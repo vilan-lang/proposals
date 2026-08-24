@@ -13,7 +13,7 @@ Layout, as ruled:
   stubs at their old paths so relative `record:` citations still land.
   `proposal/README.md` is the per-file index (gated: exactly one row
   per paper).
-- `tracker/` — THE open-work tracker, `backlog-2026-08-18.md` (the
+- `tracker/` — THE open-work tracker, `backlog.md` (the
   single planning surface), and `backlog-archive.md` (append-only
   tombstones). Deliberately its own top-level directory, structurally
   separate from the papers, so the tracker could move elsewhere later

@@ -1,7 +1,7 @@
 # Vilan Backlog — the archive
 
 Append-only. When an item in the live tracker
-([`backlog-2026-08-18.md`](backlog-2026-08-18.md)) ships or closes, the
+([`backlog.md`](backlog.md)) ships or closes, the
 same sweep that closes it moves its tombstone paragraph here — dated,
 under a dated heading — and retires the number. The live tracker never
 accumulates history; this file never holds open work.

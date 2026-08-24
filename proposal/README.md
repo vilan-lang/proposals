@@ -18,7 +18,7 @@ kept for context only).
 Cycle proposals through 2026-08-04 are merged and carry real status lines below.
 
 The open-work tracker is
-[`../tracker/backlog-2026-08-18.md`](../tracker/backlog-2026-08-18.md)
+[`../tracker/backlog.md`](../tracker/backlog.md)
 — the single planning surface (status convention in its own header),
 structurally separate from the papers per the N15 ruling. Closing
 sweeps archive tombstones into
@@ -36,7 +36,7 @@ are the frozen eras before it.
 | `argument-tail-descent.md` | shipped arc (2026-08-01, backlog B43) | A statement's split descends through a call's last argument, matching `Split::Tail`. |
 | `async-polymorphism.md` | shipped arc (Part A 2026-07-17, Part B 2026-07-18) | Async polymorphism: `sync` contracts, adaptation by monomorphized asyncness, structured-concurrency scopes; Part C (the parallelism spine) is a design record, deferred (backlog §J.1) with no driver application yet. |
 | `b33-emission-order.md` | shipped arc (2026-07-25) | Module-level binding emission in dependency order, cycles diagnosed. |
-| `backlog-2026-08-18.md` | moved → `../tracker/` | Stub — THE open-work tracker, the single planning surface, lives at [`../tracker/backlog-2026-08-18.md`](../tracker/backlog-2026-08-18.md). |
+| `backlog-2026-08-18.md` | moved → `../tracker/` | Stub — THE open-work tracker, the single planning surface, lives at [`../tracker/backlog.md`](../tracker/backlog.md). |
 | `backlog-archive.md` | moved → `../tracker/` | Stub — the append-only tombstone file lives at [`../tracker/backlog-archive.md`](../tracker/backlog-archive.md). |
 | `backlog-2026-07-18.md` | moved → `../archive/` | Stub — the frozen cycle 15–19 era tracker lives at [`../archive/backlog-2026-07-18.md`](../archive/backlog-2026-07-18.md). |
 | `backlog.md` | moved → `../archive/` | Stub — the frozen alpha-era tracker lives at [`../archive/backlog.md`](../archive/backlog.md). |
