@@ -88,6 +88,8 @@ Children are elements, string literals (including `i"…"` interpolation), and `
 
 Reactivity stays explicit, and the model stays visible through the sugar: an `if` or a `match` inside a hole runs **once, at build** — exactly as it does in a chain today. Reactive structure is what it has always been: `.show`/`.when`/`.swap`/`.bind_each` in head position, and `Signal` values in slots. The sugar adds no reactive semantics whatsoever; there is nothing to learn about *when this updates* beyond what `guide/ui.md` already teaches.
 
+**Blessed 2026-08-24 (E87; the owner's question, probed 2026-08-22):** hyphens are ordinary attribute-name characters, matching HTML exactly — `<div data-foo-bar("x") aria-label("y")>` parses, checks, and emits the attributes verbatim, because the name-blind desugar never reads the name. So the spelling for every `data-*`/`aria-*` attribute IS the undotted literal form above: no `data:` marker family beside `on:`, no `.data("foo-bar", v)` method twin. Pinned end to end (inference.rs `hyphenated_attribute_names_parse_and_emit_verbatim`, the probe's exact program) and stated in the guide's one-rule bullet the same day.
+
 ## 3. Grammar & lexing
 
 **The lexer does not change.** Every token an element form produces already exists: `<` and `>` are `Ctrl` tokens, `/` and `.` are ordinary tokens, tag and attribute names are idents/keywords, values are ordinary expressions inside parens. Lexing stays context-free (`docs/spec/lexical.md` §7) — which is precisely why text children are quoted (§8, alternative 2).

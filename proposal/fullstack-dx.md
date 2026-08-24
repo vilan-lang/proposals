@@ -2144,6 +2144,37 @@ requests are all in `head()` — that review wants the requests, not a
 pre-emption. The `<meta charset>`/`<meta name="viewport">` pair is emitted
 unconditionally and is not configurable, because no shell in the tree varies it.
 
+**Amended 2026-08-24 — the review happened and the bound moved** (E79's
+§16.13, ruled 2026-08-22; built as E85/E86). The bound as it now stands: rung
+2 is **the intersection of the shells in the tree, plus the identity lines
+the document is the sole author of — `title` and `description` — plus the
+`head`/`body` hatches for everything that names a second party std cannot
+see** (a file, a host, an address, a palette). `description(text)` is
+therefore a builder method, `title`'s twin: escaped through the attribute
+escaper, emitted beside the `<title>` in the generated prefix, absent when
+not given. Everything else §16.13 reviewed stays declined, with its reasons
+recorded there.
+
+What the identity-line rule implies **on a supplied shell**, decided with the
+build: the identity lines exist only where the document is their sole author,
+and a supplied shell's `<head>` already has an author — so `description()`
+is inert on a supplied shell, exactly as `title()` has always been (neither
+splices; the splice channels stay the render and the two hatches). A
+supplied shell that wants a description writes it in the shell, or through
+`head()` with its author doing the escaping — splicing a generated identity
+line into an authored head would make two authors of one line, which is the
+contract this bound exists to refuse. Recorded in the method's own doc
+comment and pinned only in the generated arm, where the line exists.
+
+The found-in-passing separator filed as E86 landed the same day: consecutive
+`head()`/`body()` calls join with a newline at the hatch's indent — both
+arms, since the join happens where the calls append — so the hatch is usable
+per item and §15.1's View-Source promise holds for per-item callers. Pins:
+document.rs `consecutive_hatch_calls_land_one_per_line`,
+`consecutive_head_calls_compose_one_per_line_into_a_supplied_shell`,
+`a_description_rides_the_generated_prefix_beside_the_title`,
+`a_hostile_description_is_escaped_like_the_title`.
+
 ### 15.3 The splice, and the marker
 
 `render` puts the markup inside the mount element at both rungs. For a generated
@@ -3054,3 +3085,18 @@ file, a host, an address, a palette.
 7. *The found-in-passing — `head()`/`body()` calls separated by a
    newline at the hatch's indent: file it?* — **Recommend: yes**, S,
    std; it is what lets the hatch be used per item.
+
+**Built 2026-08-24** (lane std-doc-smalls). The ruled items landed: E85
+(`description(text)`, with the supplied-shell implication recorded in
+§15.2's amendment — inert there, like `title`), E86 (the separator, both
+arms), and K17 on the site (`theme_metas("down-dim")` + `fallback(name)`
+reading `themed_values`, the served head byte-identical to the hand-stated
+lines it replaced). The site keeps its single `head_hatch` call until
+v0.36.0 ships the std this repository now carries — per-item `head()`
+calls under E86 produce the identical served head (the hatch joins at
+`"\n\t\t"`, exactly E86's separator), so the conversion is prepared as a
+held commit and proven byte-identical against the lane's own toolchain.
+One adoption question stays open for the owner: moving the site's
+description meta from the hatch to `description()` would relocate it
+beside the `<title>` in the served head — correct, but not byte-identical,
+so it was not folded into the held commit.
