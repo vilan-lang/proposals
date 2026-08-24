@@ -175,6 +175,20 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     over the golden's 456 ids) so they can never drift apart again.
     Record: markdown.md §10.
 
+138. **NEW — the analyzer's recursion depth needs 64 MiB of headroom** (M; surfaced by the v0.36.0 gate's SIGABRT 2026-08-24)
+    STATUS: OPEN
+    A modest server program's analysis overflows a 1–2 MiB stack (the
+    release gate aborted; local passed one margin over — the wasm tests now
+    ride the 256 MiB harness thread like every vilan-core binary, and the
+    shipped wasm links 64 MiB). The depth itself is the smell: measure
+    WHICH path recurses (likely `infer_type_inner`/the constraint walks —
+    instrument max depth per phase the VILAN_PHASE_TIMING way), then make
+    the deepest path iterative (the E73 hover precedent: iterative with a
+    seen-list) or explicitly bounded with a clean refusal. The 256 MiB
+    spawns and the 64 MiB link flag shrink to documented safety once the
+    depth is understood. Record: the stack-fix commit on next (0fb5e5f0's
+    parent message has the incident).
+
 ## C. Memory model
 
 1. **`Weak<T>`** (M)
