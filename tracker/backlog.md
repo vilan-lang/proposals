@@ -155,17 +155,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     those `ret`s are typed (B126), extend the join; pin the view/resource
     shapes (B116/B122 families). Record: ret-checking.md "Rule 3, amended", Q2.
 
-131. **NEW — a never-called closure's untyped parameter reports at the use, through the leftover sweep** (S; found by B125's lane 2026-08-22)
-    STATUS: OPEN
-    Since B125 an unannotated closure that is never called, iterating or
-    indexing its parameter, reports "type of function call arguments could not
-    be resolved" at the USE — the generic leftover sweep — where it used to
-    compile with the item typed `any`. Right refusal, wrong anchor and head:
-    B13 has no first call to point at, so the message should name the
-    parameter ("`list` is never given a type: this closure is never called and
-    its parameter is unannotated — annotate it") at the parameter. Ledger row,
-    pin, plant. Record: type-solver.md "P21 closed" §, Q1.
-
 132. **NEW — a bare-expression closure body reports its type disagreement at the argument, not the expression** (S; found by B125's lane 2026-08-22)
     STATUS: OPEN
     `|point| point.x * 2` under `let widths: List<str>` reports as a whole
@@ -247,62 +236,15 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     call. Also not attempted: tag-name completion and the child position.
     Record: editing-dx.md §18.
 
-82. **NEW — a derive refusal on a module's struct anchors at a comment line in the ENTRY** (S–M; found by E80's lane 2026-08-22)
-    STATUS: OPEN
-    `[derive(PartialEq)]` on a struct in `playground_page.vl:59` whose field is a
-    `List<…>` refused with "type 'List' does not implement the PartialEq operator…"
-    anchored at `./src/playground.vl:6:14` — a comment line in the entry, not the
-    struct. A span from a module rendered against the entry's text: the E16
-    anchoring rule (the file comes from the anchor, never "the entry") is not
-    honored on the derive path. Find the derive-expansion diagnostic site, route it
-    through `anchored`, pin the cross-file shape. Record: E80's report, Q3.
-
-89. **NEW — the completion measurement fold and harness are reconstructed per measurement** (S; e83's Q3, 2026-08-24)
-    STATUS: OPEN
-    K9's §9 fold (407 lines) and e83's (450) were both reconstructed from
-    the recipe because neither the fold nor the measure/worker scripts are
-    committed anywhere — a third measurement reconstructs again and the
-    numbers drift with the reconstruction. Commit the fold and the scripts
-    (vilan/examples/ or the website's scripts/ — decide by where the wasm
-    harness runs) and re-point §9's method at them. Record:
-    playground-completion.md §9's amendments.
-
-84. **NEW — the trace/demotion contract widens to any external/linked package** (S–M; owner ruling on C3a 2026-08-22)
-    STATUS: OPEN
-    diagnostics-standard.md C3a is ruled not std-specific: code the user did
-    not write — std or ANY external/linked package — demotes and traces the
-    same way. The implementation's `std_spanned` checks and the A2 anchoring
-    walk exercise std only; verify what a git-dependency package's frames do
-    today (probe a workspace with a dependency whose function reads a
-    context), then widen the demotion/labeling to non-workspace packages,
-    pins per surface. Record: diagnostics-standard.md C3a.
-
-85. **NEW — `description(text)` graduates to a `Document` builder method** (S; E79 Q2 RULED yes 2026-08-22)
-    STATUS: OPEN — RULED, ready to build
-    `title`'s twin: escaped, in the generated prefix, one pin; the docs page
-    beside it. The bound's new wording (the intersection plus the identity
-    lines the document is the sole author of) lands in §15.2 with it.
-    Record: fullstack-dx.md §16.13.
-
-86. **NEW — repeatable `head()`/`body()` calls concatenate with no separator** (S; E79 Q7 RULED file 2026-08-22)
-    STATUS: OPEN — RULED, ready to build
-    `document.vl:313` joins hatch markup with no separator, which is why the
-    site wrote its own `joined()`. Separate consecutive calls with a newline
-    at the hatch's indent so the hatch is usable per item; pin the composed
-    output; the site drops its helper when it lands. Record: fullstack-dx.md
-    §16.13.
-
-87. **NEW — data-* and aria-* attributes: `data-foo-bar(v)` already works — bless, pin, document** (S; owner question 2026-08-22, probed same day)
-    STATUS: OPEN — the probe settled the design
-    `<div data-foo-bar("x") aria-label("y")>` parses, checks and emits the
-    attributes VERBATIM on v0.35.0 (built and read in the emitted JS): the
-    name-blind desugar never cared that the name has hyphens. So the spelling
-    IS the undotted literal form, matching HTML exactly — `data:` would mint
-    a second marker family beside `on:`, and a `.data("foo-bar", v)` method
-    duplicates what the attribute form does. Bless it: a pin (parse + emit,
-    hyphenated), a docs line in the element-syntax page, and §2's prose
-    noting hyphens are ordinary attribute-name characters. Record:
-    element-syntax.md §2 when built.
+88. **NEW — a dependency named `std` resolves opposite ways in the compiler and the IDE** (S; found by L12's probe 2026-08-24)
+    STATUS: OPEN (defensive — unreachable through manifests since L12)
+    Pre-L12, the analyzer bound a dependency named `std` OVER the standard
+    library (resolve_import_root checks dependencies first) while vilan-ide's
+    completion (completion.rs:525) answers the stdlib — two answers for one
+    name. L12's manifest refusal makes the shape unreachable through
+    manifests, but a programmatically built Workspace can still stage it.
+    Either align the two resolvers or refuse at the Workspace layer too;
+    pin whichever. Record: L12's report, Q3.
 
 ## G. Macros & const
 
@@ -330,16 +272,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
    Live remainder: S6/`Iterable` waits on B4 (trait-typed-value
    dispatch). Record: iterator-adapters.md §11. History:
    backlog-2026-07-18.md §I item 3.
-
-4. **NEW — `List<T: PartialEq>` has no `PartialEq` impl, so a struct holding a list cannot derive it** (S; found by E80's lane 2026-08-22)
-   STATUS: OPEN
-   `std::List` carries only an inherent `impl List<T: PartialEq>` (`contains`/
-   `index_of`); `[derive(PartialEq)]` on a struct with a `List<…>` field is
-   refused, and the website's `DiagRow` wrote its `eq` by hand. Add
-   `impl List<T: PartialEq> with PartialEq` (element-wise, length first), pins
-   (empty/equal/unequal/nested lists, the derive on a struct field), the docs
-   page for List; then return `DiagRow` to the derive (website follow-up).
-   Record: E80's report, Q2.
 
 ## J. Concurrency
 
@@ -409,14 +341,6 @@ part of why planning fragmented. Spans `vilan-website` and
     algorithm as a compatibility surface (§4 Q3) that any renderer must
     reproduce. Record: docs-port.md §2.1, §3.3, §4 Q1.
 
-17. **NEW — site-side `theme_metas(ground)` reads `themed_values`** (S; E79 Q5 RULED yes 2026-08-22)
-    STATUS: OPEN — RULED, ready to build
-    The two `theme-color` metas and the three `var()` fallbacks in
-    `server.vl`'s `head_hatch` restate `theme.vl:120`'s pair by hand; a
-    `theme_metas` in `theme.vl` derives them from `themed_values` (one
-    palette home, K10's principle). No std helper until a second site asks.
-    Record: fullstack-dx.md §16.13.
-
 ## L. Release engineering & beta — NEW SECTION
 
 The alpha→beta transition. The *contract* is RATIFIED (process.md §5,
@@ -449,16 +373,6 @@ is **correct until the switch commit** — do not "fix" it as rot.
    CONTRIBUTING.md, SECURITY.md, CODEOWNERS, issue/PR templates,
    private vulnerability reporting. Revisit when D5's session happens;
    scaffolding for an audience arrives with the audience.
-
-88. **NEW — a dependency named `std` resolves opposite ways in the compiler and the IDE** (S; found by L12's probe 2026-08-24)
-    STATUS: OPEN (defensive — unreachable through manifests since L12)
-    Pre-L12, the analyzer bound a dependency named `std` OVER the standard
-    library (resolve_import_root checks dependencies first) while vilan-ide's
-    completion (completion.rs:525) answers the stdlib — two answers for one
-    name. L12's manifest refusal makes the shape unreachable through
-    manifests, but a programmatically built Workspace can still stage it.
-    Either align the two resolvers or refuse at the Workspace layer too;
-    pin whichever. Record: L12's report, Q3.
 
 ## M. Performance & footprint — NEW SECTION
 
