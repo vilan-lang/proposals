@@ -390,6 +390,46 @@ Not measured: a real browser's paint. No browser is reachable from this
 lane's environment; the figures above end where the worker's reply is in
 the page's hands, and the render that follows is CodeMirror's own popup.
 
+> **AMENDED 2026-08-24 — the scope position's cost is fixed (E83, lane
+> e83-completion-parse-once).** `auto_import_completions` now parses the
+> buffer ONCE per completion request and shares the parse across every
+> surviving candidate's edit — `formatter::ParsedSource`, a parsed-input
+> twin beside the string `insert_import`, both pinned to answer
+> byte-identically — and `doc_comment_of` reads a non-entry module's text
+> once per request through a per-query cache on `Analysis`
+> (`source_texts`; per query, never global, so an overlay edit lands in
+> the next query's reads). The pins hold the COUNTS, not the times: one
+> whole-buffer parse per request
+> (`a_scope_completion_with_many_auto_import_candidates_parses_the_buffer_once`,
+> vilan-lsp, over a `formatter::buffer_parse_count` probe — the plant that
+> restores the per-candidate call reads 21) and one text read per docs
+> module per request (`one_completion_request_reads_a_docs_module_text_once`,
+> over `util::source_read_count` — the plant reads 3 for three same-module
+> candidates), plus the formatter-level twin-equivalence pins.
+>
+> Re-measured with this section's method — the fold reconstructed per the
+> recipe above (450 lines, 12,242 bytes, 70 KB of JS: the store's
+> in-memory bodies rewritten, so the item counts run a hair over the
+> 2026-08-22 fold's), the release wasm pair under node 24, each figure the
+> median of 20 after one warm-up compile. The lane's machine re-measured
+> the UNCHANGED tree first, so the two columns compare like with like (its
+> warm `check` is ~147 ms against the original table's 150 ms — the
+> machines agree; the original 51 ms and 2.6 ms above stand as the
+> 2026-08-22 measurement):
+>
+> | site | before (eac75127) | after (E83) | items |
+> |---|---|---|---|
+> | member: `.` just typed after `client` (stale text) | 2.9 ms | 2.7 ms | 10 |
+> | member, same text as analyzed | 2.6 ms | 2.6 ms | 10 |
+> | import path: `import std::` | 2.8 ms | 2.8 ms | 71 |
+> | scope: a bare position inside `screen` | **60.8 ms** | **5.8 ms** | 136 |
+>
+> Worker round trip, member case: 2.9 ms before, 3.0 ms after (min 2.8,
+> max 6.9) — unchanged, as is the wire. The scope position now sits at
+> ~2× the member case instead of ~20×; the residue is the twenty
+> `insert_import` probes over the shared parse, the doc reads (one per
+> module), and the candidate walk itself — none of it re-parsing.
+
 ## 10. What shipped
 
 **Compiler repo**, branch `k9-playground-completion` off `next`:
