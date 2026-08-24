@@ -509,3 +509,198 @@ only invite someone to grow it into the package without the rulings.
    behind rulings 1–3 rather than in this lane. Accept — or, if the
    rulings all land as recommended, authorize the build as the next
    lane's first item without a further review round?
+
+## 10. Ship record — the build (2026-08-24, cycle 28, Order 10 extension, lane `markdown-build`)
+
+Shipped to the paper and the §9 rulings: `vilan/std/src/markdown.vl`
+(the one-file package, 1,017 lines), its docs page
+`vilan/docs/std/markdown.md` (+ SUMMARY entry), the book-wide anchor
+golden with its regeneration script, 35 pins in `inference.rs`, and the
+golden/discipline gate `markdown_golden.rs`. Vilan commit: fa742f146 (branch `markdown-build`).
+Seeded from the preserved k13 spike; every simplification §5 named as
+owed (the `\|` cell escape, gate-grade fence rules, strict diagnostics)
+is paid below.
+
+### 10.1 The anchor bar, verified harder than §3 asked
+
+**456/456 rendered heading ids, bit-exact and in order, against a local
+mdBook v0.5.4 build of the book as it now stands** — the census's 449
+had drifted to 450 on this branch (the l12/i4 doc edits added
+`## Reserved names` and `### Searching & equality`, net +1), and the new
+docs page adds 6 more. Verified order-preserving per page, not sorted.
+
+The empirical corpus run (a scratch mdBook book of the §3 table plus
+non-ASCII, closing-run, tag, and dedupe cases) caught **two facts the §3
+spec and the LSP twin's comments understate**, both fixed before ship:
+
+1. **mdBook lowercases with full Unicode**, not ASCII: `## École Été`
+   renders as `école-été`. `book_sync.rs`'s `normalize_id` twin
+   (`to_ascii_lowercase`, comment "lowercased") matches the book only
+   because the book has no non-ASCII heading today. The package folds
+   kept units through the host's Unicode `toLowerCase`.
+2. **mdBook trims the heading text after tag-dropping**:
+   `## <a id="x"></a> anchored` is `anchored`, not `-anchored`. The twin
+   does not trim and would emit the latter.
+
+The twin divergences are latent (zero exercised headings) but D19-class;
+flagged as an owner question (§10.9 Q2). Non-ASCII beyond the pinned
+classes is a documented approximation in the module header: keep/drop is
+a curated range table (all punctuation planes the book could plausibly
+write), and non-BMP units (surrogate pairs) drop. The corpus pins
+`café-naïveté`/`école-été` so any real divergence is loud.
+
+### 10.2 Deviations from §2, recorded
+
+1. **`Items` is `(bool, List<List<Block>>)`, not
+   `(bool, List<List<Inline>>)`.** The build found §2's sketch wrong
+   about the book itself: bullets in `tour/async.md` ("No top-level
+   await"), `guide/reactive.md` (derived state), and `spec/memory.md`
+   (R2/R10/R11) carry multi-paragraph bodies and 2-space-indented
+   fences *inside* items — six fences and their blank-line-separated
+   paragraphs, none of which an inline-only item can hold. The spike flattened them into sibling
+   top-level blocks (which is why its census cross-check still matched);
+   a docs app walking that AST would render them outside their `<li>` —
+   exactly Q1's "renders wrong quietly" failure mode. Items are block
+   lists; a simple item is one `Paragraph`. Pinned by
+   `markdown_a_list_item_carries_blocks` on the async.md shape.
+2. **`parse` returns `Result<Doc, ParseError>`**, not bare `Doc` — the
+   §9 Q1 ruling's strict failure mode made concrete.
+   `struct ParseError { line: i32, message: str }` (1-based line; exact
+   for block constructs, the enclosing block's opening line for inline
+   ones) with a `Display` impl rendering `line N: message`.
+3. **`CodeFence` bodies carry one trailing newline per line** — the docs
+   gate's extraction shape, so the package's fences byte-agree with
+   `docs.rs`/`parse_differential.rs` extraction (§8's differential
+   debt). The gate's D3 fence rules ship exactly: indent-tracked close
+   (same indent, `` ``` `` alone), CommonMark up-to-indent dedent —
+   pinned by four mirrors of `docs.rs`'s `extract_pins` cases.
+
+### 10.3 The parse-error shape: a library `Result`, no ledger row
+
+The `fs`-throws / `decode`-returns-Result fork resolves as the paper
+guided: callers are programs, so strict refusals are values —
+`Result<Doc, ParseError>`, the `from_json` precedent. **The message
+surfaces nowhere as a compiler diagnostic head** (no `diagnostics.push`
+site exists or is planned), so no diagnostics-ledger row is claimed;
+row 255 remains free. If a future docs-gate integration ever prints
+these through the CLI as diagnostics, that lane owes the row.
+
+### 10.4 Strictness as shipped
+
+Every §1.2 construct has its own refusal pin (20 strict pins), each a
+loud `ParseError` naming the construct and its line: setext underlines,
+thematic breaks, nested and indented list items, indented code blocks,
+footnotes, reference links and definitions, images, strikethrough, raw
+HTML beyond `<a id="…">`/`</a>` (with a backtick steer for bare
+generics like `List<T>`), backslash escapes outside `\|`-in-cells, hard
+and backslash line breaks, tilde fences, unclosed fences, table
+alignment colons, custom heading ids (`{#…}` — mdBook supports them,
+census zero, and one would silently change an id), and **lazy
+continuations** of blockquotes and list items (CommonMark folds those
+into the block; treating them as siblings would render wrong quietly,
+so both are refusals — book count: zero). The whole book strict-parses
+with zero refusals; the sweep that calibrated this (fence- and
+code-span-aware, all 56 files) found the book clean on every rule, the
+only near-misses being multi-line code spans (`Holder<Dog>` on a
+wrapped line), which paragraph-joining closes before inline scanning.
+
+Plants (targeted binary, restored): dedupe suffix removed → dedupe pin
+red; footnote check removed → its pin red printing `parsed`; the
+general-punctuation drop range removed → corpus pin AND the book golden
+red (first hit `appendix/cli.md h2 vilan-run-file-args`); fence close
+reverted to the spike's trim-based rule → the different-indent mirror
+pin red.
+
+### 10.5 The golden, and its regeneration story
+
+`crates/vilan-core/tests/markdown_anchors.golden` — 456 `page hN id`
+lines over 56 rendered pages — is **generated from a real mdBook build,
+never from the parser under test**: `scripts/regen-markdown-golden.py`
+(committed) refuses to run unless `mdbook --version` is exactly the
+pinned v0.5.4, builds `vilan/docs` to a temp dir, and extracts every
+`<hN id>` in document order. `markdown_golden.rs` needs no renderer in
+CI: it compiles a walker program against the real std, runs it under
+node, and diffs — so it doubles as the strict gate (a page stepping
+outside the grammar fails the suite with the refusal line). Regenerate
+when a page's headings change or the mdBook pin moves; the diff is
+reviewed as a URL-surface change. The same file also carries the
+six-rule discipline pin: markdown.vl's imports must stay Tier-1 core
+and the file must declare no `[extern]`/`external`.
+
+### 10.6 Perf: the shipped parser beats the spike
+
+Same machine, same debug-binary-compiled program shape, process leg
+(node), medians of three: **whole book 64–66 ms including file reads**
+— now 57 files / 604,321 chars with the new page (spike: 77 ms, 56
+files / 595,974 chars) — and **0.87–0.93 ms per parse of
+`spec/memory.md`** over 100 iterations (spike: 1.14 ms). Strictness,
+the `\|` unescape, gate-grade fences, and block-bodied items cost less
+than the spike's substring-heavy close-search; §4's "no performance
+case for moving the parse earlier" stands stronger than written.
+
+### 10.7 A transformer finding: `is` in a loop condition reads a stale subject
+
+Found the moment the spike was ported to house style: an `is` pattern
+test in a `for` (while) **condition** compiles to a subject binding
+hoisted *before* the loop (`const $a = found;`), so a reassignment in
+the body never reaches the condition. Minimal repro (no std beyond
+print/Option):
+
+```vilan,norun
+import std::print;
+import std::option::Option::{ None, Some, self };
+
+fun main() {
+	mut found: Option<i32> = None;
+	mut cursor = 0;
+	for (found is None) && cursor < 3 {
+		found = Some(cursor);
+		cursor += 1;
+	}
+	print(cursor);   // expected 1; prints 3 (with no bounding conjunct: infinite loop)
+}
+```
+
+`vilan check` is clean; the emitted JS is wrong. The same expression in
+an `if` is fine (fresh per evaluation); the hazard is specifically the
+re-evaluated condition position. The package works around it with a
+bool flag (one commented site in `parse_inline`). Not fixed in this
+lane — a transformer miscompile wants its own pinned fix on the
+analyzer/corpus gates, and the lane's ruling scope was the package.
+Filed as Q1 below; the repro is reproduced verbatim above so the fix
+lane needs nothing from this worktree.
+
+### 10.8 Files touched
+
+vilan (branch `markdown-build`): `vilan/std/src/markdown.vl` (new),
+`vilan/docs/std/markdown.md` (new), `vilan/docs/SUMMARY.md`,
+`crates/vilan-core/tests/markdown_golden.rs` (new),
+`crates/vilan-core/tests/markdown_anchors.golden` (new),
+`crates/vilan-core/tests/inference.rs` (+35 pins),
+`scripts/regen-markdown-golden.py` (new), `CHANGELOG.md` (feature
+entry). Suite: green — `cargo nextest run --workspace` 4098 passed, 6 skipped, exit 0. proposals (branch `markdown-build`): this
+section.
+
+### 10.9 Owner questions
+
+> Status: OPEN 2026-08-24 — for review with the build.
+
+1. **The `is`-in-loop-condition miscompile (§10.7).** Wrong values (or
+   hangs) from clean-checking source; the repro above is minimal. File
+   as its own backlog item for a transformer lane? The corpus has no
+   program in this shape, which is why it built clean; the fix lane
+   should pin exactly the repro plus a `Result` variant.
+2. **The LSP twin's two latent divergences (§10.1).** `book_sync.rs`'s
+   `mdbook_heading_ids` lowercases ASCII-only and skips the post-tag
+   trim; both diverge from measured mdBook v0.5.4 on headings the book
+   does not yet write. Align the twin with the package (and consider a
+   differential test between them), or leave until a heading exercises
+   it?
+3. **`Items` as block lists** is a §2 deviation taken on build authority
+   (the paper's "unless the build finds a flaw" clause) — the evidence
+   is §10.2. Nod wanted since every future consumer (the docs app lane
+   next) inherits the shape.
+4. **The census drift rule.** The golden regenerates from mdBook when
+   docs change; regeneration requires mdbook v0.5.4 locally (CI never
+   runs it). Acceptable as the standing workflow, or should the docs
+   gate grow a CI-side rebuild once the docs app lands?
