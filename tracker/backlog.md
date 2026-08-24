@@ -64,14 +64,16 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   (the deprecation mechanism whole), m9 SHIPPED (overlay-owned loads,
   ASan-proven, the soak reads zero), n15 PREPARED (extraction verified,
   runbook persisted — the cutover waits on the owner creating
-  `vilan-lang/proposals`). Archive 75. **Order 10 (cycle 28) LAUNCHED 2026-08-24** — the first
-  cycle on the two-repo convention (every lane: a vilan worktree + a
-  proposals worktree pair for records; the orchestrator merges both per
-  close). Lanes: k13-markdown-design (L, design-first — std::markdown
-  package-shaped, the docs-port gate), closure-ret-family (B132+B133+
-  B134), e84-package-demotion, std-doc-smalls (E85/E86/E87/I4 + website
-  K17/DiagRow), diag-anchors (E82+B131), l12-reserved-names,
-  e83-completion-parse-once. The **v0.36.0 cut rides Saturday
+  `vilan-lang/proposals`). Archive 75. **Order 10 (cycle 28) CLOSED 2026-08-24** — seven lanes, all
+  SHIPPED (l12 reserved names + the std-shadowing hole; e83 completion
+  parse-once 60.8→5.8 ms; k13 markdown.md PROPOSED, spike-proven, build
+  behind §9's rulings; e84 package demotion widened; diag-anchors E82's
+  finalize_build class + B131; std-doc-smalls E85/E86/E87/I4 + K17
+  deployed; closure-ret-family B132/B133/B134 incl. a RELEASED
+  miscompile — the unannotated loaned-tail alias). Archive 92. next
+  @12dfa484 (suite 4061); proposals main @f1890b6; website main
+  @e18eb0c + one HELD commit (a359612, lands after v0.36.0).
+  The **v0.36.0 cut rides Saturday
   2026-08-29** mid-order (post-cut merges open v0.37.0; the fold carries
   the N15 freeze to vilan main).
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
