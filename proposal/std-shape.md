@@ -335,3 +335,26 @@ small backlog item now.
 5. **The one code item.** Reserve `std`/`pkg`/`macro_std` as
    dependency import-names in `Manifest::validate` — file now as a
    small hygiene item (correct under every shape)?
+
+**Ship note (L12), 2026-08-24.** The reserved names shipped, exactly at
+the §4 seam: `Manifest::validate` refuses `std`, `pkg`, and `macro_std`
+as a `[package] name` and as a dependency key in any of the three
+`dependencies` tables, with one head family (`` `std` is a reserved
+package name: the standard library owns it (`std`, `pkg`, and
+`macro_std` are all reserved); rename the package `` — ledger row 248),
+riding the existing channels: the CLI refuses before any dependency
+work, the editor publishes on the `vilan.toml` (the F5 S5 channel). The
+probe confirmed §4's "unconsidered" verdict in the worse direction: a
+dependency named `std` did not sit beside the namespace, it silently
+*replaced* it (the analyzer binds dependency edges before the global
+roots, so every `import std::…` resolved into the dependency), `pkg`
+was silently dead (the self-package root always wins), and `macro_std`
+both shadowed the macro world's std and satisfied the macro-body
+hermeticity check by spelling alone. `[library] name` is deliberately
+exempt — std itself is `[library] name = "std"` (likewise macro_std), a
+context-free validation cannot tell the owner from an impostor, and a
+library's own name, unlike a dependency key, never binds an import
+root; the exemption is pinned as a complement, and the registry (D5's
+world) owns refusing reserved *published* names when publishing exists.
+Family `breaking` (a today-legal manifest stops compiling); docs: tour
+"Projects and dependencies", spec §4.2 and §11.4.
