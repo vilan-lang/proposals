@@ -242,17 +242,15 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     honored on the derive path. Find the derive-expansion diagnostic site, route it
     through `anchored`, pin the cross-file shape. Record: E80's report, Q3.
 
-83. **NEW — the scope-position completion re-parses the buffer once per auto-import candidate** (S–M; found by K9's lane 2026-08-22)
+89. **NEW — the completion measurement fold and harness are reconstructed per measurement** (S; e83's Q3, 2026-08-24)
     STATUS: OPEN
-    Measured on the folded walkthrough app (407 lines): member completion
-    2.6 ms, `import std::` 2.6 ms, but a bare scope position 51 ms for 131
-    items — the engine's own cost, paid by the LSP and the playground alike:
-    the E54c auto-import path calls `insert_import` (a full re-parse of the
-    buffer) per candidate, and `doc_comment_of` clones module text per
-    candidate. Parse once per request and share it across candidates; pin the
-    count of parses per request (a plant that re-parses per candidate goes
-    red) and re-measure. Lives in `crates/vilan-ide` now. Record:
-    playground-completion.md §9.
+    K9's §9 fold (407 lines) and e83's (450) were both reconstructed from
+    the recipe because neither the fold nor the measure/worker scripts are
+    committed anywhere — a third measurement reconstructs again and the
+    numbers drift with the reconstruction. Commit the fold and the scripts
+    (vilan/examples/ or the website's scripts/ — decide by where the wasm
+    harness runs) and re-point §9's method at them. Record:
+    playground-completion.md §9's amendments.
 
 84. **NEW — the trace/demotion contract widens to any external/linked package** (S–M; owner ruling on C3a 2026-08-22)
     STATUS: OPEN
@@ -374,7 +372,7 @@ part of why planning fragmented. Spans `vilan-website` and
    STATUS: OPEN (umbrella — refine into concrete items under K5's ratified language)
 
 13. **NEW — the docs on the vilan framework, the port proper — behind its markdown prerequisite** (L; filed by the K6 ruling 2026-08-19)
-    STATUS: OPEN (blocked: docs-port.md §3.3 — the markdown story, then the const input channel; STEP 3 DONE 2026-08-20 — the site took rung 2 whole, website@6036e21, record fullstack-dx.md §16.11: pixel-identical both pages both schemes, the shells deleted, the hatch census is the ladder's fit report, §15.2's declined helpers all found customers → E79)
+    STATUS: OPEN (markdown.md PROPOSED 2026-08-24 — the runtime std::markdown design, spike-proven (1.14 ms/page, 449/449 mdBook anchor parity); BUILD next order behind §9's Q1–Q4; then the const channel; STEP 3 DONE 2026-08-20 — the site took rung 2 whole, website@6036e21, record fullstack-dx.md §16.11: pixel-identical both pages both schemes, the shells deleted, the hatch census is the ladder's fit report, §15.2's declined helpers all found customers → E79)
     The owner's literal item 10 ("transitioning the docs to the vilan
     framework"), filed as its own item so it stays reachable while K6
     ships option B. docs-port.md §2.1 proved the port is *unavailable*
