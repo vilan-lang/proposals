@@ -437,12 +437,15 @@ is **correct until the switch commit** — do not "fix" it as rot.
    private vulnerability reporting. Revisit when D5's session happens;
    scaffolding for an audience arrives with the audience.
 
-12. **NEW — reserve `std`/`pkg`/`macro_std` as package names** (S; L10 Q5 RULED 2026-08-22)
-    STATUS: OPEN — RULED, ready to build
-    The namespace model's one code item now: the loader/manifest refuses a
-    dependency claiming the reserved roots, so `import std::…` can never be
-    shadowed by a package. Pin the refusal head (ledger row), docs line in
-    the packages page. Record: std-shape.md §6.
+88. **NEW — a dependency named `std` resolves opposite ways in the compiler and the IDE** (S; found by L12's probe 2026-08-24)
+    STATUS: OPEN (defensive — unreachable through manifests since L12)
+    Pre-L12, the analyzer bound a dependency named `std` OVER the standard
+    library (resolve_import_root checks dependencies first) while vilan-ide's
+    completion (completion.rs:525) answers the stdlib — two answers for one
+    name. L12's manifest refusal makes the shape unreachable through
+    manifests, but a programmatically built Workspace can still stage it.
+    Either align the two resolvers or refuse at the Workspace layer too;
+    pin whichever. Record: L12's report, Q3.
 
 ## M. Performance & footprint — NEW SECTION
 
