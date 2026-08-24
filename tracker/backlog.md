@@ -190,7 +190,7 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     bindgen.md §11. History: backlog-2026-07-18.md §E item 37.
 
 62. **NEW — Zed language extension** (M–L; owner's 2026-08-18 list, item 4)
-    STATUS: DEFERRED (owner ruling 2026-08-18: a tree-sitter grammar is one more thing to maintain after every syntax change — revisit when the syntax settles, i.e. at or after the beta switch)
+    STATUS: DEFERRED (owner ruling 2026-08-18: a tree-sitter grammar is one more thing to maintain after every syntax change — revisit when the syntax settles, i.e. at or after the beta switch) Strategy ratified 2026-08-25: skeleton-grade static grammars + semantic tokens as truth; E91 makes the tables generated so this grammar is born gated.
     Zed extensions are Rust→WASM: a tree-sitter grammar plus glue
     launching `vilan-lsp` (which already ships per-release). The grammar
     is the bulk of the work and pays twice — GitHub's syntax
@@ -220,6 +220,32 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     manifests, but a programmatically built Workspace can still stage it.
     Either align the two resolvers or refuse at the Workspace layer too;
     pin whichever. Record: L12's report, Q3.
+
+91. **NEW — grammar_sync generates the token tables, so the tree-sitter grammar is born gated** (S–M; the owner's grammar-strategy ask, filed 2026-08-25)
+    STATUS: OPEN
+    The strategy (owner + orchestrator, 2026-08-25): the compiler stays the
+    one grammar truth, delivered as SEMANTIC TOKENS wherever LSP runs
+    (already shipped in the VS Code extension; TextMate is the documented
+    fallback); every static grammar is deliberately SKELETON-grade
+    (keywords, comments, strings, numbers, attributes, element tags); the
+    tree-sitter grammar for Zed is written ONCE at/after the beta switch
+    per E62's standing deferral — ideally after I2 (const generics) and
+    B3's keyof land or park, the only foreseeable medium syntax changes.
+    This item is the enabling work: extend grammar_sync.rs from GATING the
+    word lists (TextMate + highlight.js today) to GENERATING the token-table
+    halves from the lexer's exported tables (`lexing.rs` KEYWORDS et al.) —
+    emit the keyword/operator/literal fragments the grammars consume
+    (including, when it exists, tree-sitter's `grammar.js` tables and its
+    query files under the same gate), leaving only the structural rules
+    hand-written. Pins: the generated fragments byte-match what each
+    grammar registers; a lexer keyword added without regeneration goes red.
+    Notes for the eventual E62 lane: VS Code has NO tree-sitter support and
+    none announced (TextMate + semantic tokens indefinitely); Zed is
+    tree-sitter-ONLY for highlighting (weak semantic-token support), so the
+    grammar carries real weight there; GitHub consumes tree-sitter for code
+    navigation, TextMate (linguist) for highlighting — both grammars have a
+    second customer. Record: this entry is the strategy record until the
+    E62 lane opens its paper.
 
 ## G. Macros & const
 
