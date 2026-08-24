@@ -275,6 +275,47 @@ the generic `FunctionReturn` scan (probed: `fun pick(&self) { ret &self.x; }` re
 view cannot escape its scope"). Whether `return_sites` should carry unannotated `ret`s
 too is an owner question in the lane's report.
 
+*Closed 2026-08-24 (B134, owner-approved; lane closure-ret-family).* `return_sites` now
+carries **every return position of every bodied function, annotated or not** — the tail
+and each value-carrying `ret` (a declared bare `ret`'s synthesized void still enters, it
+IS the checked value; an unannotated bare `ret` synthesizes none and has no leaves to
+contribute) — and the readers that compensated for the declared-only join read it alone:
+the crossing scan and `check_view_escape`'s function seams drop their
+tails-from-the-functions supplements, `infer_borrows` folds over the joined positions,
+and the capture-copy seam roots come from the join. Two corrections in the shipped
+compiler fell out, one per spelling. (Precision note: B116's join carried the tail only
+for a DECLARED-return function too — the parenthetical above overstated it; the clone-site
+pass had no other function source, which is the tail defect below.)
+
+- **The tail defect was a miscompile**: with no annotation the tail was not a clone seam
+  at all (`compute_return_clone_sites` took function seams only from `return_sites`), so
+  `fun grab(&self) { self.inner }` handed back the receiver's LIVE storage — probed on
+  the pre-B134 binary, the program printed 99 where its annotated twin printed 3 (pin
+  `b134_an_unannotated_tail_of_a_loaned_place_copies`, asserting the emitted `__clone`
+  and the run).
+- **The `ret` defect was the wrong refusal**: an unannotated `ret &self.inner` fell to
+  the raw `Expr::FunctionReturn` escape arm (never being in `return_sites`, it got no
+  seam walk) and was refused generically where its annotated twin copies; an unannotated
+  `ret &self.g` of a resource likewise drew the generic escape message instead of the
+  move scan's. Both spellings now answer exactly like the annotated twins, B116's own
+  bar (pins, each a B116/B122 shape with the annotation removed:
+  `b134_the_unannotated_ret_spelling_of_a_reference_leaf_copies`,
+  `b134_the_unannotated_ret_spelling_of_a_scalar_view_reads_the_place`,
+  `b134_the_unannotated_ret_spelling_of_a_borrows_call_leaf_copies` — the `borrows`
+  callee keeps its declaration; the sanction is the signature's, and an unannotated
+  caller has none to give —
+  `b134_the_unannotated_ret_spelling_of_a_resource_reference_leaf_is_refused`,
+  `b134_an_unannotated_ret_only_resource_crossing_is_named_by_the_move_scan`, and the
+  unchanged half `b134_the_unannotated_ret_spelling_of_a_view_of_a_local_still_cannot_escape`).
+
+A closure's `ret`s still never enter `return_sites` (rule 4 owns them; P4c — nothing
+sanctions a view leaving a closure). Async's return-escape readers filter on a declared
+closure-typed return and are unaffected. Plant (the declared-only join restored): 6 of
+the 7 `b134_*` pins red — the local-view refusal rightly stays. Inference 2457/0/2,
+corpus byte-identical (no corpus program had the shape), docs green; the tour's
+projection-or-copy box states the rule ("an unannotated function always returns a
+value").
+
 ## Rule 4, amended (B133, 2026-08-24)
 
 ### What rule 4 said, and what was wrong with it
