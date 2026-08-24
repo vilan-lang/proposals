@@ -342,6 +342,27 @@ position outside the instance cannot pass both halves.
 > through the same two helpers (`user_entries_of`, `trace_of`).
 > diagnostics-ledger.md rows 240–242 carry the label heads; the E78 entry
 > in the tracker holds the owner's example.
+>
+> **The demotion widens to any dependency package (E84, 2026-08-24; the
+> C3a ruling 2026-08-22)** — "std" was never the principle, only the first
+> incidence: code the user did not write demotes and traces the same way,
+> whether it is std or a git/path dependency. The walk's predicate is now
+> `library_spanned` — membership in `Program::std_sources` **or** the new
+> `Program::dependency_sources`, the latter fed by the loader's
+> `Origin::Dep` classification (the `Workspace`/`PackageSpec` layer; a
+> package is a dependency because the manifest resolver said so, never
+> because of where its path lives) at both of its load sites, the module
+> loop and the `lib.vl` surface load. Everything above holds verbatim
+> with "std" read as "the library": the primary anchors at the user's
+> earliest entering call, the C3 note names the holding function in the
+> package's own file, package-internal calls are traversed but never
+> labeled, and the injected-call flavor demotes identically — its first
+> library-internal incidence anywhere. The boundary is pinned from both
+> sides (a workspace `pkg::` sibling still anchors at the read), and an
+> overlaid dependency buffer keeps anchoring at itself, by std's
+> disk-only rule. `inference.rs` `e84_*`, the `publish.rs` cross-package
+> wire pin, the CLI `e84` pin; diagnostics-standard.md C3a carries the
+> ship record, rows 222/223/241 the amended verdicts.
 
 #### The precision residual, named
 

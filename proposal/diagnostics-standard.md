@@ -102,9 +102,29 @@ boundary sketch, and this week's diagnostics (the B13 origin-naming, the
   `trace` array on the wire (E80). A hop's `source` names its own file; a
   surface locates each hop there, never in the anchor's. The contract is not
   std-specific (the owner's ruling, 2026-08-22): code the user did not write — std
-  or **any external/linked package** — demotes and traces the same way. The
-  implementation's tests today exercise std; widening the demotion/labeling
-  checks to dependency packages is E84.
+  or **any external/linked package** — demotes and traces the same way.
+
+  **E84 DONE 2026-08-24** — the widening built. The coverage pass keys on
+  the loader's package classification: `Program::dependency_sources` (new,
+  beside `std_sources`), fed by the same `Origin::Dep` seam that namespaces
+  a dependency's modules — a `Workspace` package, git or path, at both load
+  sites (the module loop and the `lib.vl` surface); never a path heuristic.
+  A dependency-internal read now anchors at the user's earliest call into
+  the package, demotes to the C3 note in the package's own file (`the read
+  is inside `deep_read` here`), and package-internal calls are traversed
+  but never labeled; the injected-call flavor demotes identically — its
+  first library-internal incidence anywhere (std's own remains unprobed,
+  ledger row 223). The boundary holds from both sides: a workspace `pkg::`
+  sibling still anchors at the read, note-free, and an overlaid dependency
+  buffer (open in the editor) keeps anchoring at itself, by std's disk-only
+  rule. Pre-widening (the probe): the primary sat at `current.get()` inside
+  the dependency's file and the package's internal frames rendered as hops.
+  Pins per surface — analyzer `inference.rs` `e84_*` (×4), editor wire
+  `publish.rs` `a_dependency_reads_demotion_publishes_at_the_users_call`,
+  CLI `vilan-cli/tests/diagnostics.rs`
+  `e84_a_dependency_read_reports_at_the_users_call` — the five dependency
+  pins plant-proven red against the pre-widening predicate (std-only), the
+  sibling control against an over-widening one (every non-entry file).
 
 ## 4. The classes outside `diagnostics.push`
 
