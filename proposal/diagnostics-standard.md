@@ -128,9 +128,20 @@ boundary sketch, and this week's diagnostics (the B13 origin-naming, the
   **E84 rulings (2026-08-24)**: an open dependency buffer stops demoting and
   anchors at itself (confirmed); workspace MEMBERS are carved out — only
   genuinely external packages demote, decided by workspace membership,
-  never by path (E90 builds it); std's own lib.vl stays recorded; the
-  definition-site A2 sweep stays out of scope; the fallback holder name
-  stands as safety.
+  never by path (E90 — BUILT 2026-08-24: the manifest resolver flags every
+  package the enclosing `[project]`'s `packages` declares on its
+  `PackageSpec::member`, and the loader keeps a member out of
+  `dependency_sources` at both load sites, so a member's read anchors at
+  itself with member-internal calls labeled. Membership is the declaration:
+  an unlisted directory under the project root and a git checkout both stay
+  external, pinned through `resolve_workspace` in manifest.rs. Pins
+  `e90_*` — the member shapes (the read at both load sites, and row 223's
+  injected flavor) red on the pre-carve tree or under a carve-revert
+  plant, the external control red under an every-`Dep` over-carve — plus the CLI's
+  `e90_a_workspace_member_read_reports_at_itself` through real `[project]`
+  manifests; the member flag rides the base-cache fingerprint); std's own
+  lib.vl stays recorded; the definition-site A2 sweep stays out of scope;
+  the fallback holder name stands as safety.
 
 ## 4. The classes outside `diagnostics.push`
 
