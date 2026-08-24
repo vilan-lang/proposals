@@ -154,6 +154,27 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     #[ignore]d if not fixed, fix the general path. Record: std-doc-smalls'
     report Q1.
 
+136. **NEW — an `is` test in a loop CONDITION compiles against a hoisted copy of its subject** (M; found by markdown-build 2026-08-25; MISCOMPILE, live in releases)
+    STATUS: OPEN
+    The transformer hoists `const $a = subject;` before the `while`, so body
+    reassignments never reach the condition's `is` test: the minimal repro
+    (markdown.md §10.7, verbatim) prints 3 where 1 is correct, and the
+    unbounded form LOOPS FOREVER — which is how it surfaced (the spike port
+    hung). `vilan check` is clean; the defect is codegen. One commented
+    workaround site in std/src/markdown.vl (a bool flag) comes out with the
+    fix. Probe per loop form (`for cond`, infinite+break, nested), pin
+    red-first, fix the general hoist rule. Record: markdown.md §10.7.
+
+137. **NEW — book_sync's `normalize_id` diverges latently from std::markdown's anchor rule** (S; found by markdown-build 2026-08-25)
+    STATUS: OPEN
+    The LSP twin lowercases ASCII-only and skips the post-tag-drop trim —
+    both empirically wrong against mdBook v0.5.4 (`École Été` → `école-été`;
+    tag-dropped headings trim). No book heading exercises them TODAY, which
+    is why the deep links still land. Align the twin with the package's
+    `heading_id` and add a DIFFERENTIAL pin (the twin against std::markdown
+    over the golden's 456 ids) so they can never drift apart again.
+    Record: markdown.md §10.
+
 ## C. Memory model
 
 1. **`Weak<T>`** (M)
@@ -320,7 +341,7 @@ part of why planning fragmented. Spans `vilan-website` and
    STATUS: OPEN (umbrella — refine into concrete items under K5's ratified language)
 
 13. **NEW — the docs on the vilan framework, the port proper — behind its markdown prerequisite** (L; filed by the K6 ruling 2026-08-19)
-    STATUS: OPEN (markdown.md PROPOSED 2026-08-24 — the runtime std::markdown design, spike-proven (1.14 ms/page, 449/449 mdBook anchor parity); BUILD next order behind §9's Q1–Q4; then the const channel; STEP 3 DONE 2026-08-20 — the site took rung 2 whole, website@6036e21, record fullstack-dx.md §16.11: pixel-identical both pages both schemes, the shells deleted, the hatch census is the ladder's fit report, §15.2's declined helpers all found customers → E79)
+    STATUS: OPEN (STEP 1 SHIPPED 2026-08-25 — std::markdown built strict per the ruled markdown.md (fa742f146 merged 7b9b55ce): 456/456 mdBook-exact anchors with a real-build golden, 0.9 ms/page, `Items` carries BLOCK bodies (the build corrected §2's sketch — owner nod pending); NEXT: the const input channel + fuel, then the router/docs-app rung; STEP 3 DONE 2026-08-20 — the site took rung 2 whole, website@6036e21, record fullstack-dx.md §16.11: pixel-identical both pages both schemes, the shells deleted, the hatch census is the ladder's fit report, §15.2's declined helpers all found customers → E79)
     The owner's literal item 10 ("transitioning the docs to the vilan
     framework"), filed as its own item so it stays reachable while K6
     ships option B. docs-port.md §2.1 proved the port is *unavailable*
