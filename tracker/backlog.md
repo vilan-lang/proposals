@@ -447,3 +447,41 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
    the README is N12, shipped the same day, and names `chrome/` as the
    new bot-owned prefix; the stale-checkout note is moot — pulled
    2026-08-19; wasm retention is K11.)
+
+16. **NEW — the recurring codebase audit** (RECURRING; the owner's standing ask, filed 2026-08-25)
+    STATUS: RECURRING — one audit lane every other work order, rotating
+    focus; first run due Order 11. Track here: last run NONE / next due
+    Order 11 (update this line each run).
+    A standing audit over all four repos (vilan primary; website,
+    proposals, pages secondary), SURVEY-FIRST like the 2026-08-18 rot
+    survey: findings are FILED as tracker items with evidence, never fixed
+    inline — except S-sized tidies the lane can land with pins. Each run
+    picks 2–3 dimensions from the rotation and states which; the report
+    grades what it swept so coverage is honest across runs. The rotation:
+    - **Security**: `cargo audit`/dependency advisories; the `unsafe`
+      inventory (each block's SAFETY comment against reality — the
+      BASE_CACHE transmute class); injection/escaping surfaces (the
+      website's served HTML, the playground share codec, the HMR
+      endpoints); secrets/tokens in tracked files; the release pipeline's
+      supply chain (pinned actions, checksum gates).
+    - **Tidy & structure**: directory/module layout drift, files that
+      outgrew their name, orphaned assets/fixtures, stale scratch or
+      generated files tracked by mistake.
+    - **Dead code**: unreferenced items the compiler cannot see (feature-
+      gated, test-only helpers gone stale, cfg'd-out paths), dead exports,
+      the `#[cfg_attr(not(test), allow(dead_code))]` inventory re-argued.
+    - **Error handling**: `unwrap`/`expect`/`panic!` in non-test code
+      audited against the panic-fence and Result discipline; swallowed
+      errors; error messages that lost their context.
+    - **Diagnostics**: a ledger sweep (with L13's mechanical re-key),
+      heads that drifted from house rules, missing C3 notes/steers on
+      newer refusals.
+    - **Debugging**: VILAN_PHASE_TIMING/debug-dump coverage of newer
+      passes; leak_tally site coverage; whether the perf baseline still
+      reproduces.
+    - **Tests**: vacuous pins (plant-audit a sample), #[ignore]d pins
+      whose reason expired, per-case gaps on newer features, goldens
+      whose regeneration story rotted, suite wall-time creep.
+    Each run ends by updating this item's last-run/next-due line and
+    filing its findings; a dimension with zero findings says so
+    explicitly (absence of evidence recorded, not implied).
