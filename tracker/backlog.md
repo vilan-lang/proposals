@@ -64,18 +64,16 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   (the deprecation mechanism whole), m9 SHIPPED (overlay-owned loads,
   ASan-proven, the soak reads zero), n15 PREPARED (extraction verified,
   runbook persisted — the cutover waits on the owner creating
-  `vilan-lang/proposals`). Archive 75. What is active: the **v0.36.0 cut
-  on 2026-08-29** (Unreleased: 10 entries, parity 10/10, dry-run green)
-  and the N15 cutover on the owner's button.
-  Post-close 2026-08-20: E81 (1c21fa0f) — E78's hops now underline in
-  the editor as their own diagnostics; the owner's same-day report.
-  **Cycle 27 (Order 9) LAUNCHED 2026-08-21** on a bare "Go": k9 (playground
-  completion — design-first), e80 (the trace into the overlay + playground),
-  b125 (solver ordering — design + spike, merge bar stated), b126 (an
-  unannotated function's `ret`s — rule for the owner's nod at close), l11
-  (cut-script orphan markers), e79 (the §10.1 head-helpers review, paper).
-  Conditional lanes waiting on rulings: b127/b130 (§14.1), m9 (§7.9.4 nod),
-  l4 (four), n15 (six), e69 (semantics).
+  `vilan-lang/proposals`). Archive 75. **Order 10 (cycle 28) LAUNCHED 2026-08-24** — the first
+  cycle on the two-repo convention (every lane: a vilan worktree + a
+  proposals worktree pair for records; the orchestrator merges both per
+  close). Lanes: k13-markdown-design (L, design-first — std::markdown
+  package-shaped, the docs-port gate), closure-ret-family (B132+B133+
+  B134), e84-package-demotion, std-doc-smalls (E85/E86/E87/I4 + website
+  K17/DiagRow), diag-anchors (E82+B131), l12-reserved-names,
+  e83-completion-parse-once. The **v0.36.0 cut rides Saturday
+  2026-08-29** mid-order (post-cut merges open v0.37.0; the fold carries
+  the N15 freeze to vilan main).
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -233,20 +231,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     vocabulary the desugar validates AND completion reads) — the owner's
     call. Also not attempted: tag-name completion and the child position.
     Record: editing-dx.md §18.
-
-79. **NEW — the declined `Document` head helpers have their first real customers: the §10.1 review is due** (S; filed by K13 step 3, 2026-08-20)
-    STATUS: paper PROPOSED 2026-08-21 — §16.13 awaits the owner's rulings
-    fullstack-dx.md §15.2 declined three head helpers (description,
-    favicon/icons, generic meta) and §10.1 said "review when the first
-    three requests are all in `head()`". The first real site's climb put
-    ALL of them in `head()` (§16.11's census: description, the icon set,
-    the og:/twitter: card, the UA theme metas — the last restating
-    palette values theme.vl knows, a hand-sync smell). The review:
-    which, if any, graduate to builder methods — and whether the theme
-    metas deserve a token-aware helper rather than hand-restated hexes.
-    Adjacent, recorded not filed: §5.4's declined route prefix had its
-    customer too, resolved by the deployment following the ladder's URL
-    space instead. Record: fullstack-dx.md §16.11.
 
 82. **NEW — a derive refusal on a module's struct anchors at a comment line in the ENTRY** (S–M; found by E80's lane 2026-08-22)
     STATUS: OPEN
@@ -453,30 +437,6 @@ is **correct until the switch commit** — do not "fix" it as rot.
    private vulnerability reporting. Revisit when D5's session happens;
    scaffolding for an audience arrives with the audience.
 
-10. **NEW — std vs official packages: the distribution shape** (L; owner's 2026-08-20 question — proposal-first)
-    STATUS: OPEN (paper PROPOSED 2026-08-20 — std-shape.md awaits the owner's five §6 rulings; the recommendation: the NAMESPACE model as recorded direction, zero construction now — today's spellings already ARE the namespace model's, verified in the loader)
-    The owner: restructure std into 'std' and 'official packages' — "or
-    maybe std should be more of a namespace under which all of the
-    official packages are published?" Orchestrator's recommendation,
-    for the paper to argue: the NAMESPACE model, sequenced — (1) the
-    tier table (beta.md §5) already draws the seam: Tier 1 core is
-    inseparable std, the Tier 2 framework layer (reactive/ui/rpc/
-    process/router/style…) is the candidate publishing surface; (2)
-    nothing splits until a package registry exists (there is none —
-    D5's territory), because a split without distribution is import
-    churn for no capability; (3) when publishing is real, the framework
-    modules become separately-versioned packages published UNDER the
-    `std::` namespace with each toolchain release bundling a pinned,
-    offline-working set — `import std::reactive::Signal` never churns,
-    the binary stays batteries-included, and a package can still rev
-    between trains for those who opt in. A hard `std`-vs-`official-
-    packages` rename churns every import and splits the book for no
-    user gain today. The paper must decide: what the compiler treats as
-    "the std package" vs resolved packages, per-release pinning, whether
-    Tier 1 is structurally inseparable, and how the embedded binary and
-    a registry coexist. Interacts with: beta.md §3.2/§5 (tiers), L4
-    (deprecation), D5 (registry/traction).
-
 12. **NEW — reserve `std`/`pkg`/`macro_std` as package names** (S; L10 Q5 RULED 2026-08-22)
     STATUS: OPEN — RULED, ready to build
     The namespace model's one code item now: the loader/manifest refuses a
@@ -511,18 +471,6 @@ npm's `0.0.0-placeholder` and the homebrew formula's 0.14.0 seed pin
 `TODO(bindgen)` hits (an emission vocabulary, not debt), and the
 README/CHANGELOG alpha framing (correct until the beta switch — §L).
 
-2. **`proposal/archive/` consolidation** (M; owner ruling on the shape)
-   STATUS: OPEN (proposal-first — moving cited records needs the owner's nod)
-   The flat proposal directory carries three generations of the
-   memory-management design (memory-management.md → -rev-1.md →
-   claims-and-epochs.md/destruction.md), the 279KB frozen backlog.md,
-   the now-frozen backlog-2026-07-18.md, and superseded roadmap.md
-   undifferentiated among live papers. Move the dead generations and
-   frozen trackers under `proposal/archive/`, leaving the banners as
-   forwarding pointers. Cost to weigh: countless prose citations say
-   "record: backlog.md" — the move must keep those findable (the
-   banner files could stay as one-line pointers).
-
 8. **Pages repo housekeeping** (S–M umbrella)
    STATUS: OPEN (narrowed 2026-08-20 — the three orphaned brand files are deleted and the 404 shim's sunset is PROPOSED in the pages README ("at the beta switch", proposed-not-ruled — the one open half); N12's README shipped 2026-08-19; K12/N13 closed 2026-08-20)
    The local checkout is 41 commits behind its origin (refresh before
@@ -538,25 +486,3 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
    the README is N12, shipped the same day, and names `chrome/` as the
    new bot-owned prefix; the stale-checkout note is moot — pulled
    2026-08-19; wasm retention is K11.)
-
-15. **NEW — the proposals move to their own vilan-lang repo** (M; owner's 2026-08-20 ask — proposal-first)
-    STATUS: OPEN (plan PROPOSED 2026-08-20 — proposals-repo.md awaits the owner's six §8 rulings; recommends filter-repo extraction (91% of proposal commits are pure records commits), paths 1:1 under `proposal/`, the TRACKER rides with the papers, a sibling checkout with single `main`; the only functionally affected test is hygiene.rs's four allowlist rows; supersedes-and-absorbs N2)
-    Pull `vilan/proposal/` (the papers, the trackers, the archive — ~100
-    files) out of the compiler repo into a dedicated org repo (e.g.
-    `vilan-lang/proposals`). The plan must decide: history (a
-    `git filter-repo`/subtree split preserving each paper's log vs a
-    clean import with the compiler repo's history as the archive);
-    citation churn (hundreds of "record: X.md §n" prose pointers — they
-    stay greppable if paths are preserved 1:1 under the new root; the
-    in-repo pointers that MUST keep working: AGENTS.md's spec pointers,
-    the work-order briefs' `vilan/proposal/...` paths, README index,
-    docs-site.md's "design history lives in vilan/proposal/" line in the
-    book's Welcome page); the trackers' home (the single planning
-    surface moves with the papers — the orchestration workflow reads/
-    writes it every cycle, so the integration-worktree convention needs
-    a sibling checkout or the tracker stays behind — argue it); CI (the
-    hygiene gate scans tracked files — what of it applies to a prose
-    repo); and N2's original question (the dead generations under
-    `archive/`) lands as directory layout in the new repo instead of a
-    move within this one. Cost to state honestly: every future lane
-    brief and record sweep crosses a repo boundary.
