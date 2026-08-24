@@ -221,17 +221,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     Either align the two resolvers or refuse at the Workspace layer too;
     pin whichever. Record: L12's report, Q3.
 
-90. **NEW — workspace members are carved out of the E84 demotion** (S; e84 Q3, RULED 2026-08-24)
-    STATUS: OPEN — RULED, ready to build
-    Path-linked workspace siblings (`[project]` members via `path = "../common"`)
-    classify `Origin::Dep` and now demote like external packages — but they are
-    code the user edits. Carve them out by WORKSPACE MEMBERSHIP (the Workspace
-    layer knows its members; never a path heuristic): a member package anchors
-    and labels like user code; only genuinely external packages demote. Pins:
-    the sibling control flips to full user treatment; the git-dep pin stays
-    demoted. Before Saturday's cut if possible — the widened demotion ships in
-    v0.36.0. Record: diagnostics-standard.md C3a ruling note.
-
 ## G. Macros & const
 
 2. **Const-eval tail** (S–M)
