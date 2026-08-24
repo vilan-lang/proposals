@@ -512,6 +512,12 @@ only invite someone to grow it into the package without the rulings.
 
 ## 10. Ship record — the build (2026-08-24, cycle 28, Order 10 extension, lane `markdown-build`)
 
+> **OWNER NODS 2026-08-25**: `Items` carries BLOCK bodies (`List<List<Block>>`)
+> — the build's correction of §2's sketch stands, and the docs-app lane
+> inherits the shape; the golden's regeneration rule is the STANDING
+> rule (regenerate only from a real local mdBook v0.5.4 build, CI only
+> diffs — revisit when the docs app lands).
+
 Shipped to the paper and the §9 rulings: `vilan/std/src/markdown.vl`
 (the one-file package, 1,017 lines), its docs page
 `vilan/docs/std/markdown.md` (+ SUMMARY entry), the book-wide anchor
