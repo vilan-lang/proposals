@@ -221,6 +221,17 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     Either align the two resolvers or refuse at the Workspace layer too;
     pin whichever. Record: L12's report, Q3.
 
+90. **NEW — workspace members are carved out of the E84 demotion** (S; e84 Q3, RULED 2026-08-24)
+    STATUS: OPEN — RULED, ready to build
+    Path-linked workspace siblings (`[project]` members via `path = "../common"`)
+    classify `Origin::Dep` and now demote like external packages — but they are
+    code the user edits. Carve them out by WORKSPACE MEMBERSHIP (the Workspace
+    layer knows its members; never a path heuristic): a member package anchors
+    and labels like user code; only genuinely external packages demote. Pins:
+    the sibling control flips to full user treatment; the git-dep pin stays
+    demoted. Before Saturday's cut if possible — the widened demotion ships in
+    v0.36.0. Record: diagnostics-standard.md C3a ruling note.
+
 ## G. Macros & const
 
 2. **Const-eval tail** (S–M)
@@ -348,6 +359,15 @@ is **correct until the switch commit** — do not "fix" it as rot.
    CONTRIBUTING.md, SECURITY.md, CODEOWNERS, issue/PR templates,
    private vulnerability reporting. Revisit when D5's session happens;
    scaffolding for an audience arrives with the audience.
+
+13. **NEW — a mechanical re-key scan over the whole ledger** (S; diag-anchors Q4, RULED file 2026-08-24)
+    STATUS: OPEN — RULED, ready to build
+    Row 135's key had drifted outside batch 8's re-key list (caught by hand).
+    Re-run batch 8's mechanical scan over every row: site/head columns against
+    the live source; drifted keys re-keyed in place, dead rows flagged. Also
+    parks the held-target closure head as a REWORD candidate with the
+    process-layer batch (closure-ret-family Q1, RULED park 2026-08-24).
+    Record: the ledger's conventions paragraph.
 
 ## M. Performance & footprint — NEW SECTION
 

@@ -2792,7 +2792,8 @@ measurement).
 
 > **RULED 2026-08-22 — all seven as recommended.** The bound moves (the
 > intersection plus the identity lines the document is the sole author
-> of); `description(text)` graduates (E85); icons and the social card
+> of); `description(text)` graduates (E85) — the owner confirmed (2026-08-24) that an empty or
+> absent description emits NO meta (the element is structural, the meta is not); icons and the social card
 > stay hatches; the theme metas become a site-side `theme_metas`
 > reading `themed_values` (K17); generic meta/CSP/`<base>` stay
 > declined; the hatch separator files (E86).

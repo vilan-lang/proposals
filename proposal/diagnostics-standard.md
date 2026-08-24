@@ -125,6 +125,12 @@ boundary sketch, and this week's diagnostics (the B13 origin-naming, the
   `e84_a_dependency_read_reports_at_the_users_call` — the five dependency
   pins plant-proven red against the pre-widening predicate (std-only), the
   sibling control against an over-widening one (every non-entry file).
+  **E84 rulings (2026-08-24)**: an open dependency buffer stops demoting and
+  anchors at itself (confirmed); workspace MEMBERS are carved out — only
+  genuinely external packages demote, decided by workspace membership,
+  never by path (E90 builds it); std's own lib.vl stays recorded; the
+  definition-site A2 sweep stays out of scope; the fallback holder name
+  stands as safety.
 
 ## 4. The classes outside `diagnostics.push`
 
