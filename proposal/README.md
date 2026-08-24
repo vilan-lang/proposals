@@ -74,6 +74,7 @@ are the frozen eras before it.
 | `lsp-snapshot-consistency.md` | shipped arc (approved/implemented 2026-07-28) | Semantic tokens never outrun the analysis they're served from. |
 | `macro-engine.md` | shipped arc (complete 2026-07-07) | The macro engine's scheduled phases; a v1-beyond tail is tracked in the backlog trailer. |
 | `macros-post-parse.md` | deferred (design complete, deferred 2026-07-16) | The normalized `macro_std` output contract (backlog G4) — designed, not built. |
+| `markdown.md` | DRAFT 2026-08-24 (backlog K13) | The markdown story: the book's construct census (11 in, 11 measured zeros), the plain-data const-eligible AST, mdBook v0.5.4's anchor algorithm pinned as a required behavior (449/449 spike parity), runtime parser over `[build] run` pre-step and const, and the first package-shaped-module convention — four owner questions pending. |
 | `memory-management-impl-plan.md` | shipped arc (Phases 1–6 essentials) | Implementation ledger for `Arena`/`Handle`/`Shared<T>`. |
 | `memory-management.md` | moved → `../archive/` | Stub — the original memory-management exploration (superseded) lives at [`../archive/memory-management.md`](../archive/memory-management.md). |
 | `memory-management-rev-1.md` | moved → `../archive/` | Stub — the superseded rev-1 memory-management design record lives at [`../archive/memory-management-rev-1.md`](../archive/memory-management-rev-1.md). |
