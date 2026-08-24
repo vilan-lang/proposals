@@ -1,0 +1,16 @@
+# The proposals repo's only CI — prose has no build (proposals-repo.md §6):
+# publication hygiene (home paths, personal mailboxes, pre-migration owner
+# strings, ported from the compiler repo's gate) plus index completeness.
+name: hygiene
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/check_hygiene.py
