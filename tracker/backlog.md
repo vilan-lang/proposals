@@ -175,6 +175,21 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     report lands on the expression with the same steer; pin beside the eight
     `b125_*` B5 pins. Record: type-solver.md "P21 closed" §, Q2.
 
+135. **NEW — the operator path skips monomorphization for all-native bindings and hits the no-body guard** (S–M; found by std-doc-smalls 2026-08-24; B127's family, the OPERATOR half)
+    STATUS: OPEN
+    A conditional trait impl whose body calls the trait method explicitly
+    (`fun eq(self, other) { ... self.get(i).eq(other.get(i)) ... }`) ICEs
+    through the OPERATOR path at an all-native binding — `List<i32> ==
+    List<i32>` reported "internal: a call resolved to `PartialEq`'s
+    requirement `eq`, which has no body…" while `List<List<i32>> ==` and
+    explicit `.eq()` calls worked: the operator lowering skips
+    monomorphization for all-native bindings, assuming the body uses only
+    operators on `T`. Std works around it (compare.vl's body uses `==`, the
+    Option/Result idiom, recorded in its doc comment) but a USER impl can
+    still trip it. Same transformer territory D3/§14 mapped; probe, pin
+    #[ignore]d if not fixed, fix the general path. Record: std-doc-smalls'
+    report Q1.
+
 ## C. Memory model
 
 1. **`Weak<T>`** (M)
