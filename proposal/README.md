@@ -17,11 +17,15 @@ kept for context only).
 
 Cycle proposals through 2026-08-04 are merged and carry real status lines below.
 
-The open-work tracker is [`backlog-2026-08-18.md`](backlog-2026-08-18.md)
-— the single planning surface (status convention in its own header).
-Closing sweeps archive tombstones into
-[`backlog-archive.md`](backlog-archive.md); `backlog.md` and
-`backlog-2026-07-18.md` are the frozen eras before it.
+The open-work tracker is
+[`../tracker/backlog-2026-08-18.md`](../tracker/backlog-2026-08-18.md)
+— the single planning surface (status convention in its own header),
+structurally separate from the papers per the N15 ruling. Closing
+sweeps archive tombstones into
+[`../tracker/backlog-archive.md`](../tracker/backlog-archive.md);
+[`../archive/backlog.md`](../archive/backlog.md) and
+[`../archive/backlog-2026-07-18.md`](../archive/backlog-2026-07-18.md)
+are the frozen eras before it.
 
 | File | Status | Description |
 |---|---|---|
@@ -32,10 +36,10 @@ Closing sweeps archive tombstones into
 | `argument-tail-descent.md` | shipped arc (2026-08-01, backlog B43) | A statement's split descends through a call's last argument, matching `Split::Tail`. |
 | `async-polymorphism.md` | shipped arc (Part A 2026-07-17, Part B 2026-07-18) | Async polymorphism: `sync` contracts, adaptation by monomorphized asyncness, structured-concurrency scopes; Part C (the parallelism spine) is a design record, deferred (backlog §J.1) with no driver application yet. |
 | `b33-emission-order.md` | shipped arc (2026-07-25) | Module-level binding emission in dependency order, cycles diagnosed. |
-| `backlog-2026-08-18.md` | active | THE open-work tracker — the single planning surface, re-baselined at the cleanup arc; carries the Now/Next/Later strategic block. |
-| `backlog-archive.md` | active (append-only) | Where closing sweeps move tombstones from the live tracker; indexes the frozen eras. |
-| `backlog-2026-07-18.md` | historical record (frozen 2026-08-18) | The cycle 15–19 era's tracker, tombstones in place — the E49/E56 charters' arcs and the first two trains. |
-| `backlog.md` | historical record | The alpha-era planning surface; every shipped item's full body lives here, including everything moved out of the distilled file. |
+| `backlog-2026-08-18.md` | moved → `../tracker/` | Stub — THE open-work tracker, the single planning surface, lives at [`../tracker/backlog-2026-08-18.md`](../tracker/backlog-2026-08-18.md). |
+| `backlog-archive.md` | moved → `../tracker/` | Stub — the append-only tombstone file lives at [`../tracker/backlog-archive.md`](../tracker/backlog-archive.md). |
+| `backlog-2026-07-18.md` | moved → `../archive/` | Stub — the frozen cycle 15–19 era tracker lives at [`../archive/backlog-2026-07-18.md`](../archive/backlog-2026-07-18.md). |
+| `backlog.md` | moved → `../archive/` | Stub — the frozen alpha-era tracker lives at [`../archive/backlog.md`](../archive/backlog.md). |
 | `beta.md` | ratified 2026-08-18 as recommended | The beta execution charter: tracks process.md §5's ratified trigger against today's tree, plans the pre-switch/at-switch work, proposes the stability annex (diagnostics identity, std tiers). |
 | `bits-and-bytes.md` | shipped arc (2026-07-02) | The binary floor: hex literals, bitwise/shift operators, `std::bytes`. |
 | `bundle-splitting.md` | shipped arc (2026-08-04) | Route-chunk splitting from whole-program reachability (A16); S1 (measure-first), S2 (emission + gate), S3 (loading), S4 (consumer sweep) all shipped — §5's v1 non-goals stand, §11 scopes a v2. |
@@ -71,8 +75,8 @@ Closing sweeps archive tombstones into
 | `macro-engine.md` | shipped arc (complete 2026-07-07) | The macro engine's scheduled phases; a v1-beyond tail is tracked in the backlog trailer. |
 | `macros-post-parse.md` | deferred (design complete, deferred 2026-07-16) | The normalized `macro_std` output contract (backlog G4) — designed, not built. |
 | `memory-management-impl-plan.md` | shipped arc (Phases 1–6 essentials) | Implementation ledger for `Arena`/`Handle`/`Shared<T>`. |
-| `memory-management.md` | historical / superseded | Superseded by `memory-management-rev-1.md`. |
-| `memory-management-rev-1.md` | shipped arc (through Phase 6 essentials) | The memory-management design, revision 1 — largely superseded in turn by `claims-and-epochs.md` + `destruction.md`. |
+| `memory-management.md` | moved → `../archive/` | Stub — the original memory-management exploration (superseded) lives at [`../archive/memory-management.md`](../archive/memory-management.md). |
+| `memory-management-rev-1.md` | moved → `../archive/` | Stub — the superseded rev-1 memory-management design record lives at [`../archive/memory-management-rev-1.md`](../archive/memory-management-rev-1.md). |
 | `method-resolution.md` | ratified 2026-08-04; arc shipped; §14 awaits an owner ruling | A deliberate method-resolution precedence rule + ambiguity diagnostic (B57); the specificity arc (B73, R1–R3) shipped 2026-08-18 (§13.8); §14 is B127's census paper — the std `Into<T>` blanket serves zero selecting sites, recommendation DELETE, owner ruling pending. |
 | `mut-parameters.md` | shipped arc (2026-08-03) | `mut` parameters — local rebindability of a callee's copy (backlog H9). |
 | `numeric-types.md` | shipped arc (2026-07-07); tail in backlog trailer | Sized numeric types (`u8`…`i64`/`f32`); native-width tail recorded, not filed as an open item. |
@@ -87,7 +91,7 @@ Closing sweeps archive tombstones into
 | `remote-sources.md` | SHIPPED 2026-08-19 (A25 S1–S3; §8 ship record) | A25 — a remote mirror's subscription follows demand: a count on `RemoteSource` that rides owner disposal, `Unsubscribe` at zero, and `map`/`or`/`status` as the one seam into `Signal`; §6's four questions ruled as recommended; the three pins stand un-ignored, nine more beside them; §8 holds the playground/kolt diffs still to apply. |
 | `requirement-polymorphism.md` | shipped arc (2026-08-02, backlog B51) | The owner-coverage fence follows instantiation chains through generic forwarders. |
 | `ret-checking.md` | shipped arc (2026-07-04) | Return-position type checking (backlog B10). |
-| `roadmap.md` | historical / superseded (banner 2026-08-18) | Pre-lettered-section ranked backlog; its strategic role now lives in `backlog-2026-08-18.md`'s Now/Next/Later block, its Done chronicle stays as history. |
+| `roadmap.md` | moved → `../archive/` | Stub — the superseded ranked backlog lives at [`../archive/roadmap.md`](../archive/roadmap.md). |
 | `router.md` | shipped arc (settled 2026-07-11) | `std::router` — history-API routing (backlog A10). |
 | `rule4-completion.md` | shipped arc (complete 2026-07-19) | The `borrows` root-set and the `bumps` effect completing rule 4 (C6 + C10). |
 | `signature-layout.md` | shipped arc (2026-08-01, backlog B46) | `fun` signatures reach the width rule as a declaration site. |
