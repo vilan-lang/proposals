@@ -73,9 +73,18 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   miscompile — the unannotated loaned-tail alias). Archive 92. next
   @12dfa484 (suite 4061); proposals main @f1890b6; website main
   @e18eb0c + one HELD commit (a359612, lands after v0.36.0).
-  The **v0.36.0 cut rides Saturday
-  2026-08-29** mid-order (post-cut merges open v0.37.0; the fold carries
-  the N15 freeze to vilan main).
+  **v0.36.0 SHIPPED 2026-08-24/25** (the owner's call,
+  early again): release 0fb5e5f0 after ONE gate incident — the wasm
+  tests' stack margin (SIGABRT on CI, fixed + plant-proven before any
+  publish leg ran; the tag moved cleanly; B138 files the depth) — then
+  13/13 green; fold 1a4444b0 carried the N15 freeze to vilan main; the
+  playground's trace pane + completion are LIVE; the held website
+  commit deployed (ed7cc20). Beta accounting: v0.35.0 → v0.36.0 = two
+  consecutive trains, no patch between — trigger (b)'s letter may now
+  be satisfied (early cuts vs "weekly rhythm" is the owner's Q1-style
+  call), and B73's fix shipped, unblocking (c); (a) kolt migration and
+  (d) D5 remain. What is active: nothing — Order 11 on the owner's
+  ask.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
