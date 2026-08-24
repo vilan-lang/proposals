@@ -137,33 +137,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     B29 does not cover a wrong-shaped Lift impl. History:
     backlog-2026-07-18.md §B item 11.
 
-133. **NEW — lift rule 4's closure refusal to the reachable-tail rule** (S–M; B126's Q1, owner-approved follow-up 2026-08-22)
-    STATUS: OPEN
-    `{ ret 1; }` now infers `i32` in a function but is still refused in a
-    closure with rule 4's "make the ret'd value the body's tail" guidance —
-    a deliberate asymmetry kept at B126's merge. Lift rule 4 to the same
-    reachable-tail unification (ret-checking.md rule 3 as amended), keeping
-    S3's steer where a genuine disagreement remains; pins per shape mirror
-    the b126_ set. Same territory as B125's closure arm — sequence, don't
-    parallel. Record: ret-checking.md "Rule 3, amended", Q1.
-
-134. **NEW — the borrow/crossing seams do not see an unannotated function's `ret`s** (S; B126's Q2, owner-approved follow-up 2026-08-22)
-    STATUS: OPEN
-    `return_sites` joins only declared-return functions' `ret`s; an
-    unannotated `ret &self.x` is caught by the generic FunctionReturn escape
-    scan but `infer_borrows`/crossings/clone-site seams don't see it. Now that
-    those `ret`s are typed (B126), extend the join; pin the view/resource
-    shapes (B116/B122 families). Record: ret-checking.md "Rule 3, amended", Q2.
-
-132. **NEW — a bare-expression closure body reports its type disagreement at the argument, not the expression** (S; found by B125's lane 2026-08-22)
-    STATUS: OPEN
-    `|point| point.x * 2` under `let widths: List<str>` reports as a whole
-    value at the argument check (narrower than the old whole-call anchor, but
-    not at the expression), while a block body reports at the closing brace
-    with S3's one-character steer. Refine S3's route to bare bodies so the
-    report lands on the expression with the same steer; pin beside the eight
-    `b125_*` B5 pins. Record: type-solver.md "P21 closed" §, Q2.
-
 135. **NEW — the operator path skips monomorphization for all-native bindings and hits the no-body guard** (S–M; found by std-doc-smalls 2026-08-24; B127's family, the OPERATOR half)
     STATUS: OPEN
     A conditional trait impl whose body calls the trait method explicitly
