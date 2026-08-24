@@ -2,7 +2,8 @@
 
 Status: **implemented with this note** (2026-07-04). Pins: the two `#[ignore]`s named in
 B10, un-ignored, plus the per-case suite below. **Rule 3 amended 2026-08-22 (B126)** — see
-"Rule 3, amended" below; the original wording is kept there for the record.
+"Rule 3, amended" below; the original wording is kept there for the record. **Rule 4
+amended 2026-08-24 (B133)** — see "Rule 4, amended" below, likewise.
 
 ## The gap (bigger than B10 recorded)
 
@@ -83,15 +84,46 @@ and argument checking; return position had none.
      `b126_an_unannotated_impl_method_conforms_by_its_unified_type`). The old rule-3 pin
      `ret_with_a_value_in_an_undeclared_void_function_is_allowed` is re-pinned as
      `b126_a_void_ret_agrees_with_a_void_body`: same program, the new reason.
-4. **In closures and `async` blocks (shipped as the follow-up):** their return types are
-   *inferred*, so a closure's `ret`s collect on its frame and check against the inferred
-   tail type once it resolves (`Constraint::ClosureReturns`): a value-`ret` must reconcile
-   with the tail (inferred WITH the tail as expectation, so return-position generics
-   bind); a bare `ret` requires a void tail; a value-`ret` in a void-tailed closure is
-   rejected with guidance ("make the ret'd value the body's tail" — the conservative rule
-   that avoids the diverging-tail swamp). A closure that never types (unbound, never
-   called) leaves the check deferred, matching how loosely such a closure types
-   everywhere else.
+4. **In closures and `async` blocks:** their return types are *inferred*, by **the same
+   reachable-tail unification as rule 3**. (Amended 2026-08-24, B133; the original
+   conservative rule and why it was lifted are under "Rule 4, amended" below.)
+   - The evidence is the REACHABLE tail plus every `ret`, built and folded by the same
+     machinery as a function's (`return_evidence` + `unify_return_evidence`, one rule,
+     not two copies): `|x| { ret x * 2; }` is `|i32| i32` (pin
+     `b133_a_ret_only_closure_body_infers_its_return_type`), an exhaustive `if`/`else`
+     of value-`ret`s agrees with a `|i32| str` slot and runs (pin
+     `b133_a_closure_of_rets_infers_like_a_function`, re-pinned from
+     `a_closure_of_rets_loses_the_false_mismatch_and_keeps_rule_4s_guidance` — same
+     program, the new rule), and `async { ret 1; }` settles as a task of `i32` (pin
+     `b133_an_async_block_of_rets_settles_with_their_type`).
+   - A closure whose rets are its only evidence binds a caller's return-position
+     generic bottom-up, exactly as its tail would (pins
+     `b133_a_closure_ret_binds_a_callers_return_generic`,
+     `b133_a_from_fn_callback_that_leaves_by_ret_types` — the I5/B19 abstract-target
+     shape, refused by the pre-lift rule); a return-position generic IN a `ret` binds
+     from the running type or the held target (pin
+     `b133_a_ret_of_a_generic_call_binds_from_the_target`).
+   - **Disagreement is one refusal per disagreeing `ret`**, at that `ret`, in the
+     closure's wording, with a note at the origin (rule 3's origin vocabulary). The
+     conservative "make the ret'd value the body's tail" steer survives exactly where
+     the genuine disagreement remains — a value-`ret` beside a body path that CAN end
+     without a value (pins `b133_a_value_ret_beside_a_reachable_fall_through_keeps_the_steer`,
+     `b133_a_value_ret_beside_an_else_less_if_tail_keeps_the_steer`); a `ret`
+     disagreeing with a reachable tail or an earlier `ret` reports at that `ret` (pins
+     `b133_a_ret_disagreeing_with_the_tail_is_refused_at_the_ret`,
+     `b133_rets_that_disagree_are_refused_at_the_later_ret`,
+     `b133_an_async_blocks_disagreeing_rets_are_refused`); a bare `ret` beside a value
+     tail is still refused (pin `b133_a_bare_ret_beside_a_value_tail_is_still_refused`).
+   - **When the closure's return type is KNOWN** — its own annotation, or the ground
+     target S3's route held the body to (B125's expectation, a receiver-/argument-bound
+     generic) — the `ret`s check against that type instead, rule 2's regime, once, at
+     the `ret` (pins `b133_a_dead_tail_ret_is_checked_against_the_target`,
+     `b133_a_dead_tail_ret_reports_once_under_an_expectation` — the B5 probe extended
+     to `ret`s: the call and the `let` add nothing).
+   - A closure that never types (unbound, never called) leaves the check deferred,
+     matching how loosely such a closure types everywhere else — which now includes a
+     never-called `{ ret 1; }`, refused by the pre-lift rule's void vote and quiet
+     today (pin `b133_a_never_called_ret_closure_stays_quiet`).
 
 ## Mechanism
 
@@ -186,13 +218,16 @@ of the same positions and reads the answer the other way — an unreachable tail
 evidence. Nothing new is invented; the declared and inferred regimes now agree about
 which positions exist.
 
-Rule 4's "make the ret'd value the body's tail" guidance for closures is NOT lifted:
-a closure of `ret`s is still refused with that steer
+Rule 4's "make the ret'd value the body's tail" guidance for closures was NOT lifted
+by this amendment: a closure of `ret`s was still refused with that steer
 (`a_closure_of_rets_loses_the_false_mismatch_and_keeps_rule_4s_guidance`), because
-closure return inference is b125's open territory and a closure almost always has an
-expected type from its call site, which makes the conservative rule cheap there. The
-asymmetry — `{ ret 1; }` infers in a function and is refused in a closure — is
+closure return inference was b125's open territory and a closure almost always has an
+expected type from its call site, which made the conservative rule cheap there. The
+asymmetry — `{ ret 1; }` infers in a function and is refused in a closure — was
 recorded as an owner question in the B126 lane's report rather than settled here.
+*(Lifted 2026-08-24 by B133, owner-approved — see "Rule 4, amended" below; the pin is
+re-pinned as `b133_a_closure_of_rets_infers_like_a_function`: same program, the new
+rule.)*
 
 **Bare `ret` in a value-tailed function is a refusal**, not a void vote that wins or
 loses by position. Rule 2 already reads a bare `ret` as `ret <void>` with no special
@@ -240,8 +275,148 @@ the generic `FunctionReturn` scan (probed: `fun pick(&self) { ret &self.x; }` re
 view cannot escape its scope"). Whether `return_sites` should carry unannotated `ret`s
 too is an owner question in the lane's report.
 
+*Closed 2026-08-24 (B134, owner-approved; lane closure-ret-family).* `return_sites` now
+carries **every return position of every bodied function, annotated or not** — the tail
+and each value-carrying `ret` (a declared bare `ret`'s synthesized void still enters, it
+IS the checked value; an unannotated bare `ret` synthesizes none and has no leaves to
+contribute) — and the readers that compensated for the declared-only join read it alone:
+the crossing scan and `check_view_escape`'s function seams drop their
+tails-from-the-functions supplements, `infer_borrows` folds over the joined positions,
+and the capture-copy seam roots come from the join. Two corrections in the shipped
+compiler fell out, one per spelling. (Precision note: B116's join carried the tail only
+for a DECLARED-return function too — the parenthetical above overstated it; the clone-site
+pass had no other function source, which is the tail defect below.)
+
+- **The tail defect was a miscompile**: with no annotation the tail was not a clone seam
+  at all (`compute_return_clone_sites` took function seams only from `return_sites`), so
+  `fun grab(&self) { self.inner }` handed back the receiver's LIVE storage — probed on
+  the pre-B134 binary, the program printed 99 where its annotated twin printed 3 (pin
+  `b134_an_unannotated_tail_of_a_loaned_place_copies`, asserting the emitted `__clone`
+  and the run).
+- **The `ret` defect was the wrong refusal**: an unannotated `ret &self.inner` fell to
+  the raw `Expr::FunctionReturn` escape arm (never being in `return_sites`, it got no
+  seam walk) and was refused generically where its annotated twin copies; an unannotated
+  `ret &self.g` of a resource likewise drew the generic escape message instead of the
+  move scan's. Both spellings now answer exactly like the annotated twins, B116's own
+  bar (pins, each a B116/B122 shape with the annotation removed:
+  `b134_the_unannotated_ret_spelling_of_a_reference_leaf_copies`,
+  `b134_the_unannotated_ret_spelling_of_a_scalar_view_reads_the_place`,
+  `b134_the_unannotated_ret_spelling_of_a_borrows_call_leaf_copies` — the `borrows`
+  callee keeps its declaration; the sanction is the signature's, and an unannotated
+  caller has none to give —
+  `b134_the_unannotated_ret_spelling_of_a_resource_reference_leaf_is_refused`,
+  `b134_an_unannotated_ret_only_resource_crossing_is_named_by_the_move_scan`, and the
+  unchanged half `b134_the_unannotated_ret_spelling_of_a_view_of_a_local_still_cannot_escape`).
+
+A closure's `ret`s still never enter `return_sites` (rule 4 owns them; P4c — nothing
+sanctions a view leaving a closure). Async's return-escape readers filter on a declared
+closure-typed return and are unaffected. Plant (the declared-only join restored): 6 of
+the 7 `b134_*` pins red — the local-view refusal rightly stays. Inference 2457/0/2,
+corpus byte-identical (no corpus program had the shape), docs green; the tour's
+projection-or-copy box states the rule ("an unannotated function always returns a
+value").
+
+## Rule 4, amended (B133, 2026-08-24)
+
+### What rule 4 said, and what was wrong with it
+
+Rule 4 as shipped checked a closure's `ret`s against **its tail's inferred type**,
+whatever the tail's reachability: the tail of `{ ret 1; }` is the parser's synthesized
+void after a statement that LEAVES, the check read that dead position as a void vote,
+and every value-`ret` beside it drew the conservative steer ("make the ret'd value the
+body's tail"). B126 had just established, for functions, that this is exactly
+backwards — an unreachable tail is not evidence, and the compiler already draws the
+line (`expr_diverges`, B124's question). The asymmetry `{ ret 1; }` infers in a
+function / is refused in a closure was kept at B126's merge deliberately (b125's
+territory was mid-flight) and filed as its Q1; the owner approved the lift as B133.
+
+What the conservative rule cost, probed on the pre-lift binary: a `from_fn`-style
+callback that leaves only by `ret`s (`|| { .. if done { ret None; } ret Some(n); }`)
+was refused outright even though its rets agree and would bind the caller's `T`
+(pin `b133_a_from_fn_callback_that_leaves_by_ret_types`); an exhaustive `if`/`else`
+of `ret`s under a `|i32| str` slot was refused
+(pin `b133_a_closure_of_rets_infers_like_a_function`); `async { ret 1; }` was refused
+(pin `b133_an_async_block_of_rets_settles_with_their_type`); and a never-called
+`{ ret 1; }` was refused for a disagreement between a `ret` and dead code that no
+execution can exhibit (pin `b133_a_never_called_ret_closure_stays_quiet`).
+
+### The rule
+
+A closure's (and an `async` block's) return type is the **unification of its
+reachable tail and every `ret`** — rule 3's rule, rule 3's machinery. The evidence
+construction (`return_evidence`: the tail only when the block's last statement does
+not leave and the tail itself does not diverge, tagged Tail/FallThrough/IfWithoutElse;
+then the `ret`s in source order) and the fold (`unify_return_evidence`: first
+constraining item sets the running type, later items are inferred WITH it so
+return-position generics bind, `never`/`any`/`unknown` constrain nothing, a
+disagreement makes the answer `any` so nothing cascades — B5) are shared with
+`infer_function_returns` — one rule, not two copies. Only the refusals' wording is
+the closure's, and each carries a note at its origin in rule 3's vocabulary.
+
+Two regimes, mirroring a function's declared/inferred split:
+
+- **Known return type** (the closure's own annotation, or the ground target S3's
+  route held the body to — B125's expectation binding, a receiver-/argument-bound
+  generic): rule 2's regime. The tail was already checked by the route (anchored at
+  the brace, or at the expression since B132); when the tail is DEAD the `ret`s are
+  the only return positions, and they check against that type, at the `ret`
+  (pins `b133_a_dead_tail_ret_is_checked_against_the_target`,
+  `b133_a_dead_tail_ret_reports_once_under_an_expectation`). This is the B125
+  interplay the lift had to not break: the expectation binds `U` BEFORE the closure
+  types, the `ret` is checked against the bound target, and neither the call nor the
+  `let` reports a second time (the B5 probe set, extended to `ret`s).
+- **Inferred** (no annotation, no ground target): rule 3's regime, refusals at the
+  disagreeing `ret` (pins under rule 4's restated text above). The steer survives
+  only for a value-`ret` beside a body path that CAN end without a value — the
+  genuine disagreement it was written for.
+
+### Mechanism
+
+`Closure` carries its `rets` (the twin of `Function.rets`; the walk stores what the
+`Inferred` frame collected, for closures and the `async` desugar alike), and
+`Constraint::ClosureReturns` slims to the closure id. `closure_return_inference`
+builds the evidence over `closure_body_positions` (a block's tail + last statement,
+a bare expression itself) and runs the shared fold; the `Expr::Closure` arm's
+bottom-up path and the `Expr::Async` arm's payload both read it when rets exist
+(an `async` block's fold is seeded with the context's `Task<T>` payload as the
+initial expectation), so every reader of the closure's type sees the rets — which
+is what lets a `ret`-only body bind a caller's return-position generic.
+
+The route/constraint split and its ordering: S3's route records the target it holds
+a body to (`closure_held_targets`), and `resolve_closure_returns` reads it (or the
+closure's own ground annotation) for the dead-tail target check. Resolution is
+monotone — a constraint that resolved is never revisited — and a deferred owning
+call can resolve AFTER `ClosureReturns` did, so the route ALSO runs the dead-tail
+target check on every inference attempt; both sides share
+`check_closure_rets_against_target`, and a span+message dedup keeps whichever runs
+second from adding anything (the same guard the route's brace report has always
+used). `resolve_closure_returns` defers while any closure parameter is untyped —
+the body's types can depend on them, and the call that fills them may also bring
+the target — which is also what keeps a never-called closure's check deferred
+(pre-lift it deferred on the tail typing `Unknown`; a dead tail types void, so that
+guard no longer covers the `{ ret 1; }` shape).
+
+Residual, recorded: a ZERO-parameter closure with internally-disagreeing rets whose
+owning call defers past the first pass can have its internal refusal reported from
+the parameter-free evidence regime before the target lands; the identical head +
+span dedup collapses the common shapes, and no pinned program exhibits a double
+report. The held-target refusal renders the target in the existing heads' "the
+closure's body yields {T}" slot — for a fully-dead tail that phrasing describes the
+type the closure returns rather than a value the body's tail produces; kept for
+head-stability (no new ledger rows), flagged as an owner question in the lane
+report.
+
+Plants (targeted binary): the dead tail re-counted as a void vote → 10 of 15
+`b133_*` pins red (the five green ones pin reachable-tail behavior the plant does
+not touch); the dead-tail target check disabled → both dead-tail-target pins red
+(the programs compile clean — the hole is real); the arm's rets made invisible →
+`b133_a_ret_only_closure_body_infers_its_return_type` red. Inference 2450/0/2,
+corpus byte-identical, docs green. Spec §5.6 and the tour's closure section updated
+in the code commit.
+
 ## Excluded (recorded, not drifted into)
 
-- Closure-`ret` participation in closure return inference (above; `#[ignore]` pin).
+- ~~Closure-`ret` participation in closure return inference~~ — shipped as the
+  follow-up (rule 4), then lifted to rule 3's unification by B133 (above).
 - A never type: `ret`/`panic` as expressions still type void; `match` arms mixing a
   `ret` arm with value arms keep today's behavior (the arm unification is untouched).

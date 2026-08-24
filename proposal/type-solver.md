@@ -369,7 +369,7 @@ Exactly one diagnostic, at the closure:
 |---|---|---|
 | annotation `List<i32>`, block tail `{ point.x * 2; }` | whole call, `Expected List<i32>, but got List<void> instead.` | the closing `}`: `` Expected i32, but got void instead: the `;` discards this body's last value. `` |
 | annotation `List<str>`, block tail `{ point.x * 2 }` | whole call, `…got List<i32>` | the closing `}`: `Expected str, but got i32 instead.` |
-| annotation `List<str>`, bare `\|point\| point.x * 2` | whole call, `…got List<i32>` | the closure: `Expected \|Point\| str, but got \|Point\| i32 instead.` |
+| annotation `List<str>`, bare `\|point\| point.x * 2` | whole call, `…got List<i32>` | the closure: `Expected \|Point\| str, but got \|Point\| i32 instead.` — since B132 (2026-08-24): the expression, `Expected str, but got i32 instead.` |
 | parameter `\|point: str\|` vs receiver, annotation `List<i32>` | the closure, `Expected \|Point\| i32, but got \|str\| i32 instead.` | unchanged (P27's whole-value anchor) |
 | all three disagree (`List<str>`, `\|point: i32\| { point; }`) | the closure, `Expected \|Point\| str, but got \|i32\| void instead.` | unchanged |
 | `fold(0, ..)` under `let s: str` | the call, `Expected str, but got i32 instead.` | unchanged |
@@ -384,11 +384,35 @@ the closure arm's span+message dedup. Eight programs pinned
 `assert_fails_once_with` and the absence of the old whole-call message with
 `assert_fails_without`.
 
-**One anchor residual, deliberately left.** The bare-expression closure
-(`|point| point.x * 2`) reports as a whole value at the argument check,
+**One anchor residual, deliberately left** *(closed 2026-08-24, B132 —
+lane closure-ret-family)*. The bare-expression closure
+(`|point| point.x * 2`) reported as a whole value at the argument check,
 because S3 scoped the return-position route to block bodies ("no closing
-brace to anchor at"). The narrower anchor — the expression itself, `Expected
-str, but got i32` — is a later slice's refinement of S3, not this lane's.
+brace to anchor at"). B132 routes bare bodies through the same
+`check_return_position`, anchored on the expression itself: `Expected str,
+but got i32 instead.` on `point.x * 2`, still exactly once (the closure
+reports as the target it was held to, so neither the argument check nor the
+`let` doubles it). The route decides its anchor per body shape — a block's
+closing brace, a bare body's own span — and everything downstream is shared:
+the void-valued bare body gets the plain mismatch (there is no `;` to blame),
+a bare `if` with no `else` gets regime 2's wording, and the closure's own
+return annotation over a bare body anchors the same way. The refinement
+reaches every ground target, not only the expectation-bound ones: a
+receiver-/argument-bound `|T| T` under `T = Route` now reports `Expected
+Route, but got Other instead.` on the expression (the old whole-value pin
+`a_closure_arguments_return_type_is_checked_against_the_generics_binding`
+re-pinned in place — same program, the new anchor). Pins beside the b125 B5
+set: `b132_a_bare_closure_body_disagreeing_with_the_annotation_reports_on_the_expression`
+(re-pinned from
+`b125_a_bare_closure_disagreeing_with_the_annotation_reports_once_at_the_closure`
+— same program, the new anchor),
+`b132_a_void_bare_closure_body_reports_on_the_expression`,
+`b132_a_bare_if_without_else_body_names_the_gap`,
+`b132_the_free_function_spelling_reports_on_the_expression`,
+`b132_an_annotated_bare_body_reports_on_the_expression`,
+`b132_an_agreeing_bare_body_still_compiles_and_runs`; plant (route re-scoped
+to block bodies): 5 of the 6 red plus the re-pinned generics-binding pin.
+The other seven b125 pins are untouched and green.
 
 ### The role of `type_is_ground` after the change
 
@@ -532,6 +556,8 @@ wording is the sweep's (owner question below).
    item, not made here. File it?
 2. The bare-expression closure's anchor (the whole closure at the argument
    check, see the table) — refine S3's route to anchor at the expression?
+   *(Filed as B132, owner-approved; DONE 2026-08-24, lane
+   closure-ret-family — see "One anchor residual" above.)*
 3. CHANGELOG family: filed as `diagnostics` per the lane brief; the
    never-called-closure consequence is, strictly, a program that compiled
    and now does not. If that reads as `breaking` to you, the entry moves.
