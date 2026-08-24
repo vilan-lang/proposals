@@ -482,6 +482,13 @@ only invite someone to grow it into the package without the rulings.
 
 ## 9. Owner questions
 
+> **RULED 2026-08-24 — all as recommended.** Strict parsing (an unknown
+> construct is a loud parse error the docs gate catches); the one-file
+> package layout + six-rule discipline is the tree's convention; the
+> anchor bar is bit-exact mdBook v0.5.4 id parity (unit corpus + the
+> 449-id golden). **The build is AUTHORIZED** — rulings 1–3 landed as
+> recommended; the build lane seeds from the preserved spike.
+
 1. **The scope cut, and its failure mode.** Ratify the census grammar
    (§1.1 in, §1.2 out) as `std::markdown` v1, with **strict** parsing:
    a construct outside the grammar is a parse error naming the

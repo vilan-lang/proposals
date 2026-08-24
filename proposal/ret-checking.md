@@ -318,6 +318,10 @@ value").
 
 ## Rule 4, amended (B133, 2026-08-24)
 
+> **OWNER NOD 2026-08-24** — the wording stands as written; never-called ret
+> closures staying quiet is confirmed; the alias→copy upgrade impact is
+> stated plainly in the CHANGELOG entry per the same ruling.
+
 ### What rule 4 said, and what was wrong with it
 
 Rule 4 as shipped checked a closure's `ret`s against **its tail's inferred type**,
