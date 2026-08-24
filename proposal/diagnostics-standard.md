@@ -142,6 +142,10 @@ boundary sketch, and this week's diagnostics (the B13 origin-naming, the
   manifests; the member flag rides the base-cache fingerprint); std's own
   lib.vl stays recorded; the definition-site A2 sweep stays out of scope;
   the fallback holder name stands as safety.
+  E90's three edges CONFIRMED by the owner 2026-08-24: a broken ancestor
+  `[project]` refuses resolution for depending packages; membership is
+  measured against the ENTRY's enclosing project only; the nearest
+  enclosing project wins.
 
 ## 4. The classes outside `diagnostics.push`
 
