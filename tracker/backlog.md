@@ -83,8 +83,12 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   consecutive trains, no patch between — trigger (b)'s letter may now
   be satisfied (early cuts vs "weekly rhythm" is the owner's Q1-style
   call), and B73's fix shipped, unblocking (c); (a) kolt migration and
-  (d) D5 remain. What is active: nothing — Order 11 on the owner's
-  ask.
+  (d) D5 remain. **Kolt refactored current with 0.36.0** (2026-08-25,
+  the owner's ask; kolt@4289594 on its vilan-migration branch: the
+  builder chain, the generated shell, the counted mirrors; build +
+  10/10 probe + 16/16 e2e green — whether this satisfies (a)'s letter
+  is the owner's call; E92 filed from its one dogfood finding). What
+  is active: nothing — Order 11 on the owner's ask.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -290,6 +294,25 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     navigation, TextMate (linguist) for highlighting — both grammars have a
     second customer. Record: this entry is the strategy record until the
     E62 lane opens its paper.
+
+92. **NEW — `vilan build` leaves a superseded process artifact in place after a rename** (S; found refactoring kolt to 0.36.0, 2026-08-25)
+    STATUS: OPEN
+    A project last built before v0.33.0's artifact rename (process legs
+    `.js` → `.mjs`) rebuilds clean on the current toolchain — and leaves
+    the OLD `dist/server.js` sitting beside the new `dist/server.mjs`.
+    Nothing removes or flags it, so a script, Dockerfile or process
+    manager still saying `node dist/server.js` keeps launching the
+    superseded application silently — exactly the drift the gotchas page
+    warns about, with nothing in the toolchain to catch it (kolt's
+    2026-08-01 `dist/` reproduced this live: both generations present
+    after one 0.36.0 build). The shape generalizes: any output-name
+    change — a renamed leg, a leg dropped from the manifest, `split`
+    toggled — strands the previous generation in `dist/`, chunks and
+    manifest included. Candidate answers, for the lane to weigh: sweep
+    what the build itself once wrote (scoped by a recorded emission
+    manifest, so user files in `dist/` are never touched), or warn when
+    an emission's sibling with a retired name or extension survives.
+    Record: this entry.
 
 ## G. Macros & const
 
