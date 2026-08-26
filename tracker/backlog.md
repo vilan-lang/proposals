@@ -98,13 +98,27 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   userbase; the (a)–(d) accounting above is parked, D5 is the gate
   (§L's header carries the ruling). N17 SCOPED the same day: kolt.local
   only for now, full-repo expansion recorded as the end state. What is
-  active: **Order 11 (cycle 29) ACTIVE 2026-08-26 — the owner's Go,
-  k13-step-2 included. Eight lanes: audit-1 (N16 run 1: security +
-  diagnostics, carrying L13's re-key), b136-loop-is (the released
-  miscompile), b138-depth, compiler-tooling-smalls (B135/B137/E88/E92/
-  D15), e91-grammar-gen, style-dogfood (kolt.local 010–013),
-  std-dogfood (018/019/022b + the `vilan` name reservation + 005),
-  k13-step-2 (the const input channel + fuel).**
+  active: nothing — **Order 11 (cycle 29) CLOSED 2026-08-26, same day
+  as the Go** (k13-step-2 included): eight lanes, all SHIPPED, merged
+  on next @37787a39 (pushed; union suite 4167/4167, parity 20/20, cut
+  dry-run 0 reds — v0.37.0's Unreleased holds 20 entries). b136-loop-is
+  FIXED the released loop-condition `is` miscompile (every conditional-
+  position form was wrong; a release-notes line is DUE at the next
+  cut); b138-depth measured the analyzer and bounded its deepest path
+  (B139/B140 filed from its plants — the margin-shrink unlocker and an
+  exponential-time find); compiler-tooling-smalls closed
+  B135/B137/E88/E92/D15; e91-grammar-gen made the grammar word lists
+  generated and byte-gated; audit-1 ran N16's first pass (security +
+  diagnostics: zero secrets, zero unsound unsafe; 11 findings filed as
+  L14–L16, E93–E96, K18/K19, N18, M10; L13's ledger re-key LANDED —
+  13 drifted keys, one class, zero dead rows); style-dogfood shipped
+  kolt.local 010–013 (`Style::attribute` as the fourth condition axis,
+  `size()`, `Color::var`, `Color::oklch` — 014's deprecation now
+  argues against a live API); std-dogfood shipped 018/019/022(b) + the
+  `vilan` reservation (std-shape.md §6's second ship note) + 005;
+  k13-step-2 shipped `std::asset::read` + the measured 16M fuel answer
+  (markdown.md §11; one owner question PARKED there: the LSP watcher
+  glob). Archive 102.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -170,55 +184,32 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     B29 does not cover a wrong-shaped Lift impl. History:
     backlog-2026-07-18.md §B item 11.
 
-135. **NEW — the operator path skips monomorphization for all-native bindings and hits the no-body guard** (S–M; found by std-doc-smalls 2026-08-24; B127's family, the OPERATOR half)
+139. **NEW — the return-inference chain recurses once per call link, unbounded** (M; filed by B138's lane 2026-08-26 — the margin-shrink unlocker)
     STATUS: OPEN
-    A conditional trait impl whose body calls the trait method explicitly
-    (`fun eq(self, other) { ... self.get(i).eq(other.get(i)) ... }`) ICEs
-    through the OPERATOR path at an all-native binding — `List<i32> ==
-    List<i32>` reported "internal: a call resolved to `PartialEq`'s
-    requirement `eq`, which has no body…" while `List<List<i32>> ==` and
-    explicit `.eq()` calls worked: the operator lowering skips
-    monomorphization for all-native bindings, assuming the body uses only
-    operators on `T`. Std works around it (compare.vl's body uses `==`, the
-    Option/Result idiom, recorded in its doc comment) but a USER impl can
-    still trip it. Same transformer territory D3/§14 mapped; probe, pin
-    #[ignore]d if not fixed, fix the general path. Record: std-doc-smalls'
-    report Q1.
+    `inferred_return_type_of → infer_function_returns →
+    unify_return_evidence → infer_type_inner` recurses per call link when
+    returns are inferred: measured infer depth N+1 for an N-function
+    chain, ~12.5 KiB/link dev, ~2 KiB release (plant: `fun f0(){1}
+    fun f1(){f0()} …`; N=500 dev → 6.24 MiB) — and superlinear TIME
+    (N=2000 release: 6.8s vs 0.30s at N=500). `return_inference_stack`
+    guards cycles, not depth. Candidates: a depth bound answering inexact
+    (the stack already has the inexact-marking machinery), or scheduling
+    through the constraint worklist. Closing this is what lets the
+    256 MiB spawns and the wasm 64 MiB link flag actually shrink — the
+    rationale comments B138 wrote at each site say so. Minor residuals
+    ride along: `resolve_pattern` and `walk_type_node` stay
+    source-nesting-unbounded (small frames, realistic depth 3), and the
+    PARSER has no depth limit at all, so pathological nesting reaches it
+    before any analyzer bound. Record: B138's archive tombstone.
 
-136. **NEW — an `is` test in a loop CONDITION compiles against a hoisted copy of its subject** (M; found by markdown-build 2026-08-25; MISCOMPILE, live in releases)
+140. **NEW — nested arithmetic is exponential-TIME in analysis** (M; found by B138's plants 2026-08-26)
     STATUS: OPEN
-    The transformer hoists `const $a = subject;` before the `while`, so body
-    reassignments never reach the condition's `is` test: the minimal repro
-    (markdown.md §10.7, verbatim) prints 3 where 1 is correct, and the
-    unbounded form LOOPS FOREVER — which is how it surfaced (the spike port
-    hung). `vilan check` is clean; the defect is codegen. One commented
-    workaround site in std/src/markdown.vl (a bool flag) comes out with the
-    fix. Probe per loop form (`for cond`, infinite+break, nested), pin
-    red-first, fix the general hoist rule. Record: markdown.md §10.7.
-
-137. **NEW — book_sync's `normalize_id` diverges latently from std::markdown's anchor rule** (S; found by markdown-build 2026-08-25)
-    STATUS: OPEN
-    The LSP twin lowercases ASCII-only and skips the post-tag-drop trim —
-    both empirically wrong against mdBook v0.5.4 (`École Été` → `école-été`;
-    tag-dropped headings trim). No book heading exercises them TODAY, which
-    is why the deep links still land. Align the twin with the package's
-    `heading_id` and add a DIFFERENTIAL pin (the twin against std::markdown
-    over the golden's 456 ids) so they can never drift apart again.
-    Record: markdown.md §10.
-
-138. **NEW — the analyzer's recursion depth needs 64 MiB of headroom** (M; surfaced by the v0.36.0 gate's SIGABRT 2026-08-24)
-    STATUS: OPEN
-    A modest server program's analysis overflows a 1–2 MiB stack (the
-    release gate aborted; local passed one margin over — the wasm tests now
-    ride the 256 MiB harness thread like every vilan-core binary, and the
-    shipped wasm links 64 MiB). The depth itself is the smell: measure
-    WHICH path recurses (likely `infer_type_inner`/the constraint walks —
-    instrument max depth per phase the VILAN_PHASE_TIMING way), then make
-    the deepest path iterative (the E73 hover precedent: iterative with a
-    seen-list) or explicitly bounded with a clean refusal. The 256 MiB
-    spawns and the 64 MiB link flag shrink to documented safety once the
-    depth is understood. Record: the stack-fix commit on next (0fb5e5f0's
-    parent message has the incident).
+    `(1 + (1 + …))`: N=14 → 0.34s, N=18 → 2.4s, N=22 → 35s dev (~2× per
+    level; N=60 exceeds 120s; nested array literals are the same class).
+    Depth stays flat (infer 6) — it is re-computation through constraint
+    wakes, not recursion: a pure perf bug, distinct from B138's stack
+    story. Instrument with the phase clocks, find the re-wake
+    amplification, fix the general path. Record: B138's lane report.
 
 ## C. Memory model
 
@@ -247,22 +238,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
    interact with the pseudonym discipline; voice/positioning are the
    owner's calls. Overlaps §K's web arc — coordinate, don't duplicate.
    History: backlog-2026-07-18.md §D item 5.
-
-15. **NEW — `std::crypto`'s promoted primitives are undocumented; the docs still teach the extern workaround** (S; found verifying the kolt dogfood list, 2026-08-26)
-    STATUS: OPEN
-    `hmac_sha512` and `pbkdf2_sha512` shipped in `std::crypto`
-    (std/src/crypto.vl:12,18), but `docs/std/misc.md`'s crypto section
-    documents only `random_bytes`/`random_uuid`/`equals_constant_time`
-    and misdirects: "bind the host's sync primitives as externs …
-    candidates for std promotion" — the promotion happened; the docs
-    never caught up, so a reader writes an extern for a function std
-    ships. Nuance the fix must keep: the walkthrough's `pbkdf2Sync`
-    extern (guide/walkthrough.md:160) is still right for the SYNC rpc
-    dispatch path — std's surface is async WebCrypto; the docs should
-    say which need the std functions now cover, not delete the extern
-    lesson. Same sweep, same class: `content_type_of`'s doc comment
-    (std/src/process/build.vl:236-241) still claims "`std::fs` cannot
-    read bytes at all today" — stale since F13 shipped `read_bytes`.
 
 ## E. LSP & tooling
 
@@ -293,60 +268,43 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     call. Also not attempted: tag-name completion and the child position.
     Record: editing-dx.md §18.
 
-88. **NEW — a dependency named `std` resolves opposite ways in the compiler and the IDE** (S; found by L12's probe 2026-08-24)
-    STATUS: OPEN (defensive — unreachable through manifests since L12)
-    Pre-L12, the analyzer bound a dependency named `std` OVER the standard
-    library (resolve_import_root checks dependencies first) while vilan-ide's
-    completion (completion.rs:525) answers the stdlib — two answers for one
-    name. L12's manifest refusal makes the shape unreachable through
-    manifests, but a programmatically built Workspace can still stage it.
-    Either align the two resolvers or refuse at the Workspace layer too;
-    pin whichever. Record: L12's report, Q3.
+93. **NEW — the HMR dev channel answers any origin and takes unauthenticated refresh POSTs: re-affirm or gate** (S; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN (owner question — a recorded decision, not a bug)
+    `hmr.rs` sets `Access-Control-Allow-Origin: *` (deliberate,
+    commented — the page origin is the user's own server) and accepts
+    `POST /refresh` unauthenticated (dev-refresh.md §5's shipped shape).
+    Net effect: any web page the developer's browser visits can read
+    compile diagnostics — which embed source fragments and absolute
+    paths — off the dev port cross-origin, and can trigger refresh
+    floods. Dev-only surface; a per-session token or an origin allowlist
+    is cheap. The filing asks the owner to re-affirm the recorded
+    decision or gate it. Record: audit-1's report (Order 11).
 
-91. **NEW — grammar_sync generates the token tables, so the tree-sitter grammar is born gated** (S–M; the owner's grammar-strategy ask, filed 2026-08-25)
+94. **NEW — `asset::emit`'s kind becomes an output-path segment unsanitized** (S; N16 audit run 1, 2026-08-26)
     STATUS: OPEN
-    The strategy (owner + orchestrator, 2026-08-25): the compiler stays the
-    one grammar truth, delivered as SEMANTIC TOKENS wherever LSP runs
-    (already shipped in the VS Code extension; TextMate is the documented
-    fallback); every static grammar is deliberately SKELETON-grade
-    (keywords, comments, strings, numbers, attributes, element tags); the
-    tree-sitter grammar for Zed is written ONCE at/after the beta switch
-    per E62's standing deferral — ideally after I2 (const generics) and
-    B3's keyof land or park, the only foreseeable medium syntax changes.
-    This item is the enabling work: extend grammar_sync.rs from GATING the
-    word lists (TextMate + highlight.js today) to GENERATING the token-table
-    halves from the lexer's exported tables (`lexing.rs` KEYWORDS et al.) —
-    emit the keyword/operator/literal fragments the grammars consume
-    (including, when it exists, tree-sitter's `grammar.js` tables and its
-    query files under the same gate), leaving only the structural rules
-    hand-written. Pins: the generated fragments byte-match what each
-    grammar registers; a lexer keyword added without regeneration goes red.
-    Notes for the eventual E62 lane: VS Code has NO tree-sitter support and
-    none announced (TextMate + semantic tokens indefinitely); Zed is
-    tree-sitter-ONLY for highlighting (weak semantic-token support), so the
-    grammar carries real weight there; GitHub consumes tree-sitter for code
-    navigation, TextMate (linguist) for highlighting — both grammars have a
-    second customer. Record: this entry is the strategy record until the
-    E62 lane opens its paper.
+    The `(kind, line)` pairs flow from const evaluation into per-kind
+    output files under `dist/` with no separator/`..` rejection on
+    `kind` — a hostile project can direct writes outside `dist/`. Same
+    trust tier as build hooks (you built the project), but this one is
+    unintended: one sanitize-the-segment check plus a pin. Record:
+    audit-1's report (Order 11).
 
-92. **NEW — `vilan build` leaves a superseded process artifact in place after a rename** (S; found refactoring kolt to 0.36.0, 2026-08-25)
+95. **NEW — a manifest dependency `path` lacks the `..` containment check entry paths get** (S; N16 audit run 1, 2026-08-26)
     STATUS: OPEN
-    A project last built before v0.33.0's artifact rename (process legs
-    `.js` → `.mjs`) rebuilds clean on the current toolchain — and leaves
-    the OLD `dist/server.js` sitting beside the new `dist/server.mjs`.
-    Nothing removes or flags it, so a script, Dockerfile or process
-    manager still saying `node dist/server.js` keeps launching the
-    superseded application silently — exactly the drift the gotchas page
-    warns about, with nothing in the toolchain to catch it (kolt's
-    2026-08-01 `dist/` reproduced this live: both generations present
-    after one 0.36.0 build). The shape generalizes: any output-name
-    change — a renamed leg, a leg dropped from the manifest, `split`
-    toggled — strands the previous generation in `dist/`, chunks and
-    manifest included. Candidate answers, for the lane to weigh: sweep
-    what the build itself once wrote (scoped by a recorded emission
-    manifest, so user files in `dist/` are never touched), or warn when
-    an emission's sibling with a retired name or extension survives.
-    Record: this entry.
+    Entry-path handling guards traversal; the dependency-path branch
+    does not. Either decide the trust model explicitly in code (a
+    manifest you build is already trusted — say so) or add the same
+    guard; pin either. Record: audit-1's report (Order 11).
+
+96. **NEW — `[build] run` hooks are arbitrary shell by design: record the trust model** (M; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN (owner call)
+    Deliberate and documented in code; what is missing is the
+    user-facing statement ("building a project executes its build
+    hooks") and optionally a first-run consent gate — the cargo-vs-make
+    decision made on purpose. Pairs with E95's trust-model note, and
+    with the kolt-dogfood build-script design (kolt.local 027), whose
+    install-time hook raises the same question at higher stakes.
+    Record: audit-1's report (Order 11).
 
 ## G. Macros & const
 
@@ -421,7 +379,7 @@ part of why planning fragmented. Spans `vilan-website` and
    STATUS: OPEN (umbrella — refine into concrete items under K5's ratified language)
 
 13. **NEW — the docs on the vilan framework, the port proper — behind its markdown prerequisite** (L; filed by the K6 ruling 2026-08-19)
-    STATUS: OPEN (STEP 1 SHIPPED 2026-08-25 — std::markdown built strict per the ruled markdown.md (fa742f146 merged 7b9b55ce): 456/456 mdBook-exact anchors with a real-build golden, 0.9 ms/page, `Items` carries BLOCK bodies (the build's correction, OWNER NOD 2026-08-25; golden regen rule also nodded); NEXT: the const input channel + fuel, then the router/docs-app rung; STEP 3 DONE 2026-08-20 — the site took rung 2 whole, website@6036e21, record fullstack-dx.md §16.11: pixel-identical both pages both schemes, the shells deleted, the hatch census is the ladder's fit report, §15.2's declined helpers all found customers → E79)
+    STATUS: OPEN (STEP 1 SHIPPED 2026-08-25 — std::markdown built strict per the ruled markdown.md (fa742f146 merged 7b9b55ce): 456/456 mdBook-exact anchors with a real-build golden, 0.9 ms/page, `Items` carries BLOCK bodies (the build's correction, OWNER NOD 2026-08-25; golden regen rule also nodded); STEP 2 SHIPPED 2026-08-26 (lane k13-step-2, 5d434d29) — `std::asset::read` is the channel’s input direction (package-root-relative, escape-refused, const-only under emit’s machinery), every read a tracked build input (watch trigger + per-leg skip + in-process pin), the fuel budget 1M → 16M on measurement (the largest page parses at 2,001,457 fuel, pinned against the real book page); PARKED for the owner: the LSP watcher glob (`**/*.vl`) does not see read-input edits — widen, or accept next-edit freshness?; NEXT: the router/docs-app rung; STEP 3 DONE 2026-08-20 — the site took rung 2 whole, website@6036e21, record fullstack-dx.md §16.11: pixel-identical both pages both schemes, the shells deleted, the hatch census is the ladder's fit report, §15.2's declined helpers all found customers → E79)
     The owner's literal item 10 ("transitioning the docs to the vilan
     framework"), filed as its own item so it stays reachable while K6
     ships option B. docs-port.md §2.1 proved the port is *unavailable*
@@ -442,6 +400,20 @@ part of why planning fragmented. Spans `vilan-website` and
     The 32 LSP deep links and 417 in-book links pin mdBook's anchor
     algorithm as a compatibility surface (§4 Q3) that any renderer must
     reproduce. Record: docs-port.md §2.1, §3.3, §4 Q1.
+
+18. **NEW — the playground console `message` listener accepts any window's messages** (S; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN
+    `vilan-website/src/playground.vl` registers a `message` listener
+    with no `event.origin`/source check; any embedding or opener page
+    can inject console traffic. One origin check. Record: audit-1's
+    report (Order 11).
+
+19. **NEW — the website deploy fetches the latest wasm release unpinned, with no checksum** (S; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN
+    deploy.yml + fetch-wasm.sh trust "latest" blindly, and the
+    workflow's actions ride mutable tags (L14's class). Pin the release
+    by tag+SHA or carry the SHA256SUMS check into fetch-wasm.sh.
+    Record: audit-1's report (Order 11).
 
 ## L. Release engineering & beta — NEW SECTION
 
@@ -483,14 +455,36 @@ stands unchanged.
    private vulnerability reporting. Revisit when D5's session happens;
    scaffolding for an audience arrives with the audience.
 
-13. **NEW — a mechanical re-key scan over the whole ledger** (S; diag-anchors Q4, RULED file 2026-08-24)
-    STATUS: OPEN — RULED, ready to build
-    Row 135's key had drifted outside batch 8's re-key list (caught by hand).
-    Re-run batch 8's mechanical scan over every row: site/head columns against
-    the live source; drifted keys re-keyed in place, dead rows flagged. Also
-    parks the held-target closure head as a REWORD candidate with the
-    process-layer batch (closure-ret-family Q1, RULED park 2026-08-24).
-    Record: the ledger's conventions paragraph.
+14. **NEW — pin the workflows' third-party actions to commit SHAs** (S–M; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN
+    Every action in ci.yml and release.yml rides a mutable tag
+    (actions/checkout@v4/v5, dtolnay/rust-toolchain@stable,
+    taiki-e/install-action@v2, Swatinem/rust-cache@v2, the artifact and
+    pages families). A hijacked tag executes in the release path with
+    the release token. Pin to full SHAs with a tag comment; add
+    dependabot/renovate to move the pins. The same tidy is owed to
+    vilan-website's deploy.yml (K19) and the proposals repo's
+    hygiene.yml (N18). Record: audit-1's report (Order 11).
+
+15. **NEW — release artifacts are checksummed but unsigned, and the installer fails open** (M; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN (the S half is free-standing)
+    SHA256SUMS is produced and consumed same-origin (release.yml → the
+    release assets), so it authenticates transport, not the pipeline;
+    no signing/attestation. And install.sh skips verification entirely
+    when no sha256 tool is on PATH rather than refusing. Fix the S half
+    now (fail closed); signing/provenance is the M half — sensibly
+    deferred until D5 gives it an audience, but recorded. Record:
+    audit-1's report (Order 11).
+
+16. **NEW — `std::markdown`'s ~20 strict-parse refusals enter the diagnostics ledger** (S; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN
+    markdown.vl ships ~20 `ParseError` messages — the runtime-refusal
+    class of ledger rows 230–239, un-rowed, every one carrying the
+    em-dash style the process-layer REWORD parking already covers. Owed
+    as their own verdict batch (wording B-rules + C2 pins), priced with
+    the same owner ruling on std refusal style (beta.md §3.1's identity
+    surface). Record: audit-1's report; the ledger's Order 11 batch
+    note.
 
 ## M. Performance & footprint — NEW SECTION
 
@@ -504,6 +498,13 @@ suite's liveness bounds already use measured-reference thresholds
 (`support/mod.rs`'s `reference_compile()`), never fixed seconds.
 Corpora measured: todo 119 lines (smoke only), kolt 943, website 2,996,
 std 15,024 (the cold-compile stand-in).
+
+10. **NEW — mechanize the BASE_CACHE transmute's completeness claim** (M; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN (deferred: nice-to-have)
+    The unsafe audit verified the safety argument, but one leg rests on
+    a ~150-field hand-maintained completeness claim; a compile-time
+    assertion or generated check would close the honest gap. Record:
+    audit-1's report (Order 11).
 
 ## N. Hygiene & rot — NEW SECTION
 
@@ -537,8 +538,9 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
 
 16. **NEW — the recurring codebase audit** (RECURRING; the owner's standing ask, filed 2026-08-25)
     STATUS: RECURRING — one audit lane every other work order, rotating
-    focus; first run due Order 11. Track here: last run NONE / next due
-    Order 11 (update this line each run).
+    focus. Track here: last run Order 11 2026-08-26 (security +
+    diagnostics; L13's re-key carried); next due Order 13 (update this
+    line each run).
     A standing audit over all four repos (vilan primary; website,
     proposals, pages secondary), SURVEY-FIRST like the 2026-08-18 rot
     survey: findings are FILED as tracker items with evidence, never fixed
@@ -594,3 +596,9 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     and ruled "ONE surface for tracking" (§8); this changes the
     surface's internal grain, and a ruling here amends that sentence,
     not the move.
+
+18. **NEW — the proposals repo's hygiene.yml declares no `permissions:` block** (S; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN
+    The job only reads but inherits the default token grant. One
+    `permissions: contents: read` block — the same tidy audit-1 landed
+    on the vilan repo's ci.yml. Record: audit-1's report (Order 11).

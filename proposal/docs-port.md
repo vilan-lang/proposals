@@ -285,7 +285,7 @@ for a far simpler grammar. `string.vl` offers `split`, `substring`,
 vilan is realistically 1,500–3,000 lines, and it would have to reproduce
 mdBook's heading-slug algorithm exactly (§A5).
 
-**A2. A `const` cannot read a file.** The asset channel is emission-only:
+**A2. A `const` cannot read a file.** [CLOSED 2026-08-26: `std::asset::read` shipped — markdown.md §11 has the numbers.] The asset channel is emission-only:
 `std/src/asset.vl` is two lines of surface (`emit(kind, line)`), assembled at
 `const_eval.rs:202-222` and written beside the JS at `main.rs:2340-2342`.
 There is no read direction in the spec or the code, and no `include_str!`.
@@ -591,7 +591,7 @@ For the port the owner actually asked for, the honest slice order is:
    `[build] run` pre-step (`manifest.rs:378-380`, already shipped and re-run
    every watch round) emitting generated `.vl` from `.md`. The second needs
    no compiler change at all and is the cheaper proof.
-2. **A const input channel**, only if the parser is to run at compile time —
+2. **A const input channel** [SHIPPED 2026-08-26 with the fuel answer — markdown.md §11], only if the parser is to run at compile time —
    with the fuel budget question answered first, since §2.1/A4 shows the
    book's largest page already sits at the ceiling.
 3. **A router and rung-2 adoption on the site** — `Document::of` +

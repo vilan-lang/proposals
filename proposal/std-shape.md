@@ -361,3 +361,17 @@ root; the exemption is pinned as a complement, and the registry (D5's
 world) owns refusing reserved *published* names when publishing exists.
 Family `breaking` (a today-legal manifest stops compiling); docs: tour
 "Projects and dependencies", spec §4.2 and §11.4.
+
+**Ship note (the `vilan` reservation), 2026-08-26.** The set grew its
+fourth name: `vilan` joined at the same seam (Order 11, lane
+std-dogfood, vilan 9198d8f9) — the recorded first step of the owner's
+2026-08-26 position on the namespace question this paper ruled ("we can
+package this `vilan::` namespace in all vilan releases just like std
+until a package registry is up" — a re-ruling of §5's declined Shape A
+still to come; kolt.local tracker item 026 carries the argument).
+Reserving the name is neutral to however that lands and cheapest before
+any user package claims it. The refusal parenthetical now names four
+(the quoted head above is L12's as shipped then; ledger row 248
+re-keyed), the reason string is "the language owns its own name", the
+`[library]` exemption is unchanged, and the pins mirror L12's
+per-position set (plant-proven). Family `breaking`, L12's precedent.

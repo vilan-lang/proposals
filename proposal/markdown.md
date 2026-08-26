@@ -710,3 +710,43 @@ section.
    docs change; regeneration requires mdbook v0.5.4 locally (CI never
    runs it). Acceptable as the standing workflow, or should the docs
    gate grow a CI-side rebuild once the docs app lands?
+
+## 11. Ship record — step 2: the const input channel and the fuel answer (2026-08-26, cycle 29, Order 11, lane `k13-step-2`)
+
+SHIPPED (vilan 5d434d29, merged 37787a39). `std::asset::read(path)` is
+the channel's input direction — §7's deferral built: package-root-
+relative (absolute and root-escaping paths refused lexically, before
+any filesystem look, so the refusal is deterministic), const-only under
+exactly `emit`'s machinery (the const-only fixpoint generalized from
+one anchor to the set, diagnostics naming which builtin a value
+reaches), every read a tracked build input (`Program::const_input_files`,
+misses included so an appearing file invalidates too) with all three
+invalidation legs proven — the watch trigger re-runs on a read-input
+change, an unchanged-source round still recompiles a leg whose inputs
+changed, and the in-process pin guards future caches — and reads charge
+fuel per byte, so the budget bounds input size as it bounds
+computation. Determinism (const-eval.md §9.5) is restated per
+build-input closure in spec §9.2.
+
+The fuel answer is a measured raise, not the knob: parsing the book's
+largest page (docs/spec/memory.md, 40,758 B) under const eval costs
+2,001,457 fuel — §7's 2.5–10M estimate, honestly labeled an estimate,
+was high — so the explicit budget rises 1M → **16M** (8× the heaviest
+real workload; a runaway `const` still misses its budget in ~1 s on the
+release binary), inferred and macro budgets deliberately unmoved,
+`VILAN_PHASE_TIMING` printing `const-fuel-max` as the permanent
+instrument. §8's `[const]` knob and §4's memoization stay the owner's
+open questions, untouched. The centerpiece pin reads the real golden
+book page and parses it with `std::markdown` inside const eval, within
+budget — step 2's whole point, held red if page or parser outgrow the
+budget.
+
+PARKED for the owner: the LSP re-analyzes only on `.vl` events (the
+VS Code watcher glob is `**/*.vl`), so an `.md`-only edit shows stale
+const diagnostics until the next `.vl` event — every build/check/watch
+path is fresh. Widen the watcher (all files, or a recorded-inputs
+mechanism), or accept next-edit freshness for v1 the way module-text
+staleness once was?
+
+NEXT on the ladder: the router/docs-app rung (§8's stop-condition
+judgement governs).
