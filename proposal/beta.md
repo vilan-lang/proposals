@@ -117,6 +117,20 @@ process.md §5.4, verbatim conditions, with today's status:
 - **Leak soak** (M2): not a trigger condition, but "beta" and "the LSP
   grows without bound" cannot both be said with a straight face; run it
   once with findings dispositioned before the switch.
+- **The build-code trust model, strictly** (E96 — the owner's ruling,
+  2026-08-26): the two tiers are approved (first-party build code runs
+  silently and unsandboxed, documented rather than gated; third-party
+  build code does not run by default and needs an explicit
+  per-dependency opt-in), and **the owner requires strict security here
+  BEFORE beta, not at it**. The reason is structural: beta is the
+  posture in which somebody other than the author runs `vilan build` on
+  code they did not write, so tier 2 stops being hypothetical exactly
+  when the promise is made. Bundle with it the security findings that
+  share the boundary — E93 (the dev channel), E94 (`emit`'s unsanitized
+  kind segment), E95 (the dependency-path containment gap), L14/L15
+  (pinned actions; the fail-open installer) — and the registry work
+  (D5) that gives tier 2 its enforcement point. Not trigger conditions;
+  a standing bar the switch does not cross without.
 - **process.md's own deferred tail** (L6–L8): branch protection (§8.3 —
   amend ruleset 18887216 per §2.3/§2.4, then require `ci / check`), the
   three security settings (§9.2 flagged "should not drift far" — that

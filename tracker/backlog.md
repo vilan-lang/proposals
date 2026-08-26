@@ -118,7 +118,12 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   `vilan` reservation (std-shape.md §6's second ship note) + 005;
   k13-step-2 shipped `std::asset::read` + the measured 16M fuel answer
   (markdown.md §11; one owner question PARKED there: the LSP watcher
-  glob). Archive 102.
+  glob). Archive 102. **Order 12 (cycle 30) ACTIVE 2026-08-26** — the
+  owner's rulings built: five lanes — substring-ban (kolt.local 023,
+  the whole range rule, BREAKING), int-limits (021), style-chain-sort
+  (006, Tailwind order + unknown-method barriers), hmr-token (E93's
+  per-run token), build-trust (E96 tier 1's docs sentence + the
+  doctrine's written home; tier 2 recorded for 027/D5 to build to).
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -349,6 +354,19 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     QUESTIONS: (a) approve (1) as written, docs-only, no first-run
     consent gate? (b) rule (2) now — never / opt-in / freely — so 027's
     paper can build to it?
+    **RULED 2026-08-26: both tiers approved as proposed** — (1)
+    first-party build code runs silently and unsandboxed, carried by a
+    docs sentence, no first-run consent gate; (2) dependency-authored
+    build code does not run by default and requires an explicit
+    per-dependency opt-in recorded in the manifest. **And E96 needs
+    STRICT SECURITY BEFORE BETA** (the owner's words), recorded in
+    beta.md §2's "Before" list with the sibling boundary items
+    (E93/E94/E95, L14/L15) and D5's registry as tier 2's enforcement
+    point — not a trigger condition, a bar the switch does not cross
+    without. Build now: the tier-1 docs sentence and the doctrine's
+    written home. Tier 2 has no enforcement point until dependencies
+    can carry hooks (kolt.local 027 / D5's registry) — it is a ruling
+    those designs build to, not code today.
 
 ## G. Macros & const
 
