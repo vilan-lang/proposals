@@ -1,5 +1,19 @@
 # Beta — executing the ratified contract, and the annex that extends it
 
+> **DEFERRED until further notice, 2026-08-26 (owner):** "Things are
+> moving too quick, public traction hasn't taken place. We have no
+> userbase." This supersedes the trigger arithmetic below as the live
+> answer to the 2026-08-18 deferral question: the switch now reopens on
+> the owner's word, not on the four conditions holding — stop the
+> per-train (a)–(d) accounting in the cut sweeps. The ratified contract
+> (process.md §5) is untouched; the deferral is of the declaration, not
+> the contract. §2's pre-switch work stays at ordinary priority as
+> low-regret hygiene, §5.1's tier questions stay parked (DEFERRED
+> 2026-08-20), nothing beta-branded ships publicly, and the alpha
+> framing in README/CHANGELOG remains correct. D5 — public traction —
+> is the condition the owner named; re-read the trigger when the
+> deferral lifts.
+>
 > Status: **RATIFIED 2026-08-18 as recommended** ("Go with the
 > recommendations on both papers") — §4's five answers stand: Q1 the
 > clean-train count starts at v0.35.0; Q2 **B73 blocks trigger (c)** and
@@ -36,7 +50,8 @@
 > work the trigger and promises need, §3 proposes an **annex** of
 > stability surfaces the ratified floor doesn't name (diagnostics
 > identity, std tiers, toolchain, formats), and §4 asks the open
-> questions. Tracker home: backlog-2026-08-18.md §L.
+> questions. Tracker home: tracker/backlog.md §L (the live tracker;
+> backlog-2026-08-18.md was renamed at the N15 move).
 
 ## 0. Why now
 

@@ -93,8 +93,12 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   experience "much better than the last time I tried… actually quite
   good"; their 26 dogfood findings are filed per-item in the
   gitignored `projects/kolt.local/` (the N17 pilot format), with D15
-  filed from the verification sweep. What is active: nothing — Order
-  11 on the owner's ask.
+  filed from the verification sweep. **BETA DEFERRED until further
+  notice (the owner, 2026-08-26)** — too fast, no traction, no
+  userbase; the (a)–(d) accounting above is parked, D5 is the gate
+  (§L's header carries the ruling). N17 SCOPED the same day: kolt.local
+  only for now, full-repo expansion recorded as the end state. What is
+  active: **Order 11 DRAFTED 2026-08-26, awaiting the owner's Go.**
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -104,8 +108,10 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   ruling.
 - **Later** — the long-gated compiler tails (A7/A8, B3/B11, C1/C2, I2,
   J4 — each blocked on a named design or the native arc), D5's traction
-  plan (needs its dedicated session), and the beta switch itself
-  (trigger-gated: earliest 2026-08-29 for condition (b); (d) rides D5).
+  plan (needs its dedicated session — and the 2026-08-26 beta deferral
+  makes it the switch's actual gate), and the beta switch itself
+  (DEFERRED until further notice 2026-08-26, the owner's ruling in §L's
+  header; the trigger arithmetic is parked, not repealed).
 
 ---
 
@@ -444,6 +450,13 @@ ordinary priority as low-regret hygiene, and nothing beta-branded ships
 publicly until the trigger fires. The alpha framing in README/CHANGELOG
 is **correct until the switch commit** — do not "fix" it as rot.
 (L1 — ratify beta.md — CLOSED 2026-08-18; the archive's first entry.)
+**DEFERRED until further notice (the owner, 2026-08-26):** "Things are
+moving too quick, public traction hasn't taken place. We have no
+userbase." This supersedes the trigger arithmetic above — stop the
+per-train (a)–(d) accounting; the switch reopens on the owner's word,
+and D5 (public traction) is the real gate. Everything else in this
+section keeps its ordinary low-regret priority; the alpha-framing rule
+stands unchanged.
 
 3. **std tier sweep** (M)
    STATUS: OPEN (table DRAFTED 2026-08-20, beta.md §5; ruling DEFERRED 2026-08-20 by the owner — "the answers to those questions might change from now until we officially enter beta" — re-present §5.1 with the beta switch's pre-work, not before; the docs page lands at ratification)
@@ -555,7 +568,10 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     explicitly (absence of evidence recorded, not implied).
 
 17. **NEW — per-item tracker files: restructure the repo under the `projects/` format** (M, proposal-first; the owner's ask, 2026-08-26)
-    STATUS: OPEN (awaiting the owner's ruling on scope)
+    STATUS: OPEN (SCOPED 2026-08-26 by the owner: kolt.local only for
+    now — but "note that it needs to expand out to everything at the
+    end"; the full-repo migration is the recorded end state, its open
+    questions below wait until then)
     One file per item (`tracker/items/<ID>.md`), an INDEX of open
     items, a tombstone archive — the owner's format, piloted in the
     gitignored `projects/kolt.local/` and specified in

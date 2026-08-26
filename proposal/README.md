@@ -40,7 +40,7 @@ are the frozen eras before it.
 | `backlog-archive.md` | moved → `../tracker/` | Stub — the append-only tombstone file lives at [`../tracker/backlog-archive.md`](../tracker/backlog-archive.md). |
 | `backlog-2026-07-18.md` | moved → `../archive/` | Stub — the frozen cycle 15–19 era tracker lives at [`../archive/backlog-2026-07-18.md`](../archive/backlog-2026-07-18.md). |
 | `backlog.md` | moved → `../archive/` | Stub — the frozen alpha-era tracker lives at [`../archive/backlog.md`](../archive/backlog.md). |
-| `beta.md` | ratified 2026-08-18 as recommended | The beta execution charter: tracks process.md §5's ratified trigger against today's tree, plans the pre-switch/at-switch work, proposes the stability annex (diagnostics identity, std tiers). |
+| `beta.md` | ratified 2026-08-18; switch DEFERRED until further notice 2026-08-26 | The beta execution charter: tracks process.md §5's ratified trigger against today's tree, plans the pre-switch/at-switch work, proposes the stability annex (diagnostics identity, std tiers). |
 | `bits-and-bytes.md` | shipped arc (2026-07-02) | The binary floor: hex literals, bitwise/shift operators, `std::bytes`. |
 | `bundle-splitting.md` | shipped arc (2026-08-04) | Route-chunk splitting from whole-program reachability (A16); S1 (measure-first), S2 (emission + gate), S3 (loading), S4 (consumer sweep) all shipped — §5's v1 non-goals stand, §11 scopes a v2. |
 | `chain-seam-split.md` | shipped arc (2026-08-01, backlog B48) | A chain splits when a non-final link renders across lines, not just on width. |
