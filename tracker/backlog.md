@@ -87,8 +87,14 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   the owner's ask; kolt@4289594 on its vilan-migration branch: the
   builder chain, the generated shell, the counted mirrors; build +
   10/10 probe + 16/16 e2e green — whether this satisfies (a)'s letter
-  is the owner's call; E92 filed from its one dogfood finding). What
-  is active: nothing — Order 11 on the owner's ask.
+  is the owner's call; E92 filed from its one dogfood finding). **The
+  owner hand-migrated kolt onward** (2026-08-26 — theme system, static
+  assets + caching, routed panels; kolt@1e18a88) and reports the
+  experience "much better than the last time I tried… actually quite
+  good"; their 26 dogfood findings are filed per-item in the
+  gitignored `projects/kolt.local/` (the N17 pilot format), with D15
+  filed from the verification sweep. What is active: nothing — Order
+  11 on the owner's ask.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -229,6 +235,22 @@ index weight = N14; `header.hbs`; no `&v=` pin).
    interact with the pseudonym discipline; voice/positioning are the
    owner's calls. Overlaps §K's web arc — coordinate, don't duplicate.
    History: backlog-2026-07-18.md §D item 5.
+
+15. **NEW — `std::crypto`'s promoted primitives are undocumented; the docs still teach the extern workaround** (S; found verifying the kolt dogfood list, 2026-08-26)
+    STATUS: OPEN
+    `hmac_sha512` and `pbkdf2_sha512` shipped in `std::crypto`
+    (std/src/crypto.vl:12,18), but `docs/std/misc.md`'s crypto section
+    documents only `random_bytes`/`random_uuid`/`equals_constant_time`
+    and misdirects: "bind the host's sync primitives as externs …
+    candidates for std promotion" — the promotion happened; the docs
+    never caught up, so a reader writes an extern for a function std
+    ships. Nuance the fix must keep: the walkthrough's `pbkdf2Sync`
+    extern (guide/walkthrough.md:160) is still right for the SYNC rpc
+    dispatch path — std's surface is async WebCrypto; the docs should
+    say which need the std functions now cover, not delete the extern
+    lesson. Same sweep, same class: `content_type_of`'s doc comment
+    (std/src/process/build.vl:236-241) still claims "`std::fs` cannot
+    read bytes at all today" — stale since F13 shipped `read_bytes`.
 
 ## E. LSP & tooling
 
@@ -531,3 +553,22 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     Each run ends by updating this item's last-run/next-due line and
     filing its findings; a dimension with zero findings says so
     explicitly (absence of evidence recorded, not implied).
+
+17. **NEW — per-item tracker files: restructure the repo under the `projects/` format** (M, proposal-first; the owner's ask, 2026-08-26)
+    STATUS: OPEN (awaiting the owner's ruling on scope)
+    One file per item (`tracker/items/<ID>.md`), an INDEX of open
+    items, a tombstone archive — the owner's format, piloted in the
+    gitignored `projects/kolt.local/` and specified in
+    `projects/README.md` (both landed 2026-08-26). The motive:
+    per-item files let subagents read, edit, and close items without
+    contending over one long planning surface — "ideally, the rest of
+    the repo would be restructured under this format too", and that
+    restructure is this item. Open questions for the ruling: whether
+    the A–N backlog migrates wholesale or per-section; ID stability
+    across the move (numbers are stable identifiers, never reused);
+    what the hygiene gate's index-completeness check becomes when
+    INDEX files multiply; how process.md §5's ratified surface names
+    carry. Relation to N15: orthogonal — N15 moved the directory 1:1
+    and ruled "ONE surface for tracking" (§8); this changes the
+    surface's internal grain, and a ruling here amends that sentence,
+    not the move.
