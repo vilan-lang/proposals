@@ -748,5 +748,31 @@ path is fresh. Widen the watcher (all files, or a recorded-inputs
 mechanism), or accept next-edit freshness for v1 the way module-text
 staleness once was?
 
+**RECOMMENDATION 2026-08-26 (the owner asked which is better): the
+recorded-inputs mechanism, not `**/*`.** Three reasons, and the first
+is decisive. (1) `**/*` breaks the load-bearing invariant
+`watch-mode.md` states in so many words — only `.vl` files are tracked,
+so *"a build can never trigger its own rebuild"*; a glob that also
+matches `dist/`, `.parse.out` and every generated artifact re-opens
+exactly the self-triggering loop that invariant exists to forbid, and
+would have to positively exclude output paths to be safe (the same
+objection `dev-refresh.md` §2(iii) raised when it deferred widening the
+compiler's watched set). (2) The precise set already exists and cost
+nothing to obtain: this step records `Program::const_input_files` per
+analysis, misses included, which is *by construction* the exact list of
+files whose change can alter a diagnostic. (3) LSP has the mechanism —
+dynamic `workspace/didChangeWatchedFiles` registration, re-registered
+when the recorded set changes; the fallback when a client refuses
+dynamic registration is today's behaviour, which is the status quo, not
+a regression. The shape: after each analysis, diff the recorded input
+set against the registered one and re-register on change. Cost is one
+LSP capability plus a set diff, and it stays correct as the channel's
+customers grow (the docs app will read hundreds of `.md` files — the
+rung where `**/*` would be at its worst and a recorded set at its
+best). Accepting next-edit freshness is defensible for v1 and costs
+nothing today; the recommendation is to build the recorded-inputs
+watcher when the docs-app rung lands, and not to widen the glob at any
+point.
+
 NEXT on the ladder: the router/docs-app rung (§8's stop-condition
 judgement governs).

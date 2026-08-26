@@ -279,6 +279,28 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     floods. Dev-only surface; a per-session token or an origin allowlist
     is cheap. The filing asks the owner to re-affirm the recorded
     decision or gate it. Record: audit-1's report (Order 11).
+    DETAIL 2026-08-26 (the owner asked; read from hmr.rs, correcting the
+    report's phrasing): the listener binds **127.0.0.1 only**, and
+    `/bundle/`+`/asset/` already carry a traversal guard (only bare
+    `<name>.<ext>`; a separator or `..` is a 404) — so this is not a
+    network exposure and not a file-read primitive. The exposure is
+    exactly: a page the developer visits **in the same browser** while
+    `run --watch` is live can (i) read `GET /bundle/<leg>.js` and
+    `/asset/<leg>.css` — the compiled app — and (ii) hold `GET /events`
+    open and read every compile failure as it is typed, which
+    `render_overlay` builds from `file:line:col` + the diagnostic text +
+    trace hops (identifiers and paths, not whole sources), and (iii)
+    `POST /refresh` for a reload flood — the last needs no ACAO at all,
+    a simple cross-origin POST fires it CSRF-style, so an origin
+    allowlist alone does not close it. The port is the fixed default
+    35917, trivially probed by a local page. RECOMMENDED FIX (cheap,
+    keeps ACAO:* which is load-bearing since the app's origin is
+    unknowable): a **per-run token**, substituted into the shim exactly
+    as `__VILAN_HMR_PORT__` already is, required on **every** route —
+    the legitimate page has it baked into the bundle its own origin
+    served; a hostile page cannot read it (the only copies are the local
+    `dist/` and the app origin, which its own CORS protects), and cannot
+    forge the refresh POST. ~30 lines, no design change.
 
 94. **NEW — `asset::emit`'s kind becomes an output-path segment unsanitized** (S; N16 audit run 1, 2026-08-26)
     STATUS: OPEN
@@ -305,6 +327,28 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     with the kolt-dogfood build-script design (kolt.local 027), whose
     install-time hook raises the same question at higher stakes.
     Record: audit-1's report (Order 11).
+    THE ASK, sharpened 2026-08-26 (the owner asked what is needed):
+    yes — formulate it, in one short section, and cheaply now rather
+    than expensively later, because kolt.local 027's `build.vl` /
+    `vilan install` hook is the thing that needs it and the answer
+    shapes that design. Nothing is blocked meanwhile; today's hooks are
+    FIRST-PARTY only (a `[build] run` in your own manifest), which is
+    the benign half. PROPOSED DOCTRINE, for the owner to approve or
+    edit: **(1) First-party build code runs, silently and unsandboxed.**
+    Building a project executes its build hooks with the developer's own
+    privileges — the same trust `cargo build`, `npm run`, or opening the
+    folder in an editor with a language server already assumes; vilan
+    does not prompt for code you wrote. It gets a plain sentence in the
+    docs (the missing half today) rather than a gate. **(2)
+    Dependency-authored build code is a different tier.** This is the
+    npm-postinstall class: code a THIRD party wrote, running at install
+    or build with your privileges. Recommendation: dependency hooks do
+    not run by default, and require an explicit per-dependency opt-in
+    recorded in the manifest — decided now, while the registry (D5) and
+    027 are still on paper and the decision is free. TWO OWNER
+    QUESTIONS: (a) approve (1) as written, docs-only, no first-run
+    consent gate? (b) rule (2) now — never / opt-in / freely — so 027's
+    paper can build to it?
 
 ## G. Macros & const
 
