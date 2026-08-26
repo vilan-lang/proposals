@@ -98,7 +98,13 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   userbase; the (a)–(d) accounting above is parked, D5 is the gate
   (§L's header carries the ruling). N17 SCOPED the same day: kolt.local
   only for now, full-repo expansion recorded as the end state. What is
-  active: **Order 11 DRAFTED 2026-08-26, awaiting the owner's Go.**
+  active: **Order 11 (cycle 29) ACTIVE 2026-08-26 — the owner's Go,
+  k13-step-2 included. Eight lanes: audit-1 (N16 run 1: security +
+  diagnostics, carrying L13's re-key), b136-loop-is (the released
+  miscompile), b138-depth, compiler-tooling-smalls (B135/B137/E88/E92/
+  D15), e91-grammar-gen, style-dogfood (kolt.local 010–013),
+  std-dogfood (018/019/022b + the `vilan` name reservation + 005),
+  k13-step-2 (the const input channel + fuel).**
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
