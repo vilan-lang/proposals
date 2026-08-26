@@ -118,12 +118,37 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   `vilan` reservation (std-shape.md §6's second ship note) + 005;
   k13-step-2 shipped `std::asset::read` + the measured 16M fuel answer
   (markdown.md §11; one owner question PARKED there: the LSP watcher
-  glob). Archive 102. **Order 12 (cycle 30) ACTIVE 2026-08-26** — the
-  owner's rulings built: five lanes — substring-ban (kolt.local 023,
-  the whole range rule, BREAKING), int-limits (021), style-chain-sort
-  (006, Tailwind order + unknown-method barriers), hmr-token (E93's
-  per-run token), build-trust (E96 tier 1's docs sentence + the
-  doctrine's written home; tier 2 recorded for 027/D5 to build to).
+  glob). Archive 102. **Order 12 (cycle 30) CLOSED 2026-08-26, also
+  same-day** — the owner's five rulings built: all five lanes SHIPPED,
+  next @b0780c0f (pushed; union suite 4228/4228, parity 25/25, dry-run
+  0 reds — v0.37.0's Unreleased holds 25 entries, TWO of them
+  breaking). **substring-ban** made the rule whole (`0 <= start <= end
+  <= len`, refused at compile time on literal bounds, at run time via
+  a `__substring` helper on the `__at` precedent, and at const time —
+  free, since the const interpreter evaluates the transformer's own
+  output; the clamp-and-swap arm that would have folded a WRONG STRING
+  into a build is gone) and its census found **five latent bugs the
+  clamping had masked**, all fixed here — two `Document` reads past
+  the end, a `<!--` probe with no room check, and BOTH rpc frame
+  routers' inverted reply slice, the server-side one remotely
+  triggerable by a client sending `r:7`; `strip_prefix`/`strip_suffix`
+  shipped as the replacement verbs. **int-limits** shipped
+  `max_value()`/`min_value()` on all eight integer types (floats
+  declined on hard grounds: no exponent literal syntax, and
+  `min_value()` would prejudge most-negative-finite vs
+  smallest-positive-normal) and disproved an apparent i53/u53
+  bounds conflict — different bounds for different constraints, not
+  drift, do not re-open. **style-chain-sort** landed Tailwind's order
+  with unknown methods as barriers, the table derived from style.vl
+  and gated four ways, and semantic preservation PROVED on the corpus
+  — note the finding: under a planted family bug the CSS-invariance
+  test stayed GREEN while the slot-resolution test went red, so the
+  obvious proof would have passed a wrong sort. **hmr-token** closed
+  E93; **build-trust** shipped E96 tier 1 and carried tier 2 forward
+  (new paper `proposal/build-trust.md`). Archive 104. One golden
+  wants an owner glance: `vilan/test/style.mjs` moved 7 lines, each a
+  permutation of one const-folded slot map (class-attribute token
+  order, a set to CSS) — mechanically confirmed and now pinned.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -273,40 +298,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     call. Also not attempted: tag-name completion and the child position.
     Record: editing-dx.md §18.
 
-93. **NEW — the HMR dev channel answers any origin and takes unauthenticated refresh POSTs: re-affirm or gate** (S; N16 audit run 1, 2026-08-26)
-    STATUS: OPEN (owner question — a recorded decision, not a bug)
-    `hmr.rs` sets `Access-Control-Allow-Origin: *` (deliberate,
-    commented — the page origin is the user's own server) and accepts
-    `POST /refresh` unauthenticated (dev-refresh.md §5's shipped shape).
-    Net effect: any web page the developer's browser visits can read
-    compile diagnostics — which embed source fragments and absolute
-    paths — off the dev port cross-origin, and can trigger refresh
-    floods. Dev-only surface; a per-session token or an origin allowlist
-    is cheap. The filing asks the owner to re-affirm the recorded
-    decision or gate it. Record: audit-1's report (Order 11).
-    DETAIL 2026-08-26 (the owner asked; read from hmr.rs, correcting the
-    report's phrasing): the listener binds **127.0.0.1 only**, and
-    `/bundle/`+`/asset/` already carry a traversal guard (only bare
-    `<name>.<ext>`; a separator or `..` is a 404) — so this is not a
-    network exposure and not a file-read primitive. The exposure is
-    exactly: a page the developer visits **in the same browser** while
-    `run --watch` is live can (i) read `GET /bundle/<leg>.js` and
-    `/asset/<leg>.css` — the compiled app — and (ii) hold `GET /events`
-    open and read every compile failure as it is typed, which
-    `render_overlay` builds from `file:line:col` + the diagnostic text +
-    trace hops (identifiers and paths, not whole sources), and (iii)
-    `POST /refresh` for a reload flood — the last needs no ACAO at all,
-    a simple cross-origin POST fires it CSRF-style, so an origin
-    allowlist alone does not close it. The port is the fixed default
-    35917, trivially probed by a local page. RECOMMENDED FIX (cheap,
-    keeps ACAO:* which is load-bearing since the app's origin is
-    unknowable): a **per-run token**, substituted into the shim exactly
-    as `__VILAN_HMR_PORT__` already is, required on **every** route —
-    the legitimate page has it baked into the bundle its own origin
-    served; a hostile page cannot read it (the only copies are the local
-    `dist/` and the app origin, which its own CORS protects), and cannot
-    forge the refresh POST. ~30 lines, no design change.
-
 94. **NEW — `asset::emit`'s kind becomes an output-path segment unsanitized** (S; N16 audit run 1, 2026-08-26)
     STATUS: OPEN
     The `(kind, line)` pairs flow from const evaluation into per-kind
@@ -322,51 +313,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     does not. Either decide the trust model explicitly in code (a
     manifest you build is already trusted — say so) or add the same
     guard; pin either. Record: audit-1's report (Order 11).
-
-96. **NEW — `[build] run` hooks are arbitrary shell by design: record the trust model** (M; N16 audit run 1, 2026-08-26)
-    STATUS: OPEN (owner call)
-    Deliberate and documented in code; what is missing is the
-    user-facing statement ("building a project executes its build
-    hooks") and optionally a first-run consent gate — the cargo-vs-make
-    decision made on purpose. Pairs with E95's trust-model note, and
-    with the kolt-dogfood build-script design (kolt.local 027), whose
-    install-time hook raises the same question at higher stakes.
-    Record: audit-1's report (Order 11).
-    THE ASK, sharpened 2026-08-26 (the owner asked what is needed):
-    yes — formulate it, in one short section, and cheaply now rather
-    than expensively later, because kolt.local 027's `build.vl` /
-    `vilan install` hook is the thing that needs it and the answer
-    shapes that design. Nothing is blocked meanwhile; today's hooks are
-    FIRST-PARTY only (a `[build] run` in your own manifest), which is
-    the benign half. PROPOSED DOCTRINE, for the owner to approve or
-    edit: **(1) First-party build code runs, silently and unsandboxed.**
-    Building a project executes its build hooks with the developer's own
-    privileges — the same trust `cargo build`, `npm run`, or opening the
-    folder in an editor with a language server already assumes; vilan
-    does not prompt for code you wrote. It gets a plain sentence in the
-    docs (the missing half today) rather than a gate. **(2)
-    Dependency-authored build code is a different tier.** This is the
-    npm-postinstall class: code a THIRD party wrote, running at install
-    or build with your privileges. Recommendation: dependency hooks do
-    not run by default, and require an explicit per-dependency opt-in
-    recorded in the manifest — decided now, while the registry (D5) and
-    027 are still on paper and the decision is free. TWO OWNER
-    QUESTIONS: (a) approve (1) as written, docs-only, no first-run
-    consent gate? (b) rule (2) now — never / opt-in / freely — so 027's
-    paper can build to it?
-    **RULED 2026-08-26: both tiers approved as proposed** — (1)
-    first-party build code runs silently and unsandboxed, carried by a
-    docs sentence, no first-run consent gate; (2) dependency-authored
-    build code does not run by default and requires an explicit
-    per-dependency opt-in recorded in the manifest. **And E96 needs
-    STRICT SECURITY BEFORE BETA** (the owner's words), recorded in
-    beta.md §2's "Before" list with the sibling boundary items
-    (E93/E94/E95, L14/L15) and D5's registry as tier 2's enforcement
-    point — not a trigger condition, a bar the switch does not cross
-    without. Build now: the tier-1 docs sentence and the doctrine's
-    written home. Tier 2 has no enforcement point until dependencies
-    can carry hooks (kolt.local 027 / D5's registry) — it is a ruling
-    those designs build to, not code today.
 
 ## G. Macros & const
 
