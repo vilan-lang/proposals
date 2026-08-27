@@ -223,7 +223,27 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   (a space before the dot), and 007's removal path turns out to
   REASSERT a deleted stylesheet. K18 is the one open defect the pin
   rule structurally cannot reach — recorded on the item. Skipped count
-  7 → 17; suite 4310/4310; next @d51e258b.
+  7 → 17; suite 4310/4310; next @d51e258b. **Order 15 (cycle 33) ACTIVE
+  2026-08-26** — the owner's Go. Organizing principle: **turn Order 14's
+  ten ignored pins green** — every build lane un-ignores pins already
+  proven red, so acceptance criteria exist before the work starts. Six
+  lanes: completion-class (kolt.local 001's cursor-context model +
+  033, newly filed from the owner's `list.iter().|` report — member
+  completion offers only what an impl block declares, so every
+  DEFAULT-BODIED trait method in the language is invisible on every
+  implementing type: 1 of 15 iterator methods, and `Ord`'s min/max/clamp
+  too), b142-parser-depth (bound the parser, THEN collect the payoff and
+  shrink the 256 MiB/64 MiB margins that B138 and B139 were both
+  chasing), security-tail (L14/L15/E94/E95/N18/K19 — the owner's stated
+  pre-beta bar), hmr-classification (007's full matrix, including the
+  resurrection bug the pins found — a deleted stylesheet is re-injected),
+  fs-writes (filesystem.md's S1, explicitly sequenced as "do next
+  regardless of any ruling"; there is still no binary write at all), and
+  css-block-paper (016, held from the last order so it can argue against
+  `declare`'s SHIPPED API rather than a hypothetical one). HELD: 029
+  (unblocked by 030+022 but design-first and would collide with fs-writes
+  in fs.vl). Waiting on the owner, not on capacity: 031's six questions
+  led by Q1, 014's fork, 008's posture, 022(b)/025(b)'s shared fence, 026.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
