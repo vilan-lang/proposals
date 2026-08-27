@@ -1176,7 +1176,22 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     rather than the instance.
 
 25. **NEW — `fs::read_dir_all` entries carry the HOST path separator** (S; found by Order 16's `path-tooling` lane, 2026-08-27)
-    STATUS: OPEN
+    STATUS: **CLOSED 2026-08-27** (`cc5c1569`) — and it was the last red test
+    on the Windows leg. **CI on `next` is now green on BOTH platforms**, first
+    time in this record's memory. Fixed in the glue rather than in
+    `read_dir_all`: it is the one place a host hands back a joined path, so it
+    is the one place that should know about host shapes.
+    **The fix is gated on `path.sep`, and the reason is the finding.** The
+    first version was an unconditional `split("\\").join("/")`, which would
+    have **corrupted a real file on Unix** — a backslash is a legal filename
+    byte there, so `od\d.txt` would have become `od/d.txt` to fix a problem
+    that platform does not have. On Windows a filename cannot contain one, so
+    the split is unambiguous exactly where it runs. Pinned both ways, and the
+    Unix pin is the Linux-provable half of a Windows fix — proven non-vacuous
+    by planting the unconditional form. Recorded because the FIRST plant was
+    also wrong (it dropped the guard but kept `nodePath.sep`, which is `/` on
+    Linux, so it was a no-op that passed); the real plant had to hardcode the
+    backslash.
     `std::path` is POSIX-shaped by ruling — `/` on every platform — because a
     separator-aware `join` would make every derived path (cache key, asset
     URL, golden) differ by host. But `fs::read_dir_all` hands back entries in
@@ -1188,7 +1203,19 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     than silently half-supported.
 
 26. **NEW — two Windows suite failures are test-expectation defects that assert Linux-only wording** (S; found cutting v0.37.0, 2026-08-27)
-    STATUS: OPEN — **the fence itself is intact on Windows; verified, not assumed**
+    STATUS: **CLOSED 2026-08-27** (`72cdf805`, then `71453ec0`) — **and it took
+    two attempts, which is the part worth keeping.** The first repair fixed
+    `asset::read` and left `asset::bundle` red, because the two fences are not
+    the same shape: `bundled_name` refuses a backslash BEFORE it tests for
+    absolute, so the Windows-native `C:\…` path never reached the arm the pin
+    is named for — **the pin was silently re-testing
+    `a_backslash_in_a_bundle_path_is_refused` under a different name.** A pin
+    passing for the wrong reason is exactly what the plant discipline exists to
+    catch, and it could not be planted for from Linux; CI caught it. `C:/…` is
+    absolute to Windows all the same (a prefix plus a root), so the
+    forward-slashed spelling reaches the arm, and the reason is written at the
+    pin. Original finding below, which stands:
+    **the fence itself is intact on Windows; verified, not assumed**
     `an_absolute_read_path_is_refused` (`inference.rs:25171`) and its twin
     `an_absolute_bundle_path_is_refused` (`:67815`) both assert the refusal
     "`asset::read` paths are relative to the package root; `/etc/hostname` is
