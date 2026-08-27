@@ -888,6 +888,27 @@ stands unchanged.
     surface). Record: audit-1's report; the ledger's Order 11 batch
     note.
 
+17. **NEW — the release gate is Linux-only while CI tests Windows, so a Windows-red tree can publish — and one just did** (S; found cutting v0.37.0, 2026-08-27)
+    STATUS: OPEN — **this is the process finding of the v0.37.0 cut**
+    `release.yml`'s `gate` job is `runs-on: ubuntu-latest` and every publish
+    job `needs: gate`. `ci.yml`'s test job is a matrix over
+    `[ubuntu-latest, windows-latest]`. So the gate that decides whether a
+    release may publish is strictly weaker than the gate that decides whether
+    a commit is green, and the difference is exactly the platform the project
+    has a ratified support paper for (`windows-support.md`).
+    It is not hypothetical: **v0.37.0 was cut and published on a tree whose
+    Windows CI was red**, and had been red since before the cycle started.
+    The orchestrator ran `cargo nextest run --workspace` locally on Linux,
+    got 4409/4409, and treated that as the gate — which is what the local
+    discipline says to do, and it cannot see Windows.
+    Two fixes and they are not the same size. The cheap one: make the release
+    gate the same matrix as CI, so a red Windows blocks a publish. The other
+    one: nothing in the cut sequence (`releases.md` §7.2) tells the cutter to
+    **check CI on the commit being tagged** — step 1 is an ancestor sweep of
+    changelog entries, and steps 4–5 go straight to tag-and-push. A one-line
+    step ("the commit being tagged is green on CI, all platforms") would have
+    caught this without any workflow change at all.
+
 ## M. Performance & footprint — NEW SECTION
 
 Owner's items 7 (perf) and 8 (leaks). The 2026-08-18 survey found the
@@ -1121,4 +1142,27 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     compiler-side, so out of the lane's reach, and it wants a corpus check.
     Documented in `read_dir_all`'s own comment and in `std/paths.md` rather
     than silently half-supported.
+
+26. **NEW — two Windows suite failures are test-expectation defects that assert Linux-only wording** (S; found cutting v0.37.0, 2026-08-27)
+    STATUS: OPEN — **the fence itself is intact on Windows; verified, not assumed**
+    `an_absolute_read_path_is_refused` (`inference.rs:25171`) and its twin
+    `an_absolute_bundle_path_is_refused` (`:67815`) both assert the refusal
+    "`asset::read` paths are relative to the package root; `/etc/hostname` is
+    absolute". On Windows `/etc/hostname` is **not** absolute — `is_absolute`
+    wants a drive prefix — so that arm does not fire.
+    **The path is still refused**, by the next arm: its components are
+    `RootDir, Normal("etc"), Normal("hostname")`, and `RootDir` is neither
+    `Normal` nor `CurDir`, so the escape check catches it and says "…resolve
+    inside the package root; `/etc/hostname` escapes it" — which is verbatim
+    what the Windows CI log shows the test received. So there is **no
+    security gap on Windows**; the fence has two arms and the other one holds.
+    What is wrong is the pin: it asserts one platform's wording for a
+    behaviour both platforms share. The fix is to assert the refusal rather
+    than the arm, or to use a platform-appropriate absolute path per target.
+    Worth noting how it propagated: `asset::bundle`'s pin was modelled on
+    `asset::read`'s and inherited the defect with it, so one bad pin became
+    two. The third Windows failure in the same run,
+    `read_dir_all_lists_every_entry_recursively_as_relative_paths`, is a
+    genuine behavioural difference and is **N25**, filed the same day for an
+    unrelated reason.
 
