@@ -241,6 +241,47 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     story. Instrument with the phase clocks, find the re-wake
     amplification, fix the general path. Record: B138's lane report.
 
+141. **NEW — a field or method access directly off an implicitly-awaited call reads the PROMISE, not the value** (M; found probing the owner's async-transparency question 2026-08-26; MISCOMPILE, live in released toolchains)
+    STATUS: OPEN
+    `read_bytes(p).len()` compiles clean and evaluates to `undefined` at
+    run time. The emitter renders an await as the prefix form
+    `await (<operand>)` — parenthesising the OPERAND but never the whole
+    await-expression (transformer.rs, the `await (` rendering; the
+    comment there reasons only about the operand, "so `await` doesn't
+    bind too loosely") — and then `js::Node::Property` renders its
+    subject with no parens of its own. So the emission is
+    `await (call).field`, which JS parses as `await ((call).field)`:
+    member access binds tighter than the `await` unary, so the property
+    is read off the PROMISE, and awaiting `undefined` yields
+    `undefined`. `vilan check` is clean, exit code is 0, no diagnostic
+    fires — the wrong answer is silent.
+    Blast radius, probed on the RELEASED 0.36.0 toolchain (1a4444b0e)
+    and on next @b0780c0f, both identical: **field off a call**
+    (`fetch_row().id` → `await (fetch_row())[0]`) BROKEN; **method off
+    a call** (`read_bytes(p).len()`, `fetch_list().len()` →
+    `await (fetch_list()).length`) BROKEN; **subscript** (`fetch_list()[0]`)
+    CORRECT — it escapes only by accident, because `__at()` wraps the
+    await in a call argument, which parenthesises it for free. Binding
+    to a `let` first is always correct, which is why the bug is
+    invisible in std and the corpus: they bind. Every probe above
+    printed `undefined` where the bound spelling printed the value.
+    WHY IT MATTERS BEYOND ITS SIZE: this is exactly the spelling the
+    async model promises. The owner's stated design — "calling
+    `async read_bytes` should feel sync to the caller" — is implemented
+    in the type system, the inference and the diagnostics (there is no
+    call-from-sync refusal, and no `Task`/`Promise` ever enters a
+    caller's type), so the language invites the inline spelling and
+    then silently mis-answers it. The transparency is real everywhere
+    except the emitter.
+    Fix: parenthesise the whole await-expression whenever it appears as
+    the subject of a postfix (`await (x)` → `(await x)`), or emit the
+    await already-parenthesised at every site that can carry a postfix.
+    Pin per shape — field, method, index, call-of-returned-callable,
+    chained (`a().b().c()`), and the bound control — red-first; the
+    index case must be pinned too, since it is currently correct only
+    by the `__at` accident and would regress silently if that helper
+    ever inlined. A release-notes line is due at the next cut.
+
 ## C. Memory model
 
 1. **`Weak<T>`** (M)
