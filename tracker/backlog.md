@@ -817,7 +817,13 @@ part of why planning fragmented. Spans `vilan-website` and
     the 029 adoption. That branch's build now uses `const asset::bundle`,
     which **does not exist in v0.36.0**, and `deploy.yml` installs the
     toolchain from `releases/latest`. So merging it to `main` before v0.37.0
-    ships would break the deploy. Sequence: cut v0.37.0, then merge. Verified
+    ships would break the deploy. **And the branch is not pushed either**, for a
+    sharper reason found while staging it: K18's new `ci.yml` triggers on
+    `push` with no branch filter, so pushing the branch at all would start a
+    run that installs `releases/latest` and fails on the same missing
+    `asset::bundle` — a red badge for a known-good reason, on a repo whose
+    only signal today is green. Sequence: **cut v0.37.0, then push, then
+    merge.** Verified
     against a compiler built from `next`: `vilan build .` exit 0, harness
     35/35, all three vendored bundles served with correct types and byte
     counts.
