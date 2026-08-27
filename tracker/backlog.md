@@ -367,6 +367,50 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   in git and were **broken together** (the harness imports the editor bundle
   by path; the other lane moved it under `src/`), which no merge could see —
   caught by running the harness, not by reading the diff.
+  **v0.37.0 SHIPPED 2026-08-27** (the owner's approval — "I have been pushing
+  the cut off because I want all of the Kolt bugs fixed first. We can cut
+  in-between if you must. It's fine with me this time"): release `b0d20e60`,
+  50 entries (5 breaking, 2 miscompile, 17 feature, 26 tooling), all 13 jobs
+  green across all five publish channels. B136 and B141 finally got the
+  release-notes callout they had owed since Order 11 — written as a preamble
+  at the top of the section, since `release.yml` extracts the whole section
+  into the GitHub release notes. Fold `6fcb64d4`; `next` could NOT
+  fast-forward onto it because the N26 fix landed after the release commit,
+  which `fold-release.sh` caught as a red precondition and named the remedy
+  for rather than guessing — merged by hand as `ea305f0f`.
+  **ONE PROCESS INCIDENT, and it is L17.** The tree was tagged with **Windows
+  CI red, and red since before the cycle began.** The orchestrator ran the
+  union suite locally (Linux, 4409/4409) and treated it as the gate, which is
+  what the local discipline says — and `release.yml`'s own gate is
+  `ubuntu-latest` while `ci.yml` tests a ubuntu+windows matrix, so the gate
+  authorizing a publish is strictly weaker than the gate deciding a commit is
+  green, and nothing in `releases.md` §7.2 says to check CI on the commit
+  being tagged. The `main` push then surfaced it a second way, in the
+  ruleset's own bypass notice ("Required status check `check` is failing"),
+  which was read as the expected bypass line and not as the signal it was.
+  Severity, verified rather than assumed: two of the three Windows failures
+  are **bad pins, not a broken fence** — `/etc/hostname` is not absolute to
+  Windows, so a pin asserting the `is_absolute` arm's wording was handed the
+  escape arm's; the path is still refused (its components carry a `RootDir`,
+  neither `Normal` nor `CurDir`) and the Windows log shows exactly that
+  message, so there is no security gap. Fixed in `72cdf805` (N26), each arm
+  pinned on its own arm plus a new pin for the property that does not vary,
+  plants confirming the split and that the invariant pin reddens only when the
+  fence is gone entirely. The third failure is N25, a real Windows gap filed
+  the same day independently. **Rulings received 2026-08-27** and recorded on
+  their items: kolt.local 031 Q1 — (a)+(c) **scoped to `File` only**, the
+  owner declining to make it a general law, so S3 is UNBLOCKED; Q3 — delete
+  `fs::exists`; Q5 — the sixteen free functions stand. **014 RULED DELETE**,
+  and a census run at the ruling CORRECTED the item: it claimed "the site
+  estate uses the `dark` channel" and the estate is **zero** — website 0,
+  examples 0, kolt 0, leaving one internal self-call, a corpus golden and six
+  doc mentions, so the deprecation window would have protected nobody. The
+  larger half of that ruling is the owner's ask for a general selector feature
+  replacing kolt's hand-rolled `emit`, and **014 and 009 now merge**: 032's
+  shipped `@layer` invariant breaks 009's specificity tie, so one relation
+  axis (`within`/`children`/`divide`) covers both the ancestor theme guard and
+  the Tailwind child cases while keeping ui-styling §1's promise as "a child's
+  own `Style` always wins against a rule reaching in from an ancestor".
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
