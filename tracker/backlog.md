@@ -166,7 +166,33 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   paper-first). HELD until sync-justifications merges: bytes-and-mime
   (030's remainder + 022's table — both rewrite build.vl). 016's
   css-block paper deliberately deferred to the next order so it can
-  argue against 032's shipped API. **Order 13 CLOSED 2026-08-26** —
+  argue against 032's shipped API. **Order 15 CLOSED 2026-08-27** — six
+  lanes, all SHIPPED, next @48169ea7 (pushed; union suite 4353/4353,
+  parity 46/46, dry-run 0 reds — v0.37.0's Unreleased holds 46 entries).
+  The organizing principle held: every build lane turned Order 14's
+  ignored pins green, and the skipped count fell 17 → 7. **B142 was
+  larger than filed and that was the order's main finding** — the bound
+  belongs to SIX grammars, not the expression grammar alone; nested
+  `fun` at 5000 levels SIGABRT'd while four other grammars parsed 5000
+  levels with zero refusals, so an expression-only bound plus a margin
+  shrink would have been a false claim. Margins finally moved: 256 → 128
+  MiB spawns, 64 → 16 MiB wasm, the latter measured on the profile that
+  ships. **kolt.local's IDE and dev-loop sections are now EMPTY** — 001,
+  033 and 007 all closed, and 007 shipped larger than filed (a third
+  face nobody reported: S1's "a reload subsumes the stylesheet refresh"
+  died when S2 made a swap a module swap, so every round touching code
+  and styles together dropped the styles). security-tail closed
+  E94/E95/L14/N18 and L15's S half, correcting L14's stale action
+  inventory and finding two high-value actions it never named.
+  fs-writes shipped filesystem.md's S1 AND S2 together after disproving
+  the paper's own glue prediction. Two papers landed: css-block.md
+  (which discharges ui-styling §8 by turning its argument against the
+  shipped `declare`) and filesystem.md's corrections. Archive 112.
+  ONE PROCESS INCIDENT: the push was refused by the pre-push hook —
+  one lane commit carried a non-pseudonymous identity, since its
+  worktree did not inherit the repo's git config. Rewritten on the
+  owner's approval, trees verified byte-identical, and the lane brief
+  template now names identity so a worktree cannot reintroduce it. **Order 13 CLOSED 2026-08-26** —
   nine lanes, all SHIPPED, next @3de81ed5 (pushed; union suite
   4301/4301, parity 38/38, dry-run 0 reds — v0.37.0's Unreleased holds
   38 entries, FOUR breaking). **B141 fixed first, as asked**, and it
@@ -309,36 +335,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     B29 does not cover a wrong-shaped Lift impl. History:
     backlog-2026-07-18.md §B item 11.
 
-142. **NEW — the parser has no depth bound, and it is the pipeline's deepest stack consumer** (M; measured by the depth-tail lane 2026-08-26 — the ACTUAL margin-shrink unlocker)
-    STATUS: OPEN
-    `VILAN_DEPTH_STATS` grew a `parse` family and measured
-    `Parser::parse_atom` at **~71.8 KiB per level of source nesting
-    unoptimized, ~20.3 KiB optimized** — twice the bounded phase-1
-    expression walk's frame unoptimized, four times it optimized — with
-    **no depth limit at all**. It also runs FIRST, so it reaches the
-    stack cliff before either analyzer bound (`WALK_DEPTH_LIMIT`,
-    `RETURN_DEPTH_LIMIT`) can refuse: nesting 400 costs 28.15 MiB dev /
-    7.94 MiB release, and 64 MiB is roughly 3,200 levels, past which a
-    file dies with no diagnostic rather than a refusal.
-    This is now the ONLY thing holding up the 256 MiB CLI/LSP spawns and
-    the wasm 64 MiB `-zstack-size`. B138 named the return-inference
-    chain as the blocker and B139 closed it — but the premise was
-    incomplete: every analyzer family is now bounded and they total
-    ~3.4 MiB at release frame sizes, so bounding the parser is what
-    actually lets those numbers move, to single digits of MiB.
-    Shape of the fix: a depth counter in `parse_atom` mirroring B138's
-    `walk_expr_node` bound — refuse once per parse with a `Node::Error`
-    and a steering diagnostic, reusing the existing recovery machinery.
-    Watch the formatter's `preserve_paren_groups` parse mode and
-    `parse_differential`'s `formatter_never_silently_bails`.
-    Rationale comments at `crates/vilan-cli/src/main.rs`
-    (`COMPILER_STACK_SIZE`) and `.github/workflows/release.yml` name
-    this item as the blocker; the LSP's comment defers to
-    `COMPILER_STACK_SIZE`. Minor residuals ride along, unchanged from
-    B139: `resolve_pattern` and `walk_type_node` stay
-    source-nesting-unbounded (small frames, realistic depth 3).
-    Record: the depth-tail lane report (Order 13).
-
 ## C. Memory model
 
 1. **`Weak<T>`** (M)
@@ -395,22 +391,6 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     vocabulary the desugar validates AND completion reads) — the owner's
     call. Also not attempted: tag-name completion and the child position.
     Record: editing-dx.md §18.
-
-94. **NEW — `asset::emit`'s kind becomes an output-path segment unsanitized** (S; N16 audit run 1, 2026-08-26)
-    STATUS: OPEN
-    The `(kind, line)` pairs flow from const evaluation into per-kind
-    output files under `dist/` with no separator/`..` rejection on
-    `kind` — a hostile project can direct writes outside `dist/`. Same
-    trust tier as build hooks (you built the project), but this one is
-    unintended: one sanitize-the-segment check plus a pin. Record:
-    audit-1's report (Order 11).
-
-95. **NEW — a manifest dependency `path` lacks the `..` containment check entry paths get** (S; N16 audit run 1, 2026-08-26)
-    STATUS: OPEN
-    Entry-path handling guards traversal; the dependency-path branch
-    does not. Either decide the trust model explicitly in code (a
-    manifest you build is already trusted — say so) or add the same
-    guard; pin either. Record: audit-1's report (Order 11).
 
 ## G. Macros & const
 
@@ -531,8 +511,20 @@ part of why planning fragmented. Spans `vilan-website` and
     STATUS: OPEN
     deploy.yml + fetch-wasm.sh trust "latest" blindly, and the
     workflow's actions ride mutable tags (L14's class). Pin the release
-    by tag+SHA or carry the SHA256SUMS check into fetch-wasm.sh.
+    by tag+SHA or carry the sha256sums.txt check into fetch-wasm.sh.
     Record: audit-1's report (Order 11).
+    STAGED, NOT DEPLOYED 2026-08-27 (Order 15, lane security-tail): the fix
+    is written and committed on branch `k19-verify-wasm` in vilan-website —
+    fetch-wasm.sh downloads to a file, verifies against the release's own
+    `sha256sums.txt`, then extracts, then removes both scratch files so the
+    published version directory holds exactly the compiler pair as before;
+    it fails closed with no sha256 tool, the same discipline install.sh now
+    uses; deploy.yml's four actions are SHA-pinned with dependabot tending
+    them. NOT PUSHED — a push to that repo's main auto-triggers a deploy,
+    which is the owner's call. Correction to this item's text: the checksum
+    asset is `sha256sums.txt` (lowercase, .txt), not `SHA256SUMS`; there is
+    no asset by the latter name, and install.sh and the brew job already
+    consume the real one.
 
 ## L. Release engineering & beta — NEW SECTION
 
@@ -574,19 +566,8 @@ stands unchanged.
    private vulnerability reporting. Revisit when D5's session happens;
    scaffolding for an audience arrives with the audience.
 
-14. **NEW — pin the workflows' third-party actions to commit SHAs** (S–M; N16 audit run 1, 2026-08-26)
-    STATUS: OPEN
-    Every action in ci.yml and release.yml rides a mutable tag
-    (actions/checkout@v4/v5, dtolnay/rust-toolchain@stable,
-    taiki-e/install-action@v2, Swatinem/rust-cache@v2, the artifact and
-    pages families). A hijacked tag executes in the release path with
-    the release token. Pin to full SHAs with a tag comment; add
-    dependabot/renovate to move the pins. The same tidy is owed to
-    vilan-website's deploy.yml (K19) and the proposals repo's
-    hygiene.yml (N18). Record: audit-1's report (Order 11).
-
-15. **NEW — release artifacts are checksummed but unsigned, and the installer fails open** (M; N16 audit run 1, 2026-08-26)
-    STATUS: OPEN (the S half is free-standing)
+15. **NEW — release artifacts are checksummed but unsigned** (M; N16 audit run 1, 2026-08-26)
+    STATUS: OPEN — **the S half SHIPPED 2026-08-27** (Order 15, lane security-tail): `install.sh` fails closed, refusing rather than warning when no sha256 tool is on PATH, pinned. The M half REMAINS and is the whole of this item now: `sha256sums.txt` is produced and consumed same-origin (release.yml → the release assets), so it authenticates the TRANSFER and not the pipeline that produced it. Signing/provenance/attestation is the work; sensibly deferred until D5 gives it an audience, and the CHANGELOG says so explicitly rather than implying coverage.
     SHA256SUMS is produced and consumed same-origin (release.yml → the
     release assets), so it authenticates transport, not the pipeline;
     no signing/attestation. And install.sh skips verification entirely
@@ -715,9 +696,3 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     and ruled "ONE surface for tracking" (§8); this changes the
     surface's internal grain, and a ruling here amends that sentence,
     not the move.
-
-18. **NEW — the proposals repo's hygiene.yml declares no `permissions:` block** (S; N16 audit run 1, 2026-08-26)
-    STATUS: OPEN
-    The job only reads but inherits the default token grant. One
-    `permissions: contents: read` block — the same tidy audit-1 landed
-    on the vilan repo's ci.yml. Record: audit-1's report (Order 11).
