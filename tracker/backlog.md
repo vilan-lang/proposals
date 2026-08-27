@@ -756,8 +756,7 @@ part of why planning fragmented. Spans `vilan-website` and
     reproduce. Record: docs-port.md §2.1, §3.3, §4 Q1.
 
 18. **NEW — the playground console `message` listener accepts any window's messages** (S; N16 audit run 1, 2026-08-26)
-    STATUS: **FIXED 2026-08-27** (Order 16, lane `website-harness`) — staged on
-    vilan-website branch `k18-harness`, NOT pushed; pinned, 8 checks.
+    STATUS: **CLOSED 2026-08-27 — DEPLOYED** (website `f8a8dea`, deploy + the new ci both green, live). Pinned, 8 checks.
     **Two corrections, and the first one matters more than the fix.** (1) The
     remedy this item prescribed — "add the extern getter and then check it" —
     **would not have worked.** The runner iframe is `sandbox="allow-scripts"`
@@ -807,7 +806,7 @@ part of why planning fragmented. Spans `vilan-website` and
     cannot reach today.
 
 19. **NEW — the website deploy fetches the latest wasm release unpinned, with no checksum** (S; N16 audit run 1, 2026-08-26)
-    STATUS: OPEN
+    STATUS: **CLOSED 2026-08-27 — DEPLOYED** (website `f8a8dea`). Proven against a LIVE release rather than a fixture: `fetch-wasm.sh` run by hand against the freshly published v0.37.0 downloaded, verified against that release's own `sha256sums.txt`, extracted, and wrote `VERSION` — exit 0 — and the smoke gate then compiled every seeded example against the exact wasm a visitor gets. The live manifest reads `v0.37.0`.
     deploy.yml + fetch-wasm.sh trust "latest" blindly, and the
     workflow's actions ride mutable tags (L14's class). Pin the release
     by tag+SHA or carry the sha256sums.txt check into fetch-wasm.sh.
@@ -856,6 +855,7 @@ part of why planning fragmented. Spans `vilan-website` and
     `release.yml` copies `install.sh` into `release-assets/` *before*
     `sha256sum * > sha256sums.txt`, so coverage is structural. Corruption
     probe: one appended byte → `sha256sum -c` exit 1.
+    **DEPLOYED 2026-08-27** — the sequence held: v0.37.0 shipped and folded, the branch was rebuilt and re-gated against the RELEASED toolchain (build 0, harness 35/35, wasm fetch verified, smoke gate green), then merged to `main` as `f8a8dea`; deploy and the new `ci` are both green and the three bundled files are live with correct types and byte counts. What follows was the pre-merge record:
     **STAGED, NOT PUSHED — and it cannot deploy yet.** K18/K19/K20 all sit on
     vilan-website branch `k18-harness` (off `k19-verify-wasm`), together with
     the 029 adoption. That branch's build now uses `const asset::bundle`,
