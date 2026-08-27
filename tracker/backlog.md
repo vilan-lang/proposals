@@ -166,7 +166,39 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   paper-first). HELD until sync-justifications merges: bytes-and-mime
   (030's remainder + 022's table — both rewrite build.vl). 016's
   css-block paper deliberately deferred to the next order so it can
-  argue against 032's shipped API.
+  argue against 032's shipped API. **Order 13 CLOSED 2026-08-26** —
+  nine lanes, all SHIPPED, next @3de81ed5 (pushed; union suite
+  4301/4301, parity 38/38, dry-run 0 reds — v0.37.0's Unreleased holds
+  38 entries, FOUR breaking). **B141 fixed first, as asked**, and it
+  was wider than filed: `make()()` threw rather than going silent, and
+  the EXPLICIT `(await p).f` was broken too — the author's own
+  parentheses were dropped at parse and never reprinted. The fix
+  generalised an open-coded special case the printer already carried at
+  width one, and moved ZERO goldens (the blanket alternative was
+  measured at 88). **sync-justifications** deleted both sync reads and
+  the false rationale at them, took load_build/asset_body/serve_build
+  async, and left `fs::exists` and `rpc_server::create_hash` with TRUE
+  justifications written at the function — the latter is the one place
+  in std that can name a caller which cannot suspend, so the rule is
+  demonstrably satisfiable and not merely violated. **depth-tail**
+  found B140 MISFILED — the exponential cost was the PARSER
+  speculatively re-parsing every precedence chain (C(n)=2·C(n−1)), not
+  constraint wakes; 20 levels went 9.01 s → 0.24 ms — and closed B139
+  both halves, which revealed B138's premise incomplete: every analyzer
+  family is bounded now, and the parser is the real margin blocker,
+  filed B142. **ref-index** replaced the resolution ladder with one
+  identifier-occurrence index (003 was branches (b) AND (c), never
+  staleness; 002's two symptoms were two bugs — one inapplicable edit,
+  one destructive; 004's under-prune culprit was `self`, not
+  `Ok`/`Err`). **css-declare** shipped `declare` with ordering settled
+  by `@layer` rather than a sort band. **bytes-and-mime** put real
+  bytes on the wire, typed from a generated mime-db table.
+  **std-smalls** shipped digests and `Request::header`.
+  **fs-formalization** landed `proposal/filesystem.md` and shipped
+  `write_atomic`, closing a silent total-data-loss path in the todo
+  example. Archive 107. Records: fullstack-dx §5.10 now argues the
+  fence from scope rather than a capability claim that cited a deleted
+  function.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -232,73 +264,35 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     B29 does not cover a wrong-shaped Lift impl. History:
     backlog-2026-07-18.md §B item 11.
 
-139. **NEW — the return-inference chain recurses once per call link, unbounded** (M; filed by B138's lane 2026-08-26 — the margin-shrink unlocker)
+142. **NEW — the parser has no depth bound, and it is the pipeline's deepest stack consumer** (M; measured by the depth-tail lane 2026-08-26 — the ACTUAL margin-shrink unlocker)
     STATUS: OPEN
-    `inferred_return_type_of → infer_function_returns →
-    unify_return_evidence → infer_type_inner` recurses per call link when
-    returns are inferred: measured infer depth N+1 for an N-function
-    chain, ~12.5 KiB/link dev, ~2 KiB release (plant: `fun f0(){1}
-    fun f1(){f0()} …`; N=500 dev → 6.24 MiB) — and superlinear TIME
-    (N=2000 release: 6.8s vs 0.30s at N=500). `return_inference_stack`
-    guards cycles, not depth. Candidates: a depth bound answering inexact
-    (the stack already has the inexact-marking machinery), or scheduling
-    through the constraint worklist. Closing this is what lets the
-    256 MiB spawns and the wasm 64 MiB link flag actually shrink — the
-    rationale comments B138 wrote at each site say so. Minor residuals
-    ride along: `resolve_pattern` and `walk_type_node` stay
-    source-nesting-unbounded (small frames, realistic depth 3), and the
-    PARSER has no depth limit at all, so pathological nesting reaches it
-    before any analyzer bound. Record: B138's archive tombstone.
-
-140. **NEW — nested arithmetic is exponential-TIME in analysis** (M; found by B138's plants 2026-08-26)
-    STATUS: OPEN
-    `(1 + (1 + …))`: N=14 → 0.34s, N=18 → 2.4s, N=22 → 35s dev (~2× per
-    level; N=60 exceeds 120s; nested array literals are the same class).
-    Depth stays flat (infer 6) — it is re-computation through constraint
-    wakes, not recursion: a pure perf bug, distinct from B138's stack
-    story. Instrument with the phase clocks, find the re-wake
-    amplification, fix the general path. Record: B138's lane report.
-
-141. **NEW — a field or method access directly off an implicitly-awaited call reads the PROMISE, not the value** (M; found probing the owner's async-transparency question 2026-08-26; MISCOMPILE, live in released toolchains)
-    STATUS: OPEN
-    `read_bytes(p).len()` compiles clean and evaluates to `undefined` at
-    run time. The emitter renders an await as the prefix form
-    `await (<operand>)` — parenthesising the OPERAND but never the whole
-    await-expression (transformer.rs, the `await (` rendering; the
-    comment there reasons only about the operand, "so `await` doesn't
-    bind too loosely") — and then `js::Node::Property` renders its
-    subject with no parens of its own. So the emission is
-    `await (call).field`, which JS parses as `await ((call).field)`:
-    member access binds tighter than the `await` unary, so the property
-    is read off the PROMISE, and awaiting `undefined` yields
-    `undefined`. `vilan check` is clean, exit code is 0, no diagnostic
-    fires — the wrong answer is silent.
-    Blast radius, probed on the RELEASED 0.36.0 toolchain (1a4444b0e)
-    and on next @b0780c0f, both identical: **field off a call**
-    (`fetch_row().id` → `await (fetch_row())[0]`) BROKEN; **method off
-    a call** (`read_bytes(p).len()`, `fetch_list().len()` →
-    `await (fetch_list()).length`) BROKEN; **subscript** (`fetch_list()[0]`)
-    CORRECT — it escapes only by accident, because `__at()` wraps the
-    await in a call argument, which parenthesises it for free. Binding
-    to a `let` first is always correct, which is why the bug is
-    invisible in std and the corpus: they bind. Every probe above
-    printed `undefined` where the bound spelling printed the value.
-    WHY IT MATTERS BEYOND ITS SIZE: this is exactly the spelling the
-    async model promises. The owner's stated design — "calling
-    `async read_bytes` should feel sync to the caller" — is implemented
-    in the type system, the inference and the diagnostics (there is no
-    call-from-sync refusal, and no `Task`/`Promise` ever enters a
-    caller's type), so the language invites the inline spelling and
-    then silently mis-answers it. The transparency is real everywhere
-    except the emitter.
-    Fix: parenthesise the whole await-expression whenever it appears as
-    the subject of a postfix (`await (x)` → `(await x)`), or emit the
-    await already-parenthesised at every site that can carry a postfix.
-    Pin per shape — field, method, index, call-of-returned-callable,
-    chained (`a().b().c()`), and the bound control — red-first; the
-    index case must be pinned too, since it is currently correct only
-    by the `__at` accident and would regress silently if that helper
-    ever inlined. A release-notes line is due at the next cut.
+    `VILAN_DEPTH_STATS` grew a `parse` family and measured
+    `Parser::parse_atom` at **~71.8 KiB per level of source nesting
+    unoptimized, ~20.3 KiB optimized** — twice the bounded phase-1
+    expression walk's frame unoptimized, four times it optimized — with
+    **no depth limit at all**. It also runs FIRST, so it reaches the
+    stack cliff before either analyzer bound (`WALK_DEPTH_LIMIT`,
+    `RETURN_DEPTH_LIMIT`) can refuse: nesting 400 costs 28.15 MiB dev /
+    7.94 MiB release, and 64 MiB is roughly 3,200 levels, past which a
+    file dies with no diagnostic rather than a refusal.
+    This is now the ONLY thing holding up the 256 MiB CLI/LSP spawns and
+    the wasm 64 MiB `-zstack-size`. B138 named the return-inference
+    chain as the blocker and B139 closed it — but the premise was
+    incomplete: every analyzer family is now bounded and they total
+    ~3.4 MiB at release frame sizes, so bounding the parser is what
+    actually lets those numbers move, to single digits of MiB.
+    Shape of the fix: a depth counter in `parse_atom` mirroring B138's
+    `walk_expr_node` bound — refuse once per parse with a `Node::Error`
+    and a steering diagnostic, reusing the existing recovery machinery.
+    Watch the formatter's `preserve_paren_groups` parse mode and
+    `parse_differential`'s `formatter_never_silently_bails`.
+    Rationale comments at `crates/vilan-cli/src/main.rs`
+    (`COMPILER_STACK_SIZE`) and `.github/workflows/release.yml` name
+    this item as the blocker; the LSP's comment defers to
+    `COMPILER_STACK_SIZE`. Minor residuals ride along, unchanged from
+    B139: `resolve_pattern` and `walk_type_node` stay
+    source-nesting-unbounded (small frames, realistic depth 3).
+    Record: the depth-tail lane report (Order 13).
 
 ## C. Memory model
 
