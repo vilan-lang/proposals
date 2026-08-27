@@ -39,6 +39,21 @@
 > together. It does **not** answer **017** (path tooling); §9 states the
 > seam. §14 is the prior-art assessment — what node's filesystem delivers
 > cleanly and what this paper deliberately routes around.
+>
+> **SHIP NOTE, 2026-08-27 (cycle 33, order 15, lane `fs-writes`, vilan
+> b6c72d4f).** S1 AND S2 both shipped, in one commit — twelve functions:
+> `write_bytes` (the gap that mattered most; `read_bytes` had shipped and
+> `writeFile` stayed bound only at `str`, so bytes could come in and never
+> go out), `write_bytes_atomic`, `append`, `copy`, `remove`, `update`,
+> `create_dir`, `create_dir_all`, `remove_dir`, `remove_dir_all`,
+> `copy_dir`, and `scan_dir` with `Entry`. Thirteen pins, every one
+> plant-proved; the binary round trip is asserted over a payload UTF-8
+> cannot survive, with the LENGTH checked separately because the 483→853
+> favicon was a length symptom. No sync variant was added and none was
+> tempting. §11's sequencing for S2 and §10's glue claim were both wrong
+> and are struck below. **S3 (the handle) now waits on Q1 alone** — B141,
+> its other prerequisite, was fixed in Order 13.
+
 
 ## 1. What exists, measured
 
@@ -899,9 +914,16 @@ bindings.**
   added `read_bytes`. **Do this next regardless of what the owner rules
   below.**
 - **S2 — directories** (§7). `scan_dir` + `Entry`, `create_dir(_all)`,
-  `remove_dir(_all)`, `copy_dir`. Needs option-object glue at the existing
+  `remove_dir(_all)`, `copy_dir`. ~~Needs option-object glue at the existing
   `__fs_*` seam — mechanical, but it touches `transformer.rs`, so it wants
-  a lane of its own rather than a corner of another.
+  a lane of its own rather than a corner of another.~~ **CORRECTED
+  2026-08-27 (Order 15, lane fs-writes): this prediction was FALSE, and the
+  lane disproved it with a scratch probe against the real host before
+  building on it.** An options object needs no glue: `[extern("Object")]`
+  mints a fresh `{}` and `[extern(set, …)]` fills it in — both forms
+  already existed, and `std::fetch` has been building `RequestInit` this
+  way all along. So S2 touches `transformer.rs` not at all, wanted no lane
+  of its own, and **SHIPPED in S1's commit**.
 - **S3 — the handle** (§3.2, §5). `File`, the five constructors, positional
   read/write, `stat`, `truncate`, `sync`, the `Drop` ruling, `with_file`.
   **Gated on Q1** (§12), and **blocked on B141** (below). This is the big
@@ -991,10 +1013,17 @@ Each is answerable on its own; none blocks S1 or S2.
   posture — throw host-side on any failure — because that is what the rest
   of the module already promises and a split posture per-function would be
   worse than either posture consistently.
-- **The `__fs_*` glue seam stays the seam.** Options objects that the
+- **The `__fs_*` glue seam stays the seam.** ~~Options objects that the
   extern forms cannot spell go through `transformer.rs`, exactly as
-  `__fs_stat` and `__fs_read_dir_all` already do. This paper proposes no
-  new mechanism for host interop and needs none.
+  `__fs_stat` and `__fs_read_dir_all` already do.~~ **CORRECTED 2026-08-27
+  (Order 15): the extern forms CAN spell an options object** —
+  `[extern("Object")]` plus `[extern(set, …)]`, the `RequestInit` route
+  `std::fetch` already uses. Four of this paper's functions took it and
+  the compiler was untouched, which leaves `__fs_read_dir_all` as the odd
+  one out rather than the precedent; it could be retired the same way by
+  whoever is next in that file for another reason. This paper still
+  proposes no new mechanism for host interop and needs none — it simply
+  named the wrong existing one.
 - **std vs packages.** `std-shape.md` is untouched: the filesystem is
   process-layer std, not a package candidate. Nothing here is a
   registry-shaped question.
