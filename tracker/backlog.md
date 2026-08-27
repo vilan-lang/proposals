@@ -1030,9 +1030,10 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     the pre-N15 checkout path for `AGENTS.md` — the repo root as it stood
     before N15 split the toolchain and proposals repos — so every subagent
     began by reading a missing file; (2) `.claude/settings.local.json` grants
-    `Read(//home/rob/.cargo/*)` — **another user's home directory**, doubled
-    slash, non-existent — and `Bash(node src/vilan-source/*)`, a path that has
-    never existed in this tree; (3) `vilan-reviewer.md:13` hardcodes
+    a read on **another user's home directory** — a cargo glob under a
+    `/home/` entry naming a user who does not exist on this machine, with a
+    doubled slash — and `Bash(node src/vilan-source/*)`, a path that has never
+    existed in this tree; (3) `vilan-reviewer.md:13` hardcodes
     `git -C <main checkout>`, contradicting AGENTS.md's "git is scoped to your
     worktree", so a reviewer launched from it reviews the wrong diff, and
     `vilan-implementer.md:35` still forbids editing `vilan/proposal/`, a
