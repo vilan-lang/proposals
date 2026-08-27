@@ -155,12 +155,31 @@ free.
   and runs; anything a dependency ships is tier 2 and does not. What stays
   027's are its other three questions (hook point, caching/idempotence, what
   the script sees), none of which this paper touches.
-- **The registry (tracker §D item 5, "D5")** — tier 2's enforcement point,
-  named as such in `beta.md` §2. A registry is what makes third-party build
-  code reachable in the first place, so the opt-in's concrete manifest
-  syntax, its resolution rules, and its interaction with transitive
-  dependencies are the registry design's to specify, against §3's three
-  properties.
+- **The registry** — named here as tier 2's enforcement point, so that the
+  opt-in's concrete manifest syntax, its resolution rules, and its
+  interaction with transitive dependencies would be the registry design's to
+  specify, against §3's three properties.
+  **CORRECTED 2026-08-27 (Order 16, found twice — by the `build-hooks` lane
+  and by N16's run 2).** Two things were wrong with that sentence. First the
+  citation: this paper wrote "tracker §D item 5, 'D5'", but **§D item 5 is
+  the *public traction plan*, and there is no registry item anywhere in the
+  tracker.** `distribution.md` §5 says only that "a true registry is a
+  D5-era decision, demand-gated" — an era, not an item — so tier 2 was
+  pinned to an enforcement point that is both unscheduled and untracked.
+  Second, and worse, the premise: this paper says tier 2 is inert because
+  dependencies cannot carry build code yet, but **git dependencies already
+  deliver third-party code to the machine on an ordinary `vilan build`** —
+  fetched on a cache miss by shelling out to `git` with the user's own
+  credential helpers. The only thing holding the line is that
+  `Project::hooks` never reads a dependency's hooks. So tier 2 goes live the
+  first time a dependency's hook is *read*, which makes it **027's decision
+  and not the registry's**, and it is reachable today rather than at some
+  future registry. `build-hooks.md` §S2 takes it on that basis: specify the
+  opt-in now, ship it refusing everything, and let a registry inherit a
+  syntax that already exists rather than mint one under pressure.
+  Recorded rather than silently repaired because the wrong citation is the
+  more interesting half: a ruling that names its enforcement point in a
+  tracker item nobody owns reads as scheduled when it is not.
 - **`beta.md` §2** already holds the schedule half: strict security here is a
   standing bar the switch does not cross without. The reason is structural —
   beta is the posture in which somebody other than the author runs `vilan

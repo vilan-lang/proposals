@@ -311,11 +311,62 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   reachable only from an archived paragraph and a red pin, so the INDEX's
   "the IDE section is empty" was false; the filing rule, not the bug, is
   the lesson. Also fixed before launch: all three `.claude/agents/*.md`
-  pointed at the pre-N15 path `/home/reed/code/vilan/AGENTS.md`, so every
-  subagent began by reading a missing file. **A cut is the owner's open
+  pointed at the pre-N15 checkout path for `AGENTS.md` (the repo root before
+  N15 split the toolchain and proposals repos), so every subagent began by
+  reading a missing file. **A cut is the owner's open
   call** — Unreleased holds 46 entries, 5 breaking, 2 miscompile, the
   largest train since the re-baseline, and B136 + B141 both owe
   release-notes lines as RELEASED miscompiles.
+  **Order 16 CLOSED 2026-08-27, same day** — six lanes, five shipped and one
+  returned a paper; merged on next @23bd766e (pushed; union suite 4409/4409,
+  parity 50/50, cut dry-run 0 reds — v0.37.0's Unreleased holds 50 entries).
+  The gate held literally: `a_built_app_needs_nothing_but_dist` builds a
+  two-leg project, **removes the source tree**, runs `dist/server.mjs` and
+  fetches the resource — proven failing on `next` first (ENOENT) and passing
+  after. **The order's framing was wrong in its load-bearing half and the
+  lane said so.** `std::asset::read` IS the const input channel as briefed,
+  but there is **no `BuildAsset` pipeline to register into** — `BuildAsset` is
+  a runtime std struct derived from `chunks.json` at server boot, nothing
+  compiler-side owns the name — and `emit` could never be the output vehicle:
+  it accumulates *lines*, dedups and sorts them, and gives every kind one
+  output name, so no `.png` survives it. `bundle` is therefore **`read`'s
+  sibling, not `emit`'s**: same resolution, same lexical refusals, same
+  const-only fixpoint, same build-input record, diverging only on fuel (a
+  bundled file's bytes never enter the program, so a size charge would cap how
+  large a resource may be rather than how much work a build does). The path IS
+  the name, which settles subdirectories, collisions and renaming at once.
+  **build-hooks reframed 027 and 028 out of greenfield**: `[build] run`
+  already IS build-time execution and `asset::emit` already IS a named
+  accumulator, so both asks are *policy* — a staleness predicate and a
+  declared order — and its probes found two real defects behind 028 (one CSS
+  cascade comparator applied to every kind, so `@media` sorts last in a kind
+  named `manifest`; and a kind that stops emitting leaves its last file in
+  `dist/`, which under this order's own principle ships). **css-raw-typed
+  found a miscompile by refusing its own brief**: S1 as literally specified
+  (`emit` inside the `Length`/`Color` impls) would have shipped a footgun,
+  because the const-only check walks call edges and cannot follow a bounded
+  generic's trait dispatch — the emit escapes into the JS as an unbound
+  `__emit_asset` and throws at run time (B143, pinned `#[ignore]`d).
+  **website-harness disproved K18's own prescribed fix**: an origin check
+  cannot work against an opaque-origin sandbox, where every hostile frame also
+  presents `"null"`; a per-Run token shipped instead, and vilan-website now has
+  a harness and two CI gates, so the one defect the pin rule could not reach is
+  reachable. **path-tooling** shipped `std::path` colorless and const-evaluable,
+  differentialled against node's `path.posix` over 34 cases with two deliberate
+  divergences. **audit-2** closed N16's three-order slip. 15 items filed:
+  A26/A27, B143/B144/B145, G5/G6, E97, N19–N25. Archive 112. Records fixed:
+  `build-trust.md` §4 named "the registry (tracker §D item 5)" as tier 2's
+  enforcement point — **D5 is the public traction plan and no registry item
+  exists anywhere**, and worse, git dependencies already deliver third-party
+  code on an ordinary build, so tier 2 is reachable NOW and is 027's call, not
+  a registry's. THE PROCESS FINDING: the proposals **main checkout was 8
+  commits behind**, and three lanes were briefed to read the tracker and the
+  papers from it — two reported papers "missing" and one filed three findings
+  against stale text and withdrew them. Fast-forwarded; the brief template
+  must name the integration worktree. Also: two lanes' branches merged clean
+  in git and were **broken together** (the harness imports the editor bundle
+  by path; the other lane moved it under `src/`), which no merge could see —
+  caught by running the harness, not by reading the diff.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -361,6 +412,36 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     are indexed in this file's header. History: backlog-2026-07-18.md §A
     item 14.
 
+26. **NEW — a failed `__attach` on reconnect is swallowed, leaving every mirror bound to dead channel ids** (S–M; N16 audit run 2, 2026-08-27)
+    STATUS: OPEN (not reproduced — needs a live-server failure harness)
+    `vilan/std/src/rpc.vl:1497`, in `reattach_mirrors`:
+    `match attached { Err(let _failed) => {}, ... }`. If `__attach` fails the
+    `rebinds` loop is skipped entirely: **the socket reports connected, every
+    mirror stays pointed at the previous connection's channel ids, and nothing
+    reports it.** The function's own doc comment promises three things, and
+    the sibling contract-mismatch branch is handled loudly
+    (`ConnectionState::Closed` + `close()`, with a comment); the swallow nine
+    lines up at `:1489` carries a written justification. This one has neither.
+    Zero coverage: `git grep "__attach\|reattach" -- crates/vilan-cli/tests`
+    is empty, and `transport_robustness.rs` covers only the happy re-sync
+    path. Probably wants the same `Closed` treatment as the contract
+    mismatch — which is a ruling, not a patch.
+
+27. **NEW — `std::dom` cannot listen on `window` at all** (M, proposal-first; found by Order 16's `website-harness` lane, 2026-08-27)
+    STATUS: OPEN (proposal-first — new public std surface, touches L3's tier sweep)
+    `std::dom` binds element listeners only. Everything that needs a
+    window-level event hand-rolls a private binding: `std::router` has its own
+    zero-arg `window.addEventListener`, and the website has a third. So std
+    can never hand a caller a `message`, `resize`, `popstate` or `storage`
+    event — which is why K18 could not be fixed in std and had to bind its own
+    `external struct` locally.
+    The shape is an `on_window` plus a typed event, and the reason it is
+    proposal-first rather than a small add: a window `message` handler needs a
+    typed `data`, which is a bindgen-shaped question, and the surface lands in
+    beta.md §5's tier table. Note the trap recorded by the lane that found it:
+    adding `Event::origin()` alone would be **dead surface**, since nothing in
+    std delivers an event that could carry it.
+
 ## B. Type system & the type solver
 
 3. **Variadic-generics tail** (M–L)
@@ -380,6 +461,60 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     unowned subscription per render, the A21 leak shape). Recorded §11:
     B29 does not cover a wrong-shaped Lift impl. History:
     backlog-2026-07-18.md §B item 11.
+
+143. **NEW — the const-only capability check cannot follow a bounded generic's trait dispatch, so `emit` escapes it into the emitted JavaScript** (M; found by Order 16's `css-raw-typed` lane while probing a design, 2026-08-27)
+     STATUS: OPEN — pinned `#[ignore]`d (`emit_reached_through_a_bounded_generic_is_const_only`), verified red
+     `const_eval.rs::check_const_only` propagates the compile-time-only
+     property over `CallGraph` **call edges**, and a bounded generic's trait
+     dispatch is not one it can follow. So an `emit` inside a trait impl is
+     invisible to the check. Probed on the repo compiler: a generic
+     `fun render<V: Emitter>(value: V)` calling `value.text()`, where the impl
+     emits, **compiles clean outside `const`** and reaches the emitted JS as a
+     live `__emit_asset(...)` call with no runtime binding — a
+     `ReferenceError` at run time. Both *concrete* spellings of the same call
+     are correctly refused with "is compile-time-only", so the checker is right
+     everywhere it can see and blind through exactly one edge.
+     This is a miscompile in the honest sense: a clean compile, no diagnostic,
+     and a crash at run time. It predates the lane that found it and is not
+     confined to styling — any trait whose impl reaches a compile-time-only
+     builtin has the same hole.
+     It also **shaped a shipped design**, which is why it was found: S1 as
+     literally specified (the `Length`/`Color` impls carrying `value.root`
+     onto the sheet, i.e. `emit` inside the impl) would have shipped this
+     footgun. The trait ships describing values (`css_text`/`css_root`) with
+     the emitting surface doing the emitting, so nothing in std relies on the
+     hole. Record: the `css-raw-typed` lane report (Order 16).
+
+144. **NEW — `walk_type_node`'s catch-all is `unimplemented!`, a panic where every neighbour pushes a diagnostic** (S; N16 audit run 2, 2026-08-27)
+     STATUS: OPEN (latent — currently unreachable, verified)
+     `crates/vilan-core/src/analyzer.rs:21183` ends a twelve-variant match on
+     user-input-driven `Node` with `x => unimplemented!("unhandled type node:
+     {:?}", x)`. **Probed and currently unreachable**: `parse_type_atom` can
+     only produce those twelve or `None`, and B142's depth stand-in
+     (`Node::Error`) does not reach the walk — seven probes through
+     `analyze_source` (trailing-comma tuple, unclosed generic, bare `&`,
+     parameter/field/return positions, 600-level nesting) all returned a
+     program with zero fence-caught panics. So it is dead code *and* a latent
+     ICE: one new type-position variant makes it live, and its failure mode is
+     a crash where the whole file's neighbours emit a diagnostic. This is
+     AGENTS.md's `_ =>` catch-all invariant with the mistreatment upgraded
+     from "wrong answer" to "abort". Fix: push a diagnostic, or make the match
+     exhaustive so the compiler names the gap at the next variant.
+
+145. **NEW — the two files every lane appends to have outgrown their own governing paper** (M, mechanical; N16 audit run 2, 2026-08-27)
+     STATUS: OPEN
+     `crates/vilan-core/tests/inference.rs` is **66,830 lines** — the single
+     per-case pin surface every lane in every order appends to, which makes it
+     the merge-conflict magnet of a six-lane order and the suite's dominant
+     compile unit. `crates/vilan-core/src/analyzer.rs` is **38,798 lines**,
+     and its own governing paper opens "`crates/vilan-core/src/analyzer.rs`,
+     ~9000 lines" (`proposal/analyzer-refactor.md:3`) — a premise stale by
+     4.3×, which matters because that paper's plan was costed against the
+     smaller number. Neither file is tracked anywhere: `grep -i
+     "analyzer.rs\|inference.rs"` over the live backlog returned zero hits
+     before this filing. The cheap half is splitting `inference.rs` by
+     subject, mechanically; the analyzer half is `analyzer-refactor.md`'s
+     premise wanting a re-measure before its plan is trusted.
 
 ## C. Memory model
 
@@ -438,6 +573,23 @@ index weight = N14; `header.hbs`; no `&v=` pin).
     call. Also not attempted: tag-name completion and the child position.
     Record: editing-dx.md §18.
 
+97. **NEW — mutex poisoning is defended in one function and not in its neighbour thirty lines later** (S; N16 audit run 2, 2026-08-27)
+    STATUS: OPEN
+    `crates/vilan-core/src/lib.rs:235/241` take `PARSE_CLEAN_CACHE` and
+    `PARSE_CLEAN_BROKEN` with
+    `.unwrap_or_else(std::sync::PoisonError::into_inner)`;
+    `lib.rs:269/272/286/296` take **the same two mutexes** with
+    `.lock().unwrap()`, as do the five macro-world caches
+    (`macros.rs:753/757/812/870/1664/1766`). One file records the defensive
+    belief and contradicts it in the same file.
+    Every guard was traced: none is held across panic-prone code today, so
+    poisoning is not currently reachable. But the fenced pipeline is precisely
+    the architecture where a *caught* panic leaves a global poisoned, and the
+    consequence is asymmetric — one poisoned cache turns a one-shot compiler
+    bug into a language server that answers "internal error: the compiler
+    panicked" for the rest of the session. The work is to pick one posture and
+    write down why, not to add locks.
+
 ## G. Macros & const
 
 2. **Const-eval tail** (S–M)
@@ -447,6 +599,32 @@ index weight = N14; `header.hbs`; no `&v=` pin).
    memoization (cache-key question; measured 7–9% of warm analysis — of
    direct interest to §M's perf arc), a const budget knob. Liveness-tied
    emission stays A7-entangled. History: backlog-2026-07-18.md §G item 2.
+
+5. **NEW — one CSS cascade comparator is applied to every `emit` kind, so a non-CSS kind gets CSS ordering** (S; found by Order 16's `build-hooks` lane, probe-verified, 2026-08-27)
+   STATUS: OPEN
+   `assemble_assets` sorts every accumulated kind with one comparator whose
+   key is `(Option<width>, line)` — the CSS cascade rule. Applied to a kind
+   that is not CSS, it silently reorders: a plain line starting `z` (0x7A)
+   was observed sorting **before** two `@media` lines in a kind named
+   `manifest`, because the media-query arm outranks the lexical one whatever
+   the content. `const-eval.md` §3 already *promises* "a kind-specific rule";
+   the implementation has exactly one. So this is a promise being kept rather
+   than a feature being added, which is the cheaper argument. It is also the
+   blocker under kolt.local 028: a user-declared accumulator cannot have a
+   declared order while every kind inherits the stylesheet's.
+
+6. **NEW — a kind that stops emitting leaves its last output file in `dist/`** (S; found by Order 16's `build-hooks` lane, 2026-08-27)
+   STATUS: OPEN
+   Accumulators write one `<output>.<kind>` file per kind per leg. When a
+   build emits nothing for a kind it emitted before, the previous file is
+   left where it is — so `dist/` keeps serving output no current build
+   produced. Under Order 16's own organizing principle (a built app needs
+   nothing but `dist/`) that is worse than a missing file, because it
+   **ships**. Same shape as E92. Two adjacent limits recorded with it, both
+   verified: accumulators are per **leg** rather than per build (a two-entry
+   package emits two separate files, neither listed in `chunks.json`, so
+   `serve_build` cannot see either), and there is no join/header/footer
+   policy, which is why a JSON array is unreachable through `emit` today.
 
 ## I. Collections
 
@@ -534,7 +712,38 @@ part of why planning fragmented. Spans `vilan-website` and
     reproduce. Record: docs-port.md §2.1, §3.3, §4 Q1.
 
 18. **NEW — the playground console `message` listener accepts any window's messages** (S; N16 audit run 1, 2026-08-26)
-    STATUS: OPEN
+    STATUS: **FIXED 2026-08-27** (Order 16, lane `website-harness`) — staged on
+    vilan-website branch `k18-harness`, NOT pushed; pinned, 8 checks.
+    **Two corrections, and the first one matters more than the fix.** (1) The
+    remedy this item prescribed — "add the extern getter and then check it" —
+    **would not have worked.** The runner iframe is `sandbox="allow-scripts"`
+    with no `allow-same-origin`, so it has an **opaque origin** and its
+    messages arrive as `event.origin === "null"`. `"null"` is not an identity:
+    it is what *every* opaque-origin document presents, so a hostile page need
+    only post from inside a sandboxed frame of its own to satisfy an origin
+    check. `event.source === frame.contentWindow` would settle it, but the
+    frame lives in the vendored bundle rather than the entry, and vilan has no
+    reference equality on external handles anyway. So the item was right that
+    there was a hole and wrong about the instrument.
+    What shipped instead is a **per-Run token**: 122 bits from
+    `crypto.randomUUID`, minted by the page before each Run (where the
+    decision belongs), passed into the frame, quoted back on every forwarded
+    line, cleared on a failed build. The `expected != ""` term is load-bearing
+    — without it a message supplying `token: ""` matches the empty stored
+    token — and `runProgram` refuses any token failing `/^[0-9a-f-]{16,64}$/`
+    rather than trusting a caller not to close the `<script>` it is spliced
+    into. (2) "No compiler change" — `HostEvent` is an `external struct`
+    declared in `src/playground.vl` itself, so the getter binds locally in one
+    line; the escalation to a std binding was the order's error, and adding
+    `Event::origin()` to `std::dom` would have been **dead surface**, since
+    std delivers no window-level event at all (that gap is now filed as A27).
+    **The pin rule reaches this defect now**: `vilan-website` has a harness —
+    `scripts/test.mjs` + `tests/`, the `hmr.rs` shape (stub the host, drive the
+    real built bundle), 35 checks, wired into a new `ci.yml` on every push and
+    PR *and* a gate in `deploy.yml`. One correction to this item's premise:
+    the repo was not testless — `scripts/smoke-playground.mjs` was already a
+    real gate; what was missing was a DOM-stub runner for the site's own
+    bundles.
     `vilan-website/src/playground.vl` registers a `message` listener
     with no `event.origin`/source check; any embedding or opener page
     can inject console traffic. Record: audit-1's report (Order 11).
@@ -593,6 +802,25 @@ part of why planning fragmented. Spans `vilan-website` and
     authenticates the transfer and not the pipeline that produced it.
     That is L15's M half and stays open.
     Record: the security-tail lane report (Order 15).
+    **FIXED 2026-08-27** (Order 16, lane `website-harness`): the pipe is gone.
+    `scripts/install-toolchain.sh` downloads `install.sh` **and**
+    `sha256sums.txt` to a `mktemp -d`, verifies, runs, and cleans up on a
+    trap; `deploy.yml` and the new `ci.yml` share the one copy. Fails closed
+    with no sha256 tool (probed: both `command -v` lookups redirected →
+    `EXIT=1`, `.vilan` never created). Verified against the **live** release
+    rather than read: `sha256sums.txt` carries `81c89ca8…  install.sh`, and
+    `release.yml` copies `install.sh` into `release-assets/` *before*
+    `sha256sum * > sha256sums.txt`, so coverage is structural. Corruption
+    probe: one appended byte → `sha256sum -c` exit 1.
+    **STAGED, NOT PUSHED — and it cannot deploy yet.** K18/K19/K20 all sit on
+    vilan-website branch `k18-harness` (off `k19-verify-wasm`), together with
+    the 029 adoption. That branch's build now uses `const asset::bundle`,
+    which **does not exist in v0.36.0**, and `deploy.yml` installs the
+    toolchain from `releases/latest`. So merging it to `main` before v0.37.0
+    ships would break the deploy. Sequence: cut v0.37.0, then merge. Verified
+    against a compiler built from `next`: `vilan build .` exit 0, harness
+    35/35, all three vendored bundles served with correct types and byte
+    counts.
 
 ## L. Release engineering & beta — NEW SECTION
 
@@ -707,12 +935,18 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
 16. **NEW — the recurring codebase audit** (RECURRING; the owner's standing ask, filed 2026-08-25)
     STATUS: RECURRING — one audit lane every other work order, rotating
     focus. Track here: last run Order 11 2026-08-26 (security +
-    diagnostics; L13's re-key carried); **RUN 2 IN FLIGHT in Order 16
-    (2026-08-27), three orders late** — the line said "next due Order 13"
+    diagnostics; L13's re-key carried); **RUN 2 CLOSED in Order 16
+    (2026-08-27), three orders late** — 13 findings filed (A26, B144, B145,
+    E97, N19–N25) plus one S-sized tidy landed inline with its own gate;
+    grades: error handling B+, dead code A, tidy & structure B−, stale-path
+    class B. Its sharpest structural find: the documents agents read first
+    (`AGENTS.md`, `.claude/**`) are the only documents in the tree with no
+    gate, which is why a crate went five days missing from the repo map and
+    why three agent definitions pointed at a path that did not exist. It was — the line said "next due Order 13"
     and Orders 13, 14 and 15 all shipped without an audit lane, which is
     the failure this line exists to make visible and did not. Run 2's
     dimensions: error handling, dead code, tidy & structure. Next due
-    Order 18 (update this line each run — and if it goes stale again,
+    **Order 18** (update this line each run — and if it goes stale again,
     the fix is a gate, not a bigger note).
     A standing audit over all four repos (vilan primary; website,
     proposals, pages secondary), SURVEY-FIRST like the 2026-08-18 rot
@@ -769,3 +1003,115 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     and ruled "ONE surface for tracking" (§8); this changes the
     surface's internal grain, and a ruling here amends that sentence,
     not the move.
+19. **NEW — the panic fence is a four-site unwritten rule** (S; N16 audit run 2, 2026-08-27)
+    STATUS: OPEN
+    `grep -n "panic" AGENTS.md CLAUDE.md` returns **zero hits**, so there is
+    no written panic or Result discipline in the tree to audit against — the
+    audit lane had to reconstruct it from the code. What is actually load-
+    bearing: four `catch_unwind` sites (`vilan-core/src/lib.rs:389` lex/parse/
+    lift, `lib.rs:590` analyze + post-passes, `vilan-lsp/src/main.rs:1485`
+    per-request per B40, `vilan-lsp/src/document.rs:780` the analysis thread),
+    plus a build decision at `Cargo.toml:34` ("Deliberately NOT `panic =
+    "abort"` … core fences its analysis in `catch_unwind` so a compiler panic
+    degrades to one honest diagnostic"). The CLI is deliberately **outside**
+    the fence (`main.rs:19` imports `analyze`, not `analyze_source`) and joins
+    with `.expect("compiler thread panicked")`, so a CLI compiler panic
+    double-panics. There is no panic hook anywhere.
+    "A new pipeline entry point must sit inside the fence" is exactly the
+    multi-site invariant AGENTS.md's "Invariants and scar tissue" section
+    exists to carry, and it is the one such rule not in it.
+
+20. **NEW — `.claude/` is live configuration that no gate can see, and it had three dead pointers in it** (S; N16 audit run 2 + the Order 16 launch, 2026-08-27)
+    STATUS: OPEN — the three instances are fixed; the structural gap is the item
+    `crates/vilan-cli/tests/hygiene.rs:22` scans `git ls-files`, and
+    `.gitignore:3` ignores `.claude` — so every file agents read *first* is
+    the one class of file with no gate at all. Three instances found, all
+    fixed 2026-08-27: (1) all three `.claude/agents/*.md` pointed at
+    the pre-N15 checkout path for `AGENTS.md` — the repo root as it stood
+    before N15 split the toolchain and proposals repos — so every subagent
+    began by reading a missing file; (2) `.claude/settings.local.json` grants
+    `Read(//home/rob/.cargo/*)` — **another user's home directory**, doubled
+    slash, non-existent — and `Bash(node src/vilan-source/*)`, a path that has
+    never existed in this tree; (3) `vilan-reviewer.md:13` hardcodes
+    `git -C <main checkout>`, contradicting AGENTS.md's "git is scoped to your
+    worktree", so a reviewer launched from it reviews the wrong diff, and
+    `vilan-implementer.md:35` still forbids editing `vilan/proposal/`, a
+    tombstone directory since N15.
+    Also unowned: `.claude/agent-memory/` is 62 files / 472K nothing has
+    written in 26 days, with a `MEMORY.md` describing a pre-N15 world. Retire
+    it or revive it; half-alive is the worst of the three.
+    The fix is a gate, not another fix pass: have `hygiene.rs` check
+    `.claude/agents/*.md`, `.claude/settings*.json` and AGENTS.md-referenced
+    paths **for existence**, not just for the three needles it looks for now.
+
+21. **NEW — `cargo fmt --all --check` fails on `next`, and nothing gates formatting, lints or advisories** (S–M; N16 audit run 2, 2026-08-27)
+    STATUS: OPEN
+    Reproducible, exit 1, four hunks in two files
+    (`crates/vilan-cli/tests/fs.rs:927`,
+    `crates/vilan-core/tests/mime_table_sync.rs:76/157/438`, rustfmt
+    1.8.0-stable). CLAUDE.md makes `cargo fmt` a per-change rule, so three
+    separate Order 16 lanes each hit this churn, each reverted it, and each
+    reported it — the drift is now costing every lane a decision.
+    `ci.yml`'s jobs are `changes`, `test`, `wasm`, `check`: **no
+    `cargo fmt --check`, no clippy, no `cargo audit`.** And there is no
+    `rust-toolchain.toml` and no `rustfmt.toml` while CI tracks a floating
+    `stable`, so a future rustfmt default silently reformats the tree for
+    whoever runs it next with no gate to notice. Verified safe to reformat:
+    the `mime_table_sync` gate compares `CURATED.to_vec()` as values, not
+    text. Fix is pin the toolchain, land the reformat once, add the check.
+
+22. **NEW — eight source comments and two published documents still cite the tombstoned `vilan/proposal/`** (S; N16 audit run 2, 2026-08-27)
+    STATUS: OPEN
+    N15's cutover moved the papers to `vilan-lang/proposals`; `vilan/proposal/`
+    holds one tombstone README. Still pointing readers at it:
+    `crates/vilan-core/tests/inference.rs:6, :51814, :52815, :53305, :64409`;
+    `crates/vilan-cli/tests/transport_robustness.rs:2, :328`;
+    `crates/vilan-cli/tests/vscode_extension.rs:18`. Worse, two of them are
+    *published*: `proposal/process.md:548` — a **ratified** document — spells
+    the unbuilt `CONTRIBUTING.md` as telling contributors "design lands in
+    `vilan/proposal/` before code", which would ship the dead path to an
+    audience; and the pages repo's `README.md:7` and `:92` cite "docs-port.md
+    §3.2 **in the vilan repo**" and "N13 in the vilan repo's backlog", in the
+    one file whose entire job is telling a reader where things live.
+    N16's own record half-shipped here: `proposals-repo.md:174`'s reword
+    landed, `:157`'s "brief templates that hardcode `vilan/proposal/…` update
+    at cutover" did not.
+
+23. **NEW — 37 `pub` items in `vilan-core` are never referenced outside their own file** (S, mechanical; N16 audit run 2, 2026-08-27)
+    STATUS: OPEN (low priority — over-exposure, not rot)
+    Not dead, over-exposed: e.g. `StyleCategory`/`StyleMethod`
+    (`formatter.rs:524/563` — 67 and 66 in-file uses, zero elsewhere), all six
+    analyzer constraint structs (`analyzer.rs:1673–1847`), `manifest.rs`'s
+    five section types. `pub(crate)` or private would do, and the crate
+    boundary would then mean something. Recorded with it, because the audit
+    re-argued it rather than counting it: exactly one item is *actually*
+    unreferenced — `leak_tally::outstanding_total` — and the verdict is
+    **KEEP**, because it completes a symmetric instrument API and deleting it
+    leaves the instrument lopsided.
+
+24. **NEW — an archived per-item tracker file is deleted, so every `[[link]]` to it dangles** (S; found by Order 16's `asset-bundle` lane, 2026-08-27)
+    STATUS: OPEN — N17's format question, found by a consumer
+    A lane told to read kolt.local 029's see-alsos reported that "items 018,
+    024 and 030 do not exist" — correct: they shipped, and closing an item
+    **deletes `items/NNN.md`** and moves a tombstone paragraph into
+    `archive.md`. But live items keep citing them (`029.md` cites `[[018]]`
+    and `[[024]]`), so a reader following a link finds nothing, and a
+    *subagent* following one concludes the item was never filed.
+    This matters beyond the pilot: N17 proposes this format for the whole
+    repo. Options are a redirect stub at the old path, an `archive/NNN.md`
+    per-file layout mirroring `items/`, or a link-checking gate that fails on
+    a dangling `[[…]]`. The last one is the smallest and catches the class
+    rather than the instance.
+
+25. **NEW — `fs::read_dir_all` entries carry the HOST path separator** (S; found by Order 16's `path-tooling` lane, 2026-08-27)
+    STATUS: OPEN
+    `std::path` is POSIX-shaped by ruling — `/` on every platform — because a
+    separator-aware `join` would make every derived path (cache key, asset
+    URL, golden) differ by host. But `fs::read_dir_all` hands back entries in
+    the *host's* shape, so on Windows an entry is not in `std::path`'s shape
+    and reads as a single component. The clean fix is one
+    `.replaceAll('\\','/')` in `__fs_read_dir_all` (`transformer.rs`) —
+    compiler-side, so out of the lane's reach, and it wants a corpus check.
+    Documented in `read_dir_all`'s own comment and in `std/paths.md` rather
+    than silently half-supported.
+
