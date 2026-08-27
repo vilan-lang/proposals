@@ -1021,13 +1021,35 @@ mechanical, exactly as §2(iv) predicts.
 
 ### 5.10 What this is not: a static file server, and the single-leg gap
 
-`serve_build` serves **a build**, not a directory. It will not serve a favicon,
-an image or a `robots.txt`, deliberately — a directory server has traversal,
-MIME and caching surfaces, none of them E56's subject. It is also impossible
-today: `std::fs` cannot read a binary file at all (`read_file_bytes(path,
-encoding): str` is the only read and it returns a string,
-`vilan/std/src/process/fs.vl:5-6`), so no vilan program can serve a PNG.
-Bycatch, §9.3.
+`serve_build` serves **a build**, not a directory. It will not serve a
+`robots.txt` dropped beside `dist/`, or walk a directory it was not handed,
+deliberately — a directory server has traversal, `Range`, caching and
+conditional-request surfaces, none of them E56's subject.
+
+**This fence is about scope, and only about scope.** An earlier draft of this
+section also argued it was impossible — `std::fs` could not read a binary file,
+so no vilan program could serve a PNG. That has not been true since
+`fs::read_bytes` landed, and it is emphatically not true now: `BuildAsset`
+carries `Bytes`, `asset_body` returns `Bytes`, and `asset_response` answers with
+`body_bytes`, so `serve_build` serves a favicon, a woff2 and a wasm module byte
+for byte (Order 13, kolt.local 030). The capability argument is retired because
+reasoning from it produced a real cost: it kept the content-type table at four
+rows long after the table was the only thing missing, and sent kolt to a
+hand-rolled static layer to serve its own favicon (kolt.local 022). The function
+it cited by signature, `read_file_bytes`, no longer exists — the same order
+deleted it and `read_file_to_str_sync` for a separate false justification.
+
+What the scope claim still buys is the shape of the table. `serve_build` types
+an artifact from its extension using a table generated from the `mime-db`
+registry data — the same dataset vite's `mrmime` is generated from — curated to
+what a build EMITS and what a page it serves loads as a whole sub-resource:
+scripts, styles and markup, json and the web manifest, images, fonts and wasm.
+An extension outside that is still **not served rather than guessed at**, and
+the skip is said rather than silent (022(b)). Audio and video are absent for a
+reason worth stating positively rather than as an omission: `serve_build` writes
+a whole body and honours no `Range`, so a browser could not seek in anything it
+served — a row for `.mp4` would type a response that does not work. Media is one
+of the things the deferred static file server is for. Bycatch, §9.3.
 
 `hmr.md` §9 records the adjacent gap: "grow the dev channel's static serving
 into a tiny dev server (`index.html` + bundle) so `run --watch` works without a
@@ -1773,9 +1795,13 @@ module, no twin, no shadow. `LegBuild` carries §5.2's five fields plus
 `dist`, the directory its file names are relative to, so `serve_build` reads
 a path off the value instead of re-deriving the `dist/` convention
 independently. `LegBuild::artifacts()` gives `(url, file)` pairs in serving
-order and `content_type_of(file)` is the extension table (§5.4): `js`/`mjs`,
-`css`, `json`, `html`, and `None` for anything else — not served rather than
-guessed at, because `serve_build` serves a build and not a directory (§5.10).
+order and `content_type_of(file)` is the extension table (§5.4), generated
+from the `mime-db` registry data and covering what a build emits — scripts,
+styles and markup, json and the web manifest, images, fonts and wasm — with
+`None` for anything else: not served rather than guessed at, because
+`serve_build` serves a build and not a directory (§5.10). The rows are
+regenerated and gated by `crates/vilan-core/tests/mime_table_sync.rs`; none of
+them is typed from memory.
 
 `BuildError` is `NotBuilt(path)` / `Unreadable(path)` with a `message()`
 that names the path and the command that would produce it. **`require_build(leg)`
@@ -1833,11 +1859,14 @@ sibling. Installing before or after `.on_request(…)` behaves identically,
 which is the property a field (rather than a wrapper applied at call time)
 buys.
 
-The content-type table is `.js`/`.mjs` → `text/javascript`, `.css` →
-`text/css`, `.json` → `application/json`, `.html` → `text/html`. Anything
-else is **not served** rather than guessed at (§5.10): four rows, covering
-exactly what a vilan build can emit. A query string is stripped before
-matching, so `/client.js?v=2` is the bundle — a cache-buster is not a
+The content-type table is generated from `mime-db` and covers what a vilan
+build can emit plus what the page it serves loads as a whole sub-resource — 27
+rows at the time of writing, across markup and code, data and text, images,
+fonts, and wasm. Anything else is **not served** rather than guessed at
+(§5.10). A `text/*` row spells `; charset=utf-8` because the body goes out as
+raw bytes and carries no encoding of its own; `application/json` and its
+`+json` relatives take none, being utf8 by spec. A query string is stripped
+before matching, so `/client.js?v=2` is the bundle — a cache-buster is not a
 different file.
 
 **`build_handler` is the slice's one unplanned name, and it is a direct
