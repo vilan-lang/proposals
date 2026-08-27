@@ -8,9 +8,20 @@ on:
     branches: [main]
   pull_request:
 
+# The job only reads the checkout (N18). Without this block the run inherits
+# the repository's default token grant, which on a write-default repository is
+# a write token handed to a job that has nothing to write — the grant a
+# compromised step would spend. `actions/checkout` needs `contents: read` and
+# nothing else, so that is the whole of it.
+permissions:
+  contents: read
+
 jobs:
   hygiene:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Pinned to a commit SHA with the tag in the comment (L14's class, which
+      # the item names as owed here too): a mutable tag is a standing grant of
+      # code execution to whoever can move it.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: python3 scripts/check_hygiene.py
