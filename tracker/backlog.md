@@ -198,7 +198,32 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   `write_atomic`, closing a silent total-data-loss path in the todo
   example. Archive 107. Records: fullstack-dx §5.10 now argues the
   fence from scope rather than a capability claim that cited a deleted
-  function.
+  function. **Order 14 (cycle 32) CLOSED 2026-08-26** — one lane,
+  pin-discipline, on the owner's ask ("pin fixed bugs and pin-ignore
+  unresolved bugs"). An audit of BOTH directions found real gaps.
+  FIXED SIDE: B139 was under-pinned — only its depth half was pinned,
+  and the TIME half's evidence was a measurement in prose plus a green
+  suite, which CLAUDE.md forbids as proof; now pinned with an
+  `inference_entry_count` probe and a linear sweep in BOTH source
+  orders (the old plant was caller-first only, as its own comment
+  said), non-vacuity proved by disabling the memo read (400 links
+  4,202 → 245,200 entries). B140's two plants shared one test fn so an
+  arithmetic failure hid the list shape — split. A HONEST NEGATIVE:
+  B139's empty-substitution gate turned out NOT behaviourally
+  pinnable — 1,157 records are written caller-shaped, but deleting the
+  guard leaves 2,596 inference tests, the docs gate and the
+  byte-identical corpus unchanged, and twelve candidate programs
+  failed to discriminate; pinned as a guard invariant instead (red at
+  4 vs 0). OPEN SIDE: ten `#[ignore]`d pins across six defects (B142,
+  E94 ×2, kolt.local 001 ×3, 007 ×3, L15), each verified genuinely red
+  when un-ignored — B142's SIGABRTs on stack overflow, proving the
+  filing. Two items were corrected BY their pins: kolt.local 001's
+  `a.|.b` face does NOT reproduce (pinned green rather than shipping a
+  pin that passes while its bug is open) while a THIRD face was found
+  (a space before the dot), and 007's removal path turns out to
+  REASSERT a deleted stylesheet. K18 is the one open defect the pin
+  rule structurally cannot reach — recorded on the item. Skipped count
+  7 → 17; suite 4310/4310; next @d51e258b.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -466,8 +491,21 @@ part of why planning fragmented. Spans `vilan-website` and
     STATUS: OPEN
     `vilan-website/src/playground.vl` registers a `message` listener
     with no `event.origin`/source check; any embedding or opener page
-    can inject console traffic. One origin check. Record: audit-1's
-    report (Order 11).
+    can inject console traffic. Record: audit-1's report (Order 11).
+    SHARPENED + PIN NOTE 2026-08-26 (Order 14): it is NOT "one origin
+    check" — `HostEvent` binds ONLY `data()`; there is no
+    `origin()`/`source()` binding at all, so the fix is two parts, add
+    the extern getter and then check it. And this item has NO honest
+    home for a pin, recorded rather than worked around: the listener is
+    `vilan-website` code and that repo has no test harness of any kind
+    (no Cargo.toml, no package.json, no test directory; its only CI is a
+    deploy workflow), so forcing a pin into the vilan repo would be a
+    fiction. What a harness would take: the vilan repo already has the
+    machinery in shape — `crates/vilan-cli/tests/hmr.rs` builds a browser
+    bundle, runs it under a node DOM stub, dispatches a synthetic event
+    and asserts — but it belongs in vilan-website, which needs a runner
+    stood up first. This is the one open defect the pin rule structurally
+    cannot reach today.
 
 19. **NEW — the website deploy fetches the latest wasm release unpinned, with no checksum** (S; N16 audit run 1, 2026-08-26)
     STATUS: OPEN
