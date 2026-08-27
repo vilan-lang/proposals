@@ -270,6 +270,52 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   (unblocked by 030+022 but design-first and would collide with fs-writes
   in fs.vl). Waiting on the owner, not on capacity: 031's six questions
   led by Q1, 014's fork, 008's posture, 022(b)/025(b)'s shared fence, 026.
+  **Order 16 (cycle 34) ACTIVE 2026-08-27** — the owner's Go. Organizing
+  principle: **a built app needs nothing but `dist/`**, and like Order 15's
+  it is an acceptance test that exists before the work does — build a
+  program that depends on a non-code resource, delete its source tree, run
+  the artifact. That fails today in OUR OWN tree, not only in kolt:
+  vilan-website's `deploy.yml` hand-copies `playground/editor.js`,
+  `examples.js` and `worker.js` out of the source tree into `export/`
+  because `vilan build` will not carry them — the site's CI is the
+  workaround — and kolt's server reads `src/static/*` and `src/head.html`
+  at runtime. Six lanes, closing kolt.local's whole Build section plus
+  017. path-tooling (017 — `std::path`, the fork settled toward free
+  functions over `str`: a `Path` type earns its keep only at
+  normalize/relative and would collide with 031's unruled handle tier;
+  std is its own caller, `fs.vl`'s `read_dir` doc names a module that
+  does not exist), then asset-bundle HELD on it (029 — the import-file
+  const function; the framing to verify is that `std::asset::read` is
+  ALREADY the const INPUT channel and 029 is its OUTPUT sibling, with
+  030's bytes, 022's generated mime table and 024's digests all shipped
+  beneath it; this lane owns the order's gate). build-hooks (027+028,
+  paper-first — trust EXTENDS `build-trust.md`'s E96 tiers rather than
+  inventing a second model, and 028's template is already in the tree:
+  std's own css pipeline IS a build-time accumulator, `Style::rule`
+  appending through `emit` and `assemble_assets` flushing in canonical
+  order; the paper must answer whether 029 makes 027 smaller).
+  css-raw-typed (016's S1, deliberately the slice with NO grammar and no
+  dependency on any of the paper's six questions — and a real bug fix:
+  reaching for `.css` to get a token into `raw` drops its `:root` line, a
+  live dangling-`var()` hazard). audit-2 (N16, **THREE ORDERS OVERDUE** —
+  the item says every other order and named Order 13; 13/14/15 all ran
+  without one; rotation this run: error handling, dead code, tidy &
+  structure, since Order 11 took security+diagnostics and Order 14 was in
+  effect the test audit). website-harness (K18+K20 — stand a runner up in
+  vilan-website FIRST, since K18 is the one open defect the pin rule
+  structurally cannot reach; `crates/vilan-cli/tests/hmr.rs` is the shape;
+  K18 is two parts because `HostEvent` binds only `data()`; K20 rides the
+  same branch, staged not deployed). CONDITIONAL 7th lane, fs-handles
+  (031's S3 + 020), runs only if Q1 is ruled. Records with the order:
+  kolt.local **034 filed** — 003 was ARCHIVED with branch (c) still live,
+  reachable only from an archived paragraph and a red pin, so the INDEX's
+  "the IDE section is empty" was false; the filing rule, not the bug, is
+  the lesson. Also fixed before launch: all three `.claude/agents/*.md`
+  pointed at the pre-N15 path `/home/reed/code/vilan/AGENTS.md`, so every
+  subagent began by reading a missing file. **A cut is the owner's open
+  call** — Unreleased holds 46 entries, 5 breaking, 2 miscompile, the
+  largest train since the re-baseline, and B136 + B141 both owe
+  release-notes lines as RELEASED miscompiles.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -661,8 +707,13 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
 16. **NEW — the recurring codebase audit** (RECURRING; the owner's standing ask, filed 2026-08-25)
     STATUS: RECURRING — one audit lane every other work order, rotating
     focus. Track here: last run Order 11 2026-08-26 (security +
-    diagnostics; L13's re-key carried); next due Order 13 (update this
-    line each run).
+    diagnostics; L13's re-key carried); **RUN 2 IN FLIGHT in Order 16
+    (2026-08-27), three orders late** — the line said "next due Order 13"
+    and Orders 13, 14 and 15 all shipped without an audit lane, which is
+    the failure this line exists to make visible and did not. Run 2's
+    dimensions: error handling, dead code, tidy & structure. Next due
+    Order 18 (update this line each run — and if it goes stale again,
+    the fix is a gate, not a bigger note).
     A standing audit over all four repos (vilan primary; website,
     proposals, pages secondary), SURVEY-FIRST like the 2026-08-18 rot
     survey: findings are FILED as tracker items with evidence, never fixed
