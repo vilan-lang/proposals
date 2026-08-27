@@ -526,6 +526,28 @@ part of why planning fragmented. Spans `vilan-website` and
     no asset by the latter name, and install.sh and the brew job already
     consume the real one.
 
+20. **NEW — the website deploy pipes `install.sh` straight to a shell, unverified** (S; found by Order 15's security-tail lane 2026-08-27)
+    STATUS: OPEN
+    `vilan-website/.github/workflows/deploy.yml:58` runs
+    `curl -fsSL .../releases/latest/download/install.sh | sh` — the
+    installer fetched and executed in one breath, with nothing between the
+    network and the shell. It is the same class as K19 (which covered the
+    wasm tarball in the same job) but a DISTINCT hole, not covered by
+    K19's text, and it is the sharper of the two: K19's payload runs in
+    visitors' browsers, this one runs in CI holding the deploy
+    credentials.
+    Cheap to close, and the pieces already exist: `sha256sums.txt` covers
+    `install.sh` too, so the fix is the shape K19's `fetch-wasm.sh` now
+    uses — download to a file, verify against the release's own checksum
+    list, then execute — and `install.sh` itself was taught to fail
+    closed in the same order (L15's S half), so the discipline is already
+    written down twice in the tree.
+    Worth noting what it does NOT buy, the same limit K19 records: the
+    checksums come from the same release page as the asset, so this
+    authenticates the transfer and not the pipeline that produced it.
+    That is L15's M half and stays open.
+    Record: the security-tail lane report (Order 15).
+
 ## L. Release engineering & beta — NEW SECTION
 
 The alpha→beta transition. The *contract* is RATIFIED (process.md §5,
