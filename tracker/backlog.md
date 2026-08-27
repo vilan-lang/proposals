@@ -148,7 +148,25 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   (new paper `proposal/build-trust.md`). Archive 104. One golden
   wants an owner glance: `vilan/test/style.mjs` moved 7 lines, each a
   permutation of one const-folded slot map (class-attribute token
-  order, a set to CSS) — mechanically confirmed and now pinned.
+  order, a set to CSS) — mechanically confirmed and now pinned. **Order 13 (cycle 31) ACTIVE
+  2026-08-26** — the owner's ask, B141 first: seven lanes.
+  b141-await-parens (the RELEASED await-precedence miscompile — a field
+  or method off an implicitly-awaited call reads the promise and yields
+  `undefined`, found probing the owner's async-transparency question),
+  sync-justifications (delete the FALSE justifications recorded for
+  std's sync functions and the sync functions themselves where nothing
+  justifies them — the owner's rule: a sync variant must name the
+  caller that cannot suspend), then ref-index (kolt.local 003/002/+004
+  — the reference index, diagnose-then-fix), css-declare (kolt.local
+  032, the declaration block that makes the owner's "this capability
+  should be core, generically" steer true), depth-tail (B139 the
+  margin-shrink unlocker + B140 the exponential-time find), std-smalls
+  (kolt.local 024 digests + 025(a) Request::header), fs-formalization
+  (kolt.local 031 — the owner's formalized-filesystem vision,
+  paper-first). HELD until sync-justifications merges: bytes-and-mime
+  (030's remainder + 022's table — both rewrite build.vl). 016's
+  css-block paper deliberately deferred to the next order so it can
+  argue against 032's shipped API.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
