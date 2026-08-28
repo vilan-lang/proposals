@@ -12,7 +12,13 @@ items without contending over one long planning surface.
     projects/<name>/tracker/INDEX.md        every OPEN item, one row each
     projects/<name>/tracker/archive.md      finished items, one tombstone each
 
-- **IDs** are zero-padded, sequential, per-project, never reused.
+- **IDs** are zero-padded, sequential, per-project, never reused — with
+  one deliberate exception: `projects/vilan/tracker/` carries its IDs
+  VERBATIM from the frozen backlog (letter+number, unpadded: `B147`,
+  `N17`), because ~2,800 citations across the papers spell them that way
+  and verbatim filenames keep every one resolvable with zero rewrites
+  (tracker-migration.md §2). New vilan items continue each section's
+  letter sequence.
 - **Item files** open with `# <ID> — <title>`, then a short field block
   (`status` / `kind` / `area` / `discussion` / `source`, plus optional
   `flag` and `see-also` lines), then the body.

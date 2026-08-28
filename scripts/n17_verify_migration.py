@@ -92,13 +92,20 @@ def main():
     if missing:
         offenders.append(f"missing item files for open IDs: {missing}")
 
-    # 2. No ID is double-counted: nothing in items/ also appears as a
-    #    tombstone anywhere (old or new archive).
+    # 2. No ID is double-counted: nothing in items/ also HEADS a tombstone
+    #    anywhere (old or new archive). A mere mention inside another
+    #    item's tombstone prose is expected and fine — D5, N16, K5 are
+    #    named constantly — so only a tombstone HEAD counts as archived:
+    #    the archive bullet form `- **<ID>.` / `- **<ID> `/`- **<ID> +`.
+    def heads_tombstone(text, cid):
+        return re.search(
+            r"^- \*\*" + re.escape(cid) + r"[ .+]", text, re.M
+        ) is not None
     for lid in sorted(live_ids):
-        in_new = lid in mentioned_ids(new_archive_text, [lid])
-        in_old = lid in mentioned_ids(old_archive_text, [lid])
-        if in_new or in_old:
-            offenders.append(f"{lid}: live in items/ AND mentioned in an archive")
+        if heads_tombstone(new_archive_text, lid) or heads_tombstone(
+            old_archive_text, lid
+        ):
+            offenders.append(f"{lid}: live in items/ AND heads a tombstone")
 
     # 3. Extras: a materialized item file whose ID was never open in the
     #    frozen backlog (typo, stale leftover, or a real find — flagged

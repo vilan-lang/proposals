@@ -13,11 +13,13 @@ Layout, as ruled:
   stubs at their old paths so relative `record:` citations still land.
   `proposal/README.md` is the per-file index (gated: exactly one row
   per paper).
-- `tracker/` — THE open-work tracker, `backlog.md` (the
-  single planning surface), and `backlog-archive.md` (append-only
-  tombstones). Deliberately its own top-level directory, structurally
-  separate from the papers, so the tracker could move elsewhere later
-  without touching them.
+- `projects/vilan/tracker/` — THE open-work tracker, per-item since the
+  N17 migration (2026-08-28): one file per open item in `items/`,
+  `INDEX.md` the open list, `archive.md` the tombstones. The cycle
+  narrative lives at `tracker/chronicle.md`; the pre-migration eras are
+  frozen under `archive/` with banner stubs at the old `tracker/` paths,
+  so a "backlog B141" citation always resolves (see
+  `proposal/tracker-migration.md` §2).
 - `archive/` — the dead generations: the frozen tracker eras
   (`backlog.md`, `backlog-2026-07-18.md`), the superseded `roadmap.md`,
   and the superseded memory-management chain (`memory-management.md`,
