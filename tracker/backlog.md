@@ -411,6 +411,24 @@ index weight = N14; `header.hbs`; no `&v=` pin).
   axis (`within`/`children`/`divide`) covers both the ancestor theme guard and
   the Tailwind child cases while keeping ui-styling §1's promise as "a child's
   own `Style` always wins against a rule reaching in from an ancestor".
+  **Order 17 (cycle 35) ACTIVE 2026-08-28** — the two rulings built, and
+  the gates made honest. Eight lanes: style-relations (009+014 per the
+  ruling, paper-first — the `@layer` composition and slot-key probes come
+  before the build; `Style::dark` DELETED, breaking), fs-handles (031's S3
+  whole on the `Database` template; `fs::exists` deleted per Q3, breaking;
+  B141's old spelling pinned positive; watch deliberately follows in S4 so
+  `Watcher` is designed to match `File`), compiler-fences (B143 — the
+  const-only check follows bounded-generic trait dispatch — plus B144),
+  ref-index-reverse (034 — un-ignore the reverse-deps pin; rename gains
+  the same reach), emit-kinds (G5 kind-scoped ordering + G6 per-kind
+  prune; the general sweep stays with E92), release-gate (L17 — the
+  release gate gains the windows leg, §7.2 gains the tagged-commit CI
+  check, the cut script refuses; rider N21, the fmt gate), hygiene-smalls
+  (the K20 and K13 status drift, N19, N22, N24, this file's header recall
+  surface), std-smalls (025(c), the ETag/304 helper). Two breaking
+  entries; v0.38.0's Unreleased opens with this order. B145's
+  `inference.rs` split is scheduled SERIAL after the fold, never
+  in-cycle — it conflicts with every compiler lane by construction.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
