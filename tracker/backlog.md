@@ -529,7 +529,9 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
   **Order 18 (cycle 36) CLOSED 2026-08-28, same day** — eleven lanes in
   two waves, all shipped; next @460b0b3d PUSHED (union suite 4600/4600
   exit 0; CHANGELOG parity 25/25 — v0.38.0's Unreleased holds 25
-  entries, THREE breaking: Style::dark, fs::exists, the css keyword).
+  entries, FOUR breaking: Style::dark, fs::exists, the css keyword, and
+  G7's fence — the lane called its own refusal breaking, honestly,
+  though nothing in the estate emitted a build-owned kind).
   THE WAVE STRUCTURE WORKED: b145-split merged first (fifteen subject
   modules, one binary, counts identical leaf-for-leaf) and the six
   build lanes appended to the new files with ZERO inference conflicts —
@@ -555,8 +557,10 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
   10 findings, 2 of its own hypotheses killed by planting). Archive
   132; filed B148/B149, G9, E99, M11–M13, L18, N27/N28; kolt.local
   9 → 6 (008, 020, 025 tombstoned — 025 COMPLETE, all three asks).
-  Cut dry-run: pending CI on 460b0b3d (the gate refuses a pending run
-  by design; the clean rerun follows it). PROCESS FINDINGS: the shared
+  Cut dry-run: CLEAN — CI completed green on 460b0b3d (both platforms,
+  the fmt job's second live pass) and the rerun shows zero reds, 25
+  entries ordered; the cut is one command away whenever the owner calls
+  it. PROCESS FINDINGS: the shared
   session scratchpad bit two lanes (one wiped the other's probe
   project; notifications twice leaked a SIBLING lane's suite verdict
   into a lane that nearly reported it as its own — caught by the lane
