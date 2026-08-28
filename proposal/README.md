@@ -100,6 +100,7 @@ are the frozen eras before it.
 | `split-comment-attachment.md` | shipped arc (2026-08-01, backlog B41) | Mid-construct comments attach to the split element they precede instead of orphaning below the statement. |
 | `ssr.md` | shipped arc (v1, 2026-07-23); open tail, see backlog A7 | Server-side rendering — render and replace, not hydration. |
 | `suite-speed.md` | shipped arc (audit + slices, 2026-08-02; two flakes closed 2026-08-04) | The measured test-suite speed profile and the slice list that reclaimed it (E21/E25–E30); §5 closes two load-dependent flakes, harness clocks and a fixed port (E32/E33). |
+| `temporary-drop.md` | PROPOSED 2026-08-28 (Order 18, cycle 36); awaiting the mechanics ruling | Backlog C11 — a resource born and consumed as an expression temporary never drops. The direction is ruled ("those should not leak"); the paper settles the mechanics and recommends **statement-end** over scope-end, with the probes measured against emitted JS. Written as a `destruction.md` amendment-in-waiting (§10). |
 | `top-level-await.md` | ratified 2026-08-07; arc shipped | The null recommendation stood — TLA stays closed; the await-shaped hole closed (B86), the HMR-thunk twin verified unreachable (B87), Node artifacts became `.mjs` per the §8.1 ruling. |
 | `transparent-references.md` | shipped arc (2026-06-21) | Implicit place / explicit value semantics for references. |
 | `transport-robustness.md` | shipped arc (2026-07-11) | Reconnect, backoff, and re-subscription for the transport layer (K6). |
