@@ -161,8 +161,10 @@ compiler. After compilation the channel, per kind:
    CSS plateau).
 2. **Orders deterministically** — a kind-specific rule (CSS: base < pseudo <
    media in ascending min-width order, then lexical — B35 fixed the digit
-   sort that put 1024px before 640px), so outputs are byte-stable regardless
-   of evaluation or caching order.
+   sort that put 1024px before 640px; every other kind: lexical by line),
+   so outputs are byte-stable regardless of evaluation or caching order.
+   (Until G5 — 2026-08-28, `build-hooks.md` §5.2a — this sentence promised
+   more than the code did: the CSS comparator was applied to every kind.)
 3. **Writes `<out>.<ext>` beside the compiled `.js`** (e.g. `dist/client.css`).
 
 The channel is styling-agnostic: A7 SSR wants it for critical CSS, and any
