@@ -122,6 +122,43 @@ def main():
                 "(want exactly 1)"
             )
 
+    # Per-project tracker index completeness (tracker N17): the same
+    # one-row-per-file rule as proposal/README.md above, generalized to
+    # every TRACKED projects/<project>/tracker/ directory — every
+    # items/<ID>.md has exactly one row in that tracker's INDEX.md, and
+    # no INDEX.md row points at a file that is not there. A gitignored
+    # `.local` project is invisible here by construction, same posture
+    # as the dangling-cite check below.
+    tracker_item_files = {}  # project -> {id}
+    for name, _ in files:
+        m = re.fullmatch(r"projects/([^/]+)/tracker/items/([^/]+)\.md", name)
+        if m:
+            tracker_item_files.setdefault(m.group(1), set()).add(m.group(2))
+    index_row_re = re.compile(r"^\|\s*\[([^\]]+)\]\(items/([^)]+)\.md\)")
+    for project, item_ids in tracker_item_files.items():
+        index_path = f"projects/{project}/tracker/INDEX.md"
+        index_text = next((body for name, body in files if name == index_path), None)
+        if index_text is None:
+            offenders.append(f"{index_path}: missing (project has tracker items)")
+            continue
+        row_counts_by_id = {}
+        for line in index_text.splitlines():
+            m = index_row_re.match(line)
+            if m and m.group(1) == m.group(2):
+                row_counts_by_id[m.group(1)] = row_counts_by_id.get(m.group(1), 0) + 1
+        for item_id in item_ids:
+            count = row_counts_by_id.get(item_id, 0)
+            if count != 1:
+                offenders.append(
+                    f"{index_path}: `{item_id}` has {count} INDEX rows "
+                    "(want exactly 1)"
+                )
+        for row_id, count in row_counts_by_id.items():
+            if row_id not in item_ids:
+                offenders.append(
+                    f"{index_path}: `{row_id}` row has no items/{row_id}.md"
+                )
+
     # Dangling per-item tracker cites (tracker N24): closing an item
     # DELETES its `items/<ID>.md` and leaves a tombstone in archive.md,
     # so a `[[cite]]` of a closed item dangles unless the archive still
@@ -135,8 +172,9 @@ def main():
     # STRUCTURAL LIMIT, recorded here and on N24: this gate scans TRACKED
     # files only, so a gitignored `.local` tracker (projects/*.local/) is
     # invisible to it by construction — there, dangling-cite hygiene is
-    # convention, recorded on N24, not enforcement. When N17's migration
-    # lands tracked per-item trackers, this rule covers them from day one.
+    # convention, recorded on N24, not enforcement. Since N17's migration,
+    # `projects/vilan/tracker/` is tracked and this rule covers it like
+    # any other project; the limit now names `.local` projects only.
     tracked_names = {name for name, _ in files}
     cite_pattern = re.compile(r"\[\[([^\[\]\n]+)\]\]")
     archive_texts = {
@@ -151,6 +189,10 @@ def main():
         project = parts[1]
         archive_text = archive_texts.get(project, "")
         for number, line in enumerate(text.splitlines(), 1):
+            # A [[name]] inside a backtick code span is spelling (TOML's
+            # [[table]] arrays, e.g. `[[build.hook]]`), not an item cite —
+            # the gate's first live run caught exactly this (G9.md).
+            line = re.sub(r"`[^`]*`", "", line)
             for cite in cite_pattern.findall(line):
                 if f"projects/{project}/tracker/items/{cite}.md" in tracked_names:
                     continue

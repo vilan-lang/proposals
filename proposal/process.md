@@ -727,6 +727,11 @@ be a known one.
 > carries … (c) move each newly-shipped entry's full body verbatim into
 > `proposal/backlog.md`.
 
+*(The quoted (c) names the alpha-era tracker path; since the N17
+migration (2026-08-28) the same step lands the tombstone in
+`projects/vilan/tracker/archive.md` — the procedure is unchanged, only
+the address moved. See tracker-migration.md §5.)*
+
 The sweep was written when a cut followed a cycle, so it reads as "the cycle
 just ended, close its markers". Under accumulated cycles the *procedure* is
 still exactly right — it was never scoped to one cycle, it is scoped to
