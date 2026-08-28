@@ -17,6 +17,14 @@ These aren't independent bugs; they're symptoms of a few structural weaknesses.
 This document is the plan to address the **root causes**, so the class shrinks
 instead of being whack-a-moled.
 
+> **Correction (2026-08-28, measured under backlog B145).** The "~9000 lines"
+> above is stale by a factor of more than four: `wc -l
+> crates/vilan-core/src/analyzer.rs` reads **38,890 lines** today. Every S/M/L
+> scope, risk and sequencing judgement below was sized against the smaller file,
+> so **this document's costing wants re-deriving against the measured size
+> before the plan is trusted.** Nothing here is redesigned by this note — it
+> records the measurement and the fact that the premise moved.
+
 ## The motivating bugs
 
 - **Bug (a) — FIXED** (commit d77c8ef). Repro:
