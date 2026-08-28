@@ -1,5 +1,15 @@
 # std vs official packages — the distribution shape (L10)
 
+> **SUPERSEDED IN PART 2026-08-28 — read §7 first.** The owner approved
+> a *namespace* split (`std::` core, `vilan::` auxiliary) that §2 never
+> costed because it was never offered: a split with no distribution
+> change at all. §2's Shape A/Shape B framing and §5's sentence (2) —
+> "the hard split is declined" — no longer describe the live decision;
+> everything else in this paper stands, including the bundle-with-
+> releases mechanism, the exact-pins-only fence, promises attaching to
+> the train, §4's compiler contract, and §6's four reserved names. §7
+> is the amendment: the partition, the churn, the sequencing.
+>
 > Status: PROPOSED 2026-08-20 (cycle 26, work order 8, lane
 > `l10-std-shape`). Proposal-only — no code ships with this paper.
 > Tracker: backlog-2026-08-18.md §L item 10.
@@ -287,6 +297,11 @@ pin now *lags* the bundle — a diagnostic, not a resolver.
 
 ## 5. Recommendation
 
+> **Sentence (2) below is superseded — see §7.** The hard split was
+> declined as a *distribution* split, and that decline stands. What the
+> owner approved 2026-08-28 is a namespace seam inside one bundled
+> toolchain: neither Shape A nor Shape B, and §7 names it Shape C.
+
 **The namespace model, as a recorded direction — and no construction
 now.** Ratify three sentences: (1) `std::` is the publishing
 namespace; if official packages ever exist they are published under
@@ -375,3 +390,592 @@ any user package claims it. The refusal parenthetical now names four
 re-keyed), the reason string is "the language owns its own name", the
 `[library]` exemption is unchanged, and the pins mirror L12's
 per-position set (plant-proven). Family `breaking`, L12's precedent.
+
+---
+
+## 7. Amendment — the `std::`/`vilan::` partition (2026-08-28)
+
+> Status: PROPOSED 2026-08-28 (cycle 36, work order 18, lane
+> `std-shape-amendment`), written against kolt.local tracker item 026
+> (**APPROVED 2026-08-28**). Proposal-only — no code ships with this
+> section; the migration is its own later arc. Measured against vilan
+> `6fcb64d4` (v0.37.0), the website checkout, and kolt, all read-only.
+>
+> **Placement.** A new section rather than an edit of §2/§5, because
+> §§1–5 are the record that produced the 2026-08-22 ruling and rewriting
+> them would erase the reasoning the owner ruled on. §6's 2026-08-26 ship
+> note already forward-references "a re-ruling of §5's declined Shape A
+> still to come" — this is that re-ruling, landing exactly where the note
+> points. The two pointers added above (the header banner and the §5
+> note) are the whole in-place edit.
+
+### 7.1 What was ruled
+
+The owner, verbatim (2026-08-28, approving kolt.local 026):
+
+> **"I want `std::` for true core, and `vilan::` for auxiliary
+> features. `ui` would fall under `vilan::` because cli only programs
+> are somewhat common and first-party. But, something like `option`
+> would be in `std::`."**
+
+That sentence carries the ruling *and* its two calibration anchors:
+`ui` → `vilan::`, `option` → `std::`. The justification it gives for
+`ui` is the load-bearing part — a program shape (CLI-only) that is
+common and first-party must not be made to carry the framework's
+vocabulary. The seam is therefore drawn by **program shape**, not by
+stability, not by platform leg, and not by age.
+
+It stands on the owner's 2026-08-26 position, already recorded in §6's
+second ship note: *"we can package this `vilan::` namespace in all vilan
+releases just like std until a package registry is up."* That sentence is
+the reason this amendment costs so much less than §2's Shape A: the
+`vilan` namespace is not a distribution event. It is a second
+toolchain-owned root, embedded in the same binary, cut on the same
+train, hashed into the same `CONTENT_HASH`.
+
+**What is superseded.** §2's binary framing (hard split vs publishing
+namespace) and §5 sentence (2) ("the hard split is declined — spelling
+churn and a split book buy nothing…"). The decline of Shape A *as a
+distribution split* stands and is not reopened.
+
+**What survives, unamended.** §1's physical reality; §3's "nothing
+splits before a registry exists" (still true — nothing splits here);
+§4's whole compiler contract, which this amendment leans on harder than
+§4 anticipated; §5 sentences (1) and (3) as they apply to *publishing*;
+§6's four reserved names, one of which (`vilan`) was reserved for
+precisely this. The one §3 line that needs re-spelling is its naming of
+`std::markdown` as the first publishable candidate — under §7.4 that
+module is `vilan::markdown`, and the argument for building it
+package-shaped is unchanged.
+
+### 7.2 Shape C — a namespace split that is not a distribution split
+
+Call the approved shape **C: the two-root toolchain.** Two toolchain-owned
+import roots, `std` and `vilan`, both embedded, both materialized from the
+same `FILES` table, both cut on the same train, one CHANGELOG, one book,
+one version. Version skew remains *impossible*, exactly as §1 describes it
+today. `macro_std` is unaffected and stays a third root of its own.
+
+§2 costed Shape A on six axes and four of them were reasons to decline it.
+Under Shape C, **exactly one of those four lands**:
+
+| §2's cost of the split | Under Shape C |
+| --- | --- |
+| **Import churn** — "a churn event with a blast radius the tier draft already measured" | **Lands, in full.** Measured in §7.7: 939 import lines, ~1,665 textual mentions, 230 files. This is the price, and it is paid knowingly and once. |
+| **Docs shape** — "the book splits, two places to search" | **Does not land.** One book, one std reference part, one `SUMMARY.md`. The pages are organized by topic already (§7.8); they gain a namespace column, not a second home. |
+| **Batteries-included / offline** — "A *without* bundling loses the property outright" | **Does not land.** Bundling is the premise of the owner's own sentence. `build.rs` walks a third package; the property stays structural, not engineered. |
+| **Version skew** — "A has the same skew surface plus one more axis" | **Does not land.** No second version exists to skew. `vilan::` is at the toolchain's version by construction, like `std::` and `macro_std`. |
+| **What beta's promises attach to** — "per-package windows on per-package minors" | **Does not land.** One train, one CHANGELOG, one clock. §5's answer (promises attach to the train and its bundled set) is unchanged and now trivially true. |
+| **CI / test surface** — "A multiplies repos, CI surfaces, and a cross-repo version matrix" | **Does not land.** One workspace, one corpus gate, one docs gate. The `vilan` tree is another directory the same suite compiles. |
+
+That table is the honest case *for* the amendment and it should be read
+as the whole of it: the owner is buying a naming honesty that §2 priced
+only in a bundle with five costs that Shape C does not incur. §2's
+strongest sentence — "the tree is already forward-compatible with B and
+already incompatible with A" — remains literally true and is now simply
+the statement of the bill, not an argument against paying it.
+
+**The honest case against, three arguments, none disposable:**
+
+1. **939 import lines is a real number, and it recurs in every
+   snapshot.** Not just the tree: 654 of them live in the compiler's own
+   Rust test fixtures (§7.7), where a moving stem appears inside string
+   literals the byte-gate compares. This is a mechanical edit, but a wide
+   one, and it lands in the same trains as the corpus's entity-id
+   ordering shift (§7.8).
+2. **`std::` stops being the answer to "where is anything".** Today a
+   user who knows one root can find every module. Afterwards they must
+   know which side of a judgement call a module fell on — and §7.4 shows
+   the judgement is genuinely close for eight rows. The mitigation is the
+   moved-name diagnostic (§7.8), not documentation.
+3. **The seam will be re-argued the first time a module changes
+   character.** `markdown` is auxiliary today and would be core in a
+   docs-shaped language; `fetch` is core today and would be auxiliary in
+   a language that shipped no client at all. Shape B had no such rows
+   because it had no such line. Shape C creates a boundary that will
+   attract re-litigation, and the answer has to be that a later move is
+   cheap (it is: the same mechanical edit, on a smaller set).
+
+None of the three defeats the ruling. They are why §7.9's questions are
+the ones they are.
+
+### 7.3 The seam principle, made testable
+
+The owner's sentence is a principle, not a table. Three tests turn it
+into one, applied in order, plus a tiebreak:
+
+- **T1 — Structural.** The compiler knows the module by identity: it is
+  prelude (needs no import), or its names are captured at load
+  (§4's list), or the transformer resolves out of it by name. §4 already
+  proved these are inseparable from the toolchain under *every* shape.
+  → **`std::`**, no argument available.
+- **T2 — Universal by shape.** Nearly every program of some common,
+  first-party shape (CLI, browser page, server) needs it *regardless of
+  the other shapes*. This is the owner's own test, read forwards: `ui`
+  fails it because a CLI program never wants it; `process` and `fs` pass
+  it because a CLI program is nothing without them.
+  → **`std::`**.
+- **T3 — Opinionated.** The module encodes a first-party opinion about
+  *how to build an application* — a rendering model, a reactivity model,
+  a styling system, a transport, a storage engine, a document format. A
+  program that disagrees with the opinion still has a complete language.
+  → **`vilan::`**.
+- **Tiebreak — the burden of proof is on the move.** A module that
+  passes none of the three (a pure, dependency-light, platform-neutral
+  algorithm with no framework flavour and no universality claim) stays
+  **`std::`**. Moving costs churn and buys nothing; staying costs
+  nothing and can be revisited. This is what settles `base64` and
+  `random`, and it is the rule that keeps the amendment from turning
+  into a general re-sort of the tree.
+
+Two anchors check the tests: `option` is T1 (prelude, and
+`module_scopes.get("option")` is a compiler capture) → `std::` ✓.
+`ui` is T3 and fails T2 by the owner's own reasoning → `vilan::` ✓.
+
+### 7.4 The partition
+
+The census is §1's, re-walked at `6fcb64d4`: **58 public modules** —
+45 `std/src/*.vl` less `lib.vl` and `native_map.vl` (43 public), 9
+`std/src/process/*.vl` and 5 `std/src/browser/*.vl` of which
+`process/ui.vl` + `browser/ui.vl` are the two halves of the one module
+`std::ui` (13 distinct), and 2 in `macro_std`. Two modules joined since
+beta.md §5's 56-module count: `markdown` (2026-08-24) and `path`
+(2026-08-27), neither tiered.
+
+**36 stay `std::`. 20 become `vilan::`. `macro_std`'s 2 are untouched.**
+
+#### 7.4.1 `std::` — the true core (36)
+
+| Module | Leg | Tier (§5 draft) | Why core |
+| --- | --- | --- | --- |
+| `option` | base | 1 | **Owner's anchor.** T1: prelude, captured at load; the tree's most-imported name. |
+| `result` | base | 1 | T1: prelude; the error model's bedrock — `try`/`?` desugars through it. |
+| `boolean` | base | 1 | T1: the built-in `bool`, module-defined, captured. |
+| `null` | base | 1 | T1: the built-in unit; dependency-free by design. |
+| `number` | base | 1 | T1: the scalar types; prelude. |
+| `string` | base | 1 | T1: `str`; prelude. |
+| `list` | base | 1 | T1: `List::new`/`push` lower to `[]`/`.push` (§4). |
+| `map` | base | 1 | T1: the built-in map; captured as an element-slot container. |
+| `set` | base | 1 | T1: the built-in set; rides `map`'s machinery. |
+| `native_map` | base | — | Not public — `map`/`set`'s internal building block; captured at load. Follows them. |
+| `range` | base | 1 | T2: `a..b` is syntax; every loop and slice reaches it. |
+| `iterator` | base | 1 | T2: the protocol `list`/`map`/`range` implement; splitting it from them is incoherent. |
+| `compare` | base | 1 | T1: `PartialEq`/`Ord` — a derive target and the collections' contract. |
+| `hash` | base | 1 | T1: `Map`/`Set`'s key contract (I1). Inseparable from the collections. |
+| `default` | base | 1 | T1: prelude `Default`; a derive target. |
+| `display` | base | 1 | T2: `Display`/`format` — every program that prints anything. |
+| `debug` | base | 1 | T2: `[derive(Debug)]`; every program that debugs anything. |
+| `operators` | base | 2 | T1: `Add`…`BitOr` are the language's own desugaring targets; captured ×2. |
+| `into` | base | 2 | T2: after B127's DELETE the module is the `Into` trait — conversion vocabulary beside `Default`/`Display`. |
+| `io` | base | 1 | T1: the transformer resolves `print` out of std scope by name and **panics without it** (transformer.rs). Structurally unmovable. |
+| `math` | base | 1 | T2: named core by the seam definition; `number` already depends on it. |
+| `arena` | base | 1 | T2: the ownership model's own construct (docs `std/cells.md`), captured at load; a memory-model teaching surface, not a battery. |
+| `shared` | base | 1 | T1: `Shared` is captured and used in HMR classification; the reference model. |
+| `drop` | base | 1 | T1: destruction.md §5's ratified hook, captured ×2 — a language feature that happens to live in std. |
+| `promise` | base | 1 | T1: `async`/`await` types through `Promise<T>`; captured. **The async substrate.** |
+| `task` | base | 1 | T1: `nursery`/structured spawn, captured ×2. The async substrate. |
+| `context` | base | 1 | T1: spec §8's mechanism; `Context` captured and registered as an element-slot container. |
+| `time` | base | 1 | T2: `Instant`/`Duration`/`Timer` — the async substrate's clock; a CLI that measures anything needs it. |
+| `random` | base | 1 | Tiebreak: pure, tiny, platform-neutral, no framework flavour. Nothing is bought by moving it. |
+| `json` | base | 1 | T1 **and** T2: `JsonValue` is captured for lowering; the seam definition names json-ish primitives as core; broadest breadth in the tree. |
+| `bytes` | base | 1 | T2: the byte value type under every codec and every file read; 13 std consumers. |
+| `wire` | base | 2 | T1-adjacent **and forced**: `std::json` imports `Wire`/`Serializer`/`Codec` directly, and the `Wire` derive is compiler-dispatched. See §7.5 — a `vilan::wire` would make core depend on auxiliary, which is unrepresentable. beta.md §5.1 Q5 already argued it earns Tier 1 on day one. |
+| `base64` | base | 1 | Tiebreak: RFC 4648 §5, pure vilan, const-capable, no framework flavour. **OWNER-DECIDES** — see §7.4.3. |
+| `path` | base | — | Pure string manipulation, no host binding, no platform leg. Pairs with `fs`; follows it. |
+| `fs` | process | 2 | T2 by shape: reading and writing files is what a CLI program *is*. **OWNER-DECIDES** — see §7.4.3. |
+| `process` | process | 1 | T2 by the owner's own reasoning: args/env/stdin/exit is the substrate of the CLI-only programs the ruling protects. |
+| `fetch` | base | 1 | T2: the host `fetch` global, thin, universal across both legs. **OWNER-DECIDES** — see §7.4.3. |
+
+#### 7.4.2 `vilan::` — the first-party batteries (20)
+
+| Module | Leg | Tier (§5 draft) | Why auxiliary |
+| --- | --- | --- | --- |
+| `ui` | both | 2 | **Owner's anchor.** T3: the rendering model. Both platform halves move as one module. |
+| `reactive` | base | 2 | T3: signals are *the* framework opinion. kolt reports it "feels core" (026) — but it is core to an application shape, which is exactly what `vilan::` names. It is also `ui`'s substrate, and the anchor drags it. |
+| `style` | base | 2 | T3: a styling system with breakpoints and an ordering rule; a CLI program has no use for it. |
+| `dom` | browser | **1** | T3: `ui`'s host binding, one layer down. Tier 1 by age and quiet (a genuine Tier-1 row on the auxiliary side — see §7.6), but a CLI program never touches an element. Splitting it from `ui` across roots would be incoherent. |
+| `storage` | browser | 2 | T3: the browser key-value binding; same argument as `dom`, one layer out. |
+| `dev` | browser | 2 | T3: the HMR hooks (hmr.md §4) — a dev-mode contract for the app framework. |
+| `router` | browser | 2 | T3: client-side routing, an application-architecture opinion. |
+| `asset` | base | 2 | T3: the bundler's asset pipeline; meaningless outside a built app. |
+| `build` | process | 2 | T3: the build/bundle driver (`LegBuild`); an app-shaped concern. |
+| `watch` | process | 2 | T3: the dev-mode file watcher; pairs with `dev`, and the pair settles together. |
+| `document` | process | 2 | T3: the SSR document builder — a document *format* opinion. |
+| `http` | process | 2 | T3: **http-serving.** `serve_build`/`serve_service`; a server framework's front door. |
+| `ws` | base | 2 | T3: RFC 6455 frames existing to serve the server's upgrade path; one narrow consumer. |
+| `rpc` | base | 2 | T3: the client transport; the `[service]` macro's home. |
+| `rpc_server` | process | 2 | T3: `Service`; the server half of the same opinion. |
+| `binary` | base | 2 | T3: the schema-ordered codec that rides the transport family (transport-rpc §6.2). **OWNER-DECIDES** — see §7.4.3. |
+| `db` | process | 2 | T3: the `node:sqlite` seam — a storage engine choice, one example's worth of breadth. |
+| `crypto` | base | 2 | T3: an HS512-era minimum shaped by one consumer. **OWNER-DECIDES** — see §7.4.3, and note the one edge it creates. |
+| `jwt` | base | 2 | T3: HS512-only auth tokens; an application-security opinion sitting on `crypto`. |
+| `markdown` | base | — | T3: a document format. §3 named `std::markdown` the first publishable candidate; under this partition it is `vilan::markdown`, and §3's "build it package-shaped" advice is unchanged and now cheaper to honour. |
+
+#### 7.4.3 The borderline rows, argued
+
+Eight rows where a reasonable owner rules the other way. Each carries a
+recommendation; §7.9 batches the four that matter most.
+
+**`fs` → `std::` (recommended).** *For:* T2 — a CLI program that cannot
+read a file is a toy, and the owner's justification for moving `ui` is
+that CLI programs are common and first-party. Rust, Go and Python all
+put the filesystem in core. *Against:* it is `@process`-only, so a
+browser program lives without it — and "lives without it" is the
+auxiliary test. *Resolution:* platform-legging is orthogonal to this
+seam. `std` already layers, and layering answers "does this exist on
+your platform", not "is this the language". If `fs` moves, `path`
+follows it and `std`'s process layer empties.
+
+**`path` → `std::` (recommended).** Pure string work over a
+platform-neutral notion; it declares no layer and binds no host. It
+follows `fs` only in spirit — it can stay core even if `fs` moves.
+
+**`process` → `std::` (recommended).** The strongest of the eight. This
+is *the* CLI module, and the ruling's stated purpose is to stop CLI
+programs carrying framework weight. Putting `process` in `vilan::` would
+invert the sentence that produced the seam. Tier 1 already; beta.md §5.1
+Q4 flagged only that it makes its directory non-uniform.
+
+**`fetch` → `std::` (recommended).** *For:* it is a binding to a host
+global present on both legs, ~1 file, no opinion — the same class as
+`random`. Being an HTTP *client* is not an application architecture.
+*Against:* Rust keeps clients out of std. *Resolution:* the seam
+definition distinguishes http-*serving* (auxiliary) from fetching; and
+`watch` (auxiliary) already depends on `fetch`, so the edge runs the
+right way either way.
+
+**`base64` → `std::` (recommended, tiebreak).** *For:* pure, const-capable,
+zero platform coupling, and the burden of proof is on the move. *Against:*
+it fails T2 honestly — most programs never encode base64 — and `jwt`
+(auxiliary) is its only consumer today. *Resolution:* the tiebreak. If the
+owner prefers a tighter core, this is the cheapest row to move: 2 import
+lines tree-wide.
+
+**`wire` → `std::` (recommended, and effectively forced).** `std::json`
+imports seven names from it and the `Wire` derive is compiler-dispatched
+from `json.vl`. A `vilan::wire` would require `std::json` to depend on the
+auxiliary root — see §7.5, where that is shown to be unrepresentable, not
+merely ugly. The alternative is moving `json` too, which contradicts the
+seam definition's "json-ish primitives" and §4's `JsonValue` capture.
+
+**`binary` → `vilan::` (recommended).** *For:* it exists for the transport
+family and has no consumer outside it. *Against:* it is the other
+implementation of `wire`'s `Codec`/`Frame`, and splitting the two codecs
+across roots reads oddly. *Resolution:* `json` is the codec every program
+meets and `binary` is the one the RPC layer meets; the seam is about
+programs, not about trait families. Cheapest row in the moving set (5
+sites tree-wide) if the owner disagrees.
+
+**`crypto` → `vilan::` (recommended, with one required fix).**
+`std/src/process/fs.vl:31` reads `import pkg::crypto::random_uuid;` —
+used twice, for the unique suffix on atomic temp-file writes. That is the
+tree's **only** core→auxiliary edge (§7.5) and it must go. Two ways:
+(a) re-home `random_uuid` (and arguably `random_bytes`) into
+`std::random`, where a random-value generator arguably belonged anyway —
+a surface rename, family `breaking`; or (b) generate the temp suffix
+inside `fs` from `std::random`, a purely internal change with **zero
+surface impact**. Recommend (b) for the migration and (a) as a separate
+tidy if the owner wants the surface honest. The third option — `crypto`
+stays `std::` as a host-capability binding like `fetch` — is coherent,
+and leaves `jwt` as the only auxiliary user of a core module, which is
+fine.
+
+### 7.5 Seam integrity — two hard constraints, both checked
+
+**(1) No core module may import an auxiliary one.** This is not a
+preference. `vilan` depends on `std` (a global root, always loaded);
+`std` cannot depend on `vilan` without a cycle between two
+toolchain-owned packages, and §1's load order (std → deps → pkg) has no
+place to express it. Measured across all 56 modules at `6fcb64d4`, the
+recommended partition produces **exactly one violation**:
+
+```
+std/src/process/fs.vl:31:import pkg::crypto::random_uuid;
+```
+
+Everything else is clean. The full intra-tree graph was walked: 36 core
+modules import only core; the 20 auxiliary modules import 77 core names
+and 21 auxiliary ones. `wire` is in the core list *because* the walk put
+`json → wire` on the wrong side when it was not (§7.4.3).
+
+**(2) The layers re-cut, and `std` loses one entirely.** Of the five
+`browser/` files, all five are auxiliary; of the nine `process/` files,
+seven are. After the partition:
+
+- `std/vilan.toml` declares **one** layer, `process`, holding exactly
+  `fs.vl` and `process.vl`. `[library.layer.browser]` is **deleted** —
+  the core has no browser-specific module left. Core becomes
+  platform-neutral except for two files, which is a clean outcome and
+  worth saying out loud.
+- `vilan/vilan.toml` declares **both** layers: `process` = build, db,
+  document, http, rpc_server, ui, watch; `browser` = dev, dom, router,
+  storage, ui. The two-halves-one-module mechanism for `ui` carries over
+  unchanged — §4 already noted any `[library]` may declare layers.
+
+### 7.6 How this seam relates to beta.md §5's tier seam
+
+**Orthogonal — and the cross-tab proves it rather than asserting it.**
+Mapping the partition onto the draft tier table's rows:
+
+| | Tier 1 | Tier 2 | untiered (post-census) | total |
+| --- | --- | --- | --- | --- |
+| **`std::`** | 31 | 4 (`operators`, `wire`, `fs`, `into`) | 1 (`path`) | **36** |
+| **`vilan::`** | 1 (`dom`) | 18 | 1 (`markdown`) | **20** |
+| **`macro_std::`** | 0 | 2 | 0 | **2** |
+
+All four quadrants are populated, and the two off-diagonal cells are the
+argument. `vilan::dom` is Tier 1 — two months old, untouched since
+08-01, and still something a CLI program never imports. `std::fs` is
+Tier 2 — reworked 08-11, surface still moving, and still something
+nearly every non-browser program needs. Neither cell is a mistake in
+either table; they are two different questions:
+
+- **The tier seam asks: how hard is it to change this?** It is a promise
+  about *churn cost over time*, priced by process.md §5.2's window and
+  audited at the cut.
+- **The namespace seam asks: is this the language, or a battery?** It is
+  a statement about *what a program must know*, and it is fixed at the
+  spelling.
+
+Collapsing them would force one of two falsehoods: demote the whole
+`vilan::` half to Tier 2 (a lie about `dom`), or redraw the tier table
+along a line it was never measured on. Keep both. The tiers page
+(beta.md §5's `docs/std/tiers.md`, still unwritten) gains a namespace
+column; it does not merge.
+
+**One thing the namespace seam does subsume.** §3 step 1 asked the tier
+seam to double as "the seam definition of what could ever publish", and
+§6 Q3 asked whether the sequencing may lean on it. It no longer needs
+to: **`vilan::` is the publishing surface** if publishing ever happens,
+and `std::` is the inseparable floor §4 already proved. That is a
+simplification of beta.md §5.1's deferred ruling, not a complication —
+the tier questions get to be purely about stability again.
+
+### 7.7 Churn accounting — measured, not estimated
+
+All counts at vilan `6fcb64d4`, website and kolt checkouts as of
+2026-08-28, over the 20 moving stems. Two measures: **import lines**
+(the mechanical re-spell) and **all textual mentions** (import lines plus
+prose, doc comments, type paths, and the message text of tests).
+
+**Import statement lines, per module and corpus:**
+
+| Module | std tree | examples | corpus | docs fences | website | kolt | crates fixtures | total |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `reactive` | 5 | 10 | 9 | 31 | 8 | 5 | 185 | **253** |
+| `ui` | 2 | 10 | 2 | 18 | 13 | 2 | 108 | **155** |
+| `style` | 2 | 3 | 1 | 6 | 8 | 2 | 128 | **150** |
+| `http` | 1 | 4 | 0 | 12 | 2 | 1 | 37 | **57** |
+| `rpc` | 1 | 3 | 0 | 1 | 0 | 3 | 47 | **55** |
+| `build` | 2 | 4 | 0 | 5 | 1 | 1 | 28 | **41** |
+| `asset` | 1 | 0 | 1 | 0 | 1 | 1 | 29 | **33** |
+| `document` | 0 | 3 | 0 | 5 | 1 | 1 | 22 | **32** |
+| `markdown` | 0 | 0 | 0 | 3 | 0 | 0 | 17 | **20** |
+| `router` | 0 | 4 | 0 | 2 | 0 | 3 | 11 | **20** |
+| `db` | 0 | 1 | 1 | 3 | 0 | 1 | 13 | **19** |
+| `rpc_server` | 1 | 2 | 0 | 2 | 0 | 1 | 12 | **18** |
+| `crypto` | 2 | 0 | 1 | 1 | 0 | 0 | 5 | **9** |
+| `dom` | 2 | 2 | 0 | 0 | 0 | 0 | 2 | **6** |
+| `binary` | 0 | 0 | 1 | 0 | 0 | 0 | 4 | **5** |
+| `jwt` | 0 | 0 | 1 | 0 | 0 | 0 | 2 | **3** |
+| `watch` | 1 | 0 | 0 | 0 | 0 | 0 | 2 | **3** |
+| `ws` | 1 | 0 | 0 | 0 | 0 | 0 | 1 | **2** |
+| `dev` | 1 | 0 | 0 | 0 | 0 | 0 | 0 | **1** |
+| `storage` | 0 | 0 | 0 | 0 | 0 | 0 | 1 | **1** |
+| **total** | **22** | **46** | **17** | **89** | **34** | **21** | **654** | **883** |
+
+The "std tree" column counts `import pkg::<moving>` lines *inside* std —
+21 of which are auxiliary→auxiliary and keep their `pkg::` spelling for
+free, plus the one `fs → crypto` line that must be eliminated. The edit
+std actually owes is the other direction: **77** `import pkg::<core>`
+lines inside the 20 moving files become `import std::<core>`. So:
+
+**Grand total of import lines to re-spell: 939** — 77 (auxiliary→core
+inside the new package) + 1 (the `fs` edge) + 46 + 17 + 89 + 34 + 21 +
+654.
+
+**All textual mentions and files touched, per corpus:**
+
+| Corpus | files | mentions |
+| --- | ---: | ---: |
+| `std/src` + `macro_std/src` | 27 | 92 |
+| `examples/` | 32 | 73 |
+| `test/` (the corpus byte-gate) | 15 | 22 |
+| `benchmarks/` | 5 | 13 |
+| `docs/` (the book — 89 of these are compile-gated fence imports) | 58 | 517 |
+| `crates/*/src` (the compiler itself) | 15 | 93 |
+| `crates/*/tests`, `benches` (vilan fixtures inside Rust) | 39 | 743 |
+| vilan-website | 23 | 66 |
+| kolt (`src/` + `e2e/`) | 9 | 25 |
+| kolt `worktrees/connection-v3` (in-flight branch) | 7 | 21 |
+| **total** | **230** | **1,665** |
+| *proposals repo (this repo) — historical, NOT rewritten* | *351* | *2,183* |
+
+Three things this table says that a guess would have missed:
+
+1. **The compiler's own test fixtures are the largest corpus** — 743
+   mentions in 39 files, because inline vilan programs live in Rust
+   string literals. They are also the least visible: nothing in the
+   proposal's earlier reasoning counted them.
+2. **The proposals repo must not be swept.** 2,183 mentions across 351
+   papers are the record of what was decided when. Rewriting `std::ui`
+   to `vilan::ui` in a 2026-07 paper would falsify it. The rule is:
+   papers keep their spelling; this section is the pointer.
+3. **kolt is small.** 21 import lines across 9 files, plus 21 mentions in
+   its in-flight `connection-v3` worktree. The one real user's migration
+   is one `sed` and a rebuild (§7.8).
+
+**Compiler-side follow set — 7 hardcoded sites, all located.** §4 warned
+that compiler-known names are part of the toolchain contract. Of the
+stem-keyed captures in `analyzer.rs`, four name a moving module:
+`module_scopes.get("reactive")` (the `Signal` capture, for HMR transfer
+classification), `.get("asset")`, and `.get("dev")` ×2. Three more are
+the `[service]` force-load, `to_load.push((Origin::Std, "rpc"))` at
+analyzer.rs:36448, :36657 and :36921. Everything else the compiler holds
+by identity — `List`, `Map`, `Set`, `Shared`, `Context`, `JsonValue`,
+`Promise`, `operators` ×2, `drop` ×2, `task` ×2, `option`, `result`,
+`io`, `arena`, `boolean`, `native_map` — stays in `std::` by
+construction. One further site is inside the tree: `std/src/rpc.vl:1836`,
+the `service` macro's emitted import block, which names `std::rpc` and
+`std::reactive` in a string literal (and `std::wire`/`std::result`/
+`std::option`, which do not move).
+
+### 7.8 Migration sequencing
+
+**No deprecation is owed, and an alias window is not cheap.**
+`CHANGELOG.md`'s standing header is explicit: "Minor versions (`0.X`)
+may change the language, the standard library, and the wire protocol
+without a deprecation period." Beta is DEFERRED indefinitely (beta.md,
+2026-08-26), so the window in which this is free is open now and its
+closing date is unknown — which argues for doing it sooner rather than
+later. The kind-hearted instinct is a one-release alias (`std::ui` keeps
+resolving, with a warning). **It should be declined, on evidence:**
+deprecation.md §7's ship record says the machinery's "placement stays
+functions-only" and, explicitly, "an `import` line alone does not warn —
+the loader mints no value reference for it". An alias window would
+require the two things that record deferred (module-level placement and
+import-site warnings), built for a one-release lifetime, on the very
+seam that is moving. That is more machinery than the migration.
+
+**Buy the kindness on the failure path instead.** A moved import already
+fails at `analyzer.rs:24849` — `cannot find '{part}' in the imported
+path`. Add a 20-entry moved-stem table so the message steers: *"`ui`
+moved to the `vilan` namespace; use `import vilan::ui::…`"*. One
+diagnostic family, one table, deletable at any later train, and strictly
+better than a silent alias — it forces the fix and names it. This is the
+recommended kindness, and it is the answer to "is an alias window cheap
+enough to be kind": no, and it isn't the kind thing either.
+
+**The mechanical plan, in order:**
+
+1. **Clear the seam violation first, alone, on its own train.** Remove
+   `fs → crypto` (§7.4.3 option (b): zero surface impact). Nothing else
+   depends on this landing first, and it makes the partition
+   *representable*, which nothing else does.
+2. **Create the package.** `vilan/vilan/` beside `vilan/std/` and
+   `vilan/macro_std/`, with `[library] name = "vilan"` and both layers
+   (§7.5). The `[library] name` exemption ratified 2026-08-24 is exactly
+   what permits this: "a library's own name never binds an import root",
+   so `vilan` being a reserved *dependency* name does not block it being
+   a library's own name. **L12's reserved-names set needs nothing** —
+   §6's 2026-08-26 ship note already put `vilan` in it, for this. The
+   only follow-up is the comment at manifest.rs:1576–1600, whose text
+   ("held ahead of the official-package namespace re-ruling") describes a
+   ruling that has now happened.
+3. **Move the 20 files** (`git mv`, preserving `--follow` history for the
+   tier table's age column), and re-spell the 77 auxiliary→core imports
+   from `pkg::` to `std::`. Auxiliary→auxiliary imports keep `pkg::` and
+   cost nothing.
+4. **Teach the toolchain the third root.** `build.rs`'s
+   `for package in ["std", "macro_std"]` gains `"vilan"` (one line;
+   `CONTENT_HASH` covers it automatically). `std_dir`
+   (vilan-cli/src/main.rs:2588) and `resolve_std`
+   (vilan-core/src/manifest.rs:1032) gain a sibling resolver — the
+   pattern already exists at macros.rs:313, where `macro_std` is found
+   positionally from std's root. `analyzer.rs:36358` registers a second
+   global root; `Origin` (analyzer.rs:36391) gains a variant and the
+   canonical load order (the WO-1b comment at :36396–36403) gains a tier
+   between std and deps. **Expect the corpus byte-gate to move**: entity
+   ids are minted in load order, so the emitted declaration order shifts
+   for every program that touches a moved module. That diff is the
+   gate working, not a regression, but it wants its own commit.
+5. **Follow the 7 hardcoded sites** (§7.7) and the one emitted import
+   block at `rpc.vl:1836`.
+6. **Sweep the corpora** in descending order of size: crates fixtures
+   (654), docs fences (89), examples (46), website (34), corpus (17),
+   kolt (21). A whole-repo `sed` is **unsafe**: `crates/` is Rust, where
+   `std::fs`, `std::io`, `std::path` and `std::process` are Rust's own
+   and must not move. Restrict the sweep to the 20 moving stems, which
+   share no name with a Rust std module — that restriction is what makes
+   the edit mechanical.
+7. **Land the moved-name diagnostic** with (or just before) the sweep,
+   so the release that breaks the spelling is the release that explains
+   it.
+
+**CHANGELOG family: `breaking`** — L12's and the `vilan`-reservation's
+precedent, and the entry deserves the migration table inline (20 stems,
+old spelling → new). One entry, one bold head, per the writing note.
+
+**Docs and book.** The reference is organized by topic, not by module:
+18 pages under `docs/std/`, listed at `SUMMARY.md:34–51`. Six are wholly
+auxiliary (`reactive.md`, `style.md`, `rpc.md`, `browser.md`, `dev.md`,
+`markdown.md`); four are mixed and need either a split or a per-item
+namespace note (`net.md` — `fetch` core, `http`/`ws` auxiliary;
+`process.md` — `fs`/`process` core, the rest auxiliary; `encoding.md` —
+`json`/`base64`/`wire` core, `binary` auxiliary; `misc.md`). The rest are
+untouched. The part heading ("The std reference") wants renaming; the
+tiers page beta.md §5 specified — still unwritten — gains its namespace
+column at the same time. 517 mentions across 58 doc files, of which 89
+are compile-gated fences that the docs gate will catch automatically.
+
+**What breaks for kolt, the one real user.** 21 import lines across 9
+files (`src/{store,probe,views,app_context,client,routes,server,theme}.vl`
+plus `e2e/`), touching 11 moving modules — `reactive` ×5, `rpc` ×3,
+`router` ×3, `ui` ×2, `style` ×2, and one each of `rpc_server`, `http`,
+`document`, `db`, `build`, `asset`. Its core imports (`option`,
+`result`, `json`, `time`, `shared`, …) do not move. That is a
+single-pass edit and a rebuild, with the moved-name diagnostic naming
+every site. The in-flight `worktrees/connection-v3` branch carries a
+second copy (7 files, 21 mentions) and should be rebased after, not
+before. The one coordination point: kolt's migration is beta trigger
+condition (a), so this edit should not land mid-flight in a kolt arc.
+
+### 7.9 Owner questions
+
+Four, batched for one ruling. Everything not listed is proposed as
+tabled in §7.4.
+
+1. **The four core-side borderline rows: `fs`, `path`, `process`,
+   `fetch` — all `std::`?** Recommend yes, on the owner's own reasoning:
+   the ruling exists to keep CLI-only programs light, and these four are
+   what a CLI-only program is made of. The alternative reading — "browser
+   programs live without `fs`, so it is auxiliary" — makes the seam a
+   platform question, which `std`'s layer mechanism already answers
+   better. If any one moves, `std`'s process layer empties and the core
+   becomes fully platform-neutral; that is a tidier tree and a worse
+   answer to "what does a CLI program import".
+2. **`wire` stays `std::`, and `binary` and `base64` move/stay as
+   tabled?** `wire` is effectively forced (`std::json` imports it, and a
+   core→auxiliary edge is unrepresentable — §7.5), so the real question
+   is whether the owner would rather move `json` too. Recommend no:
+   `json` is compiler-known and the seam definition names it core.
+   `binary` → `vilan::` (5 sites) and `base64` → `std::` (2 sites) are
+   both cheap to rule either way; recommend as tabled.
+3. **`crypto` → `vilan::`, and how to clear the one seam violation?**
+   Recommend `vilan::crypto`, clearing `std/src/process/fs.vl:31` by
+   generating the temp-file suffix from `std::random` — zero surface
+   impact, no CHANGELOG entry. The alternative, re-homing `random_uuid`
+   into `std::random`, is a better-shaped surface and costs one
+   `breaking` entry; take it as a separate tidy if you want it. Third
+   option: `crypto` stays `std::` as a host-capability binding beside
+   `fetch`, which also clears the edge and moves one fewer module.
+4. **No alias window, plus the moved-name diagnostic?** Recommend yes.
+   Alpha owes nothing (CHANGELOG's standing header), and an alias would
+   need the module-placement and import-site-warning machinery
+   deprecation.md §7 explicitly deferred — built for one release, on the
+   seam that is moving. The steer on the existing failure path
+   (analyzer.rs:24849) is one diagnostic family, deletable later, and it
+   forces the fix rather than hiding it. Sub-question, if you want it
+   batched: **should the migration wait for kolt's current arc to
+   land?** Recommend yes — kolt's migration is beta trigger (a), and
+   re-spelling under it mid-flight buys nothing.
