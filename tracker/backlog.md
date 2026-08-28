@@ -23,17 +23,30 @@ The rules, tightened where the last tracker drifted:
   `OPEN (deferred: <demand gate>)` — same legend as before, plus the
   explicit deferred form for demand-gated items.
 
-**Owner questions parked in papers** (the recall surface — each waits on
-a ruling, none blocks unrelated work): optimistic-lifecycle.md §9 (the
-paint-less action-state cell; caller-less free `optimistic`),
-draft-reconnect.md §4 (default debounce for `bind_draft`), bindgen.md §8
-(Q1/Q2/Q3/Q6). RULED 2026-08-18, all as recommended: beta.md §4,
-design-language.md §3, method-resolution.md §13.6, const-eval.md §10.5
-(Option A). RULED 2026-08-19, all as recommended: remote-sources.md §6
-(A25 — `sub` keeps `|T|`, no `Stale`, `Waiting`/`Ready` + `or`, deferred
-`Unsubscribe`), docs-port.md §4 (K6 — option B; accept the prerequisite
-filing as K13; chrome mechanism (i); keep `/docs/` anchors; keep search,
-index weight = N14; `header.hbs`; no `&v=` pin).
+**Owner questions parked in papers and on items** (the recall surface,
+rebuilt 2026-08-28 — each waits on a ruling, none blocks unrelated
+work): optimistic-lifecycle.md §9 (the paint-less action-state cell;
+whether the free `optimistic` survives it), draft-reconnect.md §4
+(default debounce for `bind_draft`), bindgen.md §8 Q1/Q2/Q3/Q6,
+filesystem.md §12 Q2+Q6 (Q1/Q3/Q5 RULED 2026-08-27; Q4 answered in
+code — `Entry` shipped boolean-shaped with S2), css-block.md §12 Q2–Q6
+(Q1 answered in code — the trait shipped as `CssValue`; Q3's
+v0.40.0-deadline wording is void now that beta is deferred, though the
+keyword question itself stands), build-hooks.md §10 Q1–Q7, kolt.local
+025(b) (the `serve_build` caching policy — re-opens the fullstack-dx
+§5.10 fence), kolt.local 008 (the preflight reset's contents and
+opt-in shape), E97 (the mutex-poisoning posture — pick one and write
+down why), A26 (does a failed `__attach` get the contract-mismatch
+`Closed` treatment — a ruling, not a patch), N17 (the full-repo
+per-item migration's open questions, waiting per the 2026-08-26
+kolt.local-only scoping), beta.md §5.1 (the tier table — DEFERRED
+2026-08-20, re-present with the beta switch's pre-work, not before).
+RULED 2026-08-26, as recommended: markdown.md §11 (K13's watcher —
+recorded inputs, never the wide glob; built at the docs-app rung).
+RULED 2026-08-27, recorded on their items: kolt.local 031 Q1 ((a)+(c)
+scoped to `File` — S3 unblocked), Q3 (delete `fs::exists`), Q5 (the
+sixteen free functions stand); kolt.local 014 DELETE, merged with 009
+into one relation axis — Order 17 builds both.
 
 ## Now / Next / Later
 
