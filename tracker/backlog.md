@@ -27,11 +27,7 @@ The rules, tightened where the last tracker drifted:
 rebuilt 2026-08-28 twice — each waits on a ruling, none blocks
 unrelated work). STILL OPEN: optimistic-lifecycle.md §9 (the paint-less
 action-state cell; whether the free `optimistic` survives it),
-css-block.md §12 Q6 (a CSS-flavored media spelling inside a block —
-unruled; v1 keeps method spellings) and the §5.4 headed-form fork
-(no deadline under the beta deferral), N8's 404-shim sunset condition
-(proposed "at the beta switch" — now indefinite; awaiting the owner's
-pick), beta.md §5.1 (the tier table — DEFERRED 2026-08-20, re-present
+beta.md §5.1 (the tier table — DEFERRED 2026-08-20, re-present
 with the beta switch's pre-work, not before).
 **RULED 2026-08-28, the owner's batch on the Order 17 close report**
 (each recorded at its home): ui-styling §0bis.6 RATIFIED (both
@@ -41,7 +37,11 @@ unblocked); build-hooks §10 Q1–Q7 as recommended (S1 unblocked; tier
 flagged highest-unknown-cost); G7 as recommended (emit-time
 reserved-kind refusal); C11 "write the paper — those should not leak"
 (direction ruled: temporaries must drop; mechanics to the paper);
-filesystem §12 Q6 — 020 owns the whole watch surface; kolt.local
+filesystem §12 Q6 — 020 owns the whole watch surface; css-block Q3
+"take the keyword" (`css` becomes a hard keyword, three std renames,
+breaking) and Q6 as recommended (method spelling — the §12 note has
+the full batch); N8's shim REMOVED same day (the owner: alpha, no
+traction — let the old links die; executed, pages fe4bc73); kolt.local
 025(b) — an OPT-IN caching hook on `serve_build`, never default;
 kolt.local 008 — an opinionated Tailwind-scope preflight, plus
 `display: block` for buttons/anchors/selects, opt-in and opt-out-able;
@@ -956,22 +956,6 @@ npm's `0.0.0-placeholder` and the homebrew formula's 0.14.0 seed pin
 (both deliberate and test-documented), the bindgen module's 63
 `TODO(bindgen)` hits (an emission vocabulary, not debt), and the
 README/CHANGELOG alpha framing (correct until the beta switch — §L).
-
-8. **Pages repo housekeeping** (S–M umbrella)
-   STATUS: OPEN (narrowed 2026-08-20 — the three orphaned brand files are deleted and the 404 shim's sunset is PROPOSED in the pages README ("at the beta switch", proposed-not-ruled — the one open half); N12's README shipped 2026-08-19; K12/N13 closed 2026-08-20)
-   The local checkout is 41 commits behind its origin (refresh before
-   trusting any file-presence claim there — the survey's "no sitemap"
-   class of findings were checkout staleness, not site defects). Then:
-   no README distinguishing bot-generated files (`docs/`, `index.html`,
-   `client.*`, `playground/` — pushed by two different workflows) from
-   hand-owned (`assets/`); three orphaned brand files nothing
-   references (`icon-512.png`, `light_lockup.png`,
-   `dark_wordmark_flat.svg` — delete); the pre-v0.15 `404.html`
-   deep-link shim deserves a recorded sunset condition. (The
-   `book.toml` leak and mdBook fonts rode K6 — both closed 2026-08-19;
-   the README is N12, shipped the same day, and names `chrome/` as the
-   new bot-owned prefix; the stale-checkout note is moot — pulled
-   2026-08-19; wasm retention is K11.)
 
 16. **NEW — the recurring codebase audit** (RECURRING; the owner's standing ask, filed 2026-08-25)
     STATUS: RECURRING — one audit lane every other work order, rotating
