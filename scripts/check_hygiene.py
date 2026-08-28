@@ -7,6 +7,9 @@ home paths, personal mailboxes, pre-migration owner strings — as one
 script, one workflow. The fourth check (index completeness: every paper
 has exactly one row in proposal/README.md) is the gate the compiler repo
 never had; it would have caught the duplicated design-language.md row.
+The fifth (tracker N24) is the per-item tracker link rule: a `[[name]]`
+cite in a tracked `projects/<project>/tracker/` file must resolve to a
+live item file or to that tracker's archive.
 
 Needles are assembled at runtime so this file never trips itself.
 """
@@ -118,6 +121,49 @@ def main():
                 f"proposal/README.md: `{row}` appears in {count} rows "
                 "(want exactly 1)"
             )
+
+    # Dangling per-item tracker cites (tracker N24): closing an item
+    # DELETES its `items/<ID>.md` and leaves a tombstone in archive.md,
+    # so a `[[cite]]` of a closed item dangles unless the archive still
+    # names it. Rule: every `[[name]]` in a tracked file under
+    # `projects/<project>/tracker/` resolves to the live
+    # `projects/<project>/tracker/items/<name>.md`, or to a mention in
+    # that tracker's `archive.md`. Scope is deliberate — the `[[...]]`
+    # cite convention belongs to the per-item format (projects/README.md),
+    # and the wider repo uses the same brackets for TOML array-of-tables
+    # headers and nested array types, which are not cites.
+    # STRUCTURAL LIMIT, recorded here and on N24: this gate scans TRACKED
+    # files only, so a gitignored `.local` tracker (projects/*.local/) is
+    # invisible to it by construction — there, dangling-cite hygiene is
+    # convention, recorded on N24, not enforcement. When N17's migration
+    # lands tracked per-item trackers, this rule covers them from day one.
+    tracked_names = {name for name, _ in files}
+    cite_pattern = re.compile(r"\[\[([^\[\]\n]+)\]\]")
+    archive_texts = {
+        name.split("/")[1]: body
+        for name, body in files
+        if re.fullmatch(r"projects/[^/]+/tracker/archive\.md", name)
+    }
+    for name, text in files:
+        parts = name.split("/")
+        if len(parts) < 4 or parts[0] != "projects" or parts[2] != "tracker":
+            continue
+        project = parts[1]
+        archive_text = archive_texts.get(project, "")
+        for number, line in enumerate(text.splitlines(), 1):
+            for cite in cite_pattern.findall(line):
+                if f"projects/{project}/tracker/items/{cite}.md" in tracked_names:
+                    continue
+                if re.search(
+                    r"(?<![0-9A-Za-z_-])" + re.escape(cite) + r"(?![0-9A-Za-z_-])",
+                    archive_text,
+                ):
+                    continue
+                offenders.append(
+                    f"{name}:{number}: dangling item cite [[{cite}]]: no "
+                    f"items/{cite}.md, and the tracker's archive.md never "
+                    "names it"
+                )
 
     if offenders:
         print("hygiene offenders:")

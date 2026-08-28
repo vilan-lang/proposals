@@ -1076,7 +1076,7 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     leaves the instrument lopsided.
 
 24. **NEW — an archived per-item tracker file is deleted, so every `[[link]]` to it dangles** (S; found by Order 16's `asset-bundle` lane, 2026-08-27)
-    STATUS: OPEN — N17's format question, found by a consumer
+    STATUS: FIXED 2026-08-28 (Order 17, lane hygiene-smalls) — the gate rule below; `.local` trackers stay convention-covered, recorded not enforced
     A lane told to read kolt.local 029's see-alsos reported that "items 018,
     024 and 030 do not exist" — correct: they shipped, and closing an item
     **deletes `items/NNN.md`** and moves a tombstone paragraph into
@@ -1088,6 +1088,24 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     per-file layout mirroring `items/`, or a link-checking gate that fails on
     a dangling `[[…]]`. The last one is the smallest and catches the class
     rather than the instance.
+    FIXED 2026-08-28 (Order 17, lane hygiene-smalls): the smallest option
+    built — a fifth rule in `scripts/check_hygiene.py`: every `[[name]]`
+    cite in a tracked file under `projects/<project>/tracker/` must resolve
+    to the live `items/<name>.md` or to a mention in that tracker's
+    `archive.md` (closing an item deletes its file, so archived IDs resolve
+    through the tombstone). Scope is deliberate — the cite convention
+    belongs to the per-item format, and the wider repo uses the same
+    brackets for TOML tables and nested array types. Plant-proven four
+    ways: a staged dangling cite fails; a live item file resolves; an
+    archive tombstone resolves; a superstring in the archive (`1019` for
+    `[[019]]`) does not. The repo as it stands passes — no tracked
+    per-item tracker exists yet, so the rule's first real customers arrive
+    with N17's migration, covered from day one. STRUCTURAL LIMIT, stated
+    at the gate too: the gate scans TRACKED files only, so a gitignored
+    `.local` tracker (kolt.local — the pilot where this class was found —
+    included) is invisible to it by construction; there, dangling-cite
+    hygiene is convention carried by this record and projects/README.md's
+    closing discipline, not enforcement.
 
 25. **NEW — `fs::read_dir_all` entries carry the HOST path separator** (S; found by Order 16's `path-tooling` lane, 2026-08-27)
     STATUS: **CLOSED 2026-08-27** (`cc5c1569`) — and it was the last red test
