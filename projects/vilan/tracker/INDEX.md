@@ -99,7 +99,6 @@
 | ID | Title | Kind | Discussion |
 |----|-------|------|------------|
 | [N16](items/N16.md) | NEW — the recurring codebase audit | process | |
-| [N17](items/N17.md) | NEW — per-item tracker files: restructure the repo under the `projects/` format | design | |
 | [N20](items/N20.md) | NEW — `.claude/` is live configuration that no gate can see, and it had three dead pointers in it | process | |
 | [N21](items/N21.md) | `cargo fmt` is gated; the clippy and cargo-audit legs remain | process | |
 | [N23](items/N23.md) | NEW — 37 `pub` items in `vilan-core` are never referenced outside their own file | process | |
