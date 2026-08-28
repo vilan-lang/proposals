@@ -201,7 +201,8 @@ is proven. Homebrew tap alongside it.
 
 `.github/workflows/release.yml`, triggered by pushing a `v*` tag:
 
-1. **Gate**: the suite on linux, run with **exactly the command `ci.yml`
+1. **Gate**: the suite on **both CI platforms — ubuntu and windows, the
+   same matrix `ci.yml` tests** — run with **exactly the command `ci.yml`
    runs** — `cargo nextest run --workspace`, plus the
    `cargo test --workspace --doc` leg that nextest does not cover. The
    corpus, the docs gate, the walkthrough build and hygiene are all inside
@@ -221,6 +222,17 @@ is proven. Homebrew tap alongside it.
    character for character, and change them together
    (`proposal/process.md` §7.2 and §8.1 — the highest-priority item in
    that paper).
+
+   And until 2026-08-28 the same lesson had only been half-learned
+   (backlog L17): the *command* was identical while the *platforms* were
+   not — this step ran `ubuntu-latest` only, `ci.yml` a ubuntu+windows
+   matrix — so the gate authorizing a publish was strictly weaker than the
+   gate deciding a commit is green, in exactly the dimension the
+   windows-support arc had made load-bearing. v0.37.0 was tagged and
+   published on a tree whose Windows CI leg had been red for days. The
+   gate now runs the same platform matrix as `ci.yml`, and the two-sided
+   rule extends to it: change the matrix and the commands together, or not
+   at all.
 2. **Changelog check**: `CHANGELOG.md` contains a section for this
    version.
 3. **Build matrix**: the targets above, `--release` with
@@ -376,8 +388,36 @@ and 5 are the human's, and `cut-release.sh` finishes by printing them verbatim.
    parity count, markers against heads under `## Unreleased`, which must be
    equal:
    `awk '/^## Unreleased/{p=1;next} /^## /{p=0} p&&/^<!-- family:/{m++} p&&/^\*\*/{h++} END{print m+0, h+0}' CHANGELOG.md`
-4. **Commit, tag, push.** A `release: v<version>` commit on `next`, tagged
+4. **Commit, tag, push — and no tag over unverified CI** (2026-08-28,
+   backlog L17). A `release: v<version>` commit on `next`, tagged
    `v<version>`; push `next` and the tag.
+
+   **Before anything is tagged, `ci.yml` must be verified GREEN on origin
+   for the exact commit the cut is against — both platforms — and
+   `cut-release.sh`'s refusal is the enforcement.** The script performs
+   the read on every run, via `gh run list` at that commit's sha (the
+   trustworthy read — step 9 already records that the Pages builds
+   endpoint lags; run lists do not), and anything but a completed,
+   successful run refuses the cut naming its state and remedy: red says
+   fix the tree, pending says wait, absent says push the commit and let CI
+   finish — and *cannot look* (no `gh`, no `origin`, unreachable) is its
+   own refusal, never a silent pass, because unverified is not green.
+   `--allow-red-ci` is the deliberate override for the day the gate itself
+   is what is broken, and it prints what it is riding over, loudly. (In
+   the train flow the tag lands on the `release:` commit the script writes
+   on top of the verified one; that commit adds only the changelog
+   retitle and the version stamps, and `release.yml`'s gate — §7 step 1,
+   the same platform matrix since the same day — re-runs the full suite
+   on the tagged tree itself.)
+
+   Written in after v0.37.0, which was tagged and published while its
+   Windows CI leg had been red since before the cycle began: the
+   orchestrator ran the union suite locally (linux, 4409/4409) and
+   treated that as the gate — which is what the local discipline said —
+   while `release.yml`'s gate ran ubuntu only, and nothing in this
+   sequence said to check CI on the commit being tagged. Now it does, and
+   the script refuses rather than the human remembering — the L11 lesson,
+   applied to CI.
 5. **Watch `release.yml`.** The tag push is the trigger. Ten assets, five
    publish channels, several of them one-way — an npm version can be
    deprecated but never replaced. Do not walk away from a red publish leg.
