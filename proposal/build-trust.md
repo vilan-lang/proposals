@@ -3,11 +3,14 @@
 > Status: **RULED 2026-08-26** by the owner, both tiers as proposed. Tier 1
 > BUILT the same day (cycle 30, work order 12, lane `build-trust`): the docs
 > sentence landed in the book, the spec, the tour, the CLI appendix, and the
-> hook's own code comment. Tier 2 is a **ruling with no enforcement point
-> today** — dependencies cannot carry build hooks, so nothing enforces it and
-> nothing needs to; it is the constraint that kolt.local 027 and the registry
-> work (tracker §D item 5, "D5") build to. Tracker: `../tracker/backlog.md`
-> §E item 96.
+> hook's own code comment. Tier 2 was ~~a ruling with no enforcement point
+> today~~ **BUILT 2026-08-28** (cycle 36, work order 18, lane
+> `build-hooks-s1s2`), under the owner's Q6 ruling on `build-hooks.md`: the
+> threshold is the git dependency, i.e. now, not the registry. The opt-in is
+> spelled (`build-hooks = true` on the dependency's declaration), every
+> dependency hook is refused, and the refusal is said out loud. §3's
+> SUPERSEDED block and §4's SETTLED note carry it. Tracker:
+> `../tracker/backlog.md` §E item 96.
 >
 > The owner also required **strict security here before beta**, not at it —
 > recorded as a standing bar in `beta.md` §2's "Before" list, alongside the
@@ -135,11 +138,45 @@ Three properties the opt-in must have, ruled with it:
   builds fine and its hook does not run; that is a normal outcome, not an
   error to be dismissed.
 
-**There is no enforcement point today.** Dependencies cannot carry hooks —
+~~**There is no enforcement point today.** Dependencies cannot carry hooks —
 §2.1's `Project::hooks` never reaches a dependency's manifest — so this tier
-ships as a constraint, not as code. Deciding it now was the point: it was
+ships as a constraint, not as code.~~ Deciding it now was the point: it was
 decided while the registry and 027 are still on paper, when the decision is
 free.
+
+**SUPERSEDED 2026-08-28 (Order 18, lane `build-hooks-s1s2`), and the struck
+sentence was the load-bearing half.** §4's correction had already established
+that third-party code reaches the machine on an ordinary `vilan build`; the
+owner's Q6 ruling on `build-hooks.md` then set the threshold **here, now**,
+and S2 built it. What shipped:
+
+- **The opt-in's spelling is `build-hooks = true`, on the dependency's own
+  declaration** — `icons = { git = "…", tag = "v1.2.0", build-hooks = true }`.
+  It satisfies the three properties above by construction: per dependency
+  (there is no project-wide spelling to write), recorded in the manifest, and
+  absent means no. `false` is accepted and means what absence means, because a
+  considered "no" is worth being able to write down. It lives on the
+  declaration rather than in a grant table of its own for two reasons that are
+  properties rather than taste: **you cannot grant what you do not declare**,
+  so no grant can name a package that is not in the graph, and **removing the
+  dependency removes the grant**, so a grant cannot outlive its subject. An
+  inherited dependency (`project = true`) cannot carry it — trust travels with
+  the whole declaration it inherits, so the grant belongs in
+  `[project.dependencies]` beside the source.
+- **Nothing honors it.** Every dependency hook is refused, opted in or not.
+  Shipping the syntax ahead of the mechanism is the whole point: it is fixed
+  and reviewable *before* anything can cross it, and a registry inherits a
+  spelling instead of minting one under pressure.
+- **The silence is closed.** §3's third property said "absent means no"; what
+  the terminal actually did was say nothing at all, which is
+  indistinguishable from the toolchain never having looked. A dependency
+  declaring a hook now gets one dim `note:` line, once per build, naming it —
+  a note, never a warning, because this bullet's own words forbid making a
+  normal outcome an error to be dismissed. The exit code is unchanged.
+
+So this tier is no longer "a constraint, not code". It is code that refuses,
+which is a different and better thing to be: the refusal is now observable,
+and the grant that will one day lift it is already spelled.
 
 ## 4. What must build to this
 
@@ -180,6 +217,19 @@ free.
   Recorded rather than silently repaired because the wrong citation is the
   more interesting half: a ruling that names its enforcement point in a
   tracker item nobody owns reads as scheduled when it is not.
+  **SETTLED 2026-08-28 (the owner's Q6 ruling on `build-hooks.md`, built the
+  same day by Order 18's `build-hooks-s1s2` lane): the threshold is the git
+  dependency, i.e. now.** The registry is not tier 2's enforcement point and
+  never was one it could be pinned to — it raises the *volume* of third-party
+  code, not its *kind*. The opt-in's spelling, the refusal, and the note are
+  §3's now (see the SUPERSEDED block there); a registry inherits them and adds
+  only what is genuinely its own — resolution rules, and the transitive
+  question this paper still does not answer. **What a transitive dependency's
+  grant means is deliberately open**, and it stays cheap to leave open only
+  because nothing runs: today a grant is recorded wherever it is written and
+  honored nowhere, so the reading that a dependency must not be able to grant
+  execution to *its own* dependency has not yet had to be enforced. It has to
+  be settled before the first hook runs.
 - **`beta.md` §2** already holds the schedule half: strict security here is a
   standing bar the switch does not cross without. The reason is structural —
   beta is the posture in which somebody other than the author runs `vilan
@@ -190,6 +240,10 @@ free.
 
 - It does not specify tier 2's manifest syntax. That belongs with the design
   that first has a dependency hook to opt into (§4), against §3's properties.
+  **DISCHARGED 2026-08-28**: that design turned out to be `build-hooks.md`
+  rather than the registry, and its S2 spelled the key — `build-hooks = true`,
+  per §3's three properties, shipped refusing everything. Recorded here rather
+  than copied: §3's SUPERSEDED block is its one home.
 - It does not sandbox tier 1, or propose to. The ruling is that first-party
   build code runs as the developer; a sandbox would be a different ruling and
   would break every hook that exists to touch the filesystem.
