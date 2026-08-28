@@ -156,7 +156,10 @@ and tracker stay together.**
   integration session merges both repos at cycle close; the memory files
   and brief templates that hardcode `vilan/proposal/…` update at cutover
   (they live outside the repo, so this is a checklist item, not a
-  commit).
+  commit). *Post-cutover note (2026-08-28): that checklist item slipped —
+  Order 16's launch (2026-08-27) found all three `.claude/agents/*.md`
+  still pointing at the pre-N15 path and fixed them; the structural gap
+  (no gate can see `.claude/`) is tracker N20.*
 
 ## 5. What breaks, and the fix list
 

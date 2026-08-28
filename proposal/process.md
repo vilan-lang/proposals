@@ -525,9 +525,10 @@ detector one thing to pick. See the open questions.
 The governing principle: **do not write documents that describe things which
 do not exist.** At one maintainer and zero forks, a governance model, a
 maintainer ladder, an RFC process with numbers and comment periods, and a
-triage rota are all fiction. `vilan/proposal/` already *is* the RFC process,
-it demonstrably works, and its public form is one paragraph in
-`CONTRIBUTING.md` — not a new mechanism.
+triage rota are all fiction. The proposals repo (`vilan-lang/proposals`,
+its `proposal/` directory) already *is* the RFC process, it demonstrably
+works, and its public form is one paragraph in `CONTRIBUTING.md` — not a
+new mechanism.
 
 **Slice 1 — before any promotion. This is what D5's session unblocks.**
 
@@ -545,9 +546,9 @@ it demonstrably works, and its public form is one paragraph in
 
    Plus the two things `AGENTS.md` does not need to say and a stranger does:
 
-   - **design lands in `vilan/proposal/` before code.** Say it early and say
-     it kindly, so nobody writes a feature that gets rejected on semantics
-     after a weekend of work.
+   - **design lands in the `vilan-lang/proposals` repo (`proposal/…`)
+     before code.** Say it early and say it kindly, so nobody writes a
+     feature that gets rejected on semantics after a weekend of work.
    - **what will not be accepted**, stated plainly: a special case that
      quiets a checker it should have failed; any change that weakens a gate
      in order to pass it. Both are already stop conditions internally; both

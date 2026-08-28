@@ -1047,7 +1047,7 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     text. Fix is pin the toolchain, land the reformat once, add the check.
 
 22. **NEW — eight source comments and two published documents still cite the tombstoned `vilan/proposal/`** (S; N16 audit run 2, 2026-08-27)
-    STATUS: OPEN
+    STATUS: FIXED 2026-08-28 (Order 17, lane hygiene-smalls) — all ten sites, across the three repos; record at the entry's tail
     N15's cutover moved the papers to `vilan-lang/proposals`; `vilan/proposal/`
     holds one tombstone README. Still pointing readers at it:
     `crates/vilan-core/tests/inference.rs:6, :51814, :52815, :53305, :64409`;
@@ -1062,6 +1062,24 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     N16's own record half-shipped here: `proposals-repo.md:174`'s reword
     landed, `:157`'s "brief templates that hardcode `vilan/proposal/…` update
     at cutover" did not.
+    FIXED 2026-08-28 (Order 17, lane hygiene-smalls). The eight comments
+    (line numbers had drifted; today's inference.rs sites are :6, :52203,
+    :53204, :53694, :64798) now spell the bare `proposal/X.md` citation
+    form — each file's own majority convention, and the form the freeze
+    banner promises resolves verbatim in the proposals repo. process.md's
+    CONTRIBUTING sketch names `vilan-lang/proposals` outright (its §4.2
+    premise sentence two paragraphs up, same dead path, fixed with it);
+    `proposals-repo.md:157` carries a dated post-cutover note (the
+    checklist item slipped — Order 16 found and fixed the three agent
+    files; the structural gap is N20); the pages README's two cites name
+    the proposals repo (N13's, its tracker archive). Deliberately left,
+    triaged not missed: CHANGELOG.md's five (release history quotes its
+    records as published), ci.yml:84 and cut-release.sh's exclusion
+    (both ABOUT the tombstone path, and functional), docs-port.md:1108
+    (a verbatim dated suite-run record), docs-site.md:37 (a pre-move
+    paper's non-goal, historical), and this repo's README/proposals-repo
+    (the migration is their subject). The vilan and pages halves ride
+    this lane's branches in those repos.
 
 23. **NEW — 37 `pub` items in `vilan-core` are never referenced outside their own file** (S, mechanical; N16 audit run 2, 2026-08-27)
     STATUS: OPEN (low priority — over-exposure, not rot)
