@@ -53,6 +53,47 @@
 > tempting. §11's sequencing for S2 and §10's glue claim were both wrong
 > and are struck below. **S3 (the handle) now waits on Q1 alone** — B141,
 > its other prerequisite, was fixed in Order 13.
+>
+> **SHIP NOTE, 2026-08-28 (cycle 35, order 17, lane `fs-handles`, vilan
+> d359131b).** S3 SHIPPED WHOLE — the handle tier as §3.2 drew it. `File`
+> is a `resource external struct` on the `Database` template, with one
+> mechanical divergence §3.2 did not draw: the host's open is a *module
+> function*, not a constructor, so there is no extern-new — the five
+> constructors are plain associated funs over one raw `open(path, flags)`
+> extern, and the flags string stays unspellable from user code.
+> Positional `read_at`/`write_at` ride the 4-argument host form
+> (`read(buffer, offset, length, position)` — every argument explicit, no
+> overload, no version cliff), with the `{ bytesRead }`/`{ bytesWritten }`
+> results read through opaque raw structs; handle `stat` returns a bare
+> `Stat` (no `Option` — the handle is open, and no TOCTOU window exists
+> between probe and act, pinned by unlinking the path under an open handle
+> and reading on); `truncate`, `sync`, `data_sync` complete the tier, and
+> `sync` closes §5.2's durability gap. Q1 was applied exactly as ruled
+> (§5.1's ruling record) and took TWO glue seams: `__fs_close` for the
+> destructor, `__fs_close_awaited` for `with_file`. Q2 was built as
+> recommended (§12). Q3 was executed, family breaking — and its real
+> blast radius was ~20 sites, not §1's three: the consumer census counted
+> std and the examples, but the *test tree* had made `exists` its
+> canonical `@process` function precisely because it was synchronous —
+> nine coloring pins and five e2e probe programs — and the
+> module-initializer coloring pins could not migrate to any fs function
+> at all (a module-level `let` cannot await, and the module is now async
+> end to end), so they stand on `std::process::env` and a module-level
+> `Database` now. B141's two broken spellings are pinned POSITIVE (corpus
+> `file.vl`, runtime e2e, typing pin) — §11.1 inverted into a gate. The
+> Drop wiring and the awaited close were both plant-proved red-first
+> (§11.1's and §5's amendments carry the details), and the full workspace
+> suite closed at 4433 passed, exit 0.
+>
+> **Two claims S3 disproved are struck where made**: §5's module-level
+> `File` bullet (inexpressible — async constructors × the
+> module-initializer rule) and §11.1's clean bill for the chained idiom
+> (the value is right; the temporary handle is never closed — a
+> pre-existing, `Database`-included gap in temporary-resource teardown,
+> recorded there as an owner question, deliberately not fixed en
+> passant). One scope note: `with_file` opens read-mode, matching
+> §5.1(c)'s sketch; whether writing bodies get scoped forms is left for
+> S5's ergonomics pass alongside `Reader`.
 
 
 ## 1. What exists, measured
@@ -487,8 +528,17 @@ resource:
 - **R7** — no conditional moves: `let f = open(); if c { consume(f); }` is
   an error, so scope-end ownership stays static and no runtime drop flags
   are needed.
-- **Module-level `File` never drops** and is **loan-only** — process
-  lifetime, the serve-forever idiom, exactly `Database`'s.
+- ~~**Module-level `File` never drops** and is **loan-only** — process
+  lifetime, the serve-forever idiom, exactly `Database`'s.~~ **DISPROVED
+  BY S3 (2026-08-28): a module-level `File` is inexpressible.** Every
+  constructor is async (`fsPromises.open` is), and a module-level
+  initializer cannot await — §J.3, the model's one hard rule, the same
+  rule §4 of this paper leans on. `Database` escapes only because
+  `node:sqlite`'s open is synchronous. The serve-forever handle is a
+  LOCAL in `main` instead: owning across awaits is legal, and a `main`
+  that never returns never drops it. Pinned
+  (`a_module_level_file_initializer_is_refused_for_awaiting`), and the
+  docs teach the `main`-local idiom.
 - **Across `await`** — owning a `File` across a suspension is legal; frames
   own their locals. This matters a great deal here, since every method on
   the handle suspends.
@@ -578,6 +628,21 @@ made if `node:sqlite` had forced the question. This is **Open question
 Q1** (§12) — it is the one call this paper cannot make for the owner,
 because it decides whether `drop`'s synchronicity is a v1 simplification or
 a law.
+
+**RULED 2026-08-27, BUILT 2026-08-28 (S3).** The owner: "Do (a)+(c) but
+don't make this a general rule; just apply it for File." Exactly the
+recommendation, with its scope cut to the narrowest form: `File`'s `drop`
+initiates the close without awaiting it, `with_file` is the documented
+idiom whose close IS awaited, `Drop` is the safety net — and
+destruction.md's "drop is synchronous in v1" is NOT reopened as a general
+law. The deeper question was declined rather than answered; the next
+resource with asynchronous host teardown argues its own case.
+Mechanically the ruling took two glue seams, not one: `__fs_close`
+(drop's fire-and-forget, the rejection routed to stderr) and
+`__fs_close_awaited` (`with_file`'s awaited close — an awaited close with
+no public method surface cannot be spelled binding-side). The destructor
+still runs behind `with_file` and re-enters `close()`; benign, because
+the host close is idempotent (probed before building on it).
 
 ### 5.2 `sync()` is the durability primitive and it only exists on a handle
 
@@ -926,9 +991,13 @@ bindings.**
   of its own, and **SHIPPED in S1's commit**.
 - **S3 — the handle** (§3.2, §5). `File`, the five constructors, positional
   read/write, `stat`, `truncate`, `sync`, the `Drop` ruling, `with_file`.
-  **Gated on Q1** (§12), and **blocked on B141** (below). This is the big
+  ~~**Gated on Q1** (§12), and **blocked on B141** (below).~~ This is the big
   piece and it unlocks incremental reads, durability, and TOCTOU-free
-  read-then-act.
+  read-then-act. **SHIPPED WHOLE 2026-08-28 (cycle 35, Order 17, lane
+  `fs-handles`) — see the ship note at the top.** Q1 was ruled 2026-08-27
+  ((a)+(c), `File`-scoped; §5.1's ruling record); B141 had been fixed in
+  Order 13, and §11.1's argument now runs inverted — its two broken
+  spellings ride S3 as positive gates.
 - **S4 — watch** (§8). `Watcher` as a resource, answering 020. Independent
   of S3 in implementation but should follow it so that the two resource
   handles are designed to match rather than converge later.
@@ -959,6 +1028,21 @@ type-checked API that returns `undefined` in its most natural spelling.
 **B141 is therefore not "a bug we should also fix" — it is S3's
 prerequisite**, and this paper recommends it be sequenced as one.
 
+**GATE INVERTED AT SHIP (2026-08-28).** B141 was fixed in Order 13, and
+S3 pins both spellings above POSITIVE — a corpus golden
+(`vilan/test/file.vl`), a runtime e2e that prints the read count and the
+size, and a typing pin. One honesty note the fix does not cover, found
+while generating that golden: the chained spelling's temporary handle is
+never CLOSED. The drop planner tracks *bindings*, and a resource born and
+consumed as an expression temporary is neither dropped nor rejected — on
+`File` and `Database` alike (verified: `Database::open(":memory:").exec(…)`
+emits no close at all). The value is right; the handle leaks until
+process exit, and `Drop`'s safety net does not reach it. Whether the
+lifted temporary should drop at scope end, drop at statement end, or be
+rejected outright is a destruction-semantics call this paper does not own
+and leaves to the owner — flagged in the ship note, deliberately not
+"fixed" en passant.
+
 ## 12. Open questions for the owner
 
 Each is answerable on its own; none blocks S1 or S2.
@@ -974,18 +1058,27 @@ Each is answerable on its own; none blocks S1 or S2.
   owner is really being asked: is `destruction.md`'s "drop is synchronous
   in v1" a simplification that async teardown may later revisit, or a law?
   `File` is the first resource in std to put weight on the answer.
+  **RULED 2026-08-27: (a)+(c), scoped to `File` only — §5.1's ruling
+  record. The deeper question was deliberately left open.**
 - **Q2 — incremental reads: positional primitive, or cursored?** (§3.4.)
   Recommendation: positional `read_at`/`write_at` as the primitive, with a
   `Reader` wrapper deferred to S5 — because a cursor can be built from a
   position and a position cannot be recovered from a cursor, and node's
   implicit-position mode would put hidden mutable state behind a `&self`
-  loan.
+  loan. **BUILT AS RECOMMENDED 2026-08-28 (S3): the positional pair
+  shipped (4-argument host form, offset and length explicit); `Reader`
+  stays S5. The recommendation is load-bearing surface now rather than a
+  pending question.**
 - **Q3 — does `exists` survive?** (§4.2.) It is a synchronous binding whose
   justification is a category ("boot code"), all three of its callers are
   already async, and `stat(path).is_some()` answers strictly more. Delete
   it, make it async, or keep it with a named module-level caller. This
   overlaps 030's sync sweep and should probably be ruled there; it is
-  raised here because the rule in §4 is what condemns it.
+  raised here because the rule in §4 is what condemns it. **RULED
+  2026-08-27: DELETED, family breaking — executed in S3's commit. The
+  real blast radius is recorded in the ship note: ~20 sites, because the
+  test tree had made `exists` its canonical `@process` function precisely
+  for its syncness.**
 - **Q4 — `Entry`'s kind: three booleans or an enum?** (§7.) Recommendation:
   booleans, because a host dirent has nine kinds and an enum must either
   model five nobody will meet or carry a catch-all that means "one of
@@ -996,7 +1089,8 @@ Each is answerable on its own; none blocks S1 or S2.
   that none of them holds state. If the owner wants a genuinely small tier,
   the cut is to drop the `_all` recursive directory variants and the
   `_atomic` byte twin and let callers compose — at the cost of the
-  composition being wrong in ways `{ recursive: true }` is not.
+  composition being wrong in ways `{ recursive: true }` is not. **RULED
+  2026-08-27: the sixteen stand ("That's fine"). No cuts.**
 - **Q6 — does this paper's name and scope stand?** It is proposed as
   `proposal/filesystem.md` (subject-named, like `markdown.md` and
   `destruction.md`; `fs.md` reads as a module note rather than a design).
