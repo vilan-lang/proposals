@@ -494,7 +494,26 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
   annotations) and the dry-run rerun is CLEAN: zero reds, "ci.yml is
   green on origin", 13 entries ordered — the cut is one command away
   whenever the owner calls it. release.yml's own widened gate still
-  awaits its first tag to prove live. LESSONS: lanes
+  awaits its first tag to prove live.
+  **Order 18 (cycle 36) ACTIVE 2026-08-28** — the ruling batch, built.
+  TWO WAVES around the serial pre-step: b145-split first (inference.rs
+  split by SUBJECT MODULES under one test binary — tests/inference/ —
+  so the suite keeps one link, the conflict magnet dies, and this
+  order's own lanes append to the new files; analyzer half re-measured
+  only), launched alongside the four lanes that never touch it:
+  c11-paper (the expression-temporary drop paper — direction ruled, no
+  leaks; mechanics recommended against destruction.md), std-shape-
+  amendment (026's partition table on the ruled seam), n17-plan (the
+  migration runbook; execution serial between cycles), audit-3 (N16
+  run 3, no inference.rs edits). Wave 2 on the split's landing:
+  css-block-s2 (the keyword taken FIRST — breaking — then grammar +
+  desugar, byte-identical gate), build-hooks-s1s2 (staleness gate +
+  the git-dependency trust opt-in shipped refusing everything),
+  g7-g8-emit-fences, watch-020 (Watcher matches File), ruled-smalls
+  (025(b) opt-in hook + 008 preflight + E97 posture), a26-reattach
+  (the failure harness + Closed). All lanes Opus-capped per the
+  owner's standing rule; Monitor-on-suite.log briefed as the default
+  wait. LESSONS: lanes
   parked on "waiting for the suite notification" three more times
   (occurrences 6–8; the brief's discipline block alone does not prevent
   it — the one that armed a Monitor on its log self-resumed, the other
