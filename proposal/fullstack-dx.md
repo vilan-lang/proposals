@@ -1051,6 +1051,46 @@ a whole body and honours no `Range`, so a browser could not seek in anything it
 served — a row for `.mp4` would type a response that does not work. Media is one
 of the things the deferred static file server is for. Bycatch, §9.3.
 
+**RULED 2026-08-28 (the owner), on the caching half: an OPT-IN HOOK — "easy to
+add, but not default."** The fence above stands exactly as written, and the
+ruling sharpens what it fences: *defaults*, not capability. Caching was the one
+surface in this section's list ("traversal, `Range`, caching and
+conditional-request surfaces") that a served build genuinely wants and a
+directory server's other three are not prerequisites for — the motivating
+exhibit (kolt.local 025) hand-rolled a two-tier policy and recorded its ETag
+surrender as a comment, because the pieces existed everywhere except on
+`serve_build`. Built in Order 18 as `ServerBuilder::cache_build(|url|
+CachePolicy)`:
+
+- **Un-opted is unchanged, by control flow rather than by arithmetic.** With no
+  policy on the chain the asset route calls the same `asset_response` it always
+  did — one `Content-Type` header and the bytes — so "byte-identical" is a
+  property of which branch runs, not of what a neutral policy happens to add.
+  The pin is a header-set equality on a default server, and it reddens on a
+  plant that routes the default arm through the hook.
+- **The hook composes 025(c) rather than re-deriving it.** `CachePolicy::
+  validated()` *is* `etag_of` + `etag_response` applied to the artifact's own
+  bytes; the open-`ResponseBuilder` return those helpers were given (Order 17)
+  is what lets `cache_control` land on the `304` arm as well as the `200`, so
+  nothing about conditional requests is spelled twice.
+- **Per-route, not per-request.** The policy is a function of the artifact's
+  url and of nothing else: "which of my build's files is this?" is the whole
+  question a two-tier policy asks, the answer cannot change between two
+  requests for the same url, and keeping the `Request` out of the callback is
+  what stops a caching policy from quietly becoming a second request handler
+  behind `serve_build`'s back. Anything genuinely per-request stays
+  `on_request`'s, built from `etag_response` directly — which is the surface
+  025(c) already shipped for it.
+- **The validator is minted over the bytes actually served**, taken once, so it
+  stays correct under `run --watch` where `asset_body` re-reads per request. The
+  price is one sha-256 per hit on a validating route, which is the trade
+  `etag_of` documents; a boot-time digest would be wrong in exactly the mode the
+  dev policy exists for.
+
+What the fence still refuses is unchanged: traversal, `Range`, and any default
+policy at all. `serve_build` still serves a build and not a directory, and an
+app that wants caching says so in one line.
+
 `hmr.md` §9 records the adjacent gap: "grow the dev channel's static serving
 into a tiny dev server (`index.html` + bundle) so `run --watch` works without a
 Node leg". Rung 2 is half of that — a browser-only project has no server leg to
