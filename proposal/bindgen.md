@@ -695,6 +695,15 @@ anything that already exists.
 
 ## 8. Open questions (with recommendations)
 
+> **RULED 2026-08-28 (the owner): "Recommendations look good. bindgen
+> doesn't have to be signature only."** Q1 — `external struct` always in
+> v1. Q2 — output beside the input `.d.ts`. Q3 — the string-literal-union
+> wrapper functions are CONFIRMED in scope: the owner's sentence lifts the
+> signature-only precedent question explicitly, so bindgen may generate
+> real logic where the construct demands it. Q6 — the module/file-level
+> `[platform(...)]` default is worth its own item: filed as B147. Q4/Q5
+> stay what they always were — spikes owed at take-up, not rulings.
+
 1. **Interfaces: `external struct` always, or a plain `struct` for
    "obviously data" shapes?** (§3.8) Recommendation: `external struct`
    always in v1 — always correct, matches the `RequestInit` precedent,

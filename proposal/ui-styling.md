@@ -737,6 +737,12 @@ nothing else moves with it.
 
 ### 0bis.6 Design — the relation axis (kolt.local 009+014, ruled 2026-08-27, designed 2026-08-28)
 
+> **RATIFIED 2026-08-28 (the owner, on the Order 17 close report).** Both
+> probe-driven determinations stand as built: `within` emits UNLAYERED (the
+> asymmetric layer split), and `divide` renders `> :not(:first-child)`. The
+> recorded tie flip vs the old `dark()` rides with them. This section is no
+> longer awaiting review.
+
 The owner's 2026-08-27 ruling on kolt.local 014 merged it with 009 into one
 question — *"a general selector feature that Kolt's theme.vl could replace its
 handwritten `emit` with"* — and deleted `Style::dark` (census: zero user

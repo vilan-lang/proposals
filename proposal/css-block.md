@@ -898,6 +898,21 @@ Q3, and on the `css` keyword promotion being taken before beta.
 
 ## 12. Open questions for the owner
 
+> **RULED 2026-08-28 (the owner): Q2–Q5 as recommended.** Q2 — the
+> formatter sorts the headless block canonically, sharing the chain
+> sorter's order. Q3 — the recommendation ("decide the headed form's
+> fate") is accepted as written: v1 proceeds on the contextual gate with
+> no keyword promotion, and the headed form (§5.4) remains the one
+> recorded fork — its old v0.40.0 deadline is void under the beta
+> deferral, so it can be decided on demand rather than under pressure.
+> Q4 — property and combinator names in v1; value completion only behind
+> a gate that does not exist yet. Q5 — unknown property is a WARNING,
+> and the lint-framework question is filed separately rather than grown
+> here. **Q6 was not ruled**: v1 keeps the method spellings the paper's
+> own §3 rule already requires (name-blind, dot-decidable), and the
+> CSS-flavored media spelling stays an open widening, askable later.
+> S2 is UNBLOCKED.
+
 **Q1. The trait name.** `CssValue`? `DeclValue`? `StyleValue`? It sits beside
 `Slot` and `AttrValue`, which are short and unqualified. *Recommendation:*
 `CssValue`.

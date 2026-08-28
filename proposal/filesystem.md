@@ -746,6 +746,14 @@ targets. Recorded as a v2 shape, not designed here.
 
 ## 8. Watch — answering kolt.local 020 with the handle model
 
+> **Q6 RULED 2026-08-28 (the owner): "Make 020 own the watch surface."**
+> This section is now the historical sketch, not the design of record —
+> item 020 owns the whole watch surface, shape and mechanism both, and
+> the S4 lane that builds it starts from 020, shrinking this section to
+> a cross-reference as it lands. The one constraint that carries: the
+> `Watcher` resource is designed to MATCH `File` (§5's lifetime model),
+> which is why S4 was sequenced after S3.
+
 020 filed the gap (there is no watch; `std::watch` is the dev-refresh
 channel and a false friend) and left the shape open: "callback
 (`fs::watch(path, |event| ...)`) vs async stream". **This paper's model

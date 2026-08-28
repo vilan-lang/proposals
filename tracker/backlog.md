@@ -24,29 +24,39 @@ The rules, tightened where the last tracker drifted:
   explicit deferred form for demand-gated items.
 
 **Owner questions parked in papers and on items** (the recall surface,
-rebuilt 2026-08-28 — each waits on a ruling, none blocks unrelated
-work): optimistic-lifecycle.md §9 (the paint-less action-state cell;
-whether the free `optimistic` survives it), draft-reconnect.md §4
-(default debounce for `bind_draft`), bindgen.md §8 Q1/Q2/Q3/Q6,
-filesystem.md §12 Q2+Q6 (Q1/Q3/Q5 RULED 2026-08-27; Q4 answered in
-code — `Entry` shipped boolean-shaped with S2), css-block.md §12 Q2–Q6
-(Q1 answered in code — the trait shipped as `CssValue`; Q3's
-v0.40.0-deadline wording is void now that beta is deferred, though the
-keyword question itself stands), build-hooks.md §10 Q1–Q7, kolt.local
-025(b) (the `serve_build` caching policy — re-opens the fullstack-dx
-§5.10 fence), kolt.local 008 (the preflight reset's contents and
-opt-in shape), E97 (the mutex-poisoning posture — pick one and write
-down why), A26 (does a failed `__attach` get the contract-mismatch
-`Closed` treatment — a ruling, not a patch), N17 (the full-repo
-per-item migration's open questions, waiting per the 2026-08-26
-kolt.local-only scoping), beta.md §5.1 (the tier table — DEFERRED
-2026-08-20, re-present with the beta switch's pre-work, not before).
-RULED 2026-08-26, as recommended: markdown.md §11 (K13's watcher —
-recorded inputs, never the wide glob; built at the docs-app rung).
-RULED 2026-08-27, recorded on their items: kolt.local 031 Q1 ((a)+(c)
-scoped to `File` — S3 unblocked), Q3 (delete `fs::exists`), Q5 (the
-sixteen free functions stand); kolt.local 014 DELETE, merged with 009
-into one relation axis — Order 17 builds both.
+rebuilt 2026-08-28 twice — each waits on a ruling, none blocks
+unrelated work). STILL OPEN: optimistic-lifecycle.md §9 (the paint-less
+action-state cell; whether the free `optimistic` survives it),
+css-block.md §12 Q6 (a CSS-flavored media spelling inside a block —
+unruled; v1 keeps method spellings) and the §5.4 headed-form fork
+(no deadline under the beta deferral), N8's 404-shim sunset condition
+(proposed "at the beta switch" — now indefinite; awaiting the owner's
+pick), beta.md §5.1 (the tier table — DEFERRED 2026-08-20, re-present
+with the beta switch's pre-work, not before).
+**RULED 2026-08-28, the owner's batch on the Order 17 close report**
+(each recorded at its home): ui-styling §0bis.6 RATIFIED (both
+determinations stand); css-block §12 Q2–Q5 as recommended (S2
+unblocked); build-hooks §10 Q1–Q7 as recommended (S1 unblocked; tier
+2's threshold is the git dependency, NOW; Q5's second module root
+flagged highest-unknown-cost); G7 as recommended (emit-time
+reserved-kind refusal); C11 "write the paper — those should not leak"
+(direction ruled: temporaries must drop; mechanics to the paper);
+filesystem §12 Q6 — 020 owns the whole watch surface; kolt.local
+025(b) — an OPT-IN caching hook on `serve_build`, never default;
+kolt.local 008 — an opinionated Tailwind-scope preflight, plus
+`display: block` for buttons/anchors/selects, opt-in and opt-out-able;
+E97 — the safe posture, prevent a poisoned cache; A26 — patch it
+correctly (the harness and the `Closed` treatment); kolt.local 026
+APPROVED — `std::` for true core, `vilan::` for auxiliary (`ui` under
+`vilan::` since CLI-only programs are common and first-party;
+`option` stays `std::`) — the std-shape amendment names the partition;
+N17 — the full-repo per-item migration SHOULD HAPPEN, projects/ move
+included; draft-reconnect §4 — stands as written, no default debounce;
+bindgen §8 Q1/Q2/Q3/Q6 as recommended, and bindgen need not be
+signature-only (→ B147 filed for the module-level `[platform]`
+default). Earlier: RULED 2026-08-26 markdown.md §11 (K13's watcher —
+recorded inputs, built at the docs-app rung); RULED 2026-08-27
+kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
 
 ## Now / Next / Later
 
@@ -530,7 +540,9 @@ into one relation axis — Order 17 builds both.
    (same-family rule ordering). History: backlog-2026-07-18.md §A item 8.
 
 14. **Reactive residuals** (S–M)
-    STATUS: OPEN (narrowed — one mechanism + two parked owner questions)
+    STATUS: OPEN (narrowed — one mechanism + ONE parked owner question:
+    optimistic-lifecycle §9; draft-reconnect §4 RULED 2026-08-28 — stands
+    as written, no default debounce, nothing owed)
     Live remainder: `batch` async-join drain affinity — `batch` kept its
     `sync` fence at the turn merge; joining an ambient turn from an
     awaiting body is unresolved. The optimistic lifecycle and `Draft`
@@ -539,7 +551,10 @@ into one relation axis — Order 17 builds both.
     item 14.
 
 26. **NEW — a failed `__attach` on reconnect is swallowed, leaving every mirror bound to dead channel ids** (S–M; N16 audit run 2, 2026-08-27)
-    STATUS: OPEN (not reproduced — needs a live-server failure harness)
+    STATUS: OPEN — RULED 2026-08-28 (the owner): "Patch it correctly."
+    Build the live-server failure harness, reproduce, and give a failed
+    `__attach` the sibling contract-mismatch branch's `Closed` treatment.
+    Order 18 builds it.
     `vilan/std/src/rpc.vl:1497`, in `reattach_mirrors`:
     `match attached { Err(let _failed) => {}, ... }`. If `__attach` fails the
     `rebinds` loop is skipped entirely: **the socket reports connected, every
@@ -617,6 +632,17 @@ into one relation axis — Order 17 builds both.
      iterator-protocol dispatch in a bare top-level `for` statement has no
      graph node and is invisible to BOTH checks.
 
+147. **NEW — a module/file-level default for `[platform(...)]`** (S–M; bindgen.md §8 Q6, filed on the owner's 2026-08-28 ruling)
+     STATUS: OPEN (design-gated: attribute-default semantics)
+     A generated binding file — and any hand-written third-party binding
+     module — repeats the same platform fence on every function it emits.
+     bindgen.md §4 surfaces the want: declare the fence once at module or
+     file level, with per-item overrides. A language feature, not a bindgen
+     feature; the owner ruled it worth its own item. Design questions: the
+     spelling (module attribute vs manifest key), override precedence, and
+     whether the default participates in coloring inference or merely
+     expands to per-item attributes before analysis.
+
 ## C. Memory model
 
 1. **`Weak<T>`** (M)
@@ -631,8 +657,12 @@ into one relation axis — Order 17 builds both.
    STATUS: OPEN (blocked: F4's native memory story)
 
 11. **NEW — a resource born and consumed as an expression temporary is never dropped** (M — semantics ruling first; found by Order 17's fs-handles lane, 2026-08-28)
-    STATUS: OPEN (proposal-first — filesystem.md §5's amendment records the
-    finding; the ruling touches destruction.md's ratified ground)
+    STATUS: OPEN (proposal-first) — RULED 2026-08-28 (the owner): "Write
+    the paper. Those should not leak." The DIRECTION is settled — an
+    expression-temporary resource must be dropped, rejecting the spelling
+    is off the table — and the paper's job is the mechanics (scope-end vs
+    statement-end of the lifted temporary) against destruction.md's
+    ratified ground. Order 18 writes it.
     `File::open(p).read_at(b, 0)`'s receiver — and equally
     `Database::open(":memory:").exec(…)` — is neither dropped nor rejected:
     the drop planner tracks bindings, an expression temporary has none, so
@@ -661,7 +691,7 @@ into one relation axis — Order 17 builds both.
 ## E. LSP & tooling
 
 37. **bindgen v2 — the remainder** (M–L)
-    STATUS: OPEN (remaining: (c) the oxc swap-in seam and (d) the override-table direction, both unscheduled; the 183-globals "read a global" language question; §11.6's shallow `--only` mode; §8 Q1/Q2/Q3/Q6 remain the owner's)
+    STATUS: OPEN (remaining: (c) the oxc swap-in seam and (d) the override-table direction, both unscheduled; the 183-globals "read a global" language question; §11.6's shallow `--only` mode; §8 Q1/Q2/Q3/Q6 RULED 2026-08-28 as recommended — and bindgen need not stay signature-only (the Q3 wrapper precedent is confirmed; Q6 filed as B147))
     (a)(b)(e) SHIPPED 2026-08-06 (92.3% of lib.dom declarations). Record:
     bindgen.md §11. History: backlog-2026-07-18.md §E item 37.
 
@@ -688,7 +718,11 @@ into one relation axis — Order 17 builds both.
     Record: editing-dx.md §18.
 
 97. **NEW — mutex poisoning is defended in one function and not in its neighbour thirty lines later** (S; N16 audit run 2, 2026-08-27)
-    STATUS: OPEN
+    STATUS: OPEN — RULED 2026-08-28 (the owner): "Do the safe thing.
+    Prevent a poisoned cache." One posture, applied uniformly: recover
+    (`PoisonError::into_inner`) on every lock of the shared caches so a
+    caught panic can never wedge the session, with the why written at the
+    sites. Order 18 builds it.
     `crates/vilan-core/src/lib.rs:235/241` take `PARSE_CLEAN_CACHE` and
     `PARSE_CLEAN_BROKEN` with
     `.unwrap_or_else(std::sync::PoisonError::into_inner)`;
@@ -724,8 +758,9 @@ into one relation axis — Order 17 builds both.
    emission stays A7-entangled. History: backlog-2026-07-18.md §G item 2.
 
 7. **NEW — an `emit` kind colliding with the build's own output namespace overwrites real files, source included** (S–M; found by Order 17's emit-kinds lane, probe-verified, 2026-08-28)
-   STATUS: OPEN — flagged as an early-fix candidate: the failure writes over
-   user source
+   STATUS: OPEN — RULED 2026-08-28 (the owner): recommendation accepted —
+   build the emit-time reserved-kind refusal from the pruner's own
+   predicate list (build-hooks §5.6). Early fix; Order 18 builds it.
    `emit("vl", "CLOBBERED")` in a bare build **overwrites the entry source
    file**, exit 0 — probe-verified against the built binary. E94's
    one-segment fence checks the kind's SHAPE, not its namespace, so kinds
@@ -989,7 +1024,13 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     explicitly (absence of evidence recorded, not implied).
 
 17. **NEW — per-item tracker files: restructure the repo under the `projects/` format** (M, proposal-first; the owner's ask, 2026-08-26)
-    STATUS: OPEN (SCOPED 2026-08-26 by the owner: kolt.local only for
+    STATUS: OPEN — RULED 2026-08-28 (the owner): "Yes, the per-item
+    tracker format (including the move into `projects/`) should happen."
+    The full-repo migration is APPROVED; the open sub-questions below are
+    now the migration plan's to answer by recommendation. Sequencing note:
+    the migration rewrites the surface every lane's records touch, so it
+    runs SERIAL between cycles, N15-style (prepare, verify, cut over) —
+    never concurrently with an order. (Previously SCOPED 2026-08-26: kolt.local only for
     now — but "note that it needs to expand out to everything at the
     end"; the full-repo migration is the recorded end state, its open
     questions below wait until then)

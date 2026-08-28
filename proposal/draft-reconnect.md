@@ -164,6 +164,11 @@ about the world. A user's next keystroke also retries, as it always has.
 
 ## 4. Opt-in or default — opt-in, and it is not a preference
 
+> **RULED 2026-08-28 (the owner): "Looks fine to me."** §4 stands as
+> written — no default debounce on `bind_draft`; `repush()` is the public
+> primitive and the reconnect wiring is app-level composition. The parked
+> question is closed with no code change owed.
+
 The question was posed as a judgement call ("a default that re-pushes
 silently changes wire behavior for existing apps"). The investigation makes
 it structural instead: **there is no default available to give.** §1's

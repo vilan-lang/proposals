@@ -783,6 +783,19 @@ own.
 
 ## 10. Open questions for the owner
 
+> **RULED 2026-08-28 (the owner): all seven as recommended.** Q1 — S1
+> first, `build.vl` decided on evidence. Q2 — the stamp lives in `dist/`.
+> Q3 — `emit_keyed`, the contribution carries its key. Q4 — one dim line,
+> once per build, naming the un-opted-in dependency. Q5 — a second module
+> root (`[package] generated = "generated"`), auto-gitignored by
+> `vilan init`; still flagged as the highest-unknown-cost piece (module
+> resolution). Q6 — **tier 2's threshold is the git dependency, i.e.
+> now**: the opt-in is specified in S2 and ships refusing everything, and
+> the registry inherits the syntax. Q7 — per-kind (already built as G6's
+> fix in Order 17); the general sweep stays filed with E92. The same
+> ruling accepted G7's recommendation: the reserved-kind refusal at emit
+> time (§5.6), built from the pruner's own predicate list.
+
 **Q1. Does `build.vl` get built at all, or is `[build] run` plus a staleness
 gate the whole answer?** S1 delivers every blocking property of the lucide case
 (§1.2) without one line of new language surface; `build.vl`'s remaining value is
