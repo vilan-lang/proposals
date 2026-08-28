@@ -29,6 +29,18 @@ unrelated work). STILL OPEN: optimistic-lifecycle.md §9 (the paint-less
 action-state cell; whether the free `optimistic` survives it),
 beta.md §5.1 (the tier table — DEFERRED 2026-08-20, re-present
 with the beta switch's pre-work, not before).
+NEW OWNER QUESTIONS from Order 18's papers (each with a
+recommendation on record): temporary-drop.md §11 ×3 (C11's mechanics —
+rec statement-end; the conditional-temporary refusal, the one place a
+compiling program becomes an error; the corpus goldens), std-shape.md
+§7.9 ×4 (the partition's borderline rows — rec fs/path/process/fetch
+all stay `std::`; wire/binary/base64; crypto's violation-clearing
+route; no-alias-window + wait-for-kolt), build-hooks.md's ship-note
+silences (G9's workspace-member question; transitive grants OWED
+before the first hook runs; `--rerun-hooks` on `run --watch`; the
+once-per-build note repeating every watch round), and watch's
+unbounded queue (demand-gated — a ruling only if a real producer
+outruns a real consumer).
 **RULED 2026-08-28, the owner's batch on the Order 17 close report**
 (each recorded at its home): ui-styling §0bis.6 RATIFIED (both
 determinations stand); css-block §12 Q2–Q5 as recommended (S2
@@ -513,7 +525,49 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
   (025(b) opt-in hook + 008 preflight + E97 posture), a26-reattach
   (the failure harness + Closed). All lanes Opus-capped per the
   owner's standing rule; Monitor-on-suite.log briefed as the default
-  wait. LESSONS: lanes
+  wait.
+  **Order 18 (cycle 36) CLOSED 2026-08-28, same day** — eleven lanes in
+  two waves, all shipped; next @460b0b3d PUSHED (union suite 4600/4600
+  exit 0; CHANGELOG parity 25/25 — v0.38.0's Unreleased holds 25
+  entries, THREE breaking: Style::dark, fs::exists, the css keyword).
+  THE WAVE STRUCTURE WORKED: b145-split merged first (fifteen subject
+  modules, one binary, counts identical leaf-for-leaf) and the six
+  build lanes appended to the new files with ZERO inference conflicts —
+  the magnet died the same day it was split. Ships: the css KEYWORD +
+  S2 (gate held in both halves; the keyword renames moved zero
+  goldens), build-hooks S1 + the trust opt-in (refusing everything;
+  four underdetermined points decided in the building), G7 (the
+  refusal is on the VALUE; one shared list, plant-proven across both
+  consumers) + G8, watch (020's whole design — pull-shaped, polling
+  v1, and the teardown question DISSOLVED: clearTimeout is
+  synchronous, no second Q1 exception), A26 (the failure-mode harness
+  outlives the fix), E97 (one posture + the anti-drift lock scan; ONE
+  site genuinely needed clear-and-rebuild — the publish planner),
+  preflight 008 (`@layer vilan.preflight` — one spec sentence orders
+  everything), 025(b) (`cache_build`, url-keyed, byte-identical
+  default by control flow). Papers: temporary-drop.md PROPOSED (rec
+  STATEMENT-END — decided by the serve-forever main, not the loop; two
+  premise corrections), std-shape.md §7 (Shape C, 36/20, one real
+  dependency violation found, churn measured at 939 import lines),
+  tracker-migration.md PREPARED (wholesale, verbatim-ID filenames,
+  scripts tested on scratch copies; EXECUTION SERIAL between cycles),
+  audit run 3 (rotation EXHAUSTED — run 4 is the first delta run;
+  10 findings, 2 of its own hypotheses killed by planting). Archive
+  132; filed B148/B149, G9, E99, M11–M13, L18, N27/N28; kolt.local
+  9 → 6 (008, 020, 025 tombstoned — 025 COMPLETE, all three asks).
+  Cut dry-run: pending CI on 460b0b3d (the gate refuses a pending run
+  by design; the clean rerun follows it). PROCESS FINDINGS: the shared
+  session scratchpad bit two lanes (one wiped the other's probe
+  project; notifications twice leaked a SIBLING lane's suite verdict
+  into a lane that nearly reported it as its own — caught by the lane
+  blocking on its own pid) — future briefs get per-lane scratchpad
+  subdirectories and "verdicts from your own log, never a
+  notification"; the n17-plan lane missed its paper's README index
+  row (the hygiene gate caught it at merge, exactly its job); machine
+  contention across eleven lanes made every timing number
+  meaningless — the audit correctly refused to report suite-creep or
+  perf deltas measured under load 18–46.
+  LESSONS: lanes
   parked on "waiting for the suite notification" three more times
   (occurrences 6–8; the brief's discipline block alone does not prevent
   it — the one that armed a Monitor on its log self-resumed, the other
@@ -569,24 +623,6 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
     are indexed in this file's header. History: backlog-2026-07-18.md §A
     item 14.
 
-26. **NEW — a failed `__attach` on reconnect is swallowed, leaving every mirror bound to dead channel ids** (S–M; N16 audit run 2, 2026-08-27)
-    STATUS: OPEN — RULED 2026-08-28 (the owner): "Patch it correctly."
-    Build the live-server failure harness, reproduce, and give a failed
-    `__attach` the sibling contract-mismatch branch's `Closed` treatment.
-    Order 18 builds it.
-    `vilan/std/src/rpc.vl:1497`, in `reattach_mirrors`:
-    `match attached { Err(let _failed) => {}, ... }`. If `__attach` fails the
-    `rebinds` loop is skipped entirely: **the socket reports connected, every
-    mirror stays pointed at the previous connection's channel ids, and nothing
-    reports it.** The function's own doc comment promises three things, and
-    the sibling contract-mismatch branch is handled loudly
-    (`ConnectionState::Closed` + `close()`, with a comment); the swallow nine
-    lines up at `:1489` carries a written justification. This one has neither.
-    Zero coverage: `git grep "__attach\|reattach" -- crates/vilan-cli/tests`
-    is empty, and `transport_robustness.rs` covers only the happy re-sync
-    path. Probably wants the same `Closed` treatment as the contract
-    mismatch — which is a ruling, not a patch.
-
 27. **NEW — `std::dom` cannot listen on `window` at all** (M, proposal-first; found by Order 16's `website-harness` lane, 2026-08-27)
     STATUS: OPEN (proposal-first — new public std surface, touches L3's tier sweep)
     `std::dom` binds element listeners only. Everything that needs a
@@ -622,21 +658,6 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
     B29 does not cover a wrong-shaped Lift impl. History:
     backlog-2026-07-18.md §B item 11.
 
-145. **NEW — the two files every lane appends to have outgrown their own governing paper** (M, mechanical; N16 audit run 2, 2026-08-27)
-     STATUS: OPEN
-     `crates/vilan-core/tests/inference.rs` is **66,830 lines** — the single
-     per-case pin surface every lane in every order appends to, which makes it
-     the merge-conflict magnet of a six-lane order and the suite's dominant
-     compile unit. `crates/vilan-core/src/analyzer.rs` is **38,798 lines**,
-     and its own governing paper opens "`crates/vilan-core/src/analyzer.rs`,
-     ~9000 lines" (`proposal/analyzer-refactor.md:3`) — a premise stale by
-     4.3×, which matters because that paper's plan was costed against the
-     smaller number. Neither file is tracked anywhere: `grep -i
-     "analyzer.rs\|inference.rs"` over the live backlog returned zero hits
-     before this filing. The cheap half is splitting `inference.rs` by
-     subject, mechanically; the analyzer half is `analyzer-refactor.md`'s
-     premise wanting a re-measure before its plan is trusted.
-
 146. **NEW — the context coverage check's refinement consumes node-owned dispatch sites only** (S–M; found by Order 17's compiler-fences lane, 2026-08-28)
      STATUS: OPEN
      B143's fix taught the const-only check to follow refined dispatch at
@@ -662,6 +683,26 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
      whether the default participates in coloring inference or merely
      expands to per-item attributes before analysis.
 
+148. **NEW — `str + <any struct>` type-checks and renders the runtime tuple** (S–M; found by Order 18's css-block-s2 lane, 2026-08-28)
+     STATUS: OPEN
+     `i"here {p} there"` on a two-field struct prints `here 1,2 there` — the
+     concatenation admits any struct and the emitted JS stringifies it as
+     the host tuple. General and pre-existing (the i-string twin does the
+     same, which is why the css block's byte-equivalence gate still holds);
+     the css block merely makes it easier to reach (`padding: calc({space(4)}
+     + 2px);` emits the tuple mid-value). The real gap is that the concat
+     type-checks at all — a struct with no Display-shaped contract should
+     refuse into a string position.
+
+149. **NEW — an async function returning a `Task` mistypes as the task, pinned but never itemed** (S–M; N16 audit run 3, 2026-08-28)
+     STATUS: OPEN — pinned `#[ignore]`d (`an_async_function_returning_a_task_should_type_as_the_value`, now in tests/inference/ post-split), reproduces verbatim: "Expected i32, but got Task<i32>"
+     Run 3's finding was the process hole, now closed by this filing: the
+     pin cited no tracker item, so no backlog sweep could ever contradict
+     it — its sibling carries B126 and this one carried nothing. The bug
+     itself: the value position of an async function that returns a `Task`
+     sees the task type where the transparent-async model promises the
+     value. Un-ignore is the acceptance.
+
 ## C. Memory model
 
 1. **`Weak<T>`** (M)
@@ -676,12 +717,20 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
    STATUS: OPEN (blocked: F4's native memory story)
 
 11. **NEW — a resource born and consumed as an expression temporary is never dropped** (M — semantics ruling first; found by Order 17's fs-handles lane, 2026-08-28)
-    STATUS: OPEN (proposal-first) — RULED 2026-08-28 (the owner): "Write
-    the paper. Those should not leak." The DIRECTION is settled — an
-    expression-temporary resource must be dropped, rejecting the spelling
-    is off the table — and the paper's job is the mechanics (scope-end vs
-    statement-end of the lifted temporary) against destruction.md's
-    ratified ground. Order 18 writes it.
+    STATUS: PROPOSED 2026-08-28 — the paper is `proposal/temporary-drop.md`
+    (Order 18, lane c11-paper), awaiting the mechanics ruling. Its
+    recommendation: STATEMENT-END, decided not by the loop (already a drop
+    scope under both options) but by the serve-forever `main` that never
+    ends — where scope-end makes the fix a silent no-op for exactly the
+    idiom filesystem.md names. Two premise corrections en route: there was
+    never a "B141 lift" to reuse (both options invent it), and the
+    Database case is equally affected. Eleven probes against real emitted
+    JS; Q1's fire-and-forget close composes, measured. THE OWNER'S THREE
+    QUESTIONS: (1) statement-end vs scope-end final call; (2) refuse the
+    conditionally-constructed temporary (rec: yes, extending R7 — the ONE
+    place the paper makes a compiling program an error); (3) do the corpus
+    temporary-spellings keep their goldens growing `finally`s. Build
+    follows the ruling.
     `File::open(p).read_at(b, 0)`'s receiver — and equally
     `Database::open(":memory:").exec(…)` — is neither dropped nor rejected:
     the drop planner tracks bindings, an expression temporary has none, so
@@ -747,27 +796,6 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
     call. Also not attempted: tag-name completion and the child position.
     Record: editing-dx.md §18.
 
-97. **NEW — mutex poisoning is defended in one function and not in its neighbour thirty lines later** (S; N16 audit run 2, 2026-08-27)
-    STATUS: OPEN — RULED 2026-08-28 (the owner): "Do the safe thing.
-    Prevent a poisoned cache." One posture, applied uniformly: recover
-    (`PoisonError::into_inner`) on every lock of the shared caches so a
-    caught panic can never wedge the session, with the why written at the
-    sites. Order 18 builds it.
-    `crates/vilan-core/src/lib.rs:235/241` take `PARSE_CLEAN_CACHE` and
-    `PARSE_CLEAN_BROKEN` with
-    `.unwrap_or_else(std::sync::PoisonError::into_inner)`;
-    `lib.rs:269/272/286/296` take **the same two mutexes** with
-    `.lock().unwrap()`, as do the five macro-world caches
-    (`macros.rs:753/757/812/870/1664/1766`). One file records the defensive
-    belief and contradicts it in the same file.
-    Every guard was traced: none is held across panic-prone code today, so
-    poisoning is not currently reachable. But the fenced pipeline is precisely
-    the architecture where a *caught* panic leaves a global poisoned, and the
-    consequence is asymmetric — one poisoned cache turns a one-shot compiler
-    bug into a language server that answers "internal error: the compiler
-    panicked" for the rest of the session. The work is to pick one posture and
-    write down why, not to add locks.
-
 98. **NEW — a browser build constructing a `@process` resource draws the coloring diagnostic twice** (S; found by Order 17's fs-handles lane, 2026-08-28)
     STATUS: OPEN
     The second error is for the `drop` edge and anchors inside std's OWN
@@ -776,6 +804,17 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
     one of them pointing the user at std's internals. Wants the drop-edge
     diagnostic suppressed or folded into the construction site's; the
     construction-site error alone already names the platform rule.
+
+99. **NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse** (S; N16 audit run 3, 2026-08-28)
+    STATUS: OPEN
+    `elements::rewrite_items` and `lift::rewrite_items` (and now
+    `css::rewrite_items`) run before `write_debug(file, "parse.out", …)`,
+    proven by a probe whose `.parse.out` contained `LiftRegion`/`LiftHole`
+    nodes. So the desugars hooked at every parse entry have no dump of
+    their own and no way to see the tree on either side of them — exactly
+    the split needed to decide whether a bug is the parser's or a
+    desugar's. Fix: a raw-parse dump stage (and the flag help names its
+    stages).
 
 ## G. Macros & const
 
@@ -787,26 +826,18 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
    direct interest to §M's perf arc), a const budget knob. Liveness-tied
    emission stays A7-entangled. History: backlog-2026-07-18.md §G item 2.
 
-7. **NEW — an `emit` kind colliding with the build's own output namespace overwrites real files, source included** (S–M; found by Order 17's emit-kinds lane, probe-verified, 2026-08-28)
-   STATUS: OPEN — RULED 2026-08-28 (the owner): recommendation accepted —
-   build the emit-time reserved-kind refusal from the pruner's own
-   predicate list (build-hooks §5.6). Early fix; Order 18 builds it.
-   `emit("vl", "CLOBBERED")` in a bare build **overwrites the entry source
-   file**, exit 0 — probe-verified against the built binary. E94's
-   one-segment fence checks the kind's SHAPE, not its namespace, so kinds
-   colliding with the leg's own outputs (`vl`, `mjs`, `js`, `chunks.json`,
-   the `<arm>.js` family) all write where the build writes. The clean fix
-   wants build-hooks.md §5.6's reserved-kind ruling — and G6's pruner
-   already ships the refusal predicate; the same list applied at emit time
-   is the obvious shape. Record: the emit-kinds lane report (Order 17).
-
-8. **NEW — `run` and single-file watch never sweep the stale CSS sidecar** (S; found by Order 17's emit-kinds lane, 2026-08-28)
-   STATUS: OPEN
-   The build path calls `sweep_stale_sidecar`; the `run` and single-file
-   watch paths do not, so a stale `<entry>.css` survives `vilan run` after
-   the styles that produced it are gone. Pre-existing asymmetry adjacent to
-   G6's fix (whose per-kind prune IS wired into every path — this is the
-   older sidecar sweep lagging behind that standard). One call plus the pin.
+9. **NEW — a workspace member's own `[build] run` never runs, and nothing says so** (S–M; found by Order 18's build-hooks-s1s2 lane, 2026-08-28)
+   STATUS: OPEN (design-gated: what a workspace build IS)
+   In a `[project]`, hooks come from the root manifest alone — a member's
+   `[build] run` and `[[build.hook]]` are silently ignored. That is the
+   §4.3 defect in a different tier: tier 1 being IGNORED where tier 2 is
+   refused-with-a-note. The minimum fix is the note; whether a member's
+   hooks should RUN is a real question about workspace builds, recorded in
+   build-hooks.md's ship note. Related unsettled question, recorded in
+   build-trust.md §4 and OWED BEFORE the first hook ever executes:
+   transitive grants — a grant is currently recorded wherever written and
+   honored nowhere, so "a dependency must not grant execution to its own
+   dependencies" has never had to be enforced.
 
 ## I. Collections
 
@@ -953,6 +984,15 @@ stands unchanged.
     surface). Record: audit-1's report; the ledger's Order 11 batch
     note.
 
+18. **NEW — the pages repo is the one repo in the fleet with unpinned workflow actions** (S–M; N16 audit run 3, 2026-08-28)
+    STATUS: OPEN
+    `vilan-lang.github.io/.github/workflows/docs.yml` carries two bare
+    `actions/checkout@v4` and the repo has no dependabot.yml — while vilan
+    (L14), proposals (N18) and the website (K19) are all SHA-pinned with
+    dependabot. This is the workflow holding `permissions: contents:
+    write` that auto-pushes the rendered book readers visit. Not an L14
+    re-file: a fourth repo its inventory never named.
+
 ## M. Performance & footprint — NEW SECTION
 
 Owner's items 7 (perf) and 8 (leaks). The 2026-08-18 survey found the
@@ -973,6 +1013,45 @@ std 15,024 (the cold-compile stand-in).
     assertion or generated check would close the honest gap. Record:
     audit-1's report (Order 11).
 
+11. **NEW — the compiler's largest retentions are invisible to the leak tally** (M; N16 audit run 3, 2026-08-28)
+    STATUS: OPEN
+    `BASE_CACHE` (analyzer.rs) retains a whole transmuted `World<'static>`
+    per `BaseCacheKey` — the key includes the entry's std-seed set, so an
+    LSP session mints a retained world for every distinct import set it
+    ever sees, intermediate states included — with per-key overwrite the
+    only eviction and NO `leak_tally` site; `macros.rs`'s `FAILURES` cache
+    retains error text the same way. `leak_tally`'s literal contract
+    (`Box::leak`/`String::leak` sites) is not violated — that is the
+    finding: `[vilan leak] total` omits the largest per-process retention,
+    and the soak's strongest assertion (`total == counts().named()`) is
+    blind to an unrecorded site by construction. The analogous `WORLDS`
+    cache already carries a shallow site for exactly this reason; these two
+    want the same. Magnitude unmeasured — and that it CANNOT be measured is
+    the point. Distinct from M10 (the transmute's safety completeness).
+
+12. **NEW — the corpus leak-soak passes in 0.005 s asserting nothing when its corpora are absent** (S–M; N16 audit run 3, 2026-08-28)
+    STATUS: OPEN
+    `leak_soak_corpus_plateaus` gates both corpora behind env vars nothing
+    in the tree sets and `continue`s past each with a skip line — so the
+    default outcome is PASS with zero assertions against its own "thousands
+    of analyses" charter. The invariant is separately covered by the
+    in-suite synthetic fixtures, so nothing is unchecked; the defect is
+    that "I ran the soak" and "the soak ran" are the same green. Fix: fail,
+    or loudly refuse, when no corpus was measured.
+
+13. **NEW — the perf baseline is stale, and its rows carry no provenance to re-record it against** (M; N16 audit run 3, 2026-08-28)
+    STATUS: OPEN
+    Two legs, causally linked. (1) `Row` stamps section/corpus/mode/metric/
+    profile/runs/percentiles and NO machine load and NO subject set — the
+    header naming date/tree/machine is hand-added prose — so a contended or
+    reduced run is indistinguishable from the record; run 3 measured
+    std_wide warm analyze at 96.6 median ms against the recorded 21.7 under
+    loadavg 18→46 and could not say regression from load, WHICH IS THE
+    FINDING. (2) `perf-baseline.jsonl` still reads baseline 2026-08-18 /
+    "86ad2128 + M1", pre-dating M6's own note that its cold column is
+    history. Fix in order: rows gain load + subject-set provenance, then a
+    quiet-machine full re-record — run 3's numbers are explicitly NOT it.
+
 ## N. Hygiene & rot — NEW SECTION
 
 Owner's items 1–2 (repo refactoring, rot, consolidation, README;
@@ -988,7 +1067,12 @@ npm's `0.0.0-placeholder` and the homebrew formula's 0.14.0 seed pin
 README/CHANGELOG alpha framing (correct until the beta switch — §L).
 
 16. **NEW — the recurring codebase audit** (RECURRING; the owner's standing ask, filed 2026-08-25)
-    STATUS: RECURRING — one audit lane every other work order, rotating
+    STATUS: RECURRING — one audit lane every other work order. Run 3
+    (Order 18, 2026-08-28) took Debugging + Tests and EXHAUSTED the
+    rotation — all seven dimensions covered across runs 1–3, so run 4
+    (due Order 20) is the first DELTA run: re-take the earliest
+    dimensions over what changed since their run. Run 3 filed
+    M11–M13, N27/N28, L18, E99, B149; grades Debugging C+, Tests B−.
     focus. Track here: last run Order 11 2026-08-26 (security +
     diagnostics; L13's re-key carried); **RUN 2 CLOSED in Order 16
     (2026-08-27), three orders late** — 13 findings filed (A26, B144, B145,
@@ -1125,3 +1209,25 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     unreferenced — `leak_tally::outstanding_total` — and the verdict is
     **KEEP**, because it completes a symmetric instrument API and deleting it
     leaves the instrument lopsided.
+
+27. **NEW — nothing ever runs the `#[ignore]`d pins, so an expired pin reason is undetectable by machine** (S–M; N16 audit run 3, 2026-08-28)
+    STATUS: OPEN
+    CI's four legs carry no `--run-ignored`; the tree holds six live
+    `#[ignore]` pins, and CLAUDE.md's "un-ignore when fixed" rule has no
+    backstop — which is exactly why pin-expiry is a manual audit dimension.
+    Run 3's manual check was clean (both bug pins reproduce their stated
+    symptoms verbatim; the four opt-in pins pass). Fix shape, from the
+    filing: a NON-BLOCKING periodic leg that runs the ignored set filtered
+    (`perf_baseline_lsp_edit_latency` costs 247 s and must be excluded) and
+    reports A PIN THAT NOW PASSES — the bug pins are expected red, so a
+    blocking leg would be wrong by design.
+
+28. **NEW — `book_sync`'s mdBook backstop runs whatever `mdbook` is on PATH, no version check** (S; N16 audit run 3, 2026-08-28)
+    STATUS: OPEN — half fixed: the install instructions now name the v0.5.4 pin (run 3's commit); the missing version ASSERTION is this item
+    The pin is enforced in `regen-markdown-golden.py` (hard refusal) and
+    the pages repo's docs.yml (sha-checked tarball), but `book_sync.rs`
+    shells out unversioned — so its verdict is undefined in both
+    directions: a false red against a correct parser, or a green blessing
+    an anchor change the published site would not make. Fix: the same
+    version assertion the regen script already has, then skip-or-fail per
+    the harness's convention for missing tools.

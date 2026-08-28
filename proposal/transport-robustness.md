@@ -102,7 +102,13 @@ service's exposed-field order, so rebinding is positional:
 - The generated `connect` registers ONE reconnect hook: re-run the
   `__contract` check (the server may have REDEPLOYED — on drift the
   connection closes for good rather than desyncing), re-call `__attach` with
-  the new connection id, `rebind` each mirror positionally.
+  the new connection id, `rebind` each mirror positionally. **A refused
+  `__attach` takes the same close (added 2026-08-28, backlog A26, vilan
+  cbee6349):** the matched-contract-but-no-session case previously skipped
+  the rebinds in silence, leaving every mirror bound to the old connection's
+  channel ids under a socket reporting `Connected` — it now closes for good
+  exactly as drift does, so `Closed` is reached three ways: budget
+  exhausted, contract drifted, re-attach refused.
 
 ### 2.6 Initial connect is robust too
 
