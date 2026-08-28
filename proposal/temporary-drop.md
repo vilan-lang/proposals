@@ -35,6 +35,16 @@
 
 ---
 
+> **THE OWNER'S RESPONSE, 2026-08-28 — not a mechanics ruling.** Verbatim:
+> "This is reopening old wounds. I'd like to revisit the lifetime model. I
+> know we've discussed it before, but I'd like to take a detour to truly
+> explore every avenue." So §11's three questions are NOT ruled: the
+> lifetime model reopens WHOLESALE in a dedicated owner session, and this
+> paper — its probes, its two premise corrections, its statement-end
+> case — becomes an INPUT to that session rather than a pending ruling.
+> C11's build waits on the session's outcome. destruction.md's ratified
+> status is unchanged until that session says otherwise.
+
 ## 1. The finding, exactly
 
 A resource born and consumed inside one expression is neither dropped nor

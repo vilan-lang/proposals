@@ -29,18 +29,21 @@ unrelated work). STILL OPEN: optimistic-lifecycle.md §9 (the paint-less
 action-state cell; whether the free `optimistic` survives it),
 beta.md §5.1 (the tier table — DEFERRED 2026-08-20, re-present
 with the beta switch's pre-work, not before).
-NEW OWNER QUESTIONS from Order 18's papers (each with a
-recommendation on record): temporary-drop.md §11 ×3 (C11's mechanics —
-rec statement-end; the conditional-temporary refusal, the one place a
-compiling program becomes an error; the corpus goldens), std-shape.md
-§7.9 ×4 (the partition's borderline rows — rec fs/path/process/fetch
-all stay `std::`; wire/binary/base64; crypto's violation-clearing
-route; no-alias-window + wait-for-kolt), build-hooks.md's ship-note
+STILL PARKED from Order 18's papers: build-hooks.md's ship-note
 silences (G9's workspace-member question; transitive grants OWED
 before the first hook runs; `--rerun-hooks` on `run --watch`; the
 once-per-build note repeating every watch round), and watch's
 unbounded queue (demand-gated — a ruling only if a real producer
 outruns a real consumer).
+**RULED 2026-08-28, second batch (on the Order 18 close):** std-shape
+§7.9 — the partition NARROWS to the browser cluster (markdown.vl,
+browser/*, process/document.vl, process/ui.vl; everything a CLI needs
+stays `std::`) and THE SPLIT GOES ON HOLD, no rush, no execution
+planned (§7.9's note carries the verbatim). temporary-drop §11 — NOT
+ruled: the owner reopens THE LIFETIME MODEL wholesale ("truly explore
+every avenue"), a dedicated session to come; C11 waits on it; the
+paper is that session's input. N17 EXECUTED same day (the migration —
+see the chronicle). v0.38.0 CUT same day on the owner's "Cut it."
 **RULED 2026-08-28, the owner's batch on the Order 17 close report**
 (each recorded at its home): ui-styling §0bis.6 RATIFIED (both
 determinations stand); css-block §12 Q2–Q5 as recommended (S2
@@ -721,8 +724,12 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
    STATUS: OPEN (blocked: F4's native memory story)
 
 11. **NEW — a resource born and consumed as an expression temporary is never dropped** (M — semantics ruling first; found by Order 17's fs-handles lane, 2026-08-28)
-    STATUS: PROPOSED 2026-08-28 — the paper is `proposal/temporary-drop.md`
-    (Order 18, lane c11-paper), awaiting the mechanics ruling. Its
+    STATUS: OPEN (blocked: the lifetime-model session) — the owner's
+    2026-08-28 response to the paper: "This is reopening old wounds. I'd
+    like to revisit the lifetime model … a detour to truly explore every
+    avenue." The mechanics are NOT ruled; the model reopens wholesale in
+    a dedicated session and `proposal/temporary-drop.md` is an input to
+    it. The paper's own record: Its
     recommendation: STATEMENT-END, decided not by the loop (already a drop
     scope under both options) but by the serve-forever `main` that never
     ends — where scope-end makes the fix a silent no-op for exactly the

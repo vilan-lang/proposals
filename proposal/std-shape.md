@@ -942,6 +942,22 @@ condition (a), so this edit should not land mid-flight in a kolt arc.
 
 ### 7.9 Owner questions
 
+> **RULED 2026-08-28 (the owner) — and the partition NARROWS, and the split
+> GOES ON HOLD.** Verbatim: "`fs`, `path`, `process`, `fetch`, `wire`,
+> `binary`, `base64` all stay `std::`. The only items I see moving to
+> `vilan::` at this point are `markdown.vl`, `browser/*`,
+> `process/document.vl`, `process/ui.vl`. Basically, the browser stuff.
+> Despite browser features being first-class and heavily supported, cli
+> programs are still the default. I want what is needed for those to be
+> included in std. Maybe we hold off on the split for now. There's no
+> reason to rush it now." So the ruled seam is MUCH narrower than §7.4's
+> recommendation — reactive, style, http, ws, rpc, db, storage, asset et
+> al. all STAY `std::` under this ruling; the moving set is the
+> browser-and-document cluster plus markdown — and the split itself is
+> DEFERRED with no execution planned. This section's tables remain the
+> costed record for whenever the hold lifts; §7.4's assignments outside
+> the owner's named set are superseded.
+
 Four, batched for one ruling. Everything not listed is proposed as
 tabled in §7.4.
 
