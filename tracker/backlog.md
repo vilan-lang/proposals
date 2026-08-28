@@ -478,8 +478,13 @@ into one relation axis — Order 17 builds both.
   025 → (c) shipped). Cut dry-run: the CHANGELOG sweep is GREEN (13
   parsed, ordered, families balanced); the single red is the NEW gate
   refusing the still-running CI at 6edf6261 — L17 doing its job on first
-  live use; the clean rerun waits on that run, which is also the first
-  live proof of the fmt job and the windows gate legs. LESSONS: lanes
+  live use. CI then completed GREEN on 6edf6261 (the first live proof of
+  the fmt job, the toolchain-pin neutralization, and the ci.yml windows
+  leg over the union tree — only the standing Node-20 deprecation
+  annotations) and the dry-run rerun is CLEAN: zero reds, "ci.yml is
+  green on origin", 13 entries ordered — the cut is one command away
+  whenever the owner calls it. release.yml's own widened gate still
+  awaits its first tag to prove live. LESSONS: lanes
   parked on "waiting for the suite notification" three more times
   (occurrences 6–8; the brief's discipline block alone does not prevent
   it — the one that armed a Monitor on its log self-resumed, the other
