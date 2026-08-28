@@ -33,12 +33,14 @@
 > must not undermine). `std-shape.md` is untouched: this is std's process
 > layer, not a package candidate.
 >
-> This paper answers kolt.local **020** (file/directory watch) in §8 rather
-> than leaving it to be designed twice — a handle changes what a watch API
-> looks like, and 020's own filing says the two should be answered
-> together. It does **not** answer **017** (path tooling); §9 states the
-> seam. §14 is the prior-art assessment — what node's filesystem delivers
-> cleanly and what this paper deliberately routes around.
+> ~~This paper answers kolt.local **020** (file/directory watch) in §8~~
+> **SUPERSEDED by the Q6 ruling, 2026-08-28: 020 owns the whole watch
+> surface, shape and mechanism, and §8 is a cross-reference to what it
+> shipped.** What this paper contributed and what held is the one
+> constraint: the watch resource is designed to MATCH `File`. It does
+> **not** answer **017** (path tooling); §9 states the seam. §14 is the
+> prior-art assessment — what node's filesystem delivers cleanly and what
+> this paper deliberately routes around.
 >
 > **SHIP NOTE, 2026-08-27 (cycle 33, order 15, lane `fs-writes`, vilan
 > b6c72d4f).** S1 AND S2 both shipped, in one commit — twelve functions:
@@ -94,6 +96,22 @@
 > passant). One scope note: `with_file` opens read-mode, matching
 > §5.1(c)'s sketch; whether writing bodies get scoped forms is left for
 > S5's ergonomics pass alongside `Reader`.
+>
+> **SHIP NOTE, 2026-08-28 (cycle 36, order 18, lane `watch-020`).** S4
+> SHIPPED — but from **kolt.local 020**, not from §8: the owner's Q6
+> ruling gave 020 the whole watch surface, shape and mechanism, and §8 is
+> now a cross-reference to what it built. `Watcher` is `File`'s lifetime
+> model entire, which is the one constraint this paper contributed and the
+> reason S4 followed S3. Three of §8's specifics were superseded on 020's
+> own reasoning — a stat-diffing poll rather than `fs.watch`, a
+> three-variant `ChangeKind` rather than the two-variant under-promise,
+> and an addressable `Change.path` rather than a relative one — while §8's
+> pull shape and its "no ruling needed for teardown" both held, the latter
+> for a mechanism §8 did not anticipate (`clearTimeout` is as synchronous
+> as `FSWatcher.close()` would have been). The destructor turned out to be
+> load-bearing in a way no other resource in this paper is: a pending host
+> timer holds node's event loop open, so an undropped watcher is a program
+> that never exits — plant-proven as a hang.
 
 
 ## 1. What exists, measured
@@ -547,9 +565,9 @@ And two constraints that shape the surface, both worth stating because they
 are not obvious:
 
 - **R9 — a closure cannot capture a resource.** So no `fs` API may be
-  callback-shaped over an open handle. This is what decides §8's watch
-  design, and it is why `update(path, |str| str)` (§3.1) takes a *path*
-  rather than a handle.
+  callback-shaped over an open handle. This is half of what decides the
+  watch tier's pull shape (§8), and it is why `update(path, |str| str)`
+  (§3.1) takes a *path* rather than a handle.
 - **R10 — `List`/`Map`/`Set` reject resource type arguments in v1.** There
   is no `List<File>`. `Option<File>` is the sanctioned container. A program
   that wants a pool of open files cannot have one until R10's recorded
@@ -744,94 +762,51 @@ advantage over `readdir` is memory on directories with millions of entries.
 That is a real use case for a backup tool and not one for anything vilan
 targets. Recorded as a v2 shape, not designed here.
 
-## 8. Watch — answering kolt.local 020 with the handle model
+## 8. Watch — see kolt.local 020
 
 > **Q6 RULED 2026-08-28 (the owner): "Make 020 own the watch surface."**
-> This section is now the historical sketch, not the design of record —
-> item 020 owns the whole watch surface, shape and mechanism both, and
-> the S4 lane that builds it starts from 020, shrinking this section to
-> a cross-reference as it lands. The one constraint that carries: the
-> `Watcher` resource is designed to MATCH `File` (§5's lifetime model),
-> which is why S4 was sequenced after S3.
+> Shape AND mechanism both. This section had absorbed 020's shape question
+> while leaving it the mechanism; it is now a cross-reference. The sketch
+> it carried is in the repository history, and where the shipped tier
+> diverges from it, the shipped tier is right.
 
-020 filed the gap (there is no watch; `std::watch` is the dev-refresh
-channel and a false friend) and left the shape open: "callback
-(`fs::watch(path, |event| ...)`) vs async stream". **This paper's model
-answers that question, which is why 020 said the two should be answered
-together.**
+**SHIPPED 2026-08-28 (cycle 36, Order 18, lane `watch-020`)** as S4, from
+020. `std::fs` has `Watcher` — a `resource external struct` carrying §5's
+lifetime model entire (it moves, no closure captures it, no `List` holds
+it, release reachable only from `Drop`, no public `stop()`) — plus
+`Change { path, kind }`, `ChangeKind { Created, Modified, Removed }`,
+`Watcher::watch` / `Watcher::watch_all` (`read_dir` / `read_dir_all`'s
+reach), and a pull-shaped `next()`. The surface and its reasoning live in
+`vilan/docs/std/process.md` and in `std/src/process/fs.vl`'s own comments.
 
-**A callback shape is not merely unfashionable here — it is structurally
-excluded.** R9: a closure cannot capture a resource. A watch callback that
-wants to read the file it was told about would have to either capture an
-open `File` (rejected) or re-open by path inside the callback (a TOCTOU
-race, and a fresh open per event). Meanwhile the watcher itself is a live
-host object that must be stopped, which is the definition of a resource.
-So:
+What this paper contributed and what held: **the watch resource is
+designed to MATCH `File`**, which is why S4 was sequenced after S3. Four
+notes for a reader who arrives here first:
 
-```vilan
-/// A live watch on a path. A `resource`: its `Drop` stops the watch at the
-/// owner's scope end. There is no public `stop()`; `drop(watcher)` is the
-/// early form.
-resource external struct Watcher;
+- **The mechanism is a stat-diffing poll** at the compiler's own 300 ms
+  (`watch-mode.md`), not `node:fs`'s `watch`. 020's standing argument won,
+  and this section's "the surface is mechanism-agnostic" claim is what made
+  that free.
+- **`ChangeKind` has three variants, not the two sketched here.** Two was
+  an under-promise calibrated to what `fs.watch` can distinguish; a poller
+  tells creation from modification from removal on every platform, so
+  under-promising would have been a loss rather than honesty. A rename
+  arrives as `Removed` plus `Created`.
+- **`Change.path` is addressable, not relative** — the watched root joined
+  with the entry, ready for `read_file_to_str`. (`read_dir`'s bare names
+  serve callers who want the name; a change's caller wants to act on it,
+  and a single-file watch has no meaningful relative form.)
+- **Q1's exception is not inherited, and this section's reason survived the
+  mechanism change**: `clearTimeout` is synchronous, as `FSWatcher.close()`
+  would have been. The destructor is load-bearing for a different reason —
+  a pending host timer holds the event loop open, so an undropped watcher
+  is a program that never exits.
 
-struct Change {
-	/// The path that changed, relative to the watched path.
-	path: str,
-	/// `Renamed` covers creation and deletion too — see the honesty note.
-	kind: ChangeKind,
-}
-
-enum ChangeKind { Changed, Renamed }
-
-impl Watcher {
-	fun watch(path: str): Watcher;
-	fun watch_all(path: str): Watcher;      // recursive
-
-	/// The next change, awaiting one if none is pending. `None` once the
-	/// watch has ended.
-	fun next(&self): Option<Change>;
-}
-
-impl Watcher with Drop { fun drop(&mut self); }
-```
-
-Two things make this fall out cleanly rather than being an imposition:
-
-- **`FSWatcher.close()` is synchronous**, unlike `FileHandle.close()`. So
-  `Watcher`'s destructor has none of §5.1's problem and needs no ruling —
-  it is `Database`'s situation exactly.
-- **A pull-based `next()` needs no callback**, so R9 never enters, and the
-  ordinary spelling is a `while let` loop in a function that owns the
-  watcher — the shape in which the file being watched can also be held
-  open.
-
-**The honesty note 020 asked for, kept in the surface rather than the
-docs.** `fs.watch` is the least portable thing node exposes and this paper
-will not pretend otherwise: events are coalesced and also sometimes
-duplicated; `rename` covers creation, deletion and actual renaming and the
-program cannot tell which without a `stat`; recursive watching is not
-available on every platform and every version; on macOS the reported
-filename can be absent; and an editor that saves by write-to-temp-then-
-rename (which is most of them, and which §10 makes vilan programs do too)
-produces a `rename` on a *different* inode, so an inode-following watcher
-loses the file it was watching. The two-variant `ChangeKind` is a
-deliberate under-promise: it exposes exactly the distinction every platform
-agrees on and forces the caller to `stat` for the rest, rather than
-inventing `Created`/`Deleted` variants that would be wrong on some
-platforms some of the time.
-
-**This paper does not overrule 020's mechanism question.** 020 argued for a
-stat-polling v1 (dependency-free, honest semantics, mirroring the
-compiler's own deliberate choice in `watch-mode.md`) with the `fs.watch`
-binding as a recorded refinement. That argument stands and this paper adds
-to it: **the surface above is mechanism-agnostic** — a poller and
-`fs.watch` produce the same `Change` stream through the same `Watcher`, and
-`Drop` stops a polling timer as readily as an `FSWatcher`. So 020 can pick
-its mechanism freely and later change it, which is a better position than
-either item was in separately. What this paper supplies is the *shape*;
-020 keeps the *how*.
-
-**020's status should become**: shape ruled here, mechanism still open.
+The pull shape argued here stands, with the argument sharpened: R9 rules
+out a handler holding a `File` open across events, and — the half this
+section did not name — a `|Change| void` observer is a *void* channel, so
+`async-polymorphism.md` makes it fire-and-forget, unable to await the read
+of the file it was just told about.
 
 ## 9. Non-goals
 
@@ -1006,9 +981,13 @@ bindings.**
   ((a)+(c), `File`-scoped; §5.1's ruling record); B141 had been fixed in
   Order 13, and §11.1's argument now runs inverted — its two broken
   spellings ride S3 as positive gates.
-- **S4 — watch** (§8). `Watcher` as a resource, answering 020. Independent
-  of S3 in implementation but should follow it so that the two resource
-  handles are designed to match rather than converge later.
+- ~~**S4 — watch** (§8). `Watcher` as a resource, answering 020.~~
+  **SHIPPED 2026-08-28 (cycle 36, Order 18, lane `watch-020`)**, and from
+  020 rather than from §8 — the owner's Q6 ruling gave 020 the whole
+  surface, shape and mechanism. The sequencing argument held exactly as
+  written: S4 followed S3 so the two resources are designed to match
+  rather than converge later, and `Watcher` is `File`'s lifetime model
+  entire.
 - **S5 — incremental-read ergonomics.** `Reader` (§3.4), and only once S3
   is real. Deferred deliberately: a cursor over a wrong primitive is worse
   than no cursor.
@@ -1105,6 +1084,12 @@ Each is answerable on its own; none blocks S1 or S2.
   It also absorbs 020's *shape* question while leaving 020 its mechanism
   question — confirm that is the right division, or say 020 should own the
   whole watch surface and §8 should shrink to a cross-reference.
+  **RULED 2026-08-28: the name and scope stand, but 020 owns the watch
+  surface whole — shape AND mechanism. §8 is now a cross-reference (it
+  shrank when S4 shipped, Order 18), and the tier it points at is 020's
+  design: a stat-polling `Watcher` with a three-variant `ChangeKind`.
+  The one constraint this paper contributed carried: the watch resource
+  matches `File`.**
 
 ## 13. What this paper does not change
 
@@ -1175,9 +1160,14 @@ decisions above are decisions *against* node rather than for it.
   way to distinguish them without a `stat`; recursive watching is not
   universally available; macOS can report a null filename; and inode-based
   watching loses the file when an editor saves by write-temp-then-rename —
-  which §10 has now taught vilan programs to do too. §8's two-variant
-  `ChangeKind` under-promises deliberately, and 020 keeps the standing
-  argument for a stat-polling implementation behind it.
+  which §10 has now taught vilan programs to do too. **This is the one
+  prior-art bullet the shipped tier declines outright**: 020's
+  stat-polling argument won (§8), so none of this list is inherited — the
+  poller distinguishes creation, modification and removal on every
+  platform, and a watch may start on a path that does not exist yet, which
+  `fs.watch` cannot do at all. What polling costs instead is stated at the
+  surface: interval latency, blindness to a change that cancels itself out
+  inside one interval, and one `stat` per watched entry per interval.
 - **Streams vs handle reads.** `createReadStream` is the right tool for
   piping gigabytes with backpressure and the wrong thing to bind
   piecemeal — §9 makes it a non-goal pending a std stream story that would
