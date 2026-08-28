@@ -615,3 +615,20 @@ refined in the same pass (a tombstone HEAD counts as archived; a mere
 mention does not) and passed clean: 44 = 44, hygiene green, 40 sampled
 body lines lossless. From here: new items are files, closes are
 tombstones in the project archive, and this file carries the narrative.
+
+**v0.38.0 SHIPPED 2026-08-28** (the owner: "Cut it") — the fourth
+scripted cut and the first tag through the widened release gate: 13/13
+jobs green in 25m31s with the windows gate legs' first live run, which
+closes the last unproven edge of Order 17's L17 work. Fold: main folded,
+next at 6186824b, book republished, toolchains 0.38.0 both locations.
+THE INCIDENT, and it is the release working as designed: the site deploy
+went red because the website's own source used every spelling this train
+broke — `Length::css`, the `.css` field, an extern accessor NAMED `css`,
+one `fs::exists` — the same outside-the-gates class as v0.21.0's
+styles.vl. The new keyword diagnostic named the fix at every site;
+migrated (+ the 0.38.0 formatter's reflow, + examples.js regenerated for
+its freshness gate), pushed (website de2efd6), deploy green, playground
+serving v0.38.0 with six versions in the selector. Lesson re-learned
+with a sharper edge: a breaking std/grammar change's census must include
+THE WEBSITE, the one estate no vilan-repo gate can see — worth a line in
+the cut script's own checklist someday.
