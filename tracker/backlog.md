@@ -23,17 +23,30 @@ The rules, tightened where the last tracker drifted:
   `OPEN (deferred: <demand gate>)` — same legend as before, plus the
   explicit deferred form for demand-gated items.
 
-**Owner questions parked in papers** (the recall surface — each waits on
-a ruling, none blocks unrelated work): optimistic-lifecycle.md §9 (the
-paint-less action-state cell; caller-less free `optimistic`),
-draft-reconnect.md §4 (default debounce for `bind_draft`), bindgen.md §8
-(Q1/Q2/Q3/Q6). RULED 2026-08-18, all as recommended: beta.md §4,
-design-language.md §3, method-resolution.md §13.6, const-eval.md §10.5
-(Option A). RULED 2026-08-19, all as recommended: remote-sources.md §6
-(A25 — `sub` keeps `|T|`, no `Stale`, `Waiting`/`Ready` + `or`, deferred
-`Unsubscribe`), docs-port.md §4 (K6 — option B; accept the prerequisite
-filing as K13; chrome mechanism (i); keep `/docs/` anchors; keep search,
-index weight = N14; `header.hbs`; no `&v=` pin).
+**Owner questions parked in papers and on items** (the recall surface,
+rebuilt 2026-08-28 — each waits on a ruling, none blocks unrelated
+work): optimistic-lifecycle.md §9 (the paint-less action-state cell;
+whether the free `optimistic` survives it), draft-reconnect.md §4
+(default debounce for `bind_draft`), bindgen.md §8 Q1/Q2/Q3/Q6,
+filesystem.md §12 Q2+Q6 (Q1/Q3/Q5 RULED 2026-08-27; Q4 answered in
+code — `Entry` shipped boolean-shaped with S2), css-block.md §12 Q2–Q6
+(Q1 answered in code — the trait shipped as `CssValue`; Q3's
+v0.40.0-deadline wording is void now that beta is deferred, though the
+keyword question itself stands), build-hooks.md §10 Q1–Q7, kolt.local
+025(b) (the `serve_build` caching policy — re-opens the fullstack-dx
+§5.10 fence), kolt.local 008 (the preflight reset's contents and
+opt-in shape), E97 (the mutex-poisoning posture — pick one and write
+down why), A26 (does a failed `__attach` get the contract-mismatch
+`Closed` treatment — a ruling, not a patch), N17 (the full-repo
+per-item migration's open questions, waiting per the 2026-08-26
+kolt.local-only scoping), beta.md §5.1 (the tier table — DEFERRED
+2026-08-20, re-present with the beta switch's pre-work, not before).
+RULED 2026-08-26, as recommended: markdown.md §11 (K13's watcher —
+recorded inputs, never the wide glob; built at the docs-app rung).
+RULED 2026-08-27, recorded on their items: kolt.local 031 Q1 ((a)+(c)
+scoped to `File` — S3 unblocked), Q3 (delete `fs::exists`), Q5 (the
+sixteen free functions stand); kolt.local 014 DELETE, merged with 009
+into one relation axis — Order 17 builds both.
 
 ## Now / Next / Later
 
@@ -751,7 +764,7 @@ part of why planning fragmented. Spans `vilan-website` and
    STATUS: OPEN (umbrella — refine into concrete items under K5's ratified language)
 
 13. **NEW — the docs on the vilan framework, the port proper — behind its markdown prerequisite** (L; filed by the K6 ruling 2026-08-19)
-    STATUS: OPEN (STEP 1 SHIPPED 2026-08-25 — std::markdown built strict per the ruled markdown.md (fa742f146 merged 7b9b55ce): 456/456 mdBook-exact anchors with a real-build golden, 0.9 ms/page, `Items` carries BLOCK bodies (the build's correction, OWNER NOD 2026-08-25; golden regen rule also nodded); STEP 2 SHIPPED 2026-08-26 (lane k13-step-2, 5d434d29) — `std::asset::read` is the channel’s input direction (package-root-relative, escape-refused, const-only under emit’s machinery), every read a tracked build input (watch trigger + per-leg skip + in-process pin), the fuel budget 1M → 16M on measurement (the largest page parses at 2,001,457 fuel, pinned against the real book page); PARKED for the owner: the LSP watcher glob (`**/*.vl`) does not see read-input edits — widen, or accept next-edit freshness?; NEXT: the router/docs-app rung; STEP 3 DONE 2026-08-20 — the site took rung 2 whole, website@6036e21, record fullstack-dx.md §16.11: pixel-identical both pages both schemes, the shells deleted, the hatch census is the ladder's fit report, §15.2's declined helpers all found customers → E79)
+    STATUS: OPEN (STEP 1 SHIPPED 2026-08-25 — std::markdown built strict per the ruled markdown.md (fa742f146 merged 7b9b55ce): 456/456 mdBook-exact anchors with a real-build golden, 0.9 ms/page, `Items` carries BLOCK bodies (the build's correction, OWNER NOD 2026-08-25; golden regen rule also nodded); STEP 2 SHIPPED 2026-08-26 (lane k13-step-2, 5d434d29) — `std::asset::read` is the channel’s input direction (package-root-relative, escape-refused, const-only under emit’s machinery), every read a tracked build input (watch trigger + per-leg skip + in-process pin), the fuel budget 1M → 16M on measurement (the largest page parses at 2,001,457 fuel, pinned against the real book page); the watcher question RULED 2026-08-26 with Order 12's answer batch (markdown.md §11 carries the record): the recorded-inputs mechanism, never `**/*` — build the recorded-inputs watcher (dynamic `workspace/didChangeWatchedFiles` re-registration from `Program::const_input_files`) when the docs-app rung lands, and accept next-edit freshness until then; NEXT: the router/docs-app rung; STEP 3 DONE 2026-08-20 — the site took rung 2 whole, website@6036e21, record fullstack-dx.md §16.11: pixel-identical both pages both schemes, the shells deleted, the hatch census is the ladder's fit report, §15.2's declined helpers all found customers → E79)
     The owner's literal item 10 ("transitioning the docs to the vilan
     framework"), filed as its own item so it stays reachable while K6
     ships option B. docs-port.md §2.1 proved the port is *unavailable*
@@ -772,123 +785,6 @@ part of why planning fragmented. Spans `vilan-website` and
     The 32 LSP deep links and 417 in-book links pin mdBook's anchor
     algorithm as a compatibility surface (§4 Q3) that any renderer must
     reproduce. Record: docs-port.md §2.1, §3.3, §4 Q1.
-
-18. **NEW — the playground console `message` listener accepts any window's messages** (S; N16 audit run 1, 2026-08-26)
-    STATUS: **CLOSED 2026-08-27 — DEPLOYED** (website `f8a8dea`, deploy + the new ci both green, live). Pinned, 8 checks.
-    **Two corrections, and the first one matters more than the fix.** (1) The
-    remedy this item prescribed — "add the extern getter and then check it" —
-    **would not have worked.** The runner iframe is `sandbox="allow-scripts"`
-    with no `allow-same-origin`, so it has an **opaque origin** and its
-    messages arrive as `event.origin === "null"`. `"null"` is not an identity:
-    it is what *every* opaque-origin document presents, so a hostile page need
-    only post from inside a sandboxed frame of its own to satisfy an origin
-    check. `event.source === frame.contentWindow` would settle it, but the
-    frame lives in the vendored bundle rather than the entry, and vilan has no
-    reference equality on external handles anyway. So the item was right that
-    there was a hole and wrong about the instrument.
-    What shipped instead is a **per-Run token**: 122 bits from
-    `crypto.randomUUID`, minted by the page before each Run (where the
-    decision belongs), passed into the frame, quoted back on every forwarded
-    line, cleared on a failed build. The `expected != ""` term is load-bearing
-    — without it a message supplying `token: ""` matches the empty stored
-    token — and `runProgram` refuses any token failing `/^[0-9a-f-]{16,64}$/`
-    rather than trusting a caller not to close the `<script>` it is spliced
-    into. (2) "No compiler change" — `HostEvent` is an `external struct`
-    declared in `src/playground.vl` itself, so the getter binds locally in one
-    line; the escalation to a std binding was the order's error, and adding
-    `Event::origin()` to `std::dom` would have been **dead surface**, since
-    std delivers no window-level event at all (that gap is now filed as A27).
-    **The pin rule reaches this defect now**: `vilan-website` has a harness —
-    `scripts/test.mjs` + `tests/`, the `hmr.rs` shape (stub the host, drive the
-    real built bundle), 35 checks, wired into a new `ci.yml` on every push and
-    PR *and* a gate in `deploy.yml`. One correction to this item's premise:
-    the repo was not testless — `scripts/smoke-playground.mjs` was already a
-    real gate; what was missing was a DOM-stub runner for the site's own
-    bundles.
-    `vilan-website/src/playground.vl` registers a `message` listener
-    with no `event.origin`/source check; any embedding or opener page
-    can inject console traffic. Record: audit-1's report (Order 11).
-    SHARPENED + PIN NOTE 2026-08-26 (Order 14): it is NOT "one origin
-    check" — `HostEvent` binds ONLY `data()`; there is no
-    `origin()`/`source()` binding at all, so the fix is two parts, add
-    the extern getter and then check it. And this item has NO honest
-    home for a pin, recorded rather than worked around: the listener is
-    `vilan-website` code and that repo has no test harness of any kind
-    (no Cargo.toml, no package.json, no test directory; its only CI is a
-    deploy workflow), so forcing a pin into the vilan repo would be a
-    fiction. What a harness would take: the vilan repo already has the
-    machinery in shape — `crates/vilan-cli/tests/hmr.rs` builds a browser
-    bundle, runs it under a node DOM stub, dispatches a synthetic event
-    and asserts — but it belongs in vilan-website, which needs a runner
-    stood up first. This is the one open defect the pin rule structurally
-    cannot reach today.
-
-19. **NEW — the website deploy fetches the latest wasm release unpinned, with no checksum** (S; N16 audit run 1, 2026-08-26)
-    STATUS: **CLOSED 2026-08-27 — DEPLOYED** (website `f8a8dea`). Proven against a LIVE release rather than a fixture: `fetch-wasm.sh` run by hand against the freshly published v0.37.0 downloaded, verified against that release's own `sha256sums.txt`, extracted, and wrote `VERSION` — exit 0 — and the smoke gate then compiled every seeded example against the exact wasm a visitor gets. The live manifest reads `v0.37.0`.
-    deploy.yml + fetch-wasm.sh trust "latest" blindly, and the
-    workflow's actions ride mutable tags (L14's class). Pin the release
-    by tag+SHA or carry the sha256sums.txt check into fetch-wasm.sh.
-    Record: audit-1's report (Order 11).
-    STAGED, NOT DEPLOYED 2026-08-27 (Order 15, lane security-tail): the fix
-    is written and committed on branch `k19-verify-wasm` in vilan-website —
-    fetch-wasm.sh downloads to a file, verifies against the release's own
-    `sha256sums.txt`, then extracts, then removes both scratch files so the
-    published version directory holds exactly the compiler pair as before;
-    it fails closed with no sha256 tool, the same discipline install.sh now
-    uses; deploy.yml's four actions are SHA-pinned with dependabot tending
-    them. NOT PUSHED — a push to that repo's main auto-triggers a deploy,
-    which is the owner's call. Correction to this item's text: the checksum
-    asset is `sha256sums.txt` (lowercase, .txt), not `SHA256SUMS`; there is
-    no asset by the latter name, and install.sh and the brew job already
-    consume the real one.
-
-20. **NEW — the website deploy pipes `install.sh` straight to a shell, unverified** (S; found by Order 15's security-tail lane 2026-08-27)
-    STATUS: OPEN
-    `vilan-website/.github/workflows/deploy.yml:58` runs
-    `curl -fsSL .../releases/latest/download/install.sh | sh` — the
-    installer fetched and executed in one breath, with nothing between the
-    network and the shell. It is the same class as K19 (which covered the
-    wasm tarball in the same job) but a DISTINCT hole, not covered by
-    K19's text, and it is the sharper of the two: K19's payload runs in
-    visitors' browsers, this one runs in CI holding the deploy
-    credentials.
-    Cheap to close, and the pieces already exist: `sha256sums.txt` covers
-    `install.sh` too, so the fix is the shape K19's `fetch-wasm.sh` now
-    uses — download to a file, verify against the release's own checksum
-    list, then execute — and `install.sh` itself was taught to fail
-    closed in the same order (L15's S half), so the discipline is already
-    written down twice in the tree.
-    Worth noting what it does NOT buy, the same limit K19 records: the
-    checksums come from the same release page as the asset, so this
-    authenticates the transfer and not the pipeline that produced it.
-    That is L15's M half and stays open.
-    Record: the security-tail lane report (Order 15).
-    **FIXED 2026-08-27** (Order 16, lane `website-harness`): the pipe is gone.
-    `scripts/install-toolchain.sh` downloads `install.sh` **and**
-    `sha256sums.txt` to a `mktemp -d`, verifies, runs, and cleans up on a
-    trap; `deploy.yml` and the new `ci.yml` share the one copy. Fails closed
-    with no sha256 tool (probed: both `command -v` lookups redirected →
-    `EXIT=1`, `.vilan` never created). Verified against the **live** release
-    rather than read: `sha256sums.txt` carries `81c89ca8…  install.sh`, and
-    `release.yml` copies `install.sh` into `release-assets/` *before*
-    `sha256sum * > sha256sums.txt`, so coverage is structural. Corruption
-    probe: one appended byte → `sha256sum -c` exit 1.
-    **DEPLOYED 2026-08-27** — the sequence held: v0.37.0 shipped and folded, the branch was rebuilt and re-gated against the RELEASED toolchain (build 0, harness 35/35, wasm fetch verified, smoke gate green), then merged to `main` as `f8a8dea`; deploy and the new `ci` are both green and the three bundled files are live with correct types and byte counts. What follows was the pre-merge record:
-    **STAGED, NOT PUSHED — and it cannot deploy yet.** K18/K19/K20 all sit on
-    vilan-website branch `k18-harness` (off `k19-verify-wasm`), together with
-    the 029 adoption. That branch's build now uses `const asset::bundle`,
-    which **does not exist in v0.36.0**, and `deploy.yml` installs the
-    toolchain from `releases/latest`. So merging it to `main` before v0.37.0
-    ships would break the deploy. **And the branch is not pushed either**, for a
-    sharper reason found while staging it: K18's new `ci.yml` triggers on
-    `push` with no branch filter, so pushing the branch at all would start a
-    run that installs `releases/latest` and fails on the same missing
-    `asset::bundle` — a red badge for a known-good reason, on a repo whose
-    only signal today is green. Sequence: **cut v0.37.0, then push, then
-    merge.** Verified
-    against a compiler built from `next`: `vilan build .` exit 0, harness
-    35/35, all three vendored bundles served with correct types and byte
-    counts.
 
 ## L. Release engineering & beta — NEW SECTION
 
@@ -1151,7 +1047,7 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     text. Fix is pin the toolchain, land the reformat once, add the check.
 
 22. **NEW — eight source comments and two published documents still cite the tombstoned `vilan/proposal/`** (S; N16 audit run 2, 2026-08-27)
-    STATUS: OPEN
+    STATUS: FIXED 2026-08-28 (Order 17, lane hygiene-smalls) — all ten sites, across the three repos; record at the entry's tail
     N15's cutover moved the papers to `vilan-lang/proposals`; `vilan/proposal/`
     holds one tombstone README. Still pointing readers at it:
     `crates/vilan-core/tests/inference.rs:6, :51814, :52815, :53305, :64409`;
@@ -1166,6 +1062,24 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     N16's own record half-shipped here: `proposals-repo.md:174`'s reword
     landed, `:157`'s "brief templates that hardcode `vilan/proposal/…` update
     at cutover" did not.
+    FIXED 2026-08-28 (Order 17, lane hygiene-smalls). The eight comments
+    (line numbers had drifted; today's inference.rs sites are :6, :52203,
+    :53204, :53694, :64798) now spell the bare `proposal/X.md` citation
+    form — each file's own majority convention, and the form the freeze
+    banner promises resolves verbatim in the proposals repo. process.md's
+    CONTRIBUTING sketch names `vilan-lang/proposals` outright (its §4.2
+    premise sentence two paragraphs up, same dead path, fixed with it);
+    `proposals-repo.md:157` carries a dated post-cutover note (the
+    checklist item slipped — Order 16 found and fixed the three agent
+    files; the structural gap is N20); the pages README's two cites name
+    the proposals repo (N13's, its tracker archive). Deliberately left,
+    triaged not missed: CHANGELOG.md's five (release history quotes its
+    records as published), ci.yml:84 and cut-release.sh's exclusion
+    (both ABOUT the tombstone path, and functional), docs-port.md:1108
+    (a verbatim dated suite-run record), docs-site.md:37 (a pre-move
+    paper's non-goal, historical), and this repo's README/proposals-repo
+    (the migration is their subject). The vilan and pages halves ride
+    this lane's branches in those repos.
 
 23. **NEW — 37 `pub` items in `vilan-core` are never referenced outside their own file** (S, mechanical; N16 audit run 2, 2026-08-27)
     STATUS: OPEN (low priority — over-exposure, not rot)
@@ -1180,7 +1094,7 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     leaves the instrument lopsided.
 
 24. **NEW — an archived per-item tracker file is deleted, so every `[[link]]` to it dangles** (S; found by Order 16's `asset-bundle` lane, 2026-08-27)
-    STATUS: OPEN — N17's format question, found by a consumer
+    STATUS: FIXED 2026-08-28 (Order 17, lane hygiene-smalls) — the gate rule below; `.local` trackers stay convention-covered, recorded not enforced
     A lane told to read kolt.local 029's see-alsos reported that "items 018,
     024 and 030 do not exist" — correct: they shipped, and closing an item
     **deletes `items/NNN.md`** and moves a tombstone paragraph into
@@ -1192,6 +1106,24 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     per-file layout mirroring `items/`, or a link-checking gate that fails on
     a dangling `[[…]]`. The last one is the smallest and catches the class
     rather than the instance.
+    FIXED 2026-08-28 (Order 17, lane hygiene-smalls): the smallest option
+    built — a fifth rule in `scripts/check_hygiene.py`: every `[[name]]`
+    cite in a tracked file under `projects/<project>/tracker/` must resolve
+    to the live `items/<name>.md` or to a mention in that tracker's
+    `archive.md` (closing an item deletes its file, so archived IDs resolve
+    through the tombstone). Scope is deliberate — the cite convention
+    belongs to the per-item format, and the wider repo uses the same
+    brackets for TOML tables and nested array types. Plant-proven four
+    ways: a staged dangling cite fails; a live item file resolves; an
+    archive tombstone resolves; a superstring in the archive (`1019` for
+    `[[019]]`) does not. The repo as it stands passes — no tracked
+    per-item tracker exists yet, so the rule's first real customers arrive
+    with N17's migration, covered from day one. STRUCTURAL LIMIT, stated
+    at the gate too: the gate scans TRACKED files only, so a gitignored
+    `.local` tracker (kolt.local — the pilot where this class was found —
+    included) is invisible to it by construction; there, dangling-cite
+    hygiene is convention carried by this record and projects/README.md's
+    closing discipline, not enforcement.
 
 25. **NEW — `fs::read_dir_all` entries carry the HOST path separator** (S; found by Order 16's `path-tooling` lane, 2026-08-27)
     STATUS: **CLOSED 2026-08-27** (`cc5c1569`) — and it was the last red test
