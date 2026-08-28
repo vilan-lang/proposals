@@ -691,6 +691,17 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
     call — scope-end drop of the lifted temporary, statement-end, or reject
     the temporary form — and each option moves observable teardown timing,
     so it is the owner's, paper-first.
+    **PAPER WRITTEN 2026-08-28** (Order 18, lane `c11-paper`): record
+    `proposal/temporary-drop.md`, PROPOSED, awaiting the mechanics ruling
+    (§11 Q1–Q3). It recommends **(b) statement-end**, and corrects two
+    premises: there is no "B141 lifting" to hang a drop on (B141 was a
+    printer parenthesization fix — `postfix_subject`), and the loop is NOT
+    the decisive case (a loop body is already a drop scope, so both options
+    free per iteration). The case that separates them is a scope that never
+    ends — the serve-forever `main` local `filesystem.md` §5 recommends,
+    where scope-end drop is a measured no-op. The paper is written as an
+    amendment-in-waiting: its §7.1/§7.3 lift into `destruction.md` §5/§7/§4
+    at build time, and it archives once they land (§10).
    Cross-handle aliased writes (two `Shared` handles, one cell) need
    runtime generations / poisoned views; semantically empty on JS. Build
    with the native memory story, likely debug-mode-only. History:
