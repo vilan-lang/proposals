@@ -599,3 +599,19 @@ kolt.local 031 Q1/Q3/Q5 and 014-merged-with-009 (Order 17 built both).
 
 ---
 
+
+---
+
+**N17 EXECUTED 2026-08-28** (the first entry written INTO the chronicle
+rather than migrated into it): the per-item migration ran in its serial
+window per tracker-migration.md §8 — 44 open items split into
+`projects/vilan/tracker/items/` with verbatim IDs, the eras frozen under
+`archive/` with banner stubs at the old paths, the index-completeness
+gate extended to projects and the dangling-cite rule taught to skip
+backtick code spans (its first live run caught its own false-positive
+class — `[[build.hook]]` is TOML, not a cite — and the fix was
+plant-proven both ways). The verify script's census detector was
+refined in the same pass (a tombstone HEAD counts as archived; a mere
+mention does not) and passed clean: 44 = 44, hygiene green, 40 sampled
+body lines lossless. From here: new items are files, closes are
+tombstones in the project archive, and this file carries the narrative.
