@@ -7,12 +7,13 @@ planning surface — extracted from `vilan-lang/vilan` at freeze sha
 
 Layout, as ruled:
 
-- `proposal/` — the papers, a 1:1 image of the compiler repo's old
-  `vilan/proposal/`, so `proposal/X.md §n` citations resolve here
-  verbatim and stay greppable. Files that moved below leave one-line
-  stubs at their old paths so relative `record:` citations still land.
-  `proposal/README.md` is the per-file index (gated: exactly one row
-  per paper).
+- `projects/vilan/proposal/` — the papers, beside their tracker since
+  2026-08-28 (the owner's call completing the N17 restructure; before
+  that, a 1:1 image of the compiler repo's old `vilan/proposal/`). A
+  `proposal/X.md §n` citation anywhere in the record resolves there
+  verbatim — a banner stub holds the old `proposal/` path, and files
+  that moved earlier keep their one-line stubs. Its `README.md` is the
+  per-file index (gated: exactly one row per paper).
 - `projects/vilan/tracker/` — THE open-work tracker, per-item since the
   N17 migration (2026-08-28): one file per open item in `items/`,
   `INDEX.md` the open list, `archive.md` the tombstones. The cycle

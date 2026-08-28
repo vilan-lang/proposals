@@ -25,11 +25,11 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 # owner (carried over from the compiler gate's allowlist, re-rooted to
 # this repo's layout). Everything else must stay swept (F9 S4).
 OWNER_STRING_ALLOWLIST = {
-    "proposal/org-migration.md":
+    "projects/vilan/proposal/org-migration.md":
         "the migration plan itself — the old owner is its subject",
     "archive/backlog-2026-07-18.md":
         "the F9 backlog entry states the problem in terms of the old owner",
-    "proposal/releases.md":
+    "projects/vilan/proposal/releases.md":
         "release history quotes the install one-liner as it was published",
     "archive/backlog.md":
         "the historical record — ship records moved from the distilled file "
@@ -96,7 +96,7 @@ def main():
     # Index completeness: every proposal/*.md has exactly one row in
     # proposal/README.md (stubs included — their rows say where the file
     # went), and no row is duplicated.
-    index = (ROOT / "proposal" / "README.md").read_text(encoding="utf-8")
+    index = (ROOT / "projects" / "vilan" / "proposal" / "README.md").read_text(encoding="utf-8")
     rows = re.findall(r"^\| `([^`]+)` \|", index, flags=re.M)
     row_counts = {}
     for row in rows:
@@ -104,11 +104,12 @@ def main():
     for name, _ in files:
         parts = name.split("/")
         if (
-            len(parts) == 2
-            and parts[0] == "proposal"
-            and parts[1].endswith(".md")
-            and parts[1] != "README.md"
+            len(parts) == 4
+            and parts[:3] == ["projects", "vilan", "proposal"]
+            and parts[3].endswith(".md")
+            and parts[3] != "README.md"
         ):
+            parts = [None, parts[3]]
             count = row_counts.get(parts[1], 0)
             if count != 1:
                 offenders.append(

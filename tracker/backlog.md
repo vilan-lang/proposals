@@ -4,7 +4,7 @@ The single planning surface lives at
 [`projects/vilan/tracker/`](../projects/vilan/tracker/INDEX.md) — one file
 per open item, `INDEX.md` the open list, `archive.md` the tombstones
 (N17, executed 2026-08-28; the runbook is
-[`proposal/tracker-migration.md`](../proposal/tracker-migration.md)).
+[`tracker-migration.md`](../projects/vilan/proposal/tracker-migration.md)).
 
 This era's frozen record, tombstones in place, is
 [`archive/backlog-2026-08-28.md`](../archive/backlog-2026-08-28.md); the
