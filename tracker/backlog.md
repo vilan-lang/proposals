@@ -843,7 +843,7 @@ part of why planning fragmented. Spans `vilan-website` and
     consume the real one.
 
 20. **NEW — the website deploy pipes `install.sh` straight to a shell, unverified** (S; found by Order 15's security-tail lane 2026-08-27)
-    STATUS: OPEN
+    STATUS: **CLOSED 2026-08-27 — DEPLOYED** (website `f8a8dea`, the same merge as K18/K19; deploy and the new ci both green — the FIXED/DEPLOYED record below).
     `vilan-website/.github/workflows/deploy.yml:58` runs
     `curl -fsSL .../releases/latest/download/install.sh | sh` — the
     installer fetched and executed in one breath, with nothing between the
