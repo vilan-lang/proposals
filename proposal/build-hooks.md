@@ -34,6 +34,57 @@
 > pruner acts only on its own record, never on a filename it merely finds,
 > and the general sweep stays filed with E92. (b) framing and (c) the
 > per-leg unit are untouched, awaiting the §10 rulings.
+>
+> **Ship note (2026-08-28, Order 18, lane `build-hooks-s1s2`): S1 and S2
+> BUILT**, on the §10 rulings. §3's predicate ships as written — the stamp at
+> `dist/.build-hooks.json` (Q2), skipped hooks announced (`Fresh <name>`),
+> `--rerun-hooks` on `vilan build`, and §3.2's unsoundness accepted and
+> documented in the book, the spec and the code. §4.3's note ships as Q4 ruled:
+> one dim line, once per build, naming the dependency, never a warning, exit
+> code unchanged — and the opt-in is `build-hooks = true` on the dependency's
+> own declaration (Q6), shipped refusing everything. Four things the paper
+> underdetermined, decided in the building and recorded here as the paper's
+> now:
+>
+> - **`inputs`/`outputs` are literal paths, and a glob is a manifest error.**
+>   §2.1's prose writes `inputs = ["src/static/**"]`; §2.3's normative
+>   declaration does not, and §3.1 digests *declared* paths. A pattern left
+>   unmatched would digest as a file that is never there, match "missing"
+>   forever, and freeze the hook after its first run — silently, which is the
+>   one outcome this design cannot afford. So a declared path is a file **or a
+>   directory** (digesting its whole tree, which is what the copy case
+>   actually needs), and a `*`/`?`/`[` in one is refused with a message naming
+>   the fix. No matcher, no dependency, and the failure is loud.
+> - **The fingerprint is compared whole**, so adding, removing or renaming a
+>   declared path is a change without a rule of its own. §3.1 lists the
+>   conditions separately; comparing the recorded structure subsumes them.
+> - **A hook's `run` takes a string or a list**, exactly as `[build] run`
+>   does, rather than a lone string. One vocabulary across the three keys, no
+>   refusal to write, no new parsing.
+> - **Every stamp read failure is "no stamp".** A truncation, a hand edit, a
+>   version this binary does not know: each costs one hook run and can never
+>   cost a wrong build. That property is what makes the stamp cheap enough to
+>   hand-roll its (small) JSON reader rather than grow the `vilan` binary a
+>   dependency.
+>
+> **Not built, and why.** `emit_keyed` is S3's and was left alone. **Q5's
+> second module root (`[package] generated`) is in no slice of §8** — S1
+> through S5 never mention it — so it was not built and its module-resolution
+> cost is still unmeasured; it needs a slice of its own before it needs a
+> probe. G7's reserved-kind refusal belongs to a sibling lane and was not
+> touched; the seam is `recordable_emit_kind`, which this lane did not go
+> near. §9's watch-round pin is not built either: the freshness gate is
+> per-round by construction (each round calls the same hook runner) and the
+> e2e pins prove the transitions through repeated `build`/`run` invocations,
+> but a pin that actually drives N watch rounds is still owed.
+>
+> **One silence this lane found and did not close.** In a `[project]`
+> workspace, a *member's* own `[build] run` never runs — hooks come from the
+> root manifest alone — and nothing says so. That is the §4.3 defect in a
+> different place and a different tier (a member is the user's own code, so
+> it is tier 1 being ignored, not tier 2 being refused). Filed here rather
+> than fixed: whether a member's hooks should run is a real question about
+> what a workspace build *is*, and it is not S1's or S2's.
 
 ---
 
@@ -680,7 +731,7 @@ Each recorded so that declining it is a decision, not an omission.
 Suite-gated, docs in the same commit, per-case pins. The first slice is
 standalone and needs no ruling on anything else in this paper.
 
-- **S1 — the staleness gate on the hook that exists.** `[[build.hook]]` with
+- **S1 — the staleness gate on the hook that exists.** *(BUILT 2026-08-28, Order 18.)* `[[build.hook]]` with
   `name`/`run`/`inputs`/`outputs`; the `dist/.build-hooks.json` stamp; skip when
   fresh with a dim `Fresh <name>` line; `vilan build --rerun-hooks`. **No new
   language surface, no `build.vl`, no install command, no trust change.**
@@ -692,7 +743,7 @@ standalone and needs no ruling on anything else in this paper.
   Gate: a hook with no declaration runs on every build exactly as before; a
   declared hook runs once, then is skipped until an input moves; a missing
   declared output re-runs it; a changed command string re-runs it.
-- **S2 — the tier-2 boundary, said and spelled.** The per-dependency opt-in key
+- **S2 — the tier-2 boundary, said and spelled.** *(BUILT 2026-08-28, Order 18; the opt-in is `build-hooks = true` on the dependency's own declaration.)* The per-dependency opt-in key
   in the manifest, parsed and validated, against `build-trust.md` §3's three
   properties (per dependency, recorded in the manifest, absent means no); the
   one-line note when a dependency declares a hook with no opt-in (§4.3). **No
