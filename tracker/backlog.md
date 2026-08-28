@@ -442,6 +442,52 @@ into one relation axis — Order 17 builds both.
   entries; v0.38.0's Unreleased opens with this order. B145's
   `inference.rs` split is scheduled SERIAL after the fold, never
   in-cycle — it conflicts with every compiler lane by construction.
+  **Order 17 (cycle 35) CLOSED 2026-08-28, same day** — eight lanes, all
+  shipped; merged --no-ff, next @6edf6261 PUSHED (union suite 4482/4482
+  exit 0; CHANGELOG parity 13/13 — v0.38.0's Unreleased holds 13 entries,
+  TWO breaking: `Style::dark` and `fs::exists` deleted). style-relations
+  built the ruling with its probes doing real work — TWO determinations
+  deviate from the ruling's illustrative spellings and await the owner
+  (§0bis.6: `within` must emit UNLAYERED or it loses to every base rule;
+  `divide` renders `> :not(:first-child)` because the owl spelling ties
+  with `children` and resolves by class-hash order, the exact forbidden
+  resolution); the theme.vl-shaped corpus program is the acceptance.
+  fs-handles shipped 031's S3 whole (Q1 File-scoped as ruled; Q2 as
+  recommended; `fs::exists` deleted per Q3; B141's old spellings are the
+  positive pins) and DISPROVED the paper's module-level-File bullet;
+  its sharp find is C11 — an expression-temporary resource never drops,
+  and S3's intended idiom makes that routine (owner semantics call,
+  paper-first). compiler-fences closed B143 (refinement extracted into
+  shared `dispatch_refine.rs`; plants proved the hole WIDER than filed —
+  inherited-default and initializer shapes were live escapes; B146 files
+  the coverage check's narrower diet) and B144. ref-index-reverse closed
+  034 — the reverse-deps pin un-ignored, rename through the same union,
+  a staleness refusal instead of skewed edits. emit-kinds closed G5/G6
+  (css byte-identical gated; the pruner acts only on its own record) and
+  probe-found G7: `emit("vl", …)` OVERWRITES THE ENTRY SOURCE FILE, exit
+  0 — filed as an early-fix candidate. release-gate closed L17 (refusal
+  proven LIVE against origin's real shas) + N21's fmt half (with the
+  RUSTUP_TOOLCHAIN discovery). hygiene-smalls closed N19/N22/N24, fixed
+  the K20/K13 status drift, archived the K trio + N25/N26 tombstones,
+  rebuilt this file's header recall surface, and landed the dangling-
+  `[[link]]` hygiene rule. std-smalls shipped 025(c) (RFC-9110 weak
+  comparison; the open-builder shape so per-path Cache-Control chains on
+  either arm; `serve_build` untouched — (b) stays fenced). Archive 122;
+  five new items (B146, C11, E98, G7, G8); N21 narrowed to clippy/audit;
+  kolt.local 12 → 9 open (009+014, 034 tombstoned; 031 → S3 shipped;
+  025 → (c) shipped). Cut dry-run: the CHANGELOG sweep is GREEN (13
+  parsed, ordered, families balanced); the single red is the NEW gate
+  refusing the still-running CI at 6edf6261 — L17 doing its job on first
+  live use; the clean rerun waits on that run, which is also the first
+  live proof of the fmt job and the windows gate legs. LESSONS: lanes
+  parked on "waiting for the suite notification" three more times
+  (occurrences 6–8; the brief's discipline block alone does not prevent
+  it — the one that armed a Monitor on its log self-resumed, the other
+  two needed nudges: consider making Monitor-on-suite.log the briefed
+  default); three lanes independently hit the same rustfmt drift and
+  each handled it correctly (N21's toolchain pin ends the class); the
+  CHANGELOG unions conflicted at five of eight merges, resolved
+  keep-both with markers intact, parity checked at every step.
 - **Next** — the owner's parked rulings (B127 §14.1; L10 §6 ×5; N15 §8
   ×6; L4's four; M9's nod; E79's §10.1 review; N8's sunset; beta.md
   §5.1 at the switch; the REWORD candidates), then the build lanes they
@@ -537,45 +583,6 @@ into one relation axis — Order 17 builds both.
     B29 does not cover a wrong-shaped Lift impl. History:
     backlog-2026-07-18.md §B item 11.
 
-143. **NEW — the const-only capability check cannot follow a bounded generic's trait dispatch, so `emit` escapes it into the emitted JavaScript** (M; found by Order 16's `css-raw-typed` lane while probing a design, 2026-08-27)
-     STATUS: OPEN — pinned `#[ignore]`d (`emit_reached_through_a_bounded_generic_is_const_only`), verified red
-     `const_eval.rs::check_const_only` propagates the compile-time-only
-     property over `CallGraph` **call edges**, and a bounded generic's trait
-     dispatch is not one it can follow. So an `emit` inside a trait impl is
-     invisible to the check. Probed on the repo compiler: a generic
-     `fun render<V: Emitter>(value: V)` calling `value.text()`, where the impl
-     emits, **compiles clean outside `const`** and reaches the emitted JS as a
-     live `__emit_asset(...)` call with no runtime binding — a
-     `ReferenceError` at run time. Both *concrete* spellings of the same call
-     are correctly refused with "is compile-time-only", so the checker is right
-     everywhere it can see and blind through exactly one edge.
-     This is a miscompile in the honest sense: a clean compile, no diagnostic,
-     and a crash at run time. It predates the lane that found it and is not
-     confined to styling — any trait whose impl reaches a compile-time-only
-     builtin has the same hole.
-     It also **shaped a shipped design**, which is why it was found: S1 as
-     literally specified (the `Length`/`Color` impls carrying `value.root`
-     onto the sheet, i.e. `emit` inside the impl) would have shipped this
-     footgun. The trait ships describing values (`css_text`/`css_root`) with
-     the emitting surface doing the emitting, so nothing in std relies on the
-     hole. Record: the `css-raw-typed` lane report (Order 16).
-
-144. **NEW — `walk_type_node`'s catch-all is `unimplemented!`, a panic where every neighbour pushes a diagnostic** (S; N16 audit run 2, 2026-08-27)
-     STATUS: OPEN (latent — currently unreachable, verified)
-     `crates/vilan-core/src/analyzer.rs:21183` ends a twelve-variant match on
-     user-input-driven `Node` with `x => unimplemented!("unhandled type node:
-     {:?}", x)`. **Probed and currently unreachable**: `parse_type_atom` can
-     only produce those twelve or `None`, and B142's depth stand-in
-     (`Node::Error`) does not reach the walk — seven probes through
-     `analyze_source` (trailing-comma tuple, unclosed generic, bare `&`,
-     parameter/field/return positions, 600-level nesting) all returned a
-     program with zero fence-caught panics. So it is dead code *and* a latent
-     ICE: one new type-position variant makes it live, and its failure mode is
-     a crash where the whole file's neighbours emit a diagnostic. This is
-     AGENTS.md's `_ =>` catch-all invariant with the mistreatment upgraded
-     from "wrong answer" to "abort". Fix: push a diagnostic, or make the match
-     exhaustive so the compiler names the gap at the next variant.
-
 145. **NEW — the two files every lane appends to have outgrown their own governing paper** (M, mechanical; N16 audit run 2, 2026-08-27)
      STATUS: OPEN
      `crates/vilan-core/tests/inference.rs` is **66,830 lines** — the single
@@ -591,6 +598,20 @@ into one relation axis — Order 17 builds both.
      subject, mechanically; the analyzer half is `analyzer-refactor.md`'s
      premise wanting a re-measure before its plan is trusted.
 
+146. **NEW — the context coverage check's refinement consumes node-owned dispatch sites only** (S–M; found by Order 17's compiler-fences lane, 2026-08-28)
+     STATUS: OPEN
+     B143's fix taught the const-only check to follow refined dispatch at
+     every site class — and extracting the machinery into `dispatch_refine.rs`
+     showed the context COVERAGE check (the H8 owner-fence refinement) reads
+     refined edges only for node-owned sites: top-level and initializer-owned
+     dispatch still take the union, so a forwarding shape there stays
+     conservatively fenced. Deliberately preserved during B143 — a bug-fix
+     lane should not change shipped coverage semantics — but the two
+     consumers of one module now run different diets, which is exactly how
+     they drift apart. Also recorded here, B143's accepted residual: an
+     iterator-protocol dispatch in a bare top-level `for` statement has no
+     graph node and is invisible to BOTH checks.
+
 ## C. Memory model
 
 1. **`Weak<T>`** (M)
@@ -603,6 +624,19 @@ into one relation axis — Order 17 builds both.
 
 2. **Dynamic rule-4 remainder** (M)
    STATUS: OPEN (blocked: F4's native memory story)
+
+11. **NEW — a resource born and consumed as an expression temporary is never dropped** (M — semantics ruling first; found by Order 17's fs-handles lane, 2026-08-28)
+    STATUS: OPEN (proposal-first — filesystem.md §5's amendment records the
+    finding; the ruling touches destruction.md's ratified ground)
+    `File::open(p).read_at(b, 0)`'s receiver — and equally
+    `Database::open(":memory:").exec(…)` — is neither dropped nor rejected:
+    the drop planner tracks bindings, an expression temporary has none, so
+    the handle leaks until process exit. Value-correct, Drop-net-unreachable,
+    and S3's intended idiom makes the spelling routine (the B141 fix made it
+    WORK; nothing makes it clean up). The fix is an unratified semantics
+    call — scope-end drop of the lifted temporary, statement-end, or reject
+    the temporary form — and each option moves observable teardown timing,
+    so it is the owner's, paper-first.
    Cross-handle aliased writes (two `Shared` handles, one cell) need
    runtime generations / poisoned views; semantically empty on JS. Build
    with the native memory story, likely debug-mode-only. History:
@@ -665,6 +699,15 @@ into one relation axis — Order 17 builds both.
     panicked" for the rest of the session. The work is to pick one posture and
     write down why, not to add locks.
 
+98. **NEW — a browser build constructing a `@process` resource draws the coloring diagnostic twice** (S; found by Order 17's fs-handles lane, 2026-08-28)
+    STATUS: OPEN
+    The second error is for the `drop` edge and anchors inside std's OWN
+    source (the std-cache path) — `Database` shows it identically, so this
+    is the resource class, not `File`. One user mistake, two diagnostics,
+    one of them pointing the user at std's internals. Wants the drop-edge
+    diagnostic suppressed or folded into the construction site's; the
+    construction-site error alone already names the platform rule.
+
 ## G. Macros & const
 
 2. **Const-eval tail** (S–M)
@@ -675,31 +718,25 @@ into one relation axis — Order 17 builds both.
    direct interest to §M's perf arc), a const budget knob. Liveness-tied
    emission stays A7-entangled. History: backlog-2026-07-18.md §G item 2.
 
-5. **NEW — one CSS cascade comparator is applied to every `emit` kind, so a non-CSS kind gets CSS ordering** (S; found by Order 16's `build-hooks` lane, probe-verified, 2026-08-27)
-   STATUS: OPEN
-   `assemble_assets` sorts every accumulated kind with one comparator whose
-   key is `(Option<width>, line)` — the CSS cascade rule. Applied to a kind
-   that is not CSS, it silently reorders: a plain line starting `z` (0x7A)
-   was observed sorting **before** two `@media` lines in a kind named
-   `manifest`, because the media-query arm outranks the lexical one whatever
-   the content. `const-eval.md` §3 already *promises* "a kind-specific rule";
-   the implementation has exactly one. So this is a promise being kept rather
-   than a feature being added, which is the cheaper argument. It is also the
-   blocker under kolt.local 028: a user-declared accumulator cannot have a
-   declared order while every kind inherits the stylesheet's.
+7. **NEW — an `emit` kind colliding with the build's own output namespace overwrites real files, source included** (S–M; found by Order 17's emit-kinds lane, probe-verified, 2026-08-28)
+   STATUS: OPEN — flagged as an early-fix candidate: the failure writes over
+   user source
+   `emit("vl", "CLOBBERED")` in a bare build **overwrites the entry source
+   file**, exit 0 — probe-verified against the built binary. E94's
+   one-segment fence checks the kind's SHAPE, not its namespace, so kinds
+   colliding with the leg's own outputs (`vl`, `mjs`, `js`, `chunks.json`,
+   the `<arm>.js` family) all write where the build writes. The clean fix
+   wants build-hooks.md §5.6's reserved-kind ruling — and G6's pruner
+   already ships the refusal predicate; the same list applied at emit time
+   is the obvious shape. Record: the emit-kinds lane report (Order 17).
 
-6. **NEW — a kind that stops emitting leaves its last output file in `dist/`** (S; found by Order 16's `build-hooks` lane, 2026-08-27)
+8. **NEW — `run` and single-file watch never sweep the stale CSS sidecar** (S; found by Order 17's emit-kinds lane, 2026-08-28)
    STATUS: OPEN
-   Accumulators write one `<output>.<kind>` file per kind per leg. When a
-   build emits nothing for a kind it emitted before, the previous file is
-   left where it is — so `dist/` keeps serving output no current build
-   produced. Under Order 16's own organizing principle (a built app needs
-   nothing but `dist/`) that is worse than a missing file, because it
-   **ships**. Same shape as E92. Two adjacent limits recorded with it, both
-   verified: accumulators are per **leg** rather than per build (a two-entry
-   package emits two separate files, neither listed in `chunks.json`, so
-   `serve_build` cannot see either), and there is no join/header/footer
-   policy, which is why a JSON array is unreachable through `emit` today.
+   The build path calls `sweep_stale_sidecar`; the `run` and single-file
+   watch paths do not, so a stale `<entry>.css` survives `vilan run` after
+   the styles that produced it are gone. Pre-existing asymmetry adjacent to
+   G6's fix (whose per-kind prune IS wired into every path — this is the
+   older sidecar sweep lagging behind that standard). One call plus the pin.
 
 ## I. Collections
 
@@ -846,27 +883,6 @@ stands unchanged.
     surface). Record: audit-1's report; the ledger's Order 11 batch
     note.
 
-17. **NEW — the release gate is Linux-only while CI tests Windows, so a Windows-red tree can publish — and one just did** (S; found cutting v0.37.0, 2026-08-27)
-    STATUS: OPEN — **this is the process finding of the v0.37.0 cut**
-    `release.yml`'s `gate` job is `runs-on: ubuntu-latest` and every publish
-    job `needs: gate`. `ci.yml`'s test job is a matrix over
-    `[ubuntu-latest, windows-latest]`. So the gate that decides whether a
-    release may publish is strictly weaker than the gate that decides whether
-    a commit is green, and the difference is exactly the platform the project
-    has a ratified support paper for (`windows-support.md`).
-    It is not hypothetical: **v0.37.0 was cut and published on a tree whose
-    Windows CI was red**, and had been red since before the cycle started.
-    The orchestrator ran `cargo nextest run --workspace` locally on Linux,
-    got 4409/4409, and treated that as the gate — which is what the local
-    discipline says to do, and it cannot see Windows.
-    Two fixes and they are not the same size. The cheap one: make the release
-    gate the same matrix as CI, so a red Windows blocks a publish. The other
-    one: nothing in the cut sequence (`releases.md` §7.2) tells the cutter to
-    **check CI on the commit being tagged** — step 1 is an ancestor sweep of
-    changelog entries, and steps 4–5 go straight to tag-and-push. A one-line
-    step ("the commit being tagged is green on CI, all platforms") would have
-    caught this without any workflow change at all.
-
 ## M. Performance & footprint — NEW SECTION
 
 Owner's items 7 (perf) and 8 (leaks). The 2026-08-18 survey found the
@@ -988,24 +1004,6 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     and ruled "ONE surface for tracking" (§8); this changes the
     surface's internal grain, and a ruling here amends that sentence,
     not the move.
-19. **NEW — the panic fence is a four-site unwritten rule** (S; N16 audit run 2, 2026-08-27)
-    STATUS: OPEN
-    `grep -n "panic" AGENTS.md CLAUDE.md` returns **zero hits**, so there is
-    no written panic or Result discipline in the tree to audit against — the
-    audit lane had to reconstruct it from the code. What is actually load-
-    bearing: four `catch_unwind` sites (`vilan-core/src/lib.rs:389` lex/parse/
-    lift, `lib.rs:590` analyze + post-passes, `vilan-lsp/src/main.rs:1485`
-    per-request per B40, `vilan-lsp/src/document.rs:780` the analysis thread),
-    plus a build decision at `Cargo.toml:34` ("Deliberately NOT `panic =
-    "abort"` … core fences its analysis in `catch_unwind` so a compiler panic
-    degrades to one honest diagnostic"). The CLI is deliberately **outside**
-    the fence (`main.rs:19` imports `analyze`, not `analyze_source`) and joins
-    with `.expect("compiler thread panicked")`, so a CLI compiler panic
-    double-panics. There is no panic hook anywhere.
-    "A new pipeline entry point must sit inside the fence" is exactly the
-    multi-site invariant AGENTS.md's "Invariants and scar tissue" section
-    exists to carry, and it is the one such rule not in it.
-
 20. **NEW — `.claude/` is live configuration that no gate can see, and it had three dead pointers in it** (S; N16 audit run 2 + the Order 16 launch, 2026-08-27)
     STATUS: OPEN — the three instances are fixed; the structural gap is the item
     `crates/vilan-cli/tests/hygiene.rs:22` scans `git ls-files`, and
@@ -1030,8 +1028,18 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     `.claude/agents/*.md`, `.claude/settings*.json` and AGENTS.md-referenced
     paths **for existence**, not just for the three needles it looks for now.
 
-21. **NEW — `cargo fmt --all --check` fails on `next`, and nothing gates formatting, lints or advisories** (S–M; N16 audit run 2, 2026-08-27)
-    STATUS: OPEN
+21. **`cargo fmt` is gated; the clippy and cargo-audit legs remain** (S; N16 audit run 2, 2026-08-27; narrowed 2026-08-28)
+    STATUS: OPEN — the formatting half SHIPPED 2026-08-28 (Order 17, lane
+    release-gate, vilan 3eeb5dea): the drift reformatted (whitespace-only,
+    proven), `rust-toolchain.toml` pins 1.90.0, a `fmt` job in ci.yml feeds
+    `check` — with the discovery that the toolchain file OUTRANKS the CI
+    action's `rustup default`, so the suite/wasm/release legs now declare
+    `RUSTUP_TOOLCHAIN: stable` explicitly or the pin would have silently
+    dropped their cross-compile targets. The live remainder is the rest of
+    the item's own list: no clippy leg, no `cargo audit` leg. One clippy
+    candidate already recorded: the dead `Document::use_in_entry_or_generated`
+    warning three Order 17 lanes each reported. Archive holds the full
+    original finding.
     Reproducible, exit 1, four hunks in two files
     (`crates/vilan-cli/tests/fs.rs:927`,
     `crates/vilan-core/tests/mime_table_sync.rs:76/157/438`, rustfmt
@@ -1046,41 +1054,6 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     the `mime_table_sync` gate compares `CURATED.to_vec()` as values, not
     text. Fix is pin the toolchain, land the reformat once, add the check.
 
-22. **NEW — eight source comments and two published documents still cite the tombstoned `vilan/proposal/`** (S; N16 audit run 2, 2026-08-27)
-    STATUS: FIXED 2026-08-28 (Order 17, lane hygiene-smalls) — all ten sites, across the three repos; record at the entry's tail
-    N15's cutover moved the papers to `vilan-lang/proposals`; `vilan/proposal/`
-    holds one tombstone README. Still pointing readers at it:
-    `crates/vilan-core/tests/inference.rs:6, :51814, :52815, :53305, :64409`;
-    `crates/vilan-cli/tests/transport_robustness.rs:2, :328`;
-    `crates/vilan-cli/tests/vscode_extension.rs:18`. Worse, two of them are
-    *published*: `proposal/process.md:548` — a **ratified** document — spells
-    the unbuilt `CONTRIBUTING.md` as telling contributors "design lands in
-    `vilan/proposal/` before code", which would ship the dead path to an
-    audience; and the pages repo's `README.md:7` and `:92` cite "docs-port.md
-    §3.2 **in the vilan repo**" and "N13 in the vilan repo's backlog", in the
-    one file whose entire job is telling a reader where things live.
-    N16's own record half-shipped here: `proposals-repo.md:174`'s reword
-    landed, `:157`'s "brief templates that hardcode `vilan/proposal/…` update
-    at cutover" did not.
-    FIXED 2026-08-28 (Order 17, lane hygiene-smalls). The eight comments
-    (line numbers had drifted; today's inference.rs sites are :6, :52203,
-    :53204, :53694, :64798) now spell the bare `proposal/X.md` citation
-    form — each file's own majority convention, and the form the freeze
-    banner promises resolves verbatim in the proposals repo. process.md's
-    CONTRIBUTING sketch names `vilan-lang/proposals` outright (its §4.2
-    premise sentence two paragraphs up, same dead path, fixed with it);
-    `proposals-repo.md:157` carries a dated post-cutover note (the
-    checklist item slipped — Order 16 found and fixed the three agent
-    files; the structural gap is N20); the pages README's two cites name
-    the proposals repo (N13's, its tracker archive). Deliberately left,
-    triaged not missed: CHANGELOG.md's five (release history quotes its
-    records as published), ci.yml:84 and cut-release.sh's exclusion
-    (both ABOUT the tombstone path, and functional), docs-port.md:1108
-    (a verbatim dated suite-run record), docs-site.md:37 (a pre-move
-    paper's non-goal, historical), and this repo's README/proposals-repo
-    (the migration is their subject). The vilan and pages halves ride
-    this lane's branches in those repos.
-
 23. **NEW — 37 `pub` items in `vilan-core` are never referenced outside their own file** (S, mechanical; N16 audit run 2, 2026-08-27)
     STATUS: OPEN (low priority — over-exposure, not rot)
     Not dead, over-exposed: e.g. `StyleCategory`/`StyleMethod`
@@ -1092,98 +1065,3 @@ README/CHANGELOG alpha framing (correct until the beta switch — §L).
     unreferenced — `leak_tally::outstanding_total` — and the verdict is
     **KEEP**, because it completes a symmetric instrument API and deleting it
     leaves the instrument lopsided.
-
-24. **NEW — an archived per-item tracker file is deleted, so every `[[link]]` to it dangles** (S; found by Order 16's `asset-bundle` lane, 2026-08-27)
-    STATUS: FIXED 2026-08-28 (Order 17, lane hygiene-smalls) — the gate rule below; `.local` trackers stay convention-covered, recorded not enforced
-    A lane told to read kolt.local 029's see-alsos reported that "items 018,
-    024 and 030 do not exist" — correct: they shipped, and closing an item
-    **deletes `items/NNN.md`** and moves a tombstone paragraph into
-    `archive.md`. But live items keep citing them (`029.md` cites `[[018]]`
-    and `[[024]]`), so a reader following a link finds nothing, and a
-    *subagent* following one concludes the item was never filed.
-    This matters beyond the pilot: N17 proposes this format for the whole
-    repo. Options are a redirect stub at the old path, an `archive/NNN.md`
-    per-file layout mirroring `items/`, or a link-checking gate that fails on
-    a dangling `[[…]]`. The last one is the smallest and catches the class
-    rather than the instance.
-    FIXED 2026-08-28 (Order 17, lane hygiene-smalls): the smallest option
-    built — a fifth rule in `scripts/check_hygiene.py`: every `[[name]]`
-    cite in a tracked file under `projects/<project>/tracker/` must resolve
-    to the live `items/<name>.md` or to a mention in that tracker's
-    `archive.md` (closing an item deletes its file, so archived IDs resolve
-    through the tombstone). Scope is deliberate — the cite convention
-    belongs to the per-item format, and the wider repo uses the same
-    brackets for TOML tables and nested array types. Plant-proven four
-    ways: a staged dangling cite fails; a live item file resolves; an
-    archive tombstone resolves; a superstring in the archive (`1019` for
-    `[[019]]`) does not. The repo as it stands passes — no tracked
-    per-item tracker exists yet, so the rule's first real customers arrive
-    with N17's migration, covered from day one. STRUCTURAL LIMIT, stated
-    at the gate too: the gate scans TRACKED files only, so a gitignored
-    `.local` tracker (kolt.local — the pilot where this class was found —
-    included) is invisible to it by construction; there, dangling-cite
-    hygiene is convention carried by this record and projects/README.md's
-    closing discipline, not enforcement.
-
-25. **NEW — `fs::read_dir_all` entries carry the HOST path separator** (S; found by Order 16's `path-tooling` lane, 2026-08-27)
-    STATUS: **CLOSED 2026-08-27** (`cc5c1569`) — and it was the last red test
-    on the Windows leg. **CI on `next` is now green on BOTH platforms**, first
-    time in this record's memory. Fixed in the glue rather than in
-    `read_dir_all`: it is the one place a host hands back a joined path, so it
-    is the one place that should know about host shapes.
-    **The fix is gated on `path.sep`, and the reason is the finding.** The
-    first version was an unconditional `split("\\").join("/")`, which would
-    have **corrupted a real file on Unix** — a backslash is a legal filename
-    byte there, so `od\d.txt` would have become `od/d.txt` to fix a problem
-    that platform does not have. On Windows a filename cannot contain one, so
-    the split is unambiguous exactly where it runs. Pinned both ways, and the
-    Unix pin is the Linux-provable half of a Windows fix — proven non-vacuous
-    by planting the unconditional form. Recorded because the FIRST plant was
-    also wrong (it dropped the guard but kept `nodePath.sep`, which is `/` on
-    Linux, so it was a no-op that passed); the real plant had to hardcode the
-    backslash.
-    `std::path` is POSIX-shaped by ruling — `/` on every platform — because a
-    separator-aware `join` would make every derived path (cache key, asset
-    URL, golden) differ by host. But `fs::read_dir_all` hands back entries in
-    the *host's* shape, so on Windows an entry is not in `std::path`'s shape
-    and reads as a single component. The clean fix is one
-    `.replaceAll('\\','/')` in `__fs_read_dir_all` (`transformer.rs`) —
-    compiler-side, so out of the lane's reach, and it wants a corpus check.
-    Documented in `read_dir_all`'s own comment and in `std/paths.md` rather
-    than silently half-supported.
-
-26. **NEW — two Windows suite failures are test-expectation defects that assert Linux-only wording** (S; found cutting v0.37.0, 2026-08-27)
-    STATUS: **CLOSED 2026-08-27** (`72cdf805`, then `71453ec0`) — **and it took
-    two attempts, which is the part worth keeping.** The first repair fixed
-    `asset::read` and left `asset::bundle` red, because the two fences are not
-    the same shape: `bundled_name` refuses a backslash BEFORE it tests for
-    absolute, so the Windows-native `C:\…` path never reached the arm the pin
-    is named for — **the pin was silently re-testing
-    `a_backslash_in_a_bundle_path_is_refused` under a different name.** A pin
-    passing for the wrong reason is exactly what the plant discipline exists to
-    catch, and it could not be planted for from Linux; CI caught it. `C:/…` is
-    absolute to Windows all the same (a prefix plus a root), so the
-    forward-slashed spelling reaches the arm, and the reason is written at the
-    pin. Original finding below, which stands:
-    **the fence itself is intact on Windows; verified, not assumed**
-    `an_absolute_read_path_is_refused` (`inference.rs:25171`) and its twin
-    `an_absolute_bundle_path_is_refused` (`:67815`) both assert the refusal
-    "`asset::read` paths are relative to the package root; `/etc/hostname` is
-    absolute". On Windows `/etc/hostname` is **not** absolute — `is_absolute`
-    wants a drive prefix — so that arm does not fire.
-    **The path is still refused**, by the next arm: its components are
-    `RootDir, Normal("etc"), Normal("hostname")`, and `RootDir` is neither
-    `Normal` nor `CurDir`, so the escape check catches it and says "…resolve
-    inside the package root; `/etc/hostname` escapes it" — which is verbatim
-    what the Windows CI log shows the test received. So there is **no
-    security gap on Windows**; the fence has two arms and the other one holds.
-    What is wrong is the pin: it asserts one platform's wording for a
-    behaviour both platforms share. The fix is to assert the refusal rather
-    than the arm, or to use a platform-appropriate absolute path per target.
-    Worth noting how it propagated: `asset::bundle`'s pin was modelled on
-    `asset::read`'s and inherited the defect with it, so one bad pin became
-    two. The third Windows failure in the same run,
-    `read_dir_all_lists_every_entry_recursively_as_relative_paths`, is a
-    genuine behavioural difference and is **N25**, filed the same day for an
-    unrelated reason.
-
