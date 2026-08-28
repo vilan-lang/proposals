@@ -1,11 +1,13 @@
 # UI styling — typed atomic styles, compiled
 
 Status: **CORE SHIPPED 2026-07-10; TAIL SHIPPED 2026-08-04, including the
-value types** — §0bis is the live status and supersedes the "Remaining" list
-at the end of this paragraph, which is kept as the historical record of what
-the core's authors expected to be left. What remains open: critical CSS (A7)
-and liveness-tied dead-style elimination (G2), both entangled elsewhere. The
-property tail's VALUE-TYPE half closed with §0bis.3.
+value types; RELATION AXIS designed 2026-08-28 (§0bis.6 — `within`/
+`children`/`divide`, and `Style::dark` DELETED per the 2026-08-27 ruling on
+kolt.local 014)** — §0bis is the live status and supersedes the "Remaining"
+list at the end of this paragraph, which is kept as the historical record of
+what the core's authors expected to be left. What remains open: critical CSS
+(A7) and liveness-tied dead-style elimination (G2), both entangled elsewhere.
+The property tail's VALUE-TYPE half closed with §0bis.3.
 
 The original core record, unedited: **CORE SHIPPED 2026-07-10** — `std::style`
 (same day as the whole
@@ -148,6 +150,17 @@ completion for what people actually write; an exhaustive CSS mirror buys
 neither.
 
 ### 0bis.2 Design — dark × pseudo composes on one axis
+
+> **Superseded in part, 2026-08-28:** `Style::dark` is DELETED (kolt.local
+> 014, ruled 2026-08-27 — a census found zero user estate), and the theme
+> condition is now `within("data-theme", "dark", ..)` on the relation axis
+> (§0bis.6), whose ancestor guard carries this section's design forward: the
+> condition-grammar slot, the outside-in nesting, the composed-specificity
+> rule and the byte-identical-class-names argument all transfer. What does
+> not survive verbatim is the selector (`[data-theme="dark"] .sX`, without
+> the `:root` — and so (0,2,0) where dark was (0,3,0)); §0bis.6's ledger
+> records the two tie outcomes that shift with it. This section stays as the
+> record of the grammar it minted.
 
 Settled here rather than by owner call: the mechanism follows directly from
 what the emitter already does, and the naming question has a precedent.
@@ -722,6 +735,149 @@ commit as their `.css` golden, since both change the stylesheet's bytes without
 changing a computed value — the shape of diff that is only reviewable if
 nothing else moves with it.
 
+### 0bis.6 Design — the relation axis (kolt.local 009+014, ruled 2026-08-27, designed 2026-08-28)
+
+The owner's 2026-08-27 ruling on kolt.local 014 merged it with 009 into one
+question — *"a general selector feature that Kolt's theme.vl could replace its
+handwritten `emit` with"* — and deleted `Style::dark` (census: zero user
+estate; the corpus golden, one internal self-call and six doc mentions were
+the whole cost). This section is the design the ruling asked a lane to verify
+and write. The mechanism is one new axis in the condition grammar, the
+RELATION — whose element does this slot dress?
+
+- `within(attr, value, inner)` → `[attr="value"] .sX` — the ancestor guard.
+  The element itself, conditioned on an ancestor's attribute. `dark()` was one
+  hardcoded instance of this (`:root[data-theme="dark"] ⊂ [data-theme="dark"]`),
+  so deleting it and adding the general form is a net simplification: the
+  theme condition is now `within("data-theme", "dark", ..)`, and kolt's n-ary
+  themes are `within("data-theme", id, ..)` — a spelling `dark` could never
+  make.
+- `children(inner)` → `@layer vilan{.sX > *{..}}` — every direct child.
+- `divide(inner)` → `@layer vilan{.sX > :not(:first-child){..}}` — every
+  direct child but the first (Tailwind's `divide`/`space` shape).
+
+One relation per slot, sitting where `dark` sat in the condition grammar
+(`media` → relation → attribute → pseudo, outside-in as ever), one
+contribution per (relation, property) slot, the same last-wins merge — same
+key three fields, so **every pre-existing class name is byte-identical**. The
+slot-key tokens are `^[attr="value"]`, `>*` and `>*+*`: the `^`/`>` first
+byte is what keeps them distinct from the self-attribute token (`[..`), and
+none of the three can appear in a pre-relation condition, so no existing key
+rehashes.
+
+**The layer split is the load-bearing decision, and it is asymmetric on
+purpose.** The two halves of the ruling have opposite cascade needs:
+
+- `children`/`divide` rules REACH IN — they style elements other than the one
+  carrying the class. They emit inside `@layer vilan`, and 032's shipped
+  invariant (*unlayered styles beat layered ones whatever their specificity*)
+  reads as **a child's own `Style` always wins against a rule reaching in
+  from an ancestor** — §1's promise in the only form it can survive, and the
+  semantics `divide` actually wants ("space the children apart unless the
+  child says otherwise"). The cost is symmetric and stated: a combinator rule
+  cannot override any unlayered declaration either — not the child's `Style`,
+  not hand-written unlayered CSS — so the relation axis is not an escape
+  hatch, and anything wanting to beat a child's own style still cannot.
+- `within` rules DO NOT reach in — `.sX` is minted by the element's own chain
+  — and they stay UNLAYERED, exactly as `dark`'s rules were. This is forced,
+  not stylistic: the ruling's theme bullet ("an ancestor guard beats a child's
+  own base rule cleanly — that is exactly why `dark()` worked at all") is a
+  specificity argument, and layers would nullify it — a layered
+  `[data-theme="dark"] .sX{background:..}` loses to the element's own
+  unlayered base background *whatever its specificity*, which would make the
+  guard unable to express the one thing `dark()` existed for. Probe record
+  below.
+
+**`divide` renders `> :not(:first-child)`, not the ruling's illustrative
+`> * + *`, and the probe is why.** The two selectors match the same element
+set (both mean "an element child with an element before it"), but the owl is
+(0,1,0) — it TIES with `children`'s `.sX > *` when both touch one property,
+and the tie falls to intra-layer line order, which is the lexical sort over
+content-hashed class names. The probe demonstrated the winner flipping with
+the hash bytes — the exact §1-forbidden resolution this design exists to
+kill, re-shipped in a corner. `:not(:first-child)` carries its argument's
+specificity, so `divide` is (0,2,0) over `children`'s (0,1,0) and the overlap
+resolves by SPECIFICITY: *the narrower relation wins the properties both
+touch, whatever the authoring order* — deterministic, checkable, and the
+`dark`-beats-`hover` precedent's shape ("a blanket should not undo a
+refinement"). Within one relation, authoring order still rules: same
+(relation, property) slot, last wins, `+` included.
+
+**The specificity-and-band ledger** (the B35 discipline: state it where the
+emitter can be read against it). A `within` rule's first byte is `[` (0x5B),
+which opens a NEW band after `:` (0x3A) and `@layer` (0x40) and before the
+media group (which sorts last as a group by its numeric key, not by `@`):
+`*` < `.` < `:` < `@layer` < `[` < media. Consequences, each deliberate:
+
+- `within(x)` vs the base rule: (0,2,0) over (0,1,0) — the guard wins on
+  specificity when it matches, `dark`'s behavior verbatim.
+- `within(x)` vs `hover(y)` on one property: both (0,2,0), tie — resolved by
+  band order, `[` after `.`, so **the theme still beats the state**. (`dark`
+  won this by `:root`'s extra specificity point; `within` wins it by source
+  order. Same outcome, different mechanism — recorded because a future band
+  change would now move behavior.)
+- `within(.., hover(..))` composes on one slot at (0,3,0) and beats both
+  parts, the §0bis.2 rule transferred verbatim; attribute composes between
+  them (`within(.., attribute(.., hover(..)))`), and `md(..)` wraps any of
+  it (the media band sorts last, so a media-composed rule still wins its
+  uncomposed twin's tie).
+- One recorded FLIP against `dark`: plain `dark(x)` used to beat `md(hover(y))`
+  on real specificity (0,3,0 over 0,2,0); plain `within(x)` TIES with it and
+  loses on band order (media sorts last). The more-conditioned rule now wins
+  ties uniformly, and the intent has a spelling: `md(within(hover(..)))`.
+  `dark`'s outcome was `:root` fallout, never a recorded rule; this one is
+  stated.
+- The §0bis.4 family marker transfers unchanged: the condition prefix of a
+  family pair is byte-identical, so `*`-vs-`.` still decides —
+  `[a="v"] *.sX{padding:..}` sorts ahead of `[a="v"] .sY{padding-top:..}`,
+  and `@layer vilan{*.sX > *{..}}` ahead of `@layer vilan{.sY > *{..}}`.
+  Across children/divide the marker is moot: specificity outranks order.
+
+**Composition scope, v1.** `within` inherits `dark`'s whole grammar seat:
+attribute and pseudo nest inside it, media outside, every other order refused
+naming the fix, and no relation wraps a relation (one per slot — so
+`within(.., children(..))` is refused, not given accidental semantics).
+`children`/`divide` take an UNCONDITIONED inner in v1: a pseudo or attribute
+under them would bind to the CHILD's compound (`.sX > *:hover`), which is new
+semantic ground the ruling did not touch — refused with the fix named
+(condition the child's own `Style`). `md(children(..))` falls out of the
+existing media pass-through and is kept: the emitted line is
+`@media (min-width: ..){@layer vilan{..}}`, media outermost so B35's numeric
+sort still sees its prefix.
+
+**What `theme.vl` becomes** — the owner's stated test. Per-theme
+`declare(i"[data-theme=\"{id}\"]", ..)` blocks carry the `var()`-backed
+palette (032 + 012); elements read tokens through `Color::var`, so switching
+themes is one attribute write and zero recompilation; and where a theme needs
+a *structural* change rather than a value swap, `within("data-theme", id, ..)`
+reaches the same slots with the ancestor guard. Pinned as the `theme.vl`
+corpus program.
+
+**Probe record (2026-08-28, pre-build).** (a) A scratch program emitted the
+three participants around one child element — a `declare` block, hand-emitted
+`@layer vilan` combinator rules, an unlayered `Style` — through the real
+channel: the assembled bands came out as the ledger above states, the child's
+own unlayered rule beats every layered participant by the layer invariant,
+the children rule beats the equal-element declare block on intra-layer
+specificity, and the unlayered within guard beats the child's base rule —
+confirming both layer placements. The owl-tie flip was demonstrated in the
+same sheet (`.saa9 > * + *` sorting before `.saaa > *`, `.szzz > * + *`
+after `.szz9 > *`). (b) The slot mechanics were exercised through
+`Style::rule` with the real tokens: same (relation, property) slot twice
+merges to ONE class (last wins, across `+` too); children and divide hold two
+slots; a relation slot and the base slot coexist. No browser harness exists
+in the repo, so cascade outcomes are spec reasoning over the real assembled
+sheet — stated as such, not as a rendering-engine check.
+
+**Recorded rejections.** A fourth key field for the relation (rehashes every
+class name for nothing — §0bis.2's argument, still decisive). Layering
+`within` (breaks the theme guard, above). The owl spelling for `divide`
+(hash-order resolution, above). Sub-layers (`@layer vilan.children`) for the
+children/divide overlap — CSS puts a layer's direct rules ABOVE its
+sub-layers, so `declare` blocks would silently outrank every relation rule,
+a coupling 032 never signed up for; specificity says the same thing without
+new machinery.
+
 ## 0. The problem
 
 `std::ui` builds and updates DOM; nothing styles it. Handwritten CSS is the
@@ -780,7 +936,14 @@ view.class(card + active);   // padding resolves to space(6) — LAST WINS, alwa
   exactly one class, so the merged map *is* the resolution — specificity
   fights are structurally impossible. Fully-const merges fold to a
   precomputed map; runtime merges of const styles are a small map union.
-  String parsing never happens.
+  String parsing never happens. Since the relation axis (§0bis.6) let a
+  style reach its element's *children*, the invariant is stated in the form
+  that survives that reach: **a child's own `Style` always wins against a
+  rule reaching in from an ancestor** — `children`/`divide` rules emit
+  inside `@layer vilan`, and unlayered styles beat layered ones whatever
+  their specificity. The cost is symmetric and recorded: a combinator rule
+  cannot override an unlayered declaration either, so the relation axis is
+  not an escape hatch against anyone's own style.
 - **Construction happens inside `const` expressions; selection and merging
   are runtime.** This is the load-bearing rule (§3). (`const` is the
   weak-precedence expression keyword of `const-eval.md` — `let card = const
@@ -857,14 +1020,21 @@ atomic rule with the condition baked in:
   `.first(s)`, `.last(s)` → `.hB7:hover { .. }`.
 - **Breakpoints**: `.md(s)` → `@media (min-width: 768px) { .. }` (values
   from §2.1's structural tokens).
-- **Dark mode**: `.dark(s)` → `:root[data-theme="dark"] .dC9 { .. }` —
-  explicit, SSR-friendly control; an auto `prefers-color-scheme` mode is a
-  recorded refinement.
+- **Relations (as of 2026-08-28, §0bis.6)**: `.within(attr, value, s)` →
+  `[attr="value"] .wA1 { .. }` — the ancestor guard, and the theme
+  condition's spelling (`within("data-theme", "dark", ..)`; the hardcoded
+  `.dark(s)` this list used to carry was one instance of it and is deleted —
+  explicit, SSR-friendly control is unchanged, and an auto
+  `prefers-color-scheme` mode stays a recorded refinement). `.children(s)` →
+  `@layer vilan{.cB2 > * { .. }}` and `.divide(s)` →
+  `@layer vilan{.dC9 > :not(:first-child) { .. }}` style the element's
+  children, layered so a child's own `Style` always wins.
 - Condition methods take a `Style` built by its own chain
-  (`.hover(style().background(..))`). **Stacking (as of 2026-08-04, §0bis.2):**
-  media × dark × pseudo, nested outside-in in that order —
-  `md(dark(hover(..)))`. Any other nesting order is refused with a message
-  naming the fix; pseudo-over-pseudo stays unsupported.
+  (`.hover(style().background(..))`). **Stacking (§0bis.2, generalized by
+  §0bis.6):** media × relation × attribute × pseudo, nested outside-in in
+  that order — `md(within(.., attribute(.., hover(..))))`. Any other nesting
+  order is refused with a message naming the fix; pseudo-over-pseudo stays
+  unsupported, and `children`/`divide` take an unconditioned inner in v1.
 
 ### 2.3 The escape hatch
 
