@@ -20,6 +20,20 @@
 > `[build] run` already is, and a **declared order** on the accumulator that
 > `asset::emit` already is. Neither ask needs a new execution model, a new
 > command, or a second trust tier.
+>
+> **Ship note (2026-08-28, Order 17, lane `emit-kinds`):** §5.2's findings
+> (a) and (d) are FIXED — backlog G5/G6. The cascade comparator is fenced to
+> the `css` kind; **every other kind orders lexically by line**, chosen
+> because it is a pure function of the contribution set (§5.1's rule) and
+> exactly the bytes `emit_keyed(kind, line, line)`'s desugar produces for an
+> un-keyed `emit` (§5.3) — S3 lands on these bytes unchanged. Emitted CSS
+> held byte-identical across the corpus. The stale-flush prune shipped per
+> Q7's recommendation, per kind: each flush records the kind files it wrote
+> (`.vilan-asset-kinds` beside the outputs, removed with its last entry) and
+> the next build prunes a recorded file whose kind emitted nothing — the
+> pruner acts only on its own record, never on a filename it merely finds,
+> and the general sweep stays filed with E92. (b) framing and (c) the
+> per-leg unit are untouched, awaiting the §10 rulings.
 
 ---
 
@@ -446,7 +460,8 @@ above `@`. Arbitrary for anything else.
 deterministically — **a kind-specific rule**"* and names license manifests and
 service-worker precache lists as riders. The implementation has one rule. **028
 is that promise being kept**, and it should be argued as a documented-behavior
-gap rather than as a new feature.
+gap rather than as a new feature. *(FIXED 2026-08-28 — backlog G5; the ship
+note above records the chosen non-css rule.)*
 
 **(b) No framing.** Lines are joined with `\n` plus a trailing newline. There is
 no header, no footer, no separator choice. P2's `json` kind is the dead end made
@@ -466,7 +481,8 @@ but 028 should not be read as promising a cross-leg accumulator.
 and rebuilding left the previous file in `dist/`, unchanged and unmentioned.
 Under Order 16's principle that is the worst of the four, because the stale file
 ships. It is also E92's shape (a stale superseded `dist` artifact after a
-rename), which is already filed.
+rename), which is already filed. *(FIXED 2026-08-28 — backlog G6, the per-kind
+half of Q7; the general sweep stays with E92.)*
 
 ### 5.3 The answer: the contribution carries its key
 
