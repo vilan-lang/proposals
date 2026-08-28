@@ -1,7 +1,11 @@
 # A first-class `css { … }` block — the element syntax's twin on the style side (kolt.local 016)
 
-> Status: DRAFT 2026-08-27 (cycle 33, work order 15, lane `css-block-paper`),
-> for owner review. Design-only: this lane wrote no code and ran no suite.
+> Status: **S1 AND S2 SHIPPED 2026-08-28** (cycle 36, order 18, lane
+> `css-block-s2`; §11 carries each slice's record). All six open questions
+> RULED 2026-08-28 (§12), Q3 among them — the `css` keyword is TAKEN, so S2
+> builds on a real keyword rather than the contextual gate the draft
+> designed. Prior status: DRAFT 2026-08-27 (cycle 33, work order 15, lane
+> `css-block-paper`), for owner review; design-only, no code, no suite.
 > Tracker: `../projects/kolt.local/tracker/items/016.md`; it should become
 > PROPOSED with this paper as its record. The direction was RULED
 > 2026-08-26 — the paper is the deliverable that ruling asked for, not a
@@ -317,11 +321,15 @@ condition mode is untouched (an element is not a struct initializer)". `css {`
 is brace-initial and therefore occupies the *same* shape as a struct
 literal. Three findings settle it:
 
-1. **`css` is not a keyword** (`KEYWORDS`, `lexing.rs:61`), and it must not
-   become one in v1. It is a struct *field* (`Length.css`, `Color.css`), a
-   *method* (`Length::css(expression)`), and a struct-initializer field name
-   (`Length { css = …, root = "" }`) in std today. A hard keyword breaks all
-   three.
+1. **`css` was not a keyword** (`KEYWORDS`, `lexing.rs:61`) when this was
+   written. It was a struct *field* (`Length.css`, `Color.css`), a *method*
+   (`Length::css(expression)`), and a struct-initializer field name
+   (`Length { css = …, root = "" }`) in std, and a hard keyword breaks all
+   three. **Q3 ruled otherwise and the keyword was TAKEN (2026-08-28):** the
+   field is now `.text`, the method `Length::raw`, and every position that
+   used to spell the word refuses with a message naming both renames. What
+   follows is therefore the record of the alternative, not the shipped
+   design; the shipped gate is the keyword itself plus a `{`.
 2. **The recommendation is a contextual gate: `css` immediately followed by
    `{`, in atom position only.** Two tokens of lookahead. It never reaches
    field position (`value.css`), never reaches path position
@@ -478,14 +486,23 @@ with every token visible to the toolchain.
 
 **It is deferred to a later slice for two reasons, both concrete.** First,
 scope: it doubles the grammar and the headless form is where the users are.
-Second, and decisively, **it needs a token the contextual gate cannot
+Second, and decisively, **it needs a token a contextual gate cannot
 provide**: `css [` collides with indexing a variable named `css`, and
 `css :root` with a path. The headed form therefore requires promoting `css`
 to a real keyword — which requires renaming `Length::css`, `Color::css` and
 the `css` struct field on both value types. That is three std sites, one row
 in `KEYWORDS`, one `Token` variant, one `KEYWORD_ROLES` row and a grammar
-regeneration; **cheap in alpha, and impossible after beta.** It is Q3 in §12
-because the window, not the work, is what makes it urgent.
+regeneration; **cheap in alpha, and impossible after beta.** It was Q3 in
+§12 because the window, not the work, was what made it urgent.
+
+> **DONE 2026-08-28** (Q3, "Take the keyword"). The promotion shipped ahead
+> of S2, and the census found the paper's three sites and nothing else in
+> std — plus one compile-gated doc fence, one corpus call site and the vilan
+> snippets in the Rust tests. `Length::css(…)` is `Length::raw(…)`; the
+> `.css` field of a `Length`/`Color` is `.text`; no golden moved, because
+> both value types const-fold and the field name never reaches the emitted
+> JavaScript. **The headed form's door is open**; the slice itself still
+> sits after S5, per §11.
 
 Until then `declare` keeps its current spelling, unchanged and undeprecated.
 
@@ -830,8 +847,9 @@ Each recorded so declining it is a decision, not an omission.
   combinator. Arbitrary selectors are `declare`'s job (§5.4).
 - **Combinators** (`>`, `+`, `~`, `&`) — blocked on 009, grammar space
   reserved (§9).
-- **`css` as a hard keyword in v1** — the contextual gate costs nothing and
-  the promotion is a separate, dated decision (Q3).
+- ~~**`css` as a hard keyword in v1**~~ — **overtaken by Q3's ruling: the
+  keyword was taken 2026-08-28**, which is what opens the headed form's door.
+  The contextual gate was never built.
 - **Value-position completion** and **a CSS value grammar** — no typed value
   parsing inside the block; values are token runs and holes. Typed values
   arrive through holes, which is where the type system already lives.
@@ -848,7 +866,9 @@ Each recorded so declining it is a decision, not an omission.
 The element-syntax shape, with an honest first slice. Suite-gated, docs in
 the same commit, per-case pins.
 
-- **S1 — std groundwork: typed values in `raw`.** The `CssValue` trait over
+- **S1 — std groundwork: typed values in `raw`. SHIPPED** (before this lane;
+  `CssValue` is in `vilan/std/src/style.vl` and `Style::raw` /
+  `Declarations::raw` are generic over it). The `CssValue` trait over
   `str`/`Length`/`Color`; `Style::raw` and `Declarations::raw` widened over
   it, with the `Length`/`Color` impls carrying `value.root` onto the sheet.
   Re-run the §9.1 monomorphization probe on the repo compiler before
@@ -856,17 +876,57 @@ the same commit, per-case pins.
   dangling-`var()` hazard (reaching for `.css` to get a token into `raw`
   drops its `:root` line) and makes `.raw("padding", space(4))` writable in
   chains today. Docs: `guide/styling.md`'s escape-hatch section, CHANGELOG.
-- **S2 — grammar and desugar, together.** `Node::Css` (`CssBody`,
-  `CssItem::{Declaration, Nested}`) with property-name, value and
-  per-declaration spans **and zero-width scaffolding anchors from the first
-  commit** (§7.3); the `parse_atom` arm behind the contextual `css`+`{` gate,
-  honoring `no_struct`; the body parser; `css::rewrite_items` in the pre-lift
-  slot **at all five lift sites** (macro-generated blocks covered, pinned,
-  as elements had to be); a **verbatim source-slice printer passthrough** so
-  the bail set stays empty; the `#`/`@`/`!important` refusals with their
-  messages; corpus program `css-block.vl`. The gate: **byte-identical emitted
-  CSS and byte-identical emitted JS against the same program written as a
-  chain.**
+- **S2 — grammar and desugar, together. SHIPPED 2026-08-28** (branch
+  `css-block-s2`, two commits: the keyword promotion, then the block).
+  `Node::Css` (`CssBody`, `CssItem::{Declaration, Nested}`, `CssValuePiece`)
+  carrying the property-name, value and per-declaration spans **and
+  zero-width scaffolding anchors from the first commit** (§7.3, asserted
+  directly in `css.rs`'s own tests); the atom arm driven by the real
+  keyword; the body parser; `crates/vilan-core/src/css.rs` in the pre-lift
+  slot at **six** src sites and one test harness (macro-generated blocks
+  covered and pinned, as elements had to be); the verbatim source-slice
+  printer passthrough; the `#`/`@`/`!important` refusals; corpus program
+  `vilan/test/css-block.vl` with `.mjs` and `.css` goldens. The gate holds
+  in both halves: **byte-identical emitted CSS and byte-identical emitted
+  JS** against the same program written as a chain, plus the tree-level
+  form of the same claim (the desugar builds the very nodes a written chain
+  parses to, span-stripped `Debug` equality per lowering-table row).
+  Deviations and findings, recorded:
+  - **The atom arm is in `parse_chain_head`, not `parse_atom`.** An atom does
+    not know `no_struct`, and §4.2's suppression rule is exactly what has to
+    be honored — so the block sits beside the struct initializer, under the
+    same gate. The refusal in condition position names the fix
+    (parenthesize), rather than reading as the keyword-rename refusal.
+  - **The block's body COMMITS.** The draft's decline-and-recover shape put
+    every broken item through the delimiter recovery, whose last-resort
+    message claims a region is unclosed when it plainly closed, and threw
+    away the missing-`;` the author needs. Each item now reports for itself
+    and the body skips to the next `;`, E49's recorded lesson from the
+    element head. The reason it cannot ride the farthest-failure channel is
+    worth knowing: a block in statement position is parsed TWICE — once by
+    `parse_assignment`'s speculative place probe — and the speculative pass
+    leaves the enclosing statement's own terminator note farther along than
+    anything inside the block.
+  - **Value pieces PARTITION the value's span**, rather than starting at each
+    run's first token: slicing from the token would drop the space a hole is
+    separated by, and `calc({w} + 2px)` would render `calc(w+ 2px)` where the
+    i-string it lowers to keeps the space. The two are now byte-identical,
+    pinned.
+  - **The css pass runs BEFORE the element pass**, and descends into markup
+    itself, so a block written in an element's head or a child hole
+    (`<div .styled(const css { … })>`) is a chain before the element desugar
+    reaches it.
+  - **A block needs `style` in scope.** The desugar generates `style()`, so a
+    block without `import std::style::style` fails on the generated accessor
+    — which is why that one accessor keeps a REAL span (the `css` keyword's),
+    while every other generated accessor is zero-width: the diagnostic
+    underlines the word that asked for a `Style`.
+  - **A `Length` or `Color` hole in a MIXED value renders as its runtime
+    tuple**, not as its CSS text — `padding: calc({space(4)} + 2px);` puts
+    `var(--space-4),:root{…}` on the sheet. This is not a block defect: the
+    i-string twin `i"calc({space(4)} + 2px)"` does the same thing today, so
+    the equivalence gate holds and the underlying gap is that `str + Length`
+    type-checks at all. Filed as a finding, not fixed here.
 - **S3 — formatter.** The canonical printer replaces S2's passthrough:
   one declaration per line, nested rules at +1, the block's own budget
   behavior; canonical declaration order derived from
@@ -875,7 +935,10 @@ the same commit, per-case pins.
   spans, and outright refusal to reorder any block containing a comment.
   `assert_construct` pins per form (token identity, no-silent-bail, canonical
   form, idempotence, round-trip).
-- **S4 — docs and editors.** `spec/grammar.md` (the `css-block` productions,
+- **S4 — docs and editors.** *(S2 shipped the `guide/styling.md` section its
+  own surface needed — "The `css` block", compile-gated, and the anchor the
+  keyword hover deep-links to; the spec pages, the tour phrasebook and the
+  TextMate `#css` rule remain S4's.)* `spec/grammar.md` (the `css-block` productions,
   the atom-position and `no_struct` prose), `spec/lexical.md` (the two bytes
   that do not lex and why), `guide/styling.md` (both forms side by side,
   compile-gated), `tour/coming-from-javascript.md` (a CSS phrasebook), and
