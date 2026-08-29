@@ -632,3 +632,26 @@ serving v0.38.0 with six versions in the selector. Lesson re-learned
 with a sharper edge: a breaking std/grammar change's census must include
 THE WEBSITE, the one estate no vilan-repo gate can see — worth a line in
 the cut script's own checklist someday.
+
+---
+
+**Order 19 (cycle 37) ACTIVE 2026-08-28** — the lifetime paper's
+buildable half, and the arcs it joined; every §12 ruling in hand. TWO
+WAVES. Wave 1, eight lanes off next @125b4d10: graph-repairs (lifetimes S1
+— V1's proven cell-capture fix, A28 the std derivation leak pinned
+25→0, Event::target_value, A29, and the SCC-walk suite gate), liveness-
+dataflow (S2 — the real last-use dataflow at copy elision first, no
+semantic change; GATES WAVE 2), drop-safety (B151 fix-now + B150,
+red-first from the session probes), capture-spec (S5 — aliasing-as-
+shipped into spec §6, the tour corrected, C12 decided in-lane),
+css-block-s3s4 (the formatter + docs/editors slices), emit-keyed
+(build-hooks S3, byte-identity with G5's order as the gate),
+lucide-evidence (Q1's ruled method — the real icon pipeline against
+[[build.hook]], the report decides build.vl), gate-smalls (M12, N27,
+N28, L18, B152, E99). Wave 2 on S2's landing: lastuse-s3 (S3 whole +
+the [extern(retains)] contract and std audit folded in for soundness;
+the ordering amendment, family breaking; closes C11). Deferred, named:
+E98/015 → Order 20, M11/M13 → a quiet machine, reuse spike → the
+native arc's opening move, css-block S5 after S3/S4, audit run 4 due
+Order 20. All lanes Opus; per-lane scratch subdirs; verdicts from own
+logs only.
