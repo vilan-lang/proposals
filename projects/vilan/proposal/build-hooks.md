@@ -146,6 +146,38 @@
 > character as its key) stays out of scope and is now fenced against rather
 > than merely unbuilt — taking it means changing the comparator and this
 > refusal together, which is the right coupling.
+>
+> **Ship note (2026-08-29, Order 20, lane `genroot`): S6 BUILT** — Q5's
+> generated root, with the formatter exclusion Order 19's lucide evidence run
+> found. §12 is the whole design and it is new in this revision; the short
+> version is that the ruling's two halves are one manifest key
+> (`[package] generated`, and the same key on `[library]`), that `vilan fmt`
+> and the language server's formatting handler both leave a `.vl` file under
+> it byte-identical, and that this kills the fmt↔hook loop §12.1 states. Three
+> things the building decided beyond the paper, recorded here as its now:
+>
+> - **The exclusion is a `vilan-core` predicate, not a CLI walk filter.** The
+>   language server formats one buffer reached by its exact path; the CLI walks
+>   directories. Only a predicate over a *path* can be the same rule in both,
+>   so `manifest::generated_root_covering` is the one implementation and both
+>   front ends call it. Filtering in the walker would have been smaller and
+>   would have left format-on-save — §12.1's involuntary case — unfixed.
+> - **`fmt`'s walker is NOT the exclusion point, deliberately.** `fmt` and the
+>   watcher share `collect_vl_files`, and the watcher must keep seeing generated
+>   modules: a generated `.vl` that changed is a source input that has changed,
+>   and a round that ignored it would compile stale bytes. The exclusion is a
+>   partition applied after collection, in `fmt` alone.
+> - **A generated root does not have to exist**, and nothing checks that it
+>   does. §12.3 argues it; the building confirmed the shape is free, because the
+>   predicate is a prefix test over declared paths and never a filesystem probe
+>   of the root itself.
+>
+> **Not built here.** The **module-root half of Q5** — making the generated root
+> a second search root so `pkg::icons` resolves out of it — is measured in §12.6
+> and left to its own slice. §12.6 also records the configuration that works on
+> the shipped resolver today (`generated` as a subdirectory of `root`, reached
+> as `<name>/lib.vl`), which is what keeps this slice from shipping a
+> declaration with no consumer.
 
 ---
 
@@ -857,9 +889,26 @@ standalone and needs no ruling on anything else in this paper.
   equivalent `run` one-liner produce byte-identical outputs and identical
   stamps.
 
+- **S6 — the generated root, and the formatter's exclusion.** *(BUILT
+  2026-08-29, Order 20, lane `genroot`; §12 is the design, and the ship note
+  above records what the building decided.)* Q5's ruled declaration —
+  `[package] generated` (and the same key on `[library]`) — parsed and
+  validated, with `vilan fmt`, `vilan fmt --check` and the language server's
+  formatting handler all leaving a `.vl` file under it byte-identical, through
+  one shared predicate. **The gate on the slice is the loop:** a hook whose
+  declared output `vilan fmt` would reformat stays `Fresh` across a
+  build → fmt → build cycle. The **module-root half** of Q5 (the generated root
+  as a second search root) is measured in §12.6 and is not in this slice.
+  *Standalone value:* the loop §12.1 states is live in the shipped tree today,
+  it is silent from both sides, and format-on-save runs it without anyone
+  typing a command — so this slice is a defect fix before it is a feature, and
+  it does not wait on module resolution because the loop does not involve one.
+
 S1 through S4 are independent of S5 and of each other in the sense that
 matters: none of them requires a ruling on any of §10's questions except its
-own.
+own. S6 is likewise independent: it is the half of Q5 that needs no compiler
+change, and §12.6 records why taking it first is the right order rather than a
+convenient one.
 
 ---
 
@@ -909,10 +958,28 @@ own.
 - **Per-leg** — P7 promoted: a two-leg package emitting the same kind produces
   two files with the two legs' own contents, and each leg's framing is applied
   independently.
+- **The generated root** — the manifest pins: the key parses on `[package]` and
+  on `[library]`; an absent key is today's behavior; a root that escapes the
+  package (`../gen`) is refused lexically, naming the key; an absolute root is
+  refused; `generated = "."` is refused; `generated` equal to `root` is refused
+  naming both keys; a root that does not exist yet is **accepted** (a clean
+  checkout is the normal case). The formatter pins: a file under the root is
+  left byte-identical by `vilan fmt`; the same file is not reported by
+  `vilan fmt --check`, which still exits zero; a file **outside** the root under
+  the same package still formats (the negative that makes the others
+  non-vacuous); a file under the root named explicitly on the command line is
+  still left alone; the note appears once per run and names the root, and does
+  not appear when the exclusion skipped nothing.
+- **The loop — S6's headline gate** — a `[[build.hook]]` whose declared output
+  is a `.vl` file the formatter would reformat, driven end to end: build (the
+  hook runs), `vilan fmt` (the file is untouched), build again — the hook is
+  **`Fresh`**, and the generated bytes never moved. Planted against the
+  exclusion removed, where the same cycle re-runs the hook, which is the defect
+  in the shipped tree.
 - **Docs gate** — every example in this paper's final book page compiles;
   `appendix/cli.md`, `guide/dev-loop.md` and `spec/platform.md` §11.4 each carry
   the freshness rule in their own voice, beside the trust sentence E96 already
-  put there.
+  put there, and the same three carry the generated root and its exclusion.
 
 ---
 
@@ -1032,3 +1099,248 @@ slice.
   styling-agnostic; splitting it now would create two mechanisms where the tree
   has one, and would strand the license-manifest and precache-list riders
   `const-eval.md` §3 already names.
+
+---
+
+## 12. The generated root — Q5's home for products, and the formatter's exclusion
+
+*(Added 2026-08-29, Order 20, lane `genroot`, on Q5's ruling. §10 ruled Q5 as
+recommended — "a second module root (`[package] generated = "generated"`),
+auto-gitignored by `vilan init`; still flagged as the highest-unknown-cost
+piece (module resolution)" — and the Order 18 note recorded that it "is in no
+slice of §8 … it needs a slice of its own before it needs a probe". This
+section is that slice, and it arrives carrying a second problem the ruling
+could not have seen: Order 19's lucide evidence run found the **formatter**
+half.)*
+
+### 12.1 The loop, stated
+
+Q5 was argued from readability: a thousand generated icon modules in `src/`
+beside twelve hand-written ones is not a source tree anyone can read. That is
+true and it is not the load-bearing reason. The load-bearing reason is a
+**live defect in the shipped tree**, and Order 19's lucide evidence run walked
+into it:
+
+> A `[[build.hook]]` that generates a `.vl` module declares that module in its
+> `outputs`. `vilan fmt` reformats the generated file. §3.1 digests declared
+> outputs by content, so the reformat re-stales the hook. The next build re-runs
+> the generator, which writes the file **unformatted** again — a generator emits
+> the bytes its templates produce, not the bytes `vilan fmt` would. The next
+> `vilan fmt` reformats it again. **The two undo each other on every round,
+> forever.**
+
+Three properties make this worse than a nuisance and worth a section:
+
+- **It is silent.** Neither tool is wrong. `fmt` formatted a `.vl` file, which
+  is its whole job; the hook re-ran because its declared output moved, which is
+  §3.1 working exactly as specified. Nothing reports a loop, because from
+  either side there isn't one.
+- **It defeats S1 precisely where S1 was aimed.** The freshness gate exists so
+  an expensive generator is free on the common path. A developer who runs
+  `vilan fmt` — or, worse, who has format-on-save enabled — pays the generator's
+  full cost on the next build, every time, and the `Fresh <name>` line they were
+  promised never appears.
+- **The editor makes it involuntary.** Format-on-save fires on a file the
+  developer merely opened to read. The loop then runs without anyone having
+  typed a command, which is the version of this defect that never gets
+  diagnosed.
+
+Q5's ruling covers the **gitignore** half of "generated sources need a declared
+home". This section covers the **formatter** half, and they are the same
+declaration: once the build knows which directory holds products, both
+consumers read one key.
+
+### 12.2 The manifest spelling: `[package] generated`, beside `root`
+
+The declaration is one key on the section that already declares the package's
+source layout:
+
+```toml
+[package]
+name      = "app"
+root      = "src"
+generated = "src/icons"
+```
+
+and the identical key on `[library]`, which declares a `root` for the same
+reason. Not on `[project]`: a workspace declares *members*, not sources, and
+each member's manifest carries its own layout — which is also what keeps a
+workspace's answer per-member rather than global.
+
+**The alternative considered, and why it loses.** The obvious rival is to hang
+the fact on the hook that generates — `[[build.hook]] generated = true`, with
+the root derived from `outputs`. It fails on four counts, and they compound:
+
+- **`outputs` are files, not a root.** §2.3 and the Order 18 note fix `inputs`
+  and `outputs` as literal paths with globs refused. A generator writing a
+  thousand modules would have to declare a thousand outputs, or declare the
+  directory — at which point the "root" is a coincidence of how the hook chose
+  to spell its staleness, and changing that spelling silently changes what the
+  formatter does.
+- **`run = [...]` hooks have no `outputs` at all**, so the string-form hook —
+  which §7 promises never moves — could never mark its products.
+- **It makes the formatter read the build graph.** `vilan fmt` would have to
+  parse `[build]`, walk every hook, and union their outputs, to answer a
+  question about a *directory*. The coupling buys nothing: the answer is a
+  property of the layout, not of which hooks happen to exist this week.
+- **The formatter is not the only consumer.** Q5's ruled uses are a module root
+  and a `vilan init` gitignore line. Both are layout facts, and a layout fact
+  that lives in `[build]` is in the wrong file section for two of its three
+  readers.
+
+Against those, `[package] generated` is one key, declared once, read by whoever
+needs it, in the table a reader already scans to learn where the code is.
+
+**It is knowable without running hooks — and that is the requirement, not a
+convenience.** `vilan fmt` runs in trees that have never been built, in CI
+before any build step, and inside an editor that must not spawn a generator to
+answer a formatting request. A rule that required running (or even *reading*)
+hooks to know which files to leave alone would put arbitrary shell behind
+format-on-save. A manifest string is a `toml::from_str` away and cannot execute
+anything.
+
+### 12.3 Validation — four refusals, each named
+
+The value is a path relative to the manifest directory, and it is checked at
+`Manifest::validate`, beside the other layout refusals:
+
+1. **It must not escape the package.** `../shared/gen` is refused **lexically**,
+   before any filesystem look — the rule `asset::read`'s `ProjectReader` already
+   holds (P3), for the same reason: a path that leaves the package names files
+   the manifest has no standing to speak for, and resolving it first would make
+   the refusal depend on what happens to exist. A **relative** path is required;
+   an absolute one is refused by the same rule (it is outside the package by
+   construction, and it makes the manifest machine-specific).
+2. **It must not be the package directory itself.** `generated = "."` would
+   swallow the manifest, every source file and every hand-written module. The
+   key names a *part* of the package.
+3. **It must not be `root`.** Q5's ruling is a *second* root; a second root that
+   is the first is not one. The practical damage is the same failure this whole
+   design exists to avoid — `vilan fmt` would quietly stop formatting every
+   hand-written module in the package — and the message names both keys, because
+   the fix is to change one of them.
+4. **It must be one path, not a list.** One package, one home for its products.
+   A package with two generators points them at one root; they are all products,
+   and a reader should have one directory to look in, one line in `.gitignore`,
+   and one thing to delete.
+
+Nothing checks that the directory *exists*. A generated root before its first
+build is the normal case — that is the whole shape of "generated" — and a
+manifest error on a clean checkout would be the S1 stamp's own lesson
+(§3.1: a missing declared input is a recorded fact, never a failure) unlearned.
+
+### 12.4 The exclusion: `vilan fmt` does not format a package's products
+
+**The rule.** A `.vl` file under a declared generated root is left
+**byte-identical** by `vilan fmt`, and by `vilan fmt --check`.
+
+Four decisions inside that sentence:
+
+- **It is applied at collection, not at the write.** `fmt` and `--check` then
+  agree by construction. A `--check` that reported "would reformat" on a file
+  `fmt` will never touch is a CI failure with no fix, and building the exclusion
+  into the walk makes that state unreachable rather than merely untested.
+- **It is unconditional — it holds however the file is reached.** Naming the
+  file explicitly (`vilan fmt src/icons/lib.vl`) does not lift it. This is the
+  decision most worth arguing, because "the user asked for that exact file" is a
+  real principle. It loses to a stronger one: **an explicit-path exception puts
+  the loop straight back through the editor.** Format-on-save reaches a file by
+  its exact path and nothing else; an exclusion that only applied to directory
+  walks would be an exclusion the LSP could never honor, and §12.1's worst case
+  is precisely the involuntary one. One rule, no exceptions, checkable from the
+  path alone.
+- **The escape is the manifest, not a flag.** There is no `--format-generated`.
+  §3.2 gave `--rerun-hooks` because staleness is a *guess* that can be wrong;
+  this is not a guess. If a file should be formatted it is not a product: move
+  it out of the root, or drop the key. Both are one-line diffs that land in
+  review, which is the same instrument §2.2 chose over a prompt.
+- **The editor honors it through the same code.** The LSP's formatting handler
+  and the CLI reach one formatter entry, and the exclusion goes *in front of
+  that entry*, once. Two implementations of one rule is how the LSP's answer
+  drifts from the terminal's, and this rule in particular has to hold in the
+  editor or it has not been built.
+
+**The exclusion is announced, once per run.** One dim line per generated root
+that actually skipped at least one file, naming the root and the count:
+
+```
+note: 1786 generated files not formatted (`src/icons`, `[package] generated`)
+```
+
+The reasoning is §3.1's and §4.3's, applied a third time: *a tool that quietly
+stops doing what the user asked is the failure mode this design cannot afford*,
+and the answer to an undocumented consequence is a sentence. Three constraints
+on the line, each earned by a case above:
+
+- **Once per run, not once per file.** A thousand generated icons is a thousand
+  lines nobody reads, and §4.3's "once per build" is the same shape.
+- **Only when it skipped something.** A declared root with no `.vl` files under
+  it — the clean checkout — says nothing. A note about an exclusion that
+  excluded nothing is noise, and noise is how the honest lines get ignored.
+- **A note, never a warning, and the exit code is unchanged.** Skipping a
+  product is the correct outcome, not a degraded one. `vilan fmt --check` in CI
+  passes with the note, which is the behavior a generated tree needs.
+
+### 12.5 The relationship to the ruled gitignore posture
+
+Q5 ruled the root "auto-`.gitignore`'d by `vilan init`". The two consumers are
+the same key read by different tools, and stating how they relate keeps a later
+reader from inventing a coupling that isn't there:
+
+- **`vilan init` writes the line; nothing enforces it.** A generated root that
+  is committed is legal. It is a choice some projects make deliberately (a
+  generated module a consumer must be able to read without the generator's
+  toolchain), and a build that refused it would be legislating a workflow the
+  manifest has no business in. `init` is a convenience at creation time, and the
+  formatter's rule holds regardless.
+- **The fmt exclusion does not read `.gitignore`, and must not.** It reads the
+  manifest. Deriving the exclusion from ignore rules would make the formatter's
+  behavior depend on a file with its own precedence semantics, its own global
+  and per-user layers, and no relationship to what the build considers a
+  product — and it would silently stop formatting `dist/`-adjacent scratch
+  directories nobody declared. One key, one meaning.
+- **They point at the same directory for the same reason, and that is the
+  point.** Products are not authored: not reviewed as diffs, not formatted as
+  source, not edited in place. The generated root is the single place a package
+  says which files those are, and every tool that cares reads it.
+
+### 12.6 What this slice does not build: the module root
+
+Q5's ruling has two halves and this slice ships one. **The generated root is
+not yet a module search root**, and a package must still put an importable
+generated module where the resolver already looks.
+
+The measurement, since Q5 called this "the question with the most unknown
+implementation cost":
+
+- **The resolution change itself is one line.** `resolve_module_in_roots`
+  already takes `&[&Path]` — a dependency library is multi-rooted, because
+  `[library.layer.<name>]` overlays are. The entry package is the one origin
+  that is single-rooted: `Origin::Pkg => vec![pkg_root]`.
+- **The cost is the thread, not the lookup.** `pkg_root: &Path` is a scalar
+  through `vilan-core`'s public analysis surface and out into the CLI, the
+  language server, the IDE crate and the wasm binding — ~65 references across
+  five production files, several of them public signatures with callers outside
+  the compiler.
+- **And the semantics are a slice's worth on their own**, not a refactor's:
+  which root wins when a module resolves in both (and whether that is an error
+  the way `foo.vl`-plus-`foo/lib.vl` already is), what the watcher tracks, what
+  go-to-definition answers, what `case_exact_mismatch` checks against.
+
+None of that blocks the formatter half, and the formatter half should not wait
+for it, because **the loop is a property of the hook, not of the import**. A
+`[[build.hook]]` whose declared output is a `.vl` file re-stales on every
+`vilan fmt` whether or not a single `import` names it. The exclusion pays off
+the day it lands.
+
+It also lands with a configuration that works **today**, which is what keeps
+this from being a declaration with no consumer: modules are flat (P6), but a
+module's *file* may be `<root>/<name>/lib.vl` as well as `<root>/<name>.vl`. So
+`root = "src"` with `generated = "src/icons"` excludes the whole generated
+subtree from the formatter while `src/icons/lib.vl` still imports as
+`pkg::icons`, on the shipped resolver, with no compiler change. The sibling
+form Q5 recommended (`generated = "gen"`, beside `src/`) parses, validates and
+excludes today, and becomes importable when the second half lands — which is
+the right order: the declaration is fixed and reviewable before anything
+resolves through it, exactly as S2 fixed the tier-2 opt-in before anything
+could cross it.
