@@ -704,4 +704,4 @@ This is the third instance of N26's lesson (a pin asserting one
 platform's observables), now gated `#[cfg(target_os = "linux")]` with
 the reason at the site (vilan f67710be) — the emission property itself
 is pinned platform-independently in inference/resources.rs. The clean
-rerun follows CI.
+rerun follows CI. — And it came: CI GREEN on f67710be, both platforms; the dry-run rerun is CLEAN, zero reds, 19 entries ordered (3 breaking, 5 feature, 2 miscompile, 9 tooling). v0.39.0 is one command away whenever the owner calls it.
