@@ -27,6 +27,7 @@
 | [B151](items/B151.md) | mR2 overwrite double-drops when the RHS throws | bug | FIX-NOW — double close today |
 | [B152](items/B152.md) | bare `ret <expr>` emits `return return` | bug | |
 | [B153](items/B153.md) | `Option::replace` declares a loan and keeps the value | bug | FIX-NOW shaped; unlocks C11's predicate widening |
+| [B154](items/B154.md) | NEW — internal `NativeMap::insert` frees the caller's value while the table holds it | bug | the fix is a ruling; pin is `#[ignore]`d |
 
 ## C. Memory model
 
@@ -54,6 +55,7 @@
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
 | [E100](items/E100.md) | module-load parse errors carry no span | bug | 798-errors-at-line-1, measured |
 | [E101](items/E101.md) | `str::index_of`/`find` + three cause-less diagnostics | feature | one small lane |
+| [E102](items/E102.md) | NEW — module-parse-error dedup dropped the message from its key | bug | audit 4; cheap |
 
 ## G. Macros & const
 
@@ -63,6 +65,8 @@
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
 | [G10](items/G10.md) | hook `inputs` declared to the stamp, not the watcher | bug | the lucide run's biggest find |
 | [G11](items/G11.md) | `vilan build --explain` — every output names its contributors | feature | owner-filed 2026-08-29; tier-agnostic |
+| [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
+| [G13](items/G13.md) | NEW — `dist/` never sweeps a bundled asset the build no longer names | bug | audit 4; unbounded under the digest recipe |
 
 ## I. Collections
 
@@ -115,3 +119,6 @@
 | [N23](items/N23.md) | NEW — 37 `pub` items in `vilan-core` are never referenced outside their own file | process | |
 | [N27](items/N27.md) | NEW — nothing ever runs the `#[ignore]`d pins, so an expired pin reason is undetectable by machine | process | |
 | [N28](items/N28.md) | NEW — `book_sync`'s mdBook backstop runs whatever `mdbook` is on PATH, no version check | process | |
+| [N29](items/N29.md) | NEW — `[extern(…, retains)]` documented only where no extern author looks | docs | audit 4 |
+| [N30](items/N30.md) | NEW — an empty directory appearing where a listed one was missing starts no watch round | bug | audit 4; narrow |
+| [N31](items/N31.md) | NEW — an `#[ignore]` reason must name a tracker item; gate it | process | audit 4; third consecutive run |
