@@ -1030,6 +1030,18 @@ rejected outright is a destruction-semantics call this paper does not own
 and leaves to the owner — flagged in the ship note, deliberately not
 "fixed" en passant.
 
+> **NOTE RETIRED 2026-08-29.** The owner ruled statement-end
+> (`temporary-drop.md`, closed; built as the special case of
+> `lifetimes.md` §6's last-use rule, since a temporary's last use IS its
+> statement). `File::open(p).read_at(b, 0)`'s receiver is now lifted to a
+> minted `const` and closed in a `finally` at that statement's end, on
+> `File` and `Database` alike; `vilan/test/file.mjs`'s golden grew the
+> `finally`s with its runtime output unchanged, and the fd staircase is a
+> permanent e2e (`crates/vilan-cli/tests/fs.rs`) reading back to baseline
+> where the leak read +1, +2 and +7. The tier's intended idiom no longer
+> leaks, and this paper's honesty note has nothing left to be honest
+> about.
+
 ## 12. Open questions for the owner
 
 Each is answerable on its own; none blocks S1 or S2.

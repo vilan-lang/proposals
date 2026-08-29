@@ -1,6 +1,10 @@
 # The lifetime model — one liveness notion, two backends, and a measured escape hatch
 
-> Status: DRAFT 2026-08-28 (the lifetime-model session), for owner review.
+> Status: **S1, S2, S3 AND S4 SHIPPED 2026-08-29** (cycle 37, order 19;
+> S3/S4 on branch `lastuse-s3`) — §10 carries each slice's record, and
+> §6's ship note below carries what the building corrected. S5 and S6+
+> remain open. Prior status: DRAFT 2026-08-28 (the lifetime-model
+> session), for owner review.
 > Design-only: this session wrote no production code. Every load-bearing
 > claim below is **measured** — three probe legs ran against `vilan 0.38.0
 > (6186824b9)` on 2026-08-28: the semantics verification (34 compiled
@@ -353,6 +357,139 @@ highest-leverage change (§3 fact 3), a JS-backend win **today** with no
 semantic change at all. It ships first, as the dataflow's proving
 ground, before any drop timing moves.
 
+### 6.5 Ship note — S3 and S4, 2026-08-29
+
+**SHIPPED** on branch `lastuse-s3` (cycle 37, order 19). Everything §6
+ruled is built: the lowering, the loan extension rule, branch-join
+specialization, the conditional-temporary refusal, the ordering
+amendment into `memory.md` §6.8, and — because a temporary's last use
+*is* its statement — C11 in the same change-set. S4's retention contract
+rides with it. What follows is what the building CORRECTED, because the
+plan was right about the direction and wrong about several mechanics.
+
+**The dataflow answers a second question, and it had to.** S2's answer is
+per USE SITE ("is this read the last one?"), which is what elision needs.
+Disposal cannot use it directly: a `finally` region can only be cut at a
+statement boundary, so the pass also records, per binding, the CHAIN of
+enclosing statements around its last read (outermost first). The consumer
+picks the chain element that is a direct statement of the scope it is
+emitting. Three answers, and the refusals fall back to the law that
+shipped: drop at the declaration (nothing reads it), drop after the
+statement holding the last read, or scope end.
+
+**"Nothing reads it" is a ruling the paper did not make.** §6 said
+"disposal moves from scope-end to last use" and left the no-use case
+open. It is ruled here as **drop at the declaration**, because the
+alternative — keep the old scope-end rule for unread bindings — makes
+adding a use RELEASE THE VALUE EARLIER, which is not a rule anyone can
+hold in their head. It is also what makes the never-ending `main` fix
+total. It is the single largest source of estate churn: fifteen shipped
+pins had programs adjusted, because "drop runs on early `ret`" and its
+neighbours were all written with a binding nothing reads, and became
+vacuous overnight.
+
+**Branch-join specialization is the join, and only the join.** §6.3 said
+"the compiler places a drop in each path". Building it showed that a
+per-arm drop cannot be made exception-safe without a runtime flag: the
+outer `finally` covering the acquisition would fire again on the arm that
+already dropped, and distinguishing them is exactly the flag mR7 bans. So
+the drop lands at the JOIN — which every path reaches, taken, not-taken,
+`ret` and `jump` alike — and the specialization's observable content is
+what P5 asked for: both paths release exactly once, flaglessly. The
+residue is honest and recorded: a using arm with a long tail after its
+last read holds the resource to the join rather than releasing inside the
+arm. Statement granularity is the floor `temporary-drop.md` §6.1 named,
+and this is where the floor shows.
+
+**Two emission laws the plan did not name, both found by probe.**
+*Regions nest.* A teardown region lowers to a JS block, so every `const`
+a statement inside it declares dies at that block's brace — the region
+must be widened until it covers the last read of every name declared
+within it, or the emitted program reads a name out of scope. Found on
+`owner.enter(…)`'s result, read after the owner's drop point. The
+widening question is deliberately SYNTACTIC, not the dataflow's: block
+scope is about where a name may be written down, not when a value may be
+destroyed, so opacity does not apply to it and only the completeness net
+(a read the walk never saw) can make it wrong. *And order matters:* the
+`finally` must be built AFTER its region is walked, because the capture
+drop path reads an alias table the walk fills and every minted name comes
+from one generator — building the drop first renamed every helper after
+it and moved two goldens for no reason.
+
+**`drop(x)` needed no exception.** The plan reserved one, on the theory
+that B150's guarded `finally` is a net over the whole scope. It is not:
+moving into the sink is a USE, and R7 rejects a conditional one, so the
+sink's statement *is* the binding's last use and the net closes there
+instead. P6's identity holds as stated — the point the pass infers is the
+point the human wrote.
+
+**C11 came with S3 rather than after it**, and its predicate is P5's read
+off the drop scan's own ownership walk rather than re-derived. Three
+narrowings, each because the alternative is a double free rather than a
+leak: an `await`/`try` wrapper takes the record over from the call
+beneath it (capturing the inner call captures a PROMISE and hands the
+destructor one); only a `&`/`&mut` view or a bare `self` receiver leaves
+ownership with the caller; and an unresolved callee's conventions are a
+signature nobody has read. The second is a **finding against std**, not a
+choice: R3 says bare parameters are loans generally, but
+`Option::replace`'s intrinsic surface declares `value: T` bare and then
+KEEPS the value. Recording a temporary there destroys something the
+callee stored, so the predicate stops at receivers and explicit views.
+**The declaration is the real defect** — it should read `own value: T` —
+and widening the predicate is what should follow it being fixed.
+
+The refusal is also **narrower than `temporary-drop.md` §7.3's stated
+set**. §7.3 named ternary and non-block `match`-arm expressions alongside
+`&&`/`||`, correctly for the lowering it was pricing. Under S3's, an
+`if`/`match` arm emits as a JS block with its own statement list, so a
+temporary there has a statement position of its own and needs no
+refusal. Only `&&`/`||` evaluate an operand inline with no block to hold
+it, and only they are refused.
+
+**The extern audit (S4).** Asked of every `[extern]` in std. The question
+started as "does the host read this after the call returns" and the suite
+sharpened it into two halves — **and is what it keeps a VILAN-owned
+value**. 23 marked, across nine files:
+
+| Surface | Declarations | Why it retains |
+| --- | --- | --- |
+| `browser/dom.vl` | `addEventListener` × 2 | the listener is a vilan closure, stored and called later |
+| `browser/router.vl` | `window.addEventListener` | same, on the window |
+| `reactive.vl` | `queueMicrotask` | the callback runs after the call returns |
+| `browser/dev.vl` | `__hmr_register_teardown`, `__hmr_stash` | held to the next bundle; `__hmr_stash` holds ACROSS it and `hmr_take` reads it back |
+| `browser/ui.vl` | `__chunk_arm`, `__chunk_load` | a value and two closures, held until the chunk resolves |
+| `rpc.vl` | `__hmr_register_teardown`, `onmessage` / `onclose` / `onerror` | handler properties the socket keeps |
+| `process/http.vl` | `createServer`, `listen`, `on` × 4, `close` | every node `EventEmitter` registration |
+| `fetch.vl` | `body` × 2, `headers`, `signal` | request-init: a string, a `Bytes`, a header list, a signal, each kept until the fetch runs |
+
+Left unmarked deliberately, and the reasoning is the audit's other half:
+every read-through accessor and pure computation (`json`, `debug`,
+`bytes`, `crypto`, `time`'s formatters) reads within the call; the
+`File` / `Database` / `Watcher` method surfaces take `self` and the host
+is done with it when they return; `Timer`'s `wait`/`cancel` settle within
+their own suspension; and the HMR synthesized getters — §6.4's named
+exemption, the 252 invisible uses in the website server — are excluded by
+`TransferForm` already and need nothing here.
+
+**`appendChild` is the case that taught the second half**, and it is
+worth stating because it is the shape a future audit will reach for
+first. The DOM genuinely keeps the child, so the first half of the
+question says yes. But the child is an `Element` — a host handle vilan
+neither allocates nor destroys, with no vilan-side lifetime for retention
+to extend — so marking it bought no safety and cost real elisions: it
+made a SIBLING aggregate opaque (the argument is `built[0]`, whose place
+root is `built`) and put a deep copy back into the split fixture's
+golden, caught by that gate. Retention extends the liveness of values
+whose lifetime this compiler manages. A host handle has none, and marking
+one only spends precision.
+
+**Measured, after:** the copy-elision census is unmoved (parameters
+joining the liveness walk cannot reach elision's answers — it gates on
+`variables`, and `compute_view_origins` never keys a parameter), five
+corpus goldens moved with runtime output proven identical line-multiset
+and exit-code, and the fd staircase reads 0 / 0 / 0 where the leak read
+1 / 2 / 7.
+
 ## 7. Tier B — reclamation without the host collector
 
 **Stated out loud: on the JS backend the host GC stays.** Per-value RC
@@ -425,12 +562,19 @@ JS representation. Any change to mR1–mR12's *rules* — this paper moves
 - **S2 — the liveness dataflow, pointed at copy elision.** Replaces
   `reference_count == 1`; no semantic change; the census sizes the
   prize. The dataflow's proving ground.
-- **S3 — last-use disposal for the affine tier** (§6 whole): the
-  lowering, the loan extension rule, branch-join specialization, the
-  conditional-temporary refusal, the ordering amendment, memory.md
-  §6.8's edits, corpus goldens regenerated deliberately. Closes C11.
-- **S4 — the extern retention contract** (§6.4): spelling ruled, then
-  the audit of std's externs against it.
+- **S3 — last-use disposal for the affine tier. SHIPPED 2026-08-29**
+  (branch `lastuse-s3`) — the lowering, the loan extension rule,
+  branch-join specialization, the conditional-temporary refusal, the
+  ordering amendment, `memory.md` §6.8's edits, corpus goldens
+  regenerated deliberately. Closes C11. §6's ship note carries the
+  record. *Original scope: as written.*
+- **S4 — the extern retention contract. SHIPPED 2026-08-29**
+  (branch `lastuse-s3`, with S3) — spelling settled as a TRAILING FLAG
+  on `[extern(..)]` rather than a form word (the attribute's arguments
+  are matched positionally, so a form word needs an arm per
+  combination; trailing position is also what makes the formatter's
+  round trip byte-exact). 25 of std's externs marked; the audit table
+  is in §6's ship note. *Original scope: as written.*
 - **S5 — the capture rule into spec §6** (§4) + the tour correction +
   C12's view-capture enforcement decision.
 - **S6+ — the native tier** (§7): gated on a backend arc existing;
