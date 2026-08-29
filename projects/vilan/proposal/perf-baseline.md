@@ -291,9 +291,15 @@ real-file latency subjects, which is the other reason the recorded table is
 release.
 
 Every measurement is one `PERF {…}` line of JSON — section, corpus, mode,
-metric, profile, runs, and min/median/p95/p99/max in milliseconds — so
-`perf.jsonl` diffs as text and the rows from both test binaries concatenate
-into one file. A human table follows the JSON in the log for reading.
+metric, profile, **`load`** (the 1-minute loadavg when the row was
+summarized — M13's provenance, after run 3 read a 4.5× regression under
+loadavg 18–46 and could not say so from the record), runs, and
+min/median/p95/p99/max in milliseconds — so `perf.jsonl` diffs as text and
+the rows from both test binaries concatenate into one file. Each binary's
+run ends with one `"section":"run"` provenance row naming how many
+subjects it measured and the load it ended under, so a reduced
+(`-E`-filtered) or contended run is distinguishable from the record it is
+compared against. A human table follows the JSON in the log for reading.
 
 **The recorded baseline is checked in** as
 [`perf-baseline.jsonl`](perf-baseline.jsonl) beside this file — the 57 rows
