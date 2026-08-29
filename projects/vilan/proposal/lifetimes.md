@@ -452,6 +452,17 @@ pin. S5: c01–c05 as capture-semantics pins; the tour fence recompiled.
 
 ## 12. Open questions for the owner
 
+> **RULED 2026-08-28 (the owner): "All recs accepted."** (1) The capture
+> rule specifies aliasing-as-shipped — §4's text enters spec §6, the tour
+> is corrected. (2) Branch-join drop specialization; the conditional
+> temporary is refused. (3) The extern retention contract is the
+> attribute spelling (`[extern(retains)]`-shaped; the lane settles the
+> exact token). (4) The ordering amendment is confirmed — reverse
+> declaration order at scope end yields to last-use order, breaking,
+> once. (5) Tier B's opening move is the reuse-analysis spike, and
+> nothing else native is built before it proves out. S1–S5 are all
+> unblocked; S6+ stays gated on a native arc existing.
+
 Few, because the session already ruled the direction. Each with a
 recommendation:
 
