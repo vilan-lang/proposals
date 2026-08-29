@@ -705,3 +705,63 @@ platform's observables), now gated `#[cfg(target_os = "linux")]` with
 the reason at the site (vilan f67710be) — the emission property itself
 is pinned platform-independently in inference/resources.rs. The clean
 rerun follows CI. — And it came: CI GREEN on f67710be, both platforms; the dry-run rerun is CLEAN, zero reds, 19 entries ordered (3 breaking, 5 feature, 2 miscompile, 9 tooling). v0.39.0 is one command away whenever the owner calls it.
+
+---
+
+**Order 20 (cycle 38) OPENED AND CLOSED 2026-08-29 — the narrow-grafts
+order, and the day v0.39.0 shipped.** The cut came first, on the owner's
+word: cut-release.sh applied clean at f67710be, release ce281993 tagged
+and pushed, release.yml green on both platforms, fold-release.sh ran all
+ten steps (main @2acb3f41, both deploys green, the live playground
+manifest reading v0.39.0, toolchains 0.39.0 both locations), and the
+breaking census came back ZERO — website and kolt both build green, as
+the C12 entry's estate census predicted. Then the order: six wave-1
+lanes off ce281993, two wave-2 lanes off the f36d4e15 integration tip,
+one serial close step, all Opus.
+
+SHIPPED, wave 1: the ESTATE VERBS (kolt.local 035 whole — `bundle_as`
+with the collision refusal and the owned-name fence on the evaluated
+target, const `read_dir`/`read_dir_all` byte-sorted with the directory a
+tracked input, const `digest` closing 024's out-of-band-fingerprint
+exhibit; the owner's manifest-key withdrawal held: everything landed in
+the const channel); `db.migrate` (kolt.local 036 whole, paper
+db-migrations.md — recorded-iff-committed inside each step's own
+transaction, both drift refusals loud and pre-flight); G10 (declared
+hook inputs wake the watcher through the one recorded-inputs door;
+red-first proven by two pins timing out the full 300 s bound); the
+GENERATED ROOT (027's Q5 slice — `[package] generated`, fmt and
+format-on-save both leave products alone through one shared predicate,
+the fmt-restale loop pinned dead); B153 as a MISCOMPILE (`Option::replace`
+stored a bare loan — double destruction in accepted code; C11's temporary
+predicate widened back with the retains exemption as new spec text; the
+sweep found the internal NativeMap::insert use-after-free, filed B154);
+and the diags batch (E98's doubling was TWO general causes plus a third
+unfiled face, all closed by site-carrying destruction edges and one
+dedup; E100's module parse errors anchor at their real spans; E101 as
+`index_of`/`last_index_of` plus three refusals that name their cause).
+Wave 2: `vilan build --explain` (G11, filed and shipped the same day —
+builds then prints every output's contributors and every tracked input's
+blast radius from records the build already keeps, one minimal
+extension: ConstFact stamps the enclosing const site) and AUDIT RUN 4 —
+the first delta run, and the method holds: twelve findings, six of one
+new species ("the shipped sentence": prose beside code that does not
+support it), all six fixed same-cycle (efb7e67c) along with the
+un-pinned LSP format gate; B154/G12/G13/N29/N30/N31/E102 filed; run 5's
+charter recorded on N16 (transformer-weighted delta + the shipped
+sentence as a standing angle). Serial: M13 CLOSED — both perf harnesses
+stamp loadavg per row and a per-run subject-count provenance row, and
+the quiet-machine re-record landed at load 0.53–0.87 (the field proved
+itself immediately: the first recording run's own release build polluted
+the window at 8.39→3.36 and the rows said so).
+
+CLOSED: G10, G11, B153, E98, E100, E101, M13 here; 035, 036 on
+kolt.local (five open there — 027's remainder is exactly the (C) paper
+decision). FILED: B154, G12, G13, N29, N30, N31, E102. PROCESS: the
+estate lane self-reported one pkill-by-pattern (its own probe; rule
+restated), and the integration briefly committed a conflict marker AGAIN
+on the diags multi-hunk changelog union — caught by the parity check the
+same turn, amended before anything left the worktree; the marker-hunt
+now checks BEFORE the add, not after. The kolt probe's no-settle race
+(found during the census under lane load) was fixed with a bounded
+settle poll, 10/10 across three loaded runs. Final union suite and CI
+verdicts recorded below when they land.

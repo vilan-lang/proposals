@@ -26,7 +26,6 @@
 | [B150](items/B150.md) | `drop(x)` is not exception-safe | bug | lifetimes.md §6/S3 |
 | [B151](items/B151.md) | mR2 overwrite double-drops when the RHS throws | bug | FIX-NOW — double close today |
 | [B152](items/B152.md) | bare `ret <expr>` emits `return return` | bug | |
-| [B153](items/B153.md) | `Option::replace` declares a loan and keeps the value | bug | FIX-NOW shaped; unlocks C11's predicate widening |
 | [B154](items/B154.md) | NEW — internal `NativeMap::insert` frees the caller's value while the table holds it | bug | the fix is a ruling; pin is `#[ignore]`d |
 
 ## C. Memory model
@@ -51,10 +50,7 @@
 | [E37](items/E37.md) | bindgen v2 — the remainder | feature | |
 | [E62](items/E62.md) | NEW — Zed language extension | feature | |
 | [E69](items/E69.md) | NEW — attribute-NAME completion in an element head is a semantics decision | feature | |
-| [E98](items/E98.md) | NEW — a browser build constructing a `@process` resource draws the coloring diagnostic twice | bug | |
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
-| [E100](items/E100.md) | module-load parse errors carry no span | bug | 798-errors-at-line-1, measured |
-| [E101](items/E101.md) | `str::index_of`/`find` + three cause-less diagnostics | feature | one small lane |
 | [E102](items/E102.md) | NEW — module-parse-error dedup dropped the message from its key | bug | audit 4; cheap |
 
 ## G. Macros & const
@@ -63,8 +59,6 @@
 |----|-------|------|------------|
 | [G2](items/G2.md) | Const-eval tail | feature | |
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
-| [G10](items/G10.md) | hook `inputs` declared to the stamp, not the watcher | bug | the lucide run's biggest find |
-| [G11](items/G11.md) | `vilan build --explain` — every output names its contributors | feature | owner-filed 2026-08-29; tier-agnostic |
 | [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
 | [G13](items/G13.md) | NEW — `dist/` never sweeps a bundled asset the build no longer names | bug | audit 4; unbounded under the digest recipe |
 
@@ -107,7 +101,6 @@
 | [M10](items/M10.md) | NEW — mechanize the BASE_CACHE transmute's completeness claim | perf | |
 | [M11](items/M11.md) | NEW — the compiler's largest retentions are invisible to the leak tally | perf | |
 | [M12](items/M12.md) | NEW — the corpus leak-soak passes in 0.005 s asserting nothing when its corpora are absent | perf | |
-| [M13](items/M13.md) | NEW — the perf baseline is stale, and its rows carry no provenance to re-record it against | process | |
 
 ## N. Hygiene & rot — NEW SECTION
 
