@@ -179,6 +179,240 @@ JS (assets are collected before assembly-time reachability). Tying emission
 to binding liveness — which would give dead-style elimination for free — is
 the recorded refinement, mirroring F6's own recorded over-approximations.
 
+The channel's other directions are `read` (text in, docs-port.md §3.3),
+`bundle` (whole files out, kolt.local 029), and — since 2026-08-29 — the three
+verbs §3.1 adds: a directory listing in, an explicitly-targeted bundle out, and
+a file's digest in.
+
+### 3.1 The estate verbs — `read_dir`/`read_dir_all`, `bundle_as`, `digest`
+
+Status: **DESIGNED AND SHIPPED 2026-08-29** (Order 20, cycle 38), from
+kolt.local 035's ruled recommendation. Three const-only externs beside
+`emit`/`emit_keyed`/`read`/`bundle` in `std::asset`, implemented in the same
+place those live — the interpreter's extern arms and the const pass's
+`ProjectReader`.
+
+```vilan
+// const-only, all four, exactly like the four above.
+fun read_dir(path: str): List<str>;      // immediate FILE names, byte-sorted
+fun read_dir_all(path: str): List<str>;  // every FILE beneath, relative, byte-sorted
+fun bundle_as(path: str, url: str): str; // bundle, target spelled at the call
+fun digest(path: str): str;              // sha-256 of the bytes, lowercase hex
+```
+
+The gap they close is one sentence long: **const code could not enumerate a
+directory**, so a static estate was a hand-written list of `bundle` calls (the
+exhibit is kolt's twelve), and `bundle`'s "the path IS the url" rule meant a
+path-pinned name (`/favicon.ico`) forced the file to sit at the package root.
+With these, the whole estate is three lines and any rewrite policy is ordinary
+code:
+
+```vilan
+fun static_estate() {
+    for file in asset::read_dir_all("static") {
+        asset::bundle_as(i"static/{file}", i"/{file}");
+    }
+}
+let _estate = const static_estate();
+```
+
+and a content-hashed url — the immutable-cache tier's whole basis, and 024's
+recorded exhibit that kolt's fingerprints are minted OUT OF BAND — becomes
+spellable in the language that ships the file:
+
+```vilan
+let logo = const asset::bundle_as(
+    "static/logo.png",
+    i"/static/logo.{asset::digest("static/logo.png").substring(0, 8)}.png",
+);
+```
+
+#### The listing: `read_dir` and `read_dir_all`
+
+They are `read`'s directory siblings, and they take `std::fs::read_dir` /
+`read_dir_all`'s shape: `read_dir` returns a directory's IMMEDIATE entries as
+bare names (`"logo.png"` — not path-joined; what addresses one is
+`i"{dir}/{name}"`), `read_dir_all` returns every entry BENEATH it as a path
+RELATIVE to it (`"icons/close.svg"`), and both are `/`-separated on every host
+— N25's normalization rule, which exists because a host-joined entry makes
+every derived cache key, asset url and golden host-dependent (kolt.local 017).
+A missing, unreadable, or not-a-directory path is a compile error at the
+`const` expression, matching `read`'s posture and `std::fs`'s.
+
+The path is **package-root-relative under `read`'s lexical fence**: absolute is
+refused, escaping the root is refused, both before any filesystem look so the
+refusal itself is deterministic. It is `read`'s fence and deliberately not
+`bundle`'s: the argument is an INPUT path and never becomes derived output, so
+it carries no backslash rule for the same reason `read` carries none — `a\b` is
+a legal filename on Linux and refusing it would refuse a real directory to fix
+a problem that host does not have. `""` and `"."` name the package root itself,
+which is a directory and is therefore a legal thing to enumerate (where
+`bundle(".")` is refused for naming no file).
+
+**Two deliberate divergences from `std::fs`**, each forced by what the const
+channel is:
+
+1. **Entries are byte-sorted, lexicographically, always.** `std::fs::read_dir`
+   is honest that the host's order is the host's; a const result is *compiled
+   into the output*, so host iteration order would make one source tree produce
+   two builds. Determinism is not a nicety here — it is the property that lets
+   `const` be memoized, cached and reproduced at all (§9.5) — so the sort is
+   part of the contract rather than a convenience, and it is pinned as such.
+   `read_dir_all` sorts the full relative path, so a tree's listing is stable
+   under any traversal order the host walks in.
+2. **Only FILES are listed.** `std::fs::read_dir_all` lists subdirectories as
+   entries too. The const channel has no verb that consumes a directory —
+   `read`, `bundle`, `bundle_as` and `digest` all take a file — and it offers
+   no `stat`, so a directory in the list would be an entry the program can
+   neither act on nor filter out, and the estate recipe above would break on
+   the first nested folder. Listing files only is what makes that recipe
+   correct as written; a caller who wants the shape of the tree has the entries'
+   own `/`-separated paths to read it from.
+
+Kind is decided by FOLLOWING a symlink (`metadata`), so a link to a file is a
+file and is bundleable. The walk DESCENDS by not following (`symlink_metadata`),
+so a link to a directory is never descended and a const walk cannot be made to
+loop. No name filtering of any kind: a dotfile is an entry.
+
+**The directory is a tracked build input**, on `read`'s recorded-inputs
+doctrine, and the record is per DIRECTORY WALKED: `read_dir(p)` records `p`
+keyed on the hash of its immediate sorted listing; `read_dir_all(p)` records
+`p` and every directory beneath it, each keyed on its own immediate listing.
+One record shape, and it composes — a file appearing or disappearing anywhere
+in the tree moves exactly one recorded directory's key, so both directions
+invalidate. The two consumers that read those records already do the right
+thing with them: the watcher snapshots each recorded path's mtime, and a
+directory's mtime moves when an immediate entry appears or vanishes, so the
+round FIRES; the per-leg content skip re-hashes each recorded input, and the
+re-hash learned one arm — a recorded path that is a directory re-hashes as its
+listing, not as a file's text — so an unchanged directory can still be SKIPPED
+rather than disqualifying the leg by failing to read. A missing directory is
+recorded unhashed, exactly as a missed `read` is, so its later appearance
+invalidates the compile that failed on it.
+
+**Fuel: 1,024 per entry, and the directory itself counts as one entry.**
+(So an empty listing is not free, and `read_dir_all` charges every directory it
+walks — a subdirectory is an entry of its parent — which is what prices the
+walk itself rather than only its yield.) The number is a quarter of
+`bundle`'s 4,096, and that ratio is the reasoning: a directory entry is a name
+the host already had in hand from one `readdir` — no per-entry open, no bytes
+read — where `bundle`'s flat charge prices a stat plus a whole-file read. A
+quarter keeps enumeration visible in the budget (no program walks an unbounded
+tree for free: 16M fuel buys ~15,600 entries) while leaving the dominant
+per-entry cost to what the program then DOES with the entry, which for the
+estate recipe is `bundle_as` at four times the price — so the fence that binds
+first is still the one on the work that copies bytes (~3,900 files), which is
+the right one to bind. Charged per entry and not per byte, unlike `read`,
+because a listing's cost is the walk and not the names: the loop body that
+follows runs once per entry, so a per-entry price is the one that bounds it.
+
+#### `bundle_as(path, url)` — the target spelled at the call
+
+`bundle` with an explicit target; it returns the url, so it is a drop-in
+wherever `bundle`'s return was used. 029's rule that **nothing is renamed
+behind your back** survives intact, because the rename is spelled AT THE CALL:
+`bundle` still means "the path is the url", and a file lands somewhere its own
+path does not spell only where a program said so in the source.
+
+Everything downstream is `bundle`'s, unchanged: the source is registered as a
+file the build carries, its bytes are read and thrown away to hash it as a
+tracked build input, the copy lands at the target in the output directory, the
+leg's `chunks.json` carries the target as an `assets` row, `serve_build` turns
+that row into a route at `/<target>` with no route of the app's own, and
+`run --watch` recopies it when the source changes. `bundle(path)` is exactly
+`bundle_as(path, "/" + path)` — one registry, one copy path, one manifest row,
+and no second implementation of any of it.
+
+**The url's shape**, refused with a curated message naming the fix:
+
+- must start with `/` — it is a url, and a leg's build namespace is one
+  directory, so a relative target has no meaning to name;
+- `/`-separated, and a backslash is refused rather than translated — the target
+  becomes an output name, a manifest row and a golden, and a separator-aware
+  rule would make all three host-dependent (kolt.local 017, the same ruling
+  `bundle` refuses a backslash under);
+- every segment must be a NAME: no empty segment (`//`, or a trailing `/`), no
+  `..`, and no `.`. `..` because a target may not climb out of the output
+  directory; `.` and the empty segment because the const value returned is the
+  url the copy answers on, and `/a/./b` is a different url to a browser while
+  being the same file on disk — a target that is not already the url it
+  promises is a lie the caller cannot see;
+- and `"/"` alone is refused by that same rule — it names no segment at
+  all, so there is no file for it to be the url of.
+
+**The target passes the build-owned-names fence `bundle` already applies**, and
+by reaching the same code rather than a copy of it: the registration produces
+the same `(source, name)` row every `bundle` produces, and `write_bundled`
+tests that name against every leg's `LegNamespace` — `<leg>.js`/`.mjs`,
+`<leg>.css`, `<leg>.chunks.json` and the whole `<leg>.<arm>.js` chunk
+namespace, for EVERY leg, because `dist/` is one directory. The refusal is not
+fussiness: `sweep_stale_sidecar` and `sweep_stale_chunks` DELETE names in that
+namespace when a build stops producing them, so a resource parked on one does
+not merely collide — it disappears on the next build. (This is E94/G7's
+doctrine applied one layer out: one list, two consumers, never two arrays.)
+
+**One new refusal, because the identity rule used to give it for free.** Under
+`bundle` alone, "the path is the name" made a name collision impossible: two
+different files could not claim one output name, because the name WAS the
+file's path. `bundle_as` breaks that, so the guarantee has to be stated and
+enforced instead of inherited. Two registrations of one target from two
+different sources are a **const-time error naming both source paths** — the
+diagnostic has both, because a collision is a statement about a pair and
+naming one half of it sends the reader to the wrong call. The same
+`(source, target)` pair reached twice deduplicates exactly as `bundle`'s
+does — a file bundled from two call sites is registered once, so the manifest
+names it once and `serve_build` installs one route for it.
+
+That check is per COMPILE, which is per leg, and a workspace's legs are
+separate compiles into one `dist/`. So the same collision across two legs is
+caught one layer out, at the copy: `write_bundled` carries the names this
+build has already written with the source each came from, and a second leg
+writing a different source to a name an earlier leg wrote fails the build
+naming both. Two legs bundling the SAME file to the same target stays what it
+always was — fine, expected, and idempotent.
+
+#### `digest(path)` — sha-256 of the bytes
+
+The file's bytes, sha-256, lowercase hex, 64 characters. The bytes, not the
+text: a fingerprint of a font or a `.png` must be a fingerprint of the file,
+and decoding first would make it a fingerprint of a decoding. Tracked as a
+build input exactly as `read`'s and `bundle`'s are — same recorded path, same
+content key, so a changed file invalidates the compile that fingerprinted it
+and `--watch` re-mints the url. A missing file is a compile error at the
+`const` expression.
+
+**Fuel: one per eight bytes** — an eighth of `read`'s per-byte rate. `read`'s
+rate prices two things at once: the I/O, and the arbitrary-length `str` the
+const program then computes over, which is why bounding it bounds input size.
+`digest` prices only the first — its result is 64 characters whatever the file
+weighs, and the bytes never enter the program — so the charge exists to bound
+how many bytes a BUILD will hash, not how large a value a program may hold.
+An eighth puts the book's largest page (40,758 bytes, the workload
+`EXPLICIT_LIMITS` was sized against) at ~5,100 fuel rather than ~40,800, so
+fingerprinting a whole estate stays affordable inside the same budget that has
+to fit a markdown parse, while a 128 MB file still exhausts it and is refused
+with the budget diagnostic. Per byte and not flat, unlike `bundle`: hashing is
+work proportional to size, where copying is work the CLI does after the compile
+and the const pass only pays a stat for.
+
+#### What stays out
+
+`bundle_as` places a file at a url; it does not invent one. There is no
+fingerprinting POLICY here — no `[asset] hash = true`, no automatic
+content-addressing — and that is the point: 035's owner steer refused a
+manifest key for the estate because a toml key is restrictive, hard to
+diagnose, and walls off programmatic logic, and the same argument refuses a
+key for hashing. Minting is three lines of ordinary vilan over `digest` and
+`bundle_as`, diagnosable as code, and every policy above it — prefix
+stripping, filtering, per-file url minting, fingerprinting some kinds and not
+others — is ordinary code too. That follows 027's finding directly: prefer
+policy on shipped machinery over new surface.
+
+Still out, and unchanged by this: a const `stat` or any dirent-kind
+distinction (the listing is files, which is the only kind the channel can
+consume), reading a directory's bytes, and writing anywhere but through the
+channel's own registry.
+
 ## 4. Cost and caching
 
 Const evaluation runs per expression at compile time; the interpreter's
