@@ -1,10 +1,14 @@
 # A first-class `css { … }` block — the element syntax's twin on the style side (kolt.local 016)
 
-> Status: **S1 AND S2 SHIPPED 2026-08-28** (cycle 36, order 18, lane
-> `css-block-s2`; §11 carries each slice's record). All six open questions
-> RULED 2026-08-28 (§12), Q3 among them — the `css` keyword is TAKEN, so S2
+> Status: **S1–S4 SHIPPED 2026-08-28** — S1 and S2 in cycle 36, order 18
+> (lane `css-block-s2`), S3 and S4 in cycle 37, order 19 (lane
+> `css-block-s3s4`); §11 carries each slice's record. **S5 (the LSP and
+> playground tails) is the only slice left in the arc**, and its gate
+> stands: it must require no S2 rework. All six open questions RULED
+> 2026-08-28 (§12), Q3 among them — the `css` keyword is TAKEN, so S2
 > builds on a real keyword rather than the contextual gate the draft
-> designed. Prior status: DRAFT 2026-08-27 (cycle 33, work order 15, lane
+> designed, and Q2 among them — the formatter SORTS, which is what S3
+> built. Prior status: DRAFT 2026-08-27 (cycle 33, work order 15, lane
 > `css-block-paper`), for owner review; design-only, no code, no suite.
 > Tracker: `../projects/kolt.local/tracker/items/016.md`; it should become
 > PROPOSED with this paper as its record. The direction was RULED
@@ -762,6 +766,18 @@ derivation, not a fourth hand-maintained table. And, as the printer already
 does for chains, **any block containing a comment is refused outright**
 rather than reordered.
 
+> **DONE 2026-08-28** (Q2, "the formatter sorts"; S3). Built as recommended,
+> with one correction the section could not have made from outside the code:
+> "sharing one order function" required *refactoring* the chain's
+> `style_chain_permutation` into a `canonical_permutation` over already-ranked
+> links, so that four callers — the chain's printer and token net, the
+> block's printer and token net — reduce to one implementation rather than
+> two that happen to agree. The derivation needed a gate of its own
+> (`no_css_property_is_claimed_by_two_families`, the fifth in
+> `style_table_sync.rs`), and the block turns out to rank where the chain
+> *cannot*: `raw` is a barrier there because its slot is an argument, while a
+> block's property is a token. §11's S3 record carries the rest.
+
 ---
 
 ## 9. Does it subsume 009, 014, 015?
@@ -927,24 +943,130 @@ the same commit, per-case pins.
     i-string twin `i"calc({space(4)} + 2px)"` does the same thing today, so
     the equivalence gate holds and the underlying gap is that `str + Length`
     type-checks at all. Filed as a finding, not fixed here.
-- **S3 — formatter.** The canonical printer replaces S2's passthrough:
-  one declaration per line, nested rules at +1, the block's own budget
-  behavior; canonical declaration order derived from
-  `STYLE_PROPERTY_METHODS` under the `style_table_sync.rs` gate and sharing
-  one order function with the chain sorter; comment attachment via item
-  spans, and outright refusal to reorder any block containing a comment.
-  `assert_construct` pins per form (token identity, no-silent-bail, canonical
-  form, idempotence, round-trip).
-- **S4 — docs and editors.** *(S2 shipped the `guide/styling.md` section its
-  own surface needed — "The `css` block", compile-gated, and the anchor the
-  keyword hover deep-links to; the spec pages, the tour phrasebook and the
-  TextMate `#css` rule remain S4's.)* `spec/grammar.md` (the `css-block` productions,
-  the atom-position and `no_struct` prose), `spec/lexical.md` (the two bytes
-  that do not lex and why), `guide/styling.md` (both forms side by side,
-  compile-gated), `tour/coming-from-javascript.md` (a CSS phrasebook), and
-  the TextMate grammar's `#css` repository rule
-  (`editors/vscode/syntaxes/vilan.tmLanguage.json`; hand-written, regex-level,
-  as `#elements` is — there is no tree-sitter grammar in the repo).
+- **S3 — formatter. SHIPPED 2026-08-28** (cycle 37, order 19, lane
+  `css-block-s3s4`). The canonical printer replaces S2's passthrough: one
+  item per line, nested rules at +1, holes canonicalized as the ordinary
+  vilan expressions they are, blank lines between items dropped; the items
+  in the canonical order, derived from `STYLE_PROPERTY_METHODS` under the
+  `style_table_sync.rs` gate and sharing one order function with the chain
+  sorter; comment attachment via item spans, and outright refusal to
+  reorder any block containing a comment. Fifteen `assert_construct` pins,
+  one per form (token identity, no-silent-bail, canonical form,
+  idempotence, round-trip), and the bail set still asserted EMPTY over the
+  whole corpus. Decisions and findings, recorded:
+  - **"One declaration per line" and "the block's own budget behavior"
+    resolved as: the OUTER block collapses, a nested rule never does.**
+    §2 shows both shapes — `let active = const css { padding: {space(6)}; };`
+    inline and `card` split — so the outer body takes the element's own
+    rule (more than one item, or an item that is itself a rule, or a
+    comment forces the split; otherwise render and measure). A nested
+    rule is forced regardless: a rule sharing its line with its
+    declarations is not CSS, and one shape per construct beats a shape
+    that depends on how much a rule happens to declare.
+  - **The order function was REFACTORED rather than duplicated.**
+    `style_chain_permutation(names)` became `canonical_permutation(ranks)`
+    over already-ranked links, with the chain's name→rank lookup lifted
+    out. Four callers now reduce to it — the chain's printer and token
+    net, the block's printer and token net — which is what "share one
+    order function" has to mean if the block and the chain can never
+    disagree.
+  - **The property rank is a DERIVATION, and it needed a gate of its
+    own.** The rank tables are keyed by method name; a block writes CSS
+    property names. `css_property_rank` reads the rows' existing
+    `properties` column and takes the family's rank — which is only well
+    defined if no property is claimed by two families, so
+    `no_css_property_is_claimed_by_two_families` is the new fifth gate in
+    `style_table_sync.rs`. It is a consequence of gate 3 (entangled
+    methods share a family) rather than a new claim, stated where the
+    derivation can read it, and it reddens if gate 3's `entangled`
+    predicate is ever narrowed.
+  - **The block ranks where the chain CANNOT, and the paper's §8 did not
+    say so.** In a chain `raw` is a barrier because the slot it writes is
+    an argument the formatter cannot evaluate; in a block the property is
+    a token, so a declaration really does rank. That is the block getting
+    strictly more canonicalization than the chain it lowers to — which is
+    fine (the two orders agree wherever the chain has an opinion) and is
+    the reason the block's fixtures had to prove the family rule
+    independently, in `an_order_sensitive_css_block_resolves_the_same_slots`.
+    A property no row writes stays a barrier, which is `raw`'s escape
+    hatch surviving into the block whole.
+  - **The net needed its own token pass, and comments cost it nothing.**
+    `sort_css_blocks` is the token-level twin of the AST printer, folded
+    into `normalize` after `sort_style_chains` (so a chain inside a hole is
+    already canonical when a block's items move around it) and mirrored by
+    the external corpus tripwire through that one implementation. The
+    printer's comment refusal never reaches the net — comments are not
+    tokens, so both sides sort and meet — which is why the refusal can be
+    a printer-side rule and needs no token-side counterpart.
+  - **The corpus program reflowed, and what did NOT move is the
+    argument.** `vilan/test/css-block.vl` was rewritten into canonical
+    order (`values()`'s five ranked declarations sort ahead of its two
+    barriers; `conditions()`'s `.md` moves ahead of the relation rules;
+    blank lines inside blocks go) and rebuilt with a fresh binary.
+    **`css-block.css` is byte-identical** — class names are content hashes
+    of the slot and the declaration, so a moved hash would have shown —
+    and `css-block.mjs` moves on exactly two lines, both `class_list()`
+    strings carrying the SAME classes in a different insertion order,
+    which is the one thing a reorder is allowed to change. The S2
+    byte-identity gate (the block twin against the chain twin) is
+    untouched: `card()` was already canonical, so neither twin moved.
+    The file joins `STYLE_SOURCES`, so both its spellings are now held
+    canonical and built both ways.
+  - **A latent race in `style_chain_order.rs` was fixed on the way
+    through.** Two tests sweep the same fixture list into a temp path
+    keyed only by pid, and nextest runs them concurrently in one process;
+    adding a third corpus fixture made one test's `remove_dir_all` delete
+    the tree the other was mid-build in. Each call now takes its own
+    directory.
+- **S4 — docs and editors. SHIPPED 2026-08-28** (same lane, second
+  commit). *(S2 shipped the `guide/styling.md` section its own surface
+  needed — "The `css` block", and the anchor the keyword hover deep-links
+  to; the spec pages, the tour phrasebook and the TextMate `#css` rule were
+  S4's.)* `spec/grammar.md` — the `css-block` productions inside §3.6's own
+  `atom` block beside `element`'s, with the atom-position and dot-rule
+  prose, plus the brace-initial exclusion recorded in §3.8 where the struct
+  initializer's already is. `spec/lexical.md` — `css` added to the
+  reserved-word list (a hard keyword since S2 that had never been written
+  down), and the first statement in that file that a character can fail to
+  lex at all, with both spellings named. `guide/styling.md` — both forms of
+  ONE style in one `vilan,browser` program, so the docs gate compiles the
+  claim that they mint the same classes, plus what `vilan fmt` now does with
+  a block. `tour/coming-from-javascript.md` — six CSS phrasebook rows and
+  one thing to unlearn. `editors/vscode/syntaxes/vilan.tmLanguage.json` — a
+  hand-written `#css` repository rule beside `#elements`. Findings:
+  - **The S4-deferred tailored note was cheap and is in.** A block without
+    `import std::style::style` already failed AT the `css` keyword (S2 kept
+    that one accessor's real span for exactly this) with the generic import
+    steer — honest, but disjointed: `css` underlined, `style` in the
+    message, nothing drawing the line. `css_style_import_note` is the
+    element desugar's `element_view_import_note` twin, gated on the failing
+    accessor's span reading `css`, so it cannot fire on an ordinary
+    unresolved `style`. Both directions pinned.
+  - **The TextMate rule is begin/end, not a match list**, so a property
+    name is coloured as a property only INSIDE a block. Condition rules
+    take their own braces in their `begin` (head arguments included), which
+    leaves every remaining bare `{` a hole — whose contents fall back to
+    `$self`, the whole vilan grammar. Its one honest limit, written at the
+    site: a rule head whose arguments wrap across lines does not match, and
+    a `{` nested inside a hole closes it early. Regex level, as `#elements`
+    is.
+  - **The `#css` rule sits outside every `grammar_sync.rs` seam**, and had
+    to: the splice locates a generated value by an anchor line (`"name":
+    "<scope>",`) followed by a `"match":`/`"begin":` line, asserts exactly
+    ONE such anchor per scope, and asserts its own idempotence. The rule
+    names `keyword.other.vilan` in a CAPTURE (no trailing comma, next line
+    a `}`), so it cannot be read as a second anchor — and the generated
+    `\b(with|borrows|css)\b` row that colours the word stays untouched,
+    which `every_lexer_keyword_is_in_both_grammars` still requires.
+  - **Two stale facts fixed rather than merely added to**: `lexical.md`'s
+    reserved-word list was missing `css`, and `lexing.rs`'s `#`/`@` rules
+    cited a `lexical.md §7` that does not exist (the context-free sentence
+    is §2.5).
+  - **The book's highlight.js theme was left alone.** `css` is already in
+    its generated keyword group, so a block's keyword colours in the book;
+    a structural `#css`-equivalent `contains` rule there would be the
+    TextMate rule's third copy for a coarser surface, and is not worth its
+    drift risk. Named as declined, not forgotten.
 - **S5 — LSP and playground tails.** Semantic tokens for property names and
   condition heads, from a second raw parse (the `keyword_hover`/markup-tokens
   pattern, `document.rs:1862`); completion in the four positions of §7.1,
