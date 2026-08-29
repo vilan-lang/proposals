@@ -62,6 +62,7 @@
 | [G2](items/G2.md) | Const-eval tail | feature | |
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
 | [G10](items/G10.md) | hook `inputs` declared to the stamp, not the watcher | bug | the lucide run's biggest find |
+| [G11](items/G11.md) | `vilan build --explain` — every output names its contributors | feature | owner-filed 2026-08-29; tier-agnostic |
 
 ## I. Collections
 
