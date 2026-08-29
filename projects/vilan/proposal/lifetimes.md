@@ -271,6 +271,16 @@ ids, owner scopes, `when`/`bind_each` disposal) works exactly as
 designed where it is *reachable* — V2 is the API gap, not a mechanism
 gap.
 
+**AMENDMENT (2026-08-29, from the S1 build): V3's "smallest fix" line
+understated it.** The accessor is necessary but not sufficient — V8
+allocates one scope per invocation, so an inline listener reaches the
+element its sibling effect closure captured however carefully its body
+avoids naming it. The real repair is where the listener is BORN: a
+function of its own whose scope holds only the signal (`write_back_value`
+/`write_back_draft`). This is a §4 capture-rule consequence, not a DOM
+one, and it is the standing rule for any future listener that must not
+retain its element.
+
 **Consequence:** "choose an acyclic design" was the wrong tense. The
 acyclic design exists at the spine; **five mechanical repairs extend it
 to the whole graph**, one of which (V2) is a standing bug worth a lane
@@ -532,6 +542,24 @@ The census assigns the two ruled mechanisms to the corners they fit:
   an accidental cycle under counted `Shared` is a leak with a
   diagnosis, not a crash — and the escape-hatch tier it can occur in is
   7.1% of allocations, measured.
+
+### 7.1 Ship note (2026-08-29, Order 19 close): S1, S2 and S5 are BUILT
+
+S1 (lane graph-repairs): all four repairs + the standing SCC gate
+(`unmounted cycles=0` is the law; the mounted count recorded); A28's
+leak pinned 25 → 0; the client half was symmetric and also leaking —
+`ReactiveClient` gained `Disposable`, caller-less in std pending the
+owner. The ownerless derivation is leak-as-today by deliberate choice
+(strictness breaks two documented idioms); refusal recommended as a
+future ruled breaking change. S2 (lane liveness-dataflow): the last-use
+dataflow at copy elision — +69% elisions, 15 goldens moved as pure
+`__clone` removals, the old syntactic guards deleted; spec §6.2 needed
+no edit (it was already written to last-use). S5 (lane capture-spec):
+§4's rule is spec §6.9, the tour corrected, C12 ENFORCED on a zero
+census — and the build found C13, the view-parameter-through-storing-
+callee escape, pinned ignored as §6.9's honesty limit. S3+S4 shipped in
+wave 2 (§6.5's note). Remaining in this paper: S6+ (the native tier,
+gated on a backend arc; the reuse spike first, as ruled).
 
 ## 8. Tier C — recorded, possibly never
 

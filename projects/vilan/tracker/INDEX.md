@@ -26,6 +26,7 @@
 | [B150](items/B150.md) | `drop(x)` is not exception-safe | bug | lifetimes.md §6/S3 |
 | [B151](items/B151.md) | mR2 overwrite double-drops when the RHS throws | bug | FIX-NOW — double close today |
 | [B152](items/B152.md) | bare `ret <expr>` emits `return return` | bug | |
+| [B153](items/B153.md) | `Option::replace` declares a loan and keeps the value | bug | FIX-NOW shaped; unlocks C11's predicate widening |
 
 ## C. Memory model
 
@@ -33,7 +34,6 @@
 |----|-------|------|------------|
 | [C1](items/C1.md) | `Weak<T>` | design | |
 | [C2](items/C2.md) | Dynamic rule-4 remainder | design | |
-| [C11](items/C11.md) | NEW — a resource born and consumed as an expression temporary is never dropped | design | |
 | [C12](items/C12.md) | view-capture ban documented but unenforced | bug | lifetimes.md §2.2/S5 |
 | [C13](items/C13.md) | a closure over a view parameter escapes through a storing callee | bug | pinned ignored; spec §6.9's honesty limit |
 
@@ -52,6 +52,8 @@
 | [E69](items/E69.md) | NEW — attribute-NAME completion in an element head is a semantics decision | feature | |
 | [E98](items/E98.md) | NEW — a browser build constructing a `@process` resource draws the coloring diagnostic twice | bug | |
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
+| [E100](items/E100.md) | module-load parse errors carry no span | bug | 798-errors-at-line-1, measured |
+| [E101](items/E101.md) | `str::index_of`/`find` + three cause-less diagnostics | feature | one small lane |
 
 ## G. Macros & const
 
@@ -59,6 +61,7 @@
 |----|-------|------|------------|
 | [G2](items/G2.md) | Const-eval tail | feature | |
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
+| [G10](items/G10.md) | hook `inputs` declared to the stamp, not the watcher | bug | the lucide run's biggest find |
 
 ## I. Collections
 

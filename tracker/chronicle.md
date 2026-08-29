@@ -655,3 +655,42 @@ E98/015 → Order 20, M11/M13 → a quiet machine, reuse spike → the
 native arc's opening move, css-block S5 after S3/S4, audit run 4 due
 Order 20. All lanes Opus; per-lane scratch subdirs; verdicts from own
 logs only.
+
+---
+
+**Order 19 (cycle 37) CLOSED 2026-08-29** (opened 08-28; the overnight
+pause was a locked signing vault, nothing else). Nine lanes in two
+waves, all shipped; next @160cfa1e PUSHED — final union 4752/4752, exit
+0, CHANGELOG parity 19/19 (v0.39.0's Unreleased: 2 breaking, 2
+miscompile among 19). THE HEADLINE: the lifetime paper's buildable half
+is BUILT — S1 (the graph repairs + the SCC gate; A28's router leak 25→0;
+the V3 scope-split correction now in the paper), S2 (the last-use
+dataflow; +69% elisions, goldens proven pure-clone-removal), S3 (disposal
+at LAST USE, the ordering amendment family-breaking, 51 shipped pins
+moved as pure reorderings), S4 (the [extern(retains)] contract + the std
+audit, which caught appendChild over-marking via a split-golden deep
+copy), S5 (closures capture bindings — said in spec §6.9, the tour's
+false paragraph corrected, C12 ENFORCED on a zero census) — and C11
+CLOSED (the temporary drops with its statement; the conditional
+temporary refused, the arc's one new error). temporary-drop.md CLOSED as
+the special case. Also: css-block S3+S4 (one order function, four
+callers; S5 alone remains), emit_keyed (028 COMPLETE — byte-identity by
+a shared interpreter arm), the lucide evidence run (Q1 CLOSED against
+build.vl, four ways, pending veto; redirects filed as G10/E100/E101 +
+027's reframed Q5), drop-safety (B150/B151, both miscompile-family,
+RHS-first vindicated by the spec's own sentence), gate-smalls (B152's
+divergent-tail generalization, E99, M12, N27, N28, L18 staged). FILED:
+B153 (Option::replace declares a loan and keeps the value — the wave-2
+semantics finding), C13, G10, E100, E101. LANE RULINGS AWAITING
+RATIFICATION: drop-at-declaration for a never-read binding; JOIN
+placement over per-arm (per-arm cannot be exception-safe without the
+flag mR7 bans); retains marks the place ROOT. Owner queue also: the
+ownerless-derivation refusal, caller-less ReactiveClient::dispose, the
+build.vl veto window. PROCESS: a lane pkill'd every sibling's suite
+(pkill -f nextest — the lesson now a hard brief rule: kill your own pid
+only); rerere replayed a CHANGELOG union correctly at the wave-2 merge
+but the wave-1 unions ate three family markers before parity caught
+them; one conflict marker was briefly COMMITTED when a resolver's shape
+assertion failed silently mid-chain — the repair discipline (parity at
+every step) caught it two steps later. Wave structure verdict: second
+clean run — the S2→S3 dependency cost nothing.
