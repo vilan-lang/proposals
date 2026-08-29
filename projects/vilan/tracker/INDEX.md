@@ -10,6 +10,8 @@
 | [A8](items/A8.md) | UI styling — the tail | design | |
 | [A14](items/A14.md) | Reactive residuals | design | |
 | [A27](items/A27.md) | NEW — `std::dom` cannot listen on `window` at all | design | |
+| [A28](items/A28.md) | `map`/`combine`/`flatten` derivations undetachable — a live std leak | bug | FIX-NOW; lifetimes.md S1 |
+| [A29](items/A29.md) | `DuplexEnd.me` never cleared — a session retained per disconnect | bug | lifetimes.md S1 |
 
 ## B. Type system & the type solver
 
@@ -21,6 +23,9 @@
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
 | [B148](items/B148.md) | NEW — `str + <any struct>` type-checks and renders the runtime tuple | bug | |
 | [B149](items/B149.md) | NEW — an async function returning a `Task` mistypes as the task, pinned but never itemed | bug | |
+| [B150](items/B150.md) | `drop(x)` is not exception-safe | bug | lifetimes.md §6/S3 |
+| [B151](items/B151.md) | mR2 overwrite double-drops when the RHS throws | bug | FIX-NOW — double close today |
+| [B152](items/B152.md) | bare `ret <expr>` emits `return return` | bug | |
 
 ## C. Memory model
 
@@ -29,6 +34,7 @@
 | [C1](items/C1.md) | `Weak<T>` | design | |
 | [C2](items/C2.md) | Dynamic rule-4 remainder | design | |
 | [C11](items/C11.md) | NEW — a resource born and consumed as an expression temporary is never dropped | design | |
+| [C12](items/C12.md) | view-capture ban documented but unenforced | bug | lifetimes.md §2.2/S5 |
 
 ## D. Documentation
 
