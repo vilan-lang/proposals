@@ -43,6 +43,15 @@ here, copied out." Writes lose their `*`; reads keep theirs.
 
 ## Rules
 
+> *A note on the numbering (2026-08-28, the lifetimes session).* These
+> R1–R8 are the **view** surface. `spec/memory.md` §6.8 carries a second,
+> unrelated **R1–R12**, the affine rules for resources; the two
+> namespaces are disjoint, and R7 means "no rebinding a view" here and
+> "no conditional moves" there. Where a discussion spans both, write
+> **tRn** for this paper's rule and **mRn** for the affine rule.
+> Unqualified Rn in this paper always means the view rule.
+
+
 Let an expression's type be either a **value type** `T` or a **view type** `&T` / `&mut T`.
 
 - **R1 — Distinct types, no coercion.** `&T` / `&mut T` are not `T`. There is no implicit

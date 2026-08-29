@@ -35,6 +35,7 @@
 | [C2](items/C2.md) | Dynamic rule-4 remainder | design | |
 | [C11](items/C11.md) | NEW — a resource born and consumed as an expression temporary is never dropped | design | |
 | [C12](items/C12.md) | view-capture ban documented but unenforced | bug | lifetimes.md §2.2/S5 |
+| [C13](items/C13.md) | a closure over a view parameter escapes through a storing callee | bug | pinned ignored; spec §6.9's honesty limit |
 
 ## D. Documentation
 

@@ -139,7 +139,8 @@ language on JS; 4–5 earn the safety guarantees; 6+ is opt-in surface.
     what routes the signals "return an unsubscribe closure capturing `self`"
     pattern to `Shared`. Validated: capturing-closure return errors, non-capturing
     is fine, no corpus false positives, validation-only. **Deferred:** capturing
-    an outer view *binding* (vs parameter); and **no view across `await`** (needs
+    an outer view *binding* (vs parameter) — **CLOSED 2026-08-28** (Order
+    19, lane capture-spec: the ban is enforced, census zero, C12); and **no view across `await`** (needs
     precise last-use liveness, not the block-lexical approximation).
 - **Phase 5 — Projections + provenance.** `borrows` as an inferred signature
   effect (reuses the async/context effect-inference machinery); provenance
