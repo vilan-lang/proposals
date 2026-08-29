@@ -1287,12 +1287,15 @@ Q5 ruled the root "auto-`.gitignore`'d by `vilan init`". The two consumers are
 the same key read by different tools, and stating how they relate keeps a later
 reader from inventing a coupling that isn't there:
 
-- **`vilan init` writes the line; nothing enforces it.** A generated root that
-  is committed is legal. It is a choice some projects make deliberately (a
-  generated module a consumer must be able to read without the generator's
-  toolchain), and a build that refused it would be legislating a workflow the
-  manifest has no business in. `init` is a convenience at creation time, and the
-  formatter's rule holds regardless.
+- **Nothing enforces the ignore, and `init` does not write it yet.** A
+  generated root that is committed is legal. It is a choice some projects make
+  deliberately (a generated module a consumer must be able to read without the
+  generator's toolchain), and a build that refused it would be legislating a
+  workflow the manifest has no business in. The `vilan init` half of the ruling
+  is **not built in S6 and is not owed by it**: the scaffolds declare no
+  generated root, so there is nothing for `init` to ignore. It becomes a real
+  task the day a template ships a generator, and it is a convenience at
+  creation time either way — the formatter's rule holds without it.
 - **The fmt exclusion does not read `.gitignore`, and must not.** It reads the
   manifest. Deriving the exclusion from ignore rules would make the formatter's
   behavior depend on a file with its own precedence semantics, its own global
