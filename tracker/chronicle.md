@@ -765,3 +765,29 @@ now checks BEFORE the add, not after. The kolt probe's no-settle race
 (found during the census under lane load) was fixed with a bounded
 settle poll, 10/10 across three loaded runs. Final union suite and CI
 verdicts recorded below when they land.
+
+**Order 20 addendum, 2026-08-29 — the CI story, and the close's verdicts.**
+The final union suite's FIRST run was red on the hygiene gate: the
+audit-response commit's `git add -A` had swept `suite.log` into the tree
+— the exact trap the estate lane had reported hours earlier. Untracked,
+re-run green: **4846/4846, exit 0, parity 9/9**. The push's CI then came
+back RED on the Windows leg — hook-watch's new added-file-under-directory
+watch pin timed out its full liveness bound — and the machinery answered
+properly twice over: the resumed lane agent's read-only diagnosis
+eliminated every deterministic hypothesis by its own passing Windows
+siblings and ranked the flake-shaped ones (H-A: the loop consumes a
+snapshot difference BEFORE the action, so a round lost to a transient
+action failure is lost for good), and the rerun came back GREEN —
+flake-shaped confirmed. The response is pin-side and shipped (2ad39dd0):
+the watcher's stderr lands in watch.log instead of the void, the timeout
+panic carries the counts and that log, and the positive trigger-waits
+re-touch every 20 s — a lost round is a verdict now, not a 300 s
+mystery. The product-side design question is FILED as G14 (restore the
+consumed difference on a failed action, or record the wait-for-next-change
+posture as the ruling). And the suite.log sweep happened a THIRD time in
+the hardening commit itself — pushed before the parity of habits caught
+it — so the general fix finally landed: `suite.log` is gitignored, with
+the three incidents as the rule's argument. **CI GREEN on 2ad39dd0, both
+platforms; the v0.40.0 dry-run is CLEAN** — ok on ci.yml at the tip, 9
+entries ordered (1 miscompile, 3 feature, 5 tooling), one command away
+whenever the owner calls it.
