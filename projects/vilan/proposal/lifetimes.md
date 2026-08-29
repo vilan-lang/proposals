@@ -446,20 +446,21 @@ temporary there has a statement position of its own and needs no
 refusal. Only `&&`/`||` evaluate an operand inline with no block to hold
 it, and only they are refused.
 
-**The extern audit (S4).** Asked of every `[extern]` in std, against
-"does the host read this after the call returns". 25 marked, across nine
-files:
+**The extern audit (S4).** Asked of every `[extern]` in std. The question
+started as "does the host read this after the call returns" and the suite
+sharpened it into two halves — **and is what it keeps a VILAN-owned
+value**. 23 marked, across nine files:
 
 | Surface | Declarations | Why it retains |
 | --- | --- | --- |
-| `browser/dom.vl` | `addEventListener` × 2, `appendChild` × 2 | the listener is stored and called later; the tree keeps the child |
+| `browser/dom.vl` | `addEventListener` × 2 | the listener is a vilan closure, stored and called later |
 | `browser/router.vl` | `window.addEventListener` | same, on the window |
 | `reactive.vl` | `queueMicrotask` | the callback runs after the call returns |
 | `browser/dev.vl` | `__hmr_register_teardown`, `__hmr_stash` | held to the next bundle; `__hmr_stash` holds ACROSS it and `hmr_take` reads it back |
-| `browser/ui.vl` | `__chunk_arm`, `__chunk_load` | held until the chunk resolves |
+| `browser/ui.vl` | `__chunk_arm`, `__chunk_load` | a value and two closures, held until the chunk resolves |
 | `rpc.vl` | `__hmr_register_teardown`, `onmessage` / `onclose` / `onerror` | handler properties the socket keeps |
 | `process/http.vl` | `createServer`, `listen`, `on` × 4, `close` | every node `EventEmitter` registration |
-| `fetch.vl` | `body` × 2, `headers`, `signal` | request-init, kept until the fetch runs |
+| `fetch.vl` | `body` × 2, `headers`, `signal` | request-init: a string, a `Bytes`, a header list, a signal, each kept until the fetch runs |
 
 Left unmarked deliberately, and the reasoning is the audit's other half:
 every read-through accessor and pure computation (`json`, `debug`,
@@ -469,6 +470,18 @@ is done with it when they return; `Timer`'s `wait`/`cancel` settle within
 their own suspension; and the HMR synthesized getters — §6.4's named
 exemption, the 252 invisible uses in the website server — are excluded by
 `TransferForm` already and need nothing here.
+
+**`appendChild` is the case that taught the second half**, and it is
+worth stating because it is the shape a future audit will reach for
+first. The DOM genuinely keeps the child, so the first half of the
+question says yes. But the child is an `Element` — a host handle vilan
+neither allocates nor destroys, with no vilan-side lifetime for retention
+to extend — so marking it bought no safety and cost real elisions: it
+made a SIBLING aggregate opaque (the argument is `built[0]`, whose place
+root is `built`) and put a deep copy back into the split fixture's
+golden, caught by that gate. Retention extends the liveness of values
+whose lifetime this compiler manages. A host handle has none, and marking
+one only spends precision.
 
 **Measured, after:** the copy-elision census is unmoved (parameters
 joining the liveness walk cannot reach elision's answers — it gates on
