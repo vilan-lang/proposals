@@ -61,6 +61,7 @@
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
 | [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
 | [G13](items/G13.md) | NEW — `dist/` never sweeps a bundled asset the build no longer names | bug | audit 4; unbounded under the digest recipe |
+| [G14](items/G14.md) | NEW — a watch round lost to a transient action failure is lost for good | design | the Windows flake's root; pins immune |
 
 ## I. Collections
 
