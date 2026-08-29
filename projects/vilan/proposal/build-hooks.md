@@ -85,6 +85,67 @@
 > it is tier 1 being ignored, not tier 2 being refused). Filed here rather
 > than fixed: whether a member's hooks should run is a real question about
 > what a workspace build *is*, and it is not S1's or S2's.
+>
+> **Ship note (2026-08-28, Order 19, lane `emit-keyed`): S3 BUILT**, on Q3's
+> ruling. `std::asset::emit_keyed(kind, key, line)` ships as §5.3 wrote it —
+> the flush orders a kind by `(key, line)` and writes the line — and the
+> paper's byte gate is met three ways: the corpus goldens (`.css` assets
+> included) unchanged, every example-tree stylesheet byte-identical against a
+> binary built from this lane's branch point, and a differential (inference
+> pin + assets e2e) pushing one line set through both spellings and comparing
+> the written files. Four things the paper left to the building, decided here
+> and recorded as the paper's now:
+>
+> - **The identity is spelled ONCE, at the recording site.** `emit` and
+>   `emit_keyed` share one interpreter arm: one fence call, one push, and the
+>   un-keyed spelling contributes its line as its own key. §5.3's "one line of
+>   desugar" is that line. This is what makes "nothing existing moves" a
+>   property of the construction rather than a claim the tests have to
+>   re-establish — there is no second path along which an existing kind's
+>   bytes could move. The pin that holds it reads the CONTRIBUTION
+>   (`an_unkeyed_emit_records_the_line_as_its_own_key`), because the assembled
+>   file cannot distinguish a correct desugar from any other constant key.
+> - **Dedup considers the key: the unit is the `(key, line)` PAIR**, as §5.3's
+>   "a function of the set of `(key, line)` pairs" and §9's "dedup is per pair"
+>   both say. One line under two keys survives twice — a ranked list repeating
+>   an entry is the shape — and identical pairs collapse. For an un-keyed
+>   `emit` the pair is `(line, line)`, so dedup-per-pair IS dedup-by-line, and
+>   the shipped behavior is untouched.
+> - **`css` REFUSES `emit_keyed`**, at the same const-time fence, with its own
+>   message naming the cascade and `std::style`. §5.6 reserves `css` against a
+>   build *hook* and G7's fence admits it for `emit`; the keyed spelling is the
+>   third case and it is a refusal, because `assemble_assets`'s comparator
+>   reads the line and never the key — a key accepted here would be silently
+>   dropped, which is a wrong answer where a refusal costs nothing. It is also
+>   what keeps §5.3's noted migration open: a key that had been quietly ignored
+>   could not be given a meaning later without breaking whoever had passed one.
+> - **The key gets NO validation of its own**, deliberately, and that follows
+>   from the identity rather than from indifference. `emit`'s rules for a line
+>   are none; since `emit(kind, line)` is `emit_keyed(kind, line, line)`, a key
+>   validated more strictly than a line would start refusing `emit` calls that
+>   have always been legal. The key is never written, so nothing downstream
+>   constrains it either.
+>
+> **What is shared, and what could not be planted.** The kind fence stayed one
+> function reading G7's one list — `build_owned_emit_kind` now has three
+> consumers (the prune, `emit`, `emit_keyed`) and still one list — and the
+> const-only set grew `emit_keyed` beside `emit`, so a runtime path reaching
+> the keyed spelling is refused at the outermost crossing and NAMED for it.
+> Four plants proved the new pins non-vacuous: a key-ignoring flush (reddens
+> the four order/dedup pins), an un-keyed key that is not the line (reddens the
+> recording pin, and — when made non-monotone — the differential), `emit_keyed`
+> dropped from the const-only set (reddens all three fence pins), and `css`
+> admitted (reddens the refusal). **The fifth plant does not exist by
+> construction:** a flush-side re-derivation cannot be written, because the
+> flush is handed only what `EmittedAsset` carries and the key→line relation is
+> not invertible — two keys may share a line and one key may cover many. That
+> is §11's rejected alternative made unreachable rather than merely declined.
+>
+> **Not built here.** S4's framing and prune-by-declaration, and S5's
+> `build.vl`, are untouched. §5.3's CSS migration (`Style::rule` passing a band
+> character as its key) stays out of scope and is now fenced against rather
+> than merely unbuilt — taking it means changing the comparator and this
+> refusal together, which is the right coupling.
 
 ---
 
@@ -537,6 +598,11 @@ half of Q7; the general sweep stays with E92.)*
 
 ### 5.3 The answer: the contribution carries its key
 
+*(BUILT 2026-08-28, Order 19, lane `emit-keyed` — S3. The ship note above
+records the four things the building decided: the identity spelled once at the
+recording site, dedup per `(key, line)` pair, `css` refusing the keyed
+spelling, and no validation on the key.)*
+
 The smallest surface that closes (a) without inventing an ordering language:
 
 ```vilan
@@ -566,6 +632,10 @@ The keyed form also gives CSS a migration it does not need but could take:
 `Style::rule` could pass a band character as its key instead of relying on
 `'.' < ':' < '@'`, which would let the load-bearing comment on `render_rule`
 stop being load-bearing. Out of scope here, noted so the option is not lost.
+*(As built, `emit_keyed("css", …)` is REFUSED rather than ignored, which is
+what keeps this migration takeable: the comparator and the refusal would change
+together, where a key that had been silently dropped could never be given a
+meaning afterwards.)*
 
 ### 5.4 Framing belongs to the manifest, order belongs to the contribution
 
@@ -620,6 +690,16 @@ names `std::style` and says the sheet's framing is the styling system's. The
 reason is `assemble_assets`'s own documented soundness argument: the sort and
 the band order are a cascade property, and a user-supplied header, footer or
 join would break the sheet in ways nothing else in the build could detect.
+
+*(As built, `css` is now THREE answers rather than one, from the same argument.
+The per-kind prune refuses it — the sidecar is `sweep_stale_sidecar`'s file
+(G6). `asset::emit` ADMITS it — the styling system's own writes go through that
+door (G7). `asset::emit_keyed` REFUSES it, Order 19's S3: the same sentence
+above about the sort being a cascade property says a contribution's key has
+nowhere to apply here, and a key silently ignored is a wrong answer where a
+refusal costs nothing. The manifest table of §5.4 is still S4's and still
+reserved. All three read one list, `const_eval::build_owned_emit_kind`, and
+differ only in what they do with its answer.)*
 
 ---
 
@@ -752,11 +832,15 @@ standalone and needs no ruling on anything else in this paper.
   Gate: a dependency hook with an opt-in present still does not run, and says
   so; a dependency hook with no opt-in prints exactly one line naming the
   dependency; neither case changes the build's exit code.
-- **S3 — `emit_keyed`, and the CSS byte gate.** The one-function ordered surface
+- **S3 — `emit_keyed`, and the CSS byte gate.** *(BUILT 2026-08-28, Order 19,
+  lane `emit-keyed`; the ship note above records what the building decided.)*
+  The one-function ordered surface
   in `std::asset`; `emit` implemented as `emit_keyed(kind, line, line)`; `css`
   reserved. **The gate on the whole slice: byte-identical emitted CSS across the
   corpus and the whole example tree.** This is the slice that keeps
-  `const-eval.md` §3's "kind-specific rule" promise.
+  `const-eval.md` §3's "kind-specific rule" promise. *(Met: the corpus goldens
+  hold `.css` bytes directly, and every example-tree stylesheet was hashed
+  against a binary built from the branch point and came out identical.)*
 - **S4 — declared accumulators: framing and pruning.** `[build.asset.<kind>]`
   with `extension`/`header`/`footer`/`join`; kinds with no table keep today's
   framing verbatim; the stale-flush prune (P8) so a kind that stops being
