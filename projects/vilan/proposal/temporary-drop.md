@@ -1,7 +1,10 @@
 # When a resource temporary dies — statement-end, and why (backlog C11)
 
-> Status: PROPOSED 2026-08-28 (cycle 36, work order 18, lane `c11-paper`),
-> for owner review. The DIRECTION is not in question and this paper does not
+> Status: **CLOSED — SHIPPED 2026-08-29** (cycle 37, order 19, lane
+> `lastuse-s3`), as the special case of `lifetimes.md` §6's general rule.
+> The closure note is §12; the measurements below carry forward as the
+> record they always were. Prior status: PROPOSED 2026-08-28 (cycle 36,
+> work order 18, lane `c11-paper`), for owner review. The DIRECTION is not in question and this paper does not
 > reopen it. The owner, verbatim, 2026-08-28: **"Write the paper. Those
 > should not leak."** Rejecting the spelling is off the table; what is open
 > is the *mechanics*, and this paper recommends one of the two the tracker
@@ -862,3 +865,68 @@ carry them as B141's positive pins, and their goldens will grow `finally`s.
 Keeping them is recommended (the idiom should be gated where it is taught),
 but it means the fs tier's documented idiom is also the language's example of
 a compiler-inserted drop — worth a deliberate yes rather than a default.
+
+---
+
+## 12. Closure note — 2026-08-29
+
+**SHIPPED, and SUBSUMED.** C11 is closed on branch `lastuse-s3`, in the
+same change-set as `lifetimes.md` §6's slice S3, because the owner's
+lifetime session ruled the general rule this paper's recommendation is a
+special case of: **disposal happens at the last use**, and a temporary's
+last use *is* its statement. Everything §6 and §7.1 asked for is built,
+and §7.3's refusal with it.
+
+**What carries forward unchanged.** Every measurement in §3 — P1's leak,
+P6's descriptor staircase, P7's decisive three-column comparison, P8's
+error path, P9's loop, P10's composition with Q1's fire-and-forget close,
+P11's closures. They are the record of what the leak cost and what the
+lowering buys, and the suite now holds two of them permanently: P6/P7's
+staircase as an fd e2e (`crates/vilan-cli/tests/fs.rs`, read with NO
+settling poll — a poll lets node's own `FileHandle` finalizer close a
+LEAKED descriptor and report zero, which is how a first draft of that pin
+passed against a planted leak), and P5's three negatives as inference
+pins.
+
+**Both premise corrections stood.** There was no "B141 lifting" to
+inherit, and the lowering invented one: a minted `const` at the
+statement's position, the value acquired outside the `try` that destroys
+it (§2's mid-acquisition law, which a temporary obeys for the same reason
+a `let` does). And the loop was not the decisive case; §5.3's
+never-ending scope was, and it is the same argument that decided the
+general rule.
+
+**Two places the build corrected this paper.**
+
+*§7.3's refusal set is narrower than stated.* The paper named the right
+of `&&`/`||`, ternary arms and non-block `match`-arm expressions. Under
+the shipped lowering an `if`/`match` arm emits as a JS **block with its
+own statement list**, so a temporary there has a statement position of
+its own and needs no refusal at all. Only `&&`/`||` evaluate an operand
+inline with no block to hold it, and only they are refused — the
+diagnostic names binding it as the fix, exactly as §7.3 wrote it.
+
+*The predicate stops short of R3.* §5's shared machinery is "a
+resource-typed value that is neither a place nor moved anywhere", read
+off the move checker. R3 makes bare parameters loans, which would make a
+bare-parameter argument a temporary — but `Option::replace`'s intrinsic
+surface declares `value: T` bare and then KEEPS the value, so recording
+one there destroys something the callee stored. The shipped predicate
+therefore counts only `&`/`&mut` views and a bare `self` RECEIVER, which
+is C11's whole idiom (a postfix off a constructor call) and leaves the
+residue as a leak rather than a double free. **The declaration is the
+real defect** — it should read `own value: T` — and widening the
+predicate is what should follow it being fixed.
+
+**§10's placement recommendation is partly taken.** §7.1's amendment text
+and §7.3's R7 extension are in the ratified record — not in
+`destruction.md`, but in `memory.md` §6.8, which is where the resource
+class's timing law now lives, under a new **Temporaries** subsection with
+the file's usual `(added YYYY-MM-DD — finding)` provenance. This file is
+NOT a second place to look up when a resource dies; it is kept as the
+evidence behind the ruling, which is what §10 asked for.
+
+**Q3, answered by the build.** The corpus keeps the temporary spellings:
+`file.vl`'s two B141 positive pins are intact and their golden grew the
+`finally`s, with runtime output proven identical. The idiom is still
+taught where it is gated, and it no longer leaks.
