@@ -694,3 +694,14 @@ them; one conflict marker was briefly COMMITTED when a resolver's shape
 assertion failed silently mid-chain — the repair discipline (parity at
 every step) caught it two steps later. Wave structure verdict: second
 clean run — the S2→S3 dependency cost nothing.
+
+**Order 19 addendum, 2026-08-29:** the close's CI run came back RED on
+the Windows leg — the new C11 fd-staircase e2e reads `/proc/self/fd`,
+an instrument only Linux has — and THE MACHINERY WORKED END TO END: the
+widened ci.yml matrix caught what the local Linux suite could not, and
+`cut-release.sh` REFUSED the dry-run over the red, citing L17 by name.
+This is the third instance of N26's lesson (a pin asserting one
+platform's observables), now gated `#[cfg(target_os = "linux")]` with
+the reason at the site (vilan f67710be) — the emission property itself
+is pinned platform-independently in inference/resources.rs. The clean
+rerun follows CI.
