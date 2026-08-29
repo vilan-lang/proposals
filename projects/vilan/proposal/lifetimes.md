@@ -92,7 +92,7 @@ the owner's ruling, possibly never needed.
 
 The reframe the measurements then force: **"referenced data" is not what
 ties vilan to the JS collector.** The aliased tier is 7.1% of a real
-workload's allocations (§3), the affine tier is近 zero (one dropped
+workload's allocations (§3), the affine tier is near zero (one dropped
 binding in the whole website server), and ~93% of allocations are
 uniquely owned *by construction* — the language already enforces what
 other compilers must infer. What the collector actually carries is
