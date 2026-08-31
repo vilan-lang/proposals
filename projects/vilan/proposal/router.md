@@ -149,3 +149,192 @@ obvious next customer).
   error it should be.
 - **Route-change effects** (title, analytics) — plain `effect` on the route
   signal already covers this; no API needed.
+
+## 5. The event surface, widened (A27, kolt.local 037) — 2026-08-31
+
+**Why this paper.** §2.3 is where the DOM event surface was designed: `Event`
+and `Element.on_event` exist because `link` needed them and the ruling was
+"rather than a router-private helper, the general form". The same paper
+carries the *other* half of the same decision — `router.vl:29`'s
+`window_listen`, which is a router-private helper, the one §2.3 declined to
+write for elements and then wrote for the window anyway. A27 names it as one
+of three independent hand-rolls of `window.addEventListener`, and `canvas.md`
+§4 already asks for it by name ("the same shape `router.vl:29`'s
+`window_listen` already is, just not currently exported outside routing").
+So the widening belongs beside §2.3, not in `element-syntax.md` (which owns
+the *spelling* of attachment — `on:click` lowering to `.on`/`.on_event` — and
+gains every new `View` method for free, by its own name-blind rule) and not in
+`fullstack-dx.md` (the app/server seam). `std-surface.md` is the base-layer
+audit and holds no browser module at all.
+
+The live exhibit is kolt's sidebar-resize drag (`kolt/src/views.vl`,
+`View.on_drag`): a working handler that had to hand-roll three things std does
+not have. The owner is explicitly **not** asking for a drag surface — the item
+is the capabilities, and a drag is simply the case that needs all three at
+once, because the pointer leaves the element mid-drag and element-local
+`on_event` cannot follow it.
+
+### 5.1 `window` is a listen TARGET, not a suffix
+
+A27 sketched `on_window`. Taken as written it grows a parallel vocabulary —
+`on_window`, `on_window_event`, and then a `listen_window` beside `listen` —
+where the only difference from the element forms is *which object* is being
+listened to. That is a target, and vilan already spells targets as handles:
+`Element` is an opaque handle over a real DOM object, and every verb hangs off
+it.
+
+So: `external struct Window`, `fun window(): Window`, and the **same three
+verbs on both targets** — `on`, `on_event`, `listen`. `window().on_event("resize", ..)`
+reads as what it is, and the surface never has to answer "why is it
+`on_window_event` but `on_event`".
+
+`window` is a global property with no function form, so it is acquired through
+a one-line runtime helper (`__dom_window`) — exactly the precedent
+`location.pathname` set at `router.vl:26` and for exactly the stated reason.
+(`[extern(get, ..)]` is the property form and needs a receiver, so a zero-arg
+free function cannot use it; a new binding form for "a bare global as an
+expression" is the alternative, and it is a language change this does not
+need.) The visible cost is the emission: `window.addEventListener(..)` becomes
+`__dom_window().addEventListener(..)` plus a three-line helper once per bundle.
+`router.vl`'s fold onto the new verbs is what makes that concrete — the split
+fixture's golden moves by exactly those two things and nothing else, every
+chunk byte-identical — and it is the price of the handle, not of the fold: the
+same indirection appears wherever `window()` is called.
+
+The handle also gives the *next* asks a place to land. `canvas.md` §4 wants a
+window `resize` listener and, for DPR, `innerWidth`/`devicePixelRatio`; those
+are `Window` accessors, where the free-function shape would have made them
+three more free functions. Nothing beyond the listen verbs ships now — an
+accessor with no caller is the dead surface A27's own trap warns about.
+
+**Raw means raw.** `std::dom` handlers do not establish a turn — the docs
+already say so of `element.on` ("that's `View.on`'s job"), and the window
+verbs are consistent with it: `ensure_wired` keeps its explicit
+`turn(FlushPolicy::AtSuspension, ..)` wrapper after folding onto the new
+surface, and so must any caller that writes signals from a window event. A
+turn-establishing window listener at the `std::ui` layer — the `View.on`
+treatment for a target that is not a view — is **recorded, not built** (5.5).
+
+### 5.2 Removal is a `Subscription`, and it is a new verb
+
+`on_event`'s signature does not change. It is the chaining form, it is what
+`on:click` lowers to, and it is fire-and-forget by design: the listener dies
+with the element, which for an element is the right and free answer.
+
+For the window there is no element to die, so removal has to be expressible,
+and the vocabulary already exists: `Source::sub` hands back a `Subscription`
+whose `dispose` unhooks it. The registration verb is therefore **`listen`**,
+`[must_use]` exactly as `sub` is, on both targets:
+
+```vilan,ignore
+fun listen(self, event: str, handler: |Event| void): Subscription
+```
+
+Two tiers, one rule: **`on`/`on_event` are fire-and-forget; `listen` is the
+removable form.** That is why `listen` is a new verb rather than a changed
+return type on `on_event` — `on_event` returning a `[must_use]` handle would
+make every existing zero-ceremony call site a warning, and `View.on_event`'s
+chaining return (`View`) has no room for it at all.
+
+`Subscription` gains the constructor this needs:
+`Subscription::teardown(release)` — a subscription over no signal, whose
+`dispose` runs the hook once and nothing else. It is not dom-specific: it is
+the registration shape for any source outside the signal graph, and it reuses
+the one-shot `release` cell that `RemoteSource::sub`'s lease decrement already
+rides, so a double `dispose` (an owner releasing a handle the app already
+disposed by hand — precisely the drag's case) cannot unhook twice.
+
+**Ownership stays the caller's, as `sub`'s does.** `listen` does not register
+with the ambient owner. `sub` doesn't either — `effect` is the owner-tied
+twin — and the asymmetry is deliberate here: a drag arms two window listeners
+per `pointerdown`, so auto-registration would push two dead cleanups onto the
+enclosing boundary's owner on every drag, forever (the A28 shape, from the
+other end). The idiom is explicit and one line:
+`get_owner().take(window().listen(..))`. An owner-tied twin is recorded (5.5).
+
+**`removeEventListener` is `listen`'s teardown, and it is identity-matched** —
+the handler value passed to remove must be the same object the host was handed.
+Probed against the real emitter before building: a closure bound to a `let`,
+passed to a std function, used once as an argument and once captured by the
+returned teardown closure, emits as a single JS `const` referenced twice. No
+clone, no wrapper. The `off_event` twin is bound and documented, but `listen`
+exists so that nobody has to hold the pairing right.
+
+**`retains` marks registration only.** `addEventListener` retains (the host
+stores a vilan closure and calls it later — the `lifetimes.md` §S4 audit's own
+sentence); `removeEventListener` does not keep anything past the call, so it is
+left unmarked. kolt's hand-roll marks both; that is over-marking, the same
+error the audit's `appendChild` golden caught, and this surface does not
+inherit it.
+
+### 5.3 Pointer coordinates: `pointer_x` / `pointer_y`, and nothing else yet
+
+`Event` gains two accessors, over `clientX` / `clientY`.
+
+The mechanical transliteration would be `client_x`/`client_y`, and it would be
+a worse name in vilan than it is in the DOM: "client" means *viewport* for
+reasons that are pure history, and the surface would be teaching that history
+to every reader forever. `pointer_x`/`pointer_y` say where the pointer is.
+kolt already spells it that way, which makes the exhibit's `impl Event` block
+delete with zero call-site churn.
+
+The family objection is real and answered: if `pageX` lands later its vilan
+name is `page_x` — *where the pointer is in the document* — which is
+self-explanatory on its own terms rather than as the second row of a
+coordinate-space table. Two good names beat four uniform ones.
+
+**page / offset / screen variants wait.** Nothing in std or in the exhibit
+reads them, and A27's recorded trap is exactly this: an accessor no delivered
+event has a caller for is dead surface. They land with a caller.
+
+`pointerId`, `buttons`, and the rest of `PointerEvent` wait for the same
+reason — and `pointerId` in particular waits *with* 5.4.
+
+### 5.4 `setPointerCapture` — designed alongside, not built
+
+037 names it as "the honest alternative to window listeners for drags", and it
+is: `element.setPointerCapture(event.pointerId)` retargets every subsequent
+pointer event to the capturing element until release, so the pointer leaving
+the element stops mattering and a drag needs no window listener at all.
+
+It is recorded rather than built, on three grounds. It is not a substitute for
+the window surface — `resize`, `popstate`, `storage`, `message` and `keydown`
+still have no element to hang on, and A27's gap is those, not drags. It is a
+*pair* of methods plus `pointerId` plus the `lostpointercapture` event, i.e.
+its own surface with its own disposal question (what releases capture if the
+element is unmounted mid-drag?), which is a proposal, not a slice tail. And
+the exhibit does not need it: kolt's drag works today on window listeners, so
+building capture now would be building the alternative to the thing that is
+actually asked for, before the thing itself has shipped.
+
+The recommendation for when it is taken up: a capture handle that is
+`Disposable`, so release rides the same vocabulary `listen` just established,
+rather than a bare `release_pointer_capture` twin.
+
+### 5.5 Recorded, not built
+
+- **A turn-establishing window listener at the `std::ui` layer** (5.1) — the
+  `View.on` treatment for a non-view target. Every current caller wraps by
+  hand; when a second one appears, the wrapper belongs in std.
+- **An owner-tied `listen` twin** (5.2), `effect`'s shape for listeners —
+  wanted the moment a component registers a window listener for its whole
+  lifetime. Blocked on nothing but a caller.
+- **`Window` accessors** — `inner_width`/`inner_height`,
+  `device_pixel_ratio` (`canvas.md` §4's DPR path). Land with the resize
+  consumer.
+- **`page_x`/`page_y`, `screen_*`, `offset_*`, `pointerId`, `buttons`** (5.3).
+- **`setPointerCapture`** (5.4).
+- **A typed `message` event `data`** — A27's stated bindgen-shaped question.
+  The window surface delivers the event; giving `Event` an `origin()` or a
+  typed `data` is `bindgen.md`'s problem, and A27 is explicit that adding
+  `origin()` alone would have been dead surface. It is no longer dead once
+  something delivers a `message` — but the typing is still bindgen's call.
+
+### 5.6 Acceptance
+
+The surface is right if the exhibit rewrites onto it *alone*: kolt's
+`View.on_drag` keeping its own arithmetic and its own closure triple, with the
+`impl Event { pointer_x, pointer_y }` block and both
+`window_add_event_listener`/`window_remove_event_listener` externs **deleted**,
+and the `mut dispose` closure becoming two `Subscription::dispose` calls. That
+rewrite is a probe against the built compiler, and its essence is a pin.
