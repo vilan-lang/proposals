@@ -49,6 +49,12 @@
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
 | [E102](items/E102.md) | NEW — module-parse-error dedup dropped the message from its key | bug | audit 4; cheap |
 
+## F. std surface
+
+| ID | Title | Kind | Discussion |
+|----|-------|------|------------|
+| [F14](items/F14.md) | NEW — `to_lowercase_ascii` is not ASCII; rename to `to_lowercase` | bug | owner-filed 2026-08-29; FIX-NOW, breaking |
+
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
