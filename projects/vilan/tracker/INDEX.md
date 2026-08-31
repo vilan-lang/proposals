@@ -29,6 +29,9 @@
 | [B158](items/B158.md) | NEW — a blanket impl is accepted, then ICEs at first dispatch | bug | RULED 2026-08-29: SUPPORT, specificity rule; Order 22 |
 | [B161](items/B161.md) | NEW — a trait annotation as a checked constraint on bindings | design | owner-proposed with exact semantics; A32's companion |
 | [B162](items/B162.md) | NEW — trait-associated functions: `Signal::new` with a default body | design | RULED 2026-08-29; A32's companion |
+| [B163](items/B163.md) | NEW — `if`-expression arms are never unified | bug | a32-paper probe find; FIX-NOW lane in-order |
+| [B164](items/B164.md) | NEW — supertrait type argument not substituted through a sub-trait bound | bug | a32-paper probe find; FIX-NOW lane in-order |
+| [B165](items/B165.md) | NEW — `type` binders do not resolve inside an impl head's bounds | bug | blocks B157's generic blanket; Order 23 |
 
 ## C. Memory model
 
