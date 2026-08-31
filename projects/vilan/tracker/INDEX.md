@@ -9,7 +9,10 @@
 | [A7](items/A7.md) | SSR tail | design | |
 | [A8](items/A8.md) | UI styling — the tail | design | |
 | [A14](items/A14.md) | Reactive residuals | design | |
-| [A27](items/A27.md) | NEW — `std::dom` cannot listen on `window` at all | design | |
+| [A27](items/A27.md) | NEW — `std::dom` cannot listen on `window` at all | design | kolt's drag handler is the live exhibit (kolt.local 037) |
+| [A31](items/A31.md) | NEW — every terminal `Closed` disposes: the third path | feature | RULED 2026-08-29; build-ready |
+| [A32](items/A32.md) | NEW — custom signals with compatibility: `Source` is the trait, the question is reach | design | owner-proposed; trait already shipped |
+| [A33](items/A33.md) | NEW — the Source-not-Signal audit: bindings demand a `Signal` they never write | design | owner-filed; StorageSignal the exhibit |
 
 ## B. Type system & the type solver
 
@@ -24,6 +27,7 @@
 | [B156](items/B156.md) | NEW — a manifest-configurable prelude: std ambient names by default, overridable | design | RULED 2026-08-29: write the paper |
 | [B157](items/B157.md) | NEW — static-or-dynamic component values: the trait-bound pattern vs a `union` former | design | owner-proposed; both problems probe-solved, blanket impl the one gap |
 | [B158](items/B158.md) | NEW — a blanket impl is accepted, then ICEs at first dispatch | bug | RULED 2026-08-29: SUPPORT, specificity rule; Order 22 |
+| [B160](items/B160.md) | NEW — raw/typed 1:1 interchangeability: the contract and its downsides | design | owner leaned yes; downsides recorded, awaiting ruling |
 
 ## C. Memory model
 
