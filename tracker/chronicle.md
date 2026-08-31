@@ -857,3 +857,11 @@ trio ratified, ownerless-derivation deferred with its trigger, A30
 wired, B154's route, G14's posture, B156's paper, F14's shape, B158's
 support-with-specificity. Union suite at the close: parity 21/21,
 verdict recorded below when the final run lands.
+
+**Order 21 verdicts, sealing:** final union suite 4905/4905, exit 0;
+next @093bf567 PUSHED; CI GREEN both platforms (the conclusion field
+read explicitly, per the lesson); the v0.40.0 dry-run is CLEAN — ok on
+ci.yml at the tip, 21 entries ordered (1 breaking, 2 miscompile, 3
+feature, 15 tooling). The owner called nine entries light this morning;
+the train now holds twenty-one, the released miscompile's fix among
+them. One command away whenever the owner calls it.
