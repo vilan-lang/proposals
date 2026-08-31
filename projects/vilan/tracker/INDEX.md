@@ -11,7 +11,6 @@
 | [A14](items/A14.md) | Reactive residuals | design | |
 | [A27](items/A27.md) | NEW — `std::dom` cannot listen on `window` at all | design | |
 | [A28](items/A28.md) | `map`/`combine`/`flatten` derivations undetachable — a live std leak | bug | FIX-NOW; lifetimes.md S1 |
-| [A29](items/A29.md) | `DuplexEnd.me` never cleared — a session retained per disconnect | bug | lifetimes.md S1 |
 
 ## B. Type system & the type solver
 
