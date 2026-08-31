@@ -10,7 +10,7 @@
 | [A8](items/A8.md) | UI styling — the tail | design | |
 | [A14](items/A14.md) | Reactive residuals | design | |
 | [A27](items/A27.md) | NEW — `std::dom` cannot listen on `window` at all | design | |
-| [A28](items/A28.md) | `map`/`combine`/`flatten` derivations undetachable — a live std leak | bug | FIX-NOW; lifetimes.md S1 |
+| [A30](items/A30.md) | NEW — `ReactiveClient` disposes itself at terminal `Closed` | feature | RULED 2026-08-29; build-ready |
 
 ## B. Type system & the type solver
 
@@ -22,11 +22,8 @@
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
 | [B148](items/B148.md) | NEW — `str + <any struct>` type-checks and renders the runtime tuple | bug | |
 | [B149](items/B149.md) | NEW — an async function returning a `Task` mistypes as the task, pinned but never itemed | bug | |
-| [B156](items/B156.md) | NEW — a manifest-configurable prelude: std ambient names by default, overridable | design | owner-filed 2026-08-29; paper-first |
-| [B150](items/B150.md) | `drop(x)` is not exception-safe | bug | lifetimes.md §6/S3 |
-| [B151](items/B151.md) | mR2 overwrite double-drops when the RHS throws | bug | FIX-NOW — double close today |
-| [B152](items/B152.md) | bare `ret <expr>` emits `return return` | bug | |
-| [B154](items/B154.md) | NEW — internal `NativeMap::insert` frees the caller's value while the table holds it | bug | the fix is a ruling; pin is `#[ignore]`d |
+| [B156](items/B156.md) | NEW — a manifest-configurable prelude: std ambient names by default, overridable | design | RULED 2026-08-29: write the paper |
+| [B154](items/B154.md) | NEW — internal `NativeMap::insert` frees the caller's value while the table holds it | bug | RULED 2026-08-29: the R10-head extension; build-ready |
 
 ## C. Memory model
 
@@ -34,7 +31,6 @@
 |----|-------|------|------------|
 | [C1](items/C1.md) | `Weak<T>` | design | |
 | [C2](items/C2.md) | Dynamic rule-4 remainder | design | |
-| [C12](items/C12.md) | view-capture ban documented but unenforced | bug | lifetimes.md §2.2/S5 |
 | [C13](items/C13.md) | a closure over a view parameter escapes through a storing callee | bug | pinned ignored; spec §6.9's honesty limit |
 
 ## D. Documentation
@@ -61,7 +57,7 @@
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
 | [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
 | [G13](items/G13.md) | NEW — `dist/` never sweeps a bundled asset the build no longer names | bug | audit 4; unbounded under the digest recipe |
-| [G14](items/G14.md) | NEW — a watch round lost to a transient action failure is lost for good | design | the Windows flake's root; pins immune |
+| [G14](items/G14.md) | NEW — a watch round lost to a transient action failure is lost for good | design | RULED 2026-08-29: restore-with-once-guard; build-ready |
 
 ## I. Collections
 

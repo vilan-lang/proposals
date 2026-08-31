@@ -3,7 +3,16 @@
 > Status: **S1, S2, S3 AND S4 SHIPPED 2026-08-29** (cycle 37, order 19;
 > S3/S4 on branch `lastuse-s3`) — §10 carries each slice's record, and
 > §6's ship note below carries what the building corrected. S5 and S6+
-> remain open. Prior status: DRAFT 2026-08-28 (the lifetime-model
+> remain open. **The building's three lane rulings were RATIFIED
+> 2026-08-29**: drop-at-declaration for a binding nothing reads (the
+> owner's words: last-use destruction includes the declaration — unused
+> declarations drop), the branch drop at the JOIN and only the join, and
+> `retains` marking the place ROOT. Two S1 leftovers were ruled the same
+> day: `ReactiveClient` gains an AUTO-dispose at terminal `Closed`
+> (A30, the wiring over the bare seam), and the ownerless-derivation
+> refusal is DEFERRED — leak-as-today stands, refused later only if the
+> footguns become common or hard to diagnose (A28's tombstone carries
+> the trigger). Prior status: DRAFT 2026-08-28 (the lifetime-model
 > session), for owner review.
 > Design-only: this session wrote no production code. Every load-bearing
 > claim below is **measured** — three probe legs ran against `vilan 0.38.0
