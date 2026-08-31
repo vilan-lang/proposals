@@ -50,6 +50,7 @@
 | [E69](items/E69.md) | NEW — attribute-NAME completion in an element head is a semantics decision | feature | |
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
 | [E102](items/E102.md) | NEW — module-parse-error dedup dropped the message from its key | bug | audit 4; cheap |
+| [E103](items/E103.md) | NEW — the `Some`-import steer is lost via the `List`-method path | bug | prelude census find |
 
 ## F. std surface
 
@@ -120,3 +121,4 @@
 | [N29](items/N29.md) | NEW — `[extern(…, retains)]` documented only where no extern author looks | docs | audit 4 |
 | [N30](items/N30.md) | NEW — an empty directory appearing where a listed one was missing starts no watch round | bug | audit 4; narrow |
 | [N31](items/N31.md) | NEW — an `#[ignore]` reason must name a tracker item; gate it | process | audit 4; third consecutive run |
+| [N32](items/N32.md) | NEW — the grammar's `extern-args` production omits two accepted forms | docs | found widening it for N29 |
