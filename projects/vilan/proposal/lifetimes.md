@@ -472,8 +472,7 @@ value**. 23 marked, across nine files:
 
 | Surface | Declarations | Why it retains |
 | --- | --- | --- |
-| `browser/dom.vl` | `addEventListener` × 2 | the listener is a vilan closure, stored and called later |
-| `browser/router.vl` | `window.addEventListener` | same, on the window |
+| `browser/dom.vl` | `addEventListener` × 4 | the listener is a vilan closure, stored and called later — twice on `Element`, twice on `Window` |
 | `reactive.vl` | `queueMicrotask` | the callback runs after the call returns |
 | `browser/dev.vl` | `__hmr_register_teardown`, `__hmr_stash` | held to the next bundle; `__hmr_stash` holds ACROSS it and `hmr_take` reads it back |
 | `browser/ui.vl` | `__chunk_arm`, `__chunk_load` | a value and two closures, held until the chunk resolves |
@@ -489,6 +488,18 @@ is done with it when they return; `Timer`'s `wait`/`cancel` settle within
 their own suspension; and the HMR synthesized getters — §6.4's named
 exemption, the 252 invisible uses in the website server — are excluded by
 `TransferForm` already and need nothing here.
+
+*Amended 2026-08-31 (A27 / kolt.local 037, `router.md` §5).* `std::dom`
+grew the window listen target and the removable `listen` verb, which moves
+two rows into one: `browser/router.vl`'s `window.addEventListener` hand-roll
+is deleted — `ensure_wired` calls `window().on` — and `browser/dom.vl`'s
+registrations go from two to four, one `on` and one `on_event` per target.
+The count is 25, still across nine files. The two new
+`removeEventListener` bindings that `listen`'s teardown rides are
+deliberately **unmarked**, by the second half of the question: removal
+hands the host a value it does not keep. `appendChild`'s lesson below is
+the one that governs there, and the exhibit that drove this surface marks
+both halves — the over-marking this audit exists to catch.
 
 **`appendChild` is the case that taught the second half**, and it is
 worth stating because it is the shape a future audit will reach for
