@@ -27,6 +27,8 @@
 | [B156](items/B156.md) | NEW — a manifest-configurable prelude: std ambient names by default, overridable | design | RULED 2026-08-29: write the paper |
 | [B157](items/B157.md) | NEW — static-or-dynamic component values: the trait-bound pattern vs a `union` former | design | owner-proposed; both problems probe-solved, blanket impl the one gap |
 | [B158](items/B158.md) | NEW — a blanket impl is accepted, then ICEs at first dispatch | bug | RULED 2026-08-29: SUPPORT, specificity rule; Order 22 |
+| [B161](items/B161.md) | NEW — a trait annotation as a checked constraint on bindings | design | owner-proposed with exact semantics; A32's companion |
+| [B162](items/B162.md) | NEW — trait-associated functions: `Signal::new` with a default body | design | RULED 2026-08-29; A32's companion |
 
 ## C. Memory model
 
