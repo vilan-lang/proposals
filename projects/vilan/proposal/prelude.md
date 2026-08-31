@@ -1,15 +1,36 @@
 # The prelude — a manifest-configurable ambient scope (B156)
 
-> **Status: PROPOSED 2026-08-31** (work order 21, cycle 39; tracker item
-> [[B156]]). Written to the ruled frame on B156: the census draws the
-> default set, the design questions below are settled here, and the
-> numbered **owner questions** in §14 are the owner's.
+> **Status: AMENDED 2026-08-31** (work order 22, cycle 40; tracker item
+> [[B156]]) — first proposed in work order 21, cycle 39. The amendment
+> rewrites the paper to the **first ruling batch** on B156 (2026-08-29
+> evening), which changed three things and dissolved a fourth:
+>
+> 1. **Two std preludes, not one** — a base set for programs in general and
+>    a **web** set for applications, the manifest key selecting between
+>    them. The census's own finding (§3.2) — that no single fixed set
+>    serves both corpora — is now the design rather than an observation
+>    about it. §5 is rewritten around this.
+> 2. **Ambient MODULE names are a first-class prelude concept**, beside
+>    ambient member names. The web set carries the module `style`, not its
+>    sixteen members. §5.2 defines the concept; §5.3 applies it.
+> 3. **The `Display` collision is DISSOLVED** by (2), not managed: bare
+>    `Display` is `std::display::Display`'s alone, the CSS enum is
+>    `style::Display`, and the style enum never renames. §3.4 and §14 Q2
+>    are settled accordingly.
+> 4. **The alias-only re-exports in std die** — `std::print` named, and the
+>    sweep that finds the rest. §10.2 is the ruling and the sweep's full
+>    census.
+>
+> §9.2's implementation mandate is untouched and remains the paper's load-
+> bearing constraint: the prelude is a **resolution scope**, never
+> synthesized file-head imports.
 >
 > Everything measured here was measured mechanically against the estate at
 > `vilan` @ `2ad39dd0` (v0.39.0), kolt @ its 0.38.0 migration, and the
 > website @ its v0.38.0 deploy. Every behavioural claim about the shipped
 > compiler was probed against the installed `vilan 0.39.0 (2ad39dd09)`;
-> the probes are transcribed in §11.
+> the probes are transcribed in §11. The amendment's own census
+> re-verifications were run against `vilan` @ `093bf567`.
 
 ## 1. The ask, and the finding that reframes it
 
@@ -250,18 +271,41 @@ block-level. That asymmetry is worth stating plainly to the owner,
 because "no more import boilerplate" is true of the corpus and the docs
 and false of kolt.
 
-### 3.4 One name the census disqualifies outright
+### 3.4 One name the census found colliding — and the ruling that dissolved it
 
 `Display` ranks 12th overall and 5th in applications — and it is **two
 different std names**: `std::display::Display` (the `to_string`/`format`
 trait, 9 units) and `std::style::Display` (the CSS `display` property
 enum, 14 units). They live in the base layer together and cannot both be
-ambient. Any prelude containing `Display` must first rename one of them.
-Noted here because it is the one place the census found the estate
-already colliding with *itself*, and it happens to be a name a
-reflex-driven prelude would have included: making the trait ambient is
-what would let `.to_string()` work everywhere (§11.6.1 shows a re-exported
-trait does carry its methods through).
+ambient. The paper as first proposed concluded that any prelude containing
+`Display` must first rename one of them, and put the rename to the owner
+as §14 Q2.
+
+**The ruling dissolved the question instead of answering it.** The web
+prelude carries **the module `style`, not its members** (§5.2, §5.3).
+Under that shape the two names never contend:
+
+| Spelling | Means | How it is in scope |
+|---|---|---|
+| `Display` | `std::display::Display`, the `to_string`/`format` trait | admissible bare — the collision is gone |
+| `style::Display` | `std::style::Display`, the CSS `display` enum | through the ambient **module** `style` |
+
+Three consequences, each a determination (§13.4a–c):
+
+- **The CSS enum never renames.** `std::style::Display` keeps its name,
+  which is the right name for the CSS property it models, and no estate
+  file, doc fence or golden moves.
+- **`Display` the trait becomes ADMISSIBLE bare.** It is not admitted here
+  — it still has to clear §5.1's four-part test on its own merits, and it
+  does not (9 units outside style's 14, below `Result` at 36). But the
+  disqualifier is gone, so the door is open for a later census. The
+  `.to_string()` tax (§5's closing note) is now a frequency question, not
+  an ambiguity one.
+- **The lesson generalises.** An ambient *module* costs one name and buys
+  a whole namespace, and it buys it **without ever contending with a bare
+  member name of the same spelling**. That is why §5.2 promotes ambient
+  modules to a first-class concept rather than treating `style` as a
+  special case.
 
 ## 4. The census — the breaking half
 
@@ -290,22 +334,98 @@ under the rule §9 sets:
 | `vilan/test/fixed-arrays.vl:38` (and one sibling) | `let view = &mut buf[2];` | `std::ui::view` |
 | `vilan-website/src/playground.vl:296` | `let format = \|\| { … };` | `std::display::format` |
 
-**The headline: for the recommended set of §5, the collision count
-outside std is ZERO.** Not one estate file declares `print`, `Option`,
-`Some`, `None`, `Result`, `Ok` or `Err`. The two real collisions
-(`Signal`, `Default`) are both against names the recommended set does not
-include, and both would be resolved silently and correctly by the
+**The headline: for the base set of §5.1, the collision count outside std
+is ZERO.** Not one estate file declares `print`, `Option`, `Some`, `None`,
+`Result`, `Ok` or `Err`. Re-verified mechanically at `vilan` @ `093bf567`
+for the amendment: the file-scope scan over `vilan/` outside `std/` returns
+empty for all seven, and the block-scope scan returns empty too. The two
+real collisions (`Signal`, `Default`) are both against names the base set
+does not include, and both would be resolved silently and correctly by the
 shadowing rule of §9 — but only if that rule is implemented the way §9.2
 insists, which is the one place this feature can genuinely break code.
+
+### 4.1 The web set's collision census
+
+The web set (§5.3) adds five ambient names — two modules and three
+members. Scanned the same way, at `093bf567`:
+
+| Ambient name | Kind | File-scope declarations outside std | Verdict |
+|---|---|---:|---|
+| `Signal` | member | 1 — `vilan/test/match-patterns.vl:6` `enum Signal { Quit, Finished }` | shadowed correctly by §9.1; and that file's package takes the **base** prelude, so `Signal` is never ambient there in the first place |
+| `view` | member | 0 file-scope; 2 block-scope (`vilan/test/fixed-arrays.vl:38` and one sibling, `let view = &mut buf[2];`) | shadowed correctly by §9.1; base-prelude packages again |
+| `View` | member | 0 | clean |
+| `style` | **module** | 0 | clean |
+| `ui` | **module** | 0 | clean |
+
+Two notes the ambient-module concept forces, both of which the census
+makes concrete:
+
+- **`std::style::style` is a function inside the module `style`** (`fun
+  style(): Style`, `std/src/style.vl:623`), and the estate calls it bare
+  60 times in `vilan/` alone. Every one of those files carries `import
+  std::style::style;` — an **explicit import**, which under §9.1 beats the
+  ambient module binding. So bare `style()` keeps working everywhere it
+  works today, and the ambient module only surfaces in files that did not
+  import the function. This is the first real demonstration that ambient
+  modules need no precedence rule of their own: §9.1's single ladder
+  already ranks them.
+
+  **The other half of that, found in the build and recorded here because
+  the ruling did not foresee it:** a name has ONE binding, so a file that
+  imports the *function* `style` no longer reaches the *module* `style` —
+  `style::Display` stops resolving **in that file**. The compiler says so
+  plainly (`` cannot resolve `Display` here: fn style(): Style is not a
+  module ``) and the estate pays nothing, because all 60 call sites import
+  the enums they use explicitly and none of them writes `style::…`. But it
+  is a real property of ambient modules and a user will meet it: within one
+  file you take the module or the member, not both. It is the ordinary
+  shadowing rule rather than anything the prelude adds, and the recovery is
+  the ordinary one — drop the member import and write `style::style()`, or
+  import the enums you need. Pinned as
+  `shadowing_an_ambient_module_costs_that_files_qualified_spelling`.
+- **`mount_root` is browser-only inside a layered module.**
+  `std/src/browser/ui.vl:731` declares it; `std/src/process/ui.vl` does
+  not. The module `ui` resolves on both platforms (both layers declare
+  it), so an ambient `ui` is platform-safe; `ui::mount_root` on a node
+  build reports at the use site, which is exactly what the
+  platform-coloring model is for (§4.3 of the spec). An ambient bare
+  `mount_root` would have moved that error's cause off-screen. This is
+  the mechanism §5.3 uses to admit the module and refuse the member.
 
 The website's `let format = || { … }` is the near-miss worth keeping in
 view: a real application, a real closure, a name that a slightly larger
 prelude would have made ambient. It is exactly why the prelude must be
 the weakest scope and not merely a low-priority import.
 
-## 5. The default set the data draws
+## 5. The two std preludes
 
-**Recommendation — the default std prelude is these seven names:**
+**Ruled: std ships TWO preludes.** The census's sharpest finding (§3.2) is
+that `print` is not the most-imported name in real vilan code — `Signal`
+is — and that nine of the top sixteen application names are the style/UI
+cluster. The paper as first proposed recorded that as a tension and
+resolved it by shrinking the default to language-level names, pointing
+applications at a custom prelude. The ruling resolves it the other way:
+**std supplies both sets, and the manifest key picks one.**
+
+That is the better answer for a reason the paper's own §3.3 table shows.
+The base set clears the import block entirely from 62 of 121 test files
+and 60 of 185 doc fences — and from **zero of 42 application files**. A
+prelude that never empties an application's import block is a prelude that
+does not serve the corpus vilan is actually for. The web set is what
+serves it, and it can be domain-shaped precisely *because* it is not the
+default: nothing is imposed on a CLI tool or a compiler plugin.
+
+| | base | web |
+|---|---|---|
+| Selected by | omitting the key (or `prelude = "std::prelude"`) | `prelude = "std::web"` |
+| Ambient members | `print`, `Option`, `Some`, `None`, `Result`, `Ok`, `Err` | the base seven **+** `Signal`, `view`, `View` |
+| Ambient modules | — | `style`, `ui` |
+| Admission test | §5.1 — universal, language-level, unambiguous, top-of-census in more than one corpus | §5.3 — the base test with (b) read as *web*-domain-level, plus a per-file-friction test |
+| Collisions outside std | 0 | 1 member (`Signal`), shadowed correctly; 0 modules |
+
+### 5.1 The base set
+
+**The base std prelude is these seven names:**
 
 ```
 print
@@ -347,62 +467,157 @@ data supports, and which `std/src/lib.vl` already applies informally:
 Seven names, 419 of 955 std import statements (44%), zero collisions
 outside std.
 
-**Rejected, with the reason:**
+**Rejected from the base set:**
 
-- **`Signal` (61 overall, rank 1 in applications).** The strongest
-  rejection to argue and the most likely to be overturned (§14 Q1). For:
-  it is universal (base layer — SSR needs it), unambiguous, and the
-  single most-imported name in real application code. Against: it fails
-  (b) squarely — reactivity is a domain, not a language feature; a vilan
-  CLI tool or a compiler plugin never touches it; it is the one candidate
-  with a real estate collision (`test/match-patterns.vl`); and it buys
-  four percentage points. The clean answer is that `Signal` is precisely
-  what the **custom** prelude exists for: an application whose every file
-  is reactive declares one, and the census says that application is
-  every application vilan has.
-- **The style/UI cluster** (`view`, `View`, `style`, `Display`, `Length`,
-  `space`, `Color`, `AlignItems`, `FlexDirection`, `Style`, `Overflow`,
-  `Cursor`, `Position`, `JustifyContent`, `UserSelect`, `mount_root`) —
-  sixteen names, nine of them in the application top sixteen, and the
-  single largest block of imports in application code. Rejected as a
-  block: domain-level by definition, `Display` is ambiguous (§3.4),
-  `view`/`View` are platform-**layered** (`std/src/browser/ui.vl` and
-  `std/src/process/ui.vl` each declare them), and putting sixteen CSS
-  names in every vilan program's ambient scope is exactly the "platform-
-  colored names presumably never" line B156 drew. This cluster is the
-  best argument in the census for the custom prelude, and `std-shape.md`
-  has already narrowed a split to it.
 - **Platform-colored names** (`Server`, `Response`, `fs`, `storage`,
-  `router`, `mount_root`, `db`, …) — refused categorically. A name whose
-  module lives in a `[library.layer.…]` overlay cannot be ambient without
-  making a browser build's ambient scope differ from a node build's, and
-  the platform-coloring model reports reachability errors *at the use
-  site* (§4.3 of the spec) — an ambient name would move the error's
-  cause off-screen.
+  `router`, `db`, …) — refused categorically, from **both** sets. A name
+  whose module lives in a `[library.layer.…]` overlay and is declared by
+  only *one* layer cannot be ambient without making a browser build's
+  ambient scope differ from a node build's, and the platform-coloring
+  model reports reachability errors *at the use site* (§4.3 of the spec)
+  — an ambient name would move the error's cause off-screen. §5.3 shows
+  the one shape that survives this: a module BOTH layers declare.
 - **`Shared` (25)** — 9 of its 25 are std's own files and 10 more are doc
   fences, leaving **6 units of real non-std code** in the whole estate.
-  Fails (d).
+  Fails (d) in both corpora.
 - **`Map`, `Set`, `Range` (10, 6, 11)** — the plausible "inherent-ish"
   candidates B156 asked about. All three fail (d) outright: `Range` is 11
   units, `Map` 10, `Set` 6, against `Result`'s 36. `List` is already
   ambient (§4.7) and is the reason these look like they belong; the data
   says they do not. Reconsider if a future census moves them.
-- **`Display` / `format` / `panic` / `assert` / `Default`** — `Display`
-  is ambiguous (§3.4). `format` is 7 units and has the website's
-  block-scope collision. `panic` (10 units, 9 of them std's own),
-  `Default` (4 units, all four std's own) and `assert` (1 unit, in
-  `examples`) are barely imported outside std at all. All three are
-  already in `std/src/lib.vl`'s short-name set, which is a different
-  thing from being ambient.
+- **`format` / `panic` / `assert` / `Default`** — `format` is 7 units and
+  has the website's block-scope collision. `panic` (10 units, 9 of them
+  std's own), `Default` (4 units, all four std's own) and `assert` (1
+  unit, in `examples`) are barely imported outside std at all. All four
+  are in `std/src/lib.vl`'s short-name set — which is a different thing
+  from being ambient, and which §10.2 now deletes outright.
+- **`Display`** — no longer rejected for *ambiguity* (§3.4 dissolved
+  that), but still short of (d): 9 units for the trait, against
+  `Result`'s 36. See the note below.
+- **`Signal` and the style/UI cluster** — not rejected. **Moved to the
+  web set** (§5.3), which is what the ruling created it for.
 
 **A note on `Display` and the trait-method tax.** `.to_string()` on an
 `i32` fails today with `i32 has no method 'to_string'; import
 std::display::Display to use it` — a whole class of import that exists
 only to unlock methods, and one a prelude *could* abolish (§11.6.1 confirms
-a re-exported trait carries its methods through). It is left out here
-only because the name is ambiguous. Renaming `std::style::Display` — the
-CSS enum, the younger and more replaceable of the two — would clear the
-way, and is put to the owner as §14 Q2.
+a re-exported trait carries its methods through). It was left out of the
+first draft because the name was ambiguous; §3.4's dissolution removes
+that objection and leaves only frequency, which it does not yet clear.
+Recorded as the live candidate for the next census (§14 Q9).
+
+### 5.2 Ambient module names — a first-class concept
+
+**Determination: a prelude may make a MODULE name ambient, beside member
+names. `style::Display` with no import is as much a prelude effect as
+bare `Some` is.**
+
+This is the ruling's structural contribution, and it is worth stating as
+a concept rather than as a fact about `style`, because it changes what a
+prelude can be sized to carry.
+
+**What it buys.** A member entry costs one ambient name and buys one
+name. A **module** entry costs one ambient name and buys a whole
+namespace — every present member and every future one — at the price of
+one qualifying segment at each use site. For a cluster like
+`std::style`'s sixteen enums, that is sixteen-for-one.
+
+**Why it cannot collide.** A qualified use (`style::Display`) and a bare
+use (`Display`) are different syntax reaching different resolutions.
+Making the module `style` ambient therefore does not put `Display`,
+`Color`, `Length` or `space` into the bare namespace at all — which is
+precisely how §3.4's collision dissolves rather than being adjudicated.
+The general rule: **an ambient module contributes exactly one name to the
+bare namespace — its own.**
+
+**Why it needs no new precedence rule.** §9.1's ladder already ranks
+every binding; a module binding is a binding. The estate proves the case
+that matters: `std::style::style` is a *function* whose name equals its
+module's, and 60 call sites in `vilan/` write it bare. Each of those
+files carries `import std::style::style;`, which is an explicit import
+and therefore beats the ambient module. Bare `style()` keeps working;
+files that did *not* import it see the module instead. One ladder, no
+special case, zero breakage — verified in §4.1.
+
+**The admission test for a module.** A module is admissible when it is
+(a) **reachable on every platform the set targets** — either base-layer,
+or declared by *every* layer (`std::ui` is declared by both
+`browser/ui.vl` and `process/ui.vl`, so it qualifies; `std::fs`, declared
+only by `process`, does not); (b) **a namespace a program in the set's
+domain reaches into repeatedly**, so the qualifier earns its keep; and
+(c) unambiguous as a bare name, like any member.
+
+**What it does not change.** Platform coloring still reports at the use
+site. `ui::mount_root` on a node build is an error *at the call*, which
+is where it belongs and where it reads. An ambient module never suppresses
+that check — it only spares the import line.
+
+**Selection is uniform.** A prelude module publishes an ambient module by
+re-exporting it (`export import pkg::style;`), exactly as it publishes an
+ambient member (`export import pkg::reactive::Signal;`). §8's "one
+mechanism" holds: there is no second syntax and no second list.
+
+### 5.3 The web set
+
+**Determination — the web prelude is the base seven plus five names:
+three members and two modules.**
+
+```
+                       print, Option, Some, None, Result, Ok, Err   (the base seven)
+members                Signal, view, View
+modules                style, ui
+```
+
+Admitted against §5.1's test with (b) read as *web*-domain-level, plus
+one further test the ruling's "the prelude is a floor, not a ceiling"
+forces: **(e) the name is written in many of a web app's files, not once
+per app.** A prelude removes per-file friction; a name written once has
+none to remove.
+
+| Name | Kind | App units (of 42) | Admitted because |
+|---|---|---:|---|
+| `Signal` | member | **21** (rank 1) | Base-layer, so SSR reaches it; unambiguous; the single most-imported name in real application code — ahead of `print` at 15. Ruled in by the owner. |
+| `view` | member | 14 (rank 3) | `std::ui`, declared by both layers. The builder every view-producing file calls, densely — a view tree is many `view("div")` calls, and `ui::view` at each would be noise the module entry cannot justify. |
+| `View` | member | 13 (rank 4) | The type half of the same idea; admitting one without the other splits a pair that always travels together (every `fun card(): View` needs it). |
+| `style` | **module** | 11 for the function, and 11 + 11 + 10 + 9 + 8 + 8 beneath it for `Display`/`Length`/`space`/`Color`/`AlignItems`/`FlexDirection` | Ruled in. Base-layer, one ambient name for a sixteen-name namespace, and the move that dissolves §3.4. |
+| `ui` | **module** | — (see below) | Declared by *both* layers, so platform-safe. Carries `mount_root` and the rest of the UI surface at `ui::…` without putting a once-per-app name into the bare namespace. |
+
+**Rejected from the web set, with the reason:**
+
+- **`mount_root` (8 app units)** — fails (e) decisively: a web app calls
+  it **once**, in its entry file. It is also browser-only inside a
+  layered module (`std/src/browser/ui.vl:731`; `process/ui.vl` has no
+  such declaration), so bare ambience would move a platform error's cause
+  off-screen. Reachable as `ui::mount_root`, which is the ambient-module
+  concept doing exactly the job §5.2 describes.
+- **`json_codec` (9 app units)** — the closest call, and it fails on
+  where its uses are: 6 in `examples` and 3 in kolt, and **zero in the
+  website** — the only genuine web application in the corpus. It is an
+  RPC-and-examples name, not a web-app name, and it is a plain function
+  in `std::json` that a program touches at its serialization boundary,
+  not throughout. Reachable in one line.
+- **The rest of the style cluster** (`Length`, `space`, `Color`,
+  `AlignItems`, `FlexDirection`, `Style`, `Overflow`, `Cursor`,
+  `Position`, `JustifyContent`, `UserSelect`, `TextAlign`, `WhiteSpace`)
+  — all reached through `style::`. Putting them in the bare namespace
+  would be thirteen names for what one already buys, and would re-open
+  §3.4.
+- **`Shared`, `Range`, `Map`, `Set`** — fail (d) in the application
+  corpus as they do in the whole one.
+- **`Server`, `Response`, `fs`, `router`, `storage`, `db`** — one-layer
+  names; refused by §5.1's categorical rule, which the web set does not
+  relax.
+
+**What the web set costs.** One real collision in the whole estate —
+`vilan/test/match-patterns.vl`'s `enum Signal` — and that file's package
+takes the base prelude, so the name is never ambient there. Under §9.1 it
+would resolve to the local `enum` even if it were. §4.1 is the census.
+
+**What the web set buys.** The website's eleven files import `Signal` in
+7, `view`/`View` in 7, and the style cluster in 7; kolt's nine import
+`Signal` in 4 and the cluster in 2. This is the first candidate set in
+the paper that would empty import blocks in **application** files, which
+§3.3 showed the base seven never do.
 
 ## 6. The manifest spelling, and why this key belongs in toml
 
@@ -436,11 +651,12 @@ that the package's own author states once.
 
 ### 6.2 The spelling
 
-**Recommended:**
+**Recommended, as amended by the ruling:**
 
 ```toml
 [package]
-prelude = "std"                     # the default; may be omitted entirely
+prelude = "std::prelude"            # the default; may be omitted entirely
+prelude = "std::web"                # the web set
 prelude = "pkg::my_prelude"         # a module in this package
 prelude = false                     # no prelude at all
 ```
@@ -461,18 +677,51 @@ Determinations behind that spelling:
    and `manifest.rs` carries `Package` and `Library` as separate structs.
    A key that exists only on `[package]` could not state std's own
    posture (§10) and could not let any library — the whole D5 registry
-   story — declare one. Same key, same values, both sections.
-2. **The value is a string or `false`.** `"std"` names the default;
-   `false` means no prelude; any other string is a **module path** in the
-   grammar `import` already accepts (`pkg::…`, a dependency name, or
-   `std::…`). Not a table, not a list, not a merge spec — see §8.
-3. **Omitting the key means `"std"`.** The feature's whole point is that
-   the common case is silent. A package that says nothing gets the
-   default set; the manifest gains a line only when the answer is
-   unusual. This also makes the key **additive to every existing
-   manifest in the estate** with no edit.
-4. **`prelude = "std"` written out is legal and identical to omitting
-   it.** Someone will write it to be explicit; refusing it buys nothing.
+   story — declare one. Same key, same values, both sections. The
+   implementation template is `generated`, the one key already validated
+   by a single free helper called from both `validate_package` and
+   `validate_library`.
+2. **The value is a MODULE PATH or `false`, and there is no third
+   grammar.** This is the amendment's determination and it replaces the
+   first draft's `"std"`-names-the-default rule. Every accepted string is
+   a module path in the grammar `import` already takes; the two std
+   preludes are simply two std modules:
+
+   | Value | Means |
+   |---|---|
+   | *(omitted)* | `"std::prelude"` |
+   | `"std::prelude"` | the base seven (§5.1) |
+   | `"std::web"` | the web set (§5.3) |
+   | `"pkg::…"`, `"<dep>::…"`, any `"std::…"` module | that module's exports |
+   | `false` | no prelude |
+
+   The ambient names are, in **every** case, exactly the named module's
+   exports (§8). Selecting the web set is not a mode the compiler knows
+   about — it is a module path like any other, and `std::web` is a real
+   file in std whose contents a reader can open. That is the property
+   worth paying for: **the two std preludes are written in vilan, in std,
+   in the same mechanism a user's custom prelude uses.** There is no
+   built-in list in Rust to drift out of sync with the docs.
+3. **Omitting the key means `"std::prelude"`.** The feature's whole point
+   is that the common case is silent. A package that says nothing gets
+   the base set; the manifest gains a line only when the answer is
+   unusual. This makes the key **additive to every existing manifest in
+   the estate** with no edit.
+4. **`prelude = "std"` is REFUSED, with a curated diagnostic.** The first
+   draft made it a legal synonym for the default. The alias sweep (§10.2)
+   is what changes the answer: after it, `std`'s root module exports
+   nothing, so `prelude = "std"` would silently mean *an empty prelude* —
+   a trap that looks like the most obvious spelling in the language.
+   Refuse it and name the fix:
+
+   ```
+   invalid `[package] prelude`: `std` is the package root, not a prelude
+   module; use `"std::prelude"` (the default set) or `"std::web"`
+   ```
+
+   This is the same posture the reserved-package-name refusal takes: the
+   obvious wrong guess is caught by name and redirected, rather than
+   accepted into a silent misbehaviour.
 5. **It is not inherited from a `[project]` workspace root.** A workspace
    root's `[project]` section carries `packages` and shared
    `dependencies`; a semantic key must not travel that edge either, for
@@ -480,11 +729,25 @@ Determinations behind that spelling:
    §14 Q3 — this is the one place a convenience argument exists.)
 6. **`false`, not `"none"` or `""`.** TOML has a boolean; the value is a
    yes/no about a whole mechanism. `split` in `[package]`/`[entry.…]` set
-   the precedent for a bare bool.
-7. **The key is validated at manifest load**, beside `target`'s
-   validation: `false` or a syntactically valid module path, with the
-   path's *resolution* diagnosed at build time against the package's own
-   modules and dependencies, pointing at the manifest line.
+   the precedent for a bare bool. `prelude = true` is **refused** — the
+   affirmative is spelled by omitting the key or naming a module, and an
+   untagged string-or-bool deserialize accepts `true` syntactically, so
+   the refusal has to be explicit (the precedent is
+   `project_false_is_an_error_rather_than_a_no_op`).
+7. **The key is validated at manifest load**, lexically: `false`, or a
+   path whose every segment is an identifier and whose root is `pkg`,
+   `std`, or a key declared in this section's `dependencies` table. The
+   path's *resolution* — does that module exist, does it export anything
+   — is diagnosed at build time. Manifest diagnostics in this compiler
+   carry no span (they render at offset 0 of `vilan.toml`, a decision
+   recorded in the LSP), so each refusal names its own key spelling in
+   its text, as `[package] target` and `[package] generated` do.
+8. **The key is part of the editor surface.** `manifest_completion.rs`'s
+   `TABLES` listing and `editors/vscode/schemas/vilan-toml.schema.json`
+   both enumerate `[package]`/`[library]` keys under
+   `additionalProperties: false`, and `schema_and_listing_agree` fails
+   until a new key is in both. The prelude key is not done until it
+   completes in the editor.
 
 ## 7. Scoping: per package, never inherited
 
@@ -647,7 +910,9 @@ reference index to decide whether a leaf is unused. Prelude bindings must
 be **invisible to that index**, or Organize Imports will start pruning
 real imports because "the prelude already references them."
 
-## 10. std's own posture
+## 10. std's own posture, and the alias sweep
+
+### 10.1 std compiles with no prelude
 
 **Determination: std compiles with `prelude = false`, stated explicitly
 in `vilan/vilan/std/vilan.toml`.**
@@ -674,6 +939,103 @@ column exists to price.
 Stated explicitly rather than left to a special case: a reader of
 `std/vilan.toml` should see the posture, and the compiler should have no
 "std is different" branch it can drift out of sync with.
+
+One consequence of §6.2 determination 2 that must be said out loud: **std
+declaring `prelude = false` does not stop std from *containing* the
+prelude modules.** `std/src/prelude.vl` and `std/src/web.vl` are ordinary
+std modules that std's own files compile without using, exactly as
+`std/src/style.vl` is a module std's `io.vl` never imports. The posture is
+about resolution, not about contents.
+
+### 10.2 The alias sweep
+
+**Determination: std's alias-only re-exports are DELETED.** Every entry in
+`std/src/lib.vl` exists for one reason — to let a caller write
+`std::print` instead of `std::io::print` — and that reason is what the
+prelude now serves, better. Ruled by the owner on `std::print` by name,
+and extended by the same ruling to "a sweep of std for names whose whole
+job was import brevity."
+
+**The census. `std/src/lib.vl` is the whole surface** — it is the only
+`lib.vl` in std, and `export import` appears nowhere else in the package.
+Six statements, thirteen names, and every one of them is an alias for a
+name that already has a real home:
+
+| Alias | Real home | Estate uses of the alias | Verdict |
+|---|---|---:|---|
+| `std::print` | `std::io::print` | **2,278** import statements | **delete** — ruled by name; the base prelude carries `print` |
+| `std::panic` | `std::io::panic` | 8 | **delete** — same shape, no other purpose |
+| `std::assert` | `std::io::assert` | 4 | **delete** — same shape |
+| `std::Default` | `std::default::Default` | **0** | **delete** — dead on arrival; nothing in the estate ever wrote it |
+| `std::str` | `std::string::str` | 0 | **delete** — and doubly dead: `str` is a §4.7 primitive, ambient everywhere already |
+| `std::BigInt`, `std::f32`, `std::f64`, `std::i8`, `std::i16`, `std::i32`, `std::i53`, `std::u8`, `std::u16`, `std::u32`, `std::u53` | `std::number::…` | 0 | **delete** — the numerics are §4.7 primitives; the aliases spell a name that was never needed |
+
+Two findings the census turns up, both worth recording:
+
+- **Eleven of the thirteen aliases have zero uses in the entire estate.**
+  `std::Default`, `std::str` and the ten numerics were never written by
+  anyone, in std, the corpus, the docs, the examples, kolt or the
+  website. They are pure surface area — the exact shape of thing the
+  ruling is aimed at.
+- **std does not use its own aliases.** Every `std/src/*.vl` file spells
+  its imports `pkg::io::print`, `pkg::default::Default` and so on. So
+  "migrate std's own uses" is a null migration: the only std file that
+  changes is `lib.vl` itself.
+
+**What `lib.vl` becomes.** Emptied of aliases, `std/src/lib.vl` has no
+job left. It is deleted, and the two prelude modules stand in its place
+as the curated, named surfaces:
+
+```vilan
+// std/src/prelude.vl — the base prelude (§5.1)
+export import pkg::io::print;
+export import pkg::option::Option::{ self, Some, None };
+export import pkg::result::Result::{ self, Ok, Err };
+```
+
+```vilan
+// std/src/web.vl — the web prelude (§5.3)
+export import pkg::io::print;
+export import pkg::option::Option::{ self, Some, None };
+export import pkg::result::Result::{ self, Ok, Err };
+export import pkg::reactive::Signal;
+export import pkg::style;                    // the MODULE (§5.2)
+export import pkg::ui;                       // the MODULE (§5.2)
+export import pkg::ui::{ view, View };
+```
+
+Note that `web.vl` re-states the base seven rather than deriving them.
+That is §8's determination — **override replaces, extension is spelled by
+re-export** — applied to std itself. std does not get a merge rule the
+users do not have.
+
+**The breaking posture, stated plainly.** This half of the change is
+**breaking**, and it is the only breaking half. Deleting `std::print`
+turns 2,278 statements into errors at once. The migration is mechanical
+and has two shapes, and the paper prescribes which goes where:
+
+| Surface | Migration | Why |
+|---|---|---|
+| Rust test fixtures, `vilan/test/*.vl`, `vilan/benchmarks` | rewrite `std::print` → `std::io::print` | A pure textual substitution that preserves every fixture's meaning exactly and cannot depend on the prelude reaching that fixture's package. Redundant under the prelude, but §12 already rules redundant imports harmless, and Organize Imports will strip them on demand. |
+| `vilan/docs` fences, `vilan/examples`, `README.md`, the CLI templates | **delete the import** | These are the teaching surfaces. A doc fence that imports what the prelude supplies teaches the wrong thing, and the docs gate compiling every fence is the feature's best end-to-end proof. |
+
+The asymmetry is deliberate: the bulk sweep must be the transformation
+that cannot be wrong, and the curated sweep must be the one that shows
+the feature.
+
+**Rename diagnostics at the old spellings.** `std::print` will be typed
+from muscle memory for a long time, and the generic failure —
+`cannot find 'print' in the imported path` — names neither the removal
+nor the two ways forward. Each deleted alias gets a curated arm:
+
+```
+`std::print` was removed: `print` is in the default prelude (no import
+needed), and its module path is `std::io::print`
+```
+
+The same arm serves `panic`, `assert` and `Default` with the prelude
+clause dropped where it does not apply, and the numerics and `str` with
+"is a primitive and always in scope" in its place.
 
 ## 11. The tooling half
 
@@ -763,15 +1125,29 @@ bearing and must not be reflowed casually.
 
 Three determinations:
 
-1. **A new steer arm for the "not in this package's prelude" case.** When
-   a name is absent from the file's scope, is absent from the package's
-   prelude, and *is* in the **default std** prelude, the steer should say
-   so rather than propose an import — this is the misdirection a custom
-   or `false` prelude creates, and the only new class of confusion the
-   feature introduces. Proposed wording, keeping the existing prefix
-   intact so the LSP parser is unaffected:
-   `` cannot find 'Some' in this scope; it is in the std prelude, which
-   this package does not use (`[package] prelude` in vilan.toml) ``.
+1. **A new steer arm for the "not in this package's prelude" case**, in
+   two shapes now that there are two std sets. When a name is absent from
+   the file's scope and from the package's effective prelude, but *is* in
+   one of std's, the steer names the set rather than proposing an import.
+   Both keep the existing message prefix intact so the LSP's string
+   parser is unaffected:
+
+   - **The web-set arm — the one the ruling makes load-bearing.** A
+     package on the base prelude writing bare `Signal`, `view`, `View`
+     or `style` is the single most likely confusion the two-set design
+     creates, and the fix is one manifest line:
+     `` cannot find 'Signal' in this scope; it is in the prelude of the
+     web set — set `prelude = "std::web"` in vilan.toml ``.
+   - **The no-prelude arm.** A package with a custom or `false` prelude
+     writing a base-set name:
+     `` cannot find 'Some' in this scope; it is in the std prelude, which
+     this package does not use (`[package] prelude` in vilan.toml) ``.
+
+   The arms are ordered: the web arm fires when the name is in
+   `std::web` and not in the effective prelude; the no-prelude arm when
+   the name is in `std::prelude` and not in the effective prelude. A
+   package already on `std::web` never sees the web arm, because the
+   name resolves.
 2. **Never steer toward an import of a name the prelude already binds.**
    `import_steer` must consult the effective prelude before offering.
    With option 1 of §9.2 this is automatic: a prelude-bound name is in
@@ -793,17 +1169,23 @@ already carries the sentence this proposal deletes. The full edit list:
 
 | File | Edit |
 |---|---|
-| `docs/spec/names.md` §4.7 | Rewrite: the ambient set becomes the primitives + `List`/`void` **and** the seven prelude names; state per-package scoping, the `prelude` key, and the weakest-scope rule. |
+| `docs/spec/names.md` §4.7 | Rewrite: the ambient set becomes the primitives + `List`/`void` **and** the prelude's names; state the **two std sets**, ambient **module** names (§5.2), per-package scoping, the `prelude` key, and the weakest-scope rule. |
 | `docs/spec/names.md` §4.4 | The scope ladder gains its weakest rung, and gains the item-vs-import precedence §9.2 exposed, which §4.4 does not currently state. |
 | `docs/spec/appendix.md` §A.4 | The lang-item table gains a "in the default prelude" column — `Option` is already a lang item and this is where the two ideas meet. |
 | `docs/appendix/glossary.md` | The `prelude` entry's definition changes. |
-| `docs/appendix/errors.md` | The "everything, even `print`, is imported explicitly" sentence goes; the new steer arm gets an entry. |
+| `docs/appendix/errors.md` | The "everything, even `print`, is imported explicitly" sentence goes; the new steer arms and the **alias-removal** arm (§10.2) get entries. |
 | `docs/tour/hello-vilan.md` §Imports | The teaching surface: hello-world stops opening with an import. |
-| `docs/tour/projects.md` | The `vilan.toml` page documents the `prelude` key on `[package]` and `[library]`. |
+| `docs/tour/projects.md` | The `vilan.toml` page documents the `prelude` key on `[package]` and `[library]`, and the `"std::web"` value. |
 | `docs/appendix/editor.md` | The auto-import description gains the strip behaviour. |
 
 No new page and no `SUMMARY.md` change: §4.7 exists, and a prelude that
 needs its own chapter is too big.
+
+Beyond the eight, §10.2's sweep touches **every fence that imports a
+deleted alias** — 150 of them for `std::print` alone. Those are not
+"docs edits" in the §11.5 sense; they are the migration, and §10.2 rules
+that the docs corpus takes the *delete* shape so the fences teach the
+prelude rather than a redundant import.
 
 ### 11.6 The probes, transcribed
 
@@ -838,10 +1220,13 @@ literal → steer present. Same, plus `import std::iterator::ListIterator`
 
 ## 12. Migration and breaking posture
 
-**Determination: shipping the default prelude is ADDITIVE. Nothing in the
-estate breaks, and no file must be edited.**
+**Determination: shipping the preludes is ADDITIVE. Removing the aliases
+(§10.2) is BREAKING. The change has two halves and they have opposite
+postures, which is why the CHANGELOG carries them as separate entries
+under separate family markers.**
 
-The four ways this could have broken code, and why none of them does:
+The additive half first — the four ways *the prelude* could have broken
+code, and why none of them does:
 
 1. **A collision with a locally declared name.** §4: zero, outside std,
    for the recommended seven. And §9's rule means even the two that do
@@ -858,12 +1243,25 @@ The four ways this could have broken code, and why none of them does:
    every existing binding outranks the prelude.
 4. **A dependency's meaning changing.** Excluded by §7.
 
-**The migration is therefore optional and mechanical**, and has a shape:
-run Organize Imports across a package, review the 419-statement deletion,
-commit. The estate's own numbers: 46 statements in std (which will not
-take them, §10), 150 in `test`, 21 in `examples`, 190 in `docs` fences, 7
-in kolt, 5 in the website. 62 of 121 test files and 60 of 185 doc fences
-lose their import block entirely.
+**The prelude's own migration is therefore optional and mechanical**, and
+has a shape: run Organize Imports across a package, review the
+419-statement deletion, commit. The estate's own numbers: 46 statements in
+std (which will not take them, §10), 150 in `test`, 21 in `examples`, 190
+in `docs` fences, 7 in kolt, 5 in the website. 62 of 121 test files and 60
+of 185 doc fences lose their import block entirely.
+
+**The alias sweep's migration is not optional.** §10.2 prices it: 2,278
+`import std::print` statements, 8 `std::panic`, 4 `std::assert`, 25 braced
+forms naming a dying alias inside a larger `std::{ … }` group, and zero
+uses of the other eleven aliases. It is mechanical in both its shapes and
+neither shape requires judgement per site, but it must land in the same
+change as the prelude — an estate where the alias is gone and the prelude
+has not arrived does not compile.
+
+Per the standing rule, **the breaking census includes the website and kolt
+repos**. Neither imports `std::panic`, `std::assert` or `std::Default`;
+both import `std::print` (2 units and 3 units respectively) and take the
+delete shape, since both are application code the prelude serves.
 
 Two migration notes the census forces:
 
@@ -884,81 +1282,139 @@ that changes its prelude changes what its own source means but never what
 a consumer's does (§7). That is the property that makes it safe to ship
 before the registry rather than after.
 
+### 12.1 What the build surfaced
+
+Two defects the implementation found that the paper had not, both fixed in
+the same change and both worth recording as evidence for how this feature
+fails:
+
+- **The base cache did not key on the prelude.** `BaseCacheKey` carried the
+  platform, the entry's std seeds, the workspace and the macro budgets — but
+  a stored world holds its modules' scopes *already seeded* with their
+  ambient set, so a `std::web` world was served to a base-prelude program.
+  It surfaced as a pin that passed alone and failed in a full run, which is
+  the signature of process-global state. The key and
+  `workspace_fingerprint` now carry the entry package's prelude and every
+  dependency's.
+- **The add-import quickfix offered a prelude module.** Once `std::web`
+  existed, an unresolved `view` offered both `std::ui` and `std::web`, and
+  the menu went ambiguous. The cause was drift the prelude merely exposed:
+  the analyzer's B4 steer has always excluded re-exports
+  (`collect_declared_names`: "pointing at a module that merely forwards it
+  would name the wrong file") and the LSP's quickfix path did not. Bringing
+  the quickfix into line with the analyzer's rule fixes it generally —
+  nobody should ever be told to `import std::web::view`.
+
+A third, **pre-existing and not this paper's**, was found while probing
+per-package isolation and is worth a filing: a **type-position** unresolved
+name inside a dependency module is attributed to std's `lib.vl` at a
+nonsense span, where the value-position twin attributes correctly. The
+value site calls `attribute_new_diagnostics` and the type site does not.
+Reproduced on the shipped `vilan 0.39.0` with no prelude in play.
+
 ## 13. Determinations
 
-1. **§5** The default std prelude is seven names: `print`, `Option`,
-   `Some`, `None`, `Result`, `Ok`, `Err`. Admission test: universal,
-   language-level, unambiguous, top-of-census in more than one corpus.
-2. **§5** `Signal` is excluded — rank 1 in application code, but
-   domain-level, +4 percentage points, and the one candidate with a real
-   estate collision. It is the exemplar of what a custom prelude is for.
-3. **§5** The style/UI cluster and all platform-colored names are
-   excluded categorically.
-4. **§3.4** `Display` is disqualified by ambiguity: `std::display::Display`
-   and `std::style::Display` both exist in the base layer.
-5. **§6.2** The key is `prelude`, on **both** `[package]` and
+1. **§5** std ships **two** preludes. The **base** set is seven names:
+   `print`, `Option`, `Some`, `None`, `Result`, `Ok`, `Err`. Admission
+   test: universal, language-level, unambiguous, top-of-census in more
+   than one corpus.
+2. **§5.3** The **web** set is the base seven plus the members `Signal`,
+   `view`, `View` and the **modules** `style` and `ui`. Admitted against
+   the base test with domain-level read as web-domain-level, plus a
+   per-file-friction test (e) that `mount_root` fails and `json_codec`
+   fails on corpus placement.
+3. **§5.2** A prelude may make a **MODULE** name ambient, beside member
+   names — a first-class concept, not a special case for `style`. An
+   ambient module contributes exactly one name to the bare namespace, is
+   admissible only if every targeted layer declares it, needs no new
+   precedence rule (§9.1's ladder ranks it), and does not suppress
+   platform-coloring checks at the use site.
+4. **§3.4** The `Display` collision is **DISSOLVED**, not managed: bare
+   `Display` is `std::display::Display`'s alone, the CSS enum is reached
+   as `style::Display` through the ambient module, and
+   `std::style::Display` never renames. `Display` the trait becomes
+   admissible bare and is held out on frequency alone.
+5. **§5.1** All platform-colored names — those a single layer declares —
+   are excluded categorically from **both** sets.
+6. **§6.2** The key is `prelude`, on **both** `[package]` and
    `[library]` — B156's `[package]`-only spelling could not state std's
    own posture, because std is a `[library]`.
-6. **§6.2** Values: `"std"` (the default), a module path, or `false`.
-   Omitted means `"std"`. Not inherited from `[project]`.
-7. **§6.1** The key qualifies under the manifest charter because the
+7. **§6.2** Values: a **module path**, or `false`. There is no third
+   grammar and no built-in set name: `"std::prelude"` and `"std::web"`
+   are real std modules whose exports *are* the ambient names, written in
+   vilan in the same mechanism a custom prelude uses. Omitted means
+   `"std::prelude"`. `prelude = "std"` and `prelude = true` are refused
+   with curated diagnostics. Not inherited from `[project]`.
+8. **§6.1** The key qualifies under the manifest charter because the
    ambient scope must be known before the first file resolves and governs
    the file that would declare it — a bootstrapping hole, not a
    preference.
-8. **§7** A file resolves under the prelude of the package that owns it.
+9. **§7** A file resolves under the prelude of the package that owns it.
    Never inherited: not from a consumer to a dependency, not from a
    dependency to a consumer, not from a workspace root, not per layer.
-9. **§8** A custom prelude REPLACES the std one. Extension is spelled by
-   re-exporting std names from the custom module. The shipped
-   `export import` suffices — probed, including types, enum variants and
-   traits-with-methods. No globs.
-10. **§9.1** The prelude is the weakest scope. A local declaration or an
+10. **§8** A custom prelude REPLACES the std one — and so does
+    `std::web`, which re-states the base seven rather than deriving them.
+    Extension is spelled by re-exporting. The shipped `export import`
+    suffices — probed, including types, enum variants and
+    traits-with-methods. No globs.
+11. **§4.1** An ambient module is beaten by an explicit member import of
+    the same spelling. `import std::style::style;` keeps bare `style()`
+    working in all 60 estate call sites while the module `style` is
+    ambient elsewhere — §9.1's one ladder, no special case.
+12. **§9.1** The prelude is the weakest scope. A local declaration or an
     explicit import wins silently, with no diagnostic.
-11. **§9.2** The prelude MUST NOT be implemented as synthesized imports
+13. **§9.2** The prelude MUST NOT be implemented as synthesized imports
     at file head. Done that way it would silently break the two estate
     files that declare `Signal` and `Default`. Recommended: seed the
     module scope before real imports, so items and imports overwrite it.
-12. **§9.2** Prelude bindings must be invisible to the reference index
+14. **§9.2** Prelude bindings must be invisible to the reference index
     that `import_leaf_is_used` reads, or Organize Imports will prune real
     imports.
-13. **§10** std compiles with `prelude = false`, stated explicitly in its
-    own manifest. It forgoes 46 statements of savings and keeps its
-    resolution greppable.
-14. **§11.1** Organize Imports STRIPS imports the prelude covers, matched
+15. **§10.1** std compiles with `prelude = false`, stated explicitly in
+    its own manifest. It forgoes 46 statements of savings and keeps its
+    resolution greppable — and still *contains* the two prelude modules,
+    which is a fact about contents, not resolution.
+16. **§10.2** std's thirteen alias-only re-exports are **DELETED** and
+    `std/src/lib.vl` with them: `print`, `panic`, `assert`, `Default`,
+    `str` and the ten numerics. Eleven of the thirteen had zero estate
+    uses; std used none of its own. Each old spelling gets a curated
+    rename diagnostic. This is the change's breaking half.
+17. **§11.1** Organize Imports STRIPS imports the prelude covers, matched
     on same-name-and-same-definition. `vilan fmt` is unchanged.
-15. **§11.2** Prelude names are ordinary in-scope completions with no
+18. **§11.2** Prelude names are ordinary in-scope completions with no
     import edit; `auto_import_completions` and both add-import actions
     stop offering them by the existing "already in scope" filter.
-16. **§11.3** Go-to-definition needs no change.
-17. **§11.4** The unresolved-name diagnostic gains one arm — "it is in
-    the std prelude, which this package does not use" — keeping the
+19. **§11.3** Go-to-definition needs no change.
+20. **§11.4** The unresolved-name diagnostic gains **two** arms — the web
+    arm ("it is in the prelude of the web set — set
+    `prelude = \"std::web\"`") and the no-prelude arm — both keeping the
     existing message prefix so the LSP's string parser is unaffected.
-18. **§11.5** `docs/spec/names.md` §4.7 is the normative home; it exists
-    already. Eight files edited, no new page.
-19. **§12** The change is additive. Zero collisions outside std for the
-    recommended set; redundant imports are not diagnosed by the compiler,
-    so nothing must be edited. Migration is a mechanical Organize Imports
-    sweep, with the 190 doc-fence deletions done by hand in the same
-    change as the docs edits.
+21. **§11.5** `docs/spec/names.md` §4.7 is the normative home; it exists
+    already. Eight files edited, no new page, plus the fence sweep §10.2
+    prescribes.
+22. **§12** The prelude half is additive — zero collisions outside std
+    for the base set, re-verified at `093bf567`, and redundant imports
+    are not diagnosed by the compiler. The alias half is breaking and its
+    migration is mandatory and mechanical: rewrite in the fixture
+    corpora, delete in the teaching corpora.
 
 ## 14. Owner questions
 
-1. **Is `Signal` in the default set?** The census says it is the
-   most-imported name in application code (21 of 42 app files, ahead of
-   `print` at 15) and the eighth-ranked overall. §5 excludes it as
-   domain-level and worth four percentage points, and points at the
-   custom prelude instead. This is the determination most likely to be
-   wrong, and it is the one that decides whether the default prelude is a
-   *language* prelude or an *application* prelude.
+**Q1 and Q2 are CLOSED by the ruling batch of 2026-08-29.** Q6 is closed
+in passing. The rest remain open, and three new ones are added at the end
+by the amendment's own determinations.
 
-2. **Should `std::style::Display` be renamed, so `Display` can join the
-   prelude later?** The trait `std::display::Display` is what makes
-   `.to_string()` work; the estate imports it 24 times, and today's
-   diagnostic for the missing import (`i32 has no method 'to_string';
-   import std::display::Display to use it`) is a tax on every program
-   that prints a number. It cannot enter the prelude while the CSS enum
-   holds the same name in the same layer. Renaming the CSS one is cheap
-   in alpha and impossible later.
+1. ~~**Is `Signal` in the default set?**~~ **CLOSED — neither answer.**
+   The ruling created a second std prelude and put `Signal` in it. The
+   question was framed as a choice between a *language* prelude and an
+   *application* prelude; the ruling refused the framing and shipped
+   both. §5 is rewritten around it.
+
+2. ~~**Should `std::style::Display` be renamed?**~~ **CLOSED — no, and
+   the question is dissolved.** Ambient module names (§5.2) mean the CSS
+   enum is `style::Display` and never contends with the trait. The enum
+   keeps its name, `Display` becomes admissible bare, and nothing in the
+   estate moves. §3.4.
 
 3. **Should a `[project]` workspace root be able to set a default
    `prelude` its members inherit unless they override?** §6.2
@@ -980,12 +1436,11 @@ before the registry rather than after.
    make the feature's blast radius maximal on day one, which has its own
    virtue as a test.
 
-6. **Organize Imports strips prelude-covered imports — is that the right
-   aggression?** §11.1 chooses strip over leave. Strip means running the
-   action on an old file produces a large, mechanical diff; leave means
-   the estate carries 419 dead statements indefinitely and new files
-   copy-paste them forward. There is no third option that keeps one
-   canonical spelling per file.
+6. ~~**Organize Imports strips prelude-covered imports — is that the
+   right aggression?**~~ **CLOSED by the order — strip.** §11.1's
+   reasoning stands and the ruling adopted it. Recorded here because the
+   sweep (§10.2) leans on it: the fixture corpora keep redundant
+   `std::io::print` imports that only the strip will ever clear.
 
 7. **Should `prelude` be part of a package's published contract at D5,
    with a compatibility rule?** §12 argues it is safe because a package's
@@ -1002,10 +1457,45 @@ before the registry rather than after.
    specifically, but the ambiguity filter that causes it presumably
    affects other names too.
 
-9. **Does anything else deserve a place at the seven's table on
+9. **Does anything else deserve a place at the base set's table on
    *ergonomic* rather than census grounds?** The census answers "what is
    imported"; it cannot answer "what would be written if it were free".
    `Map`, `Set` and `Range` all fail the frequency test decisively (10, 6,
    11 units) and are excluded on the data — but `List` is already ambient
    and they are its siblings, so the ruling deserves to be conscious
-   rather than arithmetic.
+   rather than arithmetic. **The amendment adds one candidate to this
+   question**: `Display`, now that §3.4 has cleared its ambiguity. It is
+   9 units on the data — below the bar — but it is the name whose absence
+   taxes `.to_string()` on every program that prints a number, which is
+   the purest "would be written if it were free" case in std.
+
+**New, from the amendment's own determinations:**
+
+10. **Is `"std::prelude"` the right spelling for the default set, given
+    that it is never written?** §6.2 determination 2 buys one uniform
+    value grammar — every value is a module path — at the cost of a
+    stuttery name for a set nobody types (it is the omitted default). The
+    alternatives were `prelude = "std"` (nicer, but requires the root
+    module to *be* the prelude, which the alias sweep forecloses) and a
+    package-names-its-prelude-module convention (`"std"` → `std::prelude`
+    by rule), which is one more rule than the paper wanted. If the
+    stutter matters, `"std::base"` and `"std::core"` were the runners-up
+    and both collide with existing std terminology for the universal
+    layer.
+
+11. **Is `ui` the right second ambient module, or should the web set
+    carry `view`/`View` only?** §5.3 admits the module chiefly so
+    `mount_root` is reachable without being bare. The counter is that a
+    web app touches `ui::` for essentially nothing else once `view` and
+    `View` are ambient, which makes the module entry earn very little —
+    and an ambient module the reader never sees used is a name in scope
+    for nothing.
+
+12. **Should `std::web` re-state the base seven, or should the two sets
+    share a module?** §10.2 writes the seven twice — once in
+    `std::prelude`, once in `std::web` — because §8 forbids merge rules
+    and std must not get a mechanism users lack. The cost is a
+    seven-line duplication in std that a future edit can desynchronise.
+    The alternative is `export import pkg::prelude::{ … }` inside
+    `web.vl`, which is *re-export*, not merge, and so is arguably already
+    legal under §8 — worth confirming rather than assuming.
