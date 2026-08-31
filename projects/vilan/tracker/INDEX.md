@@ -10,7 +10,6 @@
 | [A8](items/A8.md) | UI styling — the tail | design | |
 | [A14](items/A14.md) | Reactive residuals | design | |
 | [A27](items/A27.md) | NEW — `std::dom` cannot listen on `window` at all | design | |
-| [A30](items/A30.md) | NEW — `ReactiveClient` disposes itself at terminal `Closed` | feature | RULED 2026-08-29; build-ready |
 
 ## B. Type system & the type solver
 
@@ -21,12 +20,10 @@
 | [B146](items/B146.md) | NEW — the context coverage check's refinement consumes node-owned dispatch sites only | feature | |
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
 | [B148](items/B148.md) | NEW — `str + <any struct>` type-checks and renders the runtime tuple | bug | |
-| [B149](items/B149.md) | NEW — an async function returning a `Task` mistypes as the task, pinned but never itemed | bug | |
+| [B149](items/B149.md) | NEW — an async function returning a `Task` mistypes as the task | bug | the pin names it since Order 21; the gap itself stays open |
 | [B156](items/B156.md) | NEW — a manifest-configurable prelude: std ambient names by default, overridable | design | RULED 2026-08-29: write the paper |
 | [B157](items/B157.md) | NEW — static-or-dynamic component values: the trait-bound pattern vs a `union` former | design | owner-proposed; both problems probe-solved, blanket impl the one gap |
 | [B158](items/B158.md) | NEW — a blanket impl is accepted, then ICEs at first dispatch | bug | RULED 2026-08-29: SUPPORT, specificity rule; Order 22 |
-| [B159](items/B159.md) | NEW — S3's teardown-region widening dead in nested scopes: a RELEASED miscompile | bug | audit 5 F1; FIX-NOW lane in-order |
-| [B154](items/B154.md) | NEW — internal `NativeMap::insert` frees the caller's value while the table holds it | bug | RULED 2026-08-29: the R10-head extension; build-ready |
 
 ## C. Memory model
 
@@ -50,16 +47,8 @@
 | [E62](items/E62.md) | NEW — Zed language extension | feature | |
 | [E69](items/E69.md) | NEW — attribute-NAME completion in an element head is a semantics decision | feature | |
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
-| [E102](items/E102.md) | NEW — module-parse-error dedup dropped the message from its key | bug | audit 4; cheap |
 | [E103](items/E103.md) | NEW — the `Some`-import steer is lost via the `List`-method path | bug | prelude census find |
-| [E104](items/E104.md) | NEW — b154's R11 stand-down suppresses an independent second offense | bug | audit 5 F2; FIX-NOW lane in-order |
 | [E105](items/E105.md) | NEW — an unterminated `css` block completes with ordinary scope | bug | audit 5 F10 |
-
-## F. std surface
-
-| ID | Title | Kind | Discussion |
-|----|-------|------|------------|
-| [F14](items/F14.md) | NEW — `to_lowercase_ascii` is not ASCII; rename to `to_lowercase` | bug | owner-filed 2026-08-29; FIX-NOW, breaking |
 
 ## G. Macros & const
 
@@ -68,8 +57,6 @@
 | [G2](items/G2.md) | Const-eval tail | feature | |
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
 | [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
-| [G13](items/G13.md) | NEW — `dist/` never sweeps a bundled asset the build no longer names | bug | audit 4; unbounded under the digest recipe |
-| [G14](items/G14.md) | NEW — a watch round lost to a transient action failure is lost for good | design | RULED 2026-08-29: restore-with-once-guard; build-ready |
 | [G15](items/G15.md) | NEW — a symlinked directory input re-runs its hook every build, forever | bug | audit 5 F3 |
 | [G16](items/G16.md) | NEW — watcher and stamp disagree on empty nested directories | bug | audit 5 F4; safe direction |
 
@@ -124,8 +111,5 @@
 | [N23](items/N23.md) | NEW — 37 `pub` items in `vilan-core` are never referenced outside their own file | process | |
 | [N27](items/N27.md) | NEW — nothing ever runs the `#[ignore]`d pins, so an expired pin reason is undetectable by machine | process | |
 | [N28](items/N28.md) | NEW — `book_sync`'s mdBook backstop runs whatever `mdbook` is on PATH, no version check | process | |
-| [N29](items/N29.md) | NEW — `[extern(…, retains)]` documented only where no extern author looks | docs | audit 4 |
-| [N30](items/N30.md) | NEW — an empty directory appearing where a listed one was missing starts no watch round | bug | audit 4; narrow |
-| [N31](items/N31.md) | NEW — an `#[ignore]` reason must name a tracker item; gate it | process | audit 4; third consecutive run |
 | [N32](items/N32.md) | NEW — the grammar's `extern-args` production omits two accepted forms | docs | found widening it for N29 |
 | [N33](items/N33.md) | NEW — the ignore-gate's id shape trivially satisfiable; fixture self-parse | process | audit 5 F5+F6 |
