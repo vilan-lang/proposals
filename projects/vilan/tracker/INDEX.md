@@ -64,6 +64,7 @@
 | [E105](items/E105.md) | NEW — an unterminated `css` block completes with ordinary scope | bug | audit 5 F10 |
 | [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
 | [E107](items/E107.md) | NEW — no completion at a builder chain's dot on its own line | bug | owner report; the completion-context class |
+| [E108](items/E108.md) | NEW — a type-position unresolved name in a dependency attributes to std's lib.vl | bug | prelude lane's find |
 
 ## G. Macros & const
 
