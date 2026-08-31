@@ -112,6 +112,27 @@
 > load-bearing in a way no other resource in this paper is: a pending host
 > timer holds node's event loop open, so an undropped watcher is a program
 > that never exits — plant-proven as a hang.
+>
+> **SHIP NOTE, 2026-08-31 (cycle 40, order 22, lane `fs-s5`). S5 SHIPPED,
+> and with it the paper's whole sequence: S0–S5 are all built and 031 has
+> nothing open.** Two slices in one commit. `Reader` (§3.4) is the
+> incremental read the owner's vision named — a cursor over `read_at`, so
+> no host position ever enters the tier — and it is twenty lines, which is
+> the deferral's dividend: the primitive under it was already right, and
+> building the wrapper turned up nothing that would have changed it. Seven
+> determinations recorded in §3.4's build note; the sharpest is that the
+> `Shared<i53>` position the sketch drew is **forced by the language, not
+> chosen** — `next` awaits, and an async function cannot take a `&mut`
+> parameter. The second slice closes the scope note S3 left three days
+> ago: the four WRITING scoped forms (§5.3), which is where the awaited
+> close is actually worth something, since the OS is entitled to report a
+> write's failure at `close(2)`. One implementation
+> (`scoped_file(own file, body)`), five callers, so the ordering that IS
+> the idiom cannot drift; the corpus golden moved by exactly that refactor
+> and was regenerated against verified output. Nothing new was needed from
+> the compiler: `Reader` is a `resource` by containment and every R-rule
+> lands on it unmodified, which is the destruction paper's inference rule
+> collecting its second std customer.
 
 
 ## 1. What exists, measured
@@ -420,6 +441,109 @@ Build the cursor from the position, never the position from the cursor.
 `Reader` is v1.5, not v1 (§11) — the primitive is the thing that must be
 right first, and a cursor written a cycle later costs nothing.
 
+**BUILT 2026-08-31 (S5, cycle 40, Order 22, lane `fs-s5`).** The sketch
+above shipped; the shipped surface, which the sketch's signatures
+approximate rather than state, is:
+
+```vilan
+resource struct Reader {
+	file: File,
+	cursor: Shared<i53>,
+}
+
+impl Reader {
+	fun of(own file: File): Reader;
+	fun next(self, size: i32): Bytes;   // empty at EOF
+	fun position(self): i53;
+	fun seek(self, position: i53);
+}
+```
+
+The seven determinations the sketch left open are recorded below, each
+with the evidence that settled it. Two of them were decided by the
+language rather than by taste, which is the more interesting half.
+
+**(i) The position is a `Shared<i53>`, and that is FORCED, not chosen.**
+The sketch wrote `position: Shared<i53>` beside `fun next(&self, …)`
+without saying why the obvious shape — a plain `i53` field behind
+`&mut self` — was not used. Probed at build time: it does not compile.
+`next` awaits the read, and **an async function cannot take a `&mut`
+parameter** ("the view would be held across its suspension points"),
+which is a standing rule already pinned in
+`crates/vilan-core/tests/inference/bounds.rs`. A `Shared` cell is what the
+language leaves, so the sketch was right for a reason it did not know it
+had. Re-pinned in the Reader's own shape as
+`a_cursor_method_that_awaits_cannot_take_a_mut_view`.
+
+This is worth reading twice, because it looks at first like the very
+hazard the section above rejects — mutable state reached through a
+non-exclusive loan. It is not the same thing, and the difference is the
+whole design: the host's cursor is state **the move checker cannot see**,
+living in host code under an opaque handle; this cursor is an ordinary
+vilan field, **named, readable (`position()`), writable (`seek()`), and
+carried by a value that moves**. The hazard was never mutation; it was
+mutation that no rule and no reader could observe.
+
+**(ii) `next` returns `Bytes`, empty at EOF — no `ChunkResult` twin.**
+Mirroring `BodyReader`'s *ergonomics* means the pull loop, and mirroring
+its *mechanism* would have meant a two-field result. `BodyReader` needs
+`{ done, value }` because a `ReadableStream` may legitimately yield an
+empty chunk mid-stream, so emptiness cannot carry the end there. A file's
+read cannot: `read_at` answers `0` only at or past the end. So the
+emptiness IS the signal, and a `finished()` field would be one the caller
+could always derive. The doc comment states the one trap this leaves —
+**stop on empty, not on short** — since a short chunk is not a promise
+that the next one is empty.
+
+**(iii) Each `next` allocates and slices; chunks do not alias.** A chunk
+is `buffer.slice(0, count)` off a buffer minted for that call, so a chunk
+is never a window on memory the next call overwrites. The alternative —
+one reused buffer, handed out repeatedly — is faster and is a trap in a
+language with no lifetimes on `Bytes`. A caller who wants the reuse has
+`read_at` directly, which is exactly what the primitive is for.
+
+**(iv) The cursor is visible in both directions: `position()` and
+`seek()`.** One line each, and they are what makes (i)'s argument
+checkable rather than rhetorical — the host cursor this replaces cannot
+be read at all. Seeking past the end is not an error; the next read is
+empty.
+
+**(v) Cursored and positional reads interleave, deliberately.** `Reader`'s
+fields are reachable as **loans**, so `reader.file.read_at(buffer, p)`
+reads any part of the file without disturbing the cursor — the property
+the host's hidden position would have destroyed, now demonstrable in one
+program. R5 keeps the door one-way: the `File` cannot be moved out of a
+live `Reader` (`cannot move a resource field out of a live aggregate`).
+Pinned both ways — the loan compiles, the move is refused — and the
+interleave itself is pinned against a real file and plant-proven.
+
+**(vi) No `Reader::open(path)` convenience.**
+`Reader::of(File::open(path))` is the spelling, and composing the two
+names says WHICH constructor opened the file — a reader over a `modify`
+handle is as legitimate as one over an `open` handle, and a single-name
+form would have to pick `"r"` silently. The composition also exercises
+the temporary rule in its good direction: the temporary is **moved** into
+an `own` parameter, so `temporary-drop.md`'s statement-end close does not
+fire (verified on the emitted bytes and at runtime — the reader reads
+fine on the following statement).
+
+**(vii) No `Writer`, and no `with_reader`.** A write cursor would be
+state with nothing to hold: `File::append_to`'s handle IS the sequential
+writer, because the host ignores position on it, and every other write is
+positional by choice. And the scoped form exists so that a close
+*failure* is observable (§5.3); a `Reader` never writes, so its `Drop`'s
+fire-and-forget close loses nothing a caller could act on. (`with_file`'s
+body receives its file as a loan in any case, and `Reader::of` needs an
+owned one — so a `with_reader` would have had to be a separate opener
+rather than a composition.)
+
+`Reader` is a `resource` **by containment** (destruction.md §3), which
+buys the whole R-rule surface with nothing declared: it moves, a closure
+cannot capture it, no `List`/`Map`/`Set` holds it, and its scope-end
+teardown reaches through the plain struct into the `File` it owns —
+`drop(reader)` is the early form. All four pinned on the real type, and
+the teardown pinned at runtime against `/proc/self/fd`.
+
 ## 4. The rule: sync variants must name the caller that cannot suspend
 
 **Stated as a rule, for this surface and any future one:**
@@ -674,6 +798,71 @@ have reached the platter, and the honest guarantee needs `fsync` on the
 file *and* on the containing directory. Full durability is therefore a
 capability that **only the handle tier can deliver**, which is one more
 reason handles are the real work and §10 is the cheap part.
+
+### 5.3 The scoped form is a family, one per constructor
+
+**Written 2026-08-31 (S5), because S3 shipped `with_file` read-only and
+the section above never said what the other four modes get.** §5.1's
+ruling gave the tier one scoped form, over `File::open`. That was the
+right first slice and the wrong resting place, for a reason the ruling's
+own honesty note contains: the awaited close exists so that a close
+*failure* is observable — and **a close failure is information almost
+exclusively on a writing handle.**
+
+That is not a stylistic claim. A write that has resolved was handed to
+the OS, but the OS is entitled to report its failure at close time rather
+than at write time: a full disk, an exceeded quota, a network filesystem
+that defers the error to `close(2)` (NFS is the classic case, and it is
+why POSIX says a program that ignores `close`'s return value may lose
+data it believes it wrote). Under the destructor that error goes to
+stderr — §5.1's honest cost, accepted — and the program carries on
+believing it wrote. So the tier shipped with the awaited close available
+in exactly the mode where it matters least.
+
+The family, one per constructor:
+
+```vilan
+fun with_file<T>(path: str, body: |File| T): T;             // File::open
+fun with_file_create<T>(path: str, body: |File| T): T;      // File::create
+fun with_file_create_new<T>(path: str, body: |File| T): T;  // File::create_new
+fun with_file_append<T>(path: str, body: |File| T): T;      // File::append_to
+fun with_file_modify<T>(path: str, body: |File| T): T;      // File::modify
+```
+
+Four determinations, recorded:
+
+**(a) Five named forms, not one form with a mode argument.** §3.3's
+argument against node's flags string does not stop at the constructor
+tier: a mode is an untyped enum whose typo the compiler cannot see, and
+threading one through `with_file` would reintroduce exactly what the five
+constructors exist to prevent. The suffix IS the constructor.
+
+**(b) They earn their place by the tier's own admission test (§3).** Each
+is a complete operation on a path — open, act, close — holding no state
+the caller needs between calls. Q5's ruling ("the sixteen stand") is not
+disturbed: this is the same test applied, not an exception to it.
+
+**(c) The names are stem-first, `with_file_<constructor>`.** House style
+across this module puts the stem first and the qualifier after
+(`read_dir`/`read_dir_all`, `write_bytes`/`write_bytes_atomic`), which
+groups the family in a doc page and in a completion list. `create_new`
+keeps its full name rather than being prettified, because a name that
+does not match its constructor is a name a reader has to look up twice.
+
+**(d) One implementation, five callers.** The close-before-return
+ordering IS the idiom, so it is written once — a private
+`scoped_file(own file: File, body)` the five forms delegate to — rather
+than five times, where a later addition could quietly drop the `await`.
+The emitted shape is `try { body; await close; return } finally { drop }`,
+so a throwing body still releases the handle through the safety net, and
+the existing emission pin (`with_file_awaits_the_close_before_returning`)
+covers all five by covering the one. The corpus golden `file.mjs` moved
+by exactly that refactor and was regenerated against verified output.
+
+What this does NOT change: the destructor is still the safety net and
+still fire-and-forget, `close_awaited` is still not a public `close()`
+(it is a free function the completion list never offers on a `File`), and
+Q1's ruling is still scoped to `File` alone.
 
 ## 6. Platform coloring
 
@@ -988,9 +1177,16 @@ bindings.**
   written: S4 followed S3 so the two resources are designed to match
   rather than converge later, and `Watcher` is `File`'s lifetime model
   entire.
-- **S5 — incremental-read ergonomics.** `Reader` (§3.4), and only once S3
+- ~~**S5 — incremental-read ergonomics.** `Reader` (§3.4), and only once S3
   is real. Deferred deliberately: a cursor over a wrong primitive is worse
-  than no cursor.
+  than no cursor.~~ **SHIPPED 2026-08-31 (cycle 40, Order 22, lane
+  `fs-s5`)**, and the deferral paid: the cursor is a twenty-line wrapper
+  because the primitive under it was right, and building it turned up
+  nothing that would have changed `read_at`. It carried the slice §5.1
+  left unfinished as well — the four WRITING scoped forms (§5.3), where
+  the awaited close is the half that matters. Determinations recorded in
+  §3.4's build note (seven) and §5.3 (four). **With this the paper's
+  sequencing is complete: S0–S5 all shipped, and 031 has nothing open.**
 
 ### 11.1 A hard prerequisite the handle tier has, which nothing else does
 
@@ -1067,7 +1263,9 @@ Each is answerable on its own; none blocks S1 or S2.
   loan. **BUILT AS RECOMMENDED 2026-08-28 (S3): the positional pair
   shipped (4-argument host form, offset and length explicit); `Reader`
   stays S5. The recommendation is load-bearing surface now rather than a
-  pending question.**
+  pending question. CLOSED WHOLE 2026-08-31 (S5): the `Reader` shipped
+  too, over `read_at` exactly as recommended, and the build confirmed the
+  order mattered — see §3.4's build note.**
 - **Q3 — does `exists` survive?** (§4.2.) It is a synchronous binding whose
   justification is a category ("boot code"), all three of its callers are
   already async, and `stat(path).is_some()` answers strictly more. Delete
