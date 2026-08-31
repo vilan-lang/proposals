@@ -23,7 +23,8 @@
 | [B148](items/B148.md) | NEW — `str + <any struct>` type-checks and renders the runtime tuple | bug | |
 | [B149](items/B149.md) | NEW — an async function returning a `Task` mistypes as the task, pinned but never itemed | bug | |
 | [B156](items/B156.md) | NEW — a manifest-configurable prelude: std ambient names by default, overridable | design | RULED 2026-08-29: write the paper |
-| [B157](items/B157.md) | NEW — static-or-dynamic component values: the trait-bound pattern vs a `union` former | design | owner-proposed; probe reframed |
+| [B157](items/B157.md) | NEW — static-or-dynamic component values: the trait-bound pattern vs a `union` former | design | owner-proposed; both problems probe-solved, blanket impl the one gap |
+| [B158](items/B158.md) | NEW — a blanket impl is accepted, then ICEs at first dispatch | bug | found by B157's probes; refuse-or-support |
 | [B154](items/B154.md) | NEW — internal `NativeMap::insert` frees the caller's value while the table holds it | bug | RULED 2026-08-29: the R10-head extension; build-ready |
 
 ## C. Memory model
