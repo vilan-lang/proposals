@@ -37,6 +37,7 @@
 | [B167](items/B167.md) | NEW — a pattern binding's rename misses uses inside nested closures | bug | the owner's find, minimized; FIX-NOW queued |
 | [B168](items/B168.md) | NEW — a bound's bare generic argument loses its constraints in a generic body | bug | a33's find; pin ignored, three signatures wait |
 | [B169](items/B169.md) | NEW — an unbounded generic right operand still escapes `+`'s typing | bug | b148's residual; pin ignored |
+| [B170](items/B170.md) | NEW — binary operators skip the check for non-nominal LEFT operands | bug | audit 6 F3; b148's other half |
 
 ## C. Memory model
 
@@ -65,6 +66,8 @@
 | [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
 | [E107](items/E107.md) | NEW — no completion at a builder chain's dot on its own line | bug | owner report; the completion-context class |
 | [E108](items/E108.md) | NEW — a type-position unresolved name in a dependency attributes to std's lib.vl | bug | prelude lane's find |
+| [E109](items/E109.md) | NEW — the `pub` rule's cascade; `public` refused as `pub` | bug | audit 6 F10+F21 |
+| [E110](items/E110.md) | NEW — the web-set steer's claimed LSP suppression does not exist | bug | audit 6 F22 |
 
 ## G. Macros & const
 
@@ -75,6 +78,11 @@
 | [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
 | [G15](items/G15.md) | NEW — a symlinked directory input re-runs its hook every build, forever | bug | audit 5 F3 |
 | [G16](items/G16.md) | NEW — watcher and stamp disagree on empty nested directories | bug | audit 5 F4; safe direction |
+| [G17](items/G17.md) | NEW — a `generated` root through a symlink fails open | bug | audit 6 F5 |
+| [G18](items/G18.md) | NEW — fmt/watch follow dir symlinks unguarded: hang + escape | bug | audit 6 F6 |
+| [G19](items/G19.md) | NEW — the const channel's lexical fence vs symlink escape | design | audit 6 F7; OWNER QUESTION |
+| [G20](items/G20.md) | NEW — file-mode `check` ignores the manifest | bug | audit 6 F11 |
+| [G21](items/G21.md) | NEW — the watcher gives const directories the hook reading | bug | audit 6 F23; safe |
 
 ## I. Collections
 
@@ -117,6 +125,7 @@
 | [M12](items/M12.md) | NEW — the corpus leak-soak passes in 0.005 s asserting nothing when its corpora are absent | perf | |
 | [M14](items/M14.md) | NEW — a std function that stops being an extern changes its price unpriced | perf | audit 5 F7; standing-angle candidate |
 | [M15](items/M15.md) | NEW — the const-pass scaling gate is wall-clock and reds under lane load | perf | bit a lane verdict; pick (a) or (b) |
+| [M16](items/M16.md) | NEW — T-independent generic bodies emit per-monomorphization copies | perf | audit 6 F18 |
 
 ## N. Hygiene & rot — NEW SECTION
 
@@ -132,3 +141,5 @@
 | [N33](items/N33.md) | NEW — the ignore-gate's id shape trivially satisfiable; fixture self-parse | process | audit 5 F5+F6 |
 | [N34](items/N34.md) | NEW — the normative EBNF has no gate | process | smalls' N32 finding |
 | [N35](items/N35.md) | NEW — `hmr_css_matrix` reads the bundle while the watcher writes it | bug | load-dependent race, seen once |
+| [N36](items/N36.md) | NEW — the diagnostics ledger is three orders stale | process | audit 6 F8+F9+F20 |
+| [N37](items/N37.md) | NEW — the errors appendix is ungated, flagship messages missing | process | audit 6 F12 |
