@@ -32,6 +32,8 @@
 | [B163](items/B163.md) | NEW — `if`-expression arms are never unified | bug | a32-paper probe find; FIX-NOW lane in-order |
 | [B164](items/B164.md) | NEW — supertrait type argument not substituted through a sub-trait bound | bug | a32-paper probe find; FIX-NOW lane in-order |
 | [B165](items/B165.md) | NEW — `type` binders do not resolve inside an impl head's bounds | bug | blocks B157's generic blanket; Order 23 |
+| [B166](items/B166.md) | NEW — struct-field assignment entirely unchecked against the field type | bug | the owner's find, generalized; FIX-NOW queued |
+| [B167](items/B167.md) | NEW — a pattern binding's rename misses uses inside nested closures | bug | the owner's find, minimized; FIX-NOW queued |
 
 ## C. Memory model
 
@@ -57,6 +59,8 @@
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
 | [E103](items/E103.md) | NEW — the `Some`-import steer is lost via the `List`-method path | bug | prelude census find |
 | [E105](items/E105.md) | NEW — an unterminated `css` block completes with ordinary scope | bug | audit 5 F10 |
+| [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
+| [E107](items/E107.md) | NEW — no completion at a builder chain's dot on its own line | bug | owner report; the completion-context class |
 
 ## G. Macros & const
 
