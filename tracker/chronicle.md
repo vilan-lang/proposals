@@ -791,3 +791,69 @@ the three incidents as the rule's argument. **CI GREEN on 2ad39dd0, both
 platforms; the v0.40.0 dry-run is CLEAN** — ok on ci.yml at the tip, 9
 entries ordered (1 miscompile, 3 feature, 5 tooling), one command away
 whenever the owner calls it.
+
+---
+
+**Order 21 (cycle 39) OPENED AND CLOSED 2026-08-29 — the ruled-queue
+order, the third order closed in one day.** Nine wave-1 lanes (one a
+LATE ninth, f14, ruled mid-order), audit run 5 in wave 2, and two
+same-day FIX-NOW lanes off the audit's findings — twelve lanes, every
+one green on its own suite.
+
+SHIPPED: the PRELUDE PAPER (B156 — the census-drawn seven, the
+three-preludes finding, nine owner questions) and the STYLE-VARIANTS
+NOTE (kolt.local 015 — base+delta as a recipe, 15 probes, the
+per-branch-const bundle-bloat finding, seven owner questions), both
+proposals-side; B154 per the ruling (one word + the principled
+two-head collapse; the sweep's use-after-free dead); G14 per the ruling
+(a failed round keeps its difference, retried once; ExitCode became
+readable to do it); G13 (the `.vilan-bundled` per-leg record — the
+fourth writer learns the sweep rule; its own plant audit caught a
+vacuous test it had just written); A30 per the ruling (`close_for_good`,
+state-then-dispose, the redial negative; the THIRD terminal Closed
+recorded as its own question); css-block S5 — and with it **kolt.local
+016 CLOSED WHOLE**, the arc's no-S2-rework gate holding across four
+orders, the server's first refactor.rewrite proven inverse; the smalls
+four (E102's constructible two-errors case, N29, N30 reproduced live
+before any edit, N31's gate whose FIRST catch — B149, "pinned but never
+itemed" — closed by its own rule at integration); and f14 (the
+to_lowercase rename + the honest _ascii pair, TWO latent bugs fixed by
+the migration: the KELVIN SIGN opening a tag name, skip_raw_text's
+false index claim). Between orders the owner proposed a `union` type;
+the probes dissolved it into the SHIPPED trait-bound pattern
+(AttrValue's own shape, user-reachable today), found the blanket-impl
+accept-then-ICE (B158, RULED same day: SUPPORT with the specificity
+rule — negation analyzed and declined), and B157 records the
+MaybeSignal path riding it.
+
+AUDIT RUN 5 — the transformer-weighted delta, and the emitted program
+is where the bodies were: **F1, a RELEASED miscompile** (S3's widening
+dead in every nested scope — the extents map and the widener keyed by
+different chain ends; accepted vilan threw ReferenceError on 0.39.0),
+FIXED SAME DAY as B159 (chain.last(), five shape pins red-first with
+real ReferenceErrors, the audit's probes diffing exactly as predicted);
+F2 the stand-down suppression, FIXED SAME DAY as E104 (per-offending-
+type, non-empty guard); G15/G16/M14/E105/N33 filed; four sentence-sized
+fixed in-order @167d4567 — among them run 4's bundle-identity finding
+ALIVE IN A SECOND COPY four lines from the fix commit's own edits,
+minting the rule: a corrected sentence gets a census. The golden-diff
+centrepiece verified four of five moved goldens as pure reorderings and
+caught the fifth's rotted header (resource_exit — fixed, the
+pending-finally-at-exit pin gap recorded). The integrator's hand-merges
+audited clean: line-multiset, zero invented lines. A CORRECTION to
+Order 19's record: c8609287 moved 38 pins and added 15 (53 touched),
+not the 51 the close entry said — the audit could not reconcile the
+count and the commit is the authority.
+
+CLOSED here: B154, B159, E102, E104, F14, G13, G14, A30, N29, N30, N31
+(+ A28/A29/B150/B151/B152/C12 swept earlier the same day when the
+ratification detail-pull found the Order 19 close had missed them —
+five stale-open rows, the 022 lesson recurring at scale; close sweeps
+must diff the changelog against the INDEX). FILED: B157, B158, B159,
+E103, E104, E105, F14→closed, G15, G16, M14, N32, N33, plus the
+prelude's E103 steer-loss and smalls' N32 grammar find. kolt.local:
+016 closed whole, four open. RULINGS BANKED this order: the lifetime
+trio ratified, ownerless-derivation deferred with its trigger, A30
+wired, B154's route, G14's posture, B156's paper, F14's shape, B158's
+support-with-specificity. Union suite at the close: parity 21/21,
+verdict recorded below when the final run lands.
