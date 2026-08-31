@@ -1,10 +1,16 @@
 # A first-class `css { … }` block — the element syntax's twin on the style side (kolt.local 016)
 
-> Status: **S1–S4 SHIPPED 2026-08-28** — S1 and S2 in cycle 36, order 18
-> (lane `css-block-s2`), S3 and S4 in cycle 37, order 19 (lane
-> `css-block-s3s4`); §11 carries each slice's record. **S5 (the LSP and
-> playground tails) is the only slice left in the arc**, and its gate
-> stands: it must require no S2 rework. All six open questions RULED
+> Status: **THE ARC IS COMPLETE — S1–S5 SHIPPED.** S1 and S2 on 2026-08-28 in
+> cycle 36, order 18 (lane `css-block-s2`), S3 and S4 the same day in cycle
+> 37, order 19 (lane `css-block-s3s4`), **S5 on 2026-08-31 in cycle 39, order
+> 21 (lane `css-s5`)**; §11 carries each slice's record. **The arc's gate
+> HELD: S5 required no S2 rework** — `crates/vilan-core/src/css.rs` is
+> byte-identical after the slice, every span S5 needed was cut in S2's first
+> commit, and no corpus golden moved. The one thing S5 could NOT build is
+> recorded in its own §11 entry: two of §7.2's six quickfixes attach to
+> diagnostics §7.3 designs but no slice ever sequenced, which is a gap in the
+> slice list rather than a defect in the spans. The headed form (§5.4) remains
+> a sixth slice, unsequenced. All six open questions RULED
 > 2026-08-28 (§12), Q3 among them — the `css` keyword is TAKEN, so S2
 > builds on a real keyword rather than the contextual gate the draft
 > designed, and Q2 among them — the formatter SORTS, which is what S3
@@ -1067,14 +1073,134 @@ the same commit, per-case pins.
     a structural `#css`-equivalent `contains` rule there would be the
     TextMate rule's third copy for a coarser surface, and is not worth its
     drift risk. Named as declined, not forgotten.
-- **S5 — LSP and playground tails.** Semantic tokens for property names and
+- **S5 — LSP and playground tails. SHIPPED 2026-08-31** (cycle 39, order 21,
+  lane `css-s5`, one commit). Semantic tokens for property names and
   condition heads, from a second raw parse (the `keyword_hover`/markup-tokens
   pattern, `document.rs:1862`); completion in the four positions of §7.1,
-  landing in the editor and the playground at once through `vilan-ide`; the
-  six quickfixes; the convert-between-spellings refactor with its
+  landing in the editor and the playground at once through `vilan-ide`; four
+  of the six quickfixes; the convert-between-spellings refactor with its
   `book_sync.rs` row. **The gate on the whole arc: S5 requires no S2 rework.**
   If it does, S2 got the spans wrong — which is exactly what happened to
   element syntax and is the one mistake this plan is shaped to avoid.
+  **The gate HELD, and it is worth being precise about what that means:**
+  `crates/vilan-core/src/css.rs` is byte-identical after the slice, not one
+  span was widened, narrowed or added, and every question S5 had to ask the
+  tree — which property, which value, which item, which condition head, where
+  a body starts — the AST already answered. The cost of the discipline was
+  paid in S2 and the whole of the return arrived here. Decisions and findings,
+  recorded:
+  - **The `css` keyword had to be SUPPRESSED, which is the mirror image of
+    element syntax's pain and the proof the design anticipated it.** Every
+    generated accessor is zero-width and so drops out of the token sweep for
+    free — except the outer `style()`, which keeps the keyword's own span on
+    purpose (S2's missing-import note underlines the word that asked for a
+    `Style`). Left alone it painted `css` as a *function*, the exact defect
+    the wide `<div` span produced. One line of suppression, in the same set
+    the markup pass already maintains, and TextMate's `keyword.other.vilan`
+    shows through. The two deviations from "zero-width everywhere" are
+    therefore both deliberate and both paid for: S2 bought a good diagnostic,
+    S5 paid one line for it.
+  - **A condition head paints as a METHOD, name-blind.** The dot is the whole
+    disambiguator, so any dotted head is painted — the grammar's own rule
+    rather than a lookup in `STYLE_CONDITION_METHODS`, which would make the
+    highlighter disagree with the parser on `.frobnicate { … }`. Completion
+    offering a vocabulary and the grammar admitting a name are different
+    questions, and only the second is the highlighter's.
+  - **ONE raw parse now serves both sub-language worlds.** Adding a second
+    per-request `parse` beside `open_tag_end`'s would have doubled the
+    per-keystroke cost of every completion in every file. `in_element_head`
+    and `open_tag_end` became free functions over a root the classifier parses
+    once and hands to both. A refactor the slice paid for rather than a
+    regression it shipped.
+  - **The four positions are decided by a TOKEN WALK at the body's own brace
+    depth**, `in_element_head`'s shape exactly, and one arm of it is the whole
+    subtlety: a nested rule's closing `}` ends its item and a HOLE's does not,
+    so that arm is guarded on the item being dotted. Without the guard,
+    `padding: {space(4)} |;` reads as property position. Pinned.
+  - **A value position offers NOTHING, and that is a positive decision.**
+    Falling through to the enclosing scope — the shape every non-element
+    position takes — would be actively wrong here, because a value is source
+    text: the binding's NAME is what would land on the sheet. The element
+    head's "not one binding, type, keyword or construct snippet" rule extends
+    to the block whole. The `--|` row is blank for the same reason rather
+    than falling back to the standard list, which no `--` name can match.
+  - **The block's mid-edit shapes needed no `Node::Error` arm**, unlike the
+    element head's. `parse_css_body` COMMITS (S2's own recorded deviation), so
+    a half-typed item leaves the block's `Node::Css` in the tree with the
+    items around the mistake intact — E67's recovery-shaped second arm has
+    nothing to catch. The one shape completion cannot serve is a block that
+    never closes at all, where the atom declines and no node survives; with
+    editors auto-closing braces this is rare, and it is stated rather than
+    worked around.
+  - **TWO of the six quickfixes could not be built, and the reason is a gap in
+    §11 rather than in S2's spans.** Fix 4 (unknown property → `Change to
+    'color'`) needs the unknown-property WARNING of §7.3, and fix 6
+    (out-of-order nesting → `Reorder to …`) needs the misnesting diagnostic of
+    the same table. **Neither diagnostic exists**, and no slice in this list
+    ever sequenced them: S2's record names the `#`/`@`/`!important` refusals
+    and nothing else, S3 is the formatter, S4 is docs and editors, and S5 is
+    named as the slice that ships *the six quickfixes* — as if their
+    diagnostics were already there. The spans are not the problem: the
+    property-name span and the nested head's span are both carried, so both
+    diagnostics can be anchored exactly where §7.3's table says the day they
+    are written. Fix 4 is then FREE — the LSP's `closest_name_suggestion` path
+    already turns any ``did you mean `X`?`` note into a `Change to \`X\``
+    action, which is precisely what §7.2 item 4 asks for — so what is owed is
+    the warning, not the fix. Filed as the arc's one remainder.
+  - **Fix 5 was asserted rather than assumed.** "The existing quickfix,
+    unchanged" is a claim, and it is now a pin: a declaration's missing `;`
+    reports through `TERMINATOR_EXPECTED`, which is gap-anchored like any
+    other, so E61's insertion fires inside a block with no css-side code at
+    all. It was already true; nothing had said so.
+  - **The `@media` fix needed a breakpoint map, and it is gated rather than
+    copied.** `STYLE_BREAKPOINT_WIDTHS` sits beside `STYLE_CONDITION_METHODS`
+    in `formatter.rs`, and a fifth `style_table_sync.rs` gate holds each row
+    to the `self.media("768px", inner)` the method actually delegates with,
+    in both directions — a new breakpoint in std is a red test, not a
+    quickfix that names a combinator meaning something else. A width no
+    breakpoint names becomes `.media("900px")`, which is exact, so the fix is
+    total over min-width queries; the other at-rules have no combinator
+    spelling (§10) and get the explanation alone.
+  - **The three curated message constants are now `pub`**, and the quickfixes
+    key on them directly. The server's existing convention is a local copy
+    with a doc comment naming the producer (`MISSING_TERMINATOR_MESSAGE`);
+    three more copies of curated prose is three more things to drift, and
+    `lexing`/`parsing` are already public modules.
+  - **The refactor is the slice's one piece of genuinely new machinery, as the
+    paper said**: `refactor.rewrite` in the capability declaration, a
+    non-diagnostic-driven path in `code_action`, and — the part §7.2 did not
+    anticipate — a THIRD bucket in `book_sync.rs`'s title gate, which had
+    split `QuickFix` from `CodeAction` and would otherwise have documented a
+    refactor as a source action. It now reads each literal's `kind:` too, and
+    the book gained a `## Refactors` section. Registering `refactor.rewrite`
+    also made the bare `refactor` kind an ANCESTOR of something offered, which
+    moved an existing pin from the "unoffered kind" group to the "stale
+    request refuses" group — recorded because it is a real behaviour change,
+    not a test edit.
+  - **The refactor DECLINES three ways, and the third is the interesting
+    one.** A comment inside the construct (the S3 printer's own refusal,
+    for the same reason); a value carrying a BACKSLASH, because a chain's
+    string literal has its escapes processed at emission and a block's token
+    run does not, so the two spellings would quietly stop meaning the same
+    thing (a `"` is fine — escaping it round-trips exactly, and that case is
+    pinned); and **a chain link that is not a row of the lowering table.**
+    `.padding(space(4))` writes its slot through `with_length`, which is not
+    the node `padding: {space(4)};` lowers to, so the inverse direction is
+    PARTIAL by construction. §7.2 called the refactor "mechanical because the
+    lowering is total and one-to-one" — true forward, and forward only: the
+    lowering is total from blocks to chains and onto only the `raw`/combinator
+    sublanguage of chains. A chain written in the typed property methods —
+    which is how every chain in the estate is actually written — has no block
+    spelling this refactor is entitled to invent. Whether `raw("padding", v)`
+    and `padding(v)` are interchangeable is a std question worth answering on
+    its own; until it is, the action is simply not offered, which is the
+    honest failure direction. **The two directions are inverses on everything
+    they accept**, pinned as a byte-identical round trip.
+  - **The playground tail cost nothing, which is the K9 split paying out.**
+    Completion lives in `vilan-ide` and reuses the `Field`/`Method` kinds both
+    edges already map, so the playground has css completion with no
+    `vilan-wasm` change at all. Named because "lands in the editor and the
+    playground at once" reads like work and was, this time, an absence of it.
 
 The headed form (§5.4) is **not** in this arc. It is a sixth slice gated on
 Q3, and on the `css` keyword promotion being taken before beta.
