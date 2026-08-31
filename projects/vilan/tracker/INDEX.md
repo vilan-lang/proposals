@@ -34,6 +34,7 @@
 | [B165](items/B165.md) | NEW — `type` binders do not resolve inside an impl head's bounds | bug | blocks B157's generic blanket; Order 23 |
 | [B166](items/B166.md) | NEW — struct-field assignment entirely unchecked against the field type | bug | the owner's find, generalized; FIX-NOW queued |
 | [B167](items/B167.md) | NEW — a pattern binding's rename misses uses inside nested closures | bug | the owner's find, minimized; FIX-NOW queued |
+| [B168](items/B168.md) | NEW — a bound's bare generic argument loses its constraints in a generic body | bug | a33's find; pin ignored, three signatures wait |
 
 ## C. Memory model
 
