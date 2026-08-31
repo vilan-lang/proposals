@@ -23,6 +23,7 @@
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
 | [B148](items/B148.md) | NEW — `str + <any struct>` type-checks and renders the runtime tuple | bug | |
 | [B149](items/B149.md) | NEW — an async function returning a `Task` mistypes as the task, pinned but never itemed | bug | |
+| [B156](items/B156.md) | NEW — a manifest-configurable prelude: std ambient names by default, overridable | design | owner-filed 2026-08-29; paper-first |
 | [B150](items/B150.md) | `drop(x)` is not exception-safe | bug | lifetimes.md §6/S3 |
 | [B151](items/B151.md) | mR2 overwrite double-drops when the RHS throws | bug | FIX-NOW — double close today |
 | [B152](items/B152.md) | bare `ret <expr>` emits `return return` | bug | |
