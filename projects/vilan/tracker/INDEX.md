@@ -113,6 +113,7 @@
 | [M11](items/M11.md) | NEW — the compiler's largest retentions are invisible to the leak tally | perf | |
 | [M12](items/M12.md) | NEW — the corpus leak-soak passes in 0.005 s asserting nothing when its corpora are absent | perf | |
 | [M14](items/M14.md) | NEW — a std function that stops being an extern changes its price unpriced | perf | audit 5 F7; standing-angle candidate |
+| [M15](items/M15.md) | NEW — the const-pass scaling gate is wall-clock and reds under lane load | perf | bit a lane verdict; pick (a) or (b) |
 
 ## N. Hygiene & rot — NEW SECTION
 
