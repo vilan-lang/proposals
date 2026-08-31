@@ -368,7 +368,21 @@ makes concrete:
   works today, and the ambient module only surfaces in files that did not
   import the function. This is the first real demonstration that ambient
   modules need no precedence rule of their own: §9.1's single ladder
-  already ranks them. Recorded as determination §13.10a.
+  already ranks them.
+
+  **The other half of that, found in the build and recorded here because
+  the ruling did not foresee it:** a name has ONE binding, so a file that
+  imports the *function* `style` no longer reaches the *module* `style` —
+  `style::Display` stops resolving **in that file**. The compiler says so
+  plainly (`` cannot resolve `Display` here: fn style(): Style is not a
+  module ``) and the estate pays nothing, because all 60 call sites import
+  the enums they use explicitly and none of them writes `style::…`. But it
+  is a real property of ambient modules and a user will meet it: within one
+  file you take the module or the member, not both. It is the ordinary
+  shadowing rule rather than anything the prelude adds, and the recovery is
+  the ordinary one — drop the member import and write `style::style()`, or
+  import the enums you need. Pinned as
+  `shadowing_an_ambient_module_costs_that_files_qualified_spelling`.
 - **`mount_root` is browser-only inside a layered module.**
   `std/src/browser/ui.vl:731` declares it; `std/src/process/ui.vl` does
   not. The module `ui` resolves on both platforms (both layers declare
@@ -1267,6 +1281,36 @@ places this interacts with the future: once packages are published,
 that changes its prelude changes what its own source means but never what
 a consumer's does (§7). That is the property that makes it safe to ship
 before the registry rather than after.
+
+### 12.1 What the build surfaced
+
+Two defects the implementation found that the paper had not, both fixed in
+the same change and both worth recording as evidence for how this feature
+fails:
+
+- **The base cache did not key on the prelude.** `BaseCacheKey` carried the
+  platform, the entry's std seeds, the workspace and the macro budgets — but
+  a stored world holds its modules' scopes *already seeded* with their
+  ambient set, so a `std::web` world was served to a base-prelude program.
+  It surfaced as a pin that passed alone and failed in a full run, which is
+  the signature of process-global state. The key and
+  `workspace_fingerprint` now carry the entry package's prelude and every
+  dependency's.
+- **The add-import quickfix offered a prelude module.** Once `std::web`
+  existed, an unresolved `view` offered both `std::ui` and `std::web`, and
+  the menu went ambiguous. The cause was drift the prelude merely exposed:
+  the analyzer's B4 steer has always excluded re-exports
+  (`collect_declared_names`: "pointing at a module that merely forwards it
+  would name the wrong file") and the LSP's quickfix path did not. Bringing
+  the quickfix into line with the analyzer's rule fixes it generally —
+  nobody should ever be told to `import std::web::view`.
+
+A third, **pre-existing and not this paper's**, was found while probing
+per-package isolation and is worth a filing: a **type-position** unresolved
+name inside a dependency module is attributed to std's `lib.vl` at a
+nonsense span, where the value-position twin attributes correctly. The
+value site calls `attribute_new_diagnostics` and the type site does not.
+Reproduced on the shipped `vilan 0.39.0` with no prelude in play.
 
 ## 13. Determinations
 
