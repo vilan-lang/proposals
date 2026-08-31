@@ -13,6 +13,7 @@
 | [A31](items/A31.md) | NEW — every terminal `Closed` disposes: the third path | feature | RULED 2026-08-29; build-ready |
 | [A32](items/A32.md) | NEW — custom signals with compatibility: `Source` is the trait, the question is reach | design | owner-proposed; trait already shipped |
 | [A33](items/A33.md) | NEW — the Source-not-Signal audit: bindings demand a `Signal` they never write | design | owner-filed; StorageSignal the exhibit |
+| [A34](items/A34.md) | NEW — a typed style token has no mid-value spelling in a css block | design | b148's census find; real gap revealed |
 
 ## B. Type system & the type solver
 
@@ -35,6 +36,7 @@
 | [B166](items/B166.md) | NEW — struct-field assignment entirely unchecked against the field type | bug | the owner's find, generalized; FIX-NOW queued |
 | [B167](items/B167.md) | NEW — a pattern binding's rename misses uses inside nested closures | bug | the owner's find, minimized; FIX-NOW queued |
 | [B168](items/B168.md) | NEW — a bound's bare generic argument loses its constraints in a generic body | bug | a33's find; pin ignored, three signatures wait |
+| [B169](items/B169.md) | NEW — an unbounded generic right operand still escapes `+`'s typing | bug | b148's residual; pin ignored |
 
 ## C. Memory model
 
@@ -127,3 +129,5 @@
 | [N28](items/N28.md) | NEW — `book_sync`'s mdBook backstop runs whatever `mdbook` is on PATH, no version check | process | |
 | [N32](items/N32.md) | NEW — the grammar's `extern-args` production omits two accepted forms | docs | found widening it for N29 |
 | [N33](items/N33.md) | NEW — the ignore-gate's id shape trivially satisfiable; fixture self-parse | process | audit 5 F5+F6 |
+| [N34](items/N34.md) | NEW — the normative EBNF has no gate | process | smalls' N32 finding |
+| [N35](items/N35.md) | NEW — `hmr_css_matrix` reads the bundle while the watcher writes it | bug | load-dependent race, seen once |
