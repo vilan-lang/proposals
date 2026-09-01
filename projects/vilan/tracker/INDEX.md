@@ -30,6 +30,7 @@
 | [B169](items/B169.md) | NEW — an unbounded generic right operand still escapes `+`'s typing | bug | b148's residual; pin ignored |
 | [B170](items/B170.md) | NEW — binary operators skip the check for non-nominal LEFT operands | bug | audit 6 F3; b148's other half |
 | [B171](items/B171.md) | NEW — the spec's `is`-binding scope sentence is false; the true scope wants a ruling | design | b166's find |
+| [B172](items/B172.md) | NEW — a module-qualified type path is a parse error in every type position | bug | templates lane; the web prelude makes it load-bearing |
 
 ## C. Memory model
 
