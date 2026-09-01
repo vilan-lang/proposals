@@ -865,3 +865,71 @@ ci.yml at the tip, 21 entries ordered (1 breaking, 2 miscompile, 3
 feature, 15 tooling). The owner called nine entries light this morning;
 the train now holds twenty-one, the released miscompile's fix among
 them. One command away whenever the owner calls it.
+
+## Order 22 — cycle 40: reactive foundations' groundwork, the prelude, and two FIX-NOWs (2026-08-30 → 08-31)
+
+Eleven lanes plus a late FIX-NOW pair, two waves off next, integration
+in the standing worktree; merged at 1497efa5. SHIPPED: THE PRELUDE
+(B156's paper built same-order — real modules `std::prelude` (the base
+seven) and `std::web` (+Signal/view/View, style and ui MODULE-CARRIED
+per the ruling: a user writes `style::Display`); manifest key
+`prelude =` on [package]/[library]; weakest scope, never inherited, NOT
+synthesized imports — §9.2 holds; 16 aliases DELETED from std lib.vl
+with `std::print`'s curated refusal naming both doors); B158
+blanket impls by specificity (the owner's MaybeSignal pattern, the
+union-type proposal's dissolution); a33's Source-widening of eight ui
+bindings (the owner's charge verified whole — none of the eight wrote);
+a31's uniform terminal-Closed (`close_for_good` sole writer, ruling
+(b)); the pointer surface (Window handle, `listen`→Subscription,
+pointer_x/y — kolt's drag workarounds die; A27+037); the watcher pair
+G15/G16; b148's `+` admitted set (str+renderable deliberately NOT
+B=Self — the i-string desugar rides it); fs-s5 (Reader + four
+with_file forms — kolt.local 031 CLOSES WHOLE, the fs arc complete);
+b163's pair (IfArms unification by match's rule; B164 supertrait
+substitution); smalls (E103 3-door steer, E105, N32, N33, M14's
+windowed compare 182,015→5); audit run 6 (24 findings; F2's web-steer
+sending authors into broken programs FIXED same-cycle by dynamic
+module-name exclusion; F3 non-nominal left operands → B170; the
+symlink family → G17-G21; run 7 chartered for Order 24).
+
+THE FIX-NOW PAIR (lane b166, off the owner's kolt reports): B166 —
+struct-field assignment was ENTIRELY UNCHECKED; `Constraint::
+FieldAssignment` routes it through the literal door's own rule
+(`check_field_value` extracted, one rule both doors), estate census
+149/149 via shadow-migrated copies, zero newly-refused. B167 — the
+DIAGNOSIS WAS WRONG AND THE OWNER FALSIFIED IT: I claimed shadowing;
+the owner renamed the binding and the new name errored too. Probes
+discriminated the real class (closure-typed `is` captures never
+emitted; i32 and match fine), the item was rewritten, and the lane was
+REDIRECTED MID-FLIGHT — it confirmed discarding the dead theory before
+writing code. Root: the `is_bindings` alias table had one reader while
+locals become JS in two places; the named-callee fast path never
+consulted it. The wrong-diagnosis lesson: a workaround claim is a
+PREDICTION — test it before telling the owner.
+
+PROCESS, confessed in full: b148 ran `pkill -f 'nextest run
+--workspace'` and killed three sibling suites — the own-pid-only rule
+now LEADS every brief. a33 left 113 armed wait-loops that kept
+re-waking (disarmed by hand; one wait-loop max, disarmed at completion,
+now mechanics). The std::print sweep deleted a test's own SUBJECT
+import and the first restoration guessed wrong text into the wrong
+test — third attempt fixed both, the reason comment now at the site;
+sweeps must exclude fixtures whose subject IS the swept name. E103's
+steer pins were retargeted twice (the prelude made Some ambient; then
+audit F13 caught the retarget on the wrong door). fs-s5's red was
+M15's load-sensitive perf gate, filed not fixed.
+
+CLOSED here: A27, A31, A33, B148, B158, B163, B164, B166, B167, E103,
+E105, G15, G16, M14, N32, N33; kolt.local 031 and 037. FILED: B166-171,
+E106-E110, G17-G21, N34-N37, M15, M16, F16, B170, and b166's spec find
+B171 (the `is`-binding scope sentence is FALSE in the spec — the true
+scope wants a ruling). STAYS OPEN: B156 until the web templates adopt
+(Order 23's lane), A32 (the paper's build IS Order 23's spine), B168,
+B169. RULINGS BANKED: SignalCell; Trait::func resolves to the trait's
+own default; `update` locked to SignalCell; [expose] reconciles against
+`std::Source`; G19 symlinks a SUPPORTED spelling; the lucide pipeline
+ruled IN ("I'd like to see what you build").
+
+**Order 22 verdicts, sealing:** final union suite 5057/5057, exit 0;
+CHANGELOG parity 40/40 at the merge tip; push + CI + the v0.40.0
+dry-run recorded below when they land.
