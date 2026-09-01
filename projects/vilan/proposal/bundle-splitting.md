@@ -498,6 +498,20 @@ adding capability to a mode that currently costs bytes. **The instrument to
 watch is `--print-chunks`' verdict on a real consumer app**; when one goes
 positive, that is the signal.
 
+> **Pointer, 2026-09-01 — the instrument went positive, and the case it
+> found is not a route.** kolt's lucide by-name dispatch measures
+> +984,510 bytes of client code (kolt.local 038); put behind a route arm
+> for measurement, `--print-chunks` reports *saves 935,242 bytes on the
+> first load* — the first positive verdict this paper's §11 was waiting
+> for. But the boundary that wants to be there is a FUNCTION, not a route
+> arm, so the thesis in §0 ("the split is inferred, not annotated") does
+> not reach it: nothing in the program's shape marks the seam, only its
+> weight. That case, and what the shipped machinery in §1–§3 does and does
+> not survive when boundaries stop being route arms, is
+> [`bundle-boundaries.md`](bundle-boundaries.md) (M18). Nothing above is
+> reversed by it; two things above are *load-bearing in a way this arc
+> never had to notice*, and that paper's §1.6 names them.
+
 Three things this arc touched and did not close, each outliving it:
 
 - **Nothing structurally holds the two `ui` layers' surfaces against each
