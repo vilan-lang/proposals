@@ -14,14 +14,23 @@
 > the truth is more interesting.** No request handler waits: every one is
 > an `.await`-free read of the last landed snapshot (`main.rs:1638`),
 > and on views.vl the whole five-provider burst answers in ~15 ms while
-> diagnostics take ~1.1 s. What is true is the two things underneath it:
-> every request **recomputes from the whole program on every keystroke**
-> (so its cost scales with the codebase, not the file), and it answers
-> from a snapshot that is **up to one debounce plus one full analysis
-> stale, with nothing marked and no re-mapping** beyond B38's tail. The
-> keystroke path is therefore not absent — it is unbuilt, unbudgeted and
-> already 1.5× over the mandate's 10 ms on the exhibit. The diagnostics
-> path is 2.2× over its 500 ms.
+> diagnostics take ~1.1 s. What is true is three things underneath it:
+> every request **recomputes over the whole program on every keystroke**;
+> it answers from a snapshot that is **up to one debounce plus one full
+> analysis stale, unmarked, with no re-mapping** beyond B38's tail; and a
+> **superseded analysis is never cancelled**, only discarded when it
+> finishes.
+>
+> The measurement that sizes it, and the one number to carry out of this
+> paper: **hold a file completely fixed and grow the codebase around it,
+> and the cost of serving that file's semantic tokens grows 6.4×** — 4.2
+> to 27.0 ms of CPU for one unchanged 468-token file as its import
+> closure goes from 4 to 5,000 functions (§1.4a). The keystroke path's
+> cost is proportional to the *codebase*, not to the file. So the 10 ms
+> budget is spent at **≈490 reachable functions** and kolt's views.vl is
+> at 1,791; the 500 ms error budget is spent at **≈600**. Neither is a
+> tuning problem. The keystroke path is not absent — it is unbuilt and
+> unbudgeted, and it is over on the exhibit today.
 
 §1 is the budget as measured. §2 designs the split the mandate asks for.
 §3 is incrementality and what the analyzer's architecture does to it. §4
@@ -79,13 +88,25 @@ Recorded at loadavg **8.4–11.0** (16 cores) — the order's other lanes
 were running, and the wall column must be read with that beside it. The
 CPU column is the load-robust one and is what §1.4 reasons from.
 
-† **The burst is serial.** The five hot numbers are not five independent
-latencies: they are cumulative, and their increments (1.5, 1.0, 0.3,
-0.2 ms) are exactly the individual warm costs. The server answers the
-burst one request at a time, so the number an editor actually
-experiences is **the last one — 15.3 ms on views.vl, 18.9 ms on
-syn5000, 3.1 ms on theme.vl**. That is the keystroke-path figure to
-gate on, and it is the mandate's 10 ms budget times 1.5 and 1.9.
+† **The burst does not overlap.** The five hot numbers are not five
+independent latencies: they are cumulative, and the burst total (15.3 ms)
+tracks the sum of the five individual warm costs (15.9 ms). Measured, the
+requests do not run concurrently, so the number an editor actually
+experiences is **the last one — 15.3 ms on views.vl, 18.9 ms on syn5000,
+3.1 ms on theme.vl**. That is the keystroke-path figure to gate on, and it
+is the mandate's 10 ms budget times 1.5 and 1.9.
+
+**A measurement note that governs every number below.** The dev machine
+ran 13 lanes during this order and its loadavg moved between 8 and 78.
+Wall time is unusable across that range — the same amortized
+semantic-tokens request measures 12.2 ms of wall at loadavg 11 and 320 ms
+at loadavg 57. CPU time is far better but is **not** invariant either:
+between the two bands the *CPU* for the same work roughly doubled, from
+memory-system contention on a 16-core box at load 56. So this paper does
+two things and keeps them apart: **absolute budgets** come from the
+loadavg 8–11 record (§1.2, closest to a working machine), and **scaling**
+comes from a series measured entirely inside one load band (§1.4), where
+the ratios are what travel — perf-baseline.md's own rule.
 
 ### 1.3 Where the analysis time goes
 
@@ -100,7 +121,7 @@ views.vl (medians, same session):
 | ⤷ `base` | **160 ms** | **0.0 ms** | `resolve_world()` — **M21 in the wild** |
 | ⤷ `build` | 4 ms | 1.3 ms | import fixpoint, prelude, constraint fixpoint |
 | ⤷ `checks` | **578 ms** | 19 ms | the ~40-call check sequence (`analyzer.rs:42019+`) — **M19's residue** |
-| ⤷ `post-passes` | 90 ms | 8 ms | call-graph 43, async-infer 18, const-eval 27 |
+| ⤷ `post-passes` | 90 ms | 8 ms | `call-graph` 43, `async-infer` 18, `const-eval` 30 — but see N43 below |
 | `lsp-index` | 38 ms | 5 ms | `entity_spans` + `ReferenceIndex::build` + attribution, rebuilt in full |
 | `lsp-legs` | 0.0 ms (`legs 0`) | 0.0 ms | E113's extra analysis per further reaching platform — not charged here |
 | debounce | 150 ms | 150 ms | `DEBOUNCE_MS` (`main.rs:35`) |
@@ -116,34 +137,91 @@ functions the check sequence walks again.
 Buckets plus debounce reconcile with the wall: 7.7 + 886 + 38 + 150 =
 1082 ms against a measured 1111 ms median.
 
-### 1.4 The coefficient — what "large codebase" costs
+**Read the post-pass split through N43.** `call-graph` labels
+`context::thread_contexts` and `const-eval` labels
+`const_eval::check_const_only`, but the 43 ms and the 30 ms are *both*
+dominated by the same `dispatch_refine::refined_edges` call
+(`context.rs:636` and `const_eval.rs:1734`) — the real const evaluation
+is the 10 ms `const-interp` beside them. So the post-pass line reads as
+"73 ms in two passes" when it is closer to "one memo, computed twice",
+which is exactly the fix §3.4 proposes and exactly why N43's renaming is
+worth doing before the next perf lane reads this line.
 
-The synthetic series (4 / 500 / 1,791 / 5,000 functions of one shape,
-the same views.vl consumer, the four icons it actually calls always
-present) gives the marginal cost per generated function. Recorded under
-lane load — **the wall column is unusable at loadavg 54–60 and is
-omitted; the CPU column is what M15's method exists for**:
+### 1.4 The coefficients — what "large codebase" costs
 
-| generated functions | keystroke CPU (median) | loadavg |
+The synthetic series is 4 / 500 / 1,791 / 5,000 functions of one shape,
+with **the same views.vl consumer file in every tree** and the four icons
+it actually calls always present. Holding the file fixed while the
+program grows is what isolates codebase size from file size. Both series
+below were recorded inside one load band, so their ratios travel.
+
+**(a) The keystroke path.** Per-request CPU, amortized over 50 requests
+to get past the 10 ms `/proc` clock granularity, no analysis in flight:
+
+| reachable functions | semanticTokens | the 5-provider burst | loadavg |
+|---|---|---|---|
+| 4 | 4.2 ms | 7.6 ms | 54.6 |
+| 500 | 6.6 ms | 10.6 ms | 54.4 |
+| 1,791 | 13.4 ms | 17.6 ms | 55.9 |
+| 5,000 | 27.0 ms | 32.4 ms | 55.8 |
+| kolt's real lucide (1,791) | 23.8 ms | 30.0 ms | 56.6 |
+| kolt theme.vl (closure reaches no package) | 2.6 ms | 5.6 ms | 68.4 |
+
+**The file never changed — 468 tokens in every row — and the cost of
+tokenizing it grew 6.4×.** That is the single clearest statement of
+what is wrong with the keystroke path: its cost is proportional to the
+analyzed program the file belongs to (its import closure), not to the
+file. theme.vl is the control: same workspace, same server, but its
+closure reaches no package module, so it pays 2.6 ms.
+
+Fitted over the synthetic series, the burst is **≈ 7.6 ms fixed plus
+≈ 0.005 ms per reachable function**, so:
+
+> The mandate's **10 ms keystroke budget is spent at ≈ 490 reachable
+> functions**. kolt's views.vl is at 1,791 and measures 30 ms — **3×
+> over**.
+
+**(b) The diagnostics path.** Keystroke-to-`publishDiagnostics` CPU on
+the same series (loadavg 53.7–60.3):
+
+| reachable functions | keystroke CPU |
+|---|---|
+| 4 | 290 ms |
+| 500 | 445 ms |
+| 1,791 | 925 ms |
+
+A straight line: **≈ 285 ms fixed plus ≈ 0.36 ms of CPU per function,
+per keystroke** — seventy times the keystroke path's slope.
+
+> On today's architecture the **500 ms error budget is spent at ≈ 600
+> generated functions**. kolt is at 1,791.
+
+Neither budget is a tuning problem. Both are exceeded by a codebase a
+third of the exhibit's size, and both slopes are the same defect —
+per-keystroke work proportional to the whole program. That is §3.
+
+### 1.5 How long an answer is stale
+
+The charter's re-mapping question needs one more number: how long does
+the editor show the previous analysis's answer? Measured directly — one
+`didChange` adding a **complete** new `let` binding (so a new inlay hint
+and a new token are owed), then every provider polled until its answer
+changes. On **theme.vl**, the *fast* file:
+
+| provider | first changed answer | new count |
 |---|---|---|
-| 4 | 290 ms | 53.7–55.7 |
-| 500 | 445 ms | 59.7–60.3 |
-| 1,791 | 925 ms | 58.6–59.6 |
+| semanticTokens | **409.2 ms** after the edit | 225 → 226 |
+| inlayHint | **409.9 ms** after the edit | 14 → 15 |
+| completionScope | never changed | 108 (a new local at that position adds no candidate) |
+| `publishDiagnostics` | **409 ms** | — |
 
-That is a straight line: **≈ 285 ms fixed, plus ≈ 0.36 ms of CPU per
-function in the reachable program, per keystroke.** Read against the
-mandate it says something sharper than any single measurement:
+The three numbers are the same number. **Every provider's answer is
+stale for exactly the debounce plus the analysis, and updates only when
+diagnostics do** — there is no separate, faster path for any of them.
+On theme.vl that window is 409 ms; on views.vl the same window is the
+whole 1111 ms of §1.2. Closing it is what the keystroke path is for.
 
-> On today's architecture the 500 ms diagnostics budget is spent at
-> **≈ 600 generated functions**. kolt is at 1,791. The budget is not a
-> tuning problem; it is exceeded by a *third* of the exhibit.
-
-And it says where the ceiling is. Even a perfect keystroke path leaves
-the diagnostics path at ~0.36 ms/function; the only way 500 ms survives
-a codebase that grows is for the per-keystroke work to stop being
-proportional to the whole program. That is §3.
-
-### 1.5 What actually waits for what
+### 1.6 What actually waits for what
 
 The charter asks which requests wait for the full analysis. The answer,
 read out of both the code and the measurement:
@@ -168,7 +246,11 @@ mandate's two paths must fix:
    `member_name_spans` and `type_references`, then sorts and de-overlaps
    (`document.rs:2101-2298`) — **on every request**, for a file whose own
    token count is 468. The `semantic_token_cache` (`main.rs:460`) is only
-   a delta baseline and is never read back to skip the work. Completion
+   a delta baseline and is never read back to skip the work. Worse,
+   `semantic_tokens_range` (`main.rs:2440`) — the *viewport* request, the
+   one an editor sends most — computes the **full** stream and then
+   filters it by line (`main.rs:2465-2472`), so asking for twenty visible
+   lines costs exactly what asking for the whole file costs. Completion
    re-tokenizes the entire live buffer per keystroke
    (`completion.rs:1095`) and `auto_import_completions`
    (`completion.rs:1774`) iterates every child module's whole
@@ -339,15 +421,22 @@ struct ModuleSymbols {
 struct SymbolIndex { by_module: HashMap<ModulePath, ModuleSymbols> }
 ```
 
-The property that makes this work: **a module's export list is a
-function of its own syntax alone** — the names and kinds it declares, and
-their header text. It does not depend on that module's imports. So the
-index is buildable from a *parse*, needs no analysis, and an edit to
-module `X` invalidates exactly `X`'s entry and nothing else. Doc strings
-and signature labels are likewise syntactic. What is *not* syntactic — a
-re-export's target, a type-driven member list — is carried from the last
-analysis with `analysis_epoch` beside it, so a consumer can tell a
-syntactic fact from a resolved one.
+The property that makes this work: **a module's export list is
+determined by its own syntax plus, at most, one level of lookup.** The
+names and kinds it declares, their header text, its doc strings and its
+nested `mod`s are purely syntactic — so that part is buildable from a
+*parse*, needs no analysis, and an edit to module `X` invalidates
+exactly `X`'s entry. The one exception is a **`use` re-export**, which
+by construction names an item in another module
+(`collect_importables`, `analyzer.rs:3436`; the binding rule at
+`analyzer.rs:27011`). That is not a hole in the design: resolving a
+re-export is a lookup in the *named* module's index entry — still no
+type-checking, still invalidated only by that module's content — so the
+index is a small fixpoint over a graph whose edges are the `use` lines,
+and a `use` line is itself syntax. What genuinely is not syntactic —
+a type-driven member list — is carried from the last analysis with
+`analysis_epoch` beside it, so a consumer can always tell a syntactic
+fact from a resolved one.
 
 Completion then becomes: locals from the buffer's own parse (a scope walk
 over the syntax tree, O(file)), plus an index lookup, plus the existing
@@ -580,7 +669,7 @@ Today: handlers run on tokio workers; the analysis runs on
 `spawn_blocking` (`main.rs:1354`) which then spawns and **joins** a fresh
 128 MiB-stack OS thread (`document.rs:909`, needed for chumsky's
 recursion and nested macro worlds). `did_open` is the exception and
-should not be (§1.5).
+should not be (§1.6).
 
 Under the two paths that becomes a rule rather than an accident:
 
@@ -669,11 +758,19 @@ views.vl on the exhibit.
 | 1 | **M21** — split std-world resolution from package loading so a `pkg::` entry hits `BASE_CACHE`; fix the second bypass at `analyzer.rs:40096` too | **−160 ms/keystroke** (1111 → ~950) | **measured**: `base` 160 ms on views.vl vs 0.0 ms on theme.vl, §1.3 |
 | 2 | **M19** — the module analysis cache; and, as its first tranche, the `Type`-keyed memo on `check_generic_bound_satisfaction` (`analyzer.rs:4315`, `:4329`) | tranche: **−200 to −400 ms** of the 578 ms `checks`; full cache: down to the 285 ms fixed floor of §1.4 | tranche **estimated** from the E106 collapse ratio (32 answers / 17,802 questions) applied to the same shape; floor **measured** (§1.4's N=4 row) |
 | 3 | **M22** — a watch round recompiles only the reaching leg | HMR, not the LSP: 4.0 s → ~0.6 s per round | measured by editor-perf, tracker M22 |
-| 4 | **cancellation checkpoints** (§4.2) + the `reanalyze_dependents` revision check + adaptive debounce | no change to single-keystroke latency; **removes up to 2 of 3 concurrent analyses** under sustained typing | **estimated** from 950 ms CPU/analysis against a 150 ms debounce, §1.5(3) |
-| 5 | **the keystroke path** (§2.1): two-sided anchor, declaration-shape stamp, per-module symbol index, tokens split syntax/semantic, sorted `entity_spans` | **15.3 ms → under 5 ms**, and — the point — **independent of codebase size** | **estimated**; the size-dependence it removes is measured (12.2 ms at 1,791 vs 14.7 ms at 5,000 for the same 468 tokens, §1.2) |
+| 4 | **cancellation checkpoints** (§4.2) + the `reanalyze_dependents` revision check + adaptive debounce | no change to single-keystroke latency; **removes up to 2 of 3 concurrent analyses** under sustained typing | **estimated** from 950 ms CPU/analysis against a 150 ms debounce, §1.6(3) |
+| 5 | **the keystroke path** (§2.1): two-sided anchor, declaration-shape stamp, per-module symbol index, tokens split syntax/semantic, sorted `entity_spans` | **30 ms → under 5 ms**, and — the point — **independent of codebase size** | **estimated**; the size-dependence it removes is measured (4.2 → 27.0 ms of CPU for one unchanged 468-token file as the closure grows 4 → 5,000 functions, §1.4a) |
+| 5b | **`semantic_tokens_range` stops computing the full stream** (`main.rs:2465`) — filter during the walk, not after it | the viewport request stops costing a whole-file one; on views.vl that is most of the 23.8 ms | **measured** cost of the full walk, §1.4a; the saving is **estimated** from the viewport/file ratio |
 | 6 | **cache `lsp-context`** — `resolve_project_context` keyed on the manifest's content hash plus the reachability inputs | **−7.7 ms/keystroke**, −89 ms on the first | **measured**, §1.3 |
 | 7 | **hoist and share the `refined_edges` memo** (§3.4); incrementalize the const-only reachability fixpoint | **−30 to −60 ms** of the 90 ms post-passes | **estimated** from the memo's per-site scope and the three call sites |
 | 8 | **the incremental analyzer** — content-derived ids, a real module boundary, passes as queries | what remains between step 2's floor and 500 ms on a codebase that keeps growing | **needs its own paper** (§3.5) |
+
+**One prerequisite, cheap and not a rewrite: N43.** The post-pass line
+labels two buckets after passes that are not what they time (§1.3).
+Every step in this table is going to be judged by that line, so rename
+the buckets and add an explicit `dispatch-refine` one *before* step 1,
+not after — it costs an afternoon and it is the difference between the
+next lane reading the split and re-deriving it, as this one had to.
 
 **Steps 1–3 are M21/M19/M22 as the charter requires.** One note on
 ordering within them, from the measurement rather than from the filing:
@@ -751,35 +848,56 @@ first, so that the first path to land is the thing that greens it.
 
 | # | probe | subject | result |
 |---|---|---|---|
-| P1 | scripted LSP session, warm/hot per provider | kolt-copy views.vl, theme.vl | §1.2; providers never wait; burst is serial |
-| P2 | same | synthetic 5,000-function tree | §1.2; tokens 14.7 ms for the same 468-token file |
+| P1 | scripted LSP session, warm/hot per provider | kolt-copy views.vl, theme.vl | §1.2; providers never wait; the burst does not overlap |
+| P2 | same | synthetic 5,000-function tree | §1.2; the whole burst 18.9 ms for the same 468-token file |
 | P3 | `VILAN_PHASE_TIMING` per LSP analysis | both files | §1.3; `base` 160 ms vs 0.0 ms — M21 in the wild |
-| P4 | synthetic series N = 4 / 500 / 1,791 | keystroke CPU | §1.4; ≈285 ms + 0.36 ms per function |
+| P4 | synthetic series N = 4 / 500 / 1,791 | keystroke-to-diagnostics CPU | §1.4b; ≈285 ms + 0.36 ms per function |
 | P5 | completion position sweep | views.vl | scope 125 items 2.5 ms; `style::` 49 items 1.5 ms; inside a comment, 0 items 0.3 ms |
 | P6 | staleness detector (hot payload vs settled payload) | comment-mode edits | 0 of 6 differed — as expected: a comment edit changes no token; the typing-mode run is what exercises it |
 | P7 | `vilan check` phase line, CLI | views.vl at 1,791 and 5,000 | corroborates P3 outside the LSP |
+| P8 | amortized per-request CPU (50 reps, past the 10 ms `/proc` clock), one file held fixed | the whole synthetic series + kolt views.vl/theme.vl | §1.4a; tokens 4.2 → 27.0 ms as the closure grows 4 → 5,000 functions |
+| P9 | staleness window — one complete `let` added, every provider polled until its answer changes | kolt-copy theme.vl | §1.5; tokens 409.2 ms, hints 409.9 ms, diagnostics 409 ms — one number |
 
 All probes ran against a **copy** of kolt; the owner's tree was read and
 never written. The compiler worktree was detached at `origin/next`
 33692bb2 and nothing was committed to it.
+
+**What this ledger owes a follow-up.** Every number here was taken while
+the machine carried other lanes — loadavg 8 to 78. The scaling series
+(P8, P4) was taken inside one band and its ratios are sound; the absolute
+budgets (P1–P3) are from the quietest band available, loadavg 8–11, and
+are therefore *pessimistic by an unknown amount*. **A quiet-machine
+re-record of §1.2 and §1.3 is the first thing the next lane should do**,
+by the settle-then-measure discipline M13 established after its own first
+run polluted its loadavg window. It would not move any determination in
+§7.2 — every one of them rests on a ratio or on a code fact — but it
+would put honest absolute milliseconds under the gate §6 defines.
 
 ### 7.2 Determinations
 
 - **D1. E121's premise is corrected.** No request waits for the
   analysis. The keystroke path's problem is that every request
   recomputes over the whole program, and that its answers are
-  unmarked-stale with no re-mapping beyond B38's tail. §1.5.
-- **D2. The keystroke path is 1.5× over budget today and grows with the
-  codebase** — 15.3 ms on kolt, 18.9 ms on the 5,000-function tree, for
-  a file whose own token count never changed. §1.2.
+  unmarked-stale with no re-mapping beyond B38's tail. §1.6.
+- **D2. The keystroke path is over budget today and its cost is
+  proportional to the codebase, not the file.** One unchanged 468-token
+  file costs 4.2 ms of CPU to tokenize in a 4-function closure and
+  27.0 ms in a 5,000-function one; the five-provider burst on kolt's own
+  views.vl is 30 ms against a 10 ms budget, and the budget is spent at
+  **≈490 reachable functions**. §1.4a.
 - **D3. The diagnostics path is 2.2× over budget, and the budget is
   spent at ≈600 generated functions** on today's architecture:
   ≈285 ms + 0.36 ms per reachable function, per keystroke. §1.4.
+- **D3b. There is no faster path for any provider.** Measured, every
+  provider's answer changes at exactly the moment diagnostics do —
+  409.2 ms, 409.9 ms and 409 ms on theme.vl for tokens, hints and
+  errors. The staleness window *is* the debounce plus the analysis,
+  for all of them. §1.5.
 - **D4. Superseded analyses are never cancelled**, so sustained typing
   runs up to three concurrent 950 ms analyses of which two are already
   garbage. This is invisible to single-keystroke measurement and is the
   best available explanation for the *session*-shaped half of E106.
-  §1.5(3).
+  §1.6(3).
 - **D5. M21 is the cheapest measured win in the paper** — 160 ms per
   keystroke, one seam, a filed pin — and should lead, with M19's
   `Type`-keyed memo tranche beside it. §5.
@@ -787,6 +905,11 @@ never written. The compiler worktree was detached at `origin/next`
   The 2.2× memo is sound *within* an analysis only, because `Type`
   carries per-run argument ids. Cross-analysis memoization needs
   content-derived ids, which is the incremental-analyzer paper. §3.1.
+- **D6b. A viewport request costs a whole-file request.**
+  `semantic_tokens_range` (`main.rs:2440`) computes the full token
+  stream and filters it by line afterwards (`main.rs:2465-2472`) —
+  a cheap, self-contained fix and the one item in this paper that
+  needs no design decision. §1.6(1).
 - **D7. The gate should be CPU-clocked**, which makes it
   debounce-exclusive by construction and load-proof by M15's evidence.
   §6.2.
