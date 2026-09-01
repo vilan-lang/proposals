@@ -142,3 +142,4 @@
 | [N39](items/N39.md) | NEW — `ISTRING` is used normatively, never declared in §2 | process | records' find |
 | [N40](items/N40.md) | NEW — `free_port()`'s bind-release-rebind race, two e2e suites | process | perf's find |
 | [N41](items/N41.md) | NEW — the ledger gate's catch-all row + helper blind spot | process | b179's find; day-one customer |
+| [N42](items/N42.md) | NEW — the gates' exemption lists have no stale-exemption check | process | hygiene's find |
