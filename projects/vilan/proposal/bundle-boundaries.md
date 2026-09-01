@@ -892,13 +892,15 @@ fun icon(name: str): View {
 }
 ```
 
+That fence compiles as written today, minus the attribute (probe P9).
 `lookup` and the 25 sub-lookups keep their signatures and need no
 attribute — reachability carries them (§4.3, probe P4: 1819 functions
 followed the one entry point into the chunk). The generator's change is a
 string; the `[[build.hook]]`'s content stamp restales on it and regenerates.
 
 kolt's four call sites go back to what 038 wanted before the bundle forced
-the owner's hand:
+the owner's hand — kolt's own `icon(..)` wrapper around the new by-name
+entry point, rather than around a per-icon spelling:
 
 ```vilan
 {icon(lucide::icon("search")).styled(text_icon_style)}
@@ -995,6 +997,7 @@ repositories; none is proposed for the tree.
 | **P6** | P5's program built `split = true` | **17,431 split vs 13,162 whole → +4,269 B added, 1,554 B deferred.** Isolates the route gate's fixed cost on the same shell, which is what lets §5.2 attribute ~648 B of P4's +4,917 to the dispatch itself. |
 | **P7** | P4's program with a **second** arm also calling `lucide::lookup` | Plan: **1,822 eager functions, 1,818 of them shared by 2+ arms**; the `Icons` chunk collapses to 1 function / 504 B. Eager bundle **958,680 B** (from 18,079), verdict flips from *saves 935,242* to *adds 4,704*. "Shared goes eager" sends the whole table to the first load. **§4.2.** |
 | **P8** | a vilan program implementing door (b)'s lowering on **shipped primitives only** — sync `fun … : View`, `SignalCell<bool>`, `View.when`, an `async { sleep(1); turn(AtSuspension, …) }` spawn standing in for `chunk_load`'s continuation — run under the fixture's DOM stub | First paint `<main><h1>shell</h1><span></span></main>`; after the arrival `<main><h1>shell</h1><span><i>icon:search</i></span></main>`. Sync signature, shell painted without waiting, subtree mounted under `when`'s own owner inside a turn. **§3.2.1 — door (b)'s semantics are not speculative.** |
+| **P9** | §5.1's exhibit fence, minus the attribute, compiled | Builds clean — the qualified `Option::Some(let built)` pattern over an `Option<View>` returned by a generated-module lookup is written as the paper shows it. |
 
 Read, not run, and load bearing: `chunks.rs` in full; the fixture's five
 goldens; `ui.vl`'s `swap`/`swap_split`/`when`/`bind_each` and the
