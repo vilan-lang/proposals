@@ -1078,3 +1078,147 @@ Orders 17→23 and two cuts now ship in this chronicle's span. The
 owner-question queue at rest: B180 (Order 24 top slot), B178, B173,
 B174, B181, Optimistic arity, release.yml's bare gate, B183/B184
 discussions, M18's paper trigger, K14's prelude door.
+
+## Order 24 — cycle 42: the dispatch contract, the parameter sugar, the papers, audit run 7 (2026-09-01)
+
+Thirteen wave-1 lanes + three FIX-NOWs (b188, b195, and rulings-smalls'
+five same-day closes) + wave-2 audit run 7; integration continuous,
+fourteen merges with hand-resolved conflicts in analyzer.rs (three
+times), traits.rs (twice), document.rs, and the ledger tsv. SHIPPED:
+B180 (the dispatch-path `B` check — the operator family's last door;
+thirteen pre-fix miscompiles run), B172 (qualified type paths; the
+templates' workarounds out), B186 (`fun f(x: Trait)` as the implicit
+generic, owner-ruled the same morning — emits BYTE-IDENTICAL JS to the
+written generic; `Optimistic<T, S>`), B175/B181/B177, B182 (the
+cascade: provenance, per-entry dedup, roots first — 21 → 2), B188
+(FIX-NOW: under-supplied type arguments ERASED — `seven1` through an
+`i32`), B173 refused by ruling, B171 ruled AND the compiler fixed
+(`||`-arm reads of absent payloads), B178 refuse + `process::args()`
+(and `arguments`/`eval` missing from RESERVED_NAMES — a corpus golden
+was unrunnable), A35, E119 (the overlay-naming note), editor-fixes
+(E117 stale publish, E116 recolor — and a DEAD manifest-save sweep
+found en route, E115, E118, E112, E114's unused-imports third),
+hygiene (N40 first — the flake killed; N41; N39; N27's cross-check
+whose FIRST run found the orphaned B126 pin; N28's residue; N38's
+shared table; the three legs into release.yml), examples-adopt (ten
+examples, byte-identical stylesheets), playground-prelude (K14 door
+1 — with the filing corrected: the base set already reached buffers;
+the web set + toggle were the gap; website branch k14 waits for the
+cut). PAPERS: bundle-boundaries.md (door b through the shipped
+`View.when`; two extremes that BREAK: nested boundaries — M20 — and
+shared-goes-eager, 18 KB → 959 KB measured), trait-typed-fields.md
+(HOLD the sugar, build the hole — B188, done), tuple-comprehension.md
+(build in four pieces), the B174 census (ONE site).
+
+THE LEDGER ROW-ID COLLISION: five lanes minted row 346 (b180, b172,
+hygiene, b188, rulings-smalls) — assigned at integration 346, 347,
+348-357, 358, 359-360, with B181's caught-unrowed 361. RULE MINTED:
+lanes write `NEW`; the orchestrator numbers at merge. THE GATE'S
+FIRST SIBLING CATCH: N41's hardened coverage check red-flagged
+operators-tail's unrowed message at merge — exactly its job.
+
+PROCESS, confessed: conflict markers SURVIVED into two pushed commits
+(the tsv's trailing hunk escaped the regex; the seven ledger gates
+were red on both) because the chain gated on git's exit, not the
+gate's — strike three on the chained-edit rule, now spelled: THE GATE
+GATES THE CHAIN. A traits.rs union guessed the wrong brace insert
+(`}` where `    );\n}` was owed) — caught by the compile-the-touched-
+binary rule, the Order 23 lesson holding. A gate named a nonexistent
+test target; a clean merge's auto-commit made `git commit` report
+nothing-to-commit and the `||` branch cried red — read the summary
+lines, not the chain's tail. E114 shipped one third (unused imports)
+as scoped; the declarations and unreachable-code thirds stay on the
+item.
+
+B195 (FIX-NOW #3): the negated `is` capture — a POLARITY PAIR carried
+down the boolean spine, `!` a plain swap, no counter; two latent
+unsoundnesses closed beyond the charge; B199 filed for the off-spine
+call-argument case.
+
+AUDIT RUN 7 (wave 2, tip b62c777b): thirteen findings. F1 HIGH — a
+RELEASED miscompile: every native operator except `+` unchecked for a
+bool/str/backed-enum LEFT operand (`true - 3` is a `bool` holding -2;
+a `Level` matching no variant) — B196, FIX-NOW lane. F2/F3/F4/F5 —
+three steers that lead INTO refusals (B178's `std::process::args()`
+is a namespace path; B188's `Holder<S>` names a parameter not in
+scope; the inherent-member steer vanishes on default-bodied impls):
+the rule minted, A STEER IS A CLAIM AND THE PIN COMPILES IT — lane
+audit7-steers. F6 — the Windows cycle guard's stop arm unreachable
+(`canonical_path` never fails) + eight `#[cfg(windows)]` pin drafts —
+lane audit7-windows, one landing EXPECTED RED under B198. F7/F8 — two
+corpus goldens witness the OPPOSITE of their claims since c8609287
+(run 5 fixed the third sibling without sweeping the file): rule
+minted, A CORRECTED GOLDEN GETS A CENSUS OF ITS OWN FILE — lane
+audit7-records. F9 — the "38 moved pins" was RECALLED from a commit
+message; the close record's 51 was right (+17 added): the chronicle
+re-corrected, and the rule sharpened — the derivation is the
+authority, not the commit. F10/F11/F13 prose drifts. F12 → B197.
+Steer census 14/11/3; operator matrix 216 programs, 78 wrong-running,
+three roots; merge seams 0 lost / 0 invented across 20 files; the
+estate sweep INCOMPLETE — lane estate-sweep. Run 8 chartered.
+
+THE ESTATE SWEEP (audit 7's child + a duplicate lane, stopped): 366
+snippets, 0 BROKEN, kolt and the website's own sources CLEAN — and
+164 STALE fences on the LIVE docs site: 146 `import std::print;` plus
+17 `Signal` field/return spellings. Not the sources (194/194 doc
+fences compile clean at next) — the BOOK BUILD: last rebuilt
+2026-08-29, v0.39.0's, because the v0.40.0 fold script REFUSED (next
+had moved past the tag) and the hand-fold skipped its `docs.yml`
+dispatch. Dispatched two days late; the daily cron was the safety net
+nobody was watching. RULE: a hand-fold reproduces the script's
+dispatches, and verifies a live fence. The two homepage panels
+(art.vl, page.vl) were the only hand patches — same-line
+substitutions so the depicted diagnostic's line numbers stay true.
+Sequencing note for the owner: the rebuilt docs show bare `print`,
+and the deployed playground compiles PRELUDE-LESS until the k14
+branch ships with v0.41.0's `compile_with` — tour snippets won't paste
+into the live playground until then.
+
+THE AUDIT-RESPONSE MERGES: audit7-records (resource.vl's four false
+claims repaired by adjusting the PROGRAMS, a `// witness:` corpus gate
+built and proven by re-planting c8609287's exact shape — the byte
+gate green, the witness gate red on all four; N44 filed for the
+docs' own stale scope-end law), audit7-windows (F6's defensive fix
+with the framing corrected in the code — pin 1 is a regression pin,
+not a discriminator; eight `cfg(windows)` pins compiled clean for the
+target; N45 filed: the ignored-pins backstop cannot see them),
+audit7-steers (all three steers now COMPILE their spellings; the
+sweep found row 88 held by no pin at all; rows 358/359 re-keyed).
+Union on that tip: 5423/5424 — the one red the watch pin's 301 s
+talking timeout at loadavg ~25, green alone in 0.7 s: STRIKE THREE,
+N46 filed, the union's last named flake source.
+
+b196 (FIX-NOW #4, audit 7's F1): the nine arithmetic/bitwise
+operators now refuse a `bool`/`str`/backed-enum LEFT operand, the
+admitted set named per type, per-shape steers pinned compiling;
+census ZERO across 293 files and 390 fences; 48 of the audit's 216
+matrix programs flip RUN→REFUSE, none the other way. Found: B200,
+the unary `-` twin (`-true` is `-1` typed `bool`). The vault locked
+at the merge commit — stopped per the rule, gates run unsigned,
+resumed on the owner's unlock.
+
+CLOSED here (26): B180, B172, B186, B175, B181, B177, B182, B188,
+B173, B171, B178, A35, E119, E117, E116, E115, E118, E112, N40, N41,
+N39, N27, N28, N38, B195, B196. FILED (26): A35→closed, B188-B200
+(B189 cascade siblings, B190 qualified literal, B191 B126's orphan
+re-owned, B192 partial generics, B193 trait-default self-op, B194
+derive-erasure, B197 operator impl panics, B198 Windows case-fold
+ruling, B199 off-spine capture, B200 unary minus), E120, M20-M22,
+N42-N46. STAYS OPEN deliberately: E106 (2.2× shipped; M19/M21/M22
+sized), E114 (one third), K14 (website branch parks for the cut),
+B174 (census: ONE site — the owner's word), B183/B184/M18 (papers
+recommend), C13/B149 (arcs). RULINGS BANKED: B178 refuse + args;
+B173 refused; B171 the four boundaries + B195's negation; A35 name
+the shadow; K14 door 1 + toggle; release.yml carries the three legs.
+OWNER QUESTIONS STANDING: B174 (take it — one edit); b186's `&Trait`
+acceptance; B198's case-fold; B197's operator-impl requirement; M18's
+Q7 (M20 first — yes); the K14 sequencing (rebuilt docs paste into the
+live playground only after v0.41.0 ships `compile_with`); the cut —
+the train holds 37 entries with two released miscompiles fixed
+(B188, B196).
+
+**Order 24 verdicts, sealing:** final union 5437/5437, exit 0 (run unsigned on the resolved tree while the vault was locked); next @33692bb2
+pushed; CI watching (amended below when the run lands) both platforms + clippy + audit (the first
+uninterrupted run — every earlier one superseded by the next merge
+push); the vault locked at the last merge commit and the seal waited
+on the owner's unlock, gates run unsigned meanwhile.
