@@ -60,6 +60,7 @@
 | [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
 | [E114](items/E114.md) | NEW — gray out unused imports, declarations, unreachable code | feature | owner-proposed; DiagnosticTag door |
 | [E120](items/E120.md) | NEW — every std import steer is silently dead in the playground | bug | playground lane's find |
+| [E121](items/E121.md) | NEW — the editor-latency mandate: <10 ms keystroke path, <500 ms errors | design | owner-set target; ARC, paper first |
 
 ## G. Macros & const
 
