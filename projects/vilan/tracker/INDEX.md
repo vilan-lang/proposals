@@ -39,6 +39,7 @@
 | [B176](items/B176.md) | NEW — a bounded generic right operand of `str + x` never calls `Display` | bug | LIVE MISCOMPILE; FIX-NOW lane |
 | [B177](items/B177.md) | NEW — an array impl's return check refuses with a self-contradicting message | bug | operators' find |
 | [B178](items/B178.md) | NEW — `fun main(p: bool)` compiles and emits broken JS | bug | traits-core's find; refuse-or-emit ruling |
+| [B179](items/B179.md) | NEW — a bounded generic in `+`'s numeric position still miscompiles | bug | b176's find; ruling wanted, pin waits |
 
 ## C. Memory model
 
