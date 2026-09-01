@@ -129,6 +129,8 @@
 | [M18](items/M18.md) | NEW — a function attribute marking a bundle boundary | design | owner-proposed; lucide the exhibit |
 | [M19](items/M19.md) | NEW — an unchanged package module is re-analyzed every LSP analysis / HMR round | perf | E106's prime hypothesis; lucide's 636 KB |
 | [M20](items/M20.md) | NEW — a chunk snapshots dependencies by value; wrong-order evaluation binds `undefined` forever | bug | m18-paper's P3; latent, route-partition-safe |
+| [M21](items/M21.md) | NEW — an entry with any `pkg::` import bypasses the BASE_CACHE | perf | editor-perf's find; 250-290 ms/keystroke |
+| [M22](items/M22.md) | NEW — a watch round recompiles every leg, not the reached one | perf | editor-perf's HMR measurement |
 
 ## N. Hygiene & rot — NEW SECTION
 
@@ -145,3 +147,4 @@
 | [N40](items/N40.md) | NEW — `free_port()`'s bind-release-rebind race, two e2e suites | process | perf's find |
 | [N41](items/N41.md) | NEW — the ledger gate's catch-all row + helper blind spot | process | b179's find; day-one customer |
 | [N42](items/N42.md) | NEW — the gates' exemption lists have no stale-exemption check | process | hygiene's find |
+| [N43](items/N43.md) | NEW — the phase-timing line mislabels two buckets | process | editor-perf's find |
