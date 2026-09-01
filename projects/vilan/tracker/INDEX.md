@@ -126,6 +126,7 @@
 | [M12](items/M12.md) | NEW — the corpus leak-soak passes in 0.005 s asserting nothing when its corpora are absent | perf | |
 | [M15](items/M15.md) | NEW — the const-pass scaling gate is wall-clock and reds under lane load | perf | bit a lane verdict; pick (a) or (b) |
 | [M16](items/M16.md) | NEW — T-independent generic bodies emit per-monomorphization copies | perf | audit 6 F18 |
+| [M17](items/M17.md) | NEW — cross-subject body sharing, M16's residual | perf | separate decision |
 
 ## N. Hygiene & rot — NEW SECTION
 
@@ -143,3 +144,4 @@
 | [N37](items/N37.md) | NEW — the errors appendix is ungated, flagship messages missing | process | audit 6 F12 |
 | [N38](items/N38.md) | NEW — two shipped sentences disagree on the reserved-name set | process | records' find; shared constant |
 | [N39](items/N39.md) | NEW — `ISTRING` is used normatively, never declared in §2 | process | records' find |
+| [N40](items/N40.md) | NEW — `free_port()`'s bind-release-rebind race, two e2e suites | process | perf's find |
