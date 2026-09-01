@@ -42,6 +42,7 @@
 | [B191](items/B191.md) | NEW — a let-bound self-call in a recursive tail cannot resolve (B126's orphaned residue) | bug | N27's first catch |
 | [B192](items/B192.md) | NEW — a partial generic-argument list leaves the rest uninferred | bug | b186's find |
 | [B193](items/B193.md) | NEW — a trait default's `self + self` miscompiles (host `+` over lowered structs) | bug | operators-tail's find; pin waits |
+| [B194](items/B194.md) | NEW — `[derive]` on a generic type generates erased impls | design | b188's STOP; reflection surface + bound ruling |
 
 ## C. Memory model
 

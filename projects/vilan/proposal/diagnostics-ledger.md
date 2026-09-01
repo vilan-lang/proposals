@@ -698,3 +698,4 @@ Re-keys at N38 (2026-09-01): rows **248** and **284** now carry the
 `RESERVED_PACKAGE_NAMES_CLAUSE` as a slot — the sentence is assembled
 from one shared table (`std`, `pkg`, `macro_std`, `vilan`) both
 refusals read, so the set cannot fork again.
+| 358 | analyzer.rs (`written_application_arity_error`, the `prepped_type_locals` drain) | `` `{name}` takes {count} type argument{plural}, {given} given — write `{spelling}` `` |QUALIFIES — B188's refusal: an under- or over-supplied type application in any written annotation position (bare `Holder` for `Holder<S>` used to ERASE the parameter and print `seven1` through an `i32`); not flagship — the message carries its own fix. Generated code exempt (B194). Pins `generics::b188_*` (20). (Lane b188 minted it 346; rowed 358 at integration behind b180/b172/hygiene.) |
