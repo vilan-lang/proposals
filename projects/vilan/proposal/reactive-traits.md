@@ -900,3 +900,50 @@ scratchpad.
     pressure across 26 std parameter sites. Is a measured emission pin the
     right gate, or do you want the sugar held until A33 has measured the
     monomorphization cost?
+
+## 14. As built — Order 23, reactive-replumb (2026-08-31)
+
+The arc shipped whole (vilan `b3b492ae`/`f11494d8`/`09ab5713`/`4a58b706`
+plus traits-core's `5ee496da`). Where the build diverged from the paper,
+the build is the record:
+
+1. **§7.3 did NOT ship.** B161 admits the trait-as-constraint reading at
+   the `let` position ONLY — parameter, return, field and every nested
+   spelling still refuse. §5's census arithmetic ("37 sites, 16 outside
+   std") rested on the parameter sugar; the real breaking surface was
+   173 estate occurrences, every parameter site moved to `SignalCell`
+   or an explicit bound. The parameter sugar remains unbuilt and
+   unruled (question 11 stands).
+2. **§2.1's `update` recommendation was OVERRULED** — the owner locked
+   `update` out of the trait; it is inherent to `SignalCell` alone,
+   pinned both ways. §12.3's contrary determination is void.
+3. **§9.2 shipped as `impl type S: Source<type T> with MaybeSignal<T>`**
+   — `bind` only reads, so `Source` is the right bound; a component
+   that writes back asks for `Signal<T>` directly.
+4. **§9.3's `Optimistic::over` is not buildable as written**: the type
+   STORES its signal in a field, and a field must name a real type —
+   widening means an `Optimistic<T, S>` arity change at every use. The
+   free `optimistic` fn was widened to `<T, E, S: Signal<T>>`; the type
+   awaits a determination (recorded in std's doc comment).
+5. **§4/Q7's `[expose]` ceiling is removed at the CHECK only** — it
+   reconciles against nominal `std::Source` per the ruling. `[service]`
+   client generation runs at macro time before types resolve, so it
+   still reads the element off the field's sole type argument; a source
+   whose element is not its one type argument renders `_` and errors at
+   the generated site. Standing residual.
+6. **§8's two holes were closed before this lane ran** (Order 22:
+   B163 if-arm unification, B164 supertrait substitution).
+7. **Signal::new's default body emits a one-hop trampoline** per
+   program (trait body → SignalCell::new), visible in corpus goldens.
+   Priced: cheap, recorded as a consequence of the Trait::func ruling.
+8. **Type::func does NOT inherit a trait's default body** (traits-core's
+   deliberate boundary): `SignalCell::new` is its own inherent
+   declaration. If the owner ever wants type-path fallback to the
+   trait's body, it is a one-filter change plus pins — unruled today.
+
+Three general fixes the build forced, each now pinned: trait-associated
+functions bind the TRAIT's generics from the call; a bound-site call no
+longer inherits context requirements from a same-named member on an
+unrelated trait (without which `MaybeSignal` was unshippable); and
+`impl_select` grounds a bound's binder before its instantiation tier
+(a `holder<V: Maybe<Cell>>` miscompile, only reachable since B165).

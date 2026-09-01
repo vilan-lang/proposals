@@ -1499,3 +1499,14 @@ by the amendment's own determinations.
     The alternative is `export import pkg::prelude::{ … }` inside
     `web.vl`, which is *re-export*, not merge, and so is arguably already
     legal under §8 — worth confirming rather than assuming.
+
+## 15. Census amendment — Order 23
+
+`std::web` gained `SignalCell` beside `Signal` (now the write TRAIT,
+A32): six base names + two ambient modules. Reason: B161 admits a trait
+at a `let` annotation only, while a struct field, a return type and a
+generic argument need a real type — exactly the sites the web census
+counted `Signal` at (21 of 42 app files). Without the cell in the set,
+any app storing a signal re-adds the import the prelude exists to
+delete. The prelude is read off `web.vl` itself, so the LSP web-set
+steer picked the name up with no second table.
