@@ -119,6 +119,7 @@
 | [M17](items/M17.md) | NEW — cross-subject body sharing, M16's residual | perf | separate decision |
 | [M18](items/M18.md) | NEW — a function attribute marking a bundle boundary | design | owner-proposed; lucide the exhibit |
 | [M19](items/M19.md) | NEW — an unchanged package module is re-analyzed every LSP analysis / HMR round | perf | E106's prime hypothesis; lucide's 636 KB |
+| [M20](items/M20.md) | NEW — a chunk snapshots dependencies by value; wrong-order evaluation binds `undefined` forever | bug | m18-paper's P3; latent, route-partition-safe |
 
 ## N. Hygiene & rot — NEW SECTION
 
