@@ -9,7 +9,6 @@
 | [A7](items/A7.md) | SSR tail | design | |
 | [A8](items/A8.md) | UI styling — the tail | design | |
 | [A14](items/A14.md) | Reactive residuals | design | |
-| [A32](items/A32.md) | NEW — custom signals with compatibility: `Source` is the trait, the question is reach | design | owner-proposed; trait already shipped |
 | [A34](items/A34.md) | NEW — a typed style token has no mid-value spelling in a css block | design | b148's census find; real gap revealed |
 | [A35](items/A35.md) | NEW — the element desugar's `view` is capturable; the shadowed case has no diagnostic | design | lucide lane's find |
 | [A36](items/A36.md) | NEW — `Style::when(condition, delta)` conditional-merge combinator | feature | RULED ACCEPTED 2026-08-31 (style-variants Q3); ready to queue |
@@ -23,20 +22,11 @@
 | [B146](items/B146.md) | NEW — the context coverage check's refinement consumes node-owned dispatch sites only | feature | |
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
 | [B149](items/B149.md) | NEW — an async function returning a `Task` mistypes as the task | bug | the pin names it since Order 21; the gap itself stays open |
-| [B156](items/B156.md) | NEW — a manifest-configurable prelude: std ambient names by default, overridable | design | RULED 2026-08-29: write the paper |
-| [B157](items/B157.md) | NEW — static-or-dynamic component values: the trait-bound pattern vs a `union` former | design | owner-proposed; both problems probe-solved, blanket impl the one gap |
-| [B161](items/B161.md) | NEW — a trait annotation as a checked constraint on bindings | design | owner-proposed with exact semantics; A32's companion |
-| [B162](items/B162.md) | NEW — trait-associated functions: `Signal::new` with a default body | design | RULED 2026-08-29; A32's companion |
-| [B165](items/B165.md) | NEW — `type` binders do not resolve inside an impl head's bounds | bug | blocks B157's generic blanket; Order 23 |
-| [B168](items/B168.md) | NEW — a bound's bare generic argument loses its constraints in a generic body | bug | a33's find; pin ignored, three signatures wait |
-| [B169](items/B169.md) | NEW — an unbounded generic right operand still escapes `+`'s typing | bug | b148's residual; pin ignored |
-| [B170](items/B170.md) | NEW — binary operators skip the check for non-nominal LEFT operands | bug | audit 6 F3; b148's other half |
 | [B171](items/B171.md) | NEW — the spec's `is`-binding scope sentence is false; the true scope wants a ruling | design | b166's find |
 | [B172](items/B172.md) | NEW — a module-qualified type path is a parse error in every type position | bug | templates lane; the web prelude makes it load-bearing |
 | [B173](items/B173.md) | NEW — a blanket impl never satisfies a bound for a generic value | design | b168's find; ruling wanted, pin waits |
 | [B174](items/B174.md) | NEW — an unbounded generic LEFT operand of `+` still concatenates | bug | operators' residual; breaking step deferred, pin waits |
 | [B175](items/B175.md) | NEW — `T::default()` under a multi-bound infers as the bound, not `T` | bug | operators' find; blocks closing the Trait skip-hole |
-| [B176](items/B176.md) | NEW — a bounded generic right operand of `str + x` never calls `Display` | bug | LIVE MISCOMPILE; FIX-NOW lane |
 | [B177](items/B177.md) | NEW — an array impl's return check refuses with a self-contradicting message | bug | operators' find |
 | [B178](items/B178.md) | NEW — `fun main(p: bool)` compiles and emits broken JS | bug | traits-core's find; refuse-or-emit ruling |
 | [B180](items/B180.md) | NEW — a nominal left's declared `B` is never checked at dispatch | bug | b179's find; Order 24 top slot |
@@ -65,11 +55,6 @@
 | [E69](items/E69.md) | NEW — attribute-NAME completion in an element head is a semantics decision | feature | |
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
 | [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
-| [E107](items/E107.md) | NEW — no completion at a builder chain's dot on its own line | bug | owner report; the completion-context class |
-| [E108](items/E108.md) | NEW — a type-position unresolved name in a dependency attributes to std's lib.vl | bug | prelude lane's find |
-| [E109](items/E109.md) | NEW — the `pub` rule's cascade; `public` refused as `pub` | bug | audit 6 F10+F21 |
-| [E110](items/E110.md) | NEW — the web-set steer's claimed LSP suppression does not exist | bug | audit 6 F22 |
-| [E111](items/E111.md) | NEW — semantic tokens and inlay hints drift after a `Some(let …)` pattern | bug | owner report; tuple payload, B167's territory in the span subsystem |
 | [E112](items/E112.md) | NEW — `line_indices` caches a closed workspace file forever | bug | editor-health's find |
 
 ## G. Macros & const
@@ -79,11 +64,6 @@
 | [G2](items/G2.md) | Const-eval tail | feature | |
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
 | [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
-| [G17](items/G17.md) | NEW — a `generated` root through a symlink fails open | bug | audit 6 F5 |
-| [G18](items/G18.md) | NEW — fmt/watch follow dir symlinks unguarded: hang + escape | bug | audit 6 F6 |
-| [G19](items/G19.md) | NEW — the const channel's lexical fence vs symlink escape | design | audit 6 F7; OWNER QUESTION |
-| [G20](items/G20.md) | NEW — file-mode `check` ignores the manifest | bug | audit 6 F11 |
-| [G21](items/G21.md) | NEW — the watcher gives const directories the hook reading | bug | audit 6 F23; safe |
 | [G22](items/G22.md) | NEW — a `.vl` file reached under two names collects twice | bug | symlinks' residual |
 
 ## I. Collections
@@ -123,10 +103,7 @@
 | ID | Title | Kind | Discussion |
 |----|-------|------|------------|
 | [M10](items/M10.md) | NEW — mechanize the BASE_CACHE transmute's completeness claim | perf | |
-| [M11](items/M11.md) | NEW — the compiler's largest retentions are invisible to the leak tally | perf | |
 | [M12](items/M12.md) | NEW — the corpus leak-soak passes in 0.005 s asserting nothing when its corpora are absent | perf | |
-| [M15](items/M15.md) | NEW — the const-pass scaling gate is wall-clock and reds under lane load | perf | bit a lane verdict; pick (a) or (b) |
-| [M16](items/M16.md) | NEW — T-independent generic bodies emit per-monomorphization copies | perf | audit 6 F18 |
 | [M17](items/M17.md) | NEW — cross-subject body sharing, M16's residual | perf | separate decision |
 | [M18](items/M18.md) | NEW — a function attribute marking a bundle boundary | design | owner-proposed; lucide the exhibit |
 
@@ -136,14 +113,10 @@
 |----|-------|------|------------|
 | [N16](items/N16.md) | NEW — the recurring codebase audit | process | |
 | [N20](items/N20.md) | NEW — `.claude/` is live configuration that no gate can see, and it had three dead pointers in it | process | |
-| [N21](items/N21.md) | `cargo fmt` is gated; the clippy and cargo-audit legs remain | process | |
 | [N23](items/N23.md) | NEW — 37 `pub` items in `vilan-core` are never referenced outside their own file | process | |
 | [N27](items/N27.md) | NEW — nothing ever runs the `#[ignore]`d pins, so an expired pin reason is undetectable by machine | process | |
 | [N28](items/N28.md) | NEW — `book_sync`'s mdBook backstop runs whatever `mdbook` is on PATH, no version check | process | |
-| [N34](items/N34.md) | NEW — the normative EBNF has no gate | process | smalls' N32 finding |
 | [N35](items/N35.md) | NEW — `hmr_css_matrix` reads the bundle while the watcher writes it | bug | load-dependent race, seen once |
-| [N36](items/N36.md) | NEW — the diagnostics ledger is three orders stale | process | audit 6 F8+F9+F20 |
-| [N37](items/N37.md) | NEW — the errors appendix is ungated, flagship messages missing | process | audit 6 F12 |
 | [N38](items/N38.md) | NEW — two shipped sentences disagree on the reserved-name set | process | records' find; shared constant |
 | [N39](items/N39.md) | NEW — `ISTRING` is used normatively, never declared in §2 | process | records' find |
 | [N40](items/N40.md) | NEW — `free_port()`'s bind-release-rebind race, two e2e suites | process | perf's find |
