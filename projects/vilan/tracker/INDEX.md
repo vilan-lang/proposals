@@ -127,6 +127,7 @@
 | [M15](items/M15.md) | NEW — the const-pass scaling gate is wall-clock and reds under lane load | perf | bit a lane verdict; pick (a) or (b) |
 | [M16](items/M16.md) | NEW — T-independent generic bodies emit per-monomorphization copies | perf | audit 6 F18 |
 | [M17](items/M17.md) | NEW — cross-subject body sharing, M16's residual | perf | separate decision |
+| [M18](items/M18.md) | NEW — a function attribute marking a bundle boundary | design | owner-proposed; lucide the exhibit |
 
 ## N. Hygiene & rot — NEW SECTION
 
