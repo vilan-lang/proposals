@@ -11,6 +11,7 @@
 | [A14](items/A14.md) | Reactive residuals | design | |
 | [A32](items/A32.md) | NEW — custom signals with compatibility: `Source` is the trait, the question is reach | design | owner-proposed; trait already shipped |
 | [A34](items/A34.md) | NEW — a typed style token has no mid-value spelling in a css block | design | b148's census find; real gap revealed |
+| [A35](items/A35.md) | NEW — the element desugar's `view` is capturable; the shadowed case has no diagnostic | design | lucide lane's find |
 
 ## B. Type system & the type solver
 
