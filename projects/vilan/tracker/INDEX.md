@@ -34,6 +34,8 @@
 | [B182](items/B182.md) | NEW — a refused bare-trait field cascades ~50 errors, roots printed last | bug | kolt migration's lesson |
 | [B183](items/B183.md) | NEW — tuple comprehension `(item in tuple => EXP)` + the zip form | design | owner-proposed |
 | [B184](items/B184.md) | NEW — trait annotations on struct fields, one-instantiation rule | design | owner-proposed; discussion REQUIRED |
+| [B186](items/B186.md) | NEW — `fun f(x: Trait)` as an implicit generic (the §7.3 parameter sugar) | design | owner-ruled WANTED; Order 24 |
+| [B187](items/B187.md) | NEW — a negated `is` whose then-branch diverges binds the continuation | design | owner question off B171 |
 
 ## C. Memory model
 
@@ -60,6 +62,11 @@
 | [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
 | [E112](items/E112.md) | NEW — `line_indices` caches a closed workspace file forever | bug | editor-health's find |
 | [E114](items/E114.md) | NEW — gray out unused imports, declarations, unreachable code | feature | owner-proposed; DiagnosticTag door |
+| [E115](items/E115.md) | NEW — an element tag's closing `>` on its own line is not highlighted | bug | owner report |
+| [E116](items/E116.md) | NEW — a file's platform color does not update when it becomes reachable | bug | owner report; E113 follow-up |
+| [E117](items/E117.md) | NEW — a ghost diagnostic lingers after a comment/uncomment round-trip | bug | owner report; stale-publish ordering |
+| [E118](items/E118.md) | NEW — the formatter lays out an inline element closure argument oddly | bug | owner report |
+| [E119](items/E119.md) | NEW — a field miss on an overlaid std type should name the overlay and why | bug | owner ruling, A35's companion |
 
 ## G. Macros & const
 
@@ -111,6 +118,7 @@
 | [M12](items/M12.md) | NEW — the corpus leak-soak passes in 0.005 s asserting nothing when its corpora are absent | perf | |
 | [M17](items/M17.md) | NEW — cross-subject body sharing, M16's residual | perf | separate decision |
 | [M18](items/M18.md) | NEW — a function attribute marking a bundle boundary | design | owner-proposed; lucide the exhibit |
+| [M19](items/M19.md) | NEW — an unchanged package module is re-analyzed every LSP analysis / HMR round | perf | E106's prime hypothesis; lucide's 636 KB |
 
 ## N. Hygiene & rot — NEW SECTION
 
