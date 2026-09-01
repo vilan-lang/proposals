@@ -1,7 +1,11 @@
 # Style variants — the base+delta recipe
 
 Status: **DESIGN NOTE, 2026-08-31 — RECOMMENDATION AWAITING OWNER RULING**
-(kolt.local 015). Every claim about what compiles today is probe-verified
+(kolt.local 015). **§8 Q3 RULED ACCEPTED 2026-08-31**: `Style::when`
+ships — the owner arrived at the combinator independently (as `toggle`)
+while trying their own variants system, and ruled it in; filed as
+tracker A36, ready for a future work order. The remaining questions
+stay open with the 015 hold. Every claim about what compiles today is probe-verified
 against `vilan 0.39.0 (2ad39dd09)`, the installed dev build from `next`; §7
 lists the probes and what each one refused. The note recommends **no new std
 surface** and **no compiler change** — it recommends a spelling, and §8 asks
@@ -460,7 +464,10 @@ Three mechanisms were considered and are recommended against:
   exclusive and `if`/`match` says that more honestly than two independent
   `when`s — but it is the owner's call, not the note's, and it is the only
   candidate where std would be adding something rather than renaming
-  something.
+  something. **The owner made that call: RULED ACCEPTED 2026-08-31**,
+  having reinvented the combinator independently (as `toggle`) against
+  this note's exhibit — tracker A36 carries the accepted surface and the
+  guidance lines for the building lane.
 
 The one place the recipe genuinely stops, stated so no one rediscovers it: **a
 condition cannot be lifted onto an already-built `Style` at runtime.**
@@ -509,6 +516,9 @@ The four whole-exhibit rewrites (A)–(D) were each built at 2, 3 and 6 surfaces
    emission, works in user code today (P15). It buys a chain spelling for
    independent boolean state and buys nothing for mutually exclusive states.
    The note does not recommend it and does not object to it.
+   **RULED ACCEPTED 2026-08-31** — filed as tracker A36, ready to queue;
+   the name is `when` (the owner's prototype spelled it `toggle`; the
+   accepting message named it `Style::when`).
 4. **Is route (D) documented as a sibling recipe, and on what line?** The note
    proposes: *select with `+` when the component holds the state as a value;
    select with `attribute` when the DOM already carries it.* (D) is measurably
