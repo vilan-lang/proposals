@@ -31,6 +31,7 @@
 | [B178](items/B178.md) | NEW — `fun main(p: bool)` compiles and emits broken JS | bug | traits-core's find; refuse-or-emit ruling |
 | [B180](items/B180.md) | NEW — a nominal left's declared `B` is never checked at dispatch | bug | b179's find; Order 24 top slot |
 | [B181](items/B181.md) | NEW — `&&`/`||` accept a generic operand, emit the value as the bool | bug | b179's find; one-line right half |
+| [B182](items/B182.md) | NEW — a refused bare-trait field cascades ~50 errors, roots printed last | bug | kolt migration's lesson |
 
 ## C. Memory model
 
@@ -56,6 +57,7 @@
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
 | [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
 | [E112](items/E112.md) | NEW — `line_indices` caches a closed workspace file forever | bug | editor-health's find |
+| [E113](items/E113.md) | NEW — file-mode/LSP color a module by default-entry, not reachability | bug | the owner's element report; FIX-NOW |
 
 ## G. Macros & const
 
