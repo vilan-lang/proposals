@@ -708,3 +708,4 @@ the type is a std LAYER twin — "`View` here is std's process twin —
 this file is analyzed under node: no entry reaches it (default-entry
 is `server`)" — carrying the platform REASON (package target / reached
 by leg / default-entry / --platform). Notes are not rowed.
+| 361 | analyzer.rs (the `And | Or` arm's generic right operand, B181) | `` `{symbol}` takes `bool` operands, and `{label}` is a type parameter: `bool`'s set is `bool` itself, no trait names it, and `{symbol}` models no operator trait to consult, so no bound on `{label}` can prove membership — … `` |QUALIFIES — the operand-role rule applied to `&&`/`||` (pre-fix `both(true, Point{…})` printed the value typed `bool`); self-settling, so `-` not flagship; pins `platform::b181_*`. Rowed at integration: the lane branched before N41's hardened coverage check, which then caught the unrowed message at merge — the gate's first catch of a sibling lane. |
