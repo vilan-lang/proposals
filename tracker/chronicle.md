@@ -1016,5 +1016,15 @@ impl), B174 (the left-operand breaking step), the Optimistic type's
 arity (paper §14.4), release.yml's gate carrying none of the three
 hygiene legs, and THE CUT — the v0.40.0 train holds 72 entries.
 
-**Order 23 verdicts, sealing:** final union suite recorded below when
-it lands; CI both platforms on the final tip; the dry-run after.
+**Order 23 verdicts, SEALED:** final union suite 5216/5216, exit 0;
+next @6cec2321 pushed; CI SUCCESS on the final tip — both platforms
+PLUS the maiden run of the new clippy and audit legs, five legs into
+the required check, and the Windows leg's pass is the case-precedence
+fix's end-to-end proof (the one completed CI verdict of the day —
+every intermediate push superseded its predecessor's run). The v0.40.0
+dry-run is CLEAN: ok on ci.yml at 6cec2321, all 72 entries sweep
+clean and order (3 breaking, 7 miscompile, 13 feature, 49 tooling).
+The owner's Order 21 condition — "cut after a work order or two" —
+is met twice over; the cut is one command away on the owner's word,
+with the website's std::print pair and art.vl's Signal drawings the
+same-hour estate moves.
