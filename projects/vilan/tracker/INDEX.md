@@ -32,6 +32,8 @@
 | [B180](items/B180.md) | NEW — a nominal left's declared `B` is never checked at dispatch | bug | b179's find; Order 24 top slot |
 | [B181](items/B181.md) | NEW — `&&`/`||` accept a generic operand, emit the value as the bool | bug | b179's find; one-line right half |
 | [B182](items/B182.md) | NEW — a refused bare-trait field cascades ~50 errors, roots printed last | bug | kolt migration's lesson |
+| [B183](items/B183.md) | NEW — tuple comprehension `(item in tuple => EXP)` + the zip form | design | owner-proposed |
+| [B184](items/B184.md) | NEW — trait annotations on struct fields, one-instantiation rule | design | owner-proposed; discussion REQUIRED |
 
 ## C. Memory model
 
@@ -58,6 +60,7 @@
 | [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
 | [E112](items/E112.md) | NEW — `line_indices` caches a closed workspace file forever | bug | editor-health's find |
 | [E113](items/E113.md) | NEW — file-mode/LSP color a module by default-entry, not reachability | bug | the owner's element report; FIX-NOW |
+| [E114](items/E114.md) | NEW — gray out unused imports, declarations, unreachable code | feature | owner-proposed; DiagnosticTag door |
 
 ## G. Macros & const
 
