@@ -66,6 +66,7 @@
 | [E109](items/E109.md) | NEW — the `pub` rule's cascade; `public` refused as `pub` | bug | audit 6 F10+F21 |
 | [E110](items/E110.md) | NEW — the web-set steer's claimed LSP suppression does not exist | bug | audit 6 F22 |
 | [E111](items/E111.md) | NEW — semantic tokens and inlay hints drift after a `Some(let …)` pattern | bug | owner report; tuple payload, B167's territory in the span subsystem |
+| [E112](items/E112.md) | NEW — `line_indices` caches a closed workspace file forever | bug | editor-health's find |
 
 ## G. Macros & const
 
