@@ -37,6 +37,7 @@
 | [B175](items/B175.md) | NEW — `T::default()` under a multi-bound infers as the bound, not `T` | bug | operators' find; blocks closing the Trait skip-hole |
 | [B176](items/B176.md) | NEW — a bounded generic right operand of `str + x` never calls `Display` | bug | LIVE MISCOMPILE; FIX-NOW lane |
 | [B177](items/B177.md) | NEW — an array impl's return check refuses with a self-contradicting message | bug | operators' find |
+| [B178](items/B178.md) | NEW — `fun main(p: bool)` compiles and emits broken JS | bug | traits-core's find; refuse-or-emit ruling |
 
 ## C. Memory model
 
@@ -80,6 +81,7 @@
 | [G19](items/G19.md) | NEW — the const channel's lexical fence vs symlink escape | design | audit 6 F7; OWNER QUESTION |
 | [G20](items/G20.md) | NEW — file-mode `check` ignores the manifest | bug | audit 6 F11 |
 | [G21](items/G21.md) | NEW — the watcher gives const directories the hook reading | bug | audit 6 F23; safe |
+| [G22](items/G22.md) | NEW — a `.vl` file reached under two names collects twice | bug | symlinks' residual |
 
 ## I. Collections
 
