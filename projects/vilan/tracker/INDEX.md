@@ -128,3 +128,4 @@
 | [N42](items/N42.md) | NEW — the gates' exemption lists have no stale-exemption check | process | hygiene's find |
 | [N43](items/N43.md) | NEW — the phase-timing line mislabels two buckets | process | editor-perf's find |
 | [N44](items/N44.md) | NEW — resources.md states the pre-last-use scope-end law; memory.md needs adjudication | process | audit7-records' find |
+| [N45](items/N45.md) | NEW — the ignored-pins backstop is blind to `cfg(windows)` pins | process | audit7-windows' find |
