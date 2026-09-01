@@ -1218,7 +1218,9 @@ the train holds 37 entries with two released miscompiles fixed
 (B188, B196).
 
 **Order 24 verdicts, sealing:** final union 5437/5437, exit 0 (run unsigned on the resolved tree while the vault was locked); next @33692bb2
-pushed; CI watching (amended below when the run lands) both platforms + clippy + audit (the first
+pushed; CI SUCCESS both platforms + clippy + audit (the first
 uninterrupted run — every earlier one superseded by the next merge
-push); the vault locked at the last merge commit and the seal waited
+push; the Windows leg's first real run of the seven live
+`cfg(windows)` symlink pins — all green, pin 2's junction-reads-as-
+symlink assumption HELD; the B198 pin correctly ignored); the vault locked at the last merge commit and the seal waited
 on the owner's unlock, gates run unsigned meanwhile.
