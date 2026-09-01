@@ -699,3 +699,12 @@ Re-keys at N38 (2026-09-01): rows **248** and **284** now carry the
 from one shared table (`std`, `pkg`, `macro_std`, `vilan`) both
 refusals read, so the set cannot fork again.
 | 358 | analyzer.rs (`written_application_arity_error`, the `prepped_type_locals` drain) | `` `{name}` takes {count} type argument{plural}, {given} given — write `{spelling}` `` |QUALIFIES — B188's refusal: an under- or over-supplied type application in any written annotation position (bare `Holder` for `Holder<S>` used to ERASE the parameter and print `seven1` through an `i32`); not flagship — the message carries its own fix. Generated code exempt (B194). Pins `generics::b188_*` (20). (Lane b188 minted it 346; rowed 358 at integration behind b180/b172/hygiene.) |
+| 359 | analyzer.rs (`check_entry_main_parameters`, B178) | `` `main` takes no parameters: the shell owns what is passed to a program, so nothing can call the entry with arguments — read them with `std::process::args()`, which hands back the argument tail as a `List<str>` `` |QUALIFIES — the owner's ruling verbatim ("only the shell owns that"); flagship, appendix "Names and imports"; pins `std_surface::b178_*`. (Lane rulings-smalls minted it 346; rowed 359 at integration.) |
+| 360 | analyzer.rs (`element_view_shadow_message`, A35) | ``element syntax lowers to `std::ui::view`, and `view` here is your own `fun view` — rename it, or write this element as its lowered call, `ui::view(…)` `` |QUALIFIES — the shadowed-case twin of the absent-case steer, detection keyed on the markup span so a hand-written `view(1)` keeps the arity message; flagship, appendix "Contexts and UI"; pins `modules::a35_*`. (Minted 347 by the lane; rowed 360.) |
+
+E119 (2026-09-01): the `struct '…' has no field '…'` and `cannot call
+method '…' on …` rows gain a NOTE under the type's declaration when
+the type is a std LAYER twin — "`View` here is std's process twin —
+this file is analyzed under node: no entry reaches it (default-entry
+is `server`)" — carrying the platform REASON (package target / reached
+by leg / default-entry / --platform). Notes are not rowed.
