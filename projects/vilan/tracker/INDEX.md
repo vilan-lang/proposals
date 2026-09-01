@@ -38,6 +38,7 @@
 | [B168](items/B168.md) | NEW — a bound's bare generic argument loses its constraints in a generic body | bug | a33's find; pin ignored, three signatures wait |
 | [B169](items/B169.md) | NEW — an unbounded generic right operand still escapes `+`'s typing | bug | b148's residual; pin ignored |
 | [B170](items/B170.md) | NEW — binary operators skip the check for non-nominal LEFT operands | bug | audit 6 F3; b148's other half |
+| [B171](items/B171.md) | NEW — the spec's `is`-binding scope sentence is false; the true scope wants a ruling | design | b166's find |
 
 ## C. Memory model
 
