@@ -34,6 +34,7 @@
 | [B195](items/B195.md) | NEW — a negated `is` capture reads `undefined` in its then-branch | bug | rulings-smalls' find; FIX-NOW after merge |
 | [B196](items/B196.md) | NEW — every native operator except `+` unchecked for bool/str/enum LEFT operands | bug | audit 7 F1; RELEASED miscompile; FIX-NOW |
 | [B197](items/B197.md) | NEW — an operator impl with no method compiles and panics naming nothing | bug | audit 7 F12 |
+| [B199](items/B199.md) | NEW — an `is` capture through a call argument reads the missing payload | bug | b195's find; off-spine |
 
 ## C. Memory model
 
@@ -69,6 +70,7 @@
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
 | [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
 | [G22](items/G22.md) | NEW — a `.vl` file reached under two names collects twice | bug | symlinks' residual |
+| [B198](items/B198.md) | NEW — Windows: generated-root containment fails open for a not-yet-written product | bug | audit 7 hazard (c); ruling; pin lands red |
 
 ## I. Collections
 
