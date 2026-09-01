@@ -34,7 +34,6 @@
 | [B182](items/B182.md) | NEW — a refused bare-trait field cascades ~50 errors, roots printed last | bug | kolt migration's lesson |
 | [B183](items/B183.md) | NEW — tuple comprehension `(item in tuple => EXP)` + the zip form | design | owner-proposed |
 | [B184](items/B184.md) | NEW — trait annotations on struct fields, one-instantiation rule | design | owner-proposed; discussion REQUIRED |
-| [B185](items/B185.md) | NEW — `mut` rebind of a trait-default closure param loses a container type | bug | pre-cut find; FIX-NOW, cut held |
 
 ## C. Memory model
 
