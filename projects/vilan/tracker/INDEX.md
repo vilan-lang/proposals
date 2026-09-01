@@ -33,6 +33,10 @@
 | [B171](items/B171.md) | NEW — the spec's `is`-binding scope sentence is false; the true scope wants a ruling | design | b166's find |
 | [B172](items/B172.md) | NEW — a module-qualified type path is a parse error in every type position | bug | templates lane; the web prelude makes it load-bearing |
 | [B173](items/B173.md) | NEW — a blanket impl never satisfies a bound for a generic value | design | b168's find; ruling wanted, pin waits |
+| [B174](items/B174.md) | NEW — an unbounded generic LEFT operand of `+` still concatenates | bug | operators' residual; breaking step deferred, pin waits |
+| [B175](items/B175.md) | NEW — `T::default()` under a multi-bound infers as the bound, not `T` | bug | operators' find; blocks closing the Trait skip-hole |
+| [B176](items/B176.md) | NEW — a bounded generic right operand of `str + x` never calls `Display` | bug | LIVE MISCOMPILE; FIX-NOW lane |
+| [B177](items/B177.md) | NEW — an array impl's return check refuses with a self-contradicting message | bug | operators' find |
 
 ## C. Memory model
 
