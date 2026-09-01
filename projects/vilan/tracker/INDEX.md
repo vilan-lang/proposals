@@ -39,7 +39,8 @@
 | [B176](items/B176.md) | NEW — a bounded generic right operand of `str + x` never calls `Display` | bug | LIVE MISCOMPILE; FIX-NOW lane |
 | [B177](items/B177.md) | NEW — an array impl's return check refuses with a self-contradicting message | bug | operators' find |
 | [B178](items/B178.md) | NEW — `fun main(p: bool)` compiles and emits broken JS | bug | traits-core's find; refuse-or-emit ruling |
-| [B179](items/B179.md) | NEW — a bounded generic in `+`'s numeric position still miscompiles | bug | b176's find; ruling wanted, pin waits |
+| [B180](items/B180.md) | NEW — a nominal left's declared `B` is never checked at dispatch | bug | b179's find; Order 24 top slot |
+| [B181](items/B181.md) | NEW — `&&`/`||` accept a generic operand, emit the value as the bool | bug | b179's find; one-line right half |
 
 ## C. Memory model
 
@@ -146,3 +147,4 @@
 | [N38](items/N38.md) | NEW — two shipped sentences disagree on the reserved-name set | process | records' find; shared constant |
 | [N39](items/N39.md) | NEW — `ISTRING` is used normatively, never declared in §2 | process | records' find |
 | [N40](items/N40.md) | NEW — `free_port()`'s bind-release-rebind race, two e2e suites | process | perf's find |
+| [N41](items/N41.md) | NEW — the ledger gate's catch-all row + helper blind spot | process | b179's find; day-one customer |
