@@ -139,3 +139,5 @@
 | [N35](items/N35.md) | NEW — `hmr_css_matrix` reads the bundle while the watcher writes it | bug | load-dependent race, seen once |
 | [N36](items/N36.md) | NEW — the diagnostics ledger is three orders stale | process | audit 6 F8+F9+F20 |
 | [N37](items/N37.md) | NEW — the errors appendix is ungated, flagship messages missing | process | audit 6 F12 |
+| [N38](items/N38.md) | NEW — two shipped sentences disagree on the reserved-name set | process | records' find; shared constant |
+| [N39](items/N39.md) | NEW — `ISTRING` is used normatively, never declared in §2 | process | records' find |
