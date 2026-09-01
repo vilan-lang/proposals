@@ -91,6 +91,7 @@
 | [K5](items/K5.md) | The design language — adopt | feature | |
 | [K8](items/K8.md) | Website features & small visual upgrades | feature | |
 | [K13](items/K13.md) | NEW — the docs on the vilan framework, the port proper — behind its markdown prerequisite | feature | |
+| [K14](items/K14.md) | NEW — the playground's buffers carry no prelude; examples teach the old spelling | design | v0.40.0 deploy's find; OWNER QUESTION |
 
 ## L. Release engineering & beta — NEW SECTION
 
