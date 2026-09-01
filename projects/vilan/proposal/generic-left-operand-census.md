@@ -64,8 +64,9 @@ the estate. The real set is **16 binary** (`+ - * / % << >> & ^ | == != <
 <= > >=`) **plus 5 compound**, the compound forms inheriting their base
 trait (pinned at `platform.rs:5366`).
 
-**Method.** Every `.vl` file; every fenced block in `.md` (```vilan,
-```vilan,fragment, and bare fences); and every vilan source embedded in
+**Method.** Every `.vl` file; every fenced block in `.md` — the
+`vilan`-tagged fences, the `vilan,fragment` ones, and bare fences alike;
+and every vilan source embedded in
 Rust — both `r#"…"#` raw strings and ordinary escaped `"…\n…"` literals,
 with `{{`/`}}` format-brace unescaping. Trait headers located by regex,
 bodies by brace matching, members split into abstract (`;`-terminated)
@@ -94,6 +95,12 @@ Two of the 375 grep-level `trait X {` lines in `crates/` are genuine
 **Rust** traits, not embedded vilan, and were excluded:
 `vilan-core/src/interpreter.rs:255` (`pub trait AssetReader`) and
 `vilan-cli/src/main.rs:752` (`trait CommandFailure`).
+
+**One bucket boundary, declared.** The docs figure counts **every** fence
+in `vilan/docs/**.md`, including bare ones. Restricting strictly to
+`vilan`-tagged fences drops the docs trait count from 31 to ~19. **The
+hit count is 0 either way**, so the boundary does not move any number
+this paper is arguing from.
 
 Three buckets are worth stating explicitly because they are the ones the
 owner would most fear: **kolt declares no traits at all** (19 `.vl`
