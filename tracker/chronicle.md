@@ -1023,7 +1023,7 @@ the required check, and the Windows leg's pass is the case-precedence
 fix's end-to-end proof (the one completed CI verdict of the day —
 every intermediate push superseded its predecessor's run). The v0.40.0
 dry-run is CLEAN: ok on ci.yml at 6cec2321, all 72 entries sweep
-clean and order (3 breaking, 7 miscompile, 13 feature, 49 tooling).
+clean and order (3 breaking, 13 miscompile, 14 feature, 42 tooling).
 The owner's Order 21 condition — "cut after a work order or two" —
 is met twice over; the cut is one command away on the owner's word,
 with the website's std::print pair and art.vl's Signal drawings the
