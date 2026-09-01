@@ -68,6 +68,7 @@
 | [E117](items/E117.md) | NEW — a ghost diagnostic lingers after a comment/uncomment round-trip | bug | owner report; stale-publish ordering |
 | [E118](items/E118.md) | NEW — the formatter lays out an inline element closure argument oddly | bug | owner report |
 | [E119](items/E119.md) | NEW — a field miss on an overlaid std type should name the overlay and why | bug | owner ruling, A35's companion |
+| [E120](items/E120.md) | NEW — every std import steer is silently dead in the playground | bug | playground lane's find |
 
 ## G. Macros & const
 
