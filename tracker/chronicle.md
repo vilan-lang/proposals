@@ -933,3 +933,88 @@ ruled IN ("I'd like to see what you build").
 **Order 22 verdicts, sealing:** final union suite 5057/5057, exit 0;
 CHANGELOG parity 40/40 at the merge tip; push + CI + the v0.40.0
 dry-run recorded below when they land.
+
+## Order 23 — cycle 41: the reactive arc built, the operator family closed, three gates minted (2026-08-31 → 09-01)
+
+Ten wave-1 lanes + wave-2 reactive-replumb + two FIX-NOWs + the N21
+solo slot; integration continuous (lanes merged as they landed, eleven
+merges), final tip after b179. SHIPPED, the arc: B162 trait-associated
+functions (Trait::func = the trait's own default body, ruled) + B161
+constraint annotations (let-position, unify-then-meet, §12.2's
+destructor hole shut by SEMANTICS) + B165 + THE REPLUMB — SignalCell
+the cell, `trait Signal<T>: Source<T>`, update LOCKED to the cell,
+Signal::new default-bodied, the clamping exhibit running through both
+ui layers, [expose] reconciling nominal std::Source, MaybeSignal with
+both blankets, AttrValue/Slot collapsed. Three general fixes forced:
+trait-assoc generics bind from the call (B162's own pin was too weak
+to catch it); bound-site calls no longer inherit context requirements
+from same-named members on unrelated traits (MaybeSignal unshippable
+without it); impl_select grounds a bound's binder before its
+instantiation tier. THE OPERATOR FAMILY: B170 (the non-nominal-left
+guard skip — closures concatenated their own source text), B169, B176
+(FIX-NOW: the render-bound route BUILT, i-string + `+=` same hole,
+never-silent guard), B179 (found by b176's lane, RULED by the owner
+same day — membership in the left operand's admitted set, provable by
+bound only where a trait names the set — and FIXED same day across
+the whole native-left family). B168 (the undirected unifier). ALSO:
+templates adopted the preludes (B156 ARC COMPLETE), the symlink family
+under G19's supported-spelling doctrine, editor-health (E106's watcher
+leak found via the owner's restart datapoint made rigorous, E107's
+real cause NOT the line break, E111 fixed at the span source —
+B167's shape again), diag-smalls, records (ledger current + THREE new
+gates: diagnostics, appendix, EBNF — the EBNF gate found await/is
+missing from the normative grammar), perf (M15 thread-CPU ratio: 5%
+spread across loadavg 8→107; M16's 37 merged bodies, 124 corpus
+programs byte-identical under node; M11 answered NOT-a-leak), N21
+(clippy 217→0, audit clean, both CI legs), and THE LUCIDE PIPELINE in
+the owner's kolt (1.38.0 pinned, 1791 icons, 4.3s clean build; the
+reachability measurement — 645× — drew the owner's per-icon ruling
+AND seeded M18, the owner's bundle-boundary attribute idea).
+
+CI: the Order 22 tip's Windows leg RED — a REAL catch, not flake:
+`import std::Default;` resolved case-insensitively to std's own
+default.vl before the removed-alias steer; precedence fixed, the arm
+unreachable on case-sensitive filesystems so the Windows leg IS its
+end-to-end check. Every intermediate push superseded the previous run,
+so the final tip's CI is the day's one completed verdict.
+
+PROCESS, confessed: the integrator's own incidents this order — a
+hand-union in generics.rs ate a pin's closing `);}` and the break rode
+ONE PUSHED COMMIT because the targeted gates run after that merge
+(split, corpus) never compiled the inference binary: after a
+hand-union, compile the touched binary. A `cargo test` (not nextest)
+targeted run raced the process-global leak tally and produced a false
+red that cost a bisect: tally-bearing binaries go through nextest,
+always. The close batch initially MISSED B168 — caught by the
+changelog-vs-INDEX sweep (Order 19's lesson, now twice-proven); its
+first run also half-executed before a stale assert, teaching
+validate-all-then-mutate. Marker-eaten-at-merge recurred ~6 times
+(repaired each time, parity checked before every add; families
+verified against the lane branch when reinserting). The records
+lane's suite hit the directory-watch talking timeout under 10-lane
+load (STRIKE TWO for that pin across orders; a third earns an item);
+perf found the free_port bind-release-rebind race (N40) — the fleet's
+next flake family named in advance. The 1Password vault locked
+mid-N21; the lane STOPPED per the rule, staged everything, and the
+commits landed on the owner's unlock. One environment change disclosed:
+rustup gained the Windows target so the M15 FFI arm could be
+compile-checked for real.
+
+CLOSED here (28): A32, B156, B157, B161, B162, B165, B168, B169,
+B170, B176, B179, E107, E108, E109, E110, E111, G17, G18, G19, G20,
+G21, M11, M15, M16, N21, N34, N36, N37. FILED (17): A35, B171 (O22's
+b166), B172-B181's opens (B172-B175, B177, B178, B180, B181), E112,
+G22, M17, M18, N38-N41. STAYS OPEN deliberately: E106 (instrumented,
+the owner's next slow session decides), kolt.local 038 (built,
+pending the owner's review+commit). RULINGS BANKED: B179's
+operand-role semantics (the family's unifying principle), the bundle
+call on 038 (per-icon spellings), M18 filed as the owner's idea.
+OWNER QUESTIONS STANDING: B180 (the ruling's second steer is broken
+until it closes — Order 24 top slot), B178 (parameterized main:
+refuse or emit), B173 (may an abstract parameter satisfy a blanket
+impl), B174 (the left-operand breaking step), the Optimistic type's
+arity (paper §14.4), release.yml's gate carrying none of the three
+hygiene legs, and THE CUT — the v0.40.0 train holds 72 entries.
+
+**Order 23 verdicts, sealing:** final union suite recorded below when
+it lands; CI both platforms on the final tip; the dry-run after.
