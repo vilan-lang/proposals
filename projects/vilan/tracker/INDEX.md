@@ -36,6 +36,7 @@
 | [B184](items/B184.md) | NEW — trait annotations on struct fields, one-instantiation rule | design | owner-proposed; discussion REQUIRED |
 | [B186](items/B186.md) | NEW — `fun f(x: Trait)` as an implicit generic (the §7.3 parameter sugar) | design | owner-ruled WANTED; Order 24 |
 | [B187](items/B187.md) | NEW — a negated `is` whose then-branch diverges binds the continuation | design | owner question off B171 |
+| [B188](items/B188.md) | NEW — an under-supplied type argument is erased, not refused (`seven1` through an `i32`) | bug | papers' find; LIVE MISCOMPILE + ICE; FIX-NOW |
 
 ## C. Memory model
 
