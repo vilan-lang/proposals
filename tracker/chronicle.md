@@ -1028,3 +1028,48 @@ The owner's Order 21 condition — "cut after a work order or two" —
 is met twice over; the cut is one command away on the owner's word,
 with the website's std::print pair and art.vl's Signal drawings the
 same-hour estate moves.
+
+## v0.40.0 — SHIPPED 2026-09-01
+
+Cut at d9532a9e (tag moved once, see below), release.yml GREEN all
+legs + downstream publishes, 10 assets; folded to main (fast-forward,
+main = the tag commit); site DEPLOYED and verified live (the homepage
+renders the SignalCell drawing); toolchains 0.40.0 both locations
+(~/.vilan from the release, ~/.cargo/bin from the tip). 74 entries:
+3 breaking, 14 miscompile, 14 feature, 43 tooling.
+
+THE ROAD TO THE CUT was three held gates, each earning its hold:
+(1) E113 — the owner's persistent editor error was file-mode/LSP
+coloring modules by default-entry; fixed by reachability, both
+surfaces, vintage pre-Order-23 (the owner's own web-prelude adoption
+exposed it by deleting the browser-evidence imports the old
+inference keyed on). (2) B185 — the website migration's clean-build
+gate caught `resolve_variable` grounding on an unfilled closure
+parameter's Unknown — a MISCOMPILE (the dropped `__clone`, silent
+sharing) hiding behind kolt's constraint-timing accident; 16 pins,
+the brief's discrimination corrected on all four axes by the lane.
+(3) The publish itself — GitHub's 125,000-character release-body cap
+refused the 221,530-character section; fixed at the workflow (whole
+entries to a 110k margin, family order guaranteeing breaking+
+miscompile survive, pointer to the changelog for the rest), tag
+moved pre-publication. The deploy then caught a fourth: examples.js
+is GENERATED and the hand edit tripped its staleness gate — fixed at
+the source examples, which surfaced K14 (a manifest-less playground
+buffer carries NO prelude, so the seeded examples now teach
+`import std::io::print;` — the owner's question).
+
+ESTATE: kolt fully migrated (web prelude, module-carried style with
+B172's type-position exceptions, interact.vl on the Window/
+Subscription surface, store fields SignalCell) — check/build/probe/
+lucide-e2e all green, client.js 64,447 B; website migrated minimal
+(12 param renames, prelude sweep, art drawings) and live. PROCESS:
+the chained-edit trap struck AGAIN (a failed python assert did not
+gate the git chain; the changelog entry silently missed while the
+tag moved) — the Order 22 sweep's sibling, now a RULE: an edit's
+exit code gates the chain, or the chain does not run. The tag-move
+was safe only because nothing had published; noted as the boundary.
+
+Orders 17→23 and two cuts now ship in this chronicle's span. The
+owner-question queue at rest: B180 (Order 24 top slot), B178, B173,
+B174, B181, Optimistic arity, release.yml's bare gate, B183/B184
+discussions, M18's paper trigger, K14's prelude door.
