@@ -39,6 +39,8 @@
 | [B188](items/B188.md) | NEW — an under-supplied type argument is erased, not refused (`seven1` through an `i32`) | bug | papers' find; LIVE MISCOMPILE + ICE; FIX-NOW |
 | [B189](items/B189.md) | NEW — three cascade siblings B182's stand-down does not reach | bug | b182's finds |
 | [B190](items/B190.md) | NEW — a struct literal through a module-qualified path does not parse | bug | b172's find |
+| [B191](items/B191.md) | NEW — a let-bound self-call in a recursive tail cannot resolve (B126's orphaned residue) | bug | N27's first catch |
+| [B192](items/B192.md) | NEW — a partial generic-argument list leaves the rest uninferred | bug | b186's find |
 
 ## C. Memory model
 
