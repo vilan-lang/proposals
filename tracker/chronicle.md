@@ -843,7 +843,12 @@ pending-finally-at-exit pin gap recorded). The integrator's hand-merges
 audited clean: line-multiset, zero invented lines. A CORRECTION to
 Order 19's record: c8609287 moved 38 pins and added 15 (53 touched),
 not the 51 the close entry said — the audit could not reconcile the
-count and the commit is the authority.
+count and the commit is the authority. [RE-CORRECTED by audit run 7,
+2026-09-01: the close entry's 51 WAS right — 51 modified + 17 added +
+0 removed = 68 touched, derived by `grep -c '^+#\[test\]'`, hunk
+contexts, and `--stat -M`; the commit MESSAGE's 38/15 was wrong on all
+three counts and run 5 recalled it instead of deriving. The commit is
+not the authority; the derivation is.]
 
 CLOSED here: B154, B159, E102, E104, F14, G13, G14, A30, N29, N30, N31
 (+ A28/A29/B150/B151/B152/C12 swept earlier the same day when the

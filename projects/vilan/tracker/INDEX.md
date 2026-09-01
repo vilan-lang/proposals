@@ -32,6 +32,8 @@
 | [B193](items/B193.md) | NEW — a trait default's `self + self` miscompiles (host `+` over lowered structs) | bug | operators-tail's find; pin waits |
 | [B194](items/B194.md) | NEW — `[derive]` on a generic type generates erased impls | design | b188's STOP; reflection surface + bound ruling |
 | [B195](items/B195.md) | NEW — a negated `is` capture reads `undefined` in its then-branch | bug | rulings-smalls' find; FIX-NOW after merge |
+| [B196](items/B196.md) | NEW — every native operator except `+` unchecked for bool/str/enum LEFT operands | bug | audit 7 F1; RELEASED miscompile; FIX-NOW |
+| [B197](items/B197.md) | NEW — an operator impl with no method compiles and panics naming nothing | bug | audit 7 F12 |
 
 ## C. Memory model
 
