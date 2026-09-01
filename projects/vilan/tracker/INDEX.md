@@ -38,6 +38,7 @@
 | [B187](items/B187.md) | NEW — a negated `is` whose then-branch diverges binds the continuation | design | owner question off B171 |
 | [B188](items/B188.md) | NEW — an under-supplied type argument is erased, not refused (`seven1` through an `i32`) | bug | papers' find; LIVE MISCOMPILE + ICE; FIX-NOW |
 | [B189](items/B189.md) | NEW — three cascade siblings B182's stand-down does not reach | bug | b182's finds |
+| [B190](items/B190.md) | NEW — a struct literal through a module-qualified path does not parse | bug | b172's find |
 
 ## C. Memory model
 
