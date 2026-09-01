@@ -127,3 +127,4 @@
 | [N35](items/N35.md) | NEW — `hmr_css_matrix` reads the bundle while the watcher writes it | bug | load-dependent race, seen once |
 | [N42](items/N42.md) | NEW — the gates' exemption lists have no stale-exemption check | process | hygiene's find |
 | [N43](items/N43.md) | NEW — the phase-timing line mislabels two buckets | process | editor-perf's find |
+| [N44](items/N44.md) | NEW — resources.md states the pre-last-use scope-end law; memory.md needs adjudication | process | audit7-records' find |
