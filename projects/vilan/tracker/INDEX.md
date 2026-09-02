@@ -72,6 +72,7 @@
 | [E122](items/E122.md) | NEW — `semantic_tokens_range` computes the full stream then filters | bug | latency paper's find; no design needed |
 | [E123](items/E123.md) | NEW — `did_open` analyzes inline, blocking a tokio worker | bug | latency paper's find |
 | [E124](items/E124.md) | NEW — gray top-level dead items in a single-entry package? (no visibility marker → top-level is surface) | editor | OWNER'S DECISION; E114's residual |
+| [E125](items/E125.md) | NEW — `semanticTokens/range` answers in analyzed coordinates; `full` answers live through the anchor | editor | e122-fold's find; keystroke-path design call |
 
 ## G. Macros & const
 
