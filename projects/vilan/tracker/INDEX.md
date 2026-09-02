@@ -128,6 +128,7 @@
 | [M22](items/M22.md) | NEW — a watch round recompiles every leg, not the reached one | perf | editor-perf's HMR measurement |
 | [M23](items/M23.md) | NEW — M9's overlay rule refuses the base cache for an entry importing an OPEN buffer (client.vl `base` 1.4–2.7 s every keystroke) | performance | perf-25's find; largest item on E121's diagnostics path |
 | [M24](items/M24.md) | NEW — BASE_CACHE has no eviction; M21 multiplies retained worlds per package | performance | perf-25's find; M11's standing finding |
+| [M25](items/M25.md) | NEW — completion is the keystroke path's whole remaining budget (per-module sweep + per-request read_dir; kolt burst 12 ms) | performance | keystroke-path's find; E121's next tranche |
 
 ## N. Hygiene & rot — NEW SECTION
 
