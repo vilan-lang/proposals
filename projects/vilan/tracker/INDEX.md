@@ -37,6 +37,7 @@
 | [B201](items/B201.md) | NEW — `[derive]` inside an inline `mod` generates at file top level | bug | cascade-25's find |
 | [B202](items/B202.md) | NEW — `[expose]` of a non-Source field leaves the macro's `_` placeholder as a type | bug | cascade-25's find; B189's residual |
 | [B203](items/B203.md) | NEW — watch/HMR leg-skip decided before any leg compiles; cross-leg artifact inputs can skip stale | bug | perf-25's find; pre-existing |
+| [B204](items/B204.md) | NEW — should `panic(…)` diverge for the checker as it does for paint? | bug | e114-rest's find; language question |
 
 ## C. Memory model
 
@@ -66,6 +67,7 @@
 | [E121](items/E121.md) | NEW — the editor-latency mandate: <10 ms keystroke path, <500 ms errors | design | owner-set target; ARC, paper first |
 | [E122](items/E122.md) | NEW — `semantic_tokens_range` computes the full stream then filters | bug | latency paper's find; no design needed |
 | [E123](items/E123.md) | NEW — `did_open` analyzes inline, blocking a tokio worker | bug | latency paper's find |
+| [E124](items/E124.md) | NEW — gray top-level dead items in a single-entry package? (no visibility marker → top-level is surface) | editor | OWNER'S DECISION; E114's residual |
 
 ## G. Macros & const
 
@@ -139,3 +141,4 @@
 | [N45](items/N45.md) | NEW — the ignored-pins backstop is blind to `cfg(windows)` pins | process | audit7-windows' find |
 | [N46](items/N46.md) | NEW — the watch pins' talking timeout reds under lane load (strike three) | process | the union's last named flake |
 | [N47](items/N47.md) | NEW — an output-asserting docs form (`vilan,run` + transcript) | process | docs-law's proposal |
+| [N48](items/N48.md) | NEW — std's own dead code: two rpc.vl sites | hygiene | e114-rest's find |
