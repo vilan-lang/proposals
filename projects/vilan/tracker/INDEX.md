@@ -40,6 +40,8 @@
 | [B204](items/B204.md) | NEW — should `panic(…)` diverge for the checker as it does for paint? | bug | e114-rest's find; language question |
 | [B205](items/B205.md) | NEW — `self.add(self)` in a trait default over a supertrait: supertrait `Self` not specialized to the subtrait | bug | operators-25's find |
 | [B206](items/B206.md) | NEW — conformance steer renders `B = Self` as the trait name (`b: PartialEq`) | bug | operators-25's find; pre-existing |
+| [B207](items/B207.md) | NEW — LSP containment test canonicalizes an unsaved buffer lexically (B198's shape) | bug | hygiene-25's find |
+| [B208](items/B208.md) | NEW — a watch round's second trigger is LOST (round 2 never fires in 300 s) — N46's real mechanism | bug | hygiene-25's find; undiagnosed |
 
 ## C. Memory model
 
@@ -145,3 +147,5 @@
 | [N46](items/N46.md) | NEW — the watch pins' talking timeout reds under lane load (strike three) | process | the union's last named flake |
 | [N47](items/N47.md) | NEW — an output-asserting docs form (`vilan,run` + transcript) | process | docs-law's proposal |
 | [N48](items/N48.md) | NEW — std's own dead code: two rpc.vl sites | hygiene | e114-rest's find |
+| [N49](items/N49.md) | NEW — `release_differential` is the union's 615 s critical path; split per program | hygiene | hygiene-25's find |
+| [N50](items/N50.md) | NEW — three more exemption tables without N42's inverse check | hygiene | hygiene-25's find |
