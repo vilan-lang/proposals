@@ -34,6 +34,8 @@
 | [B197](items/B197.md) | NEW — an operator impl with no method compiles and panics naming nothing | bug | audit 7 F12 |
 | [B199](items/B199.md) | NEW — an `is` capture through a call argument reads the missing payload | bug | b195's find; off-spine |
 | [B200](items/B200.md) | NEW — unary `-` on a non-numeric operand keeps the operand's type (`-true` is `-1` typed bool) | bug | b196's find; pin waits |
+| [B201](items/B201.md) | NEW — `[derive]` inside an inline `mod` generates at file top level | bug | cascade-25's find |
+| [B202](items/B202.md) | NEW — `[expose]` of a non-Source field leaves the macro's `_` placeholder as a type | bug | cascade-25's find; B189's residual |
 
 ## C. Memory model
 
