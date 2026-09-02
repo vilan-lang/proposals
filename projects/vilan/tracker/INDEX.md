@@ -36,6 +36,7 @@
 | [B200](items/B200.md) | NEW — unary `-` on a non-numeric operand keeps the operand's type (`-true` is `-1` typed bool) | bug | b196's find; pin waits |
 | [B201](items/B201.md) | NEW — `[derive]` inside an inline `mod` generates at file top level | bug | cascade-25's find |
 | [B202](items/B202.md) | NEW — `[expose]` of a non-Source field leaves the macro's `_` placeholder as a type | bug | cascade-25's find; B189's residual |
+| [B203](items/B203.md) | NEW — watch/HMR leg-skip decided before any leg compiles; cross-leg artifact inputs can skip stale | bug | perf-25's find; pre-existing |
 
 ## C. Memory model
 
@@ -121,6 +122,8 @@
 | [M20](items/M20.md) | NEW — a chunk snapshots dependencies by value; wrong-order evaluation binds `undefined` forever | bug | m18-paper's P3; latent, route-partition-safe |
 | [M21](items/M21.md) | NEW — an entry with any `pkg::` import bypasses the BASE_CACHE | perf | editor-perf's find; 250-290 ms/keystroke |
 | [M22](items/M22.md) | NEW — a watch round recompiles every leg, not the reached one | perf | editor-perf's HMR measurement |
+| [M23](items/M23.md) | NEW — M9's overlay rule refuses the base cache for an entry importing an OPEN buffer (client.vl `base` 1.4–2.7 s every keystroke) | performance | perf-25's find; largest item on E121's diagnostics path |
+| [M24](items/M24.md) | NEW — BASE_CACHE has no eviction; M21 multiplies retained worlds per package | performance | perf-25's find; M11's standing finding |
 
 ## N. Hygiene & rot — NEW SECTION
 
