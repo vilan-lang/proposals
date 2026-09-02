@@ -61,6 +61,8 @@
 | [E114](items/E114.md) | NEW — gray out unused imports, declarations, unreachable code | feature | owner-proposed; DiagnosticTag door |
 | [E120](items/E120.md) | NEW — every std import steer is silently dead in the playground | bug | playground lane's find |
 | [E121](items/E121.md) | NEW — the editor-latency mandate: <10 ms keystroke path, <500 ms errors | design | owner-set target; ARC, paper first |
+| [E122](items/E122.md) | NEW — `semantic_tokens_range` computes the full stream then filters | bug | latency paper's find; no design needed |
+| [E123](items/E123.md) | NEW — `did_open` analyzes inline, blocking a tokio worker | bug | latency paper's find |
 
 ## G. Macros & const
 
