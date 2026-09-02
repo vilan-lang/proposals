@@ -1092,3 +1092,18 @@ cost (§5.2). §7 D9 turns that estimate into a gate.
   (c)'s admission and the diagnostic between them. Slice 2 is a change to
   shipped, byte-pinned emission with no user-visible feature attached to it.
   Does the owner want it taken as its own item, ahead of the attribute?
+
+## Correction to §4.1 / D5 (lane m20, 2026-09-01)
+
+The shipped emitter never reached P3's `TypeError` shape: its preamble
+is filtered by `eager_names.contains(name)`, so a SIBLING chunk's name
+got no binding whatsoever and the call site dangled with a
+`ReferenceError` — the same root (no live cross-chunk reference form),
+one step worse than §4.1 recorded. M20 shipped the call-site registry
+read for sibling names (eager names stay snapshotted, sound by
+construction); the wrong-order pin now resolves where the shipped
+emitter threw `ReferenceError` and the snapshot form threw
+`TypeError`. Zero cross-chunk references on today's route partition —
+inert on every plan v1 can make. M20 removes the ORDERING hazard only:
+a call before the provider is fetched still throws, loudly and now
+recoverably; arranging the fetch is the attribute's (M18's).
