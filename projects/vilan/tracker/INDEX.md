@@ -30,7 +30,7 @@
 | [B191](items/B191.md) | NEW — a let-bound self-call in a recursive tail cannot resolve (B126's orphaned residue) | bug | N27's first catch |
 | [B192](items/B192.md) | NEW — a partial generic-argument list leaves the rest uninferred | bug | b186's find |
 | [B193](items/B193.md) | NEW — a trait default's `self + self` miscompiles (host `+` over lowered structs) | bug | operators-tail's find; pin waits |
-| [B194](items/B194.md) | NEW — `[derive]` on a generic type generates erased impls | design | b188's STOP; reflection surface + bound ruling |
+| [B194](items/B194.md) | NEW — `[derive]` on a generic type generates erased impls | design | b188's STOP; reflection surface + bound ruling STOPPED at the ruling boundary: the ruled default breaks C7's phantom Handle<T>; reachability refinement measured green — OWNER'S WORD |
 | [B197](items/B197.md) | NEW — an operator impl with no method compiles and panics naming nothing | bug | audit 7 F12 |
 | [B199](items/B199.md) | NEW — an `is` capture through a call argument reads the missing payload | bug | b195's find; off-spine |
 | [B200](items/B200.md) | NEW — unary `-` on a non-numeric operand keeps the operand's type (`-true` is `-1` typed bool) | bug | b196's find; pin waits |
