@@ -354,8 +354,10 @@ second-class view (`self`/`&`/`&mut` conventions), no ownership change, rule-4 p
   framework-driven data teardown, `Drop` for the language hook. A resource without a
   `Drop` impl is legal — containment alone still enforces moves and drops its fields.
 
-- **Timing and order.** At the owner's scope end, still-owned resource locals drop in
-  reverse declaration order; a value's own `drop` body runs before its fields (reverse
+- **Timing and order.** At each owner's LAST USE (the Order 21 ruling, amended from the scope
+  end: declaration counts as a use, so an unread resource drops where it
+  was created; simultaneous last uses drop in reverse declaration order),
+  still-owned resource locals drop; a value's own `drop` body runs before its fields (reverse
   field order); enum payloads drop with the value. Every exit runs drops: fall-through,
   `ret`, `jump break`/`jump continue` (out of the scopes they leave), and panic
   unwinding.
