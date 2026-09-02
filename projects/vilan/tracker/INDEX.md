@@ -133,3 +133,4 @@
 | [N44](items/N44.md) | NEW — resources.md states the pre-last-use scope-end law; memory.md needs adjudication | process | audit7-records' find |
 | [N45](items/N45.md) | NEW — the ignored-pins backstop is blind to `cfg(windows)` pins | process | audit7-windows' find |
 | [N46](items/N46.md) | NEW — the watch pins' talking timeout reds under lane load (strike three) | process | the union's last named flake |
+| [N47](items/N47.md) | NEW — an output-asserting docs form (`vilan,run` + transcript) | process | docs-law's proposal |
