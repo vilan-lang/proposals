@@ -1224,3 +1224,194 @@ push; the Windows leg's first real run of the seven live
 `cfg(windows)` symlink pins — all green, pin 2's junction-reads-as-
 symlink assumption HELD; the B198 pin correctly ignored); the vault locked at the last merge commit and the seal waited
 on the owner's unlock, gates run unsigned meanwhile.
+
+## Order 25 — cycle 43: the latency mandate, the operator tail, the ruled stragglers (2026-09-01, one day)
+
+Opened on the owner's four answers to Order 24's queue (cut DEFERRED,
+B174 "take it", the ruling queue accepted, the shape accepted) and a
+new MANDATE: <10 ms per keystroke for tokens/hints/completion on a
+large codebase, errors <500 ms — E121, an arc, paper first. Twelve
+wave-1 lanes off the sealed tip 33692bb2.
+
+THE PAPER (editor-latency.md, merged): E121's premise corrected — NO
+request waits for the analysis (the five-provider burst is 15 ms;
+diagnostics 1,111 ms). The real defects: every request RECOMPUTES
+over the whole program (cost ∝ reachable functions — the 10 ms
+budget is spent at ≈490, the 500 ms at ≈600), answers are UNMARKED-
+STALE (one 409 ms window), superseded analyses NEVER CANCELLED.
+Sequence N43 → M21 (analyzer.rs:40358, :40096) → M19's first tranche
+(:4315/:4329) → M22 → cancellation; the KEYSTROKE PATH (§2.1) gated
+on Q1. The owner ruled all six questions the same day (Q3 EXCLUDE
+the debounce; kolt NEVER integrated into vilan's codebase — the gate's
+exhibit is generated); the keystroke-path lane launched on the
+rulings. Two mechanical finds → lane e122.
+
+MERGED so far: docs-law (N44: 32 stale "scope end" sentences, two
+fences that promised the reverse of their output — witnessed by
+hand; N47 filed for an output-asserting docs form; destruction.md's
+own §5 amended at integration), playground-steers (E120: the embedded
+inventory + the toggle arm; the filing's removed-alias claim
+corrected; rows 363/364 assigned at integration — N41's helper blind
+spot, second family), m20 (call-site registry reads; the paper's D5
+corrected — ReferenceError, not TypeError; no golden moved),
+cascade-25 (B192: `call_substitution` RACED its three binding
+channels instead of merging — the unwritten generic reached emission
+abstract, over-long lists silently dropped, now refused; B189: three
+provenance siblings — the unresolved-name arm, derive-templated
+paths keyed on the refused SPELLING, `[expose]`'s two shapes keyed
+on the element as rendered — the kolt-shaped fixture 4→2; B190: the
+qualified struct literal, the last spelling off B172's type-path,
+through parser, node, formatter, analyzer and the grammar; found
+B201 derive-inside-mod and B202 rpc.vl's `_` placeholder), perf-25
+(THE MANDATE'S FIRST CUT: kolt views.vl keystroke→diagnostics 2.04 →
+0.91–1.14 s CPU — M19 tranche 1 memoizes the bound check on the
+resolved Type, `checks` 2284→769 ms; M21 keys BASE_CACHE on the
+entry's package root + sibling set, `base` 156–586 ms → 0.0 from
+analysis 2; N43's phase labels honest with `dispatch-refine` a
+deliberate slice; M22 makes `build --watch` decide with the HMR
+round's own two functions — `Compiled client` + `Fresh probe` +
+`Fresh server`, 2.31 → 1.55 s. FOUND, the new largest item: M23 —
+M9's overlay rule refuses the store for an entry importing an OPEN
+buffer, client.vl `base` 1.4–2.7 s every keystroke; M24 no eviction;
+B203 the leg-skip set decided before any leg compiles), e114-rest
+(the gray-out's last two thirds — and a REFRAMING the owner must
+rule on: the language has no visibility marker, so a top-level item
+is module surface a single-entry analysis cannot call dead; shipped
+is function-local bindings + unreachable code via one shared
+`Divergence` analysis (paint adds `panic` and the endless `for {}`);
+both on the debounced path only, 118 → 6 ms after a per-file entity
+fetch; 17 pins; E124 the single-entry-package question, N48 std's
+own dead code, B204 panic-as-divergence), b174 (THE OWNER'S "TAKE
+IT": an operator on an unbounded generic left operand is refused
+with the bound named — 16 binaries + `&&`/`||`, supertraits counting
+(std's `minmax<T: Ord>` rides `PartialOrd`'s `le`); the census
+re-derived by hand, ONE live estate site in 482 traits; six pins
+red-first with the pre-fix garbage run through emitted JS; a third
+surface nobody priced — derive-generated `eq` over a `T` field —
+exempted on the `DERIVED_SOURCE` boundary until B194), operators-25
+(THE OPERATOR FAMILY CLOSED END TO END: B200 — unary `-`/`!` had NO
+operand rule at all, `-true` was `-1` typed bool, `!Point{…}` false,
+`-Level::High` a Level matching no variant; now an admitted set per
+operator, stated not read off an impl, census zero, 15 pins; B193 —
+a default's `self + self` was native JS on the payload, `Money{21}
+.twice()` printed 2 and `self == self` was `===`, one defect in two
+halves fixed on both sides of the analyzer/transformer seam; B197 —
+the owner's "required at impl time": std's `panic("not implemented
+yet")` stubs had satisfied conformance; 63 estate impls all
+provide their method; breaking, migration "write the method".
+13 ledger rows minted locally against already-assigned ids AND
+mirrored as literals in the gate's hand-rowed table — the
+integrator's mapping step; found B205 the explicit `self.add(self)`
+spelling and B206 `b: PartialEq` in a steer).
+
+hygiene-25 (N46 ANSWERED WITH NUMBERS: the CPU-clock direction
+measured and rejected — a sleeping poll loop burns 1 ms/s whatever
+the load, so a CPU deadline is a wall deadline in other units and
+blurs starved from stuck; built the `wall-clock-waits` serial group,
+38 pins, two of them found by its own anti-rot gate, two bounds
+raised to 300 s (one had been GRAZED at 9.58 s of 10 on a quiet box),
+106/106 green at loadavg 106–143; and the honest residual — the
+recorded strike was a LOST WAKE-UP, round 2 never firing in 300 s
+despite 15 re-touches, B208; N42's three inverse checks each
+red-proved by removing the exemption's reason; N45 textual as
+suspected, Windows clippy CLEAN after one cfg gate; B198's
+canonical-or-fail on both sides of the containment test, the
+Windows pin live but locally unverifiable; found B207 the LSP's
+unsaved-buffer twin, N49 `release_differential` the 615 s critical
+path, N50 three more exemption tables).
+
+THE KEYSTROKE PATH (lane keystroke-path, E121 §2.1 as ruled): an
+analysis captures its own tokens, hints, declaration-shape stamp and
+symbol index ONCE on the analysis thread; a request re-serves the
+capture through a two-sided edit anchor (a straddling span is
+dropped, never clamped); the stamp is every lexer token outside a
+body, so it survives a mid-keystroke syntax error. THE GATE PASSES:
+release, generated 1,791-function exhibit (kolt never in the tree),
+loadavg 42 — the replaced walk 1.104 ms, semanticTokens 0.004,
+inlayHint 0.001, completion 0.592, the burst 0.828 ms against the
+10 ms budget, asserted live against the walk it replaced. kolt
+views.vl at four times the paper's load: tokens 12.2 → 0.30 ms. The
+old "answer the analyzed snapshot" pin went RED and was rewritten to
+the ruled contract — Q5 overturned it. What remains of the burst is
+completion's per-module sweep (12 ms on kolt) — M25; the diagnostics
+half of the mandate (500 ms) is M23 → M19 tranche 2 → cancellation.
+A near-miss recorded: the index's first cut contributed every loaded
+module's names at a scope position — 125 candidates became 3,144 —
+caught only because the lane ran the kolt probe.
+
+e122 (the paper's two mechanical finds: `semanticTokens/range`
+computed the whole file then filtered per token — the 20-line
+viewport cost 1.01× the file, now 0.006× through a per-analysis
+stream with a line index, invalidated in the ONE place the analyzed
+snapshot moves; `did_open` analyzed inline on the async handler —
+open-then-request 1,271 → 8 ms once it schedules like every other
+path; three pins had gone SOFT under the scheduled open — a leak
+gate's twelve opens had stopped analyzing and its loop fell from
+tens of seconds to 88 ms — repaired in the same commit; M26 filed
+for the cancellation the paper sequenced last). Its merge collided
+with the keystroke path by DESIGN, not by text — two per-analysis
+token captures built in parallel from the same paper — so a fold
+lane (e122-fold) reconciled them on its own worktree: one capture,
+one invalidation point, the ruled architecture winning by
+measurement.
+
+STOPPED AT A RULING BOUNDARY — b194: the accepted rule (bound every
+parameter under the derived trait, Rust's default) breaks C7's
+shipped, pinned doctrine — std's `Handle<T>` is a PHANTOM subject,
+and `impl Handle<type T: Wire> with Wire` would make `Handle<Session>`
+un-sendable against "a name is not the thing it names". The lane
+did not invent a second rule; it MEASURED the one amendment that
+satisfies both rulings — bind a parameter iff the generated body
+REACHES it, bare binder for a phantom (exact and syntactic in vilan,
+which Rust's `PhantomData` forbids Rust) — 919/919 across the census
+including the C7 pin, held everything uncommitted, and reported.
+Family reclassified feature (nothing runs wrong today). The refined
+form is COMMITTED on its branch (0a20b28a), unmerged, 8 pins each
+claimed by a planted wrong rule, with the owner's question written
+verbatim: accept reachability, or keep Rust's every-parameter
+default and amend C7 — delete its pin and rewrite two doc pages to
+say a handle's `T` must itself be Wire. The lane also corrected the
+integrator: B189's covered set is diagnostic dedup on a different
+axis and does not lift; b174's operator exemption does.
+
+PROCESS, so far: the chained-edit rule broken TWICE by the
+integrator on the same file (destruction.md's wrapped sentence) — a
+commit message claimed an amendment that had not landed; corrected
+in the next commit with the confession in its message. The shared
+stash stack bit TWICE: m20's `pop` took e114-rest's stash, then
+e114-rest's `pop` took e122's (one stack across every worktree of a
+repo) — both recovered fully, by hash, nothing lost; RULE: lanes
+never `git stash` while others run, a detached worktree or a
+scratch copy is the baseline instrument — into every brief's
+mechanics. The recolor pin
+`a_package_import_edit_recolors…` red in two lanes' unions and
+"alone" under 10-lane load, green alone at loadavg 86 in 13.8 s and
+on CI — N46's family, the LSP harness's wall-clocked waits. THE
+PRE-SEAL UNION on the ten-lane tip went 5565/5566, and the one red
+was N46's own anti-rot gate doing its job across lanes: perf-25's
+new watch pin file, written on a branch the group never saw, drove
+a live watch session outside the serialized set — joined whole, one
+commit. A gate written against rot within a branch caught rot
+BETWEEN branches on its first union.
+
+SEALED the same day at f261a90d: 12 lanes launched (one added mid-
+order on the paper's rulings, one fold lane added at integration),
+11 MERGED, b194 HELD on its branch for the owner's word. The final
+tree's union 5572/5572 (the fold lane's run on the exact tree; the
+pre-seal union one commit earlier 5565/5566 with the one red the
+N46 gate's cross-lane catch), clippy, Windows cross-check and audit
+green; CHANGELOG Unreleased 59 entries, parity 59/59 — THE TRAIN
+IS NOW 59 ENTRIES, the cut deferred by the owner's word until "a
+couple more of these issues" are fixed. Ledger rows 363–380 assigned
+at integration (five lanes minted local ids, one against ids already
+assigned, one mirrored as literals in the gate's own hand-rowed
+table — the mapping step now a script). CLOSED 20: N44, E120, M20,
+B192, B189, B190, N43, M21, M22, E114, B174, B200, B193, B197, N46,
+N42, N45, B198, E122, E123. FILED 17: B201–B208, M23–M26, N48–N50,
+E124, E125. OPEN QUESTIONS FOR THE OWNER: B194 (reachability vs
+amend C7 — the lane's two-sentence question), E124 (top-level gray
+in single-entry packages), B204 (panic as checker divergence), the
+cut. The mandate's ledger after one order: the keystroke half MET
+(0.83 ms burst on 1,791 functions; kolt tokens 12.2 → 0.30 ms); the
+diagnostics half at ~0.9–1.0 s CPU on kolt against 500 ms, its path
+sequenced M23 → M19 tranche 2 → M26.
