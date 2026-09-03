@@ -47,6 +47,7 @@
 | [B218](items/B218.md) | NEW — two implicit generics of one trait print the same name: `Expected X, but got X` (Q3's diagnostic face) | bug | b211-b212's find |
 | [B219](items/B219.md) | NEW — `compare_type_rigid` does not consult `rigid_binder_scope`; the documented twins disagree | bug | b211-b212's find |
 | [B220](items/B220.md) | NEW — an array receiver has B210's emission-side hole (`resolve_member_on_type` excludes arrays) | bug | b209-b210's find; a decision |
+| [B221](items/B221.md) | NEW — a diverging non-last statement does not exempt the return tail (B124's list) | bug | b204's find; pre-existing |
 
 ## C. Memory model
 
