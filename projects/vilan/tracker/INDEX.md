@@ -11,6 +11,7 @@
 | [A14](items/A14.md) | Reactive residuals | design | |
 | [A34](items/A34.md) | NEW — a typed style token has no mid-value spelling in a css block | design | b148's census find; real gap revealed |
 | [A36](items/A36.md) | NEW — `Style::when(condition, delta)` conditional-merge combinator | feature | RULED ACCEPTED 2026-08-31 (style-variants Q3); ready to queue |
+| [A37](items/A37.md) | NEW — `[gone]` trait-member attribute: reachable only through the trait (method surface, for blanket impls) | design discussion | NOT queued; the owner unsure of its value |
 
 ## B. Type system & the type solver
 
@@ -25,7 +26,7 @@
 | [B184](items/B184.md) | NEW — trait annotations on struct fields, one-instantiation rule | design | owner-proposed; discussion REQUIRED |
 | [B187](items/B187.md) | NEW — a negated `is` whose then-branch diverges binds the continuation | design | owner question off B171 |
 | [B191](items/B191.md) | NEW — a let-bound self-call in a recursive tail cannot resolve (B126's orphaned residue) | bug | N27's first catch |
-| [B194](items/B194.md) | NEW — `[derive]` on a generic type generates erased impls | design | b188's STOP; reflection surface + bound ruling STOPPED at the ruling boundary: the ruled default breaks C7's phantom Handle<T>; reachability refinement measured green — OWNER'S WORD |
+| [B194](items/B194.md) | ACCEPTED 2026-09-03 — the reachability rule (bind a parameter iff the generated body reaches it; bare binder for a phantom); branch merging | bug | lift b174's operator DERIVED_SOURCE exemption next order; B189's covered set stays |
 | [B199](items/B199.md) | NEW — an `is` capture through a call argument reads the missing payload | bug | b195's find; off-spine |
 | [B201](items/B201.md) | NEW — `[derive]` inside an inline `mod` generates at file top level | bug | cascade-25's find |
 | [B202](items/B202.md) | NEW — `[expose]` of a non-Source field leaves the macro's `_` placeholder as a type | bug | cascade-25's find; B189's residual |
@@ -60,7 +61,7 @@
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
 | [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
 | [E121](items/E121.md) | NEW — the editor-latency mandate: <10 ms keystroke path, <500 ms errors | design | owner-set target; ARC, paper first |
-| [E124](items/E124.md) | NEW — gray top-level dead items in a single-entry package? (no visibility marker → top-level is surface) | editor | OWNER'S DECISION; E114's residual |
+| [E124](items/E124.md) | RULED 2026-09-03 — no visibility markers: a `[package]`'s top-level dead code = unreached by ANY entry (the pruner's definition unioned across entries); libraries no top-level gray; `[doc(hidden)]` the soft surface; `[keep]` reserved | editor | PAPER first, then build — an upcoming order |
 | [E125](items/E125.md) | NEW — `semanticTokens/range` answers in analyzed coordinates; `full` answers live through the anchor | editor | e122-fold's find; keystroke-path design call |
 
 ## G. Macros & const
