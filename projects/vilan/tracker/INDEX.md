@@ -42,6 +42,8 @@
 | [B213](items/B213.md) | NEW — `vilan fmt` walks once per root; overlapping roots double-report a file | bug | watch-26's find |
 | [B214](items/B214.md) | NEW — `ret` inside `main` emits an illegal top-level `return` (compiles, throws at run — MISCOMPILE) | bug | bindings-26's find; lane b214-b215 |
 | [B215](items/B215.md) | NEW — a bare `let b = x is Some(let n)` binds `n` afterwards; the capture never materializes (MISCOMPILE) | bug | bindings-26's find; lane b214-b215 |
+| [B216](items/B216.md) | NEW — a parameterized supertrait clause loses `Self` in a default body (B205's gate) | bug | cascade-26's find |
+| [B217](items/B217.md) | NEW — generated-code type misses via the `prepped_*` route are not anchored at the derive | bug | cascade-26's find |
 
 ## C. Memory model
 
@@ -71,6 +73,7 @@
 | [E125](items/E125.md) | NEW — `semanticTokens/range` answers in analyzed coordinates; `full` answers live through the anchor | editor | e122-fold's find; keystroke-path design call |
 | [E126](items/E126.md) | NEW — the diagnostics gate's exhibit misses kolt's cost 178× on call substitutions; needs a view-shaped generator | editor | m19-paper's find; M19-t1 gate prerequisite |
 | [E127](items/E127.md) | NEW — no `did_change_watched_files` handler; disk-read module listings stale until re-analysis | editor | m25-e125's find |
+| [E128](items/E128.md) | NEW — hover renders `= Self` as the trait's name | editor | cascade-26's find; B206's other half |
 
 ## G. Macros & const
 
