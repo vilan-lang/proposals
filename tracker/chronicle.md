@@ -1433,3 +1433,5 @@ the run, outputs after. Both at 53c3b8bf; CI GREEN there on all eight jobs, Wind
 lesson for the record: a Windows pin the lane cannot run locally
 (B198's) and a Linux-green race are the two shapes the cross-check
 compiles but cannot see — the seal is not sealed until CI says so.
+
+B194 LANDED 2026-09-03 at 635e3728 on the owner's word — reachability accepted over amending C7; union 5580/5580 at the merge; b174's operator exemption lifts in Order 26's first lane.
