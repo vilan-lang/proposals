@@ -148,8 +148,8 @@ is in fact reached through an ordinary edge, or is not a root at all:
 
 | named in the ruling | what it actually is |
 |---|---|
-| `[rpc]` | **not a root.** `analyzer::service_impl_source` (:39562) *synthesizes source* for a `dispatcher(self)` method that routes each `[rpc]` method. That is real AST with real call edges, so kolt's `[rpc]` methods are reached from `main` through `store.dispatcher()` (`src/server.vl:20`). An `[rpc]` method on a service no entry installs is genuinely dead, and should gray. |
-| `[expose]` | **not a root, and not an item marker.** `[expose]` is a *struct-field* attribute (`parsing.rs:4867`, in `parse_struct_field`) that gives the generated client a typed `RemoteSource` mirror. It has no bearing on item reachability. |
+| `[rpc]` | **not a root.** `analyzer::service_impl_source` (:39570) *synthesizes source* for a `dispatcher(self)` method that routes each `[rpc]` method. That is real AST with real call edges, so kolt's `[rpc]` methods are reached from `main` through `store.dispatcher()` (`src/server.vl:20`). An `[rpc]` method on a service no entry installs is genuinely dead, and should gray. |
+| `[expose]` | **not a root, and not an item marker.** `[expose]` is a *struct-field* attribute (`parsing.rs:4865`, in `parse_struct_field`) that gives the generated client a typed `RemoteSource` mirror. It has no bearing on item reachability. |
 | derive-generated impls | **not a root, and invisible to paint.** Derives expand through `analyzer::derive_impl_source` into `DERIVED_SOURCE`, a sentinel `SourceId` with no path (`analyzer.rs:38495`, `derived_origin`). They never land in a user file's id range, so a file-scoped paint cannot reach them even by accident. |
 | macros | **not a root.** Macro expansion produces source before analysis; the graph sees the expansion. Correct as the ruling states it. |
 | `export` | **not a root and not a surface.** `export` re-exports an *import*; it creates no new item. |
@@ -427,7 +427,7 @@ Not per keystroke, not on the diagnostics path's own analysis. A
   entity ids. Ids are minted per analysis and are not comparable across
   the three programs — the union in §1's exhibit was taken in Python on
   `(path, span)` for exactly this reason. `Function::name_span`
-  (`analyzer.rs:706`) is the natural key: unique per declaration, already
+  (`analyzer.rs:707`) is the natural key: unique per declaration, already
   the anchor for go-to-definition and rename.
 - **Cache.** Per package root, invalidated by content hash of the entry
   set's transitive closure — which is what the analysis already computes
@@ -617,9 +617,9 @@ line in the diagnostic's steer, not a special case in the design.
 ### 5.1 `[doc(hidden)]` — shipped, and orthogonal
 
 `[doc(hidden)]` parses on functions in the ordered attribute prefix
-(`parsing.rs:4501`, `parse_doc_hidden_attribute`) and is recorded on the
+(`parsing.rs:4499`, `parse_doc_hidden_attribute`) and is recorded on the
 function; it omits the item from completion and nothing else. It shipped
-2026-07-02 (`transport-rpc.md` §238) and std uses it on externs.
+2026-07-02 (`transport-rpc.md`:238) and std uses it on externs.
 
 Its role in E124 is exactly what the ruling says and no more: it is the
 **soft surface tool for a `[library]`** — curate what a consumer
@@ -639,7 +639,7 @@ Reserved, named, and **not built**:
 - **Spelling.** `[keep]` — a bare marker attribute, no argument, parsed
   by `eat_marker_attribute("keep")` beside `[must_use]` in the ordered
   prefix `[deprecated] [extern] [must_use] [rpc] [trait_only]
-  [doc(hidden)] [platform]` (pinned in `bundle-boundaries.md` §244), added
+  [doc(hidden)] [platform]` (pinned in `bundle-boundaries.md`:244), added
   to `KNOWN_ATTRIBUTE_MARKERS` (`parsing.rs:647`) and to the two
   highlighting grammars the three-place rule and `grammar_sync.rs` hold
   to it.
