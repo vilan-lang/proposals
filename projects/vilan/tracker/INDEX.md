@@ -67,6 +67,7 @@
 | [E124](items/E124.md) | RULED 2026-09-03 — no visibility markers: a `[package]`'s top-level dead code = unreached by ANY entry (the pruner's definition unioned across entries); libraries no top-level gray; `[doc(hidden)]` the soft surface; `[keep]` reserved | editor | PAPER first, then build — an upcoming order |
 | [E125](items/E125.md) | NEW — `semanticTokens/range` answers in analyzed coordinates; `full` answers live through the anchor | editor | e122-fold's find; keystroke-path design call |
 | [E126](items/E126.md) | NEW — the diagnostics gate's exhibit misses kolt's cost 178× on call substitutions; needs a view-shaped generator | editor | m19-paper's find; M19-t1 gate prerequisite |
+| [E127](items/E127.md) | NEW — no `did_change_watched_files` handler; disk-read module listings stale until re-analysis | editor | m25-e125's find |
 
 ## G. Macros & const
 
@@ -125,6 +126,7 @@
 | [M26](items/M26.md) | NEW — superseded analyses run to completion (dropped at land, never cancelled); did_open registers no pending generation | performance | e122's find; E121's cancellation step |
 | [M27](items/M27.md) | NEW — `lsp-index` editor tables 110–584 ms per keystroke, outside analyze and every tranche | performance | m19-paper's find |
 | [M28](items/M28.md) | NEW — `plan_resource_drops` 350–600 ms, whole-program switch on any resource type | performance | m19-paper's find; Q4 |
+| [M29](items/M29.md) | NEW — completion tranche 3: whole-buffer tokenize/parse per request; member completion 2.63 ms | performance | m25-e125's finds |
 
 ## N. Hygiene & rot — NEW SECTION
 
