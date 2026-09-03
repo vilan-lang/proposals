@@ -1435,3 +1435,20 @@ lesson for the record: a Windows pin the lane cannot run locally
 compiles but cannot see — the seal is not sealed until CI says so.
 
 B194 LANDED 2026-09-03 at 635e3728 on the owner's word — reachability accepted over amending C7; union 5580/5580 at the merge; b174's operator exemption lifts in Order 26's first lane.
+
+## Order 26 — cycle 44: the diagnostics half of the mandate, the ruled stragglers, four papers (2026-09-03 → )
+
+Opened on the owner's rulings of 2026-09-03: B194 reachability
+(landed at 635e3728), B204 `panic` is `never` through erasure, E124
+no visibility markers (package-level union reachability + `[doc
+(hidden)]`, paper first), B183 "a whole suite of monadic
+transformations" (paper), B184's four cases and the `impl Trait`
+noise question (paper), A37 `[gone]` filed unqueued. The cut stays
+deferred (61 entries). Thirteen lanes off 635e3728: b194-landing,
+b204, m23-m24, m26, m25-e125, cascade-26, bindings-26, watch-26,
+hygiene-26, and four paper lanes — m19-paper, e124-paper,
+b183-paper-2, b184-paper-2. Process rules carried from Order 25:
+never `git stash`; ledger rows as NEW; Windows-only pins reported as
+CI-verified; the integration helpers rebuilt after the scratchpad
+was wiped by a session restart.
+
