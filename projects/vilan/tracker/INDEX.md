@@ -39,6 +39,7 @@
 | [B210](items/B210.md) | NEW — a tuple receiver resolves no methods at any arity (B170's Add reached via the operator path only) | bug | b183-paper-2's find |
 | [B211](items/B211.md) | NEW — a body re-binds its own generic parameter: `swap(A, B)` prints A's impl reading a B's field (MISCOMPILE) | bug | b184-paper-2's bycatch; lane b211-b212 same day |
 | [B212](items/B212.md) | NEW — duplicate top-level type declarations unrefused (resolve by order); a struct as a bound gets no sort refusal | bug | b184-paper-2's bycatch; lane b211-b212 |
+| [B213](items/B213.md) | NEW — `vilan fmt` walks once per root; overlapping roots double-report a file | bug | watch-26's find |
 
 ## C. Memory model
 
