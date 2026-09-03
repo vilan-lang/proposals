@@ -318,6 +318,13 @@ step 2's changelog check, not after.
 
 ### 7.2 Cutting a release: the whole sequence
 
+> Amended 2026-09-03 (Order 26): two families joined the set — `fix` (a
+> wrong refusal, diagnostic or behavior corrected; a miscompile is the
+> wrong RUN and keeps its own family) and `performance` (nothing changes
+> but the cost) — ordered breaking, miscompile, fix, feature,
+> performance, tooling/diagnostics. The script's `rank_of` and the
+> `release_scripts` fixture carry the six ranks.
+
 Steps 1–5 above are what CI does once a `v*` tag exists. This is what the
 person cutting does, start to finish. It is written down here because until
 2026-08-07 the second half of it lived nowhere but a comment in the pages
@@ -346,7 +353,7 @@ and 5 are the human's, and `cut-release.sh` finishes by printing them verbatim.
    At 2.7 cuts a day that section held one or two entries; at a weekly
    train it holds fifteen, so the retitle is also an **ordering** step. The
    order is the one a reader wants: breaking changes first, then
-   miscompiles, then features, then diagnostics and tooling — separated by
+   miscompiles, then fixes, then features, then performance, then diagnostics and tooling — separated by
    the `---` rules the changelog already uses between related entries.
 
    **The family is written down, not inferred.** Each entry under
