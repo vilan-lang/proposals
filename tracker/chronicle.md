@@ -1415,3 +1415,21 @@ cut. The mandate's ledger after one order: the keystroke half MET
 (0.83 ms burst on 1,791 functions; kolt tokens 12.2 → 0.30 ms); the
 diagnostics half at ~0.9–1.0 s CPU on kolt against 500 ms, its path
 sequenced M23 → M19 tranche 2 → M26.
+
+ADDENDUM 2026-09-03 — THE SEAL'S CI VERDICT WAS RED, Windows only, two
+tests, both Order 25's: (1) B198's new unit test probed "nowhere" under
+a directory that exists in the caller's spelling, and Windows spells
+the runner's temp directory as an 8.3 short name (`RUNNER~1`) that the
+deepest existing ancestor RESOLVES to `runneradmin` — "the two agree"
+was false exactly where the function's difference lives; the probe
+now pins the resolved-anchor claim outright. (2) A watch pin the
+Order 24 seal had green on Windows went red: a build hook's stamp
+re-digested its INPUTS after the hook ran, so an input edited while
+the hook's commands were still running was stamped as consumed and
+the next round called the hook `Fresh` — a race whose window
+Windows's slower `cmd` spawns opened on every run once hygiene-25's
+serial group changed the pins' timing. Inputs are now digested before
+the run, outputs after. Both at 53c3b8bf; CI's verdict pending. The
+lesson for the record: a Windows pin the lane cannot run locally
+(B198's) and a Linux-green race are the two shapes the cross-check
+compiles but cannot see — the seal is not sealed until CI says so.
