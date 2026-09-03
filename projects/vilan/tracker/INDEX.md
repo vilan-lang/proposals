@@ -49,6 +49,7 @@
 | [B220](items/B220.md) | NEW — an array receiver has B210's emission-side hole (`resolve_member_on_type` excludes arrays) | bug | b209-b210's find; a decision |
 | [B221](items/B221.md) | NEW — a diverging non-last statement does not exempt the return tail (B124's list) | bug | b204's find; pre-existing |
 | [B222](items/B222.md) | NEW — a panicking guard does not bind the continuation: B187 decides during the walk, B204's leaves settle after | bug | found at integration; pin ignored naming it |
+| [B223](items/B223.md) | NEW — `for` conditions and `match` guards have no polarity frame; a negated capture binds where an `if` refuses | bug | b214-b215's find; refuses programs that compile today |
 
 ## C. Memory model
 
