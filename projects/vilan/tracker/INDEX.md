@@ -140,3 +140,5 @@
 | [N48](items/N48.md) | NEW — std's own dead code: two rpc.vl sites | hygiene | e114-rest's find |
 | [N49](items/N49.md) | NEW — `release_differential` is the union's 615 s critical path; split per program | hygiene | hygiene-25's find |
 | [N50](items/N50.md) | NEW — three more exemption tables without N42's inverse check | hygiene | hygiene-25's find |
+| [N51](items/N51.md) | NEW — `watch.vl` never terminates; the corpus's rule for non-terminating programs | hygiene | hygiene-26's find; OWNER'S QUESTION |
+| [N52](items/N52.md) | NEW — `infer_differential.rs` has the pre-N49 single-test shape; split it, share the list | hygiene | hygiene-26's find |
