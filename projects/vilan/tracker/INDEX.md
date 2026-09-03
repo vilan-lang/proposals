@@ -37,6 +37,8 @@
 | [B208](items/B208.md) | NEW — a watch round's second trigger is LOST (round 2 never fires in 300 s) — N46's real mechanism | bug | hygiene-25's find; undiagnosed |
 | [B209](items/B209.md) | NEW — `for x in tuple` binds `any`: writes silently discarded, `let s: str = x` accepted (MISCOMPILE) | bug | b183-paper-2's find; lane b209-b210 refuses the loop now; unroll is Q2 |
 | [B210](items/B210.md) | NEW — a tuple receiver resolves no methods at any arity (B170's Add reached via the operator path only) | bug | b183-paper-2's find |
+| [B211](items/B211.md) | NEW — a body re-binds its own generic parameter: `swap(A, B)` prints A's impl reading a B's field (MISCOMPILE) | bug | b184-paper-2's bycatch; lane b211-b212 same day |
+| [B212](items/B212.md) | NEW — duplicate top-level type declarations unrefused (resolve by order); a struct as a bound gets no sort refusal | bug | b184-paper-2's bycatch; lane b211-b212 |
 
 ## C. Memory model
 
