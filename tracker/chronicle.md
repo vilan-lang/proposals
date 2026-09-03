@@ -1429,7 +1429,7 @@ the hook's commands were still running was stamped as consumed and
 the next round called the hook `Fresh` — a race whose window
 Windows's slower `cmd` spawns opened on every run once hygiene-25's
 serial group changed the pins' timing. Inputs are now digested before
-the run, outputs after. Both at 53c3b8bf; CI's verdict pending. The
+the run, outputs after. Both at 53c3b8bf; CI GREEN there on all eight jobs, Windows included — the seal stands at 53c3b8bf. The
 lesson for the record: a Windows pin the lane cannot run locally
 (B198's) and a Linux-green race are the two shapes the cross-check
 compiles but cannot see — the seal is not sealed until CI says so.
