@@ -1458,3 +1458,222 @@ never `git stash`; ledger rows as NEW; Windows-only pins reported as
 CI-verified; the integration helpers rebuilt after the scratchpad
 was wiped by a session restart.
 
+MERGED, in the order they landed:
+- b183-paper-2 (tuple-comprehension revision 2: map and zip, nothing else — a tuple body has n
+  types, only a syntactic template instantiated n times can express it; found B209 for-over-tuple
+  binds `any` and DISCARDS writes, B210 tuple receivers resolve no methods; six §R8 questions).
+- b184-paper-2 (trait-typed-fields revision 2: the language ALREADY decided the rule one level
+  down — B161's per-binding locals and B186's parameters take an A and a B in one program — so the
+  owner's case 4 is VALID and B184 is sugar over a hidden type parameter, byte-identical emission;
+  revision 1's whole-program reservations stood against rule (a) only; dynamic is off the table
+  (trait objects declined 2026-08-07, a value is a bare array); grammar bare, the LSP already
+  paints trait vs struct in the same annotation position; BYCATCH two garbage runs through the
+  reconcile arm trait-objects.md §1.4 called "the leak" — B211 — and duplicate declarations
+  unrefused, resolving by declaration order — B212; four questions).
+
+INTEGRATION acts: b194-landing merged first at 694dc142 (inference 3341/3341 under loadavg ~90).
+The release script's family set extended at integration — Order 26's entries used `fix` and
+`performance`, which the integrator's own briefs had invented; `rank_of` returned 0 and the cut
+would have refused the whole section (m25-e125 caught it with `--dry-run`); releases.md §7.2 now
+orders six ranks, the script and its fixture carry them, one tooling entry records it — landed in two commits because the first half-landed (see PROCESS).
+m25-e125 merged at 3e7afcc8 on its LSP-side gates (588/588 across lsp/wasm/ide) after its own
+union was stopped at loadavg 124 to free the box; hygiene-26 at abf2bec1 (its gates re-run once
+after a wrong target crate). The release script's dry run on the real changelog then accepted
+every entry's family, refusing only on its CI gate — pending, as designed. watch-26 merged at 4ca8e928
+(the wall-clock group's 104 pins green in 185 s, Windows cross-check clean).
+bindings-26 merged at fe02cff0 (inference 3370/3370, 672 s under load); m26 and m23-m24 queued
+behind it one at a time — both rewrite the LSP's document and server files.
+cascade-26 merged clean at 88f62c09 (its `NEW` ledger row assigned 381 in a separate commit — the
+helper's clean-merge gap); the three remaining analyzer lanes folded behind it one at a time.
+b211-b212 merged at 5e1afc7e after two fold corrections (rows 382/383; the ledger gate kept
+cascade-26's shape); b209-b210 at cfb75c43 (row 384; its own gate variant dropped); b204 folded last
+across B191's spec sentence — the same paragraph rewritten by both, unioned by hand.
+b204 landed at 21848b3d after the semantic conflict; the ten performance entries relabeled at
+620aeb35 (parity 87/87) so the train orders as one under the six ranks.
+The pre-seal union on that tip, eleven code lanes and four papers in: 5855/5855, clippy, the
+Windows cross-check and the audit all green, 483 s on a quiet box.
+m26 merged at 72fee81a (one changelog hunk unioned with its marker restored, parity 75/75; lsp 561,
+inference 3362, cli 79 green); m23-m24 merged clean behind it (parity 77/77).
+
+PROCESS:
+- b204's merge built red after a clean textual fold: a SEMANTIC conflict — bindings-26's guard
+  check (B187) called the `Divergence::checker` constructor that b204 collapsed into one walk. Git
+  merges text; the build is the gate that sees types. One line — and then the pin b187 had left
+  `#[ignore]`d naming B204 ran for the first time and STILL failed: B187 decides the continuation
+  binding while the body is walked, and B204's leaves are settled after the walk, so a panicking
+  guard cannot yet bind. Two correct lanes, one seam neither could see from inside: B222, the
+  pin re-ignored naming it, the spec's note retargeted rather than removed.
+- The b211-b212 fold's first run refused its own plan over WHITESPACE: m26's cancellation macro
+  indents the check sequence one level deeper than the lane's copy, so a literal line comparison
+  called every call "new". Compared stripped, the plan held — one inserted call at HEAD's indent.
+- The same fold then unioned a TEST FILE by line hunks — six alternating hunks that cut through
+  function bodies — and produced a file with an unclosed delimiter. A test file with interleaved
+  additions merges by WHOLE FUNCTIONS by name: the pre-merge file plus the lane's new pins
+  appended entire, which is what landed. Two rules from one fold: compare stripped, merge tests
+  by name.
+- The rebuilt merge helper had a gap its predecessor never met: a CLEAN merge auto-commits, and a
+  ledger row renumbered afterwards is staged with no merge message left to reuse — the follow-up
+  commit aborted, the merge and the row both safe. Fixed in all three helpers the same hour: with
+  no MERGE_HEAD, the integration commit writes its own message.
+- Two gate specs named test targets that do not exist where the spec put them (`macro_std` under
+  vilan-core at the b194 merge; `release_differential` under vilan-cli at hygiene-26's) — each
+  stopped a chain after a clean merge and cost a re-run under load. The rule from Order 24
+  ("verify target names") restated as a step: `ls crates/<crate>/tests/` before writing the spec,
+  and the lane's own report names the binary its pins live in.
+- The integrator's chained-edit rule broken AGAIN, third order running: a `;` placed after a
+  dry-run inside a gated chain let the commit and push run after the fixture patch had failed
+  its anchor — c93bfc2a landed the script's six ranks without the fixture or the entry, under a
+  message that claimed both; corrected in the next commit with the confession in its message.
+  The rule, restated: `&&` after every step, and an exit code you want to read goes into a
+  variable, never behind a `;`.
+- the scratchpad (session-specific) was wiped by a restart between Orders 25 and 26; the integration
+  helpers were rebuilt from memory and self-tested before the first merge.
+
+- e124-paper (dead-code-paint.md: the ruled definition taken literally grays 95.7% of kolt's
+  top-level items — every type, since types emit no declaration used or not, and 1,815 lucide
+  icons declared for 4 named; narrowed to `fun` + module-level `let` with three exemptions landed
+  FIRST; per-entry sets computed out of band on a package clock because the LSP's entry is the
+  open file and 9 of kolt's 12 files have no root; 16 true finds; five questions).
+
+- m19-paper (per-module-analysis-reuse.md: NO rewrite — M21's cached world is cloned on a hit,
+  so module entities already occupy a byte-identical id prefix; generalize the frozen-source seam
+  to every cached source and REPLAY a package module's cached diagnostics; 83% of a warm kolt
+  keystroke's analyzer CPU is one unchanged module; the key `(module × imports)` is wrong — no
+  orphan rule, whole-program predicates, four passes run backwards; projection 330–420 ms then
+  230–320 against the 500; found E126 the gate's exhibit misses kolt 178× on call substitutions,
+  M27 `lsp-index` an unbudgeted 110–584 ms, M28 `plan_resource_drops`' whole-program switch).
+
+- b194-landing (first code merge: b174's operator exemption on the derived-source boundary
+  removed with a two-factor red-proof — removing B194's binder refuses the derived body, re-planting
+  the exemption silences it again; a gap closed on the way: no pin had covered `[derive]` on a
+  GENERIC ENUM, whose `PartialEq` writes `==` over payload bindings, a distinct path now pinned;
+  B189's covered set confirmed dedup, not a bound; two stale Unreleased sentences amended in place;
+  union 5581/5581).
+
+- m25-e125 (completion's whole-program tables — 2,239 candidates walked to offer 20, a `read_dir`
+  per request — captured once per analysis in a `CompletionIndex`: the exhibit's completion 0.63 →
+  0.13 ms, kolt's burst 3.76 → 2.64, candidates identical at every position; the item's
+  manifest-fingerprint cache deliberately NOT built — the server has no watched-files handler to
+  hang it on (E127) and `modules_in_root` also feeds the compiler's own import steer; `range`
+  through the anchor, pinned to agree with `full` byte for byte after an unlanded edit above the
+  viewport; the union stalled at loadavg 115 — taken on its targeted gates, the pre-seal union
+  covers the rest; found M29 the next completion slice and the RELEASE SCRIPT refusing the
+  `performance` and `fix` markers this order's entries use — fixed at integration).
+
+- hygiene-26 (N49's split found the union's 600 s: ONE corpus program, `watch.vl`, blocking forever,
+  both builds killed at the deadline and the gate comparing two identical timeout strings — a
+  verdict that could never differ, invisible under one shared clock; now one process per program
+  with a two-way coverage gate, the binary's longest unit 607 → 14 s; N50's seven inverse checks,
+  every table found clean, each red-proved by removing its reason; the seal's lesson written into
+  CLAUDE.md in two sentences; found N51 — should the corpus hold a non-terminating program? — and
+  N52, the infer differential's identical shape).
+
+- watch-26 (B208 DIAGNOSED and it was NOT a lost wake-up: the watcher is a 300 ms poll with no
+  event backend; the strikes were the hook-stamp race the seal fixed, unrescuable by nudges that
+  rewrote identical bytes — reproduced twice, the alternatives eliminated with numbers, the Linux
+  regression pin landed with a watcher trace; B203's producer-first leg schedule; B207 both sides
+  through `canonical_path_of_unwritten`; G22 one identity per file in the walk; found B213 `fmt`
+  walks once per root; union 5588/5588).
+
+- bindings-26 (B199's miscompile: 'dropped off the spine' was the same `None` as 'no condition',
+  so a capture in a call argument fell back to scope-wide visibility and printed `undefined` —
+  narrowed instead of cleared; B187 as the owner ruled — the else-less negated `is` whose branch
+  diverges binds the block, read from the FALSE-path set B195 already computed, codegen untouched;
+  B191's inference deadlock; union 5609/5609; found two more accepted-then-throws — B214 `ret` in
+  `main` is an illegal top-level `return`, B215 a bare `let b = x is Some(let n)` dangles — a
+  sixteenth lane the same day).
+
+- m26 (cancellation: a one-way token read from a thread-local, checked at every phase boundary
+  and inside the two hot loops, every checkpoint downstream of every process-global store; a
+  cancelled analysis answers `None`, never a truncated program — a draft that fell through
+  panicked in the extraction tail; a 10-keystroke burst lands one analysis and cancels nine, per
+  keystroke 6.0× cheaper on the exhibit and 7.8× on kolt; the mandate's diagnostics gate HOLDS
+  on the exhibit at 52–59 ms CPU — and stays ignored, because E126 says the exhibit is not
+  kolt, whose last keystroke is still 6 s of wall; a starvation hazard the design created was
+  found and closed; union 5601/5601).
+
+- m23-m24 (THE OVERLAY RULE: the stored base world shares the analysis's overlay copies by
+  reference count — a claim per reader, `Arc::into_inner` the whole protocol, no second copy, no
+  ordering rule, §7.9.2's five hazards each landing on a claim; both plants red, one of them the
+  use-after-free surfacing as a wrong answer exactly as M9's own plant did; seven pins clean
+  under AddressSanitizer in the adversarial shape; kolt client.vl's `base` 5 s per keystroke →
+  0 on every round, CPU −30%; M24 a byte-budgeted LRU, 512 MiB, one eviction routine returning
+  bytes and claims together; union 5586/5586).
+
+- cascade-26 (B201 by PLACEMENT — generated items now carry the declaring module's path, the
+  template untouched so B188's anchoring holds; B202 a refused exposure generates nothing, with a
+  curated refusal added for the shape the skip alone would have made silent; B205's supertrait
+  `Self` rebinding, gated off the parameterized clause where only the written name can separate
+  `B` from `Self` — B216; B206 by the written name, B197's duplicate deleted; the ledger gate
+  taught to hold a `NEW` row — the rule the briefs demanded, finally followable; union 5600/5600;
+  found B216, B217 the `prepped_*` anchoring gap, E128 hover).
+
+- b211-b212 (the paper's bycatch fixed the same day: a generic parameter is RIGID inside its
+  own body — decided in one place from the constraint anchor's scope, asymmetric so a callee's
+  binder still infers from a rigid argument, with an `inferable_generics` counterweight whose
+  hardest case was the impl binder inheriting its subject's constraint id; six garbage runs
+  refused, a CENSUS of 254 programs + examples + every fence + std with exactly one verdict
+  change, and that one honest; B212 one declaration per name and a bound names a trait, `fun`+
+  `fun` found to have RUN the second body; union 5607/5607; found B218 the display collision
+  that is Q3's face, B219 the read-only twin that drifted).
+
+- b209-b210 (the paper lane's miscompile refused the same day, with a steer that knows which
+  spelling exists WHERE — positional reads on a concrete tuple, the comprehension on a mapped one;
+  the `any` give-up narrowed so one broken loop reports once; census one hit, an iterators pin
+  that had relied on the `any` binder; B210 by adding the tuple arm to the lookup and then finding
+  two more nominal-only receiver sets one level below, the emitter's never-silent check catching
+  the second; union 5597/5597; found B220, arrays have the same emission-side hole).
+
+- b204 (the owner's ruling built: `never` already existed and already yielded — what disagreed was
+  divergence, so the checker's and paint's two walks became ONE, with the two shape-blind leaves
+  settled once per resolution and carried on the program; erasure removes only the diverging
+  participant, so the surviving arm's mismatch still reports; a fixpoint-order bug found mid-lane
+  — divergence had been read from a table that fills as calls resolve — fixed by a walk-time
+  record; N48's `0 - 1` idiom deleted, and std itself is the pin; union 5592/5592; found B221).
+
+- b214-b215 (the last lane, rebased onto the verified tip: `ret` in `main` as a labeled break —
+  the function-wrapping alternative MEASURED at 115 of 124 goldens moved and rejected; the
+  `js::Node` interpreter taught the new forms so the equivalence gate exercises them; a capture in
+  expression position reaches its own expression and nothing after — and the filed symptom
+  corrected: not a dangling name but a silently wrong value; two corpus programs had been written
+  in the refused shape; union 5875/5875; found B223 — the `for` condition and the `match` guard
+  have no polarity frame, the end state B215 stopped short of because it refuses programs that
+  compile today).
+
+QUEUED FOR THE OWNER: N51 (a corpus program that never terminates: keep, or a runnable
+Watcher fixture?); M19's five (all-or-nothing per world; replay cached diagnostics;
+the view-shaped exhibit; M28 filed; the index invariant as an assertion); E124's five (narrowed definition; withdraw-on-edit; library
+opt-in via manifest; `[keep]` vs `[used]`; the free module-level slice first, and where it renders); B184's four (case 4 = consistency vs the two kolt sites the program-wide rule bought; the return position; how the hidden argument prints; bycatch first?); the cut (train 61+); B183's six §R8 questions (suite boundary;
+unroll vs refuse `for x in tuple`; B209 in its own lane or the concrete arm's; `=>` tuple-only;
+B210; flat_map's spread body); B184's revision-2 verdicts when the paper lands; E124's paper
+questions; M19's paper questions.
+
+SEALED 2026-09-03 at 289e2a2b (the lanes' tip 22e21d11 plus two integration commits): sixteen lanes launched (twelve at the
+open, two the same day on paper-lane miscompile finds, one on the
+integration's own miscompile bycatch, plus the four papers), ALL
+MERGED. The lanes' tip's union 5875/5875 (245 s on a quiet box); clippy, the
+Windows cross-check and the audit green; CI RED there on ONE Windows pin —
+B207's `same_file` across two spellings of an unsaved path — whose
+root was real: `canonical_path_of_unwritten` gave up at a `..` in the
+unwritten tail and answered lexically while the plain spelling
+resolved through the 8.3 temp root. The tail is folded before it
+anchors, a symlinked ancestor is the Linux-runnable pin, and CI green
+at 289e2a2b. Three seals running, three times CI has had the last
+word over a green local union; three times it was a path spelled two
+ways. CHANGELOG Unreleased 90 entries,
+parity 90/90 — the train is 90 entries, the cut deferred by the
+owner's word. Ledger rows 381–385 assigned at integration (the gate
+now holds a `NEW` row, so lanes minted none by number). CLOSED 26:
+N49, N50, M25, E125, B208, B203, B207, G22, B199, B187, B191, M26,
+M23, M24, B201, B202, B205, B206, B211, B212, B209, B210, B204, N48,
+B214, B215. FILED 22: B209–B223, M27–M29, N51–N52, E126–E128, and A37
+unqueued. OPEN QUESTIONS FOR THE OWNER: the cut; B183's six; B184's
+four; E124's five; M19's five; N51; B220. The mandate's ledger after
+two orders: the keystroke half MET and its second tranche in (burst
+0.10 ms on the exhibit); the diagnostics half moved by construction —
+cancellation, the overlay rule, the byte budget — with the honest
+number that kolt's last keystroke is still six seconds of wall and
+the gate that says otherwise measures an exhibit that is not kolt
+(E126). Three released miscompiles found by this order's own lanes
+and fixed the same day (B209, B211, B214/B215); one composition gap
+found at integration and filed (B222).
