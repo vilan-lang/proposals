@@ -66,6 +66,7 @@
 | [E121](items/E121.md) | NEW — the editor-latency mandate: <10 ms keystroke path, <500 ms errors | design | owner-set target; ARC, paper first |
 | [E124](items/E124.md) | RULED 2026-09-03 — no visibility markers: a `[package]`'s top-level dead code = unreached by ANY entry (the pruner's definition unioned across entries); libraries no top-level gray; `[doc(hidden)]` the soft surface; `[keep]` reserved | editor | PAPER first, then build — an upcoming order |
 | [E125](items/E125.md) | NEW — `semanticTokens/range` answers in analyzed coordinates; `full` answers live through the anchor | editor | e122-fold's find; keystroke-path design call |
+| [E126](items/E126.md) | NEW — the diagnostics gate's exhibit misses kolt's cost 178× on call substitutions; needs a view-shaped generator | editor | m19-paper's find; M19-t1 gate prerequisite |
 
 ## G. Macros & const
 
@@ -122,6 +123,8 @@
 | [M24](items/M24.md) | NEW — BASE_CACHE has no eviction; M21 multiplies retained worlds per package | performance | perf-25's find; M11's standing finding |
 | [M25](items/M25.md) | NEW — completion is the keystroke path's whole remaining budget (per-module sweep + per-request read_dir; kolt burst 12 ms) | performance | keystroke-path's find; E121's next tranche |
 | [M26](items/M26.md) | NEW — superseded analyses run to completion (dropped at land, never cancelled); did_open registers no pending generation | performance | e122's find; E121's cancellation step |
+| [M27](items/M27.md) | NEW — `lsp-index` editor tables 110–584 ms per keystroke, outside analyze and every tranche | performance | m19-paper's find |
+| [M28](items/M28.md) | NEW — `plan_resource_drops` 350–600 ms, whole-program switch on any resource type | performance | m19-paper's find; Q4 |
 
 ## N. Hygiene & rot — NEW SECTION
 
