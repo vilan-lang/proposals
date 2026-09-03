@@ -1444,10 +1444,16 @@ no visibility markers (package-level union reachability + `[doc
 (hidden)]`, paper first), B183 "a whole suite of monadic
 transformations" (paper), B184's four cases and the `impl Trait`
 noise question (paper), A37 `[gone]` filed unqueued. The cut stays
-deferred (61 entries). Thirteen lanes off 635e3728: b194-landing,
+deferred (61 entries). Thirteen lanes off 635e3728 (CI green there): b194-landing,
 b204, m23-m24, m26, m25-e125, cascade-26, bindings-26, watch-26,
 hygiene-26, and four paper lanes — m19-paper, e124-paper,
-b183-paper-2, b184-paper-2. Process rules carried from Order 25:
+b183-paper-2, b184-paper-2 — then a FOURTEENTH the same day:
+b183-paper-2 landed within the hour (map and zip, nothing else — a
+tuple body has n types, only a syntactic template can express it)
+and found a released MISCOMPILE on the way, `for x in tuple` binding
+`any` and discarding writes (B209), plus tuple receivers resolving no
+methods at any arity (B210); lane b209-b210 builds the conservative
+refusal now, the unroll waiting on the owner's Q2. Process rules carried from Order 25:
 never `git stash`; ledger rows as NEW; Windows-only pins reported as
 CI-verified; the integration helpers rebuilt after the scratchpad
 was wiped by a session restart.
