@@ -35,6 +35,8 @@
 | [B206](items/B206.md) | NEW — conformance steer renders `B = Self` as the trait name (`b: PartialEq`) | bug | operators-25's find; pre-existing |
 | [B207](items/B207.md) | NEW — LSP containment test canonicalizes an unsaved buffer lexically (B198's shape) | bug | hygiene-25's find |
 | [B208](items/B208.md) | NEW — a watch round's second trigger is LOST (round 2 never fires in 300 s) — N46's real mechanism | bug | hygiene-25's find; undiagnosed |
+| [B209](items/B209.md) | NEW — `for x in tuple` binds `any`: writes silently discarded, `let s: str = x` accepted (MISCOMPILE) | bug | b183-paper-2's find; shape waits on Q2 (unroll vs refuse) |
+| [B210](items/B210.md) | NEW — a tuple receiver resolves no methods at any arity (B170's Add reached via the operator path only) | bug | b183-paper-2's find |
 
 ## C. Memory model
 
