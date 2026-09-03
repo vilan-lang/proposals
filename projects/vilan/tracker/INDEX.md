@@ -44,6 +44,8 @@
 | [B215](items/B215.md) | NEW — a bare `let b = x is Some(let n)` binds `n` afterwards; the capture never materializes (MISCOMPILE) | bug | bindings-26's find; lane b214-b215 |
 | [B216](items/B216.md) | NEW — a parameterized supertrait clause loses `Self` in a default body (B205's gate) | bug | cascade-26's find |
 | [B217](items/B217.md) | NEW — generated-code type misses via the `prepped_*` route are not anchored at the derive | bug | cascade-26's find |
+| [B218](items/B218.md) | NEW — two implicit generics of one trait print the same name: `Expected X, but got X` (Q3's diagnostic face) | bug | b211-b212's find |
+| [B219](items/B219.md) | NEW — `compare_type_rigid` does not consult `rigid_binder_scope`; the documented twins disagree | bug | b211-b212's find |
 
 ## C. Memory model
 
