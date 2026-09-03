@@ -40,6 +40,8 @@
 | [B211](items/B211.md) | NEW — a body re-binds its own generic parameter: `swap(A, B)` prints A's impl reading a B's field (MISCOMPILE) | bug | b184-paper-2's bycatch; lane b211-b212 same day |
 | [B212](items/B212.md) | NEW — duplicate top-level type declarations unrefused (resolve by order); a struct as a bound gets no sort refusal | bug | b184-paper-2's bycatch; lane b211-b212 |
 | [B213](items/B213.md) | NEW — `vilan fmt` walks once per root; overlapping roots double-report a file | bug | watch-26's find |
+| [B214](items/B214.md) | NEW — `ret` inside `main` emits an illegal top-level `return` (compiles, throws at run — MISCOMPILE) | bug | bindings-26's find; lane b214-b215 |
+| [B215](items/B215.md) | NEW — a bare `let b = x is Some(let n)` binds `n` afterwards; the capture never materializes (MISCOMPILE) | bug | bindings-26's find; lane b214-b215 |
 
 ## C. Memory model
 
