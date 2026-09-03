@@ -30,7 +30,7 @@
 | [B201](items/B201.md) | NEW — `[derive]` inside an inline `mod` generates at file top level | bug | cascade-25's find |
 | [B202](items/B202.md) | NEW — `[expose]` of a non-Source field leaves the macro's `_` placeholder as a type | bug | cascade-25's find; B189's residual |
 | [B203](items/B203.md) | NEW — watch/HMR leg-skip decided before any leg compiles; cross-leg artifact inputs can skip stale | bug | perf-25's find; pre-existing |
-| [B204](items/B204.md) | NEW — should `panic(…)` diverge for the checker as it does for paint? | bug | e114-rest's find; language question |
+| [B204](items/B204.md) | RULED 2026-09-03 — `panic(…)` is `never`, reconciling through erasure; the checker agrees | bug | BUILD; N48's `0 - 1` idiom goes with it |
 | [B205](items/B205.md) | NEW — `self.add(self)` in a trait default over a supertrait: supertrait `Self` not specialized to the subtrait | bug | operators-25's find |
 | [B206](items/B206.md) | NEW — conformance steer renders `B = Self` as the trait name (`b: PartialEq`) | bug | operators-25's find; pre-existing |
 | [B207](items/B207.md) | NEW — LSP containment test canonicalizes an unsaved buffer lexically (B198's shape) | bug | hygiene-25's find |
