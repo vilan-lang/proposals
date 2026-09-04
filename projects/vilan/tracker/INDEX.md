@@ -50,6 +50,7 @@
 | [B229](items/B229.md) | NEW — an unresolved value argument silently deletes the `run` site: every context read then fences, burying the real initializer error; and the 'flows through this call' note spans the whole receiver chain | bug | owner's find (kolt: 'context threading breaks fairly often'); (b) M, (a) S; B146's sibling gap |
 | [B230](items/B230.md) | NEW — `?` inside a `let` initializer double-wraps: `let v = probe()? > 0; Ok(v)` returns `Ok(Ok(true))` and an `Err` becomes `Ok(Err(..))`, never propagated (RELEASED MISCOMPILE) | bug | lane b224's find (2026-09-04); independent of B224 — the `?`-lift restructures above the expression; same-day lane b230 |
 | [B231](items/B231.md) | NEW — a `match` expression as a binary operand (`flag && match probe() { .. }`) is a parse error: `found 'else' expected an expression` | bug | lane b224's find (2026-09-04); pre-existing parser limit |
+| [B239](items/B239.md) | NEW — FILE MODE regression from B226: an open non-entry file is analyzed as the entry, so a sibling that imports it (`channel.vl` → `pkg::views`) hits the new "entry cannot be imported" error and everything it carried cascades (kolt's views.vl in the editor: 7 errors, `vilan check .` clean) | bug | the owner's report (2026-09-04, after installing 284998ed); same-day lane b239; blocks the Order 27 seal |
 
 ## C. Memory model
 
