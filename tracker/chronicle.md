@@ -1677,3 +1677,29 @@ the gate that says otherwise measures an exhibit that is not kolt
 (E126). Three released miscompiles found by this order's own lanes
 and fixed the same day (B209, B211, B214/B215); one composition gap
 found at integration and filed (B222).
+
+## Order 27 — cycle 45: the kolt-migration batch, the two ruled papers built, tranche 1 (2026-09-04 → )
+
+Opened on the owner's "Go" of 2026-09-04 after the kolt-migration
+batch (27 points, seven read-only triage lanes, 24 items filed at
+2a28613) and the owner's acceptance of E124's and M19's papers with
+their five-and-five recommendations taken as defaults (E124: `fun` +
+module `let`, withdraw-on-edit, no library key, no marker in v1, the
+module-level slice first in the editor only; M19: all-or-nothing per
+world, replay with the differential as the gate, E126 the gate's
+prerequisite, M28 its own lane, the `Note.source` invariant an
+assertion). Sixteen lanes off 289e2a2b (CI green there): b224 (TOP —
+the `&&`/`||` short-circuit lost in codegen, a RELEASED miscompile),
+b225-b219 (the struct-literal door reopening an impl's own rigid
+parameter — B219's first live consequence), checker-27 (B226 entry
+self-import, B227 `any` fills an inference hole, B228 zero-argument
+arity anchor), divergence-27 (B222/B221/B223 behind a census),
+context-27 (B229), cascade-27 (B216/B217/E128), editor-sync-27 (E132
+linkedEditingRange in analyzed coordinates — CORRUPTING, its four-line
+fix verified at triage; E133; E134; E127), completion-27 (E129–E131 +
+M29), parse-fmt-27 (E135/E136/E137/B213), e126 (the view-shaped
+exhibit + M27 measured), m19-t1, m28, e124-build, rpc-27 (A38/A40/
+A41), std-27 (A42–A45 + A36), hygiene-27 (N52, N51 on its
+recommendation). Held for the owner: B218 (B184's Q3), A46's form,
+B220's direction, the cut. The integration helpers must be rebuilt
+first (the scratchpad was wiped again between sessions).
