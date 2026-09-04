@@ -142,6 +142,12 @@
 | [M27](items/M27.md) | NEW — `lsp-index` editor tables 110–584 ms per keystroke, outside analyze and every tranche | performance | m19-paper's find |
 | [M28](items/M28.md) | NEW — `plan_resource_drops` 350–600 ms, whole-program switch on any resource type | performance | m19-paper's find; Q4 |
 | [M29](items/M29.md) | NEW — completion tranche 3: whole-buffer tokenize/parse per request; member completion 2.63 ms | performance | m25-e125's finds |
+| [M30](items/M30.md) | NEW — `callee_bindable_generics` scans every impl/trait declaration list per call: 857k calls, ~9% of a client check | performance | kolt-benchmark's find (2026-09-04); orthogonal to M19 |
+| [M31](items/M31.md) | NEW — the analyzer's 35 `IndexMap`s still hash with SipHash: 7.4M calls, 6.7% of a client check | performance | kolt-benchmark's find; E48's residual, an alias |
+| [M32](items/M32.md) | NEW — allocation ~19% of a cold check: the parser moves `Node` by value, 1.1M `Type` clones | performance | kolt-benchmark's find; census recorded, two slices |
+| [M33](items/M33.md) | NEW — four macro-world compiles per CLI process, ~18% of a small entry, cached only in-process | performance | kolt-benchmark's find; phase line hides them |
+| [M34](items/M34.md) | NEW — `vilan check` of an entry runs the whole transformer (16% of a small entry) for one diagnostic | performance | kolt-benchmark's find; decision first |
+| [M35](items/M35.md) | NEW — a multi-entry `check`/`build` compiles entries sequentially; one of sixteen threads | performance | kolt-benchmark's find; ≤18% on kolt, N× on balanced packages |
 
 ## N. Hygiene & rot — NEW SECTION
 
