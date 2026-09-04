@@ -48,6 +48,8 @@
 | [B227](items/B227.md) | NEW — an `any` parameter FILLS an unfilled closure parameter instead of coercing: one `print(x)` types `x` as `any` and silences every later check on it (`on:keydown(\|event\| ..)`'s `event: any` is this) | bug | owner's two finds (kolt) are one defect; S — add `Type::Any` to B13's adopt guard, skip without deferring |
 | [B228](items/B228.md) | NEW — a ZERO-argument method call anchors its arity diagnostic on the DECLARATION, so a std callee's error renders against std's file at the caller's offsets (`<div .styled() />` looks undiagnosed) | bug | owner's find (kolt); S — `MethodArgCheck` already carries `call_id` |
 | [B229](items/B229.md) | NEW — an unresolved value argument silently deletes the `run` site: every context read then fences, burying the real initializer error; and the 'flows through this call' note spans the whole receiver chain | bug | owner's find (kolt: 'context threading breaks fairly often'); (b) M, (a) S; B146's sibling gap |
+| [B230](items/B230.md) | NEW — `?` inside a `let` initializer double-wraps: `let v = probe()? > 0; Ok(v)` returns `Ok(Ok(true))` and an `Err` becomes `Ok(Err(..))`, never propagated (RELEASED MISCOMPILE) | bug | lane b224's find (2026-09-04); independent of B224 — the `?`-lift restructures above the expression; same-day lane b230 |
+| [B231](items/B231.md) | NEW — a `match` expression as a binary operand (`flag && match probe() { .. }`) is a parse error: `found 'else' expected an expression` | bug | lane b224's find (2026-09-04); pre-existing parser limit |
 
 ## C. Memory model
 
