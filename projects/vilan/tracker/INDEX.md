@@ -12,6 +12,15 @@
 | [A34](items/A34.md) | NEW — a typed style token has no mid-value spelling in a css block | design | b148's census find; real gap revealed |
 | [A36](items/A36.md) | NEW — `Style::when(condition, delta)` conditional-merge combinator | feature | RULED ACCEPTED 2026-08-31 (style-variants Q3); ready to queue |
 | [A37](items/A37.md) | NEW — `[gone]` trait-member attribute: reachable only through the trait (method surface, for blanket impls) | design discussion | NOT queued; the owner unsure of its value |
+| [A38](items/A38.md) | NEW — the rpc service is one process-wide instance; transport-rpc Q9 says the instance IS the connection's session (per-connection factory + injected globals) | design | owner's ask (kolt); a paper-vs-implementation gap; prerequisite of A39 and A40 |
+| [A39](items/A39.md) | NEW — `[expose]` resyncs the whole value on every change; a message edit costs the channel (keyed deltas + per-key subscription over the wire) | design | owner's ask (kolt); a recipe exists today but stops at the generated client; needs A38 first |
+| [A40](items/A40.md) | NEW — the rpc WebSocket upgrade authorizes nothing and never echoes a subprotocol; a pre-upgrade `authorize` hook + a token subprotocol (transport-rpc Q4's transport half) | design | owner's ask (kolt); DoS surface; auth mechanism stays dev-land; needs A38 for the Session to live in |
+| [A41](items/A41.md) | NEW — the dynamic-expose path leaks and goes dead: `ReactiveServer::stop` never removes the `sources` entry; `reattach_mirrors` rebinds only `__attach`'s positional list | bug | rpc triage lane's find while writing A39's recipe |
+| [A42](items/A42.md) | NEW — `bind_each` demands both `T: PartialEq` AND a key fn; split the value-keyed and key-fn forms (kolt writes the key twice and gets a stale row) | design | owner's ask (kolt); additive, no rename; M |
+| [A43](items/A43.md) | NEW — `Source` has no lazy subscribe: land the `observe`-shaped member (`on_change`) that reactive-traits Q5 owes, rather than flipping `sub`/`effect` | design | owner's ask (kolt: eager is often not wanted); OWNER DECISION flip vs additive; S; unblocks A44 and `Source::map` widening |
+| [A44](items/A44.md) | NEW — `Source::selector()`: O(2) per-key selection notification (Solid's `createSelector`); the owner's `sub_condition` is O(n) and lands inside the notify loop | feature | owner's idea (kolt); needs A43's `on_change`; M |
+| [A45](items/A45.md) | NEW — no element mount hook: `View::on_mount(\|el\| ..)` and `View::autofocus()`; kolt focuses three modal inputs with three UUIDs, three timers and a private `focus` extern | feature | owner's ask (kolt); S; SSR twin no-op |
+| [A46](items/A46.md) | NEW — fragment syntax `<>..</>` lowering to a `List<View>` literal (reverses element-syntax.md §7's refusal); NOT a multi-root View | feature | owner's ask (kolt); S–M for the list lowering, L for a marker-node fragment; owner to say which |
 
 ## B. Type system & the type solver
 
@@ -33,6 +42,12 @@
 | [B221](items/B221.md) | NEW — a diverging non-last statement does not exempt the return tail (B124's list) | bug | b204's find; pre-existing |
 | [B222](items/B222.md) | NEW — a panicking guard does not bind the continuation: B187 decides during the walk, B204's leaves settle after | bug | found at integration; pin ignored naming it |
 | [B223](items/B223.md) | NEW — `for` conditions and `match` guards have no polarity frame; a negated capture binds where an `if` refuses | bug | b214-b215's find; refuses programs that compile today |
+| [B224](items/B224.md) | NEW — a condition's `&&`/`\|\|` short-circuit is lost in codegen: the right operand's statements hoist before the `if`; an `else if` condition hoists above its whole chain | bug | owner's find (kolt); RELEASED MISCOMPILE; crashes on the miss path, side effects run when short-circuited |
+| [B225](items/B225.md) | NEW — the struct-literal door reopens the enclosing impl's OWN rigid parameter: `impl Pair<type T> { fun make(x: T) { Pair { b = "s", a = x } } }` silently returns `Pair<str>` (B219's first live consequence) | bug | owner's find (kolt's `impl Searchable<type T>`); UNSOUND ACCEPT; M with a census — B211 shipped the door deliberately |
+| [B226](items/B226.md) | NEW — a self-import (or a cycle back) into the ENTRY module makes it load as a module and skips its walk and derive expansion: `main` and every `[derive]` vanish | bug | owner's find (kolt: 'SidebarTab does not implement PartialEq' in views.vl, fine in a new file); S–M; no self-import or cycle detection exists |
+| [B227](items/B227.md) | NEW — an `any` parameter FILLS an unfilled closure parameter instead of coercing: one `print(x)` types `x` as `any` and silences every later check on it (`on:keydown(\|event\| ..)`'s `event: any` is this) | bug | owner's two finds (kolt) are one defect; S — add `Type::Any` to B13's adopt guard, skip without deferring |
+| [B228](items/B228.md) | NEW — a ZERO-argument method call anchors its arity diagnostic on the DECLARATION, so a std callee's error renders against std's file at the caller's offsets (`<div .styled() />` looks undiagnosed) | bug | owner's find (kolt); S — `MethodArgCheck` already carries `call_id` |
+| [B229](items/B229.md) | NEW — an unresolved value argument silently deletes the `run` site: every context read then fences, burying the real initializer error; and the 'flows through this call' note spans the whole receiver chain | bug | owner's find (kolt: 'context threading breaks fairly often'); (b) M, (a) S; B146's sibling gap |
 
 ## C. Memory model
 
@@ -62,6 +77,15 @@
 | [E126](items/E126.md) | NEW — the diagnostics gate's exhibit misses kolt's cost 178× on call substitutions; needs a view-shaped generator | editor | m19-paper's find; M19-t1 gate prerequisite |
 | [E127](items/E127.md) | NEW — no `did_change_watched_files` handler; disk-read module listings stale until re-analysis | editor | m25-e125's find |
 | [E128](items/E128.md) | NEW — hover renders `= Self` as the trait's name | editor | cascade-26's find; B206's other half |
+| [E129](items/E129.md) | NEW — a code `::`-path completes only its LAST segment: `style::FlexDirection::` and `style::Color::` offer nothing | editor | owner's find (kolt); the import arm already descends; S–M |
+| [E130](items/E130.md) | NEW — member completion is blind on a call whose DECLARED return is a type parameter: `SignalCell<T>::get()`'s `.` offers nothing (E107's other half) | editor | owner's find (kolt); S, substitute through `method_call_substitution` |
+| [E131](items/E131.md) | NEW — member completion resolves a CALL receiver in ANALYZED coordinates: a receiver typed since the landing answers the OLD expression's type (`<div .styled(const style::style().` offers View's members) | editor | owner's find (kolt); E125's twin for completion; S gate now, M with M29 |
+| [E132](items/E132.md) | NEW — linkedEditingRange answers in ANALYZED coordinates; the client mirrors keystrokes into unrelated live text (E125's twin; CORRUPTS working code) | bug | owner's find (kolt): 'unrelated text deleted or changed'; fix verified S (564/564); interim: editor.linkedEditing off |
+| [E133](items/E133.md) | NEW — the reference index is end-exclusive: rename and find-references miss with the caret at `name\|` | bug | owner's find (kolt); fix verified S (564/564); hover has the same rule separately |
+| [E134](items/E134.md) | NEW — a struct-init shorthand's two references share one span; the index dedup drops the variable's use (unused-local fade + find-references), and rename at that span serves only one name | bug | owner's find (kolt); one root cause for both halves; M — a design decision, not the one-line widen |
+| [E135](items/E135.md) | NEW — an incomplete `a::` path rolls the `::` back: the failure surfaces as a missing `;`, or the path re-binds to the NEXT line's identifier and swallows that statement | bug | owner's find (kolt: broke element parsing); S — the `Length::css` arm is the model |
+| [E136](items/E136.md) | NEW — a multi-value element attribute declines the WHOLE element; its curated diagnostic is discarded and the span lands on the tag | bug | owner's find (kolt: `<div raw("inert", x) ..>`); S — mirror the `.`-chain arm |
+| [E137](items/E137.md) | NEW — the formatter never breaks a ONE-link chain: a single `.map(closure)` stays inline at any width (220 columns) | bug | owner's find (kolt); M — small change, golden churn over the byte-gated corpus |
 
 ## G. Macros & const
 
