@@ -1,0 +1,264 @@
+{
+ "items": [
+  {
+   "id": "B243",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — a supertrait's default body does not substitute the impl's trait argument into a closure PARAMETER type when reached through a single-block sub-trait impl: `impl X<type T> with Signal<T>` types `x.map(\\|v\\| ..)`'s `v` as the trait's abstract `T`",
+   "discussion": "std-28's find; pre-existing, B164/B168-adjacent; A49 puts `sub` into the affected set — kolt's StorageSignalCell must SPLIT its impl until this lands",
+   "status": "OPEN — lane std-28's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "Splitting into `with Source<T>` + `with Signal<T>` resolves it, which is the recipe on A49's tombstone. Localize the substitution the sub-trait impl skips for closure parameter types (B216's `supertrait_position_type` is the neighbour) and pin the one-block impl with `map`, `effect_on_change` and a user default body."
+  },
+  {
+   "id": "B244",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — a conditional `Wire` impl reached through two generic parameters at once has no concrete receiver: `ops.describe(s)` on `List<Delta<K, T>>` compiles and fails at EMISSION with the never-silent `internal: a call resolved to Wire's requirement describe, which has no body`",
+   "discussion": "rpc-28's find; worked around element by element; B220's emission-side family",
+   "status": "OPEN — lane rpc-28's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "`Delta<K, T>::rebuild` at the same site is fine — it is the `List<Delta<K, T>>` chaining through two parameters. Pin the shape, find the dispatch that loses the concrete receiver, and check `Map<K, V>`'s new Wire impl for the same path."
+  },
+  {
+   "id": "B245",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — defaulted trait parameters, two more sites: the written `b: B` type id of `Add<B = Self>` is not the trait's recorded constraint id (B180's binding lookup misses; worked around), and impl CONFORMANCE reads the `= Self`/clause ambiguity B235 fixed for calls (`impl Blender with Mixed` still refuses)",
+   "discussion": "rigid-28's finds 1 and 2; the full Mixer program still does not compile",
+   "status": "OPEN — lane rigid-28's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "B235 fixed `generic_bound_traits`' fallback; the id mismatch stands (`written_parameter_argument` is the workaround) and the conformance site (`parameter 1 of Blender's mix is i32, but Mixed declares Blender`) is the same ambiguity one level up. One fix for the id at the trait's declaration would retire the workaround; then the conformance site. Pins: the Mixer program compiling end to end; B180's impl path through a defaulted parameter without the `Self` fallback."
+  },
+  {
+   "id": "B246",
+   "section": "B",
+   "kind": "design",
+   "title": "NEW — `fun bump<P: Add>(a: P) { a + 1 }` (a concrete right operand against a bounded parameter) still compiles and is UNSOUND for a struct whose `Add` declares `B = Self`; pinned as the boundary — close it, at what census cost?",
+   "discussion": "rigid-28's find 3; OWNER Q",
+   "status": "OPEN — lane rigid-28's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "B233 refused two rigid parameters meeting on an operator; a rigid parameter against a CONCRETE right operand is the remaining hole, and the refusal would say `<P: Add<i32>>` is what the author meant. Census the estate for bounded-parameter operators with concrete right operands before deciding; the sugar's refusal currently renders implicit binders as trait names (B218's face in new text — B184's `C<A>` display should reach the operator steer)."
+  },
+  {
+   "id": "B247",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — an i-string hole containing an OPERATOR is silently not a hole: `print(\"{1 + 2}\")` emits the literal `{1 + 2}`",
+   "discussion": "rigid-28's find 4; silent",
+   "status": "OPEN — lane rigid-28's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "Either the hole grammar admits an expression (recommend) or a hole that fails to parse as one is refused, never printed verbatim. Pins: `{1 + 2}`, `{a.b()}`, `{x}` control, and the refusal or the value under node."
+  },
+  {
+   "id": "B248",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `match x { .. } + 1` in LEADING statement position is still refused: the block-like dispatch precedes the expression tower (B231 admitted block-likes as operands, not as heads)",
+   "discussion": "parse-fmt-28's find; low",
+   "status": "OPEN — lane parse-fmt-28's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "A statement beginning with `match`/`if`/`{` is parsed as a block statement and the trailing operator is a parse error. Decide: admit (the tower tries after the block-like) or refuse with a steer to parenthesize; pin both spellings."
+  },
+  {
+   "id": "B249",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — the missing-member diagnostic's suggested declaration renders the TRAIT's parameter names unsubstituted: `impl Counted with Source<i32>` is told to `declare fun on_change(self, observer: \\|T\\| void)` for a `T` it does not have",
+   "discussion": "std-28's find 3; generic impls are right and pinned",
+   "status": "OPEN — lane std-28's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "The refusal is right; the copyable line is wrong for concrete impls. Substitute the impl's arguments into the suggested signature (B206's written-name label is the renderer to reuse); pin `Source<i32>` and a two-parameter trait."
+  },
+  {
+   "id": "B250",
+   "section": "B",
+   "kind": "design",
+   "title": "NEW — file mode's two remaining disagreements: a dependency file opened as the entry has `package_of_source[SourceId(0)]` remapped to the dependency (an `import <depname>::…` in that file stops resolving); and `Declared` mode still loads a sibling's import of ANOTHER declared entry as a module while file mode refuses it — agreement per package, not per leg",
+   "discussion": "checker-28's finds; OWNER Q on the second",
+   "status": "OPEN — lane checker-28's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "(1) is arguably correct (inside the dep, siblings are `pkg::`) but silent at the moment the file becomes a module — say it in a note or resolve both spellings. (2) decide whether the declared-entry leg should also refuse a sibling's import of a different program (B226's rule applied per leg) or file mode should accept it; pin whichever."
+  },
+  {
+   "id": "B251",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — a struct parameter reachable ONLY through another parameter's bound never grounds (`struct Held<T> { list: Signal<List<T>> }` leaves `T = any`), and the written form ACCEPTS `Held<i32, SignalCell<List<str>>>`: the bound is not checked against the written arguments at a struct's parameter list (UNSOUND)",
+   "discussion": "b184-b218's find 2; pre-existing, B186 family — the call-side recovery does not reach a struct literal",
+   "status": "OPEN — lane b184-b218's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "Two halves: ground `T` through the bound at the literal (the recovery B186 built for calls, at struct literals), and check a struct's written arguments against its parameters' bounds. Pins: the hidden-parameter form grounding `T`, the written form refusing `Held<i32, SignalCell<List<str>>>`, a bounded-and-satisfied control."
+  },
+  {
+   "id": "B252",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — a refused RETURN annotation does not stand its uses down (`cannot call method 'who' on unknown` follows), where a refused closure parameter does (B182's stand-down)",
+   "discussion": "b184-b218's find 3; the return position's strongest practical argument (B253)",
+   "status": "OPEN — lane b184-b218's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "The call result is not the annotation's slot, so B182's covered set misses it. Extend the stand-down to a call whose callee's return annotation was refused; pin the cascade gone and an unrelated miss still reporting."
+  },
+  {
+   "id": "B253",
+   "section": "B",
+   "kind": "design",
+   "title": "NEW — a bare trait in RETURN position (`fun f(): Trait`): the last value position that refuses; the case each way",
+   "discussion": "b184-b218's question; OWNER decision; `fun get(): C` for a sugared struct is a SEPARATE, harder question",
+   "status": "OPEN — lane b184-b218's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "AGAINST: it is the existential (the callee picks) where B161/B186/B184 are all universal (the caller picks) — one bare spelling meaning two quantifiers by which side of the colon it is on; vilan has no opaque-type kind and would need one, plus a refusal for a callee with two `ret` arms at two impls; today's refusal costs one written generic. FOR: the surface reads \"bare trait works everywhere except here\"; it removes a real cascade (B252); it is the shape kolt reached for. Also on the item: should `C<A>` ever be WRITABLE (today \"takes 0 type arguments\", deliberately); and whether the attributed-declaration carve-out (`[derive]`/`[service]` cannot spell a hidden parameter) closes by teaching meta.vl about hidden parameters."
+  },
+  {
+   "id": "E145",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — rename through an import ALIAS collapses it (`greet as hello` → `greeting as greeting`); the fix is an alias entity of its own, which also restores references.rs INVARIANT 1 (an alias row's text is not its definition's name — the sole documented exception); the formatter does not drop a redundant `as x`; `as` is in neither highlighting grammar",
+   "discussion": "parse-fmt-28's finds; the E142 build's residue",
+   "status": "OPEN — lane parse-fmt-28's find (2026-09-05, Order 28)",
+   "area": "Language server & tooling",
+   "body": "Owner Qs on the item: should rename PRESERVE an alias (recommend yes — an alias entity); should `import a::b as b;` collapse (recommend yes, in the formatter); should the `::` line rule extend to type paths and struct-literal heads (census zero there too — free)."
+  },
+  {
+   "id": "E146",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — formatter gaps N55's reformat exposed: `self` sorts LAST in an import group (ASCII order; 37 groups incl. std's prelude.vl/web.vl); an `if`/`match` arm body becomes a block mid-builder-ladder; a declaration's `context` clause prints where written (`fun f(): T borrows p context c` not round-tripped); a comment between a field name and its value relocates below the statement",
+   "discussion": "l19-ci + context-28 + parse-fmt-28's finds",
+   "status": "OPEN — lane l19-ci's find (2026-09-05, Order 28)",
+   "area": "Language server & tooling",
+   "body": "Each is a printer rule: `self` first in a group; an arm body that was an expression stays one; the clause normalized after `borrows`; a field's comment kept with the field. Pins per rule; the tree reflows once more (the gate is live now, so one commit)."
+  },
+  {
+   "id": "E147",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — a binary-operator chain has NO break rule: macro_std's hand-wrapped three-line `\\|\\|` condition became one 182-character line under N55's reformat (four lines over 100 in a tree whose target is 100)",
+   "discussion": "l19-ci's find; the worst of the reflows",
+   "status": "OPEN — lane l19-ci's find (2026-09-05, Order 28)",
+   "area": "Language server & tooling",
+   "body": "Break a binary chain over budget one operand per line at the lowest-precedence operator, operator-leading (rustfmt's shape); pin the meta.vl condition and a short chain staying inline."
+  },
+  {
+   "id": "E148",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — the \"declare the inferred contexts\" quickfix fires only on the SUBSET refusal (a declared-but-narrow clause); on an UNDECLARED function it needs a signature insertion span the parser does not record, and the triggering diagnostic sits in a different function",
+   "discussion": "context-28's find; the more valuable half of B242's quickfix",
+   "status": "OPEN — lane context-28's find (2026-09-05, Order 28)",
+   "area": "Language server & tooling",
+   "body": "Record the signature end span (after the return type, before `{`) on `Func`; offer the quickfix at the caller's \"reachable without an enclosing run\" refusal naming the callee; pin it inserting `context a, b` on a bare `fun`."
+  },
+  {
+   "id": "E149",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — editor-28's smalls: `diagnostics_budget`'s `#[ignore]` reason should record its load-dependence (690–831 ms at loadavg ~100, a quiet box passes); hovering `==` answers nothing (no operator-token hover); `Document::references` hands back DERIVED_SOURCE rows (only `references_across` drops them); rename at a shorthand CARET renames whichever side declaration order gives",
+   "discussion": "editor-28's finds",
+   "status": "OPEN — lane editor-28's find (2026-09-05, Order 28)",
+   "area": "Language server & tooling",
+   "body": "Four small edits: the reason string; an operator-token hover routed to the trait method (B180's dispatch record); the derived-row filter in `references`; the shorthand caret made deterministic (the local, recommend — the field is one hop away by name)."
+  },
+  {
+   "id": "M42",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — M19 tranche 1c: a resolved-`Type` record for the drop planner (`plan_resource_drops`, `record_drop_sink_argument_types`, `build_drop_glue`, `compute_resource_types`) so it can be restored per reused module — no `TypeId` may cross the record (ids are minted per occurrence against the entry's buffer)",
+   "discussion": "m19-t1b's deferral; the largest single item left in the phase (59–149 ms warm)",
+   "status": "OPEN — lane m19-t1b's find (2026-09-05, Order 28)",
+   "area": "Performance & footprint",
+   "body": "Also R10 (feeds R11 through two sets, the second keyed by minted ids), `check_hmr_transfer_bounds` (re-infers through `&mut self`), `compute_capture_clone_sites` (reads whole-program `written_roots`). Owner Qs carried: a T1b paper section for the TypeId boundary + the foreign-touch rule; is the `CHECKED_CACHE` 8M-row table budget right (a byte budget in M24's shape is better — M46)."
+  },
+  {
+   "id": "M43",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — the const-eval interpreter's environment maps (`interpreter::lookup`/`assign`) still hash with SipHash: 83M of the 85M Ir left in `sip.rs` after M31, 1.3% of a kolt client check — the comment that left them there (\"not in the cold-analysis hot path\") is false",
+   "discussion": "compile-perf-28's find",
+   "status": "OPEN — lane compile-perf-28's find (2026-09-05, Order 28)",
+   "area": "Performance & footprint",
+   "body": "One alias swap under the same order pin as M31; expect `sip.rs` under 0.1%."
+  },
+  {
+   "id": "M44",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — M35's measured shortfall: a multi-entry `check` starts its second member cold and recomputes the base world (1.13× one entry at +63% CPU if all start cold; the shipped design keeps CPU flat at −16% wall); a base-cache \"under construction\" claim so a second cold member WAITS for the first's world (M23's territory); `build` and `check_single`'s per-platform loop are still sequential",
+   "discussion": "compile-perf-28's finds 3 and 4",
+   "status": "OPEN — lane compile-perf-28's find (2026-09-05, Order 28)",
+   "area": "Performance & footprint",
+   "body": "Numbers on the item; the claim is the fix that gets both wall and CPU. `build` writes files and chunk sinks and needs its own audit before going parallel."
+  },
+  {
+   "id": "M46",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — `CHECKED_CACHE`'s new table slice is bounded by an 8M-row budget beside the key bound; a real BYTE budget in M24's shape (and M36's on-disk world, whose `World` serialization does not exist yet) is the honest shape",
+   "discussion": "m19-t1b's find; M36 stays open with its design",
+   "status": "OPEN — lane m19-t1b's find (2026-09-05, Order 28)",
+   "area": "Performance & footprint",
+   "body": "Class D is ~10⁵ rows per world; the row count is a proxy. Measure bytes per world with tables, fold into M24's budget, pin eviction under pressure."
+  },
+  {
+   "id": "N58",
+   "section": "N",
+   "kind": "hygiene",
+   "title": "NEW — smalls from Order 28: E128's own pin imports `std::operators::PartialEq` (the misleading line that seeded the E138 phantom); a crashed differential leaves `file-corpus-<n>/` in crates/vilan-core ungitignored; markdown docs fences are outside the `vilan fmt --check` gate; `transport_robustness` flaked once on `EADDRINUSE` under lane load (N40's family — a second strike earns an item)",
+   "discussion": "hygiene-28, editor-28, l19-ci's finds",
+   "status": "OPEN — lane hygiene-28's find (2026-09-05, Order 28)",
+   "area": "Hygiene & rot",
+   "body": "Four small edits, one lane: the import in E128's pin; a `.gitignore` line; the fmt gate over docs fences (or a stated exclusion); the port pick in `transport_robustness` through N40's helper."
+  },
+  {
+   "id": "A50",
+   "section": "A",
+   "kind": "design",
+   "title": "NEW — A49's residuals: `bind_each_by` hands the row render a WRITABLE `SignalCell<T>` (a read-only projection needs a wrapper type — no trait objects); `Selector<T>` is a handle with `.of(key)` where Solid returns a function (a closure spelling needs a context-carrying closure type; `sync`/`context` are parameter-only)",
+   "discussion": "std-27/std-28's open questions; OWNER",
+   "status": "OPEN — lane std-28's find (2026-09-05, Order 28)",
+   "area": "Reactive core & UI",
+   "body": "Decide whether a `ReadOnly<T>` wrapper (or a `Source<T>`-shaped projection once trait objects exist) is worth the surface, and whether `selector` should ever be a closure."
+  },
+  {
+   "id": "A51",
+   "section": "A",
+   "kind": "design",
+   "title": "NEW — A39's residue: the `List<T>` keyed exposure has NO macro form (`[expose(keyed)]` reads two written types; vilan has no associated types), refused with a steer to `Map<K, V>` or the hand-wired `expose_keyed`; `keyed_diff` is O(N) CPU per change per connection (bytes are O(change))",
+   "discussion": "rpc-28's residue; OWNER Q on the spelling",
+   "status": "OPEN — lane rpc-28's find (2026-09-05, Order 28)",
+   "area": "Reactive core & UI",
+   "body": "Options for the list form: an attribute argument (`[expose(keyed = str)]`), a std wrapper type carrying `K`, or associated types (`T::Key`) if they ever land. For the CPU: an incremental diff keyed on the source's own change (a `Delta`-producing cell) instead of re-keying two snapshots; measure before a channel gets large."
+  },
+  {
+   "id": "A52",
+   "section": "A",
+   "kind": "design",
+   "title": "NEW — rpc smalls: `[expose]`/`[service]` cannot take a GENERIC source field in either spelling (the generated `session.expose(self.tasks)` cannot infer `T` through the supertrait; `[service]` rejects a generic subject); `RemoteSource<T>` has inherent `sub`/`map`/`or` but no `impl … with Source<T>` (a mirror is not a Source); `RpcError` has no `PartialEq`; a 503-class `Reject` arm for infrastructure refusals (429 chosen); should bare `connect_socket(url)` also offer `vilan-rpc`?",
+   "discussion": "b184-b218 + std-28's finds and open questions; OWNER on the last two",
+   "status": "OPEN — lane std-28's find (2026-09-05, Order 28)",
+   "area": "Reactive core & UI",
+   "body": "The generic-source-field gap is why B184's attributed-declaration carve-out exists; the mirror-as-Source gap means A49's `on_change` is not on `RemoteSource`; `PartialEq` on `RpcError` is one derive."
+  },
+  {
+   "id": "L20",
+   "section": "L",
+   "kind": "process",
+   "title": "NEW — L19's step 2, the owner's own: the Windows test leg run natively on the WSL2 host (`powershell.exe -c \"cargo nextest run --workspace\"` with a Windows toolchain), the one leg that is compile-only locally — three seals running, Windows had the last word",
+   "discussion": "the owner's 'whenever' (2026-09-04); a `scripts/ci-windows-host.sh` wrapper once it works",
+   "status": "OPEN — lane l19-ci's find (2026-09-05, Order 28)",
+   "area": "Release engineering & beta",
+   "body": "Install rustup + the msvc toolchain + cargo-nextest on the Windows side; the wrapper mirrors `ci-local.sh windows` but runs the suite instead of the cross-check; the seal script calls it when present."
+  },
+  {
+   "id": "B254",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `async_infer::dispatch_candidates` still resolves `OnType(Some(receiver), member)` against EVERY same-named member when the receiver is KNOWN (only the `_for` call sites narrow): the miscoloring class a49-async fixed for trait default bodies, reachable via an inherited default on a concrete value",
+   "discussion": "lane a49-async's find (the merged-tree async regression's sibling)",
+   "status": "OPEN — lane a49-async's find (2026-09-05, Order 28)",
+   "area": "Type system & the type solver",
+   "body": "The fix narrowed `OnType(None, member)` (a `self` call inside a trait default body) to the trait's own subjects — supertraits closed downward, nominal heads, blankets via `subject_applies`. Apply the same subject-based narrowing inside `dispatch_candidates` for a known receiver, and note that `call_graph.rs` and `init_order.rs` read the same set (the narrowing removes bogus reachability edges — strictly more accurate). Pins: an inherited default on a concrete value beside an unrelated same-named async inherent member; the genuinely-async control."
+  }
+ ]
+}

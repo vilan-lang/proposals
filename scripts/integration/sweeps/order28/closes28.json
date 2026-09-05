@@ -1,0 +1,252 @@
+{
+ "date": "2026-09-05",
+ "order": "Order 28",
+ "closes": [
+  {
+   "id": "N53",
+   "lane": "hygiene-28",
+   "commit": "416e2329",
+   "text": "the interpreter gate joined the shared corpus harness (roster, both-way coverage, the 300 s deadline); its private 30 s timeout and `run_node` are gone; the harness split `run_node_within` from the differentials' stderr policy because `resource_exit.vl` exits 7 with no stderr. 139 tests in 31 s (was one 58 s test); red-first by dropping a `.vl` into the corpus."
+  },
+  {
+   "id": "N54",
+   "lane": "hygiene-28",
+   "commit": "50589b1f",
+   "text": "file.vl's scratch path belongs to its run: a random-suffixed dir, `basename` printed, removed on exit; golden regenerated from the tree; a pin runs eight copies of the emitted program together in one directory — 5 of 8 died `ENOENT` on the old program."
+  },
+  {
+   "id": "N56",
+   "lane": "hygiene-28",
+   "commit": "951adae0",
+   "text": "`std_dir` dropped the ancestor walk from the process cwd when the entry has a manifest at or above it (a bare manifest-less file keeps it, documented); a `…'s definition did not compile` cascade prints one line naming the std this compile resolved. Three pins in module_paths.rs (the same absolute path gave `cannot find 'io'` from a stand-in checkout vs clean from its own directory). The LSP's `discover_std_dir` never had a cwd leg — the two surfaces now agree."
+  },
+  {
+   "id": "B236",
+   "lane": "checker-28",
+   "commit": "a4487230",
+   "text": "the entry-cycle refusal records what it covers `(file, name it would have walked or bound)` and three sites ask before reporting (the import walk's miss, the annotation drain's `cannot find type`, the bare-name drain's `cannot find … in this scope`); each still writes its `Unknown`/`Expr::Error`, only the second telling drops — 4 errors → 1. At integration the covered set learned E142's import alias (the bound name is the alias)."
+  },
+  {
+   "id": "B237",
+   "lane": "checker-28",
+   "commit": "53882371",
+   "text": "worse than filed: `n = 5` beside a guard capturing `n` targeted the top-level FUNCTION `n`, which is not a binding, so `check_readonly_mutation` had nothing to refuse — it COMPILED CLEAN and emitted the assignment (a miscompile). The wiring moved to `wire_prepped_assignment` and runs in two parts around the guard-pass seam; pins: the collision (clean → `cannot assign to this expression`), the no-collision control, a double-report guard."
+  },
+  {
+   "id": "B240",
+   "lane": "checker-28",
+   "commit": "5acdae14",
+   "text": "(a) one refusal per import statement, not per name; (b) `EntryMode::OpenFile` carries the manifest's declared-entry module names (`platform_color::declared_entry_module_names`, both front ends; the CLI's `Unit` carries `EntryMode` itself); (c) the entry-as-module arm takes back the §6.13 `SourceId(0)` pre-mark, so a dependency file opened as the entry keeps its derives (red with the fix planted back). 6 core + 1 LSP + 1 CLI pins. Finds: a dependency file opened as the entry has `package_of_source[SourceId(0)]` remapped (a silent behavior change); Declared mode still loads another declared entry as a module while file mode refuses it — per-package agreement, not per-leg (owner Q)."
+  },
+  {
+   "id": "B220",
+   "lane": "checker-28",
+   "commit": "22f92423",
+   "text": "RULED arrays join: `Type::Array` at all three B210 sites; `len` stays structural (its arm runs only for `len`, everything else falls through to nominal dispatch whose refusal is the same sentence). Five pins in tuples.rs, four red with the sites reverted."
+  },
+  {
+   "id": "B233",
+   "lane": "rigid-28",
+   "commit": "164a4dcd",
+   "text": "UNSOUND ACCEPT fixed: `fun sum<P: Add, Q>(a: P, b: Q): P { a + b }` with `sum(1, \"two\")` printed `1two` under node. The filed mechanism was wrong — `refuse_operator_right_operand`'s `retain(free_binders)` already refuses; the hole was the generic-bounded branch (`GenericDispatch::OnConstraint`) never calling it. New `refuse_operator_right_operand_on_bound` takes `B` from the bound at the declaring trait, gated on `generic_is_rigid_here` for both sides. Census: ZERO declarations with two distinct parameters on an operator (one same-parameter site, `reconcile<T, K>`'s `K == K`, accepted). 10 pins. Family breaking (census zero)."
+  },
+  {
+   "id": "B234",
+   "lane": "rigid-28",
+   "commit": "875484d3",
+   "text": "UNSOUND ACCEPT fixed: `fun f<T>(x: T) { if x { } }` emitted `if (x)` and `for x { }` looped forever; B28's condition check had `Type::Generic(_)` in its skip list — refused through the shared predicate. Census: 67 bare-identifier conditions estate-wide, zero on a generic-typed value. 7 pins; one `NEW` ledger row (389). Family breaking (census zero)."
+  },
+  {
+   "id": "B235",
+   "lane": "rigid-28",
+   "commit": "31dff857",
+   "text": "`generic_bound_traits`'s fallback (\"an unlisted parameter's own type IS its bound\") read a `= Self` DEFAULT as a requirement; defaults now record their ids where they intern (`defaulted_parameter_types`). 4 pins. Finds: the written `b: B` type id ≠ the trait's recorded constraint id for a defaulted parameter (B180's lookup misses, worked around); the impl-CONFORMANCE site has the same ambiguity unfixed (the full Mixer program still refuses); `fun bump<P: Add>(a: P) { a + 1 }` stays accepted and is unsound for a `B = Self` Add — pinned as the boundary, the owner's call."
+  },
+  {
+   "id": "E142",
+   "lane": "parse-fmt-28",
+   "commit": "220d0637",
+   "text": "RULED: the segment after `::` must start on the same line, on the two productions that COMMIT to a separator (expression path, import/use path); type paths and struct-literal heads probe both tokens and can swallow nothing. Import aliasing built as the prerequisite: `import a::b::c as d` (`ImportTail::{Leaf, Continue, Alias}`, `as` contextual — `let as = 1` still parses), the analyzer binding under the alias with a reference at its span, the formatter reprinting it, the LSP following it. Census: zero lines end in `::` across the tree, kolt and the book. Red-first: `style::`⏎`print(\"x\")` was SWALLOWED. 19 pins; one `NEW` ledger row (390). Finds: rename through an alias collapses it (E145); the `::` rule could extend to type paths and struct-literal heads (owner Q)."
+  },
+  {
+   "id": "B231",
+   "lane": "parse-fmt-28",
+   "commit": "1f8a7c7a",
+   "text": "`parse_unary`'s fallthrough admits `match`/`if` as operands always (keyword-led) and a bare block in expression mode only (in condition mode a `{` after an operator is the enclosing body); no emitter change — B224's `Sequence` slot lowers a statement-bearing operand. 7 RUN pins incl. a short-circuit control. Still refused: `match x {..} + 1` in LEADING statement position (block-like dispatch precedes the tower)."
+  },
+  {
+   "id": "B238",
+   "lane": "parse-fmt-28",
+   "commit": "65ac6af5",
+   "text": "PREMISE WRONG: `disabled` works as a binding, field, function, parameter, closure parameter, match capture, variant, module `mut` and method, with and without the web prelude; `<input disabled />` unchanged; the only table holding the word is the FORMATTER's `STYLE_CONDITION_METHODS`. The lane left a standing gate reading the keyword tables programmatically: 105 non-keyword words × 4 positions, zero leaks, with a keyword-plant non-vacuity pin."
+  },
+  {
+   "id": "D6",
+   "lane": "parse-fmt-28",
+   "commit": "88569090",
+   "text": "the EBNF's `postfix` gains `\"?\"`; §3.6 distinguishes it from a `?.` link; §3.7 lists it at level 1; §5.10 retitled to cover `!`, `?.` and `?`; seven cross-references moved; the mdBook anchor golden regenerated from a real build."
+  },
+  {
+   "id": "E138",
+   "lane": "editor-28",
+   "commit": "3dbd8b86",
+   "text": "PHANTOM — `PartialEq`/`PartialOrd` live in `std::compare`, not `std::operators` where `Add`/`Sub`/`Mul` do; cascade-27's probe imported them from the latter, so the trait did not exist and silence was correct (the analysis says so three times, including the fix). 5 pins render `fun eq(self, b: Self): bool` through both routes, plus the misroute as the non-vacuity plant. E128's own pin still carries the misleading import (shared-file rule; N58)."
+  },
+  {
+   "id": "E139",
+   "lane": "editor-28",
+   "commit": "a269eed6",
+   "text": "entity spans NEST, so E133's fallback could not be reused — strict containment at `let _ = count|` did not fail, it succeeded with the enclosing fn; the containment test is end-inclusive now, innermost-wins, and completion's receiver arm asks at `receiver_end` (asking at `end - 1` under the widening answered the narrowest entity closing there: `Some(1).` → the literal). 6 pins, 3 red first; one hover pin re-voiced."
+  },
+  {
+   "id": "E140",
+   "lane": "editor-28",
+   "commit": "3dcaf1c2",
+   "text": "E124's residue: paper §6.1 pins 4 (both states), 10 (with the unreached fenced item graying beside it), 11 (two states), 16, 19 built; withdrawal narrowed from package-wide to the inverted `depends_on` cone (`PackageReach::sources`), applied only against a union that exists; the union legs fan out concurrently, each registered with M26's `Schedule`. DECIDED and pinned as it ships: a trait-impl member never paints in this order (per-instantiation dispatch would move a dozen grays at once on an idle clock in files the user is not editing). Open: whether the cone test also applies while a union is in flight."
+  },
+  {
+   "id": "E141",
+   "lane": "editor-28",
+   "commit": "78058109",
+   "text": "RULED by measurement: `budgets_are_assertable(gate, release_figure)` guards both keystroke gates and `diagnostics_budget`; rows print in both profiles; the decline names gate, profile, release figure and the `--release` command. Release on the loaded box: arithmetic completion/burst 0.064/0.056 ms, view 0.056/0.059 (budget 0.2, green); debug 0.41–0.60 (declined, not asserted); `diagnostics_budget` 690–692 ms at loadavg ~100 — load-dependent (a quiet box passes), its reason to record that (N58's note)."
+  },
+  {
+   "id": "E143",
+   "lane": "editor-28",
+   "commit": "84153d76",
+   "text": "RULED expand: rename edits carry per-span replacement text through `rename_spans`/`rename_edits`/`rename_edits_across`/the handler; `RenameRefusal::SharedSpan` gone; field → `A { new = x }`, local → `A { x = new }`; 6 pins including two that apply the edit set back-to-front and assert the program byte-for-byte and analyzing clean. The FORMATTER half landed in parse-fmt-28 (3c047de2): `A { x = x }` prints `A { x }` (`print_struct_field` + `collapse_field_shorthands` in the normalizer and the differential's tripwire); census 91 fields in 23 files; no opt-out. Open: rename at the shorthand CARET renames whichever side declaration order gives."
+  },
+  {
+   "id": "E144",
+   "lane": "editor-28",
+   "commit": "7958e896",
+   "text": "two same-length enums deriving one trait both claimed `DERIVED_SOURCE` 63..65; the collapse kept one, the loser lost its declaration row, and rename refused exactly when it saw a generated span — so one enum's `.eq` refused `Generated` while the other's returned Ok with an edit against a declaration the derive regenerates. Generated rows dedup by definition too (invariant 2 is a claim about a span in a FILE); `no_two_indexed_occurrences_share_a_span` skips generated rows. 3 pins, red under plant."
+  },
+  {
+   "id": "B184",
+   "lane": "b184-b218",
+   "commit": "c919edbe",
+   "text": "trait-typed FIELDS as sugar over a hidden type parameter: `struct C { x: X }` → `struct C<#0: X> { x: #0 }`, one hidden parameter per trait-typed field appended after the written ones, grounded PER LITERAL (rev 2's case 4 VALID under the per-binding rule the language already had). A pre-pass `resolve_hidden_struct_parameters` (walk order drains a use before its declaration — a mention that drained first would erase the parameter, B188's miscompile in a new carrier) to a fixpoint for virality (a field naming a hidden-generic struct mints one of its own per parameter); a mention mints a fresh implicit generic (B186's `mint_implicit_generic` extended to struct/impl owners) at a `fun` parameter, an impl subject, another struct's field; a binding's annotation reads as B161's constraint; everything else refuses at the annotation naming the positions that work. Not on an attributed declaration (`[derive]`/`[service]` generate from written types). Emission byte-identical to the written-generic spelling (289 bytes, pinned); 26 pins, red-first against three planted rules; two §12.2 holes converted by semantics; the LSP paints `Interface` at the field and inlay reads `: C<A>`. Two `NEW` ledger rows (391, 392); the bare-trait steer reworded. kolt census: 22 signal-typed fields across 10 structs; `Searchable<T>` and `InputLayer<T>` (the two the program-wide rule would have refused) compile, pinned. RETURN position stays out with the case each way on the item (existential vs universal)."
+  },
+  {
+   "id": "B218",
+   "lane": "b184-b218",
+   "commit": "c919edbe",
+   "text": "RULED: the hidden argument prints — `Expected C<A>, but got C<B> instead.` with the initializer note, on case 3, the rotate (two reports) and call-argument mismatches; no new rendering code — `Type::Struct(id, args)` already renders its arguments, the work was making the argument exist. Three pins red-first under B186's display rule planted on the struct (reproducing `Expected C, but got C instead.` twice)."
+  },
+  {
+   "id": "B241",
+   "lane": "context-28",
+   "commit": "4527660d",
+   "text": "the arity refusal returned `Failed` before `wire_call`, so the site never reached `function_calls`; the written subject sat in `entity_map` as a bare `Expr::Local` naming a function nothing called, which the context pass read as a VALUE use — refusing it and putting the callee in `value_taken`, permanently uncovered, fencing its whole transitive read set. New `Program::arity_invalid_calls` (call entity, subject entity); `call_subject_entities` chains it; the callee then has no caller edges → dead-code exempt → no fence. The item's premise that the isolated shape does not reproduce was WRONG — it reproduces identically (pinned). 4 pins, 3 red."
+  },
+  {
+   "id": "B232",
+   "lane": "context-28",
+   "commit": "411b9fe6",
+   "text": "`Constraint::MethodCall` gained a residual naming the operand that stalled it (receiver first, else the first argument that never landed; a never-determined slot reads back as `any` post-fixpoint); B229's `program.diagnostics.is_empty()` guard removed. Red-first: with the residual disabled `for item in empty { item.len(); }` compiled SILENTLY. One `NEW` ledger row."
+  },
+  {
+   "id": "B242",
+   "lane": "context-28",
+   "commit": "2ccf97e7",
+   "text": "the owner's proposal built: `fun f(): T context settings` — the clause after the return type in the closure-type spelling (the type grammar takes it greedily, `parse_function` peels it back; that text was refused before, so nothing legal changed meaning); the subset rule over STRICT reads only (safe reads impose nothing — else every async spawn would force `context ambient_nursery`); a wider clause is a WARNING (a forward-compatible surface); callers checked against the declaration alone, refused AT the call, one hop; the declaring body is never a fence site; undeclared functions keep inference; trait/impl methods DEFERRED with a message saying why (shape in contexts.md §4). `Func.contexts`, `Program::declared_function_contexts`, the needs/strict walk twice per context; hover renders the clause; quickfix \"Declare the inferred contexts\" on the subset refusal. Spec §8.6; grammar; the editor appendix. 11 pins, all red (the syntax did not parse); five `NEW` ledger rows. Paper section merged into proposals main (6a278cc). Finds: the spec named row 47, the message was row 57; a nested-type hole (`&mut i32 context turn` binds to the referent); the formatter prints the clause where written."
+  },
+  {
+   "id": "M41",
+   "lane": "perf-28",
+   "commit": "6b88c9ca",
+   "text": "`type_id_sources` accounted: the std world is 177,775 B = 151,875 texts + 25,900 census (17% under-reported before); `base_cache_retained_split()` asserted exhaustive; pinned on same-length package siblings (26,156 vs 25,900 census over identical texts — the census moves on types, not text)."
+  },
+  {
+   "id": "M38",
+   "lane": "perf-28",
+   "commit": "92a7b697",
+   "text": "MEASURED, NOT A WIN — withdrawn: a per-nominal pre-filter substitutes one recursive walk over the distinct `TypeId`s for another, and `resource_classification`'s persistent memo already made the walk cost once per TYPE, not per binding; +2,312,262 Ir on a full kolt check. What ships: `declares_a_resource()` before the two whole-map sweeps and the `any_declared_resource` fold; 507 resource pins unchanged; goldens byte-identical. The item's \"~100 ms\" was a wall reading at loadavg 31–166."
+  },
+  {
+   "id": "M37",
+   "lane": "perf-28",
+   "commit": "76a66e87",
+   "text": "a non-allocating resolved-callee test and the three sweeps fused: −25,860,436 Ir (−0.36%) on `vilan check src/client.vl`, goldens byte-identical. The item's \"450 of 758 ms\" was a wall reading under load; the whole of `collect_unfollowable_loans` is under 1% of a check. Rule minted: perf items carry Ir or process CPU with loadavg, never wall."
+  },
+  {
+   "id": "M39",
+   "lane": "perf-28",
+   "commit": "fa6ad6d2",
+   "text": "completion's per-request source reads 2 → 0: the first paragraph cached per declaration in the captured index (the index build reads 34 once per analysis), answering \"covered, no doc\" distinctly from \"not covered\"; pinned as a COUNT (E83's `source_read_count`) with a documented-candidate non-vacuity assert; release completion 0.033 ms CPU on the view exhibit."
+  },
+  {
+   "id": "A49",
+   "lane": "std-28",
+   "commit": "1c36c9e1",
+   "text": "RULED invert, landed: `Source` requires `get` + `on_change`; `sub` is the default (`on_change`, then one `observer(self.get())`), `effect` the default over `effect_on_change`; the seeded wrapper deleted; `SignalCell` implements `on_change` as `observe` and keeps a `sub` override with one call less indirection. Nine test implementors and three doc examples migrated (each `fun sub` → `fun on_change`, immediate call dropped); callers unchanged; goldens moved by one shape (`effect` reaches `effect_on_change`), outputs identical. kolt's `StorageSignalCell` recipe on the item: SPLIT the impl into `with Source<T>` + `with Signal<T>` — required, because a supertrait's default body does not substitute the impl's trait argument into a closure parameter type through a single-block sub-trait impl (B243). The projection and `Selector` shapes stay open (A50). INTEGRATION FIND: the inversion met rpc-28's forward closures on the merged tree — `async_infer` resolved a trait default body's `self.get()` against every same-named member, and the `[service]`-generated async `get` colored `sub` async, refusing std's own plain `|| Subscription` fields; fixed at integration by lane a49-async (0e29d961): a default body's self call resolves against the trait's own subjects; two pins. B254 carries the known-receiver sibling."
+  },
+  {
+   "id": "A47",
+   "lane": "std-28",
+   "commit": "4f4f6509",
+   "text": "decided on measurement: the host global `WebSocket` (not node's `ws`) exposes NO status on any refusal — 401, 403, 429, a mid-handshake destroy, connection-refused and no-upgrade-handler all give the identical error and close (1002), browsers less — so reading the status is unavailable everywhere. Built the narrowed refusal frame: a client that offered `vilan-rpc` and is refused by JUDGEMENT gets a 101 + one `__reject:<status>` frame + close; `TooMany` is never eligible, so floods never reach the upgrading path and the DoS trade is bounded by construction. `DialFailure{Unreachable, Refused}`, `dial_with_backoff` breaks on Refused, `dial_for_service` maps 401/403 → `RpcError::Unauthorized`, and `Client::connect` now offers `vilan-rpc`. Red-first: Transport at 34 s → Unauthorized at 11 s."
+  },
+  {
+   "id": "A48",
+   "lane": "std-28",
+   "commit": "b4f61219",
+   "text": "`authorize_timeout(millis)` (0 = forever; armed before the hook, late answers discarded) answering 429 `TooMany` — a limit, not a judgement (503 would need a fourth `Reject` arm no app can produce); `trust_forwarded_for(bool)` keys `handshake_rate`, `Handshake.remote_addr` and `Connection.remote_addr` on the first `X-Forwarded-For` entry; `max_connections` documented as upgraded sockets on the mount. Red-first on both."
+  },
+  {
+   "id": "A39",
+   "lane": "rpc-28",
+   "commit": "ed7aac65",
+   "text": "keyed deltas and per-key subscription over the wire: `trait Keyed<K>`, `enum Delta<K, T> { Reset | Insert(K, T, i32) | Update(K, T) | Remove(K) }` with a hand-written `Wire` impl, `impl Map<K, V> with Wire` (I1's gap); `Subscribe`/`Unsubscribe` at arity 2 carrying `Option<Key>`, `Patch(channel, ops)` beside `Update`; the server keys live forwards by (channel, key), the diff removals → insertions → updates with a reorder falling back to `Reset`; `ReactiveServer::expose_keyed` / `expose_keyed_map` / `expose_keyed_with` (`key_of` a value parameter — a bound alone names `K` nowhere a call can infer it); the client `KeyedSource<K, T>` (`get`/`sub`/`map`/`or`/`sub_key`/`of`/`rebind`) reachable from the generated client — A30's declined surface in its minimal shape; `[expose(keyed)] SignalCell<Map<K, V>>`. The exhibit (20 channels × 50 messages): an edit 123,753 → 95 bytes, a post 163, a delete 34, a leased key's later events 0; opening a keyed channel is NOT cheaper (the seed is the collection) — leasing a key is. Plain-`[expose]` contract hash unmoved (pinned); the keyed twin hashes differently. Five red-first pins by plant. RESIDUE filed as A51: the `List<T>` keyed exposure has no macro form (two written types, no associated types) — refused with a steer to `Map<K, V>` or the hand-wired `expose_keyed`. Finds: `keyed_diff` is O(N) CPU per change (A51 carries it); a conditional `Wire` impl through two generic parameters fails at emission (B244); remote-sources.md §8's frame spelling stale (fixed at the sweep). The kolt recipe is on the item."
+  },
+  {
+   "id": "M40",
+   "lane": "m19-t1b",
+   "commit": "d3fe3276",
+   "text": "tranche 1b: six passes serve a reused module's rows instead of re-deriving them — `liveness::LastUse::compute` (all five row sets), `infer_bumps`, `compute_clone_sites`, `compute_return_clone_sites`, `compute_scalar_view_calls`, `compute_scalar_view_refs` — as an optional `ModuleTables` slice on T1's record (same world key; a module whose slice was never recorded replays diagnostics and recomputes tables); `table_entity` a separate range set from `world_entity`. STAYS LIVE, with the reason: the drop planner and `compute_resource_types` (no `TypeId` crosses the record — a type id is minted per occurrence against the entry's buffer), R10 (feeds R11 through TWO sets, the second keyed by minted TypeIds), `check_hmr_transfer_bounds`, `check_resource_generic_instantiations` (Class C), the hover render (megabytes per world), `compute_capture_clone_sites` (reads whole-program `written_roots`). Second recording rule: no row whose derivation could be the ENTRY's (`foreign_touched`, the walk's own opacity). Numbers (quiet box, min/median of 13 interleaved pairs): kolt client 351/369 → 331/341 ms; the view exhibit 253/261 → 226/236. Arc record: 411 → 367 (T1) → 341. Pins: restored == recomputed on the corpus-as-modules leg (which was structurally BLIND to emitter tables until a calling probe entry landed — `emitting >= 30` floor), the stale-table plant moving the emitted JS (red twice), an edited module not served its old tables. T1c (a resolved-`Type` record for the drop planner) is the largest item left — filed as M42. Process: this lane ran a broad `pkill -f cargo-nextest` that killed sibling runs, and said so."
+  },
+  {
+   "id": "M31",
+   "lane": "compile-perf-28",
+   "commit": "9a9fbe04",
+   "text": "the analyzer's 35 `IndexMap`/`IndexSet` tables on a fast hasher via one alias: `sip.rs` 484M → 80M Ir (6.73% → 1.25% of a kolt client check), SipHash calls 8.5M → 1.5M; total −11.4% Ir; insertion order pinned against the literal sequence and indexmap's default table. Residual out of scope: 83M of the remaining 85M is the const-eval interpreter's environment maps (`interpreter::lookup`/`assign`), left on std's hasher by a comment claiming they are off the cold path — false, 1.3% of a check (M43)."
+  },
+  {
+   "id": "M34",
+   "lane": "compile-perf-28",
+   "commit": "f4f53779",
+   "text": "`vilan check` skips the transformer unless a transformer-side diagnostic can fire: the call-site comment claimed `transform` \"has exactly ONE failure\" — it has four (missing `main`, B55, B68, B176), corrected; transformer 541M → 233M Ir (−57%), total −4.8%; on a generated 3-entry package `check` falls from 99.94% of a `build` to 78.4%. Pins: byte-identical stderr from `check` and `build` for a missing `main` and an analyzer refusal (red under a planted skip), a clean control writes no artifact."
+  },
+  {
+   "id": "M30",
+   "lane": "compile-perf-28",
+   "commit": "cc0e41d5",
+   "text": "a reverse index for `callee_bindable_generics` built once per world: 751M → 16M Ir (12.4% → 0.31%), total −12.3%; a new probe `analyzer::bindable_set_cost()`; pin: a lookup examines at most ONE declaration row at 4 impls and at 200 (the planted scan: 1,010,314 rows over 3,152 lookups). Cycle total across M31/M34/M30: −26.0% Ir on a cold kolt client check."
+  },
+  {
+   "id": "M35",
+   "lane": "compile-perf-28",
+   "commit": "b4379cec",
+   "text": "a multi-entry `check` compiles its entries in parallel on their own threads, diagnostics ordered by member, byte-identical to `VILAN_SEQUENTIAL_CHECK=1` (pinned three ways, red under a planted direct-to-stderr worker). Quiet box: a generated 3-entry package 76.6 → 64.3 ms wall (−16%, +8% CPU); kolt `check .` 726.7 → 677.5 ms (−6.8%, +3% CPU); end to end for the cycle 916 → 678 ms (−26%). The item's ~1.1× one-entry target is NOT met and the shortfall is measured: starting every member cold reaches 1.13× at +63% CPU and is slower in both at load; the fix that gets both is a base-cache \"under construction\" claim so a second cold member waits for the first's world (M23's territory, M44). `build` and `check_single`'s per-platform loop stay sequential (M44 carries it)."
+  },
+  {
+   "id": "L19",
+   "lane": "l19-ci",
+   "commit": "0a7b0f13",
+   "text": "steps 1 and 3 (step 2, the Windows leg on the owner's host, is the owner's own and stays on the item as a residue → L20): `scripts/ci-local.sh` holds every leg (`fmt vilan-fmt clippy test doctest audit wasm windows`) as one function each, and every ci.yml leg job's `run:` is `scripts/ci-local.sh <leg>` — pinned four ways in `ci_local_script.rs` (every leg job invokes the script; no inline cargo gate; the script's leg list equals ci.yml's job list minus the meta jobs; every leg has a function), `release_gate.rs` reading the CI commands out of the script; `Swatinem/rust-cache` (SHA-pinned v2.9.2, `save-if` on next/main) on test/clippy/wasm/vilan-fmt; `test` split into two nextest partitions per OS (3131 + 3074 = 6205, disjoint, summing) with doc-tests on partition 1; wasm's out-dir moved under target. ci.yml runs on `pull_request` and pushes to next/main only, so the cache and partition times are measured at the first push to next after this merge, not on the lane. Locally the script's union ran all eight legs green, 6205 tests."
+  },
+  {
+   "id": "N55",
+   "lane": "l19-ci",
+   "commit": "0a7b0f13",
+   "text": "RULED the gate: ONE reformatting commit over 101 `.vl` files (+847/−583; five classes — import order, one-line bodies expanding, trailing commas, chain reflow both directions at 100 columns, nothing else; every corpus golden byte-identical; the formatter idempotent) and a `vilan-fmt` job in ci.yml + `ci-local.sh`, with `check` needing it. Three things read worse and are the formatter's own rules, filed: `self` sorts LAST in an import group (E146), a binary-operator chain has no break rule — a hand-wrapped three-line `||` condition became one 182-character line (E147), an `if`/`match` arm body becomes a block mid-builder-ladder (E146 carries it). At integration this lane merged LAST and its reformat was regenerated over the merged tree."
+  },
+  {
+   "id": "N57",
+   "lane": "l19-ci",
+   "commit": "0a7b0f13",
+   "text": "the corpus-as-modules differential moved to its own binary `crates/vilan-core/tests/replay_differential.rs` with shared fixtures in `replay_harness/`; at loadavg 74 the sweep is 64.5 s alone and `check_scope_differential`'s longest member drops ~113 → 48 s; placed on the straggler priority-100 override with `slow-timeout = 180s`, NOT in `wall-clock-waits` (that group is one-thread for tests that WAIT on another thread; a compute-bound 16-way sweep would get slower there); build_hooks' mirror unchanged."
+  }
+ ]
+}
