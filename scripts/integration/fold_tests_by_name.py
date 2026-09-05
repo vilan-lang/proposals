@@ -35,5 +35,22 @@ head_text = head
 for n in allow:
     if n in hf and n in lf: head_text = head_text.replace(hf[n][2], lf[n][2], 1); print(f"took the lane's {n}")
 appended = "\n\n".join(lf[n][2] for n in new)
+# the lane's NEW top-level consts/statics (fixtures its fns read) ride along, by item boundary,
+# inserted after the last `use`
+_start = re.compile(r"^(pub(\(crate\))? )?(const|static|fn|async fn|use|mod|struct|enum|impl|type|macro_rules!|#\[|///|//)")
+def top_consts(src):
+    ls = src.split("\n"); starts = [i for i, l in enumerate(ls) if _start.match(l)]; out = {}
+    for k, i in enumerate(starts):
+        m = re.match(r"^(pub(\(crate\))? )?(const|static) ([A-Za-z_][A-Za-z0-9_]*)", ls[i])
+        if not m: continue
+        end = starts[k + 1] if k + 1 < len(starts) else len(ls); s0 = i
+        while s0 > 0 and (ls[s0-1].startswith("///") or ls[s0-1].startswith("#[")): s0 -= 1
+        out[m.group(4)] = "\n".join(ls[s0:end]).rstrip("\n")
+    return out
+carried = {k: v for k, v in top_consts(lane_src).items() if k not in top_consts(head) and k not in top_consts(base)}
+if carried:
+    hl = head_text.split("\n"); last_use = max((i for i, l in enumerate(hl) if l.startswith("use ")), default=0)
+    hl[last_use+1:last_use+1] = [""] + list(carried.values())
+    head_text = "\n".join(hl); print(f"carried top-level consts: {sorted(carried)}")
 open(path, "w").write(head_text.rstrip("\n") + ("\n\n" + appended + "\n" if appended else "\n"))
 print(f"folded {path}: head_fns={len(hf)} lane_new={len(new)} {new}")
