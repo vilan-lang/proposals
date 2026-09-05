@@ -31,7 +31,11 @@ hf, bf, lf = fns(head), fns(base), fns(lane_src)
 changed = [n for n in lf if n in bf and norm(lf[n][2]) != norm(bf[n][2]) and n not in allow]
 if changed: print(f"REFUSED: the lane edited existing fns: {changed} (pass --allow-edit a,b to take the lane's version)"); sys.exit(1)
 new = [n for n in lf if n not in hf]
+# functions the lane DELETED (in the base, not in the lane) are removed from HEAD's copy too
+deleted = [n for n in bf if n not in lf and n in hf]
 head_text = head
+for n in deleted:
+    head_text = head_text.replace(hf[n][2] + "\n", "", 1).replace(hf[n][2], "", 1); print(f"dropped the lane-deleted {n}")
 for n in allow:
     if n in hf and n in lf: head_text = head_text.replace(hf[n][2], lf[n][2], 1); print(f"took the lane's {n}")
 appended = "\n\n".join(lf[n][2] for n in new)
