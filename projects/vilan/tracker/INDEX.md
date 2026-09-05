@@ -15,7 +15,7 @@
 | [A46](items/A46.md) | NEW — fragment syntax `<>..</>` lowering to a `List<View>` literal (reverses element-syntax.md §7's refusal); NOT a multi-root View | feature | owner's ask (kolt); S–M for the list lowering, L for a marker-node fragment; owner to say which |
 | [A47](items/A47.md) | NEW — a refused client burns the full retry budget (~24 s of backoff) and reports `Transport("could not reach …")`: the host WebSocket surfaces no HTTP status, so a 401 is indistinguishable from an unreachable server | design | rpc-27's find; wants a host-specific error read or a post-upgrade refusal frame |
 | [A48](items/A48.md) | NEW — `authorize` is awaited inside the upgrade handler, so a slow verifier holds an unanswered socket (its own DoS surface); `handshake_rate` mitigates, a verification timeout is the honest addition | design | rpc-27's find |
-| [A49](items/A49.md) | NEW — std-27's residuals: `Source::on_change` as a requirement later (migration paid); `bind_each_by`'s render gets a writable `SignalCell<T>` (a read-only projection needs a wrapper type); `Selector<T>` is a handle where Solid returns a function | design | std-27's open questions; OWNER |
+| [A49](items/A49.md) | NEW — std-27's residuals: `Source::on_change` as a requirement later (migration paid); `bind_each_by`'s render gets a writable `SignalCell<T>` (a read-only projection needs a wrapper type); `Selector<T>` is a handle where Solid returns a function | design | RULED 2026-09-05: invert to on_change-required; Order 28 std lane |
 
 ## B. Type system & the type solver
 
@@ -27,9 +27,9 @@
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
 | [B149](items/B149.md) | NEW — an async function returning a `Task` mistypes as the task | bug | the pin names it since Order 21; the gap itself stays open |
 | [B183](items/B183.md) | NEW — tuple comprehension `(item in tuple => EXP)` + the zip form | design | owner-proposed |
-| [B184](items/B184.md) | NEW — trait annotations on struct fields, one-instantiation rule | design | owner-proposed; discussion REQUIRED |
-| [B218](items/B218.md) | NEW — two implicit generics of one trait print the same name: `Expected X, but got X` (Q3's diagnostic face) | bug | b211-b212's find |
-| [B220](items/B220.md) | NEW — an array receiver has B210's emission-side hole (`resolve_member_on_type` excludes arrays) | bug | b209-b210's find; a decision |
+| [B184](items/B184.md) | NEW — trait annotations on struct fields, one-instantiation rule | design | RULED 2026-09-05: Q3 = print `C<A>`; build queued Order 28 (fields only, bare grammar) |
+| [B218](items/B218.md) | NEW — two implicit generics of one trait print the same name: `Expected X, but got X` (Q3's diagnostic face) | bug | RULED 2026-09-05: print `C<A>`; Order 28 with B184 |
+| [B220](items/B220.md) | NEW — an array receiver has B210's emission-side hole (`resolve_member_on_type` excludes arrays) | bug | RULED 2026-09-05: arrays join; Order 28 |
 | [B231](items/B231.md) | NEW — a `match` expression as a binary operand (`flag && match probe() { .. }`) is a parse error: `found 'else' expected an expression` | bug | lane b224's find (2026-09-04); pre-existing parser limit |
 | [B232](items/B232.md) | NEW — a leftover `Constraint::MethodCall` after the fixpoint produces no residual diagnostic of its own; B229's clean-program guard exists only because of it | bug | context-27's find; giving MethodCall a residual lets the guard go |
 | [B233](items/B233.md) | NEW — `fun sum<P: Add, Q>(a: P, b: Q): P { a + b }` compiles and `sum(1, "two")` runs: the operator-dispatch site retains away the free binders, so two different rigid parameters meet on an operator (UNSOUND) | bug | b225-b219's find; B211's sibling |
@@ -39,6 +39,8 @@
 | [B237](items/B237.md) | NEW — `prepped_assignments` wiring skips a target whose local resolves late: an assignment to a guard continuation binding never reaches the wiring's own `cannot assign to this expression` arm | bug | divergence-27's find; the refusal survives via `check_readonly_mutation` (pinned) |
 | [B238](items/B238.md) | NEW — `disabled` is not usable as a binding name (parse error): a reserved-word leak | bug | std-27's find while writing A42's pins |
 | [B240](items/B240.md) | NEW — file mode's residues after B239: B226's refusal is pushed once PER IMPORTED NAME at one span (raw LSP diagnostics do not dedup); file mode cannot see that ANOTHER file is a declared entry (`views.vl` importing `pkg::client::helper` is clean in file mode, refused by `check .`); a DEPENDENCY file opened as the entry would lose its own derives (`base_cacheable` pre-marks SourceId(0), undone only under `!entry_is_module`) | bug | b239's finds |
+| [B241](items/B241.md) | NEW — an ARITY-invalid call to a context-reading function cascades into the context pass: `channel_component(stub_user)` (one argument short) yields the arity error PLUS three "reads context X, so it can't be used as a value" at the call and five "can be reached without an enclosing run" fences, four of them in std's reactive.vl | bug | the owner's report (2026-09-05); B229's family, the callee side; reproduced on a kolt copy from its own directory |
+| [B242](items/B242.md) | NEW — `context` clauses on `fun` declarations (`fun f(x: f64) context settings`): an explicit requirement that anchors coverage diagnostics at the declaration and stops cascades like B241 at the boundary | design | the owner's proposal (2026-09-05); the closure-type clause exists (ledger row 47) — extend the grammar; RECOMMEND yes, optional; paper section + build in Order 28 |
 
 ## C. Memory model
 
@@ -68,9 +70,9 @@
 | [E138](items/E138.md) | NEW — hover on `PartialEq::eq` and `PartialOrd::lt` returns nothing through both routes (default body, generic bound) where `Add::add`/`Sub::sub`/`Mul::mul` resolve | editor | cascade-27's find; a target-resolution gap, not rendering |
 | [E139](items/E139.md) | NEW — hover at the end of a bare USE (`let _ = count\|`) still hovers the enclosing function: `vilan_ide::analysis::entity_at` is separately end-exclusive (shared with completion's receiver resolution) | editor | editor-sync-27's find; E133 fixed declarations only |
 | [E140](items/E140.md) | NEW — E124's residue: paper §6.1 pins 4, 10, 11, 16, 19 unbuilt; withdrawal is package-wide, not the depends_on cone; the union analyses ignore M26's per-document scheduler | editor | e124-build's residue; no false gray appeared |
-| [E141](items/E141.md) | NEW — the keystroke gate's per-request completion budget is a RELEASE figure and the gate has no profile guard: red at 289e2a2b under debug (0.705–0.813 ms vs 0.2), invisible because `#[ignore]`d | editor | completion-27 + e124-build's finds; owner ruling: guard on the profile or re-derive |
-| [E142](items/E142.md) | NEW — should a `::` path be allowed to cross a line break? E135's unfixed face: `style::` ⏎ `print(..)` is the legal path `style::print` and swallows the next statement | design | parse-fmt-27's find; a language rule — the owner's; zero `.vl` files end a line on `::` |
-| [E143](items/E143.md) | NEW — rename at a struct-init shorthand refuses (E134); should it EXPAND to `A { new = old }` instead? | design | editor-sync-27's open question; needs per-span replacement text through `rename_edits_across` |
+| [E141](items/E141.md) | NEW — the keystroke gate's per-request completion budget is a RELEASE figure and the gate has no profile guard: red at 289e2a2b under debug (0.705–0.813 ms vs 0.2), invisible because `#[ignore]`d | editor | RULED 2026-09-05: not slow in release (0.04 ms); profile guard; Order 28 |
+| [E142](items/E142.md) | NEW — should a `::` path be allowed to cross a line break? E135's unfixed face: `style::` ⏎ `print(..)` is the legal path `style::print` and swallows the next statement | design | RULED 2026-09-05: no line-crossing `::` + import aliasing; Order 28 |
+| [E143](items/E143.md) | NEW — rename at a struct-init shorthand refuses (E134); should it EXPAND to `A { new = old }` instead? | design | RULED 2026-09-05: expand; + formatter shorthand; Order 28 |
 | [E144](items/E144.md) | NEW — derive-template double claims: two expansions of one `[derive(..)]` index the same DERIVED_SOURCE offsets (`Ordering` and `JsonKind` both claim 304..312) | editor | editor-sync-27's find; collapsed to one row as before; low |
 
 ## G. Macros & const
@@ -149,5 +151,6 @@
 | [N47](items/N47.md) | NEW — an output-asserting docs form (`vilan,run` + transcript) | process | docs-law's proposal |
 | [N53](items/N53.md) | NEW — `interpreter.rs` still has the un-raised `NODE_TIMEOUT = 30 s` and one whole-corpus test at 58 s: N52's shape one layer over | hygiene | hygiene-27's find |
 | [N54](items/N54.md) | NEW — `vilan/test/file.vl` writes a fixed `file-corpus.txt` relative to CWD and is run by both differentials concurrently: latent cross-talk of the kind `watch.vl` was fixed for | hygiene | hygiene-27's find |
-| [N55](items/N55.md) | NEW — 96 `.vl` files (7 under std) already differ from their own formatter; there is no repo-wide `vilan fmt --check` gate. Decide: a CI gate after one reformat, or an explicit hand-formatted statement | design | parse-fmt-27's find; OWNER DECISION |
+| [N55](items/N55.md) | NEW — 96 `.vl` files (7 under std) already differ from their own formatter; there is no repo-wide `vilan fmt --check` gate. Decide: a CI gate after one reformat, or an explicit hand-formatted statement | design | RULED 2026-09-05: add the gate; Order 28 with L19 |
 | [N56](items/N56.md) | NEW — `vilan check <absolute path>` with the cwd inside ANOTHER vilan checkout resolves that checkout's std: 37 `macro PartialEq's definition did not compile` cascades on kolt's sidebar.vl from the vilan tree, 0 from kolt's own directory | hygiene | b239's find; cost the lane a false alarm |
+| [N57](items/N57.md) | NEW — M19 T1's corpus-as-modules differential runs inside vilan-core's inference binary and adds 60–170 s to every `-p vilan-core` run; give it its own binary in the slow group | hygiene | the owner unsure (2026-09-05, Q6); orchestrator's call: keep the gate, move it |
