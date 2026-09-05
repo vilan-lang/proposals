@@ -1764,3 +1764,25 @@ PROCESS:
   report. L19's step 2 (the Windows leg on the owner's host) is what turns this from a 35-minute
   round trip into a local gate.
 - No stash incidents; no signing incidents; sixteen lanes plus the same-day b230, all merged.
+
+## Order 28 — cycle 46: CI in five minutes, the context boundary, the rulings of the fifth (2026-09-05 → )
+
+Opened on the owner's "Go" of 2026-09-05, the day after Order 27's seal,
+on the rulings of that morning: E142 no line-crossing `::` (import
+aliasing as its prerequisite), N55 the fmt gate, E141 a profile guard
+(release measures 0.04 ms against the 0.2 ms budget — the slowness was
+the debug profile), E143 expand on rename plus the formatter's
+shorthand, A49 inverted to `on_change`-required, B220 arrays join, B184
+Q3 the hidden argument prints as `C<A>`, B242 (the owner's proposal:
+`context` clauses on `fun`) accepted for a paper section and a build.
+The cut HELD until the owner has tested kolt on 49b896d0. Thirteen lanes
+off 49b896d0 (CI green there): l19-ci (TOP for DX — ci-local.sh shared
+with ci.yml, rust-cache + partitions, the fmt gate, N57), context-28
+(B241/B232/B242), rigid-28 (B233/B234/B235), checker-28
+(B236/B237/B240/B220), b184-b218, std-28 (A49/A47/A48), rpc-28 (A39,
+keyed deltas — the large one), editor-28 (E138–E141/E143/E144),
+parse-fmt-28 (E142+aliasing/B231/B238/D6/the shorthand), perf-28
+(M36–M39/M41/M27's fix half), m19-t1b (M40), compile-perf-28 (the other
+session's M30/M31/M34/M35), hygiene-28 (N53/N54/N56). Held: A46's form,
+B183's six. First integration act: the helpers committed to
+`scripts/integration/` so they stop being rebuilt every order.
