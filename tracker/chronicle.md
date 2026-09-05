@@ -1703,3 +1703,64 @@ A41), std-27 (A42–A45 + A36), hygiene-27 (N52, N51 on its
 recommendation). Held for the owner: B218 (B184's Q3), A46's form,
 B220's direction, the cut. The integration helpers must be rebuilt
 first (the scratchpad was wiped again between sessions).
+
+MERGED (seventeen lanes, in the order they landed): e126 (8bcd63bf), context-27 (152e2451), b224 (940521ee),
+hygiene-27 (51f3aa4b), editor-sync-27 (d8832db4), b225-b219 (9c5a4dff), cascade-27 (4e457bde),
+checker-27 (8d881231), divergence-27 (0f034327), parse-fmt-27 (cddf0e75), m28, completion-27 (b536f4dd),
+b230 (8d9ae5f9), rpc-27 (8009da18), e124-build (776e01ed), m19-t1 (2d9d93dc), std-27 (284998ed), and the same-day b239 (49b896d0) — the owner's evening report of seven errors in kolt's views.vl: B226's cycle refusal firing in FILE MODE, a regression this order introduced; an `EntryMode` flag, both front ends, the open-file entry taking the monolithic order.
+Ledger rows 386–388 assigned (B226's two, E135's one); CHANGELOG parity 131/131.
+
+SEALED 2026-09-05 at 49b896d0: union 6200/6200 (14 skipped, quiet box), clippy, the Windows cross-check and the audit green locally;
+CI GREEN on all eight jobs (run 33932669444) after two Windows-only rounds on E127's pins and one fmt round. The order's own verdicts: a RELEASED miscompile fixed the day it was ruled (B224) and a
+second found by that lane and OVERTURNED by its own lane the same day — B230's premise was wrong
+(bare `?` is the expression lift, correct), the real defect an unchecked generic-variant payload,
+fixed; an UNSOUND accept (B225) that was B219's first live consequence, fixed with fresh ids after
+the restriction option was built and shown to break `map<U>`; the CORRUPTING editor bug (E132)
+fixed in four lines; the mandate's number corrected — on a quiet box the 500 ms diagnostics
+budget was already met at 289e2a2b (411 ms), M19 tranche 1 takes it to 367 with 57/57 modules
+reused per keystroke, and e126's view-shaped exhibit reads 1,053 ms only under lane load; the
+keystroke completion budget is a RELEASE figure that two lanes measured in debug (E141).
+Forty closes; thirty filed (B232–B238, E138–E144, M36–M41, N53–N55, A47–A49, D6, B240 and N56 from b239, and L19 — the owner's CI-speed ask, queued for Order 28: a local gate script shared with ci.yml and rust-cache + nextest partitions; the Windows leg on the owner's own host);
+M27's premise corrected in place; E121 annotated.
+
+PROCESS:
+- The rebuilt ledger helper deduplicated rows by message KEY across the whole file and dropped 26
+  legitimate rows on the FIRST merge (rows that share a message under different ids); pushed at
+  8bcd63bf, restored at 14ed3f7b within the hour, helper fixed to touch lane rows only. Rule: a
+  merge helper never rewrites HEAD's rows.
+- build_hooks' wall-clock-group MIRROR constant must follow every `nextest.toml` group join — it
+  broke twice (E127's join, E124's join); the first was caught only by the NEXT lane's gate, because
+  neither the lane's gates nor the merge gate ran build_hooks. Rule: any lane touching
+  `.config/nextest.toml` runs `--test build_hooks`; the merge gate for an LSP lane includes it.
+- Git interleaved two lanes' appended test MODULES in `vilan-lsp/src/main.rs` (linked_editing +
+  watched_files vs dead_item_clock) and once the interleave compiled as an unclosed delimiter;
+  resolved as the merged prefix (which carries the lane's clean non-test edits) plus each
+  original's tail located by a 20-line anchor. Rule extended: test files merge by whole functions;
+  test MODULES merge by whole modules from each original.
+- The fold-by-name helper appended std-27's stale pre-N52 helpers into `release_differential.rs`
+  (the lane branched before hygiene-27 moved them into the shared harness) and the core gate
+  refused; repaired as HEAD's file plus the lane's three manifest rows. Rule: a lane that adds a
+  corpus program after N52 adds the ROW to `corpus_harness`'s manifest, nothing to the differential
+  files.
+- parse-fmt-27's merge committed with a red gate and the next two merges pushed on top of it
+  (the driver reported the failure but the chain continued); the red was the mirror constant
+  above, fixed at 0d89f1b1. Rule: merge_fold stops the CHAIN on a gate failure (now `&&`-gated).
+- Lanes shared one scratchpad and one lane read another's log as its own; briefs now name a
+  lane-private subdirectory.
+- checker-27 broke the "add whole test functions only" rule on purpose — two existing fixtures
+  were written in the self-import form B226 now refuses — and said so.
+- The seal's FIRST CI answer was red on `fmt`: the hand folds (the main.rs module-tail rebuild, the
+  by-name test folds) left rustfmt drift that no local gate ran. Fixed with a rustfmt-only commit;
+  the seal script now carries `cargo fmt --all --check`. Rule: every hand fold is followed by fmt.
+- CI's SECOND answer was red on Windows only: two E127 pins — the runner's temp directory is spelled
+  short (`RUNNER~1`), a document's package root kept that spelling, and `watched_sweep_root`
+  canonicalized only the arriving path before `starts_with`; the sweep root was `None` and a deleted
+  module kept being offered. The first fix canonicalized the ROOTS and did not help — the
+  arriving file does not EXIST yet, so `canonical_path` fell back to lexical normalization and kept
+  the URI's spelling; `canonical_path_of_unwritten` (B207's own function) is the fix, and a third
+  CI round proved it. The THIRD seal in a row where Windows had the
+  last word on a path spelled two ways (B198, B207, now E127): the rule stands — every path
+  comparison canonicalizes BOTH sides, and any lane touching paths lists that comparison in its
+  report. L19's step 2 (the Windows leg on the owner's host) is what turns this from a 35-minute
+  round trip into a local gate.
+- No stash incidents; no signing incidents; sixteen lanes plus the same-day b230, all merged.
