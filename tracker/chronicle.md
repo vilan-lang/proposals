@@ -1678,7 +1678,7 @@ the gate that says otherwise measures an exhibit that is not kolt
 and fixed the same day (B209, B211, B214/B215); one composition gap
 found at integration and filed (B222).
 
-## Order 27 — cycle 45: the kolt-migration batch, the two ruled papers built, tranche 1 (2026-09-04 → )
+## Order 27 — cycle 45: the kolt-migration batch, the two ruled papers built, tranche 1 (2026-09-04 → 2026-09-04)
 
 Opened on the owner's "Go" of 2026-09-04 after the kolt-migration
 batch (27 points, seven read-only triage lanes, 24 items filed at

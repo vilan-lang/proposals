@@ -214,22 +214,43 @@ current state is described, not assumed.
 
 ### 1.4 What the reconciler accepts
 
-`reconcile_type` (`analyzer.rs:19340-19599`) and its read-only twin
-`compare_type_rigid` (`analyzer.rs:19683-19717`) agree exactly:
+`reconcile_type` (`analyzer.rs` ~27738) and its read-only twin
+`compare_type_rigid` (~28102) agree on RIGIDITY by construction since Order 27
+(B219): both ask one predicate, `generic_is_rigid_here`, pinned by
+`both_predicates_give_one_verdict_on_b211s_garbage_shapes`. Below those arms
+the twin still falls back to a generic's constraint where the reconciler
+binds, so "agree" is a statement about rigidity, not about every arm. The
+`rigid: &[TypeId]` parameter both take is B29's conformance strictness and
+sits ABOVE body rigidity; one caller — `resolve_pattern`'s literal arm (B82) —
+deliberately opts out and opens the subject's own parameters instead. The
+line anchors in the table are the Order 27 tree's (the old ones sat ~8,500
+lines earlier):
 
 | left | right | site | verdict |
 |---|---|---|---|
-| `Trait(id, a)` | `Trait(id, b)` — **same id** | `analyzer.rs:19538` | accept, arguments reconciled |
-| `Trait(id₁, _)` | `Trait(id₂, _)` — different | falls to `19595` | fail |
-| `Struct`/`Enum` | `Trait(id, _)` | `analyzer.rs:19430` | accept iff it implements; result is the **concrete** type |
-| `Trait(_, _)` | `Struct`/`Enum` | *no arm* → `19595` | fail — B72's site |
-| `Trait` | `Generic(c)` | `analyzer.rs:19393` — the arm is `(_, Generic)` | accept, **binds `c := Trait`** |
+| `Trait(id, a)` | `Trait(id, b)` — **same id** | the same-id arm | accept, arguments reconciled |
+| `Trait(id₁, _)` | `Trait(id₂, _)` — different | falls to the final arm | fail |
+| `Struct`/`Enum` | `Trait(id, _)` | the implements arm | accept iff it implements; result is the **concrete** type |
+| `Trait(_, _)` | `Struct`/`Enum` | *no arm* → the final arm | fail — B72's site |
+| `Trait` | `Generic(c)` — c OPEN | the `(_, Generic)` arm | accept, **binds `c := Trait`** (still the leak, §2.1) |
+| `Trait` | `Generic(c)` — c RIGID, its bound carries the trait | the rigidity arm (B211) | accept, **binds nothing** — §1.4's recommendation, partly implemented |
+| `Trait` | `Generic(c)` — c rigid otherwise | the rigidity arm | fail |
+| `Generic(c)` | `Generic(c)` — same id | the rigidity arm | accept |
+| `Generic(c₁)` rigid | `Generic(c₂)` rigid, different | the rigidity arm | fail |
+| `Generic(c)` rigid | `Generic(d)` open (either order) | the rigidity arm | accept, binds the OPEN one |
+| `Generic(c)` rigid | a concrete type (either order) | the rigidity arm | fail |
 
 > **P2.** Two unrelated traits: `fun make_alpha(): Alpha { … }` assigned to
 > `let x: Beta` gives `Expected Beta, but got Alpha instead.` The same trait
 > on both sides compiles. The `if l_id == r_id` guard is exactly what it says.
 
-The last row is the one that hurts. `Trait` unifies with a generic parameter
+A note on what "open at a literal" means after B225 (Order 27): a struct
+literal instantiates the struct's parameters with the LITERAL'S OWN FRESH
+ids (`instantiate_literal_parameters`), not the impl binder B77 aliases to
+them — so `impl Pair<type T> { fun make(x: T) { Pair { b = "s", a = x } } }`
+refuses instead of binding the impl's rigid `T := str` on one field.
+
+The open-`c` row is the one that hurts. `Trait` unifies with a generic parameter
 and *binds it* — so a bare-trait value passed to
 `fun use_it<T: Display>(v: T)` binds `T := Display`, the trait itself, and the
 monomorphizer is then asked to specialize for a type that has no impls. And it

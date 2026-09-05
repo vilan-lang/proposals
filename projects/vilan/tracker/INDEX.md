@@ -10,17 +10,12 @@
 | [A8](items/A8.md) | UI styling — the tail | design | |
 | [A14](items/A14.md) | Reactive residuals | design | |
 | [A34](items/A34.md) | NEW — a typed style token has no mid-value spelling in a css block | design | b148's census find; real gap revealed |
-| [A36](items/A36.md) | NEW — `Style::when(condition, delta)` conditional-merge combinator | feature | RULED ACCEPTED 2026-08-31 (style-variants Q3); ready to queue |
 | [A37](items/A37.md) | NEW — `[gone]` trait-member attribute: reachable only through the trait (method surface, for blanket impls) | design discussion | NOT queued; the owner unsure of its value |
-| [A38](items/A38.md) | NEW — the rpc service is one process-wide instance; transport-rpc Q9 says the instance IS the connection's session (per-connection factory + injected globals) | design | owner's ask (kolt); a paper-vs-implementation gap; prerequisite of A39 and A40 |
 | [A39](items/A39.md) | NEW — `[expose]` resyncs the whole value on every change; a message edit costs the channel (keyed deltas + per-key subscription over the wire) | design | owner's ask (kolt); a recipe exists today but stops at the generated client; needs A38 first |
-| [A40](items/A40.md) | NEW — the rpc WebSocket upgrade authorizes nothing and never echoes a subprotocol; a pre-upgrade `authorize` hook + a token subprotocol (transport-rpc Q4's transport half) | design | owner's ask (kolt); DoS surface; auth mechanism stays dev-land; needs A38 for the Session to live in |
-| [A41](items/A41.md) | NEW — the dynamic-expose path leaks and goes dead: `ReactiveServer::stop` never removes the `sources` entry; `reattach_mirrors` rebinds only `__attach`'s positional list | bug | rpc triage lane's find while writing A39's recipe |
-| [A42](items/A42.md) | NEW — `bind_each` demands both `T: PartialEq` AND a key fn; split the value-keyed and key-fn forms (kolt writes the key twice and gets a stale row) | design | owner's ask (kolt); additive, no rename; M |
-| [A43](items/A43.md) | NEW — `Source` has no lazy subscribe: land the `observe`-shaped member (`on_change`) that reactive-traits Q5 owes, rather than flipping `sub`/`effect` | design | owner's ask (kolt: eager is often not wanted); OWNER DECISION flip vs additive; S; unblocks A44 and `Source::map` widening |
-| [A44](items/A44.md) | NEW — `Source::selector()`: O(2) per-key selection notification (Solid's `createSelector`); the owner's `sub_condition` is O(n) and lands inside the notify loop | feature | owner's idea (kolt); needs A43's `on_change`; M |
-| [A45](items/A45.md) | NEW — no element mount hook: `View::on_mount(\|el\| ..)` and `View::autofocus()`; kolt focuses three modal inputs with three UUIDs, three timers and a private `focus` extern | feature | owner's ask (kolt); S; SSR twin no-op |
 | [A46](items/A46.md) | NEW — fragment syntax `<>..</>` lowering to a `List<View>` literal (reverses element-syntax.md §7's refusal); NOT a multi-root View | feature | owner's ask (kolt); S–M for the list lowering, L for a marker-node fragment; owner to say which |
+| [A47](items/A47.md) | NEW — a refused client burns the full retry budget (~24 s of backoff) and reports `Transport("could not reach …")`: the host WebSocket surfaces no HTTP status, so a 401 is indistinguishable from an unreachable server | design | rpc-27's find; wants a host-specific error read or a post-upgrade refusal frame |
+| [A48](items/A48.md) | NEW — `authorize` is awaited inside the upgrade handler, so a slow verifier holds an unanswered socket (its own DoS surface); `handshake_rate` mitigates, a verification timeout is the honest addition | design | rpc-27's find |
+| [A49](items/A49.md) | NEW — std-27's residuals: `Source::on_change` as a requirement later (migration paid); `bind_each_by`'s render gets a writable `SignalCell<T>` (a read-only projection needs a wrapper type); `Selector<T>` is a handle where Solid returns a function | design | std-27's open questions; OWNER |
 
 ## B. Type system & the type solver
 
@@ -33,24 +28,17 @@
 | [B149](items/B149.md) | NEW — an async function returning a `Task` mistypes as the task | bug | the pin names it since Order 21; the gap itself stays open |
 | [B183](items/B183.md) | NEW — tuple comprehension `(item in tuple => EXP)` + the zip form | design | owner-proposed |
 | [B184](items/B184.md) | NEW — trait annotations on struct fields, one-instantiation rule | design | owner-proposed; discussion REQUIRED |
-| [B213](items/B213.md) | NEW — `vilan fmt` walks once per root; overlapping roots double-report a file | bug | watch-26's find |
-| [B216](items/B216.md) | NEW — a parameterized supertrait clause loses `Self` in a default body (B205's gate) | bug | cascade-26's find |
-| [B217](items/B217.md) | NEW — generated-code type misses via the `prepped_*` route are not anchored at the derive | bug | cascade-26's find |
 | [B218](items/B218.md) | NEW — two implicit generics of one trait print the same name: `Expected X, but got X` (Q3's diagnostic face) | bug | b211-b212's find |
-| [B219](items/B219.md) | NEW — `compare_type_rigid` does not consult `rigid_binder_scope`; the documented twins disagree | bug | b211-b212's find |
 | [B220](items/B220.md) | NEW — an array receiver has B210's emission-side hole (`resolve_member_on_type` excludes arrays) | bug | b209-b210's find; a decision |
-| [B221](items/B221.md) | NEW — a diverging non-last statement does not exempt the return tail (B124's list) | bug | b204's find; pre-existing |
-| [B222](items/B222.md) | NEW — a panicking guard does not bind the continuation: B187 decides during the walk, B204's leaves settle after | bug | found at integration; pin ignored naming it |
-| [B223](items/B223.md) | NEW — `for` conditions and `match` guards have no polarity frame; a negated capture binds where an `if` refuses | bug | b214-b215's find; refuses programs that compile today |
-| [B224](items/B224.md) | NEW — a condition's `&&`/`\|\|` short-circuit is lost in codegen: the right operand's statements hoist before the `if`; an `else if` condition hoists above its whole chain | bug | owner's find (kolt); RELEASED MISCOMPILE; crashes on the miss path, side effects run when short-circuited |
-| [B225](items/B225.md) | NEW — the struct-literal door reopens the enclosing impl's OWN rigid parameter: `impl Pair<type T> { fun make(x: T) { Pair { b = "s", a = x } } }` silently returns `Pair<str>` (B219's first live consequence) | bug | owner's find (kolt's `impl Searchable<type T>`); UNSOUND ACCEPT; M with a census — B211 shipped the door deliberately |
-| [B226](items/B226.md) | NEW — a self-import (or a cycle back) into the ENTRY module makes it load as a module and skips its walk and derive expansion: `main` and every `[derive]` vanish | bug | owner's find (kolt: 'SidebarTab does not implement PartialEq' in views.vl, fine in a new file); S–M; no self-import or cycle detection exists |
-| [B227](items/B227.md) | NEW — an `any` parameter FILLS an unfilled closure parameter instead of coercing: one `print(x)` types `x` as `any` and silences every later check on it (`on:keydown(\|event\| ..)`'s `event: any` is this) | bug | owner's two finds (kolt) are one defect; S — add `Type::Any` to B13's adopt guard, skip without deferring |
-| [B228](items/B228.md) | NEW — a ZERO-argument method call anchors its arity diagnostic on the DECLARATION, so a std callee's error renders against std's file at the caller's offsets (`<div .styled() />` looks undiagnosed) | bug | owner's find (kolt); S — `MethodArgCheck` already carries `call_id` |
-| [B229](items/B229.md) | NEW — an unresolved value argument silently deletes the `run` site: every context read then fences, burying the real initializer error; and the 'flows through this call' note spans the whole receiver chain | bug | owner's find (kolt: 'context threading breaks fairly often'); (b) M, (a) S; B146's sibling gap |
-| [B230](items/B230.md) | NEW — `?` inside a `let` initializer double-wraps: `let v = probe()? > 0; Ok(v)` returns `Ok(Ok(true))` and an `Err` becomes `Ok(Err(..))`, never propagated (RELEASED MISCOMPILE) | bug | lane b224's find (2026-09-04); independent of B224 — the `?`-lift restructures above the expression; same-day lane b230 |
 | [B231](items/B231.md) | NEW — a `match` expression as a binary operand (`flag && match probe() { .. }`) is a parse error: `found 'else' expected an expression` | bug | lane b224's find (2026-09-04); pre-existing parser limit |
-| [B239](items/B239.md) | NEW — FILE MODE regression from B226: an open non-entry file is analyzed as the entry, so a sibling that imports it (`channel.vl` → `pkg::views`) hits the new "entry cannot be imported" error and everything it carried cascades (kolt's views.vl in the editor: 7 errors, `vilan check .` clean) | bug | the owner's report (2026-09-04, after installing 284998ed); same-day lane b239; blocks the Order 27 seal |
+| [B232](items/B232.md) | NEW — a leftover `Constraint::MethodCall` after the fixpoint produces no residual diagnostic of its own; B229's clean-program guard exists only because of it | bug | context-27's find; giving MethodCall a residual lets the guard go |
+| [B233](items/B233.md) | NEW — `fun sum<P: Add, Q>(a: P, b: Q): P { a + b }` compiles and `sum(1, "two")` runs: the operator-dispatch site retains away the free binders, so two different rigid parameters meet on an operator (UNSOUND) | bug | b225-b219's find; B211's sibling |
+| [B234](items/B234.md) | NEW — `fun f<T>(x: T) { if x { } }` compiles: a rigid parameter satisfies a `bool` condition (UNSOUND) | bug | b225-b219's find |
+| [B235](items/B235.md) | NEW — a `= Self`-defaulted trait parameter is read as a BOUND when the member is reached through a sub-trait's parameterized clause: `trait Mixer<A = Self, B = Self>` under `trait Mixed with Mixer<i32, str>` refuses `i32` | bug | cascade-27's find; B216's two-parameter pin uses undefaulted parameters because of it |
+| [B236](items/B236.md) | NEW — the entry-cycle refusal (B226) still cascades three follow-ons: `cannot find 'X' in the imported path` and two `cannot find type` | bug | checker-27's find; the stand-down machinery could root them |
+| [B237](items/B237.md) | NEW — `prepped_assignments` wiring skips a target whose local resolves late: an assignment to a guard continuation binding never reaches the wiring's own `cannot assign to this expression` arm | bug | divergence-27's find; the refusal survives via `check_readonly_mutation` (pinned) |
+| [B238](items/B238.md) | NEW — `disabled` is not usable as a binding name (parse error): a reserved-word leak | bug | std-27's find while writing A42's pins |
+| [B240](items/B240.md) | NEW — file mode's residues after B239: B226's refusal is pushed once PER IMPORTED NAME at one span (raw LSP diagnostics do not dedup); file mode cannot see that ANOTHER file is a declared entry (`views.vl` importing `pkg::client::helper` is clean in file mode, refused by `check .`); a DEPENDENCY file opened as the entry would lose its own derives (`base_cacheable` pre-marks SourceId(0), undone only under `!entry_is_module`) | bug | b239's finds |
 
 ## C. Memory model
 
@@ -65,6 +53,7 @@
 | ID | Title | Kind | Discussion |
 |----|-------|------|------------|
 | [D5](items/D5.md) | Public traction plan | design | |
+| [D6](items/D6.md) | NEW — the grammar EBNF lists `!` and `?.` but no bare `?` postfix (grammar.md ~334), and spec §5.10's heading still reads "`!` and `?.`" | docs | b230's find; the grammar_ebnf/grammar_sync gates |
 
 ## E. LSP & tooling
 
@@ -76,19 +65,13 @@
 | [E99](items/E99.md) | NEW — the `-d` dump's `.parse.out` is the post-desugar tree, and no dump shows the raw parse | process | |
 | [E106](items/E106.md) | NEW — the language server slows down over a session | bug | owner report; measure first |
 | [E121](items/E121.md) | NEW — the editor-latency mandate: <10 ms keystroke path, <500 ms errors | design | owner-set target; ARC, paper first |
-| [E124](items/E124.md) | RULED 2026-09-03 — no visibility markers: a `[package]`'s top-level dead code = unreached by ANY entry (the pruner's definition unioned across entries); libraries no top-level gray; `[doc(hidden)]` the soft surface; `[keep]` reserved | editor | PAPER first, then build — an upcoming order |
-| [E126](items/E126.md) | NEW — the diagnostics gate's exhibit misses kolt's cost 178× on call substitutions; needs a view-shaped generator | editor | m19-paper's find; M19-t1 gate prerequisite |
-| [E127](items/E127.md) | NEW — no `did_change_watched_files` handler; disk-read module listings stale until re-analysis | editor | m25-e125's find |
-| [E128](items/E128.md) | NEW — hover renders `= Self` as the trait's name | editor | cascade-26's find; B206's other half |
-| [E129](items/E129.md) | NEW — a code `::`-path completes only its LAST segment: `style::FlexDirection::` and `style::Color::` offer nothing | editor | owner's find (kolt); the import arm already descends; S–M |
-| [E130](items/E130.md) | NEW — member completion is blind on a call whose DECLARED return is a type parameter: `SignalCell<T>::get()`'s `.` offers nothing (E107's other half) | editor | owner's find (kolt); S, substitute through `method_call_substitution` |
-| [E131](items/E131.md) | NEW — member completion resolves a CALL receiver in ANALYZED coordinates: a receiver typed since the landing answers the OLD expression's type (`<div .styled(const style::style().` offers View's members) | editor | owner's find (kolt); E125's twin for completion; S gate now, M with M29 |
-| [E132](items/E132.md) | NEW — linkedEditingRange answers in ANALYZED coordinates; the client mirrors keystrokes into unrelated live text (E125's twin; CORRUPTS working code) | bug | owner's find (kolt): 'unrelated text deleted or changed'; fix verified S (564/564); interim: editor.linkedEditing off |
-| [E133](items/E133.md) | NEW — the reference index is end-exclusive: rename and find-references miss with the caret at `name\|` | bug | owner's find (kolt); fix verified S (564/564); hover has the same rule separately |
-| [E134](items/E134.md) | NEW — a struct-init shorthand's two references share one span; the index dedup drops the variable's use (unused-local fade + find-references), and rename at that span serves only one name | bug | owner's find (kolt); one root cause for both halves; M — a design decision, not the one-line widen |
-| [E135](items/E135.md) | NEW — an incomplete `a::` path rolls the `::` back: the failure surfaces as a missing `;`, or the path re-binds to the NEXT line's identifier and swallows that statement | bug | owner's find (kolt: broke element parsing); S — the `Length::css` arm is the model |
-| [E136](items/E136.md) | NEW — a multi-value element attribute declines the WHOLE element; its curated diagnostic is discarded and the span lands on the tag | bug | owner's find (kolt: `<div raw("inert", x) ..>`); S — mirror the `.`-chain arm |
-| [E137](items/E137.md) | NEW — the formatter never breaks a ONE-link chain: a single `.map(closure)` stays inline at any width (220 columns) | bug | owner's find (kolt); M — small change, golden churn over the byte-gated corpus |
+| [E138](items/E138.md) | NEW — hover on `PartialEq::eq` and `PartialOrd::lt` returns nothing through both routes (default body, generic bound) where `Add::add`/`Sub::sub`/`Mul::mul` resolve | editor | cascade-27's find; a target-resolution gap, not rendering |
+| [E139](items/E139.md) | NEW — hover at the end of a bare USE (`let _ = count\|`) still hovers the enclosing function: `vilan_ide::analysis::entity_at` is separately end-exclusive (shared with completion's receiver resolution) | editor | editor-sync-27's find; E133 fixed declarations only |
+| [E140](items/E140.md) | NEW — E124's residue: paper §6.1 pins 4, 10, 11, 16, 19 unbuilt; withdrawal is package-wide, not the depends_on cone; the union analyses ignore M26's per-document scheduler | editor | e124-build's residue; no false gray appeared |
+| [E141](items/E141.md) | NEW — the keystroke gate's per-request completion budget is a RELEASE figure and the gate has no profile guard: red at 289e2a2b under debug (0.705–0.813 ms vs 0.2), invisible because `#[ignore]`d | editor | completion-27 + e124-build's finds; owner ruling: guard on the profile or re-derive |
+| [E142](items/E142.md) | NEW — should a `::` path be allowed to cross a line break? E135's unfixed face: `style::` ⏎ `print(..)` is the legal path `style::print` and swallows the next statement | design | parse-fmt-27's find; a language rule — the owner's; zero `.vl` files end a line on `::` |
+| [E143](items/E143.md) | NEW — rename at a struct-init shorthand refuses (E134); should it EXPAND to `A { new = old }` instead? | design | editor-sync-27's open question; needs per-span replacement text through `rename_edits_across` |
+| [E144](items/E144.md) | NEW — derive-template double claims: two expansions of one `[derive(..)]` index the same DERIVED_SOURCE offsets (`Ordering` and `JsonKind` both claim 304..312) | editor | editor-sync-27's find; collapsed to one row as before; low |
 
 ## G. Macros & const
 
@@ -130,6 +113,7 @@
 | [L15](items/L15.md) | NEW — release artifacts are checksummed but unsigned | feature | |
 | [L16](items/L16.md) | NEW — `std::markdown`'s ~20 strict-parse refusals enter the diagnostics ledger | process | |
 | [L18](items/L18.md) | NEW — the pages repo is the one repo in the fleet with unpinned workflow actions | process | |
+| [L19](items/L19.md) | NEW — CI's verdict takes 30 minutes because both test legs compile the workspace COLD (ubuntu 25 min, windows 30; every other job under 3): a local gate script shared with ci.yml, rust-cache + nextest partitions on GitHub, the Windows leg on the owner's host | tooling | the owner's ask (2026-09-04); QUEUED for Order 28 (steps 1 and 3); step 2 is the owner's own setup |
 
 ## M. Performance & footprint — NEW SECTION
 
@@ -140,15 +124,19 @@
 | [M17](items/M17.md) | NEW — cross-subject body sharing, M16's residual | perf | separate decision |
 | [M18](items/M18.md) | NEW — a function attribute marking a bundle boundary | design | owner-proposed; lucide the exhibit |
 | [M19](items/M19.md) | NEW — an unchanged package module is re-analyzed every LSP analysis / HMR round | perf | E106's prime hypothesis; lucide's 636 KB |
-| [M27](items/M27.md) | NEW — `lsp-index` editor tables 110–584 ms per keystroke, outside analyze and every tranche | performance | m19-paper's find |
-| [M28](items/M28.md) | NEW — `plan_resource_drops` 350–600 ms, whole-program switch on any resource type | performance | m19-paper's find; Q4 |
-| [M29](items/M29.md) | NEW — completion tranche 3: whole-buffer tokenize/parse per request; member completion 2.63 ms | performance | m25-e125's finds |
+| [M27](items/M27.md) | NEW — `lsp-index` editor tables 110–584 ms per keystroke, outside analyze and every tranche — MEASURED (e126): on the phase line after `capture_landed`, with `lsp-landed`; the per-module fix half stays | performance | m19-paper's find; measurement half landed Order 27 |
 | [M30](items/M30.md) | NEW — `callee_bindable_generics` scans every impl/trait declaration list per call: 857k calls, ~9% of a client check | performance | kolt-benchmark's find (2026-09-04); orthogonal to M19 |
 | [M31](items/M31.md) | NEW — the analyzer's 35 `IndexMap`s still hash with SipHash: 7.4M calls, 6.7% of a client check | performance | kolt-benchmark's find; E48's residual, an alias |
 | [M32](items/M32.md) | NEW — allocation ~19% of a cold check: the parser moves `Node` by value, 1.1M `Type` clones | performance | kolt-benchmark's find; census recorded, two slices |
 | [M33](items/M33.md) | NEW — four macro-world compiles per CLI process, ~18% of a small entry, cached only in-process | performance | kolt-benchmark's find; phase line hides them |
 | [M34](items/M34.md) | NEW — `vilan check` of an entry runs the whole transformer (16% of a small entry) for one diagnostic | performance | kolt-benchmark's find; decision first |
 | [M35](items/M35.md) | NEW — a multi-entry `check`/`build` compiles entries sequentially; one of sixteen threads | performance | kolt-benchmark's find; ≤18% on kolt, N× on balanced packages |
+| [M36](items/M36.md) | NEW — the base cache is process-global and in-memory, so one process per corpus program re-analyzes std: a 3.5–5 s floor per test (infer differential 12 → 47 s, release 56 s) | performance | hygiene-27's find; N49 paid this bill silently |
+| [M37](items/M37.md) | NEW — `collect_unfollowable_loans` is 60% of `LastUse` (450 of 758 ms on kolt's client): three full sweeps of `expr_id_to_expr_map`, the first allocating a `Vec<Convention>` per call only to test `is_some()` | performance | m28's find; byte-identical win of M28's order |
+| [M38](items/M38.md) | NEW — `collect_resource_bindings` is ~100 ms on kolt's client: `type_is_resource` over every variable and parameter type with field recursion | performance | m28's find; answer-identical pre-filter |
+| [M39](items/M39.md) | NEW — completion's remaining cost is documentation rendering: `doc_first_paragraph` reads the declaring module's whole text per request (0.415 → 0.324 ms with it stubbed) | performance | completion-27's find; the fourth completion tranche |
+| [M40](items/M40.md) | NEW — M19 tranche 1b: Class D (`LastUse`, the ten `compute_*`, `infer_bumps`, the hover render — 34% of the phase) and the drop planner produce tables the emitter reads, so freezing them is cache-and-restore, not skip | performance | m19-t1's deferral; the remaining two-thirds of the phase |
+| [M41](items/M41.md) | NEW — `type_id_sources` adds ~4 bytes per `TypeId` to every stored world, invisible to `base_cache_world_bytes` (text-proportional): M11/M24's tally under-reports | performance | m19-t1's find |
 
 ## N. Hygiene & rot — NEW SECTION
 
@@ -159,5 +147,7 @@
 | [N23](items/N23.md) | NEW — 37 `pub` items in `vilan-core` are never referenced outside their own file | process | |
 | [N35](items/N35.md) | NEW — `hmr_css_matrix` reads the bundle while the watcher writes it | bug | load-dependent race, seen once |
 | [N47](items/N47.md) | NEW — an output-asserting docs form (`vilan,run` + transcript) | process | docs-law's proposal |
-| [N51](items/N51.md) | NEW — `watch.vl` never terminates; the corpus's rule for non-terminating programs | hygiene | hygiene-26's find; OWNER'S QUESTION |
-| [N52](items/N52.md) | NEW — `infer_differential.rs` has the pre-N49 single-test shape; split it, share the list | hygiene | hygiene-26's find |
+| [N53](items/N53.md) | NEW — `interpreter.rs` still has the un-raised `NODE_TIMEOUT = 30 s` and one whole-corpus test at 58 s: N52's shape one layer over | hygiene | hygiene-27's find |
+| [N54](items/N54.md) | NEW — `vilan/test/file.vl` writes a fixed `file-corpus.txt` relative to CWD and is run by both differentials concurrently: latent cross-talk of the kind `watch.vl` was fixed for | hygiene | hygiene-27's find |
+| [N55](items/N55.md) | NEW — 96 `.vl` files (7 under std) already differ from their own formatter; there is no repo-wide `vilan fmt --check` gate. Decide: a CI gate after one reformat, or an explicit hand-formatted statement | design | parse-fmt-27's find; OWNER DECISION |
+| [N56](items/N56.md) | NEW — `vilan check <absolute path>` with the cwd inside ANOTHER vilan checkout resolves that checkout's std: 37 `macro PartialEq's definition did not compile` cascades on kolt's sidebar.vl from the vilan tree, 0 from kolt's own directory | hygiene | b239's find; cost the lane a false alarm |
