@@ -44,6 +44,9 @@ def top_consts(src):
         m = re.match(r"^(pub(\(crate\))? )?(const|static) ([A-Za-z_][A-Za-z0-9_]*)", ls[i])
         if not m: continue
         end = starts[k + 1] if k + 1 < len(starts) else len(ls); s0 = i
+        if 'r#"' in ls[i] and not ls[i].rstrip().endswith('"#;'):
+            # a raw-string fixture: its body may hold column-0 lines; end at the terminator
+            end = next(j for j in range(i, len(ls)) if ls[j].rstrip().endswith('"#;')) + 1
         while s0 > 0 and (ls[s0-1].startswith("///") or ls[s0-1].startswith("#[")): s0 -= 1
         out[m.group(4)] = "\n".join(ls[s0:end]).rstrip("\n")
     return out
