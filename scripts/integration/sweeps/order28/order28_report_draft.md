@@ -23,7 +23,7 @@ Order 28 is sealed at <TIP> on next. Fourteen lanes merged: the thirteen launche
 6. B250: should the declared-entry leg also refuse a sibling's import of a different program?
 7. Still held: the cut (after kolt), A46's form, B183's six.
 
-**Process.** Six incidents with their rules in the chronicle: a lane ran a broad `pkill` and killed sibling test runs, then said so; four semantic conflicts git resolved textually, three caught by the build and one only by a pin on the merged tree (std-28's inversion meeting rpc-28's closures, fixed the same hour); the fold helper learned to carry consts and drop deleted functions; my own target-name miss stopped one chain; 1Password's agent went down mid-order and three lanes stopped exactly as briefed; two perf items had been filed on wall-clock readings under load; and Windows had the last word a fourth time, on a short-spelled manifest directory and a pin that panicked without a thread clock, both fixed in one commit.
+**Process.** Six incidents with their rules in the chronicle: a lane ran a broad `pkill` and killed sibling test runs, then said so; four semantic conflicts git resolved textually, three caught by the build and one only by a pin on the merged tree (std-28's inversion meeting rpc-28's closures, fixed the same hour); the fold helper learned to carry consts and drop deleted functions; my own target-name miss stopped one chain; 1Password's agent went down mid-order and three lanes stopped exactly as briefed; two perf items had been filed on wall-clock readings under load; and Windows had the last word a fourth time, on a short-spelled manifest directory and a cost pin the Windows clock's granularity cannot measure, two commits.
 
 **Your editor build** (next only):
 

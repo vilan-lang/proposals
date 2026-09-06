@@ -63,8 +63,11 @@ PROCESS:
   compared the server's manifest directory (kept in the URI's short spelling, and the key of E124's
   package clock) against a canonical path — now canonical where it is discovered, with the package
   root beside it; and M27's entity-table pin PANICKED on a host with no thread CPU clock instead of
-  declining the cost claim as the budget gates do. The ubuntu partitions passed in 11 and 8 minutes
-  on a cold cache (25 before). Rule restated: every path canonical at its source; a pin that needs
-  a clock the host lacks declines.
+  declining the cost claim as the budget gates do — and once it declined, the same pin's cost RATIO
+  failed on the Windows clock's ~16 ms granularity against a 0.014 ms table; a second commit
+  declines the cost claim on Windows outright (the shape claims hold everywhere). The ubuntu
+  partitions passed in 10–13 minutes on a cold cache (25 before). Rule restated: every path
+  canonical at its source; a pin that needs a clock the host lacks, or finer than the host has,
+  declines.
 - The helpers now live in `proposals/scripts/integration/` (Order 28's first act); the scratchpad
   was wiped once more mid-session and nothing was lost to it.
