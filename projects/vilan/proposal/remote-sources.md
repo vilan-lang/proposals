@@ -84,7 +84,7 @@ harness of §5's pin A; the same shape as `inference.rs`'s in-process rpc
 tests) run through this worktree's `target/debug/vilan`:
 
 ```
-up   {"Subscribe":0}
+up   {"Subscribe":[0,null]}
 down {"Update":[0,0]}
 down {"Update":[0,1]}
 down {"Update":[0,2]}
@@ -791,7 +791,7 @@ forward is live (the proposal offered no-op or re-seed; a counted client
 never sends the duplicate, and a no-op is the smaller invariant).
 
 Measured frames (the relay harness of §5, pin A's program): `up
-{"Subscribe":0}` · `down {"Update":[0,0]}` · `down {"Update":[0,1]}` · `up
+{"Subscribe":[0,null]}` · `down {"Update":[0,0]}` · `down {"Update":[0,1]}` · `up
 {"Unsubscribe":0}` — and the post-dispose `set` puts nothing on the wire.
 Pin B prints its six lines. `sub`+`dispose`+`sub` in one `batch`: one
 `Subscribe`, no `Unsubscribe`, and the channel is still live after the
