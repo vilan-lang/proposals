@@ -778,9 +778,9 @@ this dev box under ten sibling lanes. Cold and warm interleaved in one
 run at loadavg 120–160: `plan_resource_drops` **4,729 → 627 ms**, the
 enrolment gate walking **154 of 3,398** bodies instead of all of them and
 the enrolment itself unchanged at 90 roots. At the leg level, with the
-restore the only thing switched, warm process CPU per keystroke **6,010 →
-5,630 ms** — median of three interleaved pairs, min 5,730 → 5,600, at
-loadavg 97–125 either way. Every figure here is debug and load-inflated;
+restore the only thing switched, warm process CPU per keystroke **5,875 →
+5,615 ms** — median of four interleaved pairs, min 5,720 → 5,410, at
+loadavg 97–190 either way. Every figure here is debug and load-inflated;
 what is load-independent is the body count and the enrolment, and those
 are the numbers to hold onto.
 
