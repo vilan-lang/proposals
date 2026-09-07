@@ -1,0 +1,14 @@
+{"items": [
+{"id": "E151", "section": "E", "kind": "editor",
+ "title": "NEW — an element-head ATTRIBUTE sorter in the formatter, the import and style-chain sorters' sibling: undotted attributes in a canonical order (`id`, `name`, `type`, `for`, `href`, `src`, then alphabetical), `on:` handlers after them alphabetically, dotted chain links LAST and in written order (a chain's order is semantics — `.child` order, `.styled` then `.when`)",
+ "discussion": "the owner's ask (2026-09-07); the style-chain sorter (formatter.rs `sort_style_chains`, `style_chain_order.rs`'s corpus proof) is the precedent: sort only what commutes, and prove it",
+ "status": "OPEN — the owner's ask (2026-09-07)",
+ "area": "Language server & tooling",
+ "body": "Attributes and `on:` handlers commute (each lowers to its own `.attr`/`.on` call on a fresh view before the dotted links); dotted links do not. Rule: reorder within the two commuting groups, never across the group boundary with the links, and keep a link's position relative to the other links. Pins per group, an idempotence pin, and a corpus proof that the emitted JS of every element is byte-identical before and after sorting (build each element in source and sorted order, diff). One reformat commit if the tree moves (kolt is the read-only exhibit: count the heads it reorders)."},
+{"id": "A66", "section": "A", "kind": "feature",
+ "title": "NEW — a boolean-attribute binding on `View`: `toggle_attr(name, source: Source<bool>)` (presence, not value — `inert`, `disabled`, `hidden`, `open`) beside `bind_attr(name, Source<str>)`; kolt hand-writes it over its own `Element::remove_attribute` extern (views.vl:371–384) to make the app shell `inert` while a modal is up",
+ "discussion": "the owner's question (2026-09-07); `Element::remove_attribute` itself is in A59's list — this is the `View`-level half, a two-method change plus the SSR twin",
+ "status": "OPEN — the owner's ask (2026-09-07)",
+ "area": "Reactive core & UI",
+ "body": "`Element::remove_attribute` (A59) plus `View::toggle_attr<S: Source<bool>>(self, name, source)` in browser/ui.vl (an effect under the row's owner: set the attribute to the empty string when true, remove it when false) and the process/ui.vl twin (render the attribute when the initial value is true). Pin `inert` toggling on and off, the SSR twin's markup, and that the effect dies with the owner."}
+]}
