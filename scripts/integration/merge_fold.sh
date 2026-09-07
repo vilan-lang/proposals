@@ -24,5 +24,6 @@ git add $uu && test -z "$(git diff --name-only --diff-filter=U)" && git commit -
 cargo build -q -p vilan-cli || exit 5
 for spec in "$@"; do log="$S/gate-$lane-$(echo "$spec" | tr -c 'a-z0-9' '_' | cut -c1-40).log"; echo "== gate: $spec"; eval "cargo nextest run $spec" > "$log" 2>&1; r=$?; tail -1 "$log"; [ $r = 0 ] || { echo "$lane: gate failed ($spec) — NOT pushed"; exit 6; }; done
 cargo nextest run -p vilan-cli --test release_scripts > "$S/gate-$lane-release.log" 2>&1 || { echo "$lane: release_scripts failed — NOT pushed"; exit 6; }
+cargo nextest run -p vilan-cli --test split > "$S/gate-$lane-split.log" 2>&1 || { echo "$lane: split golden failed — regenerate over the merged tree (tests/split.rs ritual) — NOT pushed"; exit 6; }
 cargo fmt --all --check || { echo "$lane: fmt drift — NOT pushed"; exit 6; }
 git push -q origin next && echo "$lane: pushed $(git rev-parse --short=8 HEAD)"

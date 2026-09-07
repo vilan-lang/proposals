@@ -28,6 +28,8 @@ echo "committed $(git rev-parse --short=8 HEAD)"
 cargo build -q -p vilan-cli || exit 5
 for spec in "$@"; do echo "== gate: $spec"; eval "cargo nextest run $spec" || exit 6; done
 echo "== gate: release_scripts"; cargo nextest run -p vilan-cli --test release_scripts || exit 6
+# The split emission is a byte golden over std + reachability; two lanes moved it together in Order 29 and no lane gate saw it.
+echo "== gate: split"; cargo nextest run -p vilan-cli --test split || exit 6
 cargo fmt --all --check || { echo "fmt drift — run cargo fmt --all and amend"; exit 6; }
 git push -q origin next || exit 7
 echo "pushed $(git rev-parse --short=8 HEAD)"
