@@ -769,7 +769,23 @@ what a record could remove is the classification, 158–342 ms against the
 gate's 950–1230 in the same phase. It is left live, and it is written down
 here rather than left as an absence.
 
-#### The residue, named
+#### What it bought, and the residue
+
+**The measurement.** kolt's client leg (`src/client.vl`, 58 sources, all
+reused) driven through the replay harness's warm pair — analysis 1 fills
+the world and records, analysis 2 is the keystroke — process CPU, debug,
+this dev box under ten sibling lanes. Cold and warm interleaved in one
+run at loadavg 120–160: `plan_resource_drops` **4,729 → 627 ms**, the
+enrolment gate walking **154 of 3,398** bodies instead of all of them and
+the enrolment itself unchanged at 90 roots. At the leg level, warm
+process CPU **5,840 → 5,340 ms** with the record on (and the "before" leg
+measured at the *lower* loadavg of the two, so that 9% is a floor rather
+than an estimate). Every figure here is debug and load-inflated; what is
+load-independent is the body count and the enrolment.
+
+The table below is the same phase measured the same way (kolt's client
+leg, warm, debug, loadavg 66–113), so the rows compare with each other
+and not with a release build.
 
 What T1c leaves live on this line, with the reason in one clause each:
 
