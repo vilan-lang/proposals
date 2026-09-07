@@ -1859,3 +1859,28 @@ PROCESS:
   declines.
 - The helpers now live in `proposals/scripts/integration/` (Order 28's first act); the scratchpad
   was wiped once more mid-session and nothing was lost to it.
+
+## Order 29 — cycle 47: the rule 1 holes, the solver's unsound tail, the phase line's last slice (2026-09-06 → )
+
+Opened on the owner's "Go" of 2026-09-06, the evening of Order 28's seal, off
+757d3f4b (CI green there). The order's seed was the owner's kolt find of the
+same evening — a `remove` through `SignalCell::update` throwing from
+`reconcile` — which turned out to be std keeping the live list under an
+in-place mutation (B255) over two rule 1 holes: `Shared::read()` handing out
+storage (B256) and ASSIGNMENT from a live aggregate never copying (B257, a
+miscompile the spec's own example exposes rewritten as an assignment). Twelve
+lanes: rule1-29 (TOP: B257, B256 under the default ruling that a read result
+is a PLACE, B255's pins), solver-29 (B251 unsound, B245, B246 census-first),
+checker-29 (B244/B252/B243/B254), smalls-29 (B247/B249/B248 refuse-with-steer/
+B250 per leg), editor-29 (E145's alias entity, E148, E149), fmt-29 (E146/E147
+plus E145's collapse, merges LAST with its reformat regenerated over the merged
+tree), rpc-29 (A52, A51 as `[expose(keyed = K)]`), m19-t1c (M42), perf-29
+(M43/M44/M46/M47 splice), compile-perf-29 (the other session's M32/M33, skipped
+if taken), m36 (World serialization behind a flag — the largest, droppable),
+hygiene-29 (N58). Rulings the lanes run on: B256 place treatment; B246 close
+on a clean census; A51 the attribute argument; E145 preserve, collapse, extend;
+B250 refuse per leg with a note on the remap; B253 keep the refusal, no build;
+A50 close as designed. Held: the cut (until kolt is tested on 757d3f4b), A46's
+form, B183's six. L20 is the owner's own. Two owner topics queued for after the
+launch: CSS block syntax / compact styling, and complex rpc signal tracking in
+kolt.
