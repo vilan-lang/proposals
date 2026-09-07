@@ -705,3 +705,215 @@ turns exactly the derived-impls assertion red); the corpus differential
 now pushes every derive-using corpus program through the hoist both
 ways. With this, the §6.10 residual list is EMPTY — the std-tax arc has
 no open slices.
+
+### 6.15 M36 spike (2026-09-07): the world holds per-process ADDRESSES,
+### so the on-disk unit cannot be the world
+
+§6.11's cache is process-global and in memory, which was the whole of
+what the std-tax arc needed while a compile was one process. N52 made
+it 261 processes: one per corpus program, per differential leg, each
+paying a cold `std` analysis nothing carries across. M36 is the item
+that asks whether that floor can be written to a file. This section is
+the spike's answer, its measurements, and the design as far as it got —
+so the next lane to pick it up starts where this one stopped rather
+than re-deriving it.
+
+**The floor, split.** `base_cache.rs`'s M36 measurement re-runs at
+**cold 400 / warm 210 / floor 190 ms** (debug, loadavg 13.8), against
+perf-28's 370 / 180 / 190 at loadavg 106 — the same finding on a
+different box. But that measurement deliberately warms the process
+first, so its 190 ms is the RESOLVE alone: the parse cache is hot in
+both halves. A second PROCESS starts with nothing hot, and the two
+candidate on-disk units remove different halves of what it pays.
+`world_cache_spike.rs` measures all three points in one fresh process —
+`first` (everything cold), `reparse_free` (base cache cleared, parse
+cache warm), `hit` (a base-cache hit) — over five runs at loadavg
+35–37, debug:
+
+| | median | range |
+|---|---|---|
+| `first` | 490 ms | 420–570 |
+| `reparse_free` | 400 ms | 320–540 |
+| `hit` | 160 ms | 140–220 |
+| parse share (`first − reparse_free`) | 90 ms | 0–170 |
+| resolve share (`reparse_free − hit`) | 210 ms | 170–320 |
+
+The spread is wide because `USER_HZ` is 10 ms and the box was at
+loadavg 36; the ORDER is what the numbers are for, and it does not
+move. **The resolve is twice the parse.** An on-disk cache of the
+ANALYZED world removes both, about 330 ms of a 490 ms floor; an
+on-disk cache of the PARSED ASTs removes only the parse, about 90 ms,
+because re-resolving from trees is exactly the 190–210 ms the base
+cache exists to skip. `hit` already includes re-reading and hashing
+every loaded std source, which is the E12 revalidation an on-disk hit
+would also pay, so it is the right thing to subtract.
+
+Against the two differentials as they stand — `infer_differential`
+**93.8 s CPU** (84.9 u + 8.9 s) over 131 processes and
+`release_differential` **100.7 s CPU** (88.1 + 12.6) over 130, both at
+loadavg 16.8 — the ceiling of a free-to-load analyzed-world cache is
+131 × 330 ms = **43 s** and 130 × 330 ms = **43 s**, or 46% and 43% of
+each leg's CPU. That is a ceiling and not an estimate: it credits the
+load with costing nothing.
+
+**And the two differentials are not the size of the problem.** The
+floor barely depends on how much `std` a program names: the same
+measurement on a NARROW closure — one `import std::io::print` — loads
+**161,944 B** of std text against the wide fixture's 165,643, and pays
+`first` 400 ms against 470 and `hit` 160 against 170 (medians of four
+runs at loadavg 113–115). The prelude reaches most of `std` on its
+own, so **every** process that analyzes anything at all pays about
+240–330 ms, and `nextest` gives every test its own process. The whole
+`-p vilan-core` suite is **5,089 tests in 1,384 s wall and 3,949 s CPU**
+(3,591.6 u + 356.9 s, loadavg 86) — so the same ceiling over the same
+arithmetic is 5,089 × 240 ms = **1,221 s, about 31% of the crate's
+suite CPU**, against 86 s for the two differentials that raised the
+item. M36 was filed as a differentials problem because that is where
+N52 made it visible. It is a suite-wide one.
+
+**What the world is made of, and what of it is relocatable.**
+`Analyzer<'src>` — the bulk of a `World` — has **229 fields**, 89 of
+them maps and 34 sets; 46 name `'src` directly, and 74 types in the
+crate carry the lifetime. That is a large mechanical job and not, by
+itself, a blocking one. Three kinds of content in it are relocatable
+with only patience:
+
+- `Id`, `TypeId` and `SourceId` are `u32` counters minted in walk
+  order. Within one world they are dense and self-consistent, so a
+  world loaded WHOLE keeps them unchanged and the entry's walk
+  continues from the stored `entry_id` and type counter. This is the
+  part that looks hard and is not.
+- `Span` is a pair of byte offsets into a source text — relocatable
+  the moment the text is.
+- `&'src str` is a slice into the parse cache's leaked module texts,
+  into `interned_display_name`'s interner, or into macro-generated
+  leaked text. Each is an offset plus a provenance tag, and the tag is
+  the work: nothing today records WHICH text a given slice came from,
+  so the encoder has to recover provenance by pointer range over the
+  ~40 texts a wide world loads.
+
+And four kinds are not relocatable at all:
+
+1. **AST node ADDRESSES used as map keys.**
+   `macro_item_invocations: HashSet<usize>`,
+   `macro_expression_expansions: HashMap<usize, &'static Spanned<Node<'static>>>`
+   and `macro_failed_sites: HashSet<usize>` are keyed by the invocation
+   node's address; the field comment says so, and calls it stable
+   because every walked AST is leaked. It is stable within a process
+   and meaningless outside one. The address → node correspondence is
+   the identity of a leaked allocation and is recorded nowhere else, so
+   a decoder cannot rebuild the key without re-parsing and re-walking
+   the tree that minted it — which is the cost the cache exists to
+   avoid.
+2. **`MacroRegistry::blocks_by_module`** is `HashMap<ModuleKey,
+   HashMap<usize, MacroDef>>`, address-keyed for the same reason
+   (anonymous `macro { .. }` blocks dispatch by position).
+3. **`MacroDef::world: RefCell<Option<Arc<World>>>`** — a lazily
+   COMPILED macro world, an entire `Program` behind an `Arc`, hanging
+   off the registry the base world carries. Serializing a base world
+   means serializing compiled macro worlds, recursively.
+4. **`GeneratedItems::nodes: &'static NodeList<'static>`** — a leaked
+   AST the world points into, one per expansion in the load region.
+
+None of this is exotic in a wide world: `std::json` alone defines six
+macros, and the M36 fixture imports it, so the macro registry of the
+measured world is not empty and neither are the address-keyed maps.
+
+**The weight.** `base_cache_retained_bytes` — the currency M24's LRU
+budget is spent in — is deliberately source-proportional: the texts a
+world was built from plus T0's per-`TypeId` census, so an eviction can
+recompute it without a heap audit. For the M36 fixture that is
+**195,087 B** per world (165,643 B of texts, 29,444 B of census). What
+a world actually WEIGHS resident, measured by minting eight distinct
+keys for one closure (`macro_limits` is part of `BaseCacheKey`, so a
+workspace differing only in its macro fuel resolves the same modules
+into a world of its own) and subtracting a same-key control that stores
+one world and hits seven times, is **4,722,688 B** — 36.3 MB of growth
+for eight worlds against 3.3 MB for one, byte-identical across three
+runs. **A retained world costs about 24× the figure the budget counts
+it at.** M24 bounds the cache; it does not bound it where it thinks it
+does, and 512 MiB of recorded bytes is on the order of 12 GB resident.
+That is a finding of this spike, not of M36's item, and it is about the
+IN-MEMORY cache — it stands whether or not anything is ever written to
+a file. It is also the honest size of the on-disk unit: 4.7 MB per
+world to write and to read back, and a decoder that must beat 210 ms of
+resolve while rebuilding 4.7 MB of maps and sets in debug is not
+obviously ahead.
+
+**Decision: neither unit is buildable in this order's span, and the
+deliverable is this section.** Serializing the analyzed world is
+blocked on (1)–(4) above, each of which is a change to how the macro
+engine identifies its own sites rather than a serializer; doing it
+properly means giving every invocation site a relocatable identity
+(source id + span, which it already has beside the address) and
+teaching the macro world cache to be reconstructible, and only then
+writing the 229-field encoder. Serializing the INPUTS instead — module
+texts plus parsed ASTs, re-resolved on load — is genuinely tractable
+(an AST's `&'src str` all point into that module's own text, so offsets
+suffice, and the tree carries no addresses of its own) but buys the
+parse share only: about 90 ms of a 490 ms floor, a fifth of what the
+analyzed world would buy, for a serializer of its own. Neither half of
+that trade is worth taking on the strength of these numbers.
+
+The obvious escape — store only worlds whose macro state is EMPTY, and
+serve a miss for the rest — narrows the win without shortening the
+work. The base prelude re-exports `io`, `option` and `result` and
+registers nothing, so such worlds do exist; but `json`, `debug`,
+`hash`, `compare`, `default` and `rpc` are the std modules a corpus
+program actually reaches for, the whole 229-field encoder and the
+`&'src str` provenance recovery still have to be written, and the
+cache would then be off for exactly the programs whose analyses cost
+the most. A subset that skips the hard part is not a smaller version
+of this feature.
+
+**The design, for whoever does build it.** Recorded here so it is not
+re-derived:
+
+*The flag* is an environment variable, `VILAN_WORLD_CACHE=<dir>`, unset
+= off, and not a manifest key. Four reasons, in order of weight: a
+cache directory is a property of the machine and the job, never of the
+program, and a manifest key would put a runner's scratch path into a
+program's identity and into version control; CI sets an env var per job
+and cannot set a manifest key per runner; the base cache's existing
+knob (`VILAN_BASE_CACHE_BUDGET_MIB`, read at server start) is already
+an env var, so this joins a convention rather than starting one; and at
+least the language server's boot consults the cache before the manifest
+is fully resolved. The directory is an unwritten path, so every
+comparison against it canonicalizes both sides through
+`canonical_path_of_unwritten`.
+
+*The key* is M21's `BaseCacheKey` — platform, `std::` seeds, the
+workspace fingerprint, the macro limits, the entry prelude, the entry
+package — hashed into the filename, PLUS the loaded sources' content
+hashes and the toolchain version. The content hashes belong in the key
+and not only in a per-hit revalidation: the in-memory cache can afford
+to load a world and then find it stale, and a file cache must not read
+4.7 MB to discover the same thing. A toolchain bump changes the key
+outright; an edited `std` misses by CONTENT, which is the E12 rule the
+in-memory cache already follows.
+
+*The eviction* is M24's, denominated in the FILE's bytes — which,
+unlike the in-memory figure above, is exactly what the cache costs.
+Bounded, oldest out. A corrupt or truncated file is a MISS and never a
+fatal; a format-version mismatch, stamped in a header, is a MISS; the
+write is temp-file-plus-rename, so a killed process cannot leave a
+half-file where a whole one is expected.
+
+*M9's rules* carry over unchanged and one of them bites harder on
+disk: a stored world may retain only what it can keep alive, and an
+on-disk world has no `ModuleClaim` to take (M23), so the file cache
+must refuse to STORE a world holding `overlay_claims` — an overlay is a
+buffer in an editor and has no business in a file keyed by content
+hashes — and must refuse to serve into a macro world, exactly as
+`base_cache_lookup` already does.
+
+**And the alternative worth trying first.** The cheapest way to hand a
+warm world to one-process-per-program is not to serialize it. It is to
+`fork()` from a parent that has already resolved it: copy-on-write
+gives the child the world at its own addresses, so every address key
+stays valid, every leaked text is where the world expects it, and
+nothing is relocated because nothing moves. That is out of reach where
+`nextest` owns the spawn, which is exactly the case M36 was raised
+about — but it is the shape that fits what a `World` actually is, and
+any harness of our own that wants a warm base should reach for it
+before it reaches for an encoder.
