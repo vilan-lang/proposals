@@ -15,7 +15,7 @@ uu=$(git diff --name-only --diff-filter=U); echo "UU: $uu"
 base=$(git merge-base HEAD "origin/$lane"); ok=1
 for f in $uu; do
   case "$f" in
-    crates/*/tests/*) if [ "$allow" = "-" ]; then python3 "$S/fold_tests_by_name.py" "$f" "$base" "origin/$lane" || ok=0; else python3 "$S/fold_tests_by_name.py" "$f" "$base" "origin/$lane" --allow-edit "$allow" || ok=0; fi ;;
+    crates/*/tests/*.rs) if [ "$allow" = "-" ]; then python3 "$S/fold_tests_by_name.py" "$f" "$base" "origin/$lane" || ok=0; else python3 "$S/fold_tests_by_name.py" "$f" "$base" "origin/$lane" --allow-edit "$allow" || ok=0; fi ;;
     *) echo "NON-TEST CONFLICT: $f"; ok=0 ;;
   esac
 done
