@@ -659,6 +659,129 @@ most of the mandate without it, and that they are the right preparation
 for it: the `Type`-keyed memo is the id fix in miniature, and M19's
 cache is the module boundary in miniature.
 
+### 3.6 What a per-module record may carry — the law T1b and T1c found
+
+> **Written after the fact** (2026-09-07, trackers M40 and M42). §3.2 asked
+> whether one analyzed module could be addressed independently of what
+> loaded before it. Three tranches have now answered in the affirmative for
+> three different kinds of output — T1 for a module's diagnostics, T1b for
+> the tables the emitter reads, T1c for the drop planner — and between them
+> they have turned an open question into a rule with two halves. Both halves
+> were found by trying to break them, and both are cheap to state and cheap
+> to check, which is the only reason they are worth writing down.
+
+#### The TypeId boundary
+
+**No `TypeId` may cross the record.** Not a bare one, and not one hiding
+inside a resolved `Type`.
+
+The first half is §3.1 restated at this seam: ids are minted **per
+occurrence, not per meaning**, so an id a recording analysis wrote down
+names a slot the replaying analysis never mints. The exception looks
+tempting and is the thing to be careful about — a base-cache HIT clones
+the stored world, so every id the world's own walk minted comes back
+byte-identical, and a module's `variables[b].type_id` therefore *is* stable
+across the two analyses. It is the ids minted **after** the world was
+stored that are not: `record_resource_temporaries` and
+`record_drop_sink_argument_types` each run `infer_type(..).get_type_id(..)`
+inside the checks phase, against the entry's buffer, and mint one fresh id
+per occurrence.
+
+So the boundary is not "ids are unstable" — it is that **a row cannot tell
+you which kind of id it is carrying**. `Type` is a *shallow* structural key
+(§3.1): `Struct(Id, Vec<TypeId>)` carries argument **ids**, so recording a
+resolved `Type` records ids too, and one freshly-minted argument id inside
+an otherwise stable type is a hard index into a slot the next analysis does
+not have (`borrow_type_by_type_id` panics by design, B77/B95). Recording
+the type *deeply* — a tree of nominal entity ids, re-minted bottom-up on
+restore — closes that hole and opens another: the emitter looks a drop
+helper up by **the id on the expression** (`binding_drops_nontrivially`,
+`ensure_drop_helper`), so a re-minted id is a key nothing ever asks for,
+and the teardown silently disappears from the emitted JavaScript.
+
+The rule that survives both is therefore the narrow one:
+
+> **The record carries entity `Id`s the module minted, and nothing else.
+> Where a row needs a type, the RESTORE re-reads the module's own slot
+> rather than the record remembering it.**
+
+T1c is what made that affordable rather than merely safe, and the finding
+is worth recording because it inverts the tranche's premise. T1b left the
+drop planner live *because* of the `TypeId`s in `resource_temporaries` and
+`drop_owned_types_by_root`, and filed the resolved-`Type` record as the way
+in. Measured, those tables are the **cheap** rows. On kolt's client leg the
+drop planner costs ~1.1 s of a 5.7 s debug checks phase, and it divides:
+
+| inside `plan_resource_drops` | debug ms, warm |
+|---|---|
+| `resource_reaching_roots` — M28's per-body enrolment gate | **950–1230** |
+| `explicitly_dropped_bindings` | 99–102 |
+| `collect_place_overwrites` | 26–35 |
+| the per-root scope walk | 2–11 |
+| `record_resource_temporaries` (the inference mint) | 2–10 |
+| `drop_sink_types_by_root` | 2–3 |
+
+Every row that carries a `TypeId` is in the bottom half of that table.
+**The expensive answer is one bit per body** — does this body reach a
+resource — and a bit is keyed by the body's own `Id`. So T1c's record is
+`Vec<Id>` per module and carries no type at all, which is a smaller and
+safer record than the item asked for, arrived at by measuring rather than
+by reading.
+
+#### The foreign-touch rule
+
+**A row may be recorded for a module only if its derivation was the
+module's own.** Not "was computed while that module was current" — *was
+the module's own*, which is a claim about what the derivation READ.
+
+It has three instances in the tree already, each found by a different
+tranche and each the same shape:
+
+- **T1**, `reaches_outside_the_world`: a module diagnostic whose note or
+  trace names `SourceId(0)` is not recorded at all. The entry is not part
+  of the base-cache key, so "the entry" is a different file next time.
+- **T1b**, `LastUse::foreign_touched`: a liveness row for a binding the
+  walk reached from another file's region belongs to that analysis's entry,
+  not to the module.
+- **T1c**, the nominal fingerprint: the enrolment gate asks each body
+  whether it reaches one of the program's resource-reaching **nominals**,
+  and that set is closed over every declaration in the world. It cannot in
+  fact be moved from outside the module — a module declares no field of an
+  entry type, and a `Generic` names nothing — but "cannot in fact" is what
+  a `u64` compare per analysis is for, and a record whose fingerprint
+  disagrees recomputes.
+
+And it has a consequence the tranche has to say out loud rather than
+discover later:
+
+> **A pass that reads whole-program state cannot be restored from one
+> module's record alone.** Either the read is SPLIT — partitioned by the
+> source that wrote it, so a row touched from outside is refused —
+> or the pass stays live and is named as the tranche's RESIDUE.
+
+`compute_capture_clone_sites` is the standing example and T1c takes the
+second option deliberately. It classifies each capture against
+`collect_written_roots()`, and a write in the entry to a root the module
+declares (a module-level binding is exactly one) flips that module's own
+verdict. Splitting the read would not buy the walk — `collect_written_roots`
+has to run either way for a foreign write to be visible to the refusal — so
+what a record could remove is the classification, 158–342 ms against the
+gate's 950–1230 in the same phase. It is left live, and it is written down
+here rather than left as an absence.
+
+#### The residue, named
+
+What T1c leaves live on this line, with the reason in one clause each:
+
+| pass | debug ms, warm | why it stays |
+|---|---|---|
+| `check_container_resource_arguments` (R10) | 477–1113 | its report doubles as R11's dedup set, and its diagnostics sit **outside** T1's Class A window — restoring it means moving that window, which is a tranche of its own. **The largest single item left on this line.** |
+| `compute_resource_types` | 605–843 | not restorable **in principle**: its key space is the interned type table, and an interned id is nobody's to own. The instrument that would apply is tranche 1's rather than 1c's — `resource_classification` is `TypeId`-keyed, so it memoizes nothing, and a memo on the resolved `Type` would collapse it the way the impl-selection memo collapsed its own. Written, measured at loadavg 110+, did not clear the noise floor, left unshipped rather than shipped unmeasured. |
+| `compute_capture_clone_sites` | 158–342 | the foreign-touch rule, above. |
+| `build_drop_glue` | 24–125 | its output is `TypeId`-keyed program-wide and the emitter looks it up by the id on the expression; its INPUTS arrive free from the restored plan. |
+| `check_hmr_transfer_bounds` | 100–165 | it re-infers each `stash` value through `&mut self`, so freezing it means freezing the mint with it — a `TypeId` in the record, which the boundary forbids. Inert unless `std::dev` is loaded. |
+| `record_drop_sink_argument_types` | 34–53 | recordable in principle (its ids are private to the analysis, so re-minting is sound) and not worth a record at that size. |
+
 ---
 
 ## 4. Debouncing and scheduling
