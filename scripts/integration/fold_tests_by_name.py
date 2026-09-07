@@ -16,11 +16,31 @@ def fns(src):
         if m:
             name, start = m.group(4), n
             while start > 0 and (lines[start-1].startswith("#[") or lines[start-1].startswith("//")): start -= 1
-            depth, end, seen = 0, n, False
+            # Brace depth counted OUTSIDE string literals: a pin's raw-string vilan program can hold an
+            # unbalanced brace (Order 29, smalls-29: one such pin made its fn run to EOF and every lane
+            # that appended to the file read as "edited it").
+            depth, end, seen, state, hashes = 0, n, False, None, 0
             while end < len(lines):
-                depth += lines[end].count("{") - lines[end].count("}")
-                if "{" in lines[end]: seen = True
-                if seen and depth == 0: break
+                line, i = lines[end], 0
+                while i < len(line):
+                    c = line[i]
+                    if state is None:
+                        m2 = re.match(r'r(#*)"', line[i:])
+                        if m2: state, hashes = "raw", len(m2.group(1)); i += m2.end(); continue
+                        if c == '"': state = "str"; i += 1; continue
+                        if c == "'" and i + 2 < len(line) and line[i+2] == "'": i += 3; continue
+                        if line.startswith("//", i): break
+                        if c == "{": depth += 1; seen = True
+                        elif c == "}": depth -= 1
+                        i += 1
+                    elif state == "str":
+                        if c == "\\": i += 2; continue
+                        if c == '"': state = None
+                        i += 1
+                    else:
+                        if line.startswith('"' + "#" * hashes, i): state = None; i += 1 + hashes; continue
+                        i += 1
+                if seen and depth == 0 and state is None: break
                 end += 1
             res[name] = (start, end, "\n".join(lines[start:end+1])); n = end + 1
         else: n += 1
