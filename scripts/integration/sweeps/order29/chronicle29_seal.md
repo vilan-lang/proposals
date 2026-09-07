@@ -5,10 +5,10 @@ rule1-29 (69fbfe59, the reactive-flatten golden regenerated), editor-29 (37512be
 (a1a224ac; analyzer, census and list-splice golden by hand; the split golden regenerated at
 a145993c), compile-perf-29 (37ce54fc), fmt-29's seven rules (6cedfe36) with the reformat
 regenerated over the merged tree LAST (637cc4d7: 81 files, lines over 100 columns 150 → 107).
-Ledger rows 400–404 assigned (399 edited in place; next 405); CHANGELOG parity <PARITY>.
+Ledger rows 400–404 assigned (399 edited in place; next 405); CHANGELOG parity 221/221.
 
-SEALED 2026-09-07 at <TIP>: union <UNION>; clippy, the Windows cross-check, audit and fmt green
-locally; CI <CI>. The order's verdicts: the RULE 1 HOLES — assignment from a live aggregate
+SEALED 2026-09-07 at a5473227 (637cc4d7 plus one seal repair: a pin's attributes restored, M46's reason named): union 6665/6665 (23 skipped) at a5473227; clippy, the Windows cross-check, audit and fmt green
+locally; CI GREEN on all eleven jobs (run 34143208240: ubuntu 15 and 13 min, Windows 18 and 15; the first round at 637cc4d7 was cancelled by the repair push). The order's verdicts: the RULE 1 HOLES — assignment from a live aggregate
 copies (B257, a miscompile whose root was a bare local read interning no type; the same root
 fixed `List::insert`, `Arena`'s slot writes, `SignalCell::set` and the iterator folds), which
 alone closed the owner's kolt crash (B255, no std change) — and B256 built, measured and HELD
