@@ -1,0 +1,13 @@
+# Order 29 — integration notes (running; the sweep reads this)
+
+## hygiene-29 — landed first (4 commits @ 8b80a64e), merged with --allow-edit on document.rs's E128 pin import
+- N58 all four: E128 pin import fixed (the pin's control was an impl of an unresolved trait — corrected claim); `.gitignore file-corpus-*/` (no Drop guard: the harness never learns the suffix, a glob would race siblings — N54's hazard); docs fences = STATED EXCLUSION in `leg_vilan_fmt` (152/208 fences would reflow, 1,062 lines, 91 of them an aligned trailing comment lifted to its own line; extractor lives in a test target); transport_robustness port picked at SPAWN via one `free_port` in tests/support/port.rs (document/split/init/asset_bundle dropped their copies).
+- FINDS (to file or note at the sweep): `wait_for_port` duplicated three ways with three signatures; corpus programs inherit the test process cwd (crates/vilan-core) — a per-run `current_dir` in `run_node_within` would end the pollution but changes relative-path resolution for three gates (integrator's call → item).
+- Brief error of mine: `-p vilan-cli --test corpus_harness` does not exist; the binary is `--test corpus` (harness source lives in vilan-core/tests/corpus_harness/). Several briefs carry the wrong name; lanes verify names by rule.
+
+## m36 — spike only, nothing built (vilan m36 @ c40716b1: world_cache_spike.rs 3 ignored measurements + tooling changelog; proposals m36 @ 9b5c363 merged to main: analysis-reuse.md §6.15)
+- Serializing the analyzed world NOT feasible: four address-keyed structures (macro_item_invocations/macro_expression_expansions/macro_failed_sites keyed by AST node address; MacroRegistry::blocks_by_module; MacroDef::world Arc<World>; GeneratedItems::nodes &'static). Inputs+reconstruction buys only the 90 ms parse share (resolve is 210 ms = 2× parse).
+- Floor re-measured: cold 400 / warm 210 / floor 190 ms (loadavg 13.8); true per-process first 490 / hit 160. infer_differential 93.8 s CPU/131 procs, release 100.7 s/130. Whole vilan-core 5,089 tests 3,949 s CPU (loadavg 86).
+- FINDS: (1) M24's budget denominated ~24× LOW — `base_cache_retained_bytes` records 195,087 B for a world that weighs 4,722,688 B resident; 512 MiB recorded ≈ 12 GB resident → ITEM. (2) M36 is SUITE-WIDE: every test process pays 240–330 ms, 5,089 × 240 ms ≈ 1,221 s ≈ 31% of suite CPU (vs 86 s for the two differentials) → M36 status update, reframed. (3) fork()-based warm-base harness needs no relocation (COW) but nextest owns the spawn → note on M36 as the shape that fits.
+- CI saving if a cache shipped: a few percent of wall (legs are compile-dominated) — not the reason to build.
+- M36 stays OPEN with §6.15 as its design; the flag was never built.
