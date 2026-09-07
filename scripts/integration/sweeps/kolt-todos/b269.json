@@ -1,0 +1,8 @@
+{"items": [
+{"id": "B269", "section": "B", "kind": "bug",
+ "title": "NEW — the dead-code paint (E124) marks a function used ONLY under `const` as unused: kolt's `fun page_defaults()` is called by `const page_defaults();` (build-time side effects — `declare`, `preflight`, `bundle`) and reads as dead because the paint follows the pruner's RUNTIME reachability, under which a const-evaluated call never runs; a `const` call is a use",
+ "discussion": "the owner's find (2026-09-07); the binding spelling `let _page_defaults = const page_defaults();` is not needed — a bare `const page_defaults();` statement at module level compiles and emits the same CSS (probed on a5473227)",
+ "status": "OPEN — the owner's find (2026-09-07)",
+ "area": "Language server & tooling",
+ "body": "In `dead_items.rs` (E124's package-level union reachability) add the const evaluator's call set as roots: every function the const pass invoked is reached, for the paint only — the pruner keeps its runtime definition (the function is rightly absent from the emission). Pin: a function called only from a module-level `const f();` statement is not painted; one called from nowhere still is; the emission still omits it."}
+]}
