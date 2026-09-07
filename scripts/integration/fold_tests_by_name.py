@@ -15,7 +15,14 @@ def fns(src):
         m = re.match(r"^(pub(\(crate\))? )?(async )?fn ([A-Za-z_][A-Za-z0-9_]*)", lines[n])
         if m:
             name, start = m.group(4), n
-            while start > 0 and (lines[start-1].startswith("#[") or lines[start-1].startswith("//")): start -= 1
+            # The header above a fn: attributes and comments back to the previous blank line or item end —
+            # a MULTI-LINE `#[ignore = "…"]` has continuation lines that start with neither `#[` nor `//`
+            # (Order 29, rule1-29: a pin lost its `#[test]` at the fold and clippy called it unused).
+            i = n - 1
+            while i >= 0 and lines[i].strip() != "" and not lines[i].startswith("}") and not re.match(r"^(pub(\(crate\))? )?(async )?fn ", lines[i]): i -= 1
+            block = i + 1
+            while block < n and not (lines[block].startswith("#[") or lines[block].startswith("//")): block += 1
+            start = block
             # Brace depth counted OUTSIDE string literals: a pin's raw-string vilan program can hold an
             # unbalanced brace (Order 29, smalls-29: one such pin made its fn run to EOF and every lane
             # that appended to the file read as "edited it").
