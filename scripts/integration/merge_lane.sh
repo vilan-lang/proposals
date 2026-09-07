@@ -8,6 +8,14 @@ W=${VILAN_INTEGRATION:-$HOME/code/vilan-lang/vilan/.claude/worktrees/integration
 lane=$1; shift
 cd "$W" || exit 1
 git fetch -q origin || exit 1
+# Every `-p <crate> --test <name>` in the gate specs must name a real test binary — a typo
+# (corpus_harness, std_surface) stops the chain AFTER the merge otherwise (Order 29's third strike).
+for spec in "$@"; do
+  crate=$(echo "$spec" | sed -n 's/.*-p \([a-z-]*\).*/\1/p')
+  for t in $(echo "$spec" | grep -o -- '--test [A-Za-z0-9_]*' | awk '{print $2}'); do
+    [ -f "crates/$crate/tests/$t.rs" ] || { echo "UNKNOWN TEST TARGET: -p $crate --test $t (no crates/$crate/tests/$t.rs) — fix the spec"; exit 8; }
+  done
+done
 git merge --no-ff --no-commit "origin/$lane" >/dev/null 2>&1; echo "merge exit=$? (non-zero = conflicts to resolve)"
 python3 "$S/changelog_union.py" "origin/$lane" || { echo "CHANGELOG needs a hand"; exit 2; }
 python3 "$S/renumber_ledger.py" "$lane" || exit 2
