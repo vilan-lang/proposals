@@ -777,11 +777,12 @@ the world and records, analysis 2 is the keystroke — process CPU, debug,
 this dev box under ten sibling lanes. Cold and warm interleaved in one
 run at loadavg 120–160: `plan_resource_drops` **4,729 → 627 ms**, the
 enrolment gate walking **154 of 3,398** bodies instead of all of them and
-the enrolment itself unchanged at 90 roots. At the leg level, warm
-process CPU **5,840 → 5,340 ms** with the record on (and the "before" leg
-measured at the *lower* loadavg of the two, so that 9% is a floor rather
-than an estimate). Every figure here is debug and load-inflated; what is
-load-independent is the body count and the enrolment.
+the enrolment itself unchanged at 90 roots. At the leg level, with the
+restore the only thing switched, warm process CPU per keystroke **6,010 →
+5,630 ms** — median of three interleaved pairs, min 5,730 → 5,600, at
+loadavg 97–125 either way. Every figure here is debug and load-inflated;
+what is load-independent is the body count and the enrolment, and those
+are the numbers to hold onto.
 
 The table below is the same phase measured the same way (kolt's client
 leg, warm, debug, loadavg 66–113), so the rows compare with each other
