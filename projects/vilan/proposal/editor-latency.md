@@ -792,12 +792,131 @@ What T1c leaves live on this line, with the reason in one clause each:
 
 | pass | debug ms, warm | why it stays |
 |---|---|---|
-| `check_container_resource_arguments` (R10) | 477–1113 | its report doubles as R11's dedup set, and its diagnostics sit **outside** T1's Class A window — restoring it means moving that window, which is a tranche of its own. **The largest single item left on this line.** |
+| `check_container_resource_arguments` (R10) | 477–1113 | its report doubles as R11's dedup set, and its diagnostics sit **outside** T1's Class A window — restoring it means moving that window, which is a tranche of its own. **The largest single item left on this line.** — CLOSED by T1d below (M48): the window moved, and the report turned out to be recordable because it is keyed on a canonical RENDERING rather than on an id. |
 | `compute_resource_types` | 605–843 | not restorable **in principle**: its key space is the interned type table, and an interned id is nobody's to own. The instrument that would apply is tranche 1's rather than 1c's — `resource_classification` is `TypeId`-keyed, so it memoizes nothing, and a memo on the resolved `Type` would collapse it the way the impl-selection memo collapsed its own. Written, measured at loadavg 110+, did not clear the noise floor, left unshipped rather than shipped unmeasured. |
 | `compute_capture_clone_sites` | 158–342 | the foreign-touch rule, above. |
 | `build_drop_glue` | 24–125 | its output is `TypeId`-keyed program-wide and the emitter looks it up by the id on the expression; its INPUTS arrive free from the restored plan. |
 | `check_hmr_transfer_bounds` | 100–165 | it re-infers each `stash` value through `&mut self`, so freezing it means freezing the mint with it — a `TypeId` in the record, which the boundary forbids. Inert unless `std::dev` is loaded. |
 | `record_drop_sink_argument_types` | 34–53 | recordable in principle (its ids are private to the analysis, so re-minting is sound) and not worth a record at that size. |
+
+#### T1d: moving the window (M48)
+
+> **Written after the fact** (2026-09-08, tracker M48). The table above named
+> R10 the largest item left and gave two reasons it stayed live: its
+> diagnostics sat outside the Class A window, and its report doubles as R11's
+> dedup set. Only the second was ever load-bearing, and it turned out to be the
+> thing that made the move SAFE rather than the thing that blocked it.
+
+**Where the window is, is not a fact about the check.** T1's window is the
+`class_a_checks!` macro in `analyze` (`analyzer.rs`), and it is per CALL rather
+than per phase, because the sequence interleaves Class B (coherence) and
+Class C (instantiation-driven) work that must keep running over every module on
+every analysis. That granularity is exactly what lets a check be moved INTO the
+window without moving anything else: R10 gets a second `class_a_checks!` block
+of its own, in the place it already ran, and `check_hmr_transfer_bounds` — which
+sat in the same `unless_cancelled!` block and stays live for its own reason —
+keeps the block it had. Nothing about the ORDER of the phase changes; what
+changes is that R10's diagnostics are now harvested per source and replayed.
+
+**What R10 costs, and where.** The check has three tiers over three different
+kinds of site, and each site already carries the file its span indexes into
+(B112): the written type applications collected at `walk_type_node`, an
+INFERRED sweep over every typed expression, binding and parameter in the
+program, and the native method RECEIVERS whose type nothing else records. On
+kolt's client leg (69 sources) the middle tier is the cost: it enumerates
+**15,717** sites where the first tier has 1,053, and it enumerates them by
+walking `expr_id_to_expr_map`, `variables` and `parameters` whole. Almost every
+one of those belongs to a module the analysis is already reusing.
+
+**The record is a set of STRINGS, and that is the whole trick.** R10 keeps two
+dedup sets and they answer different questions. `reported_instantiations` is
+`HashSet<TypeId>` — instantiation identity, so two spellings of `List<Db>` stay
+two reports — and `reported_structures` is `HashSet<String>`, the canonical
+rendering, which is what the inferred and receiver tiers key on and what
+survives the check as `reported_container_structures` for R11 to read.
+
+The `TypeId` half is where §3.6's boundary would normally bite, and R10 mints
+one per occurrence in the checks phase like the passes T1c named:
+`container_receiver_sites` builds `Type::Struct(container_id, arguments)` and
+calls `get_type_id`, which is a fresh mint against THIS entry's buffer. The
+record avoids it by not needing it, and the reason is a property of the
+analyzer rather than an argument about R10: **types are not interned**
+(`type_id_for_type` — "each call mints a fresh id"), so a `TypeId` names one
+occurrence in one file and can never be the same id as another file's site.
+The instantiation set is therefore PARTITIONABLE by construction — dropping a
+module's sites cannot change any other file's tier-1 verdict, because no other
+file's site carries an id the module's sites could have claimed first. The only
+state that genuinely crosses files is the structural one, and a canonical
+rendering is a string. So the record carries strings and no ids at all, and it
+meets the boundary by the shape of the check rather than by a promise about it.
+
+**The condition on a key is that its insertion was NEW, not that its site
+found something**, and getting that wrong is a lost diagnostic rather than a
+lost optimisation. A site whose key was already in the set contributed nothing;
+recording it anyway would pre-seed, on the next analysis, a key that some OTHER
+file's site had inserted first — and that file's diagnostic would then be
+deduplicated away. The two tiers that key their dedup on the string report
+exactly when the insertion is new, and in the first tier a key-new site is
+always a reporting site (an instantiation already reported has already put its
+own rendering in the set), so "the module put this key here" and "the module
+reported this container" are the same set, which is what makes the union on
+restore exact.
+
+**And R10 needs no fingerprint, where T1c needed one.** The rule is the same —
+a row may be recorded for a module only if its derivation was the module's own
+— but the whole-program state R10 reads is already excluded by a term the reuse
+decision has. It reads three things from outside the module: whether the
+program declares a resource at all, the container HEADS it refuses to
+(`List`/`Map`/`Set`/`NativeMap`/`Shared`/`Context`/`Promise`/`Task`, std
+entities resolved from the world), and the resource classification of a site's
+type arguments. A module cannot import the entry (B226), so no module type
+mentions an entry nominal and a `Generic` names nothing; the one way the entry
+CAN reach into a module's types is by grounding a slot, which is T0's dirty bit
+and drops the module out of reuse entirely. The `declares_a_resource()` gate is
+worth stating explicitly because two entries over one world can disagree about
+it — the entry is not part of the base-cache key — and both directions are
+safe for the same reason: a world whose modules declare no resource has no
+module site that can find one, whatever the entry declares. Where T1c added a
+`u64` because its set could not be excluded by an existing term, this one is
+excluded by one the decision already makes, and the argument is written here
+instead of compiled in.
+
+**What it bought.** kolt's client leg (`src/client.vl`, 69 sources, all reused,
+clean) through the replay harness's warm pair, with the record the only thing
+switched, both legs interleaved in one process, three pairs:
+
+| warm analysis | R10 sites visited | R10 thread CPU | leg process CPU |
+|---|---|---|---|
+| without the record | 153,302 of 153,302 | 340 / 280 / 280 ms | 8,390 / 7,850 / 8,090 ms |
+| with it | **24,459** of 153,302 | **70 / 60 / 70 ms** | 6,180 / 6,040 / 5,960 ms |
+
+The site count is the load-independent number and the one to hold onto. The leg
+column is NOT T1d's own delta — the switch in one process is `set_world_reuse`,
+which turns the whole T1 seam off — so T1d's share of the leg was taken across
+two builds instead: warm process CPU per keystroke 6,680 / 6,230 / 5,920 ms
+without the window and 6,200 / 6,070 / 5,840 with it, medians **6,230 → 6,070**,
+with the AFTER legs at the higher load (loadavg 87 / 74 / 61 against 91 / 109 /
+92). Everything is debug and this box carried ten sibling lanes at loadavg
+60–160 throughout, so the release re-measure a quiet box would allow was
+DECLINED rather than reported at that load.
+
+**And the standing corpus differential does not cover this.** Planting the
+failure — dropping the restored keys on the way back in — turns T1d's own pin
+red on its first assertion and leaves `replay_differential` green, because the
+golden corpus as modules declares almost no resource and puts none of them in a
+container, so there is no R10 report there for a record to lose. It is T1b's
+blind-leg shape at a different seam, and it is the reason the fast pin's fixture
+instantiates the module's generic from the entry rather than settling for a
+module that merely refuses something.
+
+What the line looks like after it: `compute_resource_types`,
+`compute_capture_clone_sites`, `build_drop_glue`, `check_hmr_transfer_bounds`
+and `record_drop_sink_argument_types` are unchanged and keep the reasons the
+table gives. R10 leaves one residue of its own — the ENTRY's share of the
+inferred sweep, **24,459 sites of the 153,302**, which is the tier walking three
+whole maps to find the entry's own entities and the ids minted after the world
+was stored. A record cannot remove that; an index from source to entity could,
+and it is the same missing structure §3.5 calls the module boundary.
 
 ---
 
