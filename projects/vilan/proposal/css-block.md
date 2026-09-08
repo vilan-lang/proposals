@@ -1339,3 +1339,259 @@ syntax's precedent — the dot keeps the rule decidable on one token forever.
   §8's surviving requirement that the form compose with functions, impls and
   `match` natively. Holes are what make `gap: {space(4)};` a token reference
   rather than a copied literal.
+
+---
+
+## 15. Compact styling (Order 30)
+
+The charter §0 settled what the block IS. This section settles what it is
+FOR, records the five gaps that stood between the shipped form and that
+purpose, and rules the one design question A36 left open.
+
+### 15.1 The goal, and the bar
+
+The owner's goal, stated plainly: **a style should be easier to write and
+easier to read than the chain, and Tailwind is the bar.** Not "as expressive
+as" — the chain is already that — but shorter on the page and closer to the
+CSS the author already knows. Tailwind wins on exactly one axis, brevity per
+declaration, and it wins by giving up the type system, the merge model and
+the tooling. The block's claim is that the brevity is separable from the
+giving-up.
+
+**The position, in one line: the block is the compact form; the chain stays
+for the common set plus `raw`; there is no parallel short vocabulary.**
+
+Each clause is load-bearing:
+
+- **The block is the compact form.** Where a style is mostly declarations,
+  the block is what to write. It reads as CSS, `vilan fmt` orders it exactly
+  as it orders the chain, and it desugars to the chain before anything else
+  in the compiler sees it — so there is one model, one chokepoint
+  (`Style::rule`), one sheet.
+- **The chain stays.** It is the typed surface — `padding(space(4))` is
+  checked as a `Length`, `hover(..)` composes as a value, `+` merges — and
+  it is what a style built by a function, a `match` or an `impl` is. The two
+  forms mix freely inside one expression; §10's "neither moves" is
+  unchanged.
+- **No parallel short vocabulary.** The one thing this arc will not do is
+  mint `p_4()`, `mx_2()`, `text_sm()` — a second name for every property,
+  which is Tailwind's actual cost and the coupling `ui-styling.md` §8
+  rejected. Brevity comes from the SYNTAX (a block, a hole, a link), never
+  from a second dictionary the reader has to learn and the compiler has to
+  maintain.
+
+### 15.2 The five gaps, and what closed them
+
+The block shipped in Order 28 and could not be used in the package it was
+built for. Five gaps, in the order they bite:
+
+**B270 — the seeds were scope-dependent (fixed).** The block seeded its
+chain with a bare `style` accessor and element syntax called a bare `view`,
+both resolved at the WRITE SITE. Under `prelude = "std::web"` the ambient
+`style` is a MODULE, so every block in an application package reported
+"`style` is a module, not a value" — the form was unusable in exactly the
+packages it was designed for, and the per-file workaround
+(`import std::style::{ Color, Length, style };`) costs that file the
+`style::Length::rem` spelling, since a name has one binding. Both desugars
+now emit a `StdItem(module, item)` — a node no source can spell, resolved
+through `std`'s own namespace by the walk `resolve_import` uses. A block
+means std's `style()` under the web prelude, under a local `let style = 1;`,
+under `import std::style::style as s;`, and with no prelude at all; the
+loader seeds `std::style` / `std::ui` off the reference, so neither form
+needs an import. This supersedes A35, which had ruled the element half to a
+diagnostic on the ground that shadowing is a ruled feature: it is, but a
+GENERATED callee nobody wrote is not a name the site should be able to bind.
+
+**A68 — every block had to be written `const` (fixed).** `Style::raw` calls
+`emit`, the compile-time channel, so `let b = css { padding: 1rem; };` was
+refused with "`raw` … is compile-time-only" — a message about the desugar's
+internals, for a form that has no other meaning. A block is a compile-time
+asset by construction, so the desugar writes the word. `const` forwards to
+its inner expression, so a written `const css { … }` is byte-for-byte the
+same program and every existing block is untouched. A runtime hole still
+gets const-eval's refusal, now AT the hole.
+
+**A69 — an app's own helpers could not be called (fixed).** A dotted item
+ending in `;` is a verbatim `Style` method call at its written position:
+`.flex_row();`, `.ghost();`, `.custom(a, b);`. The dot was already the whole
+disambiguator; what FOLLOWS a dotted head now splits it — a `{ … }` body is
+a condition rule, a `;` is a link — which is element syntax's own rule read
+on the style side. Nothing consults `Style`'s method list either way. This
+claims the grammar space §10 listed as free ("Composing styles inside a
+block … Grammar space is free if this is ever wanted"), and it is what makes
+the block usable in a real app: kolt's `flex_row`, `ghost` and `select_off`
+are `impl Style` methods, and before this the only way to use one was to
+leave the block. `vilan fmt` treats a link as a BARRIER — an opaque method
+may write any property — so nothing sorts across it.
+
+**A70 — the hole vocabulary was qualified twice over (fixed).**
+`{Length::rem(1)}` and `{Color::gray(500)}` inside a value that is otherwise
+plain CSS, and `{style::Length::rem(1)}` under the web prelude.
+`std::style::prelude` is those constructors as free functions — `rem`, `px`,
+`em`, `pct`, `vh`, `vw`, `auto`, `space`; `black`, `white`, `transparent`,
+`hex`, `gray`, `blue`, `red`, `green`, `rgba`, `oklch`; `s()` for `style()`
+— **ambient inside a block and nowhere else**. The resolution rule is the
+one that makes it safe to grow: the site's own scope is asked FIRST, and the
+module only if nothing there answers, so a local binding always wins. It is
+an ordinary module everywhere else (`import std::style::prelude::{ rem, s };`
+binds the members bare; `import std::style::prelude;` qualifies through the
+name — both block-scoped, so a `const { … }` can carry its own).
+
+**A34 — a typed token had no MID-VALUE spelling (fixed).**
+`border: 1px solid {Color::gray(500)}` — the idiomatic mixed value — lowered
+to a plain string concatenation, which B148 refuses for a struct; and the
+workaround, `.text`, gets the var reference while dropping the `:root` line,
+which is a dangling `var()` on the sheet and the exact hazard the single-hole
+path exists to close. Each hole of a mixed value now passes through
+`std::style::piece`, over a new `CssPiece` trait. `CssPiece` is deliberately
+a SECOND trait rather than `CssValue` widened, because the two positions have
+different rules: a whole value must carry its own unit (so
+`raw("padding", 4)` stays refused and still steers to `space(4)`), while a
+piece sits inside text that supplies it, which is why a bare number is legal
+there and always was.
+
+**E153 — the editor was silent where it mattered most (fixed).** `:hover {`
+inside a block reported the bare `found ':' expected a declaration …`: true,
+and no help, because nothing in it says the answer is a DOT. It now names
+`.hover { … }` and says why the dotted form is the only one — it is
+name-blind, so one rule covers pseudo-classes, breakpoints, `within` and
+`divide`. And property-name completion inside a block now draws on the CSS
+property index rather than on the fifty-odd slots a `Style` method happens to
+write: `raw` reaches all of CSS, and the properties a block exists for
+(`mask`, `contain`, `scroll-snap-type`, `text-wrap`) were exactly the ones
+the editor stayed silent about. The list is a static, versioned file with a
+stated provenance, consulted by nothing in the compiler — a name missing from
+it costs a completion entry and no program is wrong, which is why it is
+admissible where E67 refused an invented HTML attribute list. **Value
+completion stays a non-goal** (§10): names are a closed vocabulary, values
+are not.
+
+### 15.3 The measurement
+
+Two sets of numbers, and they disagree about the baseline; both are reported
+rather than reconciled, because what they agree about is the shape.
+
+**The cycle's fact sheet**, on three kolt styles: the button delta **244 →
+175** characters as a block, the panel **178 → 109**, the row **78 → 75**;
+Tailwind's equivalents **104 / 63 / 34**.
+
+**This lane's own measurement**, after A69 and A70, on the three styles as
+they are actually written in kolt today (whitespace kept, newlines dropped;
+`src/styles.vl:33` `button_style_base`, `src/lib/overlay.vl:450`
+`default_panel_style`, `src/views.vl:332`'s inline row):
+
+| style | chain, as written | block, after A69+A70 | with plain-CSS values |
+|---|---|---|---|
+| button | 392 | 260 (−34%) | 243 (−38%) |
+| panel | 193 | 158 (−18%) | 149 (−23%) |
+| row | 73 | 55 (−25%) | — |
+
+The third column is worth its own line, because it is the honest one: a
+`Length::rem(0.5)` renders `0.5rem` and declares no token, so
+`gap: 0.5rem;` is byte-identical on the sheet and shorter on the page. A
+hole earns its keep where the value IS a token (`{space(4)}`,
+`{gray(500)}`), and the block lets the author spend one only there. That is
+a property the chain does not have: in a chain every value is a typed call,
+whether or not the type carries anything.
+
+**What the numbers say, and what they do not.** The block is a third shorter
+than the chain and still roughly twice Tailwind's length. The remaining
+distance is not syntax — it is the property NAMES, which Tailwind abbreviates
+(`p-4`, `mx-2`, `text-sm`) and this system spells. That is the trade §15.1
+refuses to reverse: an abbreviation dictionary is a second vocabulary, and
+the CSS names are the ones the author already knows and the ones every other
+tool agrees on. The gap that remains is the gap we are choosing.
+
+Three of A69's five button links (`flex_row`, `script_label`, `select_off`)
+are also worth reading as a measurement of something else: they are an app's
+own words, and they compress far better than any general vocabulary could,
+because they name what the app means rather than what CSS does. The chain
+link is what lets a block reach them.
+
+### 15.4 A64 RULED: conditional component state
+
+A36 shipped `Style::when(condition, delta)` as "exactly the ruling's five
+lines", with guidance that own-flag chains are the intended use and that a
+compound condition is the tell for `match`. The owner's FIRST real use
+produced a compound condition and a question the ruling did not reach —
+kolt `src/styles.vl:62`:
+
+```vilan
+fun button_style(selected: bool, disabled: bool) {
+    button_style_base
+        .when(selected, button_style_selected)
+        .when(!disabled, button_style_interactive)
+        .when(!selected && !disabled, button_style_interactive_events)
+}
+```
+
+Should a stateful component's style be COMPUTED per state at all, or ride
+CSS variables, or ride data attributes through the `within` /
+`child_relation` machinery std already has?
+
+**The ruling, in one line each:**
+
+1. **Keep `.when` for state that changes the RULE SET** — which properties
+   are written at all, or under which selectors. This is `when`'s job and it
+   is the default answer.
+2. **Use CSS VARIABLES, through `Color::var` / `Length::var` and
+   `view.style_var(name, signal)` (or a `declare` block), for state that
+   changes a VALUE** while the rule set stays put.
+3. **Use DATA ATTRIBUTES only as a styling hook for something outside the
+   style system** — a third-party widget, a global theme switch, a
+   host-page contract — never as the everyday spelling of a component's own
+   boolean state.
+
+**Why, and what each costs.**
+
+*Computed (`when`).* Each distinct state tuple yields its own class-list
+string. The sheet cost is nil — the delta styles are emitted once, at build
+time, whatever the state — and the CORRECTNESS argument is decisive: a
+variable cannot vary a SELECTOR-shaped thing, and two of kolt's three deltas
+are exactly that (`hover` and `active` inside
+`button_style_interactive_events`). Only a computed style can add a rule
+that did not exist. The cost is a per-read rebuild: `class_list`
+(`style.vl:1465`) walks every slot and joins it, so a `when` chain inside a
+signal's `.map` (kolt `views.vl:513`, `:711`) re-derives the string on every
+notify. That is O(slots) string work per notify — tens of slots, a handful
+of allocations — against a DOM write the framework is doing anyway. **It has
+never been priced, and it should be**: the exhibit is named, and this ruling
+is about which spelling is correct, not about a measurement that has not
+been taken. If the rebuild ever shows up, the fix is memoization at the
+`class_list` seam, not a different idiom — which is precisely why the idiom
+is the thing to settle first.
+
+*CSS variables.* One stable class; the varying declarations are `var(--x)`
+and the state writes the custom property per element. Sheet size flat, the
+class attribute never changes, and the cost per change is one custom-property
+write — cheaper than a class rebuild, and the reason this is the right answer
+for a value that varies continuously (a width, a progress colour, a
+transform). The cost is the hard limit above: a variable cannot introduce a
+`:hover` rule, a media query or an ancestor guard, so a state whose delta is
+selector-shaped simply cannot be expressed this way. Reaching for one there
+produces a style that is silently missing its interactive states.
+
+*Data attributes.* One class whose rules are conditioned on
+`[data-selected="true"]`; std already has the machinery (`within`,
+`child_relation`), and kolt already uses both. The element's class never
+changes and toggling is one `set_attribute`. Two costs, and the second is
+the ruling's reason: sheet size (BOTH branches are always emitted, for every
+component, whether or not any instance is ever in that state), and — the
+real one — it gives up the property that makes `when` composable at all,
+that **a style is a value you can merge and pass around**. A data-attribute
+style is a contract between a rule and a DOM attribute, not a value; it
+cannot be merged with `+`, cannot be returned from a `match`, and cannot be
+handed to a component that knows nothing about the attribute's name. That
+is a large thing to give up for a string join. Where the toggling party is
+NOT the style system — a third-party widget setting its own attributes, a
+theme switch on `<html>` — the contract is already the medium, and that is
+the case the machinery exists for.
+
+**And the compound-condition steer.** A36's doc says a compound condition is
+the tell for `match`. That stands and is not widened to `within`: the
+compound condition in the exhibit is a fact about the STATE SPACE
+(`!selected && !disabled` is a cell of a 2×2 grid), and `match` is how vilan
+spells an exhaustive case analysis over a state space. `within` answers a
+different question — "who else's state is this?" — and steering a compound
+own-flag condition there would trade a value for a DOM contract in exactly
+the case where the value is composing correctly.
