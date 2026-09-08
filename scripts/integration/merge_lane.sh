@@ -25,6 +25,11 @@ git add CHANGELOG.md crates/vilan-cli/tests/diagnostics-ledger.tsv crates/vilan-
 uu=$(git diff --name-only --diff-filter=U)
 if [ -n "$uu" ]; then echo "UNRESOLVED:"; echo "$uu"; exit 3; fi
 git commit -q --no-edit || exit 4
+# The mdBook anchor golden is DERIVED from vilan/docs; a lane that edits docs without regenerating it
+# reds `markdown_golden` at the merge (Order 30: dom-30, hygiene-30). Regenerate and fold it in.
+if git diff --name-only HEAD~1 HEAD | grep -q '^vilan/docs/'; then
+  python3 scripts/regen-markdown-golden.py > /dev/null 2>&1 && git add crates/vilan-core/tests && git commit -q --amend --no-edit && echo "markdown golden regenerated into the merge"
+fi
 echo "committed $(git rev-parse --short=8 HEAD)"
 cargo build -q -p vilan-cli || exit 5
 for spec in "$@"; do echo "== gate: $spec"; eval "cargo nextest run $spec" || exit 6; done
