@@ -1,0 +1,274 @@
+{
+ "items": [
+  {
+   "id": "B272",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — an `[rpc] fun f(&mut self, …)` REFUSES the build (the generator emits `fun dispatcher(self)` by value and every route closes over that copy — rpc.vl ~:3249/:3188/:3193) with a diagnostic on the STRUCT that recommends the receiver the author just wrote; the admitted `mut self` compiles and SILENTLY LOSES the write (the next call on the same connection reads the old value); only `Shared<T>` fields persist per connection — the owner's `is_authenticated: bool` sketch cannot be written today",
+   "discussion": "rpc-paper-30's 9.1 verification (2026-09-08), pinned `a_mut_self_rpc_mutation_is_lost_where_a_shared_field_survives`; R-A38b in transport-rpc §9.5",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Hold the per-connection instance in a cell inside the generated dispatcher and hand `&mut self` to the handler (the turn already serializes a connection's calls); fix the diagnostic's span and remedy; then the pin flips to \"the write survives\"."
+  },
+  {
+   "id": "B273",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — UNSOUND: an impl's `with` clause is bound-checked by NOTHING and arity-checked by nothing — `impl CatBox with Holder<Cat>` compiles with `Cat` implementing no `Label`, and `impl CatBox with Holder<Cat, i32>` compiles too (B188's arity check misses the position); the tour (data-and-traits.md) asserts the opposite in prose",
+   "discussion": "solver-30's find 1 (2026-09-08), pinned `#[ignore]`d as `b262_an_impl_with_clauses_trait_argument_is_still_unchecked`; predates B262 — a site apart from the `prepped_type_locals` drain",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Type system & the type solver",
+   "body": "Check the clause's arguments against the trait's parameter bounds and arity at the impl (B251's `check_written_nominal_bounds` shape, a third site); census the estate; un-ignore the pin; the docs page is ahead of the compiler and stays."
+  },
+  {
+   "id": "B274",
+   "section": "B",
+   "kind": "design",
+   "title": "NEW — `shared.read().push(x)` GROWS the cell: a temporary read stays free under the B256 ruling and a `&mut self` receiver is not a considered position, so the write lands in the cell; four doc sites say the write is lost (tour/memory-model.md:172, :240; std/cells.md:36; appendix/gotchas.md:44) and spec/memory.md:377 says `read()` copies — a ruling: copy at a `&mut self` receiver on a temporary read (the docs' promise, the narrow remnant of clone-at-every-read), or rewrite the five sites",
+   "discussion": "rule1-30's find (2026-09-08); OWNER Q — my recommendation: the copy, it is what every reader of those pages already believes",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Memory model (rule 1 / rule 2)",
+   "body": "Add the `&mut self` receiver on a `SharedValue` temporary to `consider`'s positions (a scalar receiver is a `(base, key)` pair — say what it does there); pin the probe (`log.read().push(9)` leaves the cell at 1); or edit the five sites."
+  },
+  {
+   "id": "B275",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `satisfies_trait_bound` drops trait ARGUMENTS on a SUPERTRAIT match (v1, documented in-source): a program with only `Source<str> with Place` still ADMITS `slot(signal_of_panel)` at the analyzer, and only the emission filter's never-empty fallback keeps it from an internal-error report — closing the gap turns it into a real bound refusal at the call site",
+   "discussion": "view-30's find 1 and open question 1 (2026-09-08); B268 fixed the direct-bound half",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Type system & the type solver",
+   "body": "Thread the bound's arguments through the supertrait walk in `satisfies_trait_bound` (the `instantiation_agrees` machinery B268 used), pin the refusal, keep the fallback as an internal guard only."
+  },
+  {
+   "id": "B276",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — a leg that BUNDLES anything is never `Fresh` under `build --watch`: `asset::bundle` records `content_hash_bytes(&bytes)` (const_eval.rs ~487) while `current_source_hash` re-hashes with `read_source` + `content_hash`, and the two never agree, so `leg_is_current` always fails — kolt bundles heavily and its watch reuses nothing today; reproduced under `VILAN_SEQUENTIAL_BUILD=1`, so pre-existing (M22/E12 class)",
+   "discussion": "build-30's find 1 (2026-09-08); forced its watch pin onto a bundle-free fixture",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "CLI & workflow",
+   "body": "One hash function for both sides; pin a bundling leg `Fresh` on an unchanged round."
+  },
+  {
+   "id": "B277",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `std::time::Debounce`'s driving loop runs under the ambient nursery, so a nursery cancellation unwinds it with `running` still true and leaves that `Debounce` value INERT (every later `run` is swallowed); not pinned",
+   "discussion": "std-30's open question (c) (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Either a cleanup that resets `running` when the loop unwinds, or a stated scope rule (a debounce lives in the nursery that made it); pin the cancelled-then-run shape."
+  },
+  {
+   "id": "B278",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — an i-string hole cannot contain an ESCAPED QUOTE: `i\"{x.get(\\\"k\\\")}\"` is a parse error, so a call with a string argument inside a hole must be bound first; cost a lane an iteration",
+   "discussion": "std-30's find 3 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Type system & the type solver",
+   "body": "Let the hole scanner track string literals (lexical.md §3.4's hole grammar already says `expression`); pin the escaped quote and a nested string inside a hole; formatter round-trip."
+  },
+  {
+   "id": "B279",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — the silence behind B258 has no STRUCTURAL guard: nothing forbids a future over-approximation promoting a node to strict that coverage's narrower edge set never fences — the result would again be a silent `undefined`; and B254 + B258 are one class (a NAME-keyed `candidates_of` list consumed as receiver-specific) with a third instance named in `impl_members_for_bound`'s doc — a sweep of `candidates_of` consumers is owed (the const-only capability check reads edges as refusals and is safe by direction)",
+   "discussion": "b258's finds 1 and 3 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Type system & the type solver",
+   "body": "Assert every strict node has at least one refined coverage caller (or is run-closure/declared) and REFUSE rather than emit; enumerate `candidates_of` consumers and narrow or justify each; pins per consumer."
+  },
+  {
+   "id": "B280",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `freshen_list_element_slots`' EXTERNAL-function path is unguarded: B263 guarded only the declared-function return, so an external method returning `List<T>` reached through a bounded receiver would still erase the caller's rigid `T`; no exhibit found",
+   "discussion": "solver-30's find 2 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Type system & the type solver",
+   "body": "Apply `generic_is_enclosing_binder` on the external path too, with an exhibit (an external `fun items(self): List<T>` on a bounded receiver) pinned red first."
+  },
+  {
+   "id": "A71",
+   "section": "A",
+   "kind": "design",
+   "title": "NEW — a reactive element child APPENDS on replacement, like `when`/`swap`: `std::dom` has no `insertBefore`, so a `Source<View>` child's position is lost after its first change — a marker node and `insert_before` would keep it; is \"put it last\" the contract?",
+   "discussion": "view-30's find 2 and open question 2 (2026-09-08); OWNER Q — my recommendation: keep position (a child that moves on update is a bug a reader cannot see in the source)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "`Element::insert_before` + an anchor comment node per reactive child (the row's owner disposes it); `when`/`swap` take the same anchor; pins for a middle child replaced twice."
+  },
+  {
+   "id": "A72",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — `std::router` after A62: `segments` (raw) and `parse_path().segments` (decoded) disagree on `%20` — two forms of one question, making `segments` decode is the tidier end state (a behaviour change not taken); and `current_path()` is pathname-only so `parse_path(current_path().get())` never sees a query — there is no SIGNAL over the full URL (`location_url()` is a read), so an app routing on `?q=` still wires its own `popstate`",
+   "discussion": "dom-30's finds 1 and 2 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "`current_url(): Source<str>` beside `current_path()` (one `popstate` listener); rule on `segments` decoding (recommend: decode, one form); pins."
+  },
+  {
+   "id": "A73",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — std-30's two unshipped halves: `Storage` key ITERATION (today `len` + `key_at` by hand; a `keys(): List<str>` or an iterator) and `Debounce::flush()` (fire the pending callback now — a form that unloads before the window closes needs it)",
+   "discussion": "std-30's open questions (a) and (b) (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Two small additions with pins; `flush` cancels the timer and runs the last callback once."
+  },
+  {
+   "id": "E154",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — E150's third: a `for x in <iterable>` head lacks the split permission rule B gave `for` conditions and `match` subjects (a 117-column iterable is left untouched); the obvious one-line sibling",
+   "discussion": "fmt-30's find 1 (2026-09-08); OWNER Q — my recommendation: yes",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Language server & tooling",
+   "body": "Grant the permission to the iterable position; pin an over-budget iterable breaking operator-leading and a short one inline; one reformat commit if the tree moves."
+  },
+  {
+   "id": "E155",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — PRE-EXISTING, confirmed on f0f4e301: on kolt's generated `src/lucide/lib.vl` `vilan fmt` rejoins a hand-broken four-link `.child` ladder into one over-budget line and then breaks INSIDE an element argument (`.child(<path⏎ d(…)⏎/>)`), which reads worse than the source; visible only because kolt excludes `src/lucide` from its fmt gate",
+   "discussion": "fmt-30's find 2 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Language server & tooling",
+   "body": "An element argument is atomic to the chain-break rule: break the chain one link per line before breaking inside an element; pin the lucide shape."
+  },
+  {
+   "id": "E156",
+   "section": "E",
+   "kind": "design",
+   "title": "NEW — E151 moves EVALUATION ORDER: an attribute value is an arbitrary expression, so sorting attributes reorders when their values run; the sorter documents the bargain (the style-chain sorter took the same one) rather than refusing impure values — a ruling: accept, or refuse to reorder a head whose values are not literals or pure paths",
+   "discussion": "fmt-30's semantics note (2026-09-08); OWNER Q — my recommendation: accept and document, as the chain did; a side-effecting attribute value is already a smell the formatter should not be the first to notice",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Language server & tooling",
+   "body": "Rule and pin: either the documented bargain (a test whose attribute values print, asserting the sorted order) or a purity check that leaves such a head unsorted."
+  },
+  {
+   "id": "E157",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — a block-like head followed by `::` takes B248's parenthesize steer, which is not a fix there (`(match x {..})::foo` is not valid either); `::` is a `Token::Op` and needs its own arm",
+   "discussion": "smalls-30's find 1 (2026-09-08); pre-existing B248 behaviour",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Language server & tooling",
+   "body": "A `::`-specific refusal naming the real problem (a path cannot start at a block); pin."
+  },
+  {
+   "id": "E158",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — editor smalls from Order 30: `references.rs`'s `narrow` trusts that an `Anchor::Start`/`End` span spells its definition's name — B264 fixed the alias case, and every other table whose span is DERIVED rather than recorded has the same exposure (a sweep); `is_namespace_module` discriminates on \"attributed to `SourceId(0)` and has a children scope\" — the `pkg::<entry>` alias arm is the other `SourceId(0)` entity and the discriminator is thin, a third such entity needs a real marker",
+   "discussion": "editor-30's finds 1 and 2 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Language server & tooling",
+   "body": "Enumerate derived-span tables and anchor each (or record the name span); give the namespace entity a marker; pins per table."
+  },
+  {
+   "id": "M54",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — `LastUse`/`source_of` residuals from perf-30's re-pricing: the restored tables are CLONED into `LastUse::compute`'s walk state (8.9M Ir per analysis — needs `&mut Analyzer` or a read-through layer); `collect_unfollowable_loans` is 68% of the warm `LastUse` (whole-program by nature, a loan crosses modules — a record DESIGN); `Program::source_of` is still a linear scan of ~60 ranges and now the residual in `arrival_by` (`source_lookup` exists but is not the default); and `compute_shared_read_bindings` (B267) adds a second whole-program `collect_written_roots()` walk beside the capture pass's",
+   "discussion": "perf-30's and rule1-30's finds (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Performance & footprint",
+   "body": "Four slices with profile diffs on the E121 exhibit and kolt's client, warm AND cold (see M58)."
+  },
+  {
+   "id": "M55",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — module-level SHARING across the platform axis: M52's union key was refused because kolt's browser leg is 82% of all base time and no seed union crosses the platform; the node legs load 48 and 49 sources from disjoint seeds but the FILES overlap — sharing a module's analyzed world across legs (and platforms where coloring allows) is where kolt's remaining base-cache headroom is",
+   "discussion": "perf-30's M52 conclusion and open question 2 (2026-09-08); OWNER Q — M19's next tranche or its own item",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Performance & footprint",
+   "body": "Measure the per-module overlap of kolt's three legs; design the key (module + platform + seed closure) against M19's record; pin the second node leg's `base` phase at ~0 on kolt's shape."
+  },
+  {
+   "id": "M56",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — R10's residue after T1d is the ENTRY's share of the sweep: 24,459 of 153,302 sites still walked, because the tier enumerates `expr_id_to_expr_map`/`variables`/`parameters` whole and ids minted after the world was stored fall in no range — removing it needs a source→entity index, §3.5's missing module boundary",
+   "discussion": "m19-t1d's find 2 (2026-09-08); the next tranche's shape",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Performance & footprint",
+   "body": "A per-source entity index built at record time; the tier enumerates the entry's sources only; measure the residue to ~0 on kolt's client."
+  },
+  {
+   "id": "M57",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — the corpus replay differential is BLIND to the R10 seam (and to T1b's): the golden corpus as modules declares almost no resource and none in a container, so a dropped-keys plant leaves `replay_differential` green — an R10 probe (a `List<Guard>` in every third module) would make the standing gate see it; it means editing a shared test function, which needs an owner's word or a lane that owns the file",
+   "discussion": "m19-t1d's find 1 and open question 1 (2026-09-08); OWNER Q",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Performance & footprint",
+   "body": "Give the differential's module fixture a resource-in-container probe and re-run the dropped-keys plant red."
+  },
+  {
+   "id": "M58",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — on a WARM analysis `post_analysis_passes` is 62.7% of the work (57.1% after M53): the warm profile is a different shape from the cold one, and every lane profile so far has used the cold one — the keystroke path is the warm shape",
+   "discussion": "perf-30's find 1 (2026-09-08); a rule for M briefs as much as an item",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Performance & footprint",
+   "body": "Profile a warm re-analysis of kolt's client on the `profiling` profile; name the top five warm items with Ir; queue the largest."
+  },
+  {
+   "id": "M59",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — build-30's two follow-ups: persist the leg RECORD into `dist/` so a plain `build` gets the schedule's edges (and the artifact-edge guard's redo) from the second build on, not only under `--watch`; and give the HMR round's own compile loop (`run --watch`, ~main.rs:1340) the same tiering — it writes `dist/` after the whole loop, so the guard's shape differs",
+   "discussion": "build-30's open questions 1 and 2 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Performance & footprint",
+   "body": "Two slices with the parallel_build.rs pins extended; measure kolt's three-leg wall on the second plain build."
+  },
+  {
+   "id": "N65",
+   "section": "N",
+   "kind": "hygiene",
+   "title": "NEW — ledger hygiene: parser CURATED rule statements (`CSS_BLOCK_IS_BRACE_INITIAL`, `IMPORTANT_HAS_NO_PLACE`, E153's `:hover` rule) are not enumerated by the ledger gate, so E153's \"row EDIT\" had no row to edit; and `resource_derive_refusal`'s message carries no ledger row at all (a helper-built `msg:` the ledger's checks cannot reach or miss) — unrowed messages, not red ones",
+   "discussion": "css-30's find 1 and smalls-30's find 3 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Hygiene & rot",
+   "body": "Enumerate the curated rule constants in the ledger's population check (row 229's twin for the css/parse constants) and row the helper-built message; pin both directions."
+  },
+  {
+   "id": "N66",
+   "section": "N",
+   "kind": "hygiene",
+   "title": "NEW — harness notes from Order 30: the replay harness drives kolt's client clean only with `pkg_root = <repo>/src` (the manifest's `root`) — the repo root gives 22 spurious \"cannot find … in the imported path\" errors and 39 sources instead of 69, a trap for anyone measuring a real package; `reused_source` and `container_site_visited` are two spellings of one predicate at two granularities",
+   "discussion": "m19-t1d's finds 4 and 5 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Hygiene & rot",
+   "body": "A doc line on the harness's `std_root`/`std_spec` helpers (or a manifest-reading helper that finds `root`); one predicate taking either granularity."
+  },
+  {
+   "id": "N67",
+   "section": "N",
+   "kind": "process",
+   "title": "NEW — two rulings the hygiene lane left: does N63's \"every on-disk cache under `dist/.cache/`\" include `dist/.build-hooks.json` (a stamp under build-hooks §3.3 Q2, deliberately not moved), and build-hooks.md:1035's Q5 (`generated` as a second module root \"since a subdirectory cannot be imported today\") is overtaken by A65 — the generated root can be an ordinary subdirectory of `root` (`src/lucide/*.vl` resolves as `pkg::lucide::*`; the manifest key `generated_root_problem` still exists)",
+   "discussion": "hygiene-30's open question and N64's reported note (2026-09-08); OWNER Qs on the build-hooks paper",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "CLI & workflow",
+   "body": "Two one-line rulings; then either a move plus a §3.3 edit, or a note that the stamp is not a cache; and the paper's Q5 rewritten."
+  },
+  {
+   "id": "N68",
+   "section": "N",
+   "kind": "hygiene",
+   "title": "NEW — the weakest survivor of N61's wall-bound sweep: `service_layer.rs:1667` bounds a raw handshake at 2,500 ms against a 300 ms claim — not over a build, but still wall on a shared box",
+   "discussion": "hygiene-30's find 1 (2026-09-08)",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Hygiene & rot",
+   "body": "Bound the claim in retries or CPU, or decline under load (M27's rule)."
+  }
+ ]
+}

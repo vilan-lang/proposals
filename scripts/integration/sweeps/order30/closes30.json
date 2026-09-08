@@ -1,0 +1,270 @@
+{
+ "date": "2026-09-09",
+ "order": "Order 30",
+ "closes": [
+  {
+   "id": "B258",
+   "lane": "b258",
+   "commit": "1df74952",
+   "text": "MISCOMPILE, root in the CONTEXT pass: `settle_strict` promoted safe candidates to strict over `dispatch_refine::candidates_of`, a NAME-keyed list, so `RemoteSource`'s strict override of `Source::map` promoted a `SignalCell` FIELD's inherited default in `status` — the default's `get_safe()` became `Some(<hidden>)`, `status` grew a bare-owner parameter, and the call reached `Owner::take` on undefined. Silent because coverage read the receiver-narrowed `refined_edges` while needs/strict/threading read the union. Fix: `dispatch_refine::known_receiver_candidates` extracted and shared, so the two cannot drift; the mirror's `map` back onto the trait (`or` stays inherent). Pins: the user program (default(cell) under undefined → no scope), the fence control, A25's four green. Residue: B279 (the structural guard and the sweep of name-keyed consumers)"
+  },
+  {
+   "id": "B267",
+   "lane": "rule1-30",
+   "commit": "740ea1a8",
+   "text": "the CELL-AWARE last-use elision: a binding fed by `cell.read()` may alias the cell when it is never mutated in place, never at a value seam, not opaque to the last-use walk (closure captures refuse), and the cell's storage is safe — no in-place write to that cell (a `write() = x` REBINDS and leaves the old value: `bind_each`'s `row_views`/`row_owners`), or a rebind orphans the read first on the declaring block's straight line (`drain`'s clear ENDS the aliasing). Cell identity is a union-find over slots. Alone it moves no emitted byte (pinned); with B256 it is what makes the ruling free. `compute_shared_read_bindings` adds a second whole-program `collect_written_roots()` walk (M54)"
+  },
+  {
+   "id": "B256",
+   "lane": "rule1-30",
+   "commit": "3f00157d",
+   "text": "LANDED on the ruling's bar after B267: a `Shared::read()` result is a PLACE for the clone pass (`is_shared_read`; `consider` admits it minus B267's elisions; `returned_value_places` reads a read leaf through to its receiver, so `SignalCell::get` copies at its return; `shared_read_value_type_id` reads the receiver's payload type — the extern's abstract `T` had collected identity clones on every scalar read). Node CPU, medians of nine at loadavg ~150: `bind_each` 500 rows −0.9%, A44's selector +1.6%, the batch drain byte-identical, against +20/+12/+25 last cycle; a raw `get()` of a 1,000-element list +544%, the fix itself. Std gains exactly one clone site; corpus census 305 → 319. Find: `shared.read().push(x)` still grows the cell (B274)"
+  },
+  {
+   "id": "B270",
+   "lane": "css-30",
+   "commit": "9ba73762",
+   "text": "the css block's seed is HYGIENIC: `Node::StdItem(module, item)`, a node no source can spell, resolved through std's own namespace (`Analyzer::std_item_id`); the element form's `view` the same; the loader seeds `std::style`/`std::ui` off the reference. Pinned under a real `prelude = \"std::web\"` manifest (was \"`style` is a module, not a value\"), a local `let style`, `import … as s`, nothing imported; the element under a local `view`. Ledger row 360 DELETED — A35's shadow message cannot fire once the callee is hygienic"
+  },
+  {
+   "id": "A68",
+   "lane": "css-30",
+   "commit": "8497af44",
+   "text": "a css block is `const` by construction: the desugar wraps its chain, a written `const css {…}` is byte-identical, a runtime hole is refused at the hole; the guide's examples drop `const`"
+  },
+  {
+   "id": "A69",
+   "lane": "css-30",
+   "commit": "fb074b8b",
+   "text": "chain links inside a block: `css-item = declaration | rule | link`, a dotted item ending in `;` is a verbatim `Style` call at its written position; the link accessor keeps the name's own span (hover and go-to-definition see the method); a BARRIER for both printers, parens reproduced as written; kolt's helper shape called from a block end to end (dd73b704 the follow-through)"
+  },
+  {
+   "id": "A70",
+   "lane": "css-30",
+   "commit": "e24d1bac",
+   "text": "`std::style::prelude` (`vilan/std/src/style/prelude.vl`, an A65 module directory): free-function aliases of the typed tokens, AMBIENT for every expression inside a block — holes, condition-head arguments, link arguments (widened past the item's letter, since A69 created the link position) — via `Node::CssScope`, site scope first; importable in any block (`import std::style::prelude::{ rem, s };` binds bare); not in scope outside a block (pinned). Kolt's `button_style_base` 392 → 260 characters, `default_panel_style` 193 → 158"
+  },
+  {
+   "id": "A34",
+   "lane": "css-30",
+   "commit": "5169b537",
+   "text": "mid-value tokens: each hole of a multi-piece value goes through `std::style::piece` over a NEW `CssPiece` trait (not `CssValue` widened — that would have legalized `raw(\"padding\", 4)` and lost the unit guard), so `border: 1px solid {Color::gray(500)}` emits `var(--gray-500)` AND its `:root` line; impls str/i32/f64/u32/BigInt/bool/Length/Color; ledger row 355 edited in place"
+  },
+  {
+   "id": "E153",
+   "lane": "css-30",
+   "commit": "4afb7a3e",
+   "text": "a curated parse rule for `:hover {` naming `.hover` (the 21st `ParseErrorReason::Rule` site — row 229's count moved at integration), and PROPERTY-NAME completion inside a block from `css_properties.rs`, a static versioned CSS property index with provenance, offered behind std's slots in canonical order; two table gates in `style_table_sync.rs`"
+  },
+  {
+   "id": "A64",
+   "lane": "css-30",
+   "commit": "ruling",
+   "text": "RULED in css-block.md §15: `.when` for state that changes the RULE SET (only a computed style adds a selector-shaped rule; cost an O(slots) `class_list` rebuild per notify, unpriced, exhibit named), CSS variables through `Color::var`/`declare` for state that changes a VALUE, data attributes only as a hook for something outside the style system; the compound-condition steer stays `match`"
+  },
+  {
+   "id": "B268",
+   "lane": "view-30",
+   "commit": "774d68c7",
+   "text": "the CHILD CONTRACT, root in the compiler: an impl's bound ARGUMENTS were dropped when matching it to a receiver on both sides (`impl_bounds_hold`'s `generic_bound_trait_ids`, `impl_select::subject_applies`'s `bound_trait_ids`), so `impl type S: Source<str>` applied to a `SignalCell<View>` and two blankets over one trait at different arguments could not coexist; both read the bound at its arguments now, the emission filter narrows but never empties. The trait stays `Slot` (it already was the contract); new arms `Source<View>` (replace the element) and `Source<List<View>>` (replace the run) with SSR twins; the static `List<View>` arm is A46's door. Kolt's views.vl:543 hack goes. Red first: `[object Object]`. Residue: B275 (supertrait argument threading), A71 (position on replacement)"
+  },
+  {
+   "id": "A66",
+   "lane": "view-30",
+   "commit": "1cc7e632",
+   "text": "`View::toggle_attr<S: Source<bool>>(name, source)` — presence, not value — with `Element::remove_attribute` and the SSR twin; pinned never `\"false\"`, dead after dispose"
+  },
+  {
+   "id": "A60",
+   "lane": "view-30",
+   "commit": "5b22616d",
+   "text": "`View::show()` was a NO-OP on every flex container: app rules are emitted UNLAYERED and outrank every layer, so no `vilan.overrides` layer could beat `.sX{display:flex}` and `!important` is refused — `show` writes inline `display:none` and restores the element's own inline value (`Element::style_property`, empty removes); the `hidden` attribute still set; SSR twin writes both. Plus `flex_grow` beside `flex_shrink` (and its sorter row), `Color::current()`; `Length::full` confirmed a non-gap (`pct(100f)`)"
+  },
+  {
+   "id": "A57",
+   "lane": "std-30",
+   "commit": "3bf4a8c6",
+   "text": "a typed `Storage` handle: `window().local_storage()`/`session_storage()` → `len`, `key_at → Option`, `get → Option`, `has`, `set`, `remove`, `clear`; the six free functions stay as the one-key form; process twin DECLINED (the cross-platform error beats a diverging in-memory map); `storage_handle.rs` pins incl. a missing key as `None`. Kolt deletes its `storage.vl:6–41`. Residue: key iteration (A73)"
+  },
+  {
+   "id": "A58",
+   "lane": "std-30",
+   "commit": "cfd98359",
+   "text": "`Event::code`, `target`, `current_target` on the browser `Event` (no process twin exists for `std::dom`); dom-30 declared `target` too and integration kept one. Kolt deletes three extern blocks"
+  },
+  {
+   "id": "A61",
+   "lane": "std-30",
+   "commit": "e6d091b9",
+   "text": "`str::parse_bool(): Option<bool>` beside `parse_i32`/`parse_f64` — `\"true\"`/`\"false\"` only, trimmed (a parser wider than its writer adopts another producer's convention); corpus `parse-bool.vl`. Kolt deletes prefs.vl's three impls and imports `Display`"
+  },
+  {
+   "id": "A63",
+   "lane": "std-30",
+   "commit": "fd492291",
+   "text": "`std::time::Debounce { new(delay), run(fn), cancel() }`, trailing edge, the deadline pushed per call, the callback replaced; three `Shared` cells each justified, kolt's TODO answered in the doc (rule 1 §6.1 + rule 3 §6.3); base layer, `cancel()` the teardown; an exact-sequence pin over seven phases. Residue: `flush()` (A73), inert after a nursery cancellation (B277)"
+  },
+  {
+   "id": "A59",
+   "lane": "dom-30",
+   "commit": "f19313a6",
+   "text": "`std::dom` measures, observes and un-sets: `DomRect` value with `right()`/`bottom()`, `Element::bounding_rect`/`offset_width`/`offset_height`/`is_connected`/`contains`/`query_selector_all`/`remove_attribute`, capture-phase `listen_capture` on `Element` and `Window`, `[must_use] observe_resize` over a raw `ResizeObserver`; PREMISE CORRECTED — no process twin exists (the browser layer is single-platform), the honest zero lives in the DOM stub, which grew measurement, capture tables, dispatch order and a ResizeObserver. Kolt's overlay.vl drops ~16 externs"
+  },
+  {
+   "id": "A62",
+   "lane": "dom-30",
+   "commit": "0b429daf",
+   "text": "`std::router` reads: `PathParts { segments, query: Map<str, str>, fragment: Option<str> }`, `parse_path`, `parse_query`, `percent_decode` (total), `location_url()`; the trait shape the language admits is `trait FromPath { fun from_segments(parts): Self }` plus a free generic `from_path<R: FromPath>` (a trait default calling `Self::from_segments` is refused). Kolt's routes.vl parse pair becomes `impl Route with FromPath`. Residue: `segments` raw vs decoded, no signal over the full URL (A72)"
+  },
+  {
+   "id": "B261",
+   "lane": "solver-30",
+   "commit": "877bebf3",
+   "text": "the implicit binder's face is `impl Add` (`impl Signal<List<i32>>` with arguments): it stands where a type stands and invents no binder; scoped to the operator OPERAND labels, deliberately not planted in `pretty_print_type_inner` (that would pre-empt B211's same-trait collision, the owner's); the implicit-subject steer arm hoisted above B233's (the old steer bound a name no parameter has). Row 346 unchanged (its key is all slots)"
+  },
+  {
+   "id": "B262",
+   "lane": "solver-30",
+   "commit": "da549cde",
+   "text": "B251's written-argument bound check reaches enums and traits (`nominal_bound_owner`); refusal reuses row 401; census over the estate: four bounded structs, two bounded traits, zero bounded enums, every application satisfied — zero new refusals. Find: an impl's `with` CLAUSE is checked by nothing (B273)"
+  },
+  {
+   "id": "B263",
+   "lane": "solver-30",
+   "commit": "9b722ab6",
+   "text": "the filing's diagnosis was wrong: the bound-driven recovery existed; `freshen_list_element_slots` ERASED the element because its test (\"an unbound generic\") is true of a caller's rigid `T` as of `List::new()`'s own parameter — guarded by `generic_is_enclosing_binder` on the declared-function return path only; not an impl-body rule (a free generic function failed identically). Residue: the external-function path is unguarded (B280)"
+  },
+  {
+   "id": "B259",
+   "lane": "smalls-30",
+   "commit": "7e5649f5",
+   "text": "B248's siblings: the refusal moved to the four block-bearing heads of `parse_secondary_inner` (`refuse_block_like_continuation`), recovery consumes a `.` chain WHOLE, all four shapes one diagnostic; late find inside the item — `=>` is a `Token::Op`, so the widened refusal ate match-arm arrows until `=>` joined the exclusion set as a separator (pinned)"
+  },
+  {
+   "id": "B260",
+   "lane": "smalls-30",
+   "commit": "a011c61e",
+   "text": "the missing-member diagnostic's HEAD names the trait with its arguments (`'Source<i32>'`) via `trait_label_with_arguments`; row 132 edited in place; B197's operator arm shares the slot and follows"
+  },
+  {
+   "id": "B265",
+   "lane": "smalls-30",
+   "commit": "0e0978f0",
+   "text": "intrinsics bind to `external fun` declarations only (`external_intrinsic_declaration` gates all six tables plus `list_new_fn_id`/`list_push_fn_id`); a bodied `List::remove` in a scratch std keeps its body (new `intrinsic_binding.rs`); the reach was std authors only"
+  },
+  {
+   "id": "B266",
+   "lane": "smalls-30",
+   "commit": "e7c435d4",
+   "text": "a generic `[service]` subject gets one curated refusal at the attribute (`service_generic_refusal` in the `Node::Service` arm above the backend split), five cascade diagnostics → one; ledger row 406"
+  },
+  {
+   "id": "B264",
+   "lane": "editor-30",
+   "commit": "c09aacf3",
+   "text": "type-position import aliases per TypeScript, and the check RAN (typescript@5's LanguageService): go-to-definition resolves through, hover shows `(alias) …` with the target's signature, rename at a use renames the alias and its uses, at the original the original. Red-first found a struct-literal alias head (`Spot { x = 1 }`) whose derived span let `rename Point` write `zzz{ x = 1 }` — anchored now. Residue: `narrow` trusts derived spans elsewhere (E158)"
+  },
+  {
+   "id": "E152",
+   "lane": "editor-30",
+   "commit": "86c9e559",
+   "text": "a pure-namespace module segment points at its first child's file, line 1 (a `Location` is a text-document range); hover names what it holds; references pinned unmoved; `Program` publishes `module_children_scopes`"
+  },
+  {
+   "id": "B269",
+   "lane": "editor-30",
+   "commit": "d85838ce",
+   "text": "measured before the fix: the `_`-bound, bare-statement and `const { … }` block forms all painted the callee gray (the `_` exempts the binding, so the walk never followed its const edges); every `const` region is a ROOT now (`CallGraph::const_regions` + `walk_const_region`, edges out without recording the region); the emission still omits the callee. Broader than the three shapes: a const callee inside an unreached function body is non-gray too (defensible — const_eval evaluates it)"
+  },
+  {
+   "id": "B271",
+   "lane": "editor-30",
+   "commit": "4783d045",
+   "text": "`View::autofocus()` is frame-aware and bounded: microtask, next frame, the frame after, then stop — `std::dom::request_animation_frame` (browser layer) and `Element::matches`; the docs state the precondition (connected, rendered, visible, not inert) and stop claiming `autofocus` equals `on_mount(focus)`; DOM stub grew `visibility`, `activeElement`, `matches(\":focus\")`, a driven frame clock. The on-shown/`<dialog>` shape is documented, kolt's overlay already implements it"
+  },
+  {
+   "id": "E150",
+   "lane": "fmt-30",
+   "commit": "2c9a9301",
+   "text": "RULED count: a braced `match` leg body stays an expression mid-line (E146 rule 2's shape one construct over; braces kept so the token net holds), and `for` conditions and `match` subjects take E147's split permission (69a8e0b0); the count threshold stays. Residue: the `for`-in iterable (E154)"
+  },
+  {
+   "id": "E151",
+   "lane": "fmt-30",
+   "commit": "fb28428c",
+   "text": "the element-head attribute sorter: attributes lead (`id name type for href src`, then alphabetical), `on:` handlers follow alphabetically, dotted links are BARRIERS holding their index; a head with a comment is refused; a token-level twin `sort_element_heads` in `normalize`; commutation proved in `element_head_order.rs` by rendering both orders (equal modulo attribute-set order, non-vacuous) with a string-literal multiset over the emitted JS. Kolt: four heads reorder. Ruling owed: the evaluation-order bargain (E156)"
+  },
+  {
+   "id": "M48",
+   "lane": "m19-t1d",
+   "commit": "658745f5",
+   "text": "M19 tranche 1d: R10 joins the Class A window with a second `class_a_checks!` block; all three tiers skip a reused module; `ModuleDiagnostics.container_structures: Vec<String>` unioned back before any check; no fingerprint needed — types are not interned, so an id names one occurrence in one file and the instantiation set is partitionable by construction (paper subsection). Kolt's client (69/69 reused): R10 sites walked 153,302 → 24,459, R10 thread CPU 280–340 → 60–70 ms, leg CPU per keystroke medians 6,230 → 6,070 ms (debug, loadavg 120–161; release declined, no quiet box). Residue: the entry's share of the sweep (M56), the differential blind to the seam (M57)"
+  },
+  {
+   "id": "M49",
+   "lane": "perf-30",
+   "commit": "fd51eb16",
+   "text": "the resource-reaching nominal fingerprint split by DECLARING SOURCE (entry versus world; derived/unattributed to the world half), so two entries differing in a resource share one enrolment record (pinned, the second walks a tenth); `LastUse::compute` re-priced — cold 1.88%, warm 1.70%, the restore works (`walk_block` 3.3% of warm) and what it misses is `collect_unfollowable_loans` (68%, whole-program by nature), restored tables cloned into the walk state, `compute_view_origins` — a record design, reported not taken (M54)"
+  },
+  {
+   "id": "M50",
+   "lane": "perf-30",
+   "commit": "2ae38a3e",
+   "text": "M24's denomination measured at 24.1× (4,701,037 B resident per world against 194,843 recorded, release and debug agree; the leaked ASTs and interned tables are process-global and rightly not counted — the gap is the analyzer's derived tables): `BASE_CACHE_RESIDENT_BUDGET` 512 MiB over `BASE_CACHE_WEIGHT_FACTOR` 24, the env knob re-denominated, M46's budget re-derived from the resident constant; a pin holds the measured factor within 3× of the shipped one"
+  },
+  {
+   "id": "M52",
+   "lane": "perf-30",
+   "commit": "c993961c",
+   "text": "REFUSED with the numbers: kolt's seed sets share only `json`, and the CLIENT is browser-colored, which no union can cross — the browser leg is 82% of all base time (681.8 of 829 ms); a union would win 74 ms, pay a superset world per leg, and put an unimported module's impls in scope. Pinned: legs share one world exactly when their seed sets agree. The real follow-up is module-level sharing across the platform axis (M55)"
+  },
+  {
+   "id": "M53",
+   "lane": "perf-30",
+   "commit": "7fe26f99",
+   "text": "four slices with profile diffs: path handling → `Program::source_layers` (`_starts_with` 261M Ir → 0, `Components::next` 179M → 0, `arrival_by` 311M → 76M); `const_eval::State::new` 120.6M → 98K (`LocalIndex` built once, `source_lookup`); `infer_type_path`'s `constraint` as a `Cow` −0.238% (the estimate); `Node` at 96 bytes (five item declarations boxed by field; the ceiling pin stops there). Cold kolt client −8.20% Ir, the exhibit −4.54%, a warm re-analysis −12.86%; control +0.0006%"
+  },
+  {
+   "id": "M51",
+   "lane": "build-30",
+   "commit": "720453c5",
+   "text": "`build` walks TIERS: `schedule_tiers` over the leg DAG, only `compile_unit` overlaps, every writer serial in schedule order (so `bundled_names`' blame is the schedule's and needs no lock), `explain::leg_facts` captured per leg and replayed, per-leg results merged after the join, the first failing leg in schedule order; M35's warm-up compiles the round's first leg alone; `VILAN_SEQUENTIAL_BUILD=1` the reference. A hazard the audit missed and the lane guarded: a plain build has no edges from a previous round, so a leg whose sources include a same-tier sibling's artifact is compiled again. Kolt's three legs: wall 23.8 → 15.7 s at flat CPU (release, loadavg ~120). Five red-first pins. `check_single` stays serial. Residue: the leg record into `dist/`, the HMR round (M59); bundling legs never `Fresh` under watch (B276)"
+  },
+  {
+   "id": "N59",
+   "lane": "hygiene-30",
+   "commit": "72520330",
+   "text": "corpus node children get a per-run scratch cwd (removed after a clean run); the `file-corpus-*/` ignore line and its comment dropped; a pin that two runs never share one and nothing is left behind"
+  },
+  {
+   "id": "N60",
+   "lane": "hygiene-30",
+   "commit": "ee901d6b",
+   "text": "FOUR `wait_for_port` copies → one in `tests/support/port.rs` (no deadline, which deletes `split`'s 30 s and `init`'s 20 s); `release_emission.rs`'s fixture canonical; row 229's population is `RULE_STATEMENT_SITES`, gated against the tree (twenty, twenty-one after css-30)"
+  },
+  {
+   "id": "N61",
+   "lane": "hygiene-30",
+   "commit": "5c7893ac",
+   "text": "three wall bounds over a build in `service_layer.rs` replaced by handshake COUNTS; the sweep's list recorded (loop deadlines and two margins left; `:1667`'s 2500 ms is the weakest survivor, N68)"
+  },
+  {
+   "id": "N62",
+   "lane": "hygiene-30",
+   "commit": "2b5592a3",
+   "text": "`reachability_and_depth.rs`: B254's removed edge pinned absent (red first with `members_named` planted); B244's `substitution_peak()` measured over the corpus (11 max) and bounded at 24; a stale `dispatch_candidates` comment fixed"
+  },
+  {
+   "id": "N63",
+   "lane": "hygiene-30",
+   "commit": "69492cf6",
+   "text": "RULED and done: `dist/.cache/macro-expansions`; a fresh `check` leaves exactly `.cache` and that file (pinned); the ignore lines become `dist/`; `dist/.build-hooks.json` deliberately not moved (a stamp under build-hooks §3.3 Q2 — the owner's word if it should be, N67)"
+  },
+  {
+   "id": "N64",
+   "lane": "hygiene-30",
+   "commit": "3745cd9a",
+   "text": "the tour had NO keyword list at all — `## Reserved words` with all 32, gated both ways against `lexing::KEYWORDS`; names.md §4.1 gains the parent-load paragraph (verified: the parent is analyzed, emission follows reachability); build-hooks.md:1035's Q5 reported as overtaken by A65 (N67)"
+  }
+ ]
+}
