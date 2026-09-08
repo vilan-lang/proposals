@@ -269,6 +269,16 @@
    "status": "OPEN — Order 30's finds (2026-09-09)",
    "area": "Hygiene & rot",
    "body": "Bound the claim in retries or CPU, or decline under load (M27's rule)."
+  },
+  {
+   "id": "N69",
+   "section": "N",
+   "kind": "hygiene",
+   "title": "NEW — `element_view_import_note` (analyzer.rs ~21871, \"element syntax lowers to std::ui::view; add `import std::ui::{ view, View };`\") is UNREACHABLE after B270 whenever std holds `ui::view`: the element seeds a scope-independent `std::ui::view` and a miss degrades to the site's scope only when std lacks the item; the note has no ledger row, so no gate notices a dead note — and the seal found the only pin of the old behaviour in vilan-lsp (the add-import quickfix's element target), which no lane gate ran",
+   "discussion": "the Order 30 seal repair (2026-09-08): the quickfix pin re-aimed at the `View` type; B270's element side pinned from the editor too",
+   "status": "OPEN — Order 30's finds (2026-09-09)",
+   "area": "Hygiene & rot",
+   "body": "Delete the note (its steer is now false: no import is needed) or narrow it to the std-without-`ui` case with a pin; sweep the docs for \"add `import std::ui::{ view, View };`\" (element-syntax S4). Process rule filed with it: a lane that changes WHAT a diagnostic fires on runs `-p vilan-lsp` too — the quickfix and steer pins live there."
   }
  ]
 }
