@@ -1947,3 +1947,19 @@ PROCESS:
   and regenerated over the merged tree with the merged compiler — the pattern held.
 - No `git stash`, no pattern kills, no 1Password outage this order. Every sweep artifact was
   written to the repo as it happened (notes29.md), nothing to the scratchpad as a record.
+
+## a65 — a single lane between Orders 29 and 30: module directories (2026-09-07 → 2026-09-08)
+
+Opened on the owner's "Go on A65 as its own lane now" of 2026-09-07 off a5473227; one Opus lane,
+three commits (cd2ff4c5 core, 8e08af4e editor, 7e5db561 spec/docs). MERGED at 0a2ab908, ledger
+row 405. SEALED 2026-09-08 at f0f4e301 after one repair — the new `module-dirs` corpus golden had
+no row in the copy-elision census (zero copies, total unchanged); union 6690/6690, clippy, the
+Windows cross-check, audit, fmt green locally, parity 224/224; CI GREEN on all eleven jobs (run
+34175510571; the first run at 0a2ab908 was red on partition 1 of both OSes for the census). The
+verdict: a package's modules may live in directories under Rust's rule — `a.vl` or `a/lib.vl` is
+the body, `a/b.vl` is `a::b`, a bodiless directory is a namespace whose refusal names its
+children; submodules are NOT brought into scope by a parent import (pinned); the editor knows
+the tree. One close (A65), three filed (A67 the item-versus-file collision ruling, E152 the
+namespace's nowhere-to-point, N64 three doc notes). Kolt's `lib/` move follows on the sealed tip.
+PROCESS: my CI watcher twice looked for the run before GitHub had created it and watched
+nothing — the run id must be read after the push has propagated, not after a fixed sleep.
