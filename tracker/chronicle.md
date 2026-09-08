@@ -1963,3 +1963,20 @@ the tree. One close (A65), three filed (A67 the item-versus-file collision rulin
 namespace's nowhere-to-point, N64 three doc notes). Kolt's `lib/` move follows on the sealed tip.
 PROCESS: my CI watcher twice looked for the run before GitHub had created it and watched
 nothing — the run id must be read after the push has propagated, not after a fixed sleep.
+
+## Order 30 — cycle 48: the miscompile, the rule 1 landing, the css block made usable, the rpc paper (2026-09-08 → )
+
+Opened on the owner's "Go" of 2026-09-08, off f0f4e301 (a65's sealed tip, CI green there).
+Fifteen lanes: b258 (TOP: the default-override miscompile through an inherited field), rule1-30
+(B267 the cell-aware last-use elision, then B256 landed on the numbers), css-30 (B270 first —
+the block seeds a bare `style` and fails under the web prelude — then the paper section and
+A68 auto-const / A69 chain links / A70 the hole prelude / A34 / E153), rpc-paper-30 (transport-rpc
+§9 from the owner's three points: per-connection mutable state, return-typed signal handles,
+client-declared functions; A53–A56 fold in; paper only), view-30 (B268 the `Child` trait,
+A66 `toggle_attr`, A60's `View::show` no-op on flex containers), std-30 (A57/A58/A61/A63),
+dom-30 (A59/A62), solver-30 (B261/B262/B263), smalls-30 (B259/B260/B265/B266), editor-30
+(B264 per TypeScript, E152, B269, B271), fmt-30 (E150/E151, LAST), m19-t1d (M48), perf-30
+(M49/M50/M52/M53), build-30 (M51), hygiene-30 (N59–N64). Rulings in force: A67 the ambiguity
+error; `.hover` stays, `:hover` gets a steer; the `Child` trait before any `View`-as-trait
+decision; the rpc proxy injected through `Connection`. Held: the cut (kolt under test), A46's
+form, B183's six, M36's fork harness, A64 (rides css-30's paper section).
