@@ -1,6 +1,6 @@
 # P6 follow-ups — the post-completion ladder (2026-07-02)
 
-P6 (transport/RPC) shipped end to end: phases 0–6 of `transport-rpc.md` §11, the
+P6 (transport/RPC) shipped end to end: phases 0–6 of `transport-rpc.md` §12 (was §11 before the 2026-09-08 insert of §9), the
 codec arc (§6.1/§6.2 — prerequisites, visitor, both codecs, the single-pass
 re-plumb), the WebSocket transport (§5), and a solver pass that killed both
 known silent miscompiles. This file ranks what remains, with enough context to
