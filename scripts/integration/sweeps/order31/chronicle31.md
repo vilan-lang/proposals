@@ -9,7 +9,7 @@ integrator docs commit (65af4be0: the interleave caveat, B287). Twenty-two commi
 +6,074/−322. Ledger rows 407–411 assigned (next 412); CHANGELOG parity 283/283.
 
 SEALED 2026-09-09 at 65af4be0: union 6872/6872 (22 skipped); clippy, the Windows cross-check, audit and fmt green
-locally; CI GREEN on all eleven jobs (run @@RUN@@). The order's verdicts, against the owner's
+locally; CI GREEN on all eleven jobs (run 34383623175: ubuntu 16 and 16 min, Windows 19 and 20). The order's verdicts, against the owner's
 framing that rpc was the last feature blocking a functional kolt: PER-CONNECTION MUTABLE STATE —
 the generated dispatcher declares `mut self` and the routes capture the binding, so `&mut self`
 writes the connection's instance in place (B272), and `mut self` is refused so the silent loss
