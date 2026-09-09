@@ -14,7 +14,7 @@ for spec in "$@"; do
   crate=$(echo "$spec" | sed -n 's/.*-p \([a-z-]*\).*/\1/p')
   for t in $(echo "$spec" | grep -o -- '--test [A-Za-z0-9_]*' | awk '{print $2}'); do
     # present in HEAD, or ADDED by the lane (a new binary the gate names) — Order 30, hygiene-30
-    [ -f "crates/$crate/tests/$t.rs" ] || git cat-file -e "origin/$lane:crates/$crate/tests/$t.rs" 2>/dev/null || { echo "UNKNOWN TEST TARGET: -p $crate --test $t (no crates/$crate/tests/$t.rs in HEAD or on origin/$lane) — fix the spec"; exit 8; }
+    [ -f "crates/$crate/tests/$t.rs" ] || [ -f "crates/$crate/tests/$t/main.rs" ] || git cat-file -e "origin/$lane:crates/$crate/tests/$t.rs" 2>/dev/null || git cat-file -e "origin/$lane:crates/$crate/tests/$t/main.rs" 2>/dev/null || { echo "UNKNOWN TEST TARGET: -p $crate --test $t (no crates/$crate/tests/$t.rs in HEAD or on origin/$lane) — fix the spec"; exit 8; }
   done
 done
 git merge --no-ff --no-commit "origin/$lane" >/dev/null 2>&1; echo "merge exit=$? (non-zero = conflicts to resolve)"
