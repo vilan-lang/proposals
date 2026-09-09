@@ -1374,17 +1374,20 @@ on the server struct and `[client_service]` on the handler struct, both attribut
 struct for peer-to-peer. The alternative is the owner's
 `[service_server(MyClientService)]` / `[service_client]`, which reads better in isolation
 but renames the shipped attribute and moves every existing service's diagnostics. §9.3.
+> **RULED 2026-09-09 (owner): as recommended.** Built by lane reverse-31 (Order 31).
 
 **R2 — does `[expose]` stay?** Recommend YES, as sugar for a zero-argument getter, with
 its `expose:` contract-surface entry kept verbatim so no shipped hash moves. The
 alternative (delete it; write the getter) is one fewer concept but moves every existing
 service's hash and costs kolt two rewrites for no behaviour change. §9.2, §9.4.
+> **RULED 2026-09-09 (owner): YES.** Verified empirically by handles-31: a handle-free service hashes byte-identically (78bdada7 frozen at c3ed9239).
 
 **R3 — the release policy.** Recommend EXPLICIT: `Unsubscribe` stays demand-only
 (lease-zero, unchanged), and a new `Release(channel)` is sent when a mirror carrying an
 `origin` is disposed. Lease-zero release alone is the alternative and it is wrong for the
 same reason A41 recorded — a remount re-acquires on the same id, and a channel dropped at
 lease-zero is silently dead. §9.2.
+> **RULED 2026-09-09 (owner): REVERSED — demand decides; no `Release` frame.** Out of the owner's own SolidJS auto-dispose experience (the unmount-then-mount window inside one tick): lease-zero defers to the turn's settle and then one microtask look; an `Unsubscribe` on a DYNAMIC channel is a revoke; a re-acquire re-mints from the mirror's `origin` (the cached value stays as the seed); a never-leased handle goes with its ambient owner. The `origin` field closes A41's long-gap remount, which was this paper's reason for the frame. As built (handles-31), the hop is the ORIGIN-CARRYING mirror's only: applied to every mirror it reds four ratified A25 pins (`remote-sources.md` §2's promise that a close with no ambient turn goes now), and the keyed per-key lease got no hop — both open for the owner (§9.6).
 
 **R4 — may a server→client call be awaited in v1, or notifications only?** Recommend
 NOTIFICATIONS ONLY in v1: fire-and-forget needs no pending table, no reverse reply lane,
@@ -1392,11 +1395,13 @@ and cannot deadlock, and it covers the owner's exhibit and kolt's first use. Awa
 calls need §9.3's receive-loop change (the same-chunk serialization is a real deadlock
 today) and a turn/flush sentence in the guide; both are v2 work with a red-first pin
 available. §9.3.
+> **RULED 2026-09-09 (owner): NOTIFICATIONS ONLY in v1; the receive-loop fix landed now (B281).** Awaited calls are A81.
 
 **R5 — A55's `bind_each` sibling.** Recommend NO SIBLING: `or([])` is the binding saying
 what an unseeded list renders as, and the `Option` is the truth about a mirror that has
 not been told anything. `impl KeyedSource … with Source<Option<List<T>>>` IS to be built.
 §9.2.
+> **RULED 2026-09-09 (owner): NO SIBLING; the impl built** (keyed-31).
 
 **R6 — A56's two.** (i) Recommend REFUSING a `[expose(keyed = K)]` whose argument
 disagrees with the `Map`'s own key type, at the attribute, in the field's vocabulary —
@@ -1404,6 +1409,7 @@ one new ledger row; today the written argument silently wins (`rpc.vl:3093-3098`
 (ii) Recommend KEEPING 429 for `authorize_timeout`: 503 is the app's judgement
 (`Reject::Unavailable`, A52) and a std timeout is std's limit, not the app's judgement.
 Record on A48's tombstone and close A56. §9.2.
+> **RULED 2026-09-09 (owner): as recommended** — the refusal at the attribute (ledger row 407) and 429 kept, both by rpc-smalls-31; the rationale was already at the site (A52's lane) and the ruling record joined it.
 
 **R7 — replay idempotence (raised by this lane).** `reattach_mirrors` re-issuing a
 mirror's `origin` call re-runs a server method after a reconnect. Recommend that the
@@ -1411,6 +1417,7 @@ handle return type IS the opt-in — a method returning a source is a getter by
 declaration — with the sentence in the guide that such a method must be safe to re-run.
 The alternative is an explicit `[rpc(replayable)]`, which is honest but adds an attribute
 the author will forget. §9.2.
+> **RULED 2026-09-09 (owner): the handle return type IS the opt-in;** the guide carries the must-be-safe-to-re-run sentence (handles-31).
 
 **R-A38b — the `&mut self` hole (raised by this lane, §9.1).** `&mut self` on an `[rpc]`
 method is refused with a diagnostic pointing at the struct and recommending the receiver
@@ -1418,6 +1425,64 @@ the author wrote; `mut self` compiles and silently loses the write. Recommend (a
 generator honours `&mut self` as Q9 ruled, or failing that (b) the attribute refuses it
 in its own vocabulary and Q9's ruling is amended. What must not stand is the silent loss.
 Filed as a B item by this lane.
+> **RULED 2026-09-09 (owner): option (a), plus `mut self` REFUSED on an `[rpc]` method** (B272, mutself-31, ledger row 408). The mechanism was smaller than (a) assumed — see §14 Q9's amendment.
+
+### 9.6 As built — Order 31 (2026-09-09)
+
+Five lanes built §9.1's hole, §9.2's plain half and §9.3's notification half; what
+follows is where the tree deviates from the design above, so a reader of §9.2–§9.4
+knows which sentences are now history.
+
+- **§9.1 (B272).** The generated `dispatcher()` declares `mut self` and every route
+  captures that BINDING (spec §6.9), so a `&mut self` method writes the connection's
+  instance in place — no `Shared<S>` cell (built, measured, rejected: a copy per
+  connection, C9's resource pin regressed, a reflection field it forced). `mut self` on
+  an `[rpc]` method is refused at the attribute, span on the method.
+- **§9.2 recognition is the WRITTEN spelling.** `SignalCell<T>` and
+  `Option<SignalCell<T>>` only; the table's "any `S: Source<T>`" row is not
+  implementable — the expansion runs before types resolve. A user `Source` type in a
+  return position falls to the ordinary `[rpc]` Wire refusal; the element-Wire refusal
+  is ledger row 411.
+- **The export is the ROUTE's, not the outcome encoder's.** `reply_source(request, ..)`
+  over `RpcProtocol.connection`, stamped by `Service::new`/`factory` at the upgrade and
+  carried on the `RpcRequest`; `-1` on `local_rpc` and the connectionless POST leg is an
+  honest runtime failure (A78 asks for the compile-time refusal).
+- **`origin` is a struct** (`Origin { method, describers, reissue }`), not a pair: the
+  mirror holds the reactive duplex, not the rpc transport, so the re-issue seam is a
+  closure.
+- **R3 as ruled, and the hop's scope.** `Capability.dynamic`; `Unsubscribe` on a dynamic
+  channel runs `revoke` (`release_demand`; `stop` itself unchanged, so a hand
+  `session.stop` keeps A41's meaning); `acquire` re-mints; `release_unleased` is the
+  owner hook; `flush_close` hops one microtask — for origin-carrying mirrors only (see
+  R3's note). **This order added ZERO wire frames**; reverse-31 added one LANE.
+- **§9.3 without a pending table.** No `fresh_id`, no correlation, `DuplexEnd` UNTOUCHED
+  (§9.4's "extended" row is wrong); the reverse channel is a per-connection registry in
+  `std::rpc` fed by the socket layer. The proxy method is SYNC and void; the
+  async-coloring paragraph is A81's. The `s:` id bytes (`0x73` + 4-byte LE 0) exist and
+  are reserved. `connection.client()` is generic over a std trait (`ClientProxy`), `P`
+  resolved from the field's declared type — a generated `Connection` member would
+  collide across services. The handler instance rides `.with_handlers(instance)` on the
+  CONNECTED client, which is what makes "refused before any `s:` frame" hold by
+  construction (connect verifies the contract first), with an `early_serve` queue for a
+  server that notifies at `on_connect`. The `client:` entries are a SUFFIX of the
+  surface — what makes the byte-identical claim mechanical. Void `[rpc]` methods are
+  legal only on a client-side struct; the handler must be a same-module sibling (v1).
+- **A54's "irreducible" was the SERVER half's truth only.** The client half
+  (`KeyedSource::apply` reaching `index_of` per op, a `SignalCell` copying on `get`/`set`)
+  was reducible without changing the source type and is fixed. Carry the RATIO: for 10×
+  rows the diff path costs 12.1×, the cell 1.32× (0.0078 → 0.0103 ms per change per
+  connection). A bare `[expose]` over a `KeyedCell<K, T>` field is the direct spelling;
+  `keyed = K` remains what a `SignalCell<List<T>>` needs. The cell drops `T: PartialEq`
+  from the exposed element. `keyed_log_limit = 1024` → `Reset` on lag (open: per-cell?).
+- **Deferred, tracked.** The keyed RETURN mapping (`KeyedCell` → `KeyedSource` in a reply)
+  is A79 — unblocked by A54 and A74, unbuilt. Awaited server→client calls are A81. The
+  interleave hazard the receive-loop fix opens for an awaiting `&mut self` handler is
+  B287 (stated in the guide, unenforced).
+- **Owner questions left by the lanes.** The hop on every mirror or dynamic-only; the
+  keyed per-key hop; a curated refusal for a user `Source` return; `reattach_mirrors`'
+  new `replay` parameter on a public std fn; same-module handler only; an awaitable ack
+  for a void method's forward stub; the `__contract` route on a client-only struct;
+  bare `[expose]` over a `KeyedCell` as the keyed channel (the type decides).
 
 ## 10. Where it lives
 
@@ -1562,6 +1627,13 @@ paradigm needs:
 The agreed build order within phases 2–3 (2026-07-02): the `[rpc]`/`[expose]` checks first, then
 the `[trait_only]`/`[doc(hidden)]` hygiene attributes (§3.2), then `[service(Client)]`
 generation, then the real transports (phase 4), then phase 6's apps + benchmarks.
+
+7. **Sessions, handles, and the other direction** (L; §9) — **✅ Order 31, 2026-09-09**:
+   per-connection mutable state through `&mut self` (B272), return-typed signal handles
+   with the demand-decides release rule (A74), client-declared functions as notifications
+   (A75), the receive loop made non-blocking (B281), the delta cell and the keyed mirror
+   as a `Source` (A54, A55), the keyed-map refusal (A56). Left: the keyed return mapping
+   (A79), awaited reverse calls (A81), the `&mut self`-across-await rule (B287).
 
 The **codec** slice is complete (see §6's status block): the agreed order ran
 prerequisites → visitor → both codecs → the single-pass re-plumb, and the benchmarks
@@ -1720,6 +1792,24 @@ cross-references hold):
     `&mut self` as the sync optimization — a `&mut self` method is itself a promise that it does
     not await. No auto-wrapping magic; the field type is the developer's and signals the method's
     nature.
+    > **Built, 2026-09-09 (B272, ruling R-A38b option (a)).** Q9's prediction holds and the
+    > mechanism is smaller than it assumed: the connection does own the session and a
+    > `&mut self` method does mutate it in place per call, with no `Shared` — not because
+    > the generator re-borrows a cell, but because the generated `dispatcher()` declares
+    > `mut self` and every route captures that BINDING (spec §6.9), so a `&mut self` call
+    > through any route reaches it; `dispatcher()` runs once per connection under
+    > `Service::factory`, so the write survives to that connection's next call and no other
+    > connection sees it. Two clauses amended. First, **`mut self` is REFUSED on an `[rpc]`
+    > method** (span on the method): it is the receiver whose copy is discarded when the
+    > handler returns — the silent loss §9.1 measured; the admitted spellings are
+    > `&mut self` (a write the next call must see), `Shared<T>`/`Signal<T>` (state something
+    > other than a method body must reach) and an `[expose]`d cell (state with a wire behind
+    > it). Second, the async clause is over-cautious as built: an `async fun f(&mut self)`
+    > `[rpc]` method compiles today and its write persists, because the no-view-across-await
+    > rule is still deferred and the awaits sit inside the callee; "a `&mut self` method is
+    > itself a promise that it does not await" therefore has NO enforcement behind it, and it
+    > became load-bearing the moment B281 let one connection's handlers interleave — B287,
+    > stated in the guide, ruled by the owner.
 - **Q10 — server-handler decode ergonomics.** `arg(req, i)` reads clean on the happy path; a
   malformed argument wants `arg -> Result<T, RpcError>` + a `?`/try to stay terse (else a
   handler regrows a per-argument match). This is really a **general error-handling dependency**
