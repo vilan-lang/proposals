@@ -1,0 +1,154 @@
+{
+ "items": [
+  {
+   "id": "B282",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — an `[rpc]` method with a parameter named `request` does not build: `route_block` emits `\\|request\\| { .. let request: str = arg(request, 0); .. }`, so the author's parameter shadows the closure's — `[rpc] fun send(self, request: str): str` fails with \"Expected RpcRequest, but got str\" spanned on the STRUCT; only `request` collides (`reason`, the decode arm's binding, is safe)",
+   "discussion": "mutself-31's find 1 (2026-09-09); left alone mid-order because `route_block` was three lanes' territory",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Gensym the route closure's parameter and thread it into `arg(..)`/`decode_failed(..)`; pin the `request`-named parameter."
+  },
+  {
+   "id": "B283",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `at_settle` reached from a subscription's RELEASE HOOK resolves the turn the closure captured AT CREATION, so a `RemoteSource`/`KeyedSource` lease taken outside a turn and disposed-and-rebuilt INSIDE one gets NO same-turn cancellation — the plant run measured `same-turn:up=2 down=1` (two frames up, one down, for a rebuild the guide promises churns nothing); the guide's \"re-renders in place churn nothing\" is true only for subscriptions born inside that turn",
+   "discussion": "handles-31's find 1 (2026-09-09), evidence from the hop pin's plant",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Resolve the deferral against the turn AMBIENT AT RELEASE (the draining turn, else the ambient one) rather than the captured one, or document the capture rule and make `lease` capture at the right site; pin the outside-in shape."
+  },
+  {
+   "id": "B284",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `[expose]` on a `[client_service]`-ONLY struct is a silent no-op: it compiles, contributes an `expose:` entry to that struct's hash, and nothing ever mints the channel (no `__attach`, no reactive session client-side) — `[client_service] struct Handlers { [expose] tally: SignalCell<i32> }` builds and prints a hash",
+   "discussion": "reverse-31's find 1 (2026-09-09)",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Refuse at the attribute in the field's vocabulary (a client-side struct has no reactive session to export into); one ledger row; a must-fail pin."
+  },
+  {
+   "id": "B285",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `[expose(keyed = K2)]` over a `KeyedCell<K, T>` with `K2 ≠ K` is silently IGNORED: the type's `K` wins (it must — `expose_keyed_cell` and the mirror are typed at it), which is the same silent-preference family R6/A56 just closed for the `Map` form",
+   "discussion": "keyed-31's find 1 (2026-09-09); one arm beside row 407's",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Refuse at the attribute, span on the argument, reusing row 407's shape (or its row with a `KeyedCell` label); control pin for the agreeing form."
+  },
+  {
+   "id": "B286",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — a `Source`-generic runtime function is UNCALLABLE from generic code: `expose_dynamic<T: Wire, S: Source<T>>(source: S)` from `reply_source<T: Wire>` fails with \"cannot infer 'T' for this call; its bound ': Wire' cannot be checked\" — a type parameter is solved from the call's TYPES and never from a bound, so an `S` that is itself a parameter leaves `T` unsolvable; both had to take the concrete `SignalCell<T>` (`expose_keyed` says the same of its key projection)",
+   "discussion": "handles-31's find 3 (2026-09-09); a real inference limitation, not a lane's shortcut",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Type system & the type solver",
+   "body": "Solve a bound-introduced parameter from the bound's application when the argument's type is a parameter with that bound (`S: Source<T>` + `S` known → `T`); pin the generic-to-generic call; measure the solver cost."
+  },
+  {
+   "id": "B287",
+   "section": "B",
+   "kind": "design",
+   "title": "NEW — once B281 lets one connection's handlers INTERLEAVE, two routes share the one `self` binding and an `async fun f(&mut self)` `[rpc]` method that awaits can have its instance mutated underneath it — Q9's \"a `&mut self` method is itself a promise that it does not await\" is now load-bearing and NOTHING enforces it (an async `&mut self` rpc compiles today and its write persists; the no-view-across-await rule is still deferred)",
+   "discussion": "mutself-31's open Q (2026-09-09); OWNER ruling: enforce (refuse `async` + `&mut self` on an `[rpc]` method, or serialize `&mut self` handlers per connection) or document",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Rec: REFUSE `async fun f(&mut self)` on an `[rpc]` method at the attribute (one row) until the no-view-across-await rule lands; the guide sentence lands with Order 31's seal either way."
+  },
+  {
+   "id": "A76",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — the SSE/`SplitDuplex` leg has no reverse lane: `s:` is socket-only, `events_response` registers no client channel, so `self.client.ping()` on an SSE connection drops silently; documented at the site, but a service mounted for SSE gives no signal that the direction does not exist there",
+   "discussion": "reverse-31's find 2 (2026-09-09)",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Either register a client channel on the SSE leg (the frame rides the event stream) or refuse `client = H` on a service mounted SSE-only; pin."
+  },
+  {
+   "id": "A77",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — a PEER struct's browser-side instance has no honest proxy value: the pin writes `PeerProxy::for_connection(0 - 1)`, a generated struct literal reaching for a sentinel",
+   "discussion": "reverse-31's find 3 (2026-09-09)",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "`ClientProxy::detached()` (a proxy that says so when called) or make the proxy field `Option`; pin the browser-side construction."
+  },
+  {
+   "id": "A78",
+   "section": "A",
+   "kind": "design",
+   "title": "NEW — a handle-returning service on the CONNECTIONLESS leg (`{mount}rpc` POST, `local_rpc`) fails at RUNTIME with `RpcError::Remote(\"..arrived on none..\")`; a `[service]` with a handle method is WebSocket-only and could be refused at compile time or at mount",
+   "discussion": "handles-31's find 4 (2026-09-09)",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Refuse at `Service::new(..).at(..)` for a service whose surface carries a `RemoteSource` return when the mount has no socket, or document the runtime failure in the guide's status table."
+  },
+  {
+   "id": "A79",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — the keyed RETURN mapping: `[rpc] fun tasks_in(workspace): KeyedCell<i32, Task>` → a stub returning `Result<KeyedSource<i32, Task>, RpcError>` — §9.2's row, UNBLOCKED by A54 (the cell exists) and A74 (the mapping machinery, `handle_element` + `reply_source`), unbuilt",
+   "discussion": "handles-31 and keyed-31 both left it as instructed (2026-09-09); kolt's per-workspace tasks are the exhibit (store.vl:96–99)",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Add the `KeyedCell` spelling to `handle_element` and a `reply_source_keyed` over `expose_keyed_cell` marked DYNAMIC; the keyed lease gets the same origin/re-mint path (owner Q: the per-key hop); pins mirroring A74's."
+  },
+  {
+   "id": "A80",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — vilan has no MUTABLE PATTERN BINDING: `Some(let mut x)` and `Some(mut let x)` are both parse errors, so `cell.update(\\|&mut held\\| match held { Some(let list) => list.push(..) })` is refused with \"cannot mutate immutable 'list'\"; `Option::take`/`replace` is the working idiom and it is not obvious",
+   "discussion": "keyed-31's find 3 (2026-09-09)",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Type system & the type solver",
+   "body": "Either the sugar (`Some(let mut x)`, one grammar rule + `RULE_STATEMENT_SITES`) or a line in `SignalCell::update`'s docs naming the take/replace idiom; the refusal's steer could name it too."
+  },
+  {
+   "id": "A81",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — v2 of the reverse direction: AWAITED server→client calls — the `s:` id bytes are reserved on the wire, the server end needs a pending table and `fresh_id`, the client dispatches `s:` under a held turn and replies on the same lane; and `notify` on a closed connection is silent by design — an app cannot learn a notification went nowhere",
+   "discussion": "reverse-31's finds 4 and open Q 2 (2026-09-09); transport-rpc §9.3's async-coloring paragraph is this item's",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Build after B287 is ruled (an awaited call inside a `&mut self` handler is the hazard); the forward stub's `Result<bool, RpcError>` ack is the small first half."
+  },
+  {
+   "id": "E159",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — a doc-facing enum arm can ship UNDOCUMENTED: `RpcError::Unavailable` (A52) reached no reader-facing page because `--test docs` compiles fragments and a stale enum LISTING still compiles (the guide counted five variants, the reference listed five, the status mapping named two codes)",
+   "discussion": "rpc-smalls-31's find F-A (2026-09-09)",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Language server & tooling",
+   "body": "A parity gate: every `[derive(Wire, Debug)] enum` fragment the docs show for a std enum lists every arm std declares (the `style_table_sync` idiom); pin on `RpcError` and `Reject`."
+  },
+  {
+   "id": "M60",
+   "section": "M",
+   "kind": "performance",
+   "title": "NEW — `SignalCell::get()` and `set()` DEEP-COPY the value (`__clone` over the whole container) and nothing at the source says so: `let x = shared.read()` clones, `shared.read().len()` does not, and the rule is invisible — it is what made `KeyedSource::apply` O(N) per patch on the receiving end of an O(change) protocol until keyed-31 moved it to `update`",
+   "discussion": "keyed-31's find 2 (2026-09-09); rule 1's copy elision is the machinery",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Performance & footprint",
+   "body": "A census of `get()`/`set()` pairs over containers in std (the pattern `let x = cell.get(); .. cell.set(x)`), each moved to `update`; a note in the memory-model tour naming the clone at a bound read; consider an editor hint for the pair."
+  },
+  {
+   "id": "N70",
+   "section": "N",
+   "kind": "hygiene",
+   "title": "NEW — `analyzer::service_impl_source`, the Rust FALLBACK `[service]` generator, is a stale twin: no `turn` wrapper, no keyed exposures, still `fun dispatcher(self)`, no `connect_with`, no reconnect hook, no handle mapping, and its `service_contract_hash` disagrees with the macro's for any keyed service; it runs only for fixture stds without `rpc.vl` (the `inference` harness uses the real std), and the file's own comments insist the two must not disagree",
+   "discussion": "mutself-31's find 3 and handles-31's find 2 (2026-09-09)",
+   "status": "OPEN — Order 31's finds (2026-09-09)",
+   "area": "Hygiene & rot",
+   "body": "Delete it (the fixtures that need it get a minimal `rpc.vl`) or gate it behind a comment that says it is a stub; a pin that the fallback is unreachable from any shipped path."
+  }
+ ]
+}

@@ -1,0 +1,54 @@
+{
+ "date": "2026-09-09",
+ "order": "Order 31",
+ "closes": [
+  {
+   "id": "A74",
+   "lane": "handles-31",
+   "commit": "234fe33f",
+   "text": "BUILT — `[rpc] fun f(..): SignalCell<T>` / `Option<SignalCell<T>>` becomes a stub returning `Result<RemoteSource<T>, RpcError>` (the Option form too); the contract surface renders the MAPPED type (a handle-free service hashes byte-identically: 78bdada7 frozen at c3ed9239); the reply exports the source into the connection's capability table INSIDE the route (`reply_source(request, ..)` over `RpcProtocol.connection` stamped at the upgrade), a plain `i32` channel on the wire; the mirror carries its `Origin` (method, describers, the re-issue seam); R3 AS RULED: lease-zero → turn settle → one microtask look (dynamic mirrors only — four ratified A25 pins keep a field mirror's close immediate), `Unsubscribe` on a DYNAMIC channel revokes, a re-acquire re-mints from `origin` with the cached value as the seed, a never-leased handle goes with its ambient owner; reconnect replays only WATCHED dynamic mirrors; ZERO new wire frames. Pins: a hundred handles cost ten forwards, a released one is revoked and re-minted (server tables read directly); the hop pin RED without the hop; owner/reconnect pin; the two hash pins; the element-Wire refusal (row 411). Recognition is the WRITTEN spelling — \"any `S: Source<T>`\" is not implementable pre-resolution (paper corrected)."
+  },
+  {
+   "id": "A75",
+   "lane": "reverse-31",
+   "commit": "3267426c",
+   "text": "BUILT, notifications only (R4): `[client_service]` generates dispatcher + contract hash + a `<Name>Proxy` (sync, void methods; a return type REFUSED, row 409); `[service(X, client = H)]` appends `client:<m>(..)->void;` as a SUFFIX of the surface (a service without one hashes byte-identically: d1d5fba0; with one moves; server == client on a live connection); `Connection::client<P: ClientProxy>()` — a std TRAIT, `P` resolved from the field's declared type (a generated `Connection` member would collide across services); the handler instance via `.with_handlers(instance)` on the CONNECTED client (connect verifies the contract first → refused before any `s:` frame) with an `early_serve` queue; text `s:<id>:<payload>` / binary 0x73, id 0 on the wire (reserved for v2); a per-connection `client_channels` registry in std::rpc, `DuplexEnd` untouched (no pending table — paper corrected); void `[rpc]` methods legal ONLY on a client-side struct; `client = X` without the attribute refused (row 410); peer-to-peer = both attributes on one struct. Open for the owner: same-module handler only (v1); an awaitable ack for the forward stub; the `__contract` route on a client-only struct."
+  },
+  {
+   "id": "B281",
+   "lane": "reverse-31",
+   "commit": "83af3f52",
+   "text": "FIXED — both `respond` turns in the receive loop are started as `async { .. }` and not awaited: a chunk's events are all dispatched before any handler's suspension; reply ORDER within a chunk is not promised (guide sentence). Pin `two_frames_coalesced_into_one_read_are_not_serialized_by_the_receive_loop`: a raw TCP client writes two masked frames in one write; handler 1 polls a `Shared<bool>` only handler 2 sets, bounded at 400 retries (never wall); RED on the reverted tree (`Success:-1` after the budget, ~445 ms), green on the first retry (~3–7 ms), `r:2` replies first."
+  },
+  {
+   "id": "B272",
+   "lane": "mutself-31",
+   "commit": "4a9cb0ec",
+   "text": "FIXED — the generated `dispatcher()` declares `mut self` and every route captures that BINDING (spec §6.9: a closure captures bindings, not values), so a `&mut self` `[rpc]` method writes the connection's instance in place and the next call on the same socket reads it; no `Shared<S>` cell (built, measured and rejected: a copy per connection, C9's resource pin regressed with no code frame, a reflection field it forced). `mut self` on an `[rpc]` method is REFUSED at the attribute, span on the METHOD (row 408; 71570b77) — the silently-lost write cannot recur; the struct-span diagnostic no longer fires for a service. Pins: the owner's sketch over two live connections (`Shared<bool>` control); the must-fail. Side fix: `construct_function_item` writes all five `meta::Field` slots."
+  },
+  {
+   "id": "A54",
+   "lane": "keyed-31",
+   "commit": "25d34f25",
+   "text": "BUILT — `KeyedCell<K, T>` beside `KeyedSource` in std::rpc (its product is `Delta`, a std::wire type; std::reactive imports nothing from wire): `new/insert/remove/update(key, |&mut T|)/set/locate`, a `Source<List<T>>` view, a position index by key hash, an op log with per-forward cursors trimmed to the laggiest live forward, `keyed_log_limit = 1024` → `Reset` on lag; `ReactiveServer::expose_keyed_cell`; a bare `[expose]` over a `KeyedCell` field IS the keyed channel and hashes byte-identically to `[expose(keyed = K)]` over the list form (pinned). The CLIENT half was the bigger half: `KeyedSource::apply` did `cache.get()`/`set()` per patch — a `SignalCell` COPIES on both — now `SignalCell::update` + a maintained position index. Numbers (children CPU, getrusage, idle subtracted, ms/change/connection): diff 0.315 → 3.814 for 1k → 10k rows (12.1×), cell 0.0078 → 0.0103 (1.32×); `Keyed::key` calls 240,019 (diff, 2k rows) vs 0. Perf pin on the RATIO (10× rows < 3×; the restored copy pair reads 4.52×). The keyed RETURN mapping stays unbuilt (now unblocked). The cell drops `T: PartialEq` from the exposed element."
+  },
+  {
+   "id": "A55",
+   "lane": "keyed-31",
+   "commit": "9994d969",
+   "text": "BUILT — `impl KeyedSource<type K, type T> with Source<Option<List<T>>>` on the shipped counted lease (no second mechanism); `get`/`map` moved into it; `sub`/`effect` override the defaults over `lease`; the inherent `sub(|List<T>|)` still outranks. R5: no `bind_each` sibling — `or([])` stays the binding saying what an unseeded list renders as. Pin: two generic `Source<Option<List<Row>>>` consumers take the mirror; `on_change` takes and releases the SAME count in bytes on a metered link."
+  },
+  {
+   "id": "A56",
+   "lane": "rpc-smalls-31",
+   "commit": "a092d246",
+   "text": "RULED AND BUILT (R6) — (i) `[expose(keyed = K)]` over a `SignalCell<Map<K2, V>>` whose `K` disagrees is REFUSED at the attribute, span on the argument (`Exposure::Keyed` carries `Option<Spanned<&str>>`; row 407); four generated `Keyed<i32>` bound failures stand down behind it via `expose_refused_key_bounds` keyed on the trait APPLICATION; three a56_* pins in vilan-core `inference/traits.rs`. (ii) `authorize_timeout` keeps 429 — the rationale was already at rpc_server.vl:639–647 (A52's lane); the ruling record added (f03ee14d) and a four-arm `Reject` status table in guide/services.md, which also fixed a sentence stale since A52 (three of four arms)."
+  },
+  {
+   "id": "A53",
+   "lane": "rpc-paper-30 / handles-31",
+   "commit": "234fe33f",
+   "text": "ANSWERED, NOT BUILT — the element type is written in the METHOD signature (`fun items(self): SignalCell<Task>`), where the contract hash already reads it and the stub already renders it; a service wanting two element types writes two methods and they hash differently (handles-31 confirmed on the built mapping). The generic-struct `[service]` refusal STANDS (row 406, B266; its two pins green)."
+  }
+ ]
+}
