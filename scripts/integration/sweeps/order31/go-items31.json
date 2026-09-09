@@ -24,7 +24,7 @@
    "id": "B281",
    "section": "B",
    "kind": "bug",
-   "title": "NEW — the server's receive loop SERIALIZES frames TCP coalesced into one read: `for event in parser.feed(chunk) { … turn(FlushPolicy::AtEnd, || protocol.respond(…)) … }` (rpc_server.vl ~1117–1176) awaits each event's `respond` before parsing the next, so a handler that awaits something only the NEXT frame's handler supplies never completes — on a fast local link coalescing is the common case; a present-tree hazard and the prerequisite of every awaited server→client call",
+   "title": "NEW — the server's receive loop SERIALIZES frames TCP coalesced into one read: `for event in parser.feed(chunk) { … turn(FlushPolicy::AtEnd, \\|\\| protocol.respond(…)) … }` (rpc_server.vl ~1117–1176) awaits each event's `respond` before parsing the next, so a handler that awaits something only the NEXT frame's handler supplies never completes — on a fast local link coalescing is the common case; a present-tree hazard and the prerequisite of every awaited server→client call",
    "discussion": "transport-rpc §9.3's \"the router never blocks on a handler\" (rpc-paper-30, 2026-09-08); Order 31 lane reverse-31 with a red-first pin",
    "status": "OPEN — Order 31 in flight (2026-09-09)",
    "area": "Reactive core & UI",
