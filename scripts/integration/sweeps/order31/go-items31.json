@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "A74",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — RETURN-TYPED SIGNAL HANDLES (transport-rpc §9.2, the owner's point 1; §8's unbuilt half): an `[rpc]` method returning `SignalCell<T>` / `S: Source<T>` / `Option<SignalCell<T>>` becomes a stub returning `Result<RemoteSource<T>, RpcError>`; the reply carries a plain-Wire `ChannelId` exported into the connection's capability table inside the reply's turn; the mirror remembers its minting call (`origin`) and is re-issued on reconnect; R3 AS RULED (owner, 2026-09-09): demand decides — lease-zero defers to the turn's settle then one microtask look, `Unsubscribe` on a DYNAMIC channel is a revoke, a re-acquire re-mints from `origin`, a never-leased handle is released with its ambient owner; no new frame; R7: a source-returning method is a getter by declaration",
+   "discussion": "Order 31 lane handles-31 (TOP); the kolt exhibit `get_messages(conversation, amount): List<MessageId>` + `get_message(id): SignalCell<MessageBody>` (store.vl:102–109)",
+   "status": "OPEN — Order 31 in flight (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Lane handles-31 builds it whole (mapping, hash pins, the Wire refusal, the dynamic export, origin, R3's four points, reconnect replay, docs, pins a–i); the keyed RETURN mapping (`KeyedCell` → `KeyedSource`) waits for the order after A54 lands."
+  },
+  {
+   "id": "A75",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — CLIENT-DECLARED FUNCTIONS, notifications only in v1 (transport-rpc §9.3, the owner's point 3; rulings R1 + R4): `[client_service]` on the browser struct generates its dispatcher, contract hash and a typed `<Name>Proxy`; `[service(X, client = H)]` appends `client:<method>(..)->void;` to the server's contract surface; `Connection::client()` hands the factory a typed proxy; a one-way reverse lane (text `s:<id>:<payload>`, binary tag `0x73`) in the server's id namespace; the handler instance supplied at connect; an old client's silent drop of `s:` frames is fenced by the contract hash; awaited server→client calls are v2",
+   "discussion": "Order 31 lane reverse-31; kolt's TODO at store.vl:93 (\"how client functions can be called from the server\"); first use: `session_revoked()`",
+   "status": "OPEN — Order 31 in flight (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Lane reverse-31 builds it with both hash pins, the two refusals (a return type on a client method in v1; `client = X` without the attribute), the round-trip pin, peer-to-peer; B281 is its prerequisite and lands with it."
+  },
+  {
+   "id": "B281",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — the server's receive loop SERIALIZES frames TCP coalesced into one read: `for event in parser.feed(chunk) { … turn(FlushPolicy::AtEnd, || protocol.respond(…)) … }` (rpc_server.vl ~1117–1176) awaits each event's `respond` before parsing the next, so a handler that awaits something only the NEXT frame's handler supplies never completes — on a fast local link coalescing is the common case; a present-tree hazard and the prerequisite of every awaited server→client call",
+   "discussion": "transport-rpc §9.3's \"the router never blocks on a handler\" (rpc-paper-30, 2026-09-08); Order 31 lane reverse-31 with a red-first pin",
+   "status": "OPEN — Order 31 in flight (2026-09-09)",
+   "area": "Reactive core & UI",
+   "body": "Parse the chunk into its events, START every handler's turn, let the event loop interleave; per-handler turns settle independently; reply ORDER is not promised (guide sentence); pin: two coalesced frames, handler 1 awaits a `Shared` flag only handler 2 sets — bound the wait in retries/CPU, never wall."
+  }
+ ]
+}
