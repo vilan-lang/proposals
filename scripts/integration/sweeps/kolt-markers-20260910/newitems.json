@@ -1,0 +1,64 @@
+{
+ "items": [
+  {
+   "id": "B288",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — a closure's declared return type that reaches a callee generic THROUGH A USER GENERIC STRUCT (`g: \\|T\\| Remote<U>`, `\\|T\\| Option<Remote<U>>`) neither binds `U` nor is checked against it: `wrap([], \\|x\\| Remote { seed = [x] })` leaves the list's element \"never determined\" (the `[]` seed wins, the closure never refines it), and `let f: List<str> = wrap([], \\|x\\| Remote { seed = [x] })` COMPILES — while `\\|T\\| Option<U>`, `\\|T\\| Option<Option<U>>` and `\\|T\\| List<U>` all bind and all refuse the wrong annotation. Kolt hits both faces through its `Task::remote_signal<U>(fallback, \\|T\\| Option<RemoteSource<U>>)` hack: `channel.vl:13` annotates `SignalCell<List<Message>>` over a `List<i53>` handle and is accepted; `views.vl:134` cannot drop the annotation at all",
+   "discussion": "kolt marker sweep 2026-09-10; reproduced on 65af4be0 in a pure form (nine variants) and on a real generated client (`Option<SignalCell<List<i53>>>` handle); a soundness hole, not only an inference gap",
+   "status": "OPEN — kolt marker sweep (2026-09-10)",
+   "area": "Type system & the type solver",
+   "body": "The closure's expected return type is reconciled against the closure body's type only through std applications (`Option`, `List`); a user struct application (`Remote<U>`) is skipped, so a `U` reached only that way is left to whatever the OTHER arguments bound (an empty `[]` seed: `List<?>`) and a pre-bound `U` (the annotation) is never compared. Descend user struct applications in the closure-return reconciliation exactly as `Option`/`List` are descended (the same walk `reconcile_type` does for arguments); pins: the infer face (`wrap([], |x| Remote { seed = [x] })` then `f[0] + 1` compiles), the refuse face (the `List<str>` annotation is refused naming `Remote<List<i32>>`), and the kolt shape on a generated client (`remote_signal` over a handle with a wrong annotation refused). Probes: scratchpad `kolt-markers/pa2` (free fn + generic-impl method) and `pa4` (real `[service]` client)."
+  },
+  {
+   "id": "B289",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — the Wire predicate is a SYNTACTIC ALLOWLIST, not trait resolution: `is_wire_type`/`resolved_type_is_wire` accept the six scalars, `List`/`Option`/`Map` of Wire, and `[derive(Wire)]` NAMES — so a hand-written `impl Result<type T: Wire, type E: Wire> with Wire` is invisible to the `[rpc]` signature check (\"return type … is `Result<i53, str>`, which is not Wire\"), to the `[expose]` element check and to the derive-field check; kolt's `store.vl:184` returns `Option<i53>` where it wants `Result<i53, str>`, with the forty-line impl sitting right above it (and the refusal's own list omits `Map`, which A39 admitted)",
+   "discussion": "kolt marker sweep 2026-09-10; reproduced on 65af4be0 (probe `kolt-markers/probe_b.vl`); analyzer.rs 6338 / 15170 at that sha",
+   "status": "OPEN — kolt marker sweep (2026-09-10)",
+   "area": "Reactive core & UI",
+   "body": "Make the predicate consult the trait table — a resolved type is Wire when an `impl … with Wire` applies to it (the allowlist stays as the fast path and as the rule for the primitives), recursing into arguments only where the impl's own bounds demand it (`impl Result<type T: Wire, type E: Wire>` binds both; `impl Handle<type T>` binds none, which is C7's phantom rule expressed by the impl rather than by a special case). The three call sites share one predicate. Pins: a user `impl Result<T, E> with Wire` admits `[rpc] fun f(self): Result<i53, str>` and refuses `Result<Opaque, str>` naming the argument; the refusal text names `Map`. A82 lands the std `Result` impl this makes usable without the workaround."
+  },
+  {
+   "id": "A82",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — `std::wire` has no `Result<T, E>` (kolt hand-writes forty lines at `store.vl:27`, variant-tagged `Ok`/`Err` exactly as `Option` is) and its scalar row stops at `i53`: no `u53` (`store.vl:143` wants an unsigned id; `u53` IS a scalar, `u64`'s rename), nor `i8`/`u8`/`i16`/`u16`/`f32` — in `wire.vl` AND in the analyzer's allowlist (`str \\| i32 \\| u32 \\| i53 \\| f64 \\| bool`), so the two must move together",
+   "discussion": "kolt marker sweep 2026-09-10 (store.vl:27 and :143); B289 is the predicate half, this is the std half — the impls are owed either way",
+   "status": "OPEN — kolt marker sweep (2026-09-10)",
+   "area": "Reactive core & UI",
+   "body": "`impl Result<type T: Wire, type E: Wire> with Wire` beside `Option`'s (take kolt's impl; a hash-stable `Ok`/`Err` tag); `impl u53 with Wire` and the small scalars in one row; both allowlists (`is_wire_type`, `resolved_type_is_wire`) and the refusal text updated in the same commit; the contract-hash goldens re-checked (a new impl moves no hash — pin it). Docs: `std/wire.md`'s table."
+  },
+  {
+   "id": "A83",
+   "section": "A",
+   "kind": "feature",
+   "title": "NEW — a 2-D vector helper in std: kolt's `interact.vl:127` hand-writes `magnitude((x, y): (f64, f64))` for pointer-drag distances and asks for \"a vector library for std\" — the smallest useful surface is a `Vec2 { x, y }` value with `add`/`sub`/`scale`/`length`/`distance`/`dot` (and `Length`-free: pixels are `f64` here), or the same over `(f64, f64)` tuples",
+   "discussion": "kolt marker sweep 2026-09-10; a std question of SHAPE (value type vs tuple fns) before it is a build — small either way",
+   "status": "OPEN — kolt marker sweep (2026-09-10)",
+   "area": "Standard library (`std::math`)",
+   "body": "Rule the shape (recommend the `Vec2` value type with operator impls — `Add`/`Sub` exist, and a named type reads at a call site where a tuple does not), land it in `std::math`, migrate kolt's `magnitude` and its drag arithmetic; the drag/threshold idiom in kolt's `interact.vl` is the exhibit."
+  },
+  {
+   "id": "A84",
+   "section": "A",
+   "kind": "design",
+   "title": "NEW — HOW a `Style::when(..)` variant should be EMITTED: today every combination of flags (`selected`, `!disabled`, `!selected && !disabled` in kolt's `styles.vl:46`) computes its own merged style and so its own class set per call; the owner's TODO asks whether variants should instead be CSS custom properties or `data-` attributes selected by static rules (`[data-selected]`), for both performance (one class per variant vs one rule set) and tidiness — the emission strategy the A36 combinator left open",
+   "discussion": "kolt marker sweep 2026-09-10 (styles.vl:46); A36 built `Style::when` (Order 27) without ruling the emission; ties to the owner's style-variants exploration (2026-08-31) that A36's ruling came from",
+   "status": "OPEN — kolt marker sweep (2026-09-10)",
+   "area": "Reactive core & UI",
+   "body": "Measure first: count the classes and rule bytes kolt's button emits across its flag space under the current computed form, then the same surface as (a) `data-` attribute rules and (b) custom properties; rule on one or on a per-site choice (a `Style::variant(name, delta)` that emits an attribute-selected rule beside `when`'s computed merge would let both coexist). No build before the ruling."
+  },
+  {
+   "id": "E160",
+   "section": "E",
+   "kind": "editor",
+   "title": "NEW — completion inside a STRUCT INITIALIZER offers the scope's names, not the struct's fields: `CursorContext` (vilan-ide `completion.rs:975`) has no struct-literal arm, so `KoltStore { us▮ }` falls to `Expression` and lists every binding in scope while the one thing the author is typing is a field name (kolt `store.vl:253`); a field's shorthand (`user,` with a same-named binding in scope) is exactly where the two lists overlap and the wrong one wins",
+   "discussion": "kolt marker sweep 2026-09-10 (store.vl:253); read against the tip's context enum, not re-driven in an editor",
+   "status": "OPEN — kolt marker sweep (2026-09-10)",
+   "area": "LSP & tooling",
+   "body": "A `StructInitializer { struct_id, written }` context recognised from the token stream (`Name {` … cursor at a field position, comma-separated, `=` not yet typed): candidates are the struct's fields minus the ones already written, each inserting `name = ` (or bare `name` when a same-named binding is in scope, the shorthand), with the field's type and doc as the detail; a nested initializer resolves to the inner struct. Generic structs resolve their fields through the declaration. Pins in `completion.rs` beside `member_completion_lists_fields_and_methods`."
+  }
+ ]
+}
