@@ -1493,6 +1493,7 @@ knows which sentences are now history.
 > OPEN for an explicit ruling: P1–P3 (the SYNC unleased handle stub returning `RemoteSource<T>`
 > with `Absent`/`Failed`, server dedup by source identity with lease counting, std `Memo`, A79 in
 > the same shape — the rpc-32 brief stands in `briefs32.md`) and B287 (P4).
+> **RULED 2026-09-11 (owner): P1–P3 as recommended (A92, built by Order 33's rpc-33 with A79); P4 refuse (B287, rpc-smalls-33).**
 
 ## 10. Where it lives
 

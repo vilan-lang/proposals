@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "A90",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — `Color::var` / `Length::var` (style.vl:200/:128) render the name VERBATIM, so `var(\"button-color\")` emits `var(button-color)`, which no browser resolves, and nothing says so until the page is wrong; the docs spell `var(\"--w\")`. Refuse a name without the leading `--` at const time (curated, one row) — and `view.style_var(name, ..)` (browser/ui.vl:160) takes the same check if it writes the property name verbatim",
+   "discussion": "the owner's kolt `new_button_style` (styles.vl:65–76) wrote the dashless form five times (2026-09-11); filed at Order 33's GO for styles-33",
+   "status": "OPEN — filed at Order 33's GO (2026-09-11); styles-33",
+   "body": "`check_attribute_name`'s shape (style.vl): `check_custom_property_name(name)` panics at const time unless `name` starts with `--` and carries no spaces/quotes/`:`; called by both `var`s and by `style_var`. Message: \"a custom property is written with its dashes — `var(\\\"--button-color\\\")`\". Pins: the refusal, the `--` control, `style_var` with a dashless name (if it checks). Docs: one sentence at the `var` rows."
+  },
+  {
+   "id": "A91",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — a RENDER CLOSURE may yield a `Slot`: today `swap`'s and `bind_each`'s render closures (and `when`'s body) must return a `View`, so the two kolt wrappers A85's value forms do not remove (views.vl:127 a swap render's result, views.vl:204 a bind_each row) exist only because a `List<View>`, a `str` or a positional value cannot be what a row or a page IS — the closure type becomes `\\|T\\| C` with `C: Slot` (a fragment, a value form, a text node), the region owning whatever the child placed",
+   "discussion": "A85's paper §7/§9 Q3, RULED 2026-09-11 (owner): filed as its own item, queued behind A85's build (Order 33, slots-33); kolt rows 4 and 6 of the paper's census are the exhibits",
+   "status": "OPEN — A85's Q3 (2026-09-11); after slots-33",
+   "body": "Generalise the render parameter from `View` to `C: Slot` on `swap`/`swap_split`, `bind_each` ×3, `when`'s body and the value forms; the row's `Region` (A71) already owns a run, so a `List<View>` row is a run placed before the row's anchor and moved as a unit by the reconciler's order pass; the process twin renders whatever the Slot renders. Costs: the reconciler's per-row `element.remove()`/move becomes per-region; `bind_each`'s `T: PartialEq` unchanged; the split gate's `swap_split` keeps its render type. Pins: a fragment row, a text row, a value-form row, reorder/remove of fragment rows; `ssr_differential`."
+  },
+  {
+   "id": "A92",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — the SYNC UNLEASED HANDLE STUB (Order 32's P1–P3, RULED 2026-09-11 as recommended): an `[rpc]` method returning `SignalCell<T>` / `Option<SignalCell<T>>` / `KeyedCell<K, T>` (A79) becomes a SYNC stub returning `RemoteSource<T>` / `KeyedSource<K, T>` minted UNLEASED from its `Origin` (the shipped re-mint path is the first mint, so an unleased handle costs nothing — R3 kept); `Status` gains `Absent` (the `Option` form's `None` reply) and `Failed(RpcError)` (the next 0→1 lease retries); `.or(seed)` at the call site, no `remote_signal` bridge; the SERVER dedups dynamic channels by SOURCE IDENTITY with a per-channel client-lease count (revoke at zero, never under another mirror); a std `Memo<K: Hashable, V>` (`get_or`/`forget`, the maker at the call site) is the app's composition tool — the stub does not auto-memo. BREAKING for every handle stub's type",
+   "discussion": "Order 32's rulings P1–P3, deferred at that GO and RULED at Order 33's (owner: 'go with your recommendations on all rulings', 2026-09-11); kolt's `Task::remote_signal` hack, model.vl's three memos and `lib/memo.vl` are the exhibits; the brief is briefs32.md's rpc-32 section re-anchored (Order 33, rpc-33); transport-rpc §9.6's standing questions annotated",
+   "status": "OPEN — RULED 2026-09-11; Order 33 (rpc-33)",
+   "body": "See `briefs32.md` §rpc-32 (steps 1–7, pins, hash pins) — the plain form's hash 78bdada7 must not move; the `Option` form's does (`Option<RemoteSource<T>>` → `RemoteSource<T>` in the surface). `RemoteSource<T>: Source<Option<T>>` unchanged (`None` while Waiting/Absent/Failed). The keyed form (A79) in the same shape, no per-key hop. Paper: transport-rpc §9.2/§9.6 as-built; remote-sources.md §2d (`status()`'s four arms). Kolt migrates at the owner's word: model.vl's memos → std `Memo`, `lib/remote_signal.vl` deleted, `.or()` at the call sites."
+  }
+ ]
+}

@@ -2198,3 +2198,31 @@ Process, for the next order: pins live in `tests/inference/<module>.rs`; the spl
 on any `std::reactive` emission change and is regenerated once over the merged tree; a merge is
 never chained behind another's outcome check in one command; the integrator pushes lane branches
 (lanes never push — the mechanics block's "push the branch" is retired).
+
+## Order 33 — cycle 51: the surface order (2026-09-11 → )
+
+Opened on the owner's "Go with your recommendations on all rulings" of 2026-09-11, off
+5a0d0b49 (Order 32's sealed tip, CI green there). Every ruling Order 32 left in the queue is
+therefore ruled as recommended, the same day: A85's surface (five value forms `when`/`swap`/
+`each`/`each_values`/`each_by` as `Slot` structs with the parent methods as sugar, render
+closures still `View`, no `Group`, B253 unchanged; `each` beside `bind_each`; the split
+recognizer learns the value form; "a render closure may yield a `Slot`" filed as A91); A46 as
+the `List<View>` literal; A88 the boundary removes what it placed; P1–P3 the sync unleased
+handle stub with server dedup by source identity and a std `Memo` (filed as A92, with A79 in
+the same shape); P4 B287 refused; B299 desugared to `impl type S: Trait<..>`; B307's under-supply
+refused with B273's binder boundary kept; A84's direction (data-attribute rules + custom
+properties) measured before it is confirmed; `View::link_to` kept, `Vec2` gains
+`length_squared`, `Region` public, A87 declined until a caller appears, E163's two
+devDependencies added, E154 yes, E156 accept and document, A82's lanes and sticky tag kept,
+A78's wiring refusal kept, B292's abandon-the-wave kept; A90 (`var("--")` checked at const
+time) filed at GO. The order is the UI surface kolt is written against — styles, positional
+slots, fragments — plus the solver residue Order 32 pinned and the owner's daily loop. Eight
+Opus lanes: solver-33 (TOP: B300 → A86, B304, B296, B305, B306, B299, B297; B286 droppable),
+styles-33 (A89 with the owner's `not` marker, B308, A90, `Vec2::length_squared`, the A84
+measurement), rpc-smalls-33 (B295, B303, B301 with a census, B307, N70, B287), dx-33 (B276,
+E106, M58), editor-33 (E160, E163, E162, E157, E159, E154, E156, E158), hygiene-33 (droppable,
+lands first: N73, N71, N72, M61, N69, N68, N65), slots-33 (A85, A46, A88), rpc-33 (A92, A79 —
+briefs32's rpc-32 text re-anchored). Landing order hygiene → editor → styles → rpc-smalls → dx
+→ solver → slots → rpc. Ledger next id 415. Kolt follow-ups wait for the owner's word after the
+seal; the cut waits for the owner's kolt test. Briefs:
+`scripts/integration/sweeps/order33/briefs33.md`.

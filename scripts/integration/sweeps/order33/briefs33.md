@@ -1,4 +1,10 @@
-# Order 33 — the surface order (DRAFTED 2026-09-11, off vilan next @5a0d0b49; not yet GO)
+# Order 33 — the surface order (drafted 2026-09-11; GO 2026-09-11, off vilan next @5a0d0b49)
+
+**GO (2026-09-11).** The owner: "Go with your recommendations on all rulings." Every R below and
+every record-only default is therefore RULED as recommended: slots-33 and rpc-33 GO; B299 is the
+DESUGAR; B287 is refused (rpc-smalls-33); `Vec2` gains `length_squared` (styles-33); E156 is
+documented (editor-33); A90, A91 (A85's Q3) and A92 (P1–P3, rpc-33's item) are filed at GO.
+EIGHT lanes.
 
 The owner's focus, read from the day: the UI surface kolt is being written against — styles
 (the `new_button_style` exploration: state as data attributes, colour as a custom property,
@@ -8,6 +14,7 @@ error), and the daily loop (B276: kolt's watch reuses nothing; E106: the languag
 over a session). Six lanes go on no ruling; two (slots-33, rpc-33) go only with one.
 
 ## Rulings at GO (owner) — the ones that change what a lane BUILDS
+> **RULED 2026-09-11 (owner): all as recommended.** The recommendations below are the rulings.
 - **R1 — A85's surface (slots-33 go/no-go).** The paper (`proposal/positional-slots.md` §9)
   asks: ship five value forms `when`/`swap`/`each`/`each_values`/`each_by` as structs with
   concretely-typed closure fields implementing `Slot`, the five parent methods as one-line
@@ -124,10 +131,13 @@ Build:
 5. B306 — `bind_callee_own_generics` drops a failed reconcile silently. Record it as a
    candidate diagnostic deduped against the later check (B5's rule) or prove a later check
    always fires; pin a contradicting closure argument with NO later consumer.
-6. B299 (R5; default REFUSE) — `impl Trait<..> { .. }` with a bare trait as the SUBJECT:
-   refuse at the head with the steer "write `impl type S: Source<..>` to implement for every
-   source" (one row), or desugar per R5. Pin either; the owner's probe head
-   `impl Source<Option<type _: Source<type U>>>` is the exhibit.
+6. B299 (R5 RULED: DESUGAR) — `impl Trait<..> { .. }` with a bare trait as the SUBJECT means
+   `impl type S: Trait<..> { .. }` — the universal reading B186 (parameters) and B184 (fields)
+   already give a bare trait; desugar at the impl-subject walk (mint the implicit binder the way
+   B186's `implicit_generic_scopes` does), so `self` is the bound `S`. Pins: the owner's probe
+   head `impl Source<Option<type _: Source<type U>>> { fun foo(self) .. }` compiles AND `self.get()`
+   works in it; a body that needs `S` by name is told the spelling (one steer, no refusal); the
+   spec's impl-subject rule (types.md §5.4) gains the sentence.
 7. B297 — an unresolved name in an impl subject reports twice (`walk_trait_position_type_node`
    + the per-argument walk each prep a `prepped_type_locals` entry): walk once or dedupe by
    (span, name); pin one error; the `let` form is the control.
@@ -180,7 +190,9 @@ Build:
    const time (curated, one row): "a custom property is written with its dashes —
    `var(\"--button-color\")`"; pin the refusal and the `--` control; `view.style_var` (browser/
    ui.vl:160) takes the same check if it writes the property name verbatim.
-4. A84 MEASURE — kolt's `button_style` (styles.vl:44) across its flag space under the current
+4. `Vec2::length_squared` (record-only ruling): the no-sqrt threshold form beside `length` in
+   std/math.vl, one pin, one doc row; no `Mul<f64>`.
+5. A84 MEASURE — kolt's `button_style` (styles.vl:44) across its flag space under the current
    computed `when` merge (:1591): count classes and rule bytes per distinct combination, then
    the same surface as (a) `data-` attribute rules (A89's form — `new_button_style` is the
    author's own draft) and (b) custom properties; a one-page note in your report with the
@@ -191,7 +203,7 @@ ssr_differential --test split --test corpus --test release_scripts --test diagno
 `-p vilan-core --test inference --test docs`; std full-scan; `-p vilan-lsp` (completion tables).
 Family: feature (A89, A90), fix (B308), diagnostics.
 
-## Lane rpc-smalls-33 — B295, B303, B301, B307, N70 (+B287 if P4)
+## Lane rpc-smalls-33 — B295, B303, B301, B307, N70, B287 (P4 RULED: refuse)
 Build:
 1. B295 — QUALIFY the free calls in generated stubs (`rpc::call(..)`, `rpc::notify(..)` — the
    import list at rpc.vl ~4993 is where the bare names come from) so an `[rpc]` method named
@@ -218,7 +230,7 @@ Build:
    twin: TOMBSTONE it (the fixture stds without rpc.vl are the only reach — make them carry
    rpc.vl or make the fallback refuse with "std without `rpc.vl` cannot expand `[service]`")
    rather than sync it; say which.
-6. B287 (if P4 = refuse) — `async` + `&mut self` on an `[rpc]` method refused at expansion (the
+6. B287 (P4 RULED refuse) — `async` + `&mut self` on an `[rpc]` method refused at expansion (the
    `service` macro; row 408's `mut self` refusal is the model), one row, must-fail pin; the
    guide caveat becomes "refused".
 Gates: `-p vilan-core --test inference --test docs`; `-p vilan-cli --test service_layer --test
@@ -273,7 +285,10 @@ Build:
    (the `style_table_sync` idiom); pin on `RpcError` and `Reject`.
 6. E154 (ruled yes) — `for x in <iterable>` heads take the split permission `for` conditions and
    `match` subjects have (E150 rule B); formatter pin; `vilan fmt --check vilan/` green.
-7. E158 — `references.rs`'s `narrow` and every DERIVED-span table: the sweep B264 asked for;
+7. E156 (ruled: accept and document) — one paragraph at E151's attribute-sorting rule in the
+   formatter docs: sorting reorders WHEN attribute values run; a side-effecting attribute value
+   is the smell, not the sorter's; no code change.
+8. E158 — `references.rs`'s `narrow` and every DERIVED-span table: the sweep B264 asked for;
    `is_namespace_module`'s thin discriminator gets a real marker if a third `SourceId(0)`
    entity exists — else document.
 Gates: `-p vilan-ide`; `-p vilan-lsp`; `-p vilan-cli --test grammar_sync --test grammar_ebnf
@@ -308,7 +323,7 @@ ssr_differential --test ssr_fullstack --test router --test split --test debounce
 service_layer --test diagnostics_ledger --test release_scripts`; `-p vilan-core --lib`; std
 full-scan. Family: tooling, fix.
 
-## Lane slots-33 — CONDITIONAL on R1–R3: the A85 build, A46, A88
+## Lane slots-33 — GO (R1–R3 RULED as recommended): the A85 build, A46, A88
 Build (per `proposal/positional-slots.md` §3, §4, §8):
 1. A85 — `Conditional<S>`, `Swap<T, S>`, `Each<T, K, S>` (+ `EachValues`, `EachBy`) as structs
    with CONCRETELY-TYPED closure fields (§5: PROBE FIRST that a struct field typed as a
@@ -342,7 +357,7 @@ Gates: `-p vilan-cli --test ui_rows --test router --test ssr_differential --test
 `-p vilan-core --test docs --test markdown_golden --test parse_expr_regression`; std full-scan.
 Family: feature (A85, A46), fix (A88).
 
-## Lane rpc-33 — CONDITIONAL on R4 (P1–P3): the sync unleased handle stub + A79
+## Lane rpc-33 — GO (R4 RULED: P1–P3 as recommended): A92 (the sync unleased handle stub) + A79
 The brief is `briefs32.md`'s "Lane rpc-32" section, verbatim, with two updates: RE-ANCHOR the
 rpc.vl line numbers (A78 added `Dispatcher.handle_methods`/`RpcProtocol.handle_methods` and
 `no_connection_for_handle` in the 1184–1440 region and the generated chain gained `.handles(..)`
@@ -375,9 +390,9 @@ stub's type — the entry names it; kolt's model.vl migrates at the owner's word
 
 ## At the sweep (integrator, proposals)
 - Close: B300 B304 B296 B305 B306 B299 B297 (B286 if built) A86 (if landed) · A89 B308 A90 ·
-  B295 B303 B301 B307 N70 (+B287) · B276 E106 M58 (or filed residue) · E160 E163 E162 E157
-  E159 E154 E158 · N73 N71 N72 M61 N69 N68 N65 · (A85 A46 A88 if slots-33 went) · (the
-  sync-handles item and A79 if rpc-33 went).
+  B295 B303 B301 B307 N70 B287 · B276 E106 M58 (or filed residue) · E160 E163 E162 E157 E159
+  E154 E156 E158 · N73 N71 N72 M61 N69 N68 N65 · A85 A46 A88 · A92 A79. A91 stays open (after
+  A85); A87 stays open, declined until a caller appears.
 - A84's ruling from styles-33's numbers; css-block.md/ui-styling.md as-built notes for A89/
   B308 (the `not` marker, the application-time sheet); positional-slots.md §10 as-built;
   transport-rpc §9.6 if rpc-33 went.
