@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B291",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `Owner` has no DISPOSED state: `dispose` runs and empties its cleanups but keeps no flag, so a `take`/`defer` that lands AFTER disposal (an async continuation whose scope was torn down first — a route switched away before a handle's reply) sits on a list nothing runs again: the subscription fires for the rest of the session and only a SECOND `dispose` releases it. Probed: an `effect` registered from a continuation after `owner.dispose()` fires on every later `set`; a remote mirror leased this way stays subscribed (count never returns to 0, the server forwards forever) — kolt's channel switch before the channel's first reply is exactly this shape",
+   "discussion": "found investigating kolt's quick-switch freeze report (2026-09-11; the freeze itself not reproduced headless); scratchpad `kolt-markers/pa7` is the pin; sibling of B283 (a release hook resolving its creation turn) — both are 'ambient capture outlives the extent'",
+   "status": "OPEN — kolt investigation (2026-09-11)",
+   "area": "Reactive core & UI",
+   "body": "A `disposed: Shared<bool>` on `Owner`; `take`/`defer` on a disposed owner run the cleanup IMMEDIATELY (the item is disposed on the spot, the deferred action runs now) instead of parking it; `dispose` is idempotent. Pins: the late `effect` never fires after the owner went; a `RemoteSource` lease taken from a continuation after disposal sends `Subscribe` and then its `Unsubscribe` in the same segment (or, better, never subscribes — `acquire` on a disposed ambient owner is a no-op lease); `bind_each`/`swap` boundaries unchanged. Consider a debug assertion under the LSP/dev build naming the site that registered late."
+  }
+ ]
+}
