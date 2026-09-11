@@ -2131,3 +2131,31 @@ PROCESS:
 - A heredoc terminator ends an `&&` chain; the GO commit went through with an INVALID spec once.
 - One ssh timeout to GitHub on a proposals push, retried clean. No `git stash`, no pattern kills,
   no 1Password outage. notes31.md is the record.
+
+## Order 32 — cycle 50: the kolt-findings order (2026-09-11 → )
+
+Opened on the owner's "adjust order or go" of 2026-09-11, off 65af4be0 (Order 31's sealed
+tip, CI green there). The order is what kolt found while dogfooding the rpc seal: three
+soundness holes (B288 and B290, closure typing through a user generic struct and an
+unannotated closure parameter's `is` pattern, both accepting programs that must refuse;
+B273, an impl's `with` clause bound-checked by nothing), two reactive-core robustness
+defects (B291, an `Owner` with no disposed state, so a late registration leaks for the
+session; B292, a drain with no exception safety, so one throwing observer turns the graph
+off), the Wire predicate as a syntactic allowlist (B289, with A82's std `Result`/`u53`
+impls), a Chrome per-tab drag wedge std's `link` arms (B293), and — the owner's asks of the
+day — A85 positional slots (a paper this order, `when`/`swap`/`bind_each` as `Slot` values
+at an anchor, A71 built as its brick), B294 (`_` as the anonymous type binder), A86
+(`flatten` as a blanket over `Source`) and E161 (the generic-head highlighting). Rulings
+asked at the draft (P1–P3 the sync unleased handle stub with server dedup by identity and a
+std `Memo`; P4 B287; P5 A71) were not given, so the defaults stand: rpc-32 is not in this
+order (a breaking stub change waits for an explicit ruling — its brief stands for the next
+order), B287 stays stated-unenforced, A71 is built. Six Opus lanes: solver-32 (TOP: B288,
+B290, B273, B275, B280), reactive-32 (B291, B292, B283, B277, A86), wire-32 (B289 then A82,
+one lane), rpc-smalls-32 (B282, B284, B285, A78), ui-32 (B293, A83, A71, the A85 paper),
+smalls-32 (B294, E161). Landing order smalls → ui → reactive → wire → rpc-smalls → solver.
+The record-only rulings from Order 31 (hop scope dynamic-only, no keyed hop, same-module
+handlers, sync void forward stubs, `__contract` kept, bare `[expose]` over a `KeyedCell`,
+`reattach_mirrors`' `replay`, `keyed_log_limit` fixed) are written as built at the sweep
+unless the owner objects. Kolt follow-ups wait for the owner's word after the seal; the cut
+(held since Order 29) waits for the owner's kolt test on it. Briefs:
+`scripts/integration/sweeps/order32/briefs32.md`.

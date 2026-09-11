@@ -1,4 +1,13 @@
-# Order 32 — the kolt-findings order (DRAFTED 2026-09-11, off vilan next @65af4be0; not yet GO)
+# Order 32 — the kolt-findings order (drafted 2026-09-11; GO 2026-09-11, off vilan next @65af4be0)
+
+**GO as adjusted (2026-09-11).** The owner filed three more items (B294, A86, E161) and said
+"adjust order or go" without ruling P1–P5. Defaults taken: rpc-32 is DROPPED from this
+order (P1–P3 are a BREAKING change to every handle stub and get an explicit ruling, not a
+default); B287 is NOT built (P4 unruled — stays stated-unenforced, record-only); A71 IS
+built (P5 — the owner's positional-slots ask is 'keep position' in substance). The
+record-only list below is written as built at the sweep unless the owner objects. Six
+lanes: solver-32, reactive-32 (+A86), wire-32, rpc-smalls-32, ui-32, smalls-32 (new: B294,
+E161).
 
 The owner's focus: kolt, dogfooding Order 31's seal, exposed three SOUNDNESS holes (B288,
 B290, B273 — programs that must refuse compile), two reactive-core ROBUSTNESS defects (B291,
@@ -130,8 +139,9 @@ fits. Gates: `-p vilan-core --test inference --test infer_differential --test do
 notes for any census hit).
 
 ## Lane reactive-32 — ambient capture outliving its extent, and exception safety
-Items: B291, B292, B283, B277. One family: something captured at creation (an owner, a
-turn, a nursery) is resolved after its extent ended.
+Items: B291, B292, B283, B277, and A86 (the owner's flatten ask — last, droppable). One
+family for the four: something captured at creation (an owner, a turn, a nursery) is
+resolved after its extent ended.
 Build:
 1. B291 — `Owner` (reactive.vl:347–380) has no disposed state. Add `disposed: Shared<bool>`;
    `take`/`defer` on a disposed owner run the cleanup NOW (the item is disposed on the spot);
@@ -176,9 +186,26 @@ Build:
    the cancellation path — or state the scope rule (a debounce lives in the nursery that
    made it) and make `run` after cancellation refuse loudly. Pin (`debounce.rs`): cancel the
    nursery mid-window, then `run` — fires.
+5. A86 — `flatten` (reactive.vl:890) is inherent on `SignalCell<SignalCell<U>>`; make it a
+   BLANKET over the trait: `impl Source<type I: Source<type U>> { fun flatten(self):
+   SignalCell<U> }` (the bare-trait impl subject compiles at 65af4be0 — the owner's probe
+   `impl Source<Option<type _: Source<type U>>>` is the head) with the shipped body, plus
+   the `Option` form `impl Source<Option<type I: Source<type U>>> { fun flatten(self):
+   SignalCell<Option<U>> }`; the cell-only impl goes (the A4 pins are the control). PROBE
+   FIRST against `SignalCell<SignalCell<i32>>`, a `map` result and
+   `SignalCell<Option<SignalCell<i32>>>` — if impl selection cannot see through the nested
+   bound (B268's machinery, B275's gap), report it as an OPEN Q for solver-32 and leave the
+   inherent impl. Census: `RemoteSource::or` (rpc.vl:2943) and `KeyedSource::or` (:3636)
+   are one `impl Source<Option<type T>> { fun or(self, initial: T): SignalCell<T> }` in
+   reactive.vl — build it ONLY if the two mirrors' `Source<Option<..>>` impls select it
+   cleanly (their channel pins are the control; rpc.vl lines 2937–2960 and 3630–3650 are
+   yours for the deletion, nothing else in rpc.vl); `status()`, `of(key)`, `update` (A32),
+   `Draft`, `Selector`, `Optimistic` stay — say why for each you judged. Pins beside the A4
+   pins; docs: std/reactive.md's `flatten` paragraph.
 Gates: `-p vilan-cli --test reactive_lifetimes --test reactive_channels --test debounce
 --test cancellation --test owned_nursery --test corpus --test release_scripts`; the std
-full-scan; `-p vilan-core --test inference` (the A25 markdown pins). Family: fix.
+full-scan; `-p vilan-core --test inference --test docs` (the A25 markdown pins). Family:
+fix; feature (A86).
 
 ## Lane wire-32 — B289 then A82, two commits, one lane (they must move together)
 Build:
@@ -296,7 +323,7 @@ ssr_fullstack --test benchmarks --test corpus --test release_scripts`; `-p vilan
 --test docs --test markdown_golden`; the std full-scan. Family: fix (B293, A71), feature
 (A83).
 
-## Lane rpc-32 — CONDITIONAL on P1–P3 (dropped from the order without them)
+## Lane rpc-32 — NOT IN THIS ORDER (P1–P3 unruled at GO; kept here as the brief for the next order)
 Items: A-sync-handles (the integrator files it at GO from P1/P2), A79 (P3).
 Build, under the recommended shape:
 1. `Status` (rpc.vl:2748) gains `Absent` and `Failed(RpcError)`; `status()` (:2959) reports
@@ -339,6 +366,57 @@ first lease; Absent; Failed then retry on the next lease; the in-flight join; de
 Memo; A79; the hash pins. Gates: handles-31's list + `--test examples` + `-p vilan-core
 --test docs`. Family: feature; BREAKING (every handle stub's type — the entry names it).
 
+## Lane smalls-32 — B294 (`_` as the anonymous type binder) + E161 (the generic-head highlighting)
+Build:
+1. B294 — `parse_type_atom` (parsing.rs:4430) routes only the `type` keyword to
+   `parse_type_binder` (:4495, `type NAME (: A + B)?` → `Node::TypeBinder`). Add the arm: an
+   `_` identifier in type position, optionally `: bounds`, produces the SAME node — one
+   analyzer path, no new semantics (`impl Source<Option<_: Source<type U>>>` is the owner's
+   exhibit; `impl Source<Option<type _: Source<type U>>>` compiles today, `_:` is a parse
+   error at the `:`). CHECK FIRST and pin either way: `impl Pair<type _, type _>` — are two
+   anonymous binders ONE parameter named `_` today (an aliasing bug the wildcard must not
+   inherit) or fresh each? The wildcard must be fresh each time. A named binder keeps its
+   keyword; `type _` stays accepted and `vilan fmt` canonicalises to `_` (formatter pin;
+   E150's rules apply). A bare `_` outside an impl head (`let x: List<_>`, an inference
+   placeholder) is OUT OF SCOPE — its refusal text should now say what `_` is for (one
+   curated row, `diagnostics_ledger`). Estate: spec/grammar.md:249 and spec/types.md:318
+   gain the spelling; `grammar_ebnf` and `grammar_sync` green (no new keyword — `_` is an
+   identifier; if the EBNF grows a production, the sync test tells you). Pins (vilan-core
+   `inference` for the type faces, `parse_expr_regression`/the parser tests for the
+   grammar): the exhibit; two-wildcards-fresh; `type _` still accepted; the placeholder
+   refusal text.
+2. E161 — the TextMate grammar (`editors/vscode/syntaxes/vilan.tmLanguage.json`) mis-scopes
+   a nested generic head: `type` is in the declaration-keyword list (`storage.type.vilan`,
+   :303), `<type` matches the ELEMENT rule (:388 — a lowercase word glued to `<` is a tag),
+   the other brackets are the operator fallback (:380), a line-leading `>` is E115's
+   terminator rule. Fix: (a) a begin/end generic-argument-list rule (`(?<=[A-Za-z0-9_])<` …
+   `>`, `meta.generic.vilan`, delimiters `punctuation.definition.generic.begin/end.vilan`,
+   nesting by including itself — `>>>` closes three); (b) the binder rule inside it
+   (`\b(type)\b(?=\s+[A-Za-z_])` → `keyword.other.type-binder.vilan` or
+   `storage.modifier.vilan` — pick what the shipped themes colour as a KEYWORD, name the
+   themes checked); (c) the element rule requires the `<` not to follow an identifier
+   character (`(?<![A-Za-z0-9_])`) — element-syntax S2's atom-position rule, the grammar
+   catching up; (d) the E115 terminator scoped only where a generic did not consume the
+   `>` (the begin/end from (a) spans lines). Third place: `vilan/docs/theme/vilan.js` —
+   check the book's highlighter on the same head. SEMANTIC LAYER: vilan-lsp emits semantic
+   tokens (main.rs:251 `encode_semantic_tokens`, E2's classes) and in VS Code they override
+   TextMate where they classify — establish which layer painted each of the owner's three
+   observations (`vilan.semanticTokens.enabled` off in a scratch VS Code settings file is
+   not available to you headlessly, so read the classifier: if it classifies `type`
+   binders or brackets, fix it there or leave the spans unclassified). Pins: `grammar_sync`
+   green (regenerate ONLY if a generated fragment moved, and say so); a NEW node-driven
+   scope test beside it that tokenises the exhibit with `vscode-textmate` (grammar_sync
+   already reads the grammar under node — copy its harness; if `vscode-textmate` is not in
+   the extension's `package-lock.json`, that is a new dependency: STOP and report, and
+   assert on the regexes instead) — every bracket in the head carries the generic
+   delimiter scope and none the tag or operator scope; `type` the binder scope; `<div>`
+   still a tag and `a < b` still an operator (controls).
+Gates: `-p vilan-core --test inference --test parse_expr_regression --test docs`;
+`-p vilan-cli --test grammar_ebnf --test grammar_sync --test vscode_extension --test
+corpus --test release_scripts --test diagnostics_ledger`; `-p vilan-lsp` if the
+classifier moved; `cargo fmt`/clippy; `vilan fmt --check` over `vilan/test/`. Family:
+feature (B294), tooling (E161), diagnostics (the placeholder row).
+
 ## Ownership map (conflict avoidance)
 - analyzer.rs: solver-32 owns the closure/pattern/impl-bound sites (:4865–5937, :25326,
   :28704, :29119, :31447, :37075–37260, :38683); wire-32 owns :6300–6410, :14865–14890,
@@ -352,16 +430,22 @@ Memo; A79; the hash pins. Gates: handles-31's list + `--test examples` + `-p vil
 - reactive.vl, time.vl: reactive-32 only (rpc-32 touches no `at_settle`; B283's mirror-side
   fix lives in rpc.vl:3081–3095 — reactive-32 owns those lines, rpc-32 stays out).
 - wire.vl: wire-32. browser/ui.vl, process/ui.vl, browser/dom.vl, browser/router.vl,
-  math.vl: ui-32. process/rpc_server.vl: rpc-smalls-32 (A78).
-- Landing order (integrator): ui-32 → reactive-32 → wire-32 → rpc-smalls-32 → solver-32 →
-  rpc-32 (if it goes; the largest, last over the generator changes). Docs-touching merges
+  math.vl: ui-32. process/rpc_server.vl: rpc-smalls-32 (A78). rpc.vl:2937–2960 and
+  3630–3650 (the two `or` bodies) are reactive-32's for A86's deletion only.
+- parsing.rs (`parse_type_atom`/`parse_type_binder`), formatter.rs, spec/grammar.md,
+  spec/types.md, `editors/vscode/syntaxes/`, `vilan/docs/theme/vilan.js`: smalls-32.
+  solver-32 touches no parser file; smalls-32 touches no analyzer type-check site (the
+  placeholder refusal text lives where 'cannot find type' is raised — one string).
+- Landing order (integrator): smalls-32 → ui-32 → reactive-32 → wire-32 → rpc-smalls-32 →
+  solver-32 (the largest, last). Docs-touching merges
   regenerate the mdBook golden (merge_lane does it). After any two lanes add a FIELD and a
   CONSTRUCTION SITE to one std struct, grep every `Name {` post-merge (keyed-31's lesson).
 
 ## At the sweep (integrator, proposals)
-- Close: B288 B290 B273 B275 B280 · B291 B292 B283 B277 · B289 A82 · B282 B284 B285 A78 ·
-  B293 A83 A71 (+ B287 if P4; + the sync-handles item and A79 if rpc-32 went). A85: the
-  paper committed to proposals (`proposal/positional-slots.md`), the ruling requested.
+- Close: B288 B290 B273 B275 B280 · B291 B292 B283 B277 A86 · B289 A82 · B282 B284 B285
+  A78 · B293 A83 A71 · B294 E161. Not this order: B287 (P4 unruled), the sync-handles item
+  and A79 (P1–P3 unruled — rpc-32's brief stands for the next order). A85: the paper
+  committed to proposals (`proposal/positional-slots.md`), the ruling requested.
 - Paper: transport-rpc.md §9.6 as-built amendment and remote-sources.md §2d (if rpc-32);
   the Order 31 record-only rulings written down; B253's ruling cited from A85.
 - Kolt follow-ups AT THE OWNER'S WORD (nothing in this order touches kolt): delete
