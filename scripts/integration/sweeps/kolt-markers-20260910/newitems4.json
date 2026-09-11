@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B292",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `drain` has no exception safety: a throw inside ANY notify (`(subscriber.notify)()` in `reactive.vl`'s drain loop — a panic in an observer, a host API that throws such as Chrome's `insertRule` on a selector it refuses) unwinds past `draining_turns.pop()` and `draining = false`, so the turn stays DRAINING forever and on the `draining_turns` stack; every later write that resolves to it — a settled capture's late path (`enqueue` skips the microtask while `draining`), and EVERY no-ambient-turn `set`/`at_settle`, which join `draining_turns.last()` — enqueues and never flushes. One error turns the reactive graph off for the rest of the session with no second error to show for it",
+   "discussion": "found reading the drain while investigating kolt's Chrome-only pointer freeze (2026-09-11; the freeze's mechanism still open — this is one of the two candidates: buttons whose writes resolve to the stuck turn stop working while the page stays alive); not reproduced, established by reading `drain`/`enqueue`/`at_settle`",
+   "status": "OPEN — kolt investigation (2026-09-11)",
+   "area": "Reactive core & UI",
+   "body": "Make the drain loop exception-safe: run each notify under a guard that on a throw records the error, restores `draining = false`, pops `draining_turns`, and RETHROWS after the wave (or reports through the host console with the subscriber's origin) — the turn must never be left draining. Pin: an observer that panics once; a later `set` on another signal captured under the same turn still reaches its observers, and the panic surfaced. Consider the same guard around `Owner::dispose`'s cleanup loop (a throwing cleanup leaves the rest undisposed)."
+  }
+ ]
+}
