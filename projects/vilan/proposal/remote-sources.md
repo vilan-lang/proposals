@@ -374,6 +374,13 @@ existing rule rather than inventing a second one.
 
 ### 2d. `status()` — passive, and the sentence that goes with it
 
+> **AS BUILT, Order 33 (A92):** `Status` has FOUR arms — `Waiting`, `Ready`, `Absent` (the
+> `Option` handle form's `None` reply), `Failed(RpcError)` (a failed mint; the next 0→1 lease
+> retries). The honest sentence survives verbatim and gains one: an UNWATCHED handle mirror has
+> not even asked. §3's "the server does not rely on a counted client" now holds for what the
+> server SENDS and not for when it STOPS: a demand's forward is hold-counted (two `Subscribe`s
+> need two `Unsubscribe`s) — transport-rpc.md §9.6b.
+
 ```vilan
 [derive(PartialEq, Debug)]
 enum Status {

@@ -332,3 +332,19 @@ context-carrying closure field must be probed first (§5), the split recognizer 
 learn the value form (§8.1), and the process twin plus `ssr_differential` must move in
 step. Roughly: ~250 lines of std across the two twins, ~120 lines in `chunks.rs` /
 `transformer.rs`, ~300 lines of pins, three docs pages. An L only if Q3 is folded in.
+
+## 10. As built — Order 33 (2026-09-11, lane slots-33)
+
+A46 and A88 landed as §4 and §3e imply; A85 did not, and §5's own instruction held: the value
+forms are NOT expressible today, because a `context` clause lives on a PARAMETER and nowhere
+else (recorded by parameter id; `Type::Closure` carries none; `context.rs` keys on locals), so a
+struct field typed `(sync || View) context owner_scope` is refused three ways — and the
+plain-closure fallback the work order substituted is not a fallback: a closure captures its
+context at CREATION, so after a `when` toggled off and its owner was disposed, the body's effect
+still fired (measured). Every body, row and page would leak into the enclosing boundary. Four
+pins in `inference/bounds.rs` hold the wall (one control goes red the day it lifts). The
+blocker is B309 (context clauses on struct fields, generic arguments and returns); A85 and A91
+wait on it. The split gate (§8.1) was not touched — there is no value form for it to learn yet.
+Re-ruling asked of the owner: (a) build B309 first, then A85 as ruled (recommended); (b) ship
+with the ownership divergence documented (recommended against); (c) a `Render` trait the app
+implements per body (works, verbose).

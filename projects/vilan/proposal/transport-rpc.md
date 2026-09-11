@@ -1495,6 +1495,45 @@ knows which sentences are now history.
 > the same shape — the rpc-32 brief stands in `briefs32.md`) and B287 (P4).
 > **RULED 2026-09-11 (owner): P1–P3 as recommended (A92, built by Order 33's rpc-33 with A79); P4 refuse (B287, rpc-smalls-33).**
 
+### 9.6b As built — Order 33 (2026-09-11, lane rpc-33: A92 + A79)
+
+- **The handle stub is SYNC and makes no call.** `[rpc] fun get_message(self, id: str):
+  SignalCell<MessageBody>` becomes `fun get_message(self, id: str): RemoteSource<MessageBody>`;
+  the mirror is minted UNLEASED (channel `-1`, `released = true`) and the first 0→1 lease runs
+  the shipped `acquire → remint → rebind` path — the first mint IS the re-mint path. Measured on
+  the demand pin: 100 handles minted = 1 source, 0 calls (was 101 / 100); 10 leased = 11 sources,
+  10 calls; re-acquired after release = 1 more call. The laziness reaches the CALL, not only the
+  subscription, and a handle method's body runs at the first lease, not at the stub call.
+- **§9.2's mapping table, corrected:** `SignalCell<T>` ⇒ `RemoteSource<T>` (sync, no `Result`);
+  `Option<SignalCell<T>>` ⇒ `RemoteSource<T>` whose `None` reply reads `Status::Absent`;
+  `KeyedCell<K, T>` ⇒ `KeyedSource<K, T>` (A79, the same shape, no per-key hop);
+  `Option<KeyedCell<..>>` is deliberately NOT a handle. "Any `S: Source<T>`" stays
+  unimplementable (the written spelling is the recognition, as Order 31 found).
+- **`Status` has four arms:** `Waiting`, `Ready`, `Absent`, `Failed(RpcError)`; `Absent` and
+  `Failed` are handle-only, cleared by the rebind, retried at the next 0→1 lease. `.or(seed)`
+  is reachable at the call site; kolt's `Task::remote_signal` bridge is retired.
+- **The surface hash:** the plain handle form is UNMOVED (`da79e00b`; the handle-free control
+  `78bdada7` unmoved); the `Option` form MOVED (`5f491b0a` → `384b5434`) and is written
+  `..->RemoteSource<T>?;` — the two forms answer one client type but DECODE differently (`i32`
+  vs `Option<i32>`), and collapsing them would let a client read the other's `null` as a channel
+  id. `Origin.reissue` is three-valued: `Result<Option<i32>, RpcError>`.
+- **Server dedup by source identity:** `expose_dynamic` keys the capability by `SignalCell.id`
+  (a `fresh_id()` stamped at construction — twelve goldens moved for it; a lazily-stamped
+  identity is filed as the cheaper form); two replies carrying one cell share one channel; the
+  per-channel `Subscribe` count lives on the forward (`LiveForward.holds`, per DEMAND), and
+  `release_demand` revokes at zero — never under another mirror. A `KeyedCell`'s `elements` IS a
+  `SignalCell`, so a service answering both would have deduped a `Patch` channel and an
+  `Update` channel onto one id; `dynamic_channel_for(identity, keyed)` discriminates on frame
+  shape. Consequence for §3 of remote-sources.md: a demand's forward is hold-counted, so two
+  `Subscribe`s need two `Unsubscribe`s — the server no longer relies on a counted client for
+  WHEN it stops, only for what it sends.
+- **`std::memo`:** `Memo<K: Hashable, V>` (`new`/`get_or`/`get`/`forget`/`clear`/`len`), the
+  maker at the call site — the app's composition tool; the stub does not auto-memo (P2).
+- Owner questions left: the `?` surface marker (vs keeping `Option<RemoteSource<T>>` in the
+  surface); `Absent` as a retry (built) or a final answer; client-side per-channel demand
+  coordination to restore §3's letter; the seed now arrives one round trip later (the mint and
+  a concurrent write in flight together — `examples/rpc` lost its `note = (empty)` line).
+
 ## 10. Where it lives
 
 A `[library]` package, `std::rpc` (or a standalone `rpc` library), providing the stable

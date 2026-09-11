@@ -462,6 +462,13 @@ That is what §6 is for.
 
 ### 5.3 Nested rules lower to combinators, also name-blind
 
+> **AS BUILT, Order 33 (A89):** the name-blind rule held with no change to `css.rs` — `.not { … }`
+> lowers to `.not(style() …)` and `.attribute("data-selected", None) { … }` passes its `Option`
+> through the head's ordinary expressions (both pinned). Combinators have NO free-function
+> forms (`style/prelude.vl` aliases only the `Length`/`Color` constructors and `s()`), so the
+> chain spelling is `style().attribute("disabled", None, style().not(style().hover(S)))` and the
+> block spelling is the one above.
+
 `.hover { … }` → `.hover(style() … )`. The rule is general: **a dotted head
 lowers to a method call with the block's own chain appended as the final
 argument.** Checked against every combinator that exists — `hover`, `focus`,

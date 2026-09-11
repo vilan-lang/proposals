@@ -737,6 +737,18 @@ nothing else moves with it.
 
 ### 0bis.6 Design — the relation axis (kolt.local 009+014, ruled 2026-08-27, designed 2026-08-28)
 
+> **Order 33 (A89) — one row the ledger did not have:** a NEGATED ancestor guard is the only
+> rule a negation moves between cascade BANDS. `:not([data-theme="dark"]) .sX` opens with `:`
+> where `[data-theme="dark"] .sX` opened with `[`, so it sorts into the pseudo band; specificity
+> is unchanged (`:not(x)` counts as `x`), so the only outcome the band decides is a (0,2,0) tie
+> between a negated guard and a plain pseudo rule, which now falls to the pseudo. Written at
+> `render_rule`, pinned (`a_negated_attribute_rule_outranks_the_plain_pseudo_rule` and its
+> siblings in `inference/styling.rs`). The `not` marker itself: `fun not(self, inner: Style)`
+> marks the inner's slots (a pending `!` in the condition grammar) and the immediately enclosing
+> condition combinator emits its own selector negated; `attribute`/`within` take
+> `value: Option<str>` (`None` = presence). §846's "unconditioned inner" fence on the child
+> relations stands; `child_relation`'s message now steers to `attribute(..)`.
+
 > **RATIFIED 2026-08-28 (the owner, on the Order 17 close report).** Both
 > probe-driven determinations stand as built: `within` emits UNLAYERED (the
 > asymmetric layer split), and `divide` renders `> :not(:first-child)`. The
