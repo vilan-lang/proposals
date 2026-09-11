@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B293",
+   "section": "B",
+   "kind": "bug",
+   "title": "NEW — `std::router::link` (and the guide's `<a href on:click>` idiom) builds a DRAGGABLE anchor: Chrome arms a link drag on every mousedown on an anchor with an `href`, and an in-app navigation completed under that armed press sometimes leaves Blink's mouse routing STUCK — hover, `:active`, clicks and even the native scrollbars go dead while wheel scrolling (compositor-driven) keeps working and the console stays alive, until the tab loses focus. Reproduced by the owner in kolt (Chrome 153.0.8010.37, not in Firefox-based Zen) switching channels quickly; bisected to the anchor's `href` — removing it, OR `draggable=\"false\"` with it kept, ends the freeze; deferring the navigation does not matter",
+   "discussion": "kolt investigation 2026-09-11 (the 'freeze' reported as a hang was a dead-pointer state; headless harnesses cannot see it — it lives in Blink's press/drag routing); kolt's sidebar link carries the fix and the explanation",
+   "status": "OPEN — kolt investigation (2026-09-11)",
+   "area": "Reactive core & UI",
+   "body": "`link` sets `draggable=\"false\"` on the anchor it builds (the href stays: middle-click, ctrl-click and copy-link keep native behaviour, only the drag arming goes); the guide's hand-written `<a href on:click>` idiom in `guide/routing` (and wherever the sidebar pattern is shown) gains the attribute with one sentence on why; consider a `View::link_to(route)` chain so an app styling its own anchor gets the attribute without knowing the story. Pin: the built anchor carries `draggable=\"false\"`. The Chrome mechanism is not ours to fix, but a note in the tour's browser-quirks list is owed."
+  }
+ ]
+}
