@@ -189,6 +189,36 @@
    "discussion": "wire-32's find F5 and open Q1 (2026-09-11); the owner may prefer the six methods now — say so and it moves to A82's residue",
    "status": "OPEN — Order 32's finds (2026-09-11)",
    "body": "Per-width visitor methods with defaults that ride the wide lane (so a codec opts in); the binary codec writes the narrow width; the JSON codec unchanged. Measure a frame-heavy exhibit before building."
+  },
+  {
+   "id": "B305",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — a NON-EMPTY list literal whose element type is `Unknown` types as an ERASED `List` (no arguments) that reconciles with anything: the `Expr::List` arm's `if matches!(element_type, Type::Unknown) { Vec::new() }` — the EMPTY-literal path deliberately mints a slot instead (B16: a zero-argument `List` made every method call on it vacuous), the non-empty path still erases; B288 closed its struct-literal door by deferring upstream, but the erasure is still manufactured and any other consumer of an unfilled closure parameter's literal reaches it",
+   "discussion": "solver-32's find F1 (2026-09-11); evidence: the pre-fix trace `body_type=Remote<List> target=Remote<List<str>>` → matched",
+   "status": "OPEN — Order 32's finds (2026-09-11)",
+   "body": "Mint a slot for the non-empty path exactly as the empty path does (one arm), then sweep for the consumers that relied on the erasure (the infer differential and the corpus are the net). Pin: a `[x]` over an unfilled `x` never types as a bare `List`."
+  },
+  {
+   "id": "B306",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — `bind_callee_own_generics` silently DROPS a failed reconcile: a closure argument whose type contradicts the substituted parameter binds nothing and reports nothing there, so detection depends entirely on a later check — not exploitable after B288 in the shapes probed, but it is why B288's hole was invisible",
+   "discussion": "solver-32's find F2 (2026-09-11)",
+   "status": "OPEN — Order 32's finds (2026-09-11)",
+   "body": "Record the failed reconcile as a candidate diagnostic (deduped against the later check's, B5's rule) or assert that a later check always fires for the shape; pin a closure argument contradicting a substituted parameter with NO later consumer."
+  },
+  {
+   "id": "B307",
+   "section": "B",
+   "kind": "design",
+   "area": "Type system & the type solver",
+   "title": "NEW — an ELIDED `with` clause over a parameterised trait is PADDED, not checked: `effective_trait_arguments_of` fills a missing argument with the trait's own declared parameter, so `impl DogBox with Holder` (a bounded, non-defaulted parameter left unwritten) is accepted at the clause — B188's erasure in another position; its comment's claim that over-supply 'is already an arity error elsewhere' was false until B273",
+   "discussion": "solver-32's find F3 and open Q2 (2026-09-11); a new refusal on a supported spelling is a semantics call — the estate has no instance to force it; OWNER Q",
+   "status": "OPEN — Order 32's finds (2026-09-11); OWNER Q",
+   "body": "Rule: under-supply is an arity error like over-supply (B188's row, the honest reading — a bounded parameter cannot be inferred from nothing), or a documented elision that means 'the trait's own parameter' (then say so on the trait page). Rec: refuse; pin either way."
   }
  ]
 }

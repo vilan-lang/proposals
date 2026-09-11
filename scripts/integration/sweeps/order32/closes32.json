@@ -2,20 +2,125 @@
  "date": "2026-09-11",
  "order": "Order 32",
  "closes": [
-  {"id": "B282", "lane": "rpc-smalls-32", "commit": "fb9e8c4e", "text": "FIXED — `route_block` names the route closure's parameter `__request` and threads it into `arg`/`decode_failed`/`reply_source*`/`__attach`, so an `[rpc]` parameter named `request` no longer shadows the handle; pinned on a one-parameter, a multi-parameter and a no-argument route (non-vacuity proven by reverting the rename). Residue: `__request` is now the reserved binding, and an `[rpc]` method named `call` (or a `[client_service]` method named `notify`) still collides with the generated stub's free call — filed as their own items"},
-  {"id": "B284", "lane": "rpc-smalls-32", "commit": "0e2fc458", "text": "FIXED — `[expose]` on a struct carrying only `[client_service]` is refused at the attribute in the field's vocabulary (ledger row 412; `client_only_service_declarations` filled in the `Node::Service` arm, read by an early arm at the top of `check_expose_fields`); the peer struct that also serves stays admitted (control pin)"},
-  {"id": "B285", "lane": "rpc-smalls-32", "commit": "097bf774", "text": "FIXED — `[expose(keyed = K2)]` over a `KeyedCell<K, T>` with `K2 ≠ K` is refused at the attribute, span on the argument, row 407's shape (ledger row 413, a sibling of 407 — the text names the cell's key); before the fix `keyed = i32` and `keyed = str` over one cell hashed identically (`f53b6a70`), proving the argument was read by nothing"},
-  {"id": "A78", "lane": "rpc-smalls-32", "commit": "13051db2", "text": "BUILT, differently from the item: the premise ('a mount with no socket leg') was false — `ServerBuilder::build` installs the WebSocket leg beside every mounted service's POST leg — so the only connectionless mount is `local_rpc`, which is now REFUSED AT WIRING when its protocol is unstamped and carries handle methods (`Dispatcher.handle_methods` → `RpcProtocol.handle_methods`, emitted only for a handle service; the contract hash is unmoved), naming the method and both ways out; the `{mount}rpc` POST leg's runtime failure names the method and the transport that works; guide/services.md + std/rpc.md's transports table. Open for the owner: whether the wiring refusal (which newly refuses an in-process handle service whose caller uses only plain methods — nothing in the estate does) should revert to the per-call message alone"},
-  {"id": "B294", "lane": "smalls-32", "commit": "b5365f0a", "text": "BUILT — `_` in a type position, optionally `: bounds`, parses as the same `Node::TypeBinder` as `type _` (`ANONYMOUS_TYPE_BINDER`); `vilan fmt` prints the wildcard. The check the item asked for found a BUG: two `type _` binders in one impl head ALIASED to one parameter at 65af4be0 (`impl Pair<type _: PartialEq, type _: PartialEq>` comparing the two fields compiled) — fixed by withdrawing the anonymous name from the head's scope and filing the parameter by its span (`anonymous_binder_scopes`, scoped to impl subjects; a declared generic named `_` still resolves by name). A placeholder `_` outside an impl head gets a curated refusal (ledger row 414). Spec grammar.md §3.9 + types.md §5.4; eleven inference pins, two parser pins, one formatter pin"},
-  {"id": "E161", "lane": "smalls-32", "commit": "ccbc995d", "text": "FIXED, with the owner's three observations ATTRIBUTED: the `type` binder coloured as a type came from the SEMANTIC layer (vilan-lsp spanned the binder's entity by its whole node, one `TypeParameter` token whose fallback scope is `entity.name.type`) — `Node::TypeBinder` now carries the name's span, which also fixes go-to-definition on a binder; `<type` as a tag delimiter and the operator/terminator brackets were TEXTMATE's — a `generics` begin/end rule (`meta.generic.vilan`, self-including so `>>>` closes three), the binder keyword → `keyword.other.type-binder.vilan`, `_` → `variable.language.wildcard.vilan`, the element rule and the book's `ELEMENT_TAG` (vilan.js) refuse a `<` that follows an identifier character. Five regex/order pins beside `grammar_sync` + one in document.rs; no generated fragment moved. UNVERIFIED half: a real tokenisation needs `vscode-textmate` + `vscode-oniguruma` as extension devDependencies (a new dependency — the lane stopped and asked)"},
-  {"id": "B291", "lane": "reactive-32", "commit": "9577026f", "text": "FIXED — `Owner` carries `disposed` (+ `is_disposed()`); `take`/`defer` on a disposed owner release on the spot; `dispose` is idempotent with the flag raised before the loop. The mirror half was measured both ways (the general `take` fix: `up=2 down=1`, live=0, the observer fires once with the seed; an `is_disposed` check before leasing: 0/0, never fires) and the general fix was built as the backstop every path shares. BREAKING, disclosed: an `Owner` is now single-use — dispose-then-refill on the same owner releases each new item at once (nothing in std/examples/docs/kolt did it; the one shipped pin that did, `owner_disposes_subscriptions_across_re_renders`, mints a fresh owner per render now). Three pins, all planted-bug non-vacuous"},
-  {"id": "B292", "lane": "reactive-32", "commit": "f90a0855", "text": "FIXED — two runtime helpers in the `__db_exec_guarded` shape, `__with_finally` (try/finally) and `__guarded` (try/catch → `Option<str>`), with matching interpreter arms; `drain`'s wave loop runs under the finally so the turn is restored on any exit and the original error leaves untouched (the rest of that wave is abandoned — the catch-and-continue form is a one-line swap at ~1.3 kIr per drain); `Owner::dispose` takes the opposite guard (per-cleanup catch, first failure panicked after the group is released). Cost: +0.436% Ir at 20k drains × 16 notifies, +0.031% at 1,250 × 256 — ~1.3 kIr per drain, 0 per notify. Pin: a throwing observer leaves the turn drainable and the error visible (planted-bug run reproduced the dead graph)"},
-  {"id": "B283", "lane": "reactive-32", "commit": "5d1760e1", "text": "FIXED (the narrow shape) — `Subscription::dispose` publishes the ambient turn on a `releasing_turns` stack for the release hook's duration (under `with_finally`); a new `at_release_settle` reads it; `at_settle` is refactored onto a shared `defer_to_turn` with its own rule untouched; the three mirror release paths (`RemoteSource::release`, `KeyedSource::release`, `KeyedSource::release_key`) use it. Reproduced `same-turn:up=2 down=1` first; after: 0/0, the four A25 pins and the macrotask-hop pin green throughout"},
-  {"id": "B277", "lane": "reactive-32", "commit": "ac8fd66c", "text": "FIXED — a third helper `__with_finally_async` (kept apart from the sync one, which sits on the drain hot path) wraps `Debounce::run`'s driving loop so `running` clears on every unwind, a nursery cancellation included; `pending`/`timer` untouched (the next `run` opens a fresh window). Pin: cancel the nursery mid-window, then `run` — fires. Residue: a callback that THROWS killed the loop the same way and is fixed by the same finally but not pinned (a free-task failure reports to the console) — filed"},
-  {"id": "B289", "lane": "wire-32", "commit": "3f310c37", "text": "FIXED — one predicate, `resolved_type_is_wire`, at all FOUR Wire boundaries (the derive field check, the `[rpc]` parameter/return, the handle element = row 411, the `[expose]` element), whose last word is `satisfies_trait_bound(type, wire_trait_id, ..)` — a hand-written `impl .. with Wire` is read, recursing into arguments only where the impl's own bounds demand it (C7's phantom rule without a special case); the syntactic `is_wire_type` is DELETED (no callers left) and the name arms stay in front as the fast path, so the change only admits; all four texts now end '…a `[derive(Wire)]` type, or a type with an `impl .. with Wire`' and name `Map` (row edits; only 411 re-keyed). The only syntactic remainder is which written spelling counts as a handle return — a generator question. Nine pins over a user enum `Outcome<T, E>` (5 of 9 red with the table consultation planted out)"},
-  {"id": "A82", "lane": "wire-32", "commit": "b919c708", "text": "BUILT — `impl Result<type T: Wire, type E: Wire> with Wire` beside `Option`'s (variant-name tags, hash-stable) and the sized numeric family `i8`/`u8`/`i16`/`u16`/`u53`/`f32`, the analyzer's one scalar list (`WIRE_SCALAR_NAMES`) moved in the same commit; the sized widths RIDE the existing six visitor lanes (lossless both ways at both ends of every range, both codecs) rather than adding six methods to both traits, both records and both codecs (open for the owner); an unknown `Result` tag is a sticky decode failure, not a panic. Pins: both codecs, the sticky tag, the family at both ends, a real-socket `Result` over a `u53` id at 2^53; the contract-hash control 78bdada7 unmoved. Docs: std/encoding.md, guide/services.md, appendix/errors.md, glossary. Residue: `[derive(Wire)]` still emits the JSON impls, so `Result` works as an `[rpc]` RETURN (the item's case) but not yet as a derived FIELD — filed"},
-  {"id": "B293", "lane": "ui-32", "commit": "e049b099", "text": "FIXED — `link` sets `draggable=\"false\"` (href kept); the body moved into a new `View::link_to(route)` chain so an app styling its own anchor gets href + attribute + plain-left-click interception (new surface under the item's 'consider' clause — the owner may drop it); guide/routing.md, appendix/gotchas.md (the per-tab Chrome mechanism), std/browser.md. The guide had NO hand-written `<a href on:click>` idiom to amend. Pin `b293_the_anchor_link_builds_is_not_drag_armed` (both spellings; plain click intercepted, modified click passes; non-vacuous)"},
-  {"id": "A83", "lane": "ui-32", "commit": "a1a43084", "text": "BUILT — `Vec2 { x: f64, y: f64 }` in `std::math` with `scale`/`length`/`distance`/`dot` and hand-written `Add`/`Sub`/`PartialEq`; corpus `vilan/test/vec2.vl` + golden (three witnesses); std/numbers.md row + example. Not added (owner's call): `length_squared`, `Mul<f64>`. kolt's `magnitude` migrates at the owner's word"},
-  {"id": "A71", "lane": "ui-32", "commit": "202aadee", "text": "BUILT — the anchor is an EMPTY TEXT NODE (serializes to nothing, so the browser tree and the process twin's HTML stay byte-comparable; a comment would not); `Element::insert_before(child, anchor: Text)` + `Text::remove` in dom.vl; `Region { parent, anchor }` (`open`/`insert`/`close`) in browser/ui.vl; `when`, `swap`, `bind_each` ×3 and the `Source<View>`/`Source<List<View>>` arms open a region where they are called and insert before it — signatures unchanged, 'put it last' removed. Cost on 1,000 rows between a header and a footer through refresh/reorder/restore: +0.22% Ir, ONE node and ONE host insertion per region, ZERO per row (4,003 → 4,004 insertions). Five `ui_rows.rs` pins (four red under insert→append). Side effect: fixed a latent kolt position bug (views.vl:564/:776 re-appended their rows behind the empty-state div on every keystroke). The process twin declares `Region` for the twin-surface gate and calls it nowhere (a server render is one pass in source order; routing it through would move the ssr-render golden to say the same thing). A85's brick"}
+  {
+   "id": "B282",
+   "lane": "rpc-smalls-32",
+   "commit": "fb9e8c4e",
+   "text": "FIXED — `route_block` names the route closure's parameter `__request` and threads it into `arg`/`decode_failed`/`reply_source*`/`__attach`, so an `[rpc]` parameter named `request` no longer shadows the handle; pinned on a one-parameter, a multi-parameter and a no-argument route (non-vacuity proven by reverting the rename). Residue: `__request` is now the reserved binding, and an `[rpc]` method named `call` (or a `[client_service]` method named `notify`) still collides with the generated stub's free call — filed as their own items"
+  },
+  {
+   "id": "B284",
+   "lane": "rpc-smalls-32",
+   "commit": "0e2fc458",
+   "text": "FIXED — `[expose]` on a struct carrying only `[client_service]` is refused at the attribute in the field's vocabulary (ledger row 412; `client_only_service_declarations` filled in the `Node::Service` arm, read by an early arm at the top of `check_expose_fields`); the peer struct that also serves stays admitted (control pin)"
+  },
+  {
+   "id": "B285",
+   "lane": "rpc-smalls-32",
+   "commit": "097bf774",
+   "text": "FIXED — `[expose(keyed = K2)]` over a `KeyedCell<K, T>` with `K2 ≠ K` is refused at the attribute, span on the argument, row 407's shape (ledger row 413, a sibling of 407 — the text names the cell's key); before the fix `keyed = i32` and `keyed = str` over one cell hashed identically (`f53b6a70`), proving the argument was read by nothing"
+  },
+  {
+   "id": "A78",
+   "lane": "rpc-smalls-32",
+   "commit": "13051db2",
+   "text": "BUILT, differently from the item: the premise ('a mount with no socket leg') was false — `ServerBuilder::build` installs the WebSocket leg beside every mounted service's POST leg — so the only connectionless mount is `local_rpc`, which is now REFUSED AT WIRING when its protocol is unstamped and carries handle methods (`Dispatcher.handle_methods` → `RpcProtocol.handle_methods`, emitted only for a handle service; the contract hash is unmoved), naming the method and both ways out; the `{mount}rpc` POST leg's runtime failure names the method and the transport that works; guide/services.md + std/rpc.md's transports table. Open for the owner: whether the wiring refusal (which newly refuses an in-process handle service whose caller uses only plain methods — nothing in the estate does) should revert to the per-call message alone"
+  },
+  {
+   "id": "B294",
+   "lane": "smalls-32",
+   "commit": "b5365f0a",
+   "text": "BUILT — `_` in a type position, optionally `: bounds`, parses as the same `Node::TypeBinder` as `type _` (`ANONYMOUS_TYPE_BINDER`); `vilan fmt` prints the wildcard. The check the item asked for found a BUG: two `type _` binders in one impl head ALIASED to one parameter at 65af4be0 (`impl Pair<type _: PartialEq, type _: PartialEq>` comparing the two fields compiled) — fixed by withdrawing the anonymous name from the head's scope and filing the parameter by its span (`anonymous_binder_scopes`, scoped to impl subjects; a declared generic named `_` still resolves by name). A placeholder `_` outside an impl head gets a curated refusal (ledger row 414). Spec grammar.md §3.9 + types.md §5.4; eleven inference pins, two parser pins, one formatter pin"
+  },
+  {
+   "id": "E161",
+   "lane": "smalls-32",
+   "commit": "ccbc995d",
+   "text": "FIXED, with the owner's three observations ATTRIBUTED: the `type` binder coloured as a type came from the SEMANTIC layer (vilan-lsp spanned the binder's entity by its whole node, one `TypeParameter` token whose fallback scope is `entity.name.type`) — `Node::TypeBinder` now carries the name's span, which also fixes go-to-definition on a binder; `<type` as a tag delimiter and the operator/terminator brackets were TEXTMATE's — a `generics` begin/end rule (`meta.generic.vilan`, self-including so `>>>` closes three), the binder keyword → `keyword.other.type-binder.vilan`, `_` → `variable.language.wildcard.vilan`, the element rule and the book's `ELEMENT_TAG` (vilan.js) refuse a `<` that follows an identifier character. Five regex/order pins beside `grammar_sync` + one in document.rs; no generated fragment moved. UNVERIFIED half: a real tokenisation needs `vscode-textmate` + `vscode-oniguruma` as extension devDependencies (a new dependency — the lane stopped and asked)"
+  },
+  {
+   "id": "B291",
+   "lane": "reactive-32",
+   "commit": "9577026f",
+   "text": "FIXED — `Owner` carries `disposed` (+ `is_disposed()`); `take`/`defer` on a disposed owner release on the spot; `dispose` is idempotent with the flag raised before the loop. The mirror half was measured both ways (the general `take` fix: `up=2 down=1`, live=0, the observer fires once with the seed; an `is_disposed` check before leasing: 0/0, never fires) and the general fix was built as the backstop every path shares. BREAKING, disclosed: an `Owner` is now single-use — dispose-then-refill on the same owner releases each new item at once (nothing in std/examples/docs/kolt did it; the one shipped pin that did, `owner_disposes_subscriptions_across_re_renders`, mints a fresh owner per render now). Three pins, all planted-bug non-vacuous"
+  },
+  {
+   "id": "B292",
+   "lane": "reactive-32",
+   "commit": "f90a0855",
+   "text": "FIXED — two runtime helpers in the `__db_exec_guarded` shape, `__with_finally` (try/finally) and `__guarded` (try/catch → `Option<str>`), with matching interpreter arms; `drain`'s wave loop runs under the finally so the turn is restored on any exit and the original error leaves untouched (the rest of that wave is abandoned — the catch-and-continue form is a one-line swap at ~1.3 kIr per drain); `Owner::dispose` takes the opposite guard (per-cleanup catch, first failure panicked after the group is released). Cost: +0.436% Ir at 20k drains × 16 notifies, +0.031% at 1,250 × 256 — ~1.3 kIr per drain, 0 per notify. Pin: a throwing observer leaves the turn drainable and the error visible (planted-bug run reproduced the dead graph)"
+  },
+  {
+   "id": "B283",
+   "lane": "reactive-32",
+   "commit": "5d1760e1",
+   "text": "FIXED (the narrow shape) — `Subscription::dispose` publishes the ambient turn on a `releasing_turns` stack for the release hook's duration (under `with_finally`); a new `at_release_settle` reads it; `at_settle` is refactored onto a shared `defer_to_turn` with its own rule untouched; the three mirror release paths (`RemoteSource::release`, `KeyedSource::release`, `KeyedSource::release_key`) use it. Reproduced `same-turn:up=2 down=1` first; after: 0/0, the four A25 pins and the macrotask-hop pin green throughout"
+  },
+  {
+   "id": "B277",
+   "lane": "reactive-32",
+   "commit": "ac8fd66c",
+   "text": "FIXED — a third helper `__with_finally_async` (kept apart from the sync one, which sits on the drain hot path) wraps `Debounce::run`'s driving loop so `running` clears on every unwind, a nursery cancellation included; `pending`/`timer` untouched (the next `run` opens a fresh window). Pin: cancel the nursery mid-window, then `run` — fires. Residue: a callback that THROWS killed the loop the same way and is fixed by the same finally but not pinned (a free-task failure reports to the console) — filed"
+  },
+  {
+   "id": "B289",
+   "lane": "wire-32",
+   "commit": "3f310c37",
+   "text": "FIXED — one predicate, `resolved_type_is_wire`, at all FOUR Wire boundaries (the derive field check, the `[rpc]` parameter/return, the handle element = row 411, the `[expose]` element), whose last word is `satisfies_trait_bound(type, wire_trait_id, ..)` — a hand-written `impl .. with Wire` is read, recursing into arguments only where the impl's own bounds demand it (C7's phantom rule without a special case); the syntactic `is_wire_type` is DELETED (no callers left) and the name arms stay in front as the fast path, so the change only admits; all four texts now end '…a `[derive(Wire)]` type, or a type with an `impl .. with Wire`' and name `Map` (row edits; only 411 re-keyed). The only syntactic remainder is which written spelling counts as a handle return — a generator question. Nine pins over a user enum `Outcome<T, E>` (5 of 9 red with the table consultation planted out)"
+  },
+  {
+   "id": "A82",
+   "lane": "wire-32",
+   "commit": "b919c708",
+   "text": "BUILT — `impl Result<type T: Wire, type E: Wire> with Wire` beside `Option`'s (variant-name tags, hash-stable) and the sized numeric family `i8`/`u8`/`i16`/`u16`/`u53`/`f32`, the analyzer's one scalar list (`WIRE_SCALAR_NAMES`) moved in the same commit; the sized widths RIDE the existing six visitor lanes (lossless both ways at both ends of every range, both codecs) rather than adding six methods to both traits, both records and both codecs (open for the owner); an unknown `Result` tag is a sticky decode failure, not a panic. Pins: both codecs, the sticky tag, the family at both ends, a real-socket `Result` over a `u53` id at 2^53; the contract-hash control 78bdada7 unmoved. Docs: std/encoding.md, guide/services.md, appendix/errors.md, glossary. Residue: `[derive(Wire)]` still emits the JSON impls, so `Result` works as an `[rpc]` RETURN (the item's case) but not yet as a derived FIELD — filed"
+  },
+  {
+   "id": "B293",
+   "lane": "ui-32",
+   "commit": "e049b099",
+   "text": "FIXED — `link` sets `draggable=\"false\"` (href kept); the body moved into a new `View::link_to(route)` chain so an app styling its own anchor gets href + attribute + plain-left-click interception (new surface under the item's 'consider' clause — the owner may drop it); guide/routing.md, appendix/gotchas.md (the per-tab Chrome mechanism), std/browser.md. The guide had NO hand-written `<a href on:click>` idiom to amend. Pin `b293_the_anchor_link_builds_is_not_drag_armed` (both spellings; plain click intercepted, modified click passes; non-vacuous)"
+  },
+  {
+   "id": "A83",
+   "lane": "ui-32",
+   "commit": "a1a43084",
+   "text": "BUILT — `Vec2 { x: f64, y: f64 }` in `std::math` with `scale`/`length`/`distance`/`dot` and hand-written `Add`/`Sub`/`PartialEq`; corpus `vilan/test/vec2.vl` + golden (three witnesses); std/numbers.md row + example. Not added (owner's call): `length_squared`, `Mul<f64>`. kolt's `magnitude` migrates at the owner's word"
+  },
+  {
+   "id": "A71",
+   "lane": "ui-32",
+   "commit": "202aadee",
+   "text": "BUILT — the anchor is an EMPTY TEXT NODE (serializes to nothing, so the browser tree and the process twin's HTML stay byte-comparable; a comment would not); `Element::insert_before(child, anchor: Text)` + `Text::remove` in dom.vl; `Region { parent, anchor }` (`open`/`insert`/`close`) in browser/ui.vl; `when`, `swap`, `bind_each` ×3 and the `Source<View>`/`Source<List<View>>` arms open a region where they are called and insert before it — signatures unchanged, 'put it last' removed. Cost on 1,000 rows between a header and a footer through refresh/reorder/restore: +0.22% Ir, ONE node and ONE host insertion per region, ZERO per row (4,003 → 4,004 insertions). Five `ui_rows.rs` pins (four red under insert→append). Side effect: fixed a latent kolt position bug (views.vl:564/:776 re-appended their rows behind the empty-state div on every keystroke). The process twin declares `Region` for the twin-surface gate and calls it nowhere (a server render is one pass in source order; routing it through would move the ssr-render golden to say the same thing). A85's brick"
+  },
+  {
+   "id": "B290",
+   "lane": "solver-32",
+   "commit": "1028cdb2",
+   "text": "FIXED — `resolve_is` lacked the defer `resolve_match` (B23) and `resolve_subscript` (B129) have: it resolved on the `Unknown` an unannotated closure parameter reads before its call fills it, so `resolve_pattern` read the payload off the enum's DECLARATION (a free `T`) and, resolution being monotone, never revisited. One guard. Ten pins beside B23's (seven red with the defer planted out; `match` was already right and is the control; the annotated parameter stays the control). Not one root with B288 — verified by landing this first and re-running every B288 face"
+  },
+  {
+   "id": "B288",
+   "lane": "solver-32",
+   "commit": "3aafe281",
+   "text": "FIXED — the item's mechanism was wrong (`reconcile_type` already descends user struct applications; the closure-return sites are fine); the two real roots: the STRUCT-LITERAL door — `check_field_value` deferred on `Unresolved` but not on an unfilled closure parameter's `Unknown`, so `resolve_struct_initializer` published and CACHED `Remote<any>`/`Remote<List>` (an erased argument the list-literal arm manufactures), which reconcile with anything — now deferred while the field value's subtree awaits a closure parameter; and the READINESS gate — `own_generics_unbound` treated `U := List<?>` (an empty `[]` binding) as an answer so B19's closure-retry defer never fired — now `own_generics_undetermined` at that gate. The item's claim that the `Option`/`List` shapes 'all bind and all refuse' was false: a 16-program matrix was wrong in four places, uniformly right now. Ten `generics.rs` pins + a three-way `service_layer` pin over a real generated client (wrong annotation refused naming `SignalCell<List<i53>>`, right green, none green). Kolt builds with all three `remote_signal` FIXME annotations deleted"
+  },
+  {
+   "id": "B273",
+   "lane": "solver-32",
+   "commit": "1405ca7e",
+   "text": "FIXED — a third recording site for the written-bound check at the conformance drain (arity via B188's message, bounds via B251's; no new row). The census the item demanded ran first: parameterised `with` clauses std 24, test 10, docs 44, kolt 1, examples 0 — zero refused; the blanket check refused two compiler tests (`impl Holder<type T> with Doubler<T>` over `trait Doubler<T: Add>`), one a recently shipped pin ruling the other way, so the boundary is: an argument that is the impl's OWN BINDER is exempt at the clause (discharged at grounding), a concrete argument is checked. `b262_an_impl_with_clauses_trait_argument_is_still_unchecked` un-ignored; five new pins. OWNER Q filed: refuse at the clause instead (Rust's rule), and refuse under-supply (`impl DogBox with Holder`, padded today)"
+  },
+  {
+   "id": "B275",
+   "lane": "solver-32",
+   "commit": "5d7e9615",
+   "text": "FIXED — `satisfies_trait_bound` threaded an impl's provided arguments only when the clause NAMED the required trait; a clause naming a subtrait threaded none and passed vacuously — since `trait Signal<T> with Source<T>`, that was every `impl … with Signal<T>` in the estate. Threaded through `trait_with_supertraits_at`; the emission filter's fallback untouched. Six pins (three red first). BREAKING for one program, and the refusal is correct: kolt `views.vl:57` passes a `Source<bool>` into the `Source<str>` `AttrValue` blanket (it rendered `user-select=\"true\"` by JS coercion) — `.map(|on| i\"{on}\")` fixes it, at the owner's word"
+  },
+  {
+   "id": "B280",
+   "lane": "solver-32",
+   "commit": "20a2b7d6",
+   "text": "FIXED — the item's 'no exhibit found' was wrong: three, the first in std (`List::sort_by`, an external returning `List<T>`, inside `impl Holder<type T: Ord>` reported 'element type is never determined' over correct code). The brief's prescription (`generic_is_enclosing_binder` alone, B263's shape) BROKE std (`List::new()` is declared inside `impl List<type T>`, so its element IS the enclosing binder by name and stopped being freshened) and was narrowed: the element counts as fixed only when the callee's OWN SIGNATURE fixes it (`external_parameters_fix_the_list_element`). Four pins (three red first; the `List::new()` counterweight)"
+  }
  ]
 }
