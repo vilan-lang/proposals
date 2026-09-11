@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "B310",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — MISCOMPILE: `Map::entries()` hands out the GENERIC tuple layout for a `Map<K, (A, B)>`: `for entry in m.entries() { let (key, slot) = entry; let (class, declaration) = slot; }` reads `class = \"class,decl\"`, `declaration = undefined` (and `entry.1.0` / `entry.1.1` the same way) — a tuple built inside a GENERIC function from type-parameter-typed values (`self.table.insert(key.hash(), (key, value))`, map.vl:73 `self.table.values()`) is not flattened, while the caller, which knows `V = (A, B)`, reads the result flat (`$m.slice(1, 3)`); `keys()`, `values()` and `get()` are right; silent wrong values, no diagnostic",
+   "discussion": "styles-33's find F3 (2026-09-11), hit while writing `class_list` and routed around; `entries()` has no other caller in std — which is why it survived",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "The tuple-flattening decision is made at the SITE that builds the tuple, from the static types it sees there; inside a generic body the element types are parameters, so the tuple keeps its boxed layout, and the instantiated caller assumes the flat one. Either flatten by the INSTANTIATED layout at the call boundary (the return of a generic function that yields a tuple of parameters is re-laid out when `V` is known — the `freshen_list_element_slots` neighbourhood is the model for a return-type rewrite), or never flatten a tuple whose components are type parameters and teach the flat readers to recognise the boxed form. Pins: the exhibit (a `Map<str, (str, str)>` round trip through `entries()`), a user generic `fun pair<T>(a: T, b: T): (T, T)` read flat at a concrete call, the corpus differential. Family: miscompile."
+  },
+  {
+   "id": "B311",
+   "section": "B",
+   "kind": "bug",
+   "area": "Reactive core & UI",
+   "title": "NEW — MISCOMPILE: `Style::pseudo` accepts a name containing `:` (the slot key's own delimiter — `rule` builds `media:condition:property` and every consumer `split(\":\")`s it), so an ENCLOSING combinator emits a WEAKER selector: `attribute(\"data-open\", Some(\"true\"), pseudo(\"hover:not(:active)\", S))` → `.sX[data-open=\"true\"]:hover` with the `:not(:active)` GONE (and the property field reads `not(`, so `without_covered`'s family resolution is computed against garbage); pre-existing, and LIVE IN KOLT: `styles.vl:48–49` write `pseudo(\"hover:not(:active)\", ..)` and `pseudo(\"focus-visible:not(:active)\", ..)` — not biting only because nothing wraps them. The fence (`:` refused in `pseudo`'s name, as `check_attribute_name` refuses it) is BREAKING for kolt and needs the spelling that replaces it: A89's `not` negates the ENCLOSING condition, so \"hovered AND not active\" (two pseudo-classes in one slot) is unspellable today — `hover(not(active(S)))` means `:not(:hover):active`",
+   "discussion": "styles-33's finds F1 + F2 (2026-09-11); the raw-`pseudo` escape is what kolt reached for; one item because the fence cannot land before the spelling does",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "(1) The spelling: `pseudo_not(name, inner)` appending `:not(:name)` to the pseudo slot (one slot, one positive pseudo-class plus any number of negated ones — `:hover:not(:active):not(:focus)`), or admit a second pseudo-class per slot in general (a design ruling — the one-per-slot rule was deliberate). Rec: `pseudo_not`, small and honest. (2) Then the fence: `pseudo`'s name is one token — no `:`, no space, no quote (the attribute-name check's shape), one ledger row; kolt migrates `styles.vl:48–49` to `hover(pseudo_not(\"active\", ..))` at the owner's word. Pins: the miscompile as a must-emit-`:not(:active)` pin under an enclosing `attribute`; the fence refusal; the corpus differential. Family: miscompile (the fence lands with a `breaking` note naming kolt)."
+  }
+ ]
+}
