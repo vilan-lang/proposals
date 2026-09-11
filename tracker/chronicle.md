@@ -2226,3 +2226,18 @@ briefs32's rpc-32 text re-anchored). Landing order hygiene → editor → styles
 → solver → slots → rpc. Ledger next id 415. Kolt follow-ups wait for the owner's word after the
 seal; the cut waits for the owner's kolt test. Briefs:
 `scripts/integration/sweeps/order33/briefs33.md`.
+
+MERGED (eight lanes, in the order they landed): hygiene-33 (a7c1db5f; ledger row 415), editor-33
+(c9a72294 + 99e822b6 — E157's new rule constant joined N65's curated list at the merge, the two
+lanes having branched before either existed), slots-33 (31592245; guide/ui.md auto-merged),
+rpc-smalls-33 (44ee8529; rows 416–418 — the lane had numbered its rows itself and one collided
+with hygiene-33's, resolved by marking it NEW), dx-33 (34933b5c), styles-33 (4a70f301; rows
+419–424), rpc-33 (ca5e0777 + 288ce830 — rpc.vl's generator hunks scripted: the lane's A92/A79
+structure with B295's module qualification re-applied; `service_layer.rs` needed an ITEM-LEVEL
+three-way merge because the fold-by-name tool carries new program constants but not edited ones,
+a tool that now lives beside the others as `merge_items_by_name.py`), and solver-33 (e4d192e3; the un-ignored A86 pins and the a52 markdown pin taken from the lane; ledger row 425 — B299's steer).
+The corpus, split and markdown goldens merged consistently across lanes and were regenerated only
+where the merged tree said so. One outage: the 1Password agent that signs commits and answers
+GitHub went silent for about an hour mid-order; every lane and the integrator prepared their
+commits as idempotent scripts and landed them when it returned — nothing was committed unsigned.
+CHANGELOG parity 343/343 at the eighth merge; ledger next id 426.
