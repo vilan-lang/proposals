@@ -139,6 +139,26 @@
    "discussion": "hygiene-33's find F3 and dx-33's find F5 (2026-09-11)",
    "status": "OPEN — Order 33's finds (2026-09-11)",
    "body": "(1) The exemption list carries keys (the 60-char head), resolved to numbers at gate time; the integrator's `apply_row_mapping.py` then has nothing to renumber there. (2) One doc sentence at `LegArtifact.bundled`."
+  },
+  {
+   "id": "B315",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — the duplicate-inherent-member rule now reads a bound's ARGUMENTS only for two BARE binders (A86's `subjects_collide`), so a blanket pair whose bounds OVERLAP but are not identical (`impl type S: Source<type I>` and `impl type S: Source<Option<type I>>` on a hypothetical `Option: Source`) would both be admitted, and tier 1 of method resolution takes the first inherent candidate UNRANKED — 'no silent pick' is weaker than it was; not reachable today (no `Option: Source` in std)",
+   "discussion": "solver-33's find F1 (2026-09-11); the pins `a86_two_blankets_bounded_*` and `subjects_collide`'s doc comment are the evidence",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "Either rank inherent candidates by specificity at tier 1 (the trait-impl tiers already do) or refuse two blankets whose bounds overlap (`instantiation_agrees` in both directions = overlap); pin the hypothetical pair with a local trait. Rec: refuse overlap — the cheaper rule and the one the doc comment already wants."
+  },
+  {
+   "id": "B316",
+   "section": "B",
+   "kind": "design",
+   "area": "Type system & the type solver",
+   "title": "NEW — `reconcile_type(Trait, Concrete)` REFUSES what every value-first position accepts (B4 / method-resolution.md §10): measured at 18 correct programs when a pass reported on the parameter-first drop (B306's rejected backstop — `Doubler`'s supertrait defaults read \"Expected Add, but got Doubler\"), so any future 'report where the binder gave up' instrument is unbuildable until the arm is settled; and B304's real discriminator was receiver-resolution TIMING (a chain receiver defers, a parameter receiver freezes the one-shot slot) — the other `is_unknown_closure_parameter` doors may be schedule-dependent the same way",
+   "discussion": "solver-33's finds F2 + F3 (2026-09-11); B4 was declined (trait-objects.md) — this is the reconcile arm's residue, not trait objects",
+   "status": "OPEN — Order 33's finds (2026-09-11); OWNER Q (the arm's reading)",
+   "body": "(1) Rule the arm: a bare-trait PARAMETER type reconciled against a concrete argument is the universal reading (accept when the concrete implements the trait) — then B306's backstop becomes buildable and the 18 programs are the pin set. (2) A sweep of the one-shot-slot doors for schedule dependence, each pinned with a chain receiver and a parameter receiver (B304's pair is the template)."
   }
  ]
 }
