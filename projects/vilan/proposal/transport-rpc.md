@@ -1483,6 +1483,16 @@ knows which sentences are now history.
   new `replay` parameter on a public std fn; same-module handler only; an awaitable ack
   for a void method's forward stub; the `__contract` route on a client-only struct;
   bare `[expose]` over a `KeyedCell` as the keyed channel (the type decides).
+> **STANDING AS BUILT (Order 32's sweep, 2026-09-11) — not a ruling.** These eight were listed
+> as record-only defaults in Order 32's briefs (P-list, `briefs32.md`), the owner said "adjust
+> order or go" without objecting, and nothing in Order 32 moved them: the hop stays dynamic-only,
+> the keyed per-key lease has no hop, `replay` stays on `reattach_mirrors`, handlers stay
+> same-module, a void forward stub stays sync void, `__contract` stays on a client-only struct,
+> bare `[expose]` over a `KeyedCell` is the keyed channel, `keyed_log_limit` stays 1024. The
+> curated refusal for a user `Source` return is folded into the sync-stub question (P1). Still
+> OPEN for an explicit ruling: P1–P3 (the SYNC unleased handle stub returning `RemoteSource<T>`
+> with `Absent`/`Failed`, server dedup by source identity with lease counting, std `Memo`, A79 in
+> the same shape — the rpc-32 brief stands in `briefs32.md`) and B287 (P4).
 
 ## 10. Where it lives
 

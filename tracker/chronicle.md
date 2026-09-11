@@ -2159,3 +2159,15 @@ handlers, sync void forward stubs, `__contract` kept, bare `[expose]` over a `Ke
 unless the owner objects. Kolt follow-ups wait for the owner's word after the seal; the cut
 (held since Order 29) waits for the owner's kolt test on it. Briefs:
 `scripts/integration/sweeps/order32/briefs32.md`.
+
+MERGED (six lanes, in the order they landed, not the brief's): rpc-smalls-32 (64e4765b; ledger
+rows 412 and 413), smalls-32 (f8e23015; row 414), reactive-32 (20e0e6af; `inference/traits.rs`
+folded by name), wire-32 (fb898003; row 411 re-keyed) — these two held back from pushing by the
+split emission golden, which reactive-32's two runtime helpers moved, and regenerated once over
+the merged tree (85f5c56c) — ui-32 (08c9f9d6, the same golden regenerated again over that tree
+at 4d38678c; seven DOM stubs edited by the lane, no fold needed), and solver-32 (5a0d0b49;
+`bounds.rs` folded with the un-ignored B262 pin taken from the lane, `service_layer.rs` by
+name; analyzer.rs auto-merged — the ownership map held across four lanes that touched it).
+One integrator miss: the wire-32 merge was chained behind the reactive-32 check in one command
+and ran before the split failure had been read; recovered by the one regeneration. No ledger
+rows beyond 412–414; CHANGELOG parity 303/303 at the last merge.
