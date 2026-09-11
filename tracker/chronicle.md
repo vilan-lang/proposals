@@ -2132,7 +2132,7 @@ PROCESS:
 - One ssh timeout to GitHub on a proposals push, retried clean. No `git stash`, no pattern kills,
   no 1Password outage. notes31.md is the record.
 
-## Order 32 — cycle 50: the kolt-findings order (2026-09-11 → )
+## Order 32 — cycle 50: the kolt-findings order (2026-09-11 → 2026-09-11)
 
 Opened on the owner's "adjust order or go" of 2026-09-11, off 65af4be0 (Order 31's sealed
 tip, CI green there). The order is what kolt found while dogfooding the rpc seal: three
@@ -2171,3 +2171,30 @@ name; analyzer.rs auto-merged — the ownership map held across four lanes that 
 One integrator miss: the wire-32 merge was chained behind the reactive-32 check in one command
 and ran before the split failure had been read; recovered by the one regeneration. No ledger
 rows beyond 412–414; CHANGELOG parity 303/303 at the last merge.
+
+SEALED 2026-09-11 at 5a0d0b49: union 6971/6971 (23 skipped; 1 slow); clippy, the Windows
+cross-check, audit and fmt green locally; CHANGELOG parity 303/303; CI GREEN on all eleven jobs (run 34633671304: ubuntu 17 and 15 min, Windows 16 and 18). Six lanes,
+26 commits over the six merges plus two golden regenerations; ledger rows 412–414 assigned (next
+415) and row 411 re-keyed. The order's verdicts, against the kolt dogfooding that opened it: the
+three soundness holes are closed (B288's two real roots were the struct-literal door and the
+readiness gate, not the closure-return sites the brief named; B290 was one missing defer in
+`resolve_is`; B273 draws its boundary at the impl's own binder), the reactive core survives a
+late registration and a throwing observer (B291's single-use `Owner` is the one breaking
+consequence, disclosed; B292's finally costs ~1.3 kIr per drain and nothing per notify), the
+Wire predicate reads the impl table at all four boundaries and std carries `Result` and the
+sized scalars (B289/A82 — `[derive(Wire)]` still emitting the JSON impls is the residue, B301),
+std's `link` no longer arms the Chrome drag wedge (B293, with `View::link_to`), every reactive
+child keeps its position at one node per region and zero per row (A71, which also fixed a latent
+kolt bug for free), `_` is the anonymous type binder and two of them were one parameter until
+today (B294), the generic-head highlighting is traced to its two layers and fixed in both
+(E161), and A86 (`flatten` as a blanket) was dropped honestly behind two impl-selection gaps
+(B299, B300). What the order did not do: rpc-32 (the sync unleased handle stub, identity dedup,
+`Memo`, A79) waits for the owner's P1–P3; B287 stays stated and unenforced; A85's surface is the
+paper's ruling. Kolt does not build on this toolchain until `views.vl:57` maps its `Source<bool>`
+to a string (B275's correct refusal); the rest of its follow-ups wait for the owner's word. The
+sweep: 20 closed, 22 filed (B295–B307, A87, A88, E162, E163, N71–N73, M61, M62); the eight
+Order 31 record-only questions stand as built, not ruled. Lane worktrees and branches reaped.
+Process, for the next order: pins live in `tests/inference/<module>.rs`; the split golden moves
+on any `std::reactive` emission change and is regenerated once over the merged tree; a merge is
+never chained behind another's outcome check in one command; the integrator pushes lane branches
+(lanes never push — the mechanics block's "push the branch" is retired).
