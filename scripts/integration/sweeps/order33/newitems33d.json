@@ -1,0 +1,144 @@
+{
+ "items": [
+  {
+   "id": "A93",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — `child_relation` is a PUBLIC RAW-SELECTOR HATCH and kolt uses it as one: `views.vl:165` writes `child_relation(\"not([hidden])\", \"display\", ..)` — the token is neither `^…` nor `>…`, so it lands in the pseudo slot, skips the `@layer` wrap and the `> *` suffix, and renders `.sX:not([hidden])`, a rule about the element itself from a child-relation method; A89 gives it a real spelling (`attribute(\"hidden\", None, not(..))` emits the identical selector, verified). Fence the token to `>*` / `>*+*` (the two shipped relations) once kolt's site migrates",
+   "discussion": "styles-33's find F5 (2026-09-11); the fence is BREAKING for kolt views.vl:165 — kolt migrates first, at the owner's word",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "`child_relation(self, token, name, inner)` (style.vl ~1432) accepts any token string; the two callers (`children` = `>*`, `divide` = `>*+*`) are the whole legitimate set. Check the token at const time against those two (curated, one row) after kolt's one site moves to `attribute(\"hidden\", None, not(style().flex_col()))`; pin the refusal and the two controls."
+  },
+  {
+   "id": "A94",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — a FRAGMENT does not FLATTEN: `<><i/><>..</></>` is a `List<View>` inside a `List<View>` and is refused — A46's lowering is a literal, so nesting one fragment in another is a type error, not a run; pinned and documented as the limit; if flattening is wanted it is a lowering change (concatenate the inner list into the outer) with no type change",
+   "discussion": "slots-33's find F2 (2026-09-11); no exhibit asks for it yet — filed so the limit has an id",
+   "status": "OPEN — Order 33's finds (2026-09-11); no caller yet",
+   "body": "`build_chain`'s nameless arm concatenates a child that is itself a fragment literal into the outer `Node::List` (syntactic — only a LITERAL inner fragment flattens; a `List<View>` VALUE in a hole stays one child, which is the `List<View>` Slot arm's job). Pin: the nested literal renders as one run; the value form unchanged."
+  },
+  {
+   "id": "B312",
+   "section": "B",
+   "kind": "bug",
+   "area": "Reactive core & UI",
+   "title": "NEW — generated METHOD-name collisions in a `[service]` expansion are unhandled, and B295's qualification cannot help because the clash is a DUPLICATE DEFINITION: `[rpc] fun verify` → \"'verify' is already defined for 'EchoClient<T>'\" (1 error), `contract_hash` / `dispatcher` → 3 errors each, `connect` / `connect_with` / `with_handlers` → 1 each (`dispatcher_for` is clean — it lives on the trait impl), all anchored inside generated code on the struct; wants a refusal in the method's own vocabulary naming the reserved set",
+   "discussion": "rpc-smalls-33's find F1 (2026-09-11), B295's sibling",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "The generator knows its own member names; refuse an `[rpc]`/`[client_service]` method whose name is in that set at the attribute, spanned on the method (one row: \"`{name}` is a name the `[service]` expansion generates on `{client}` — rename the method\"); pin each reserved name once and a control."
+  },
+  {
+   "id": "B313",
+   "section": "B",
+   "kind": "bug",
+   "area": "Reactive core & UI",
+   "title": "NEW — a SUSPENDING `async fun f(&mut self)` `[rpc]` method now takes TWO refusals: B287's expansion-time refusal and E3's `async_view_parameter_message` (\"an async function cannot take '&mut' parameters\"), both true, different vocabularies; deduping needs a channel from expansion-time diagnostics into the analyzer's stand-down set, which does not exist today",
+   "discussion": "rpc-smalls-33's find F2 (2026-09-11); B189/B236's one-mistake-one-report house rule",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "Either the expansion records the refused method's id in a set the analyzer consults before E3's check (the B189 mechanism, fed from macros.rs), or E3's check stands down for a method the `[rpc]` attribute already refused (the attribute is the outer frame). Pin: one report for the suspending shape; the non-suspending shape keeps B287's alone."
+  },
+  {
+   "id": "B314",
+   "section": "B",
+   "kind": "bug",
+   "area": "LSP & tooling",
+   "title": "NEW — `pkg` and `Self` are INDEXED AS REFERENCES to entities they are not: `pkg` (the origin segment inside a package's own sources) is recorded against the package ROOT module, whose name is the package's; `Self` against the trait it stands for — both survive `narrow`'s exact check by LENGTH COINCIDENCE (`pkg`/`std`, `Self`/`Wire`), so a rename of a 3-letter package or a 4-letter trait REWRITES them and breaks the build, and at any other length the row is dropped and rename refuses (the safe half of the same bug); ~40 rows across `vilan/std/src`",
+   "discussion": "editor-33's find F3 (2026-09-11), found by E158's widened invariant pin (`KEYWORD_SPELLED_ROWS` enumerates the two breaches so a third reds); the fix belongs at the analyzer's RECORDING site — the index has no source text at build time",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "At the two recording sites, a `pkg` origin segment and a `Self` keyword are NOT references (record nothing, or record a distinct `Keyword` row rename skips); drop the two entries from `KEYWORD_SPELLED_ROWS` and let the widened invariant hold with none. Pins: rename a 3-letter package and a 4-letter trait in a fixture — no `pkg`/`Self` rewritten; the references list for the trait omits `Self`."
+  },
+  {
+   "id": "E164",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — the TextMate `generics` rule swallows a CLOSING TAG straight after text: `<span>hello</span>` paints `</span>` as `meta.generic.vilan` with generic delimiters (its begin is `(?<=[A-Za-z0-9_])<` and `hello` ends in an identifier character) — the commonest markup shape in the language, mis-coloured, invisible to E161's regex pins; and the `>` closing an OPENING tag WITH attributes (`<div class=\"row\">`) is painted `keyword.operator.vilan` because the terminator rule is line-start only",
+   "discussion": "editor-33's finds F1 + F2 (2026-09-11), both found by the E163 tokeniser prototype in its first run — the argument that E163 is worth its CI price",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "(1) The generics begin must not fire when the `<` is followed by `/` (a closing tag) — `(?<=[A-Za-z0-9_])<(?!/)`; the element rule's `</tag>` arm then wins. (2) An element-head begin/end (from `<tag` to `>`/`/>`, spanning lines) replaces E115's line-start terminator, so the `>` of any opening tag is a tag delimiter wherever it sits. Pins: scope pins once E163 lands (regex pins else): `</span>` after text is a tag; `<div class=\"row\">`'s `>` is a tag delimiter; `a < b` stays an operator; `List<i32>` stays generic."
+  },
+  {
+   "id": "E165",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — scope completion on a BLANK LINE inside a function offers only globals: `fun main() { let start = 1; ▮ }` does not offer `start` while `st▮` does — `scope_at` falls back to the nearest entity BEFORE the offset and lands on the global scope when the line is empty; pre-existing, and it is the moment a user actually asks for completion",
+   "discussion": "editor-33's find F4 (2026-09-11)",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "`scope_at` resolves the innermost scope whose SPAN contains the offset (the block's braces), not the nearest entity; pin the blank-line case and a nested block; kolt's `store.vl` as the exhibit."
+  },
+  {
+   "id": "E166",
+   "section": "E",
+   "kind": "tooling",
+   "area": "LSP & tooling",
+   "title": "NEW — `Vilan: Show Language Server Status` reports cardinalities and deliberately no memory; `mallinfo2`'s in-use/free split IS attributable (leak-soak §7.7) and is exactly what located E106's memory (738 → 320 MB in use, 421 MB retained free after closing 18 documents) — put RSS, heap in-use and retained-free on the status page so the next report carries the numbers",
+   "discussion": "dx-33's find F4 (2026-09-11)",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "Three lines on the status page (RSS from `/proc/self/statm`, `mallinfo2().uordblks`/`.fordblks` behind a `cfg(target_os = \"linux\")` gate, the leak tally's outstanding balance); a pin that the page renders them."
+  },
+  {
+   "id": "M63",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — the language server RETAINS ONE FULL ANALYSIS PER OPEN DOCUMENT: ~48 MB per kolt file, 126 MB for `views.vl`/`client.vl`/`channel.vl` each, 864 MB with kolt's 18 `src/*.vl` open — the growth E106 measured and the owner's field reading (VmRSS 4.13 GB after 8 h under the VS Code host, VmPeak 6.64 GB); bounding it (only the FOCUSED document keeps its `Program`; the others keep their editor tables and re-analyze on focus) is a design question",
+   "discussion": "dx-33's find F2 (2026-09-11), E106's successor; OWNER Q: the retention policy (focused-only, an LRU of N, or a byte budget)",
+   "status": "OPEN — Order 33's finds (2026-09-11); OWNER Q",
+   "body": "Rec: keep the `Program` for the focused document and the N most recently focused (N = 2), drop the rest to their editor tables (diagnostics, symbols, references stay served from the tables); re-analysis on refocus is the warm path M58 measured (~3.4 G Ir on client.vl, sub-second). Pin: `open_documents` (dx-33's instrument) bounded at N × the largest document; kolt's 18 files under 300 MB."
+  },
+  {
+   "id": "M64",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — glibc never TRIMS what a closed document gives back: closing kolt's 18 documents returned 418 MB to the allocator's free list and 62 MB to the OS; `malloc_trim(0)` on document close would return it, but needs `libc` as a REAL dependency of vilan-lsp (dev-only today) — a dependency ruling",
+   "discussion": "dx-33's find F3 (2026-09-11); OWNER Q (the dependency)",
+   "status": "OPEN — Order 33's finds (2026-09-11); OWNER Q",
+   "body": "If ruled: `libc` promoted to a normal dependency of vilan-lsp (Linux-gated call, no-op elsewhere), `malloc_trim(0)` after a document close and after an analysis drop; pin RSS after close within 1.2× of before open. Alternative without the dependency: an allocator that trims (mimalloc) — a bigger ruling."
+  },
+  {
+   "id": "M65",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — `vilan_ide::completion::CompletionIndex::build` asks `Program::source_of` 14,580× / 7.5 M Ir per warm analysis — the identical M27/M58 hoist (`source_lookup`, the binary search that is answer-identical by construction) not yet taken there",
+   "discussion": "dx-33's find F1 (2026-09-11); editor-33's file, so filed rather than taken",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "One hoist in `completion.rs`'s index build; pin answer-identity as M58's pin does; measure on the warm profile."
+  },
+  {
+   "id": "N74",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — `css_style_import_note` is N69's identical twin: same `.or_else` chain in analyzer.rs, same B270 seed change, same false steer (\"add `import std::style::style;`\" can only fire for a std with no `style` item, where that import misses too); `styling.rs`'s own comment already says it is unreachable from a well-formed std",
+   "discussion": "hygiene-33's find F1 (2026-09-11); the same deletion as N69, one pin",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "Delete it as N69 was deleted; pin `an_unresolved_style_is_reported_without_an_import_steer`; the reachability claim stays with its existing pin."
+  },
+  {
+   "id": "N75",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — two DOM stubs remain outside N73's consolidation: `mount_missing_id.rs` (a `format!` stub, braces doubled) and `hmr_swap.rs` — both `StubElement` near-copies; folding them in means their binaries' gates (one is a watch test); and the Rust DERIVE fallback (`derive_impl_source`'s Json/Wire split) is N70's twin, UNPINNED — it fires only for a std lacking `json.vl`'s macros, so no shipped path reaches it: tombstone it the same way or give it a fixture-std pin",
+   "discussion": "hygiene-33's find F2 and rpc-smalls-33's find F3 (2026-09-11)",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "(1) The two stubs include `support/dom/stub.js` with their extras; behaviour-neutral, gates green. (2) The derive fallback: delete it and refuse a std without `json.vl`'s macros with a curated message (N70's shape, one row), or a `VILAN_STD` fixture pin — rec: delete."
+  },
+  {
+   "id": "N76",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — `ROWS_THE_ENUMERATION_CANNOT_REACH` (diagnostics_ledger.rs) is keyed by row NUMBER, so a lane's `NEW` row cannot be listed there safely (it has no number until integration, and a second lane's `NEW` row would make the exemption name the wrong row) — key the list on the row's KEY; and `LegArtifact.bundled`'s doc claims a skipped watch round \"still re-copies\" its bundled files, which both skip paths deliberately do not (unreachable before B276, so nobody could notice)",
+   "discussion": "hygiene-33's find F3 and dx-33's find F5 (2026-09-11)",
+   "status": "OPEN — Order 33's finds (2026-09-11)",
+   "body": "(1) The exemption list carries keys (the 60-char head), resolved to numbers at gate time; the integrator's `apply_row_mapping.py` then has nothing to renumber there. (2) One doc sentence at `LegArtifact.bundled`."
+  }
+ ]
+}
