@@ -928,10 +928,14 @@ in `vilan/vilan/std/vilan.toml`.**
 
 Three reasons, in order of weight:
 
-1. **std's own resolution stays greppable.** 264 names, 59 files, a
-   library whose every symbol is somebody's lang item: "where does this
-   name come from" must be answerable by reading the file. std is the one
-   codebase in the world where the import block is doing real work.
+1. **std's own resolution stays greppable.** 664 top-level declarations
+   across 63 files (measured at `e4d192e3`; `visibility.md` §6's census,
+   whose command `std/vilan.toml` now carries beside the posture — the
+   figure here read "264 names, 59 files" for eleven orders, which is
+   what N77 closed), a library whose every symbol is somebody's lang
+   item: "where does this name come from" must be answerable by reading
+   the file. std is the one codebase in the world where the import block
+   is doing real work.
 2. **The bootstrapping order is trivial rather than delicate.** The std
    prelude's members are std definitions; std compiling under them is a
    loop the implementation would have to reason about. `false` deletes

@@ -72,6 +72,20 @@ binary never sees a stale cache, and `vilan upgrade` swaps versions
 without any sync step. The LSP replaces its baked-path fallback with the
 same call (fixing the kolt-shape fragility for installed binaries).
 
+**The cache prunes itself (L21).** A new key means a new tree and nothing
+ever deleted the old ones, so a machine that builds the toolchain from
+source accumulated one std tree per build — 374 entries and 316 MB on the
+owner's machine in two months, because `vilan upgrade` was the only
+pruner and a dev toolchain never runs it. Materialization now sweeps the
+root at the one moment it grows (after the atomic rename of a NEW entry),
+on the same seven-day age guard `upgrade` has always used: an entry's
+mtime is its creation time and nothing touches it after the rename, so
+the tree just written survives its own sweep and so does anything a
+running compile might still be reading. `vilan cache prune [--all]
+[--dry-run]` is the explicit gesture for the machine neither automatic
+sweep catches up with; this binary's own tree is never removed, `--all`
+included, since the next resolution would write it straight back.
+
 **Pre-compiled std: measured, deferred.** Embedding *parsed* std (the
 caching plan's deferred tier) was considered here. Measured on the
 release binary: `check` on a hello is ~100ms end to end and a full
