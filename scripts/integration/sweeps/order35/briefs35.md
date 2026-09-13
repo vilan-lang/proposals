@@ -1,6 +1,11 @@
-# Order 35 — the papers' first slices (drafted 2026-09-13; NOT GO), off vilan next @36fb64ed
+# Order 35 — the papers' first slices (drafted 2026-09-13; GO 2026-09-13, off vilan next @36fb64ed)
 
-**Status: DRAFT.** Order 34 sealed at 36fb64ed (CI green on all eleven jobs; toolchain at that
+**GO (2026-09-13).** The owner: "Go with your recommendations on all rulings." Every R below is
+therefore RULED as recommended: R1 the plain-import WARNING (rollout warning-only for release N);
+R2 a type segment REPLACES the namespace after a zero-hit census; R3 `lib` refused as a segment;
+R4 B326 declines to descend; R5 B330 documented now, refused at the call under S4; R6 M67's
+default set after measuring; R7 N79 built; R8 E173 built; the record-only defaults stand. NINE
+lanes. Order 34 sealed at 36fb64ed (CI green on all eleven jobs; toolchain at that
 sha in both locations). Ledger next id 434. Tracker 96 open.
 
 The shape, read from Order 34's two papers and their rulings: both designs are RULED down to

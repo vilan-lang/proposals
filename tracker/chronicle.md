@@ -2345,3 +2345,21 @@ both locations (vilan 0.40.0 (36fb64ed2)); the ten lane worktrees and branches r
 owner's kolt `child_relation` site had moved before the fence landed, so the order shipped with
 no owner action pending. One number for the day: kolt's nineteen files open in the language
 server went from 1,090 MiB to 510 MiB, and what remains is the base cache's ruling (M67).
+
+## Order 35 — cycle 53: the papers' first slices (2026-09-13 → )
+
+Opened on the owner's "Go with your recommendations on all rulings" of 2026-09-13, the same day Order
+34 sealed, off 36fb64ed. Both papers are built from their first slices: style-35 lays G23 (the
+const-eval end-of-evaluation hook the owner ruled for B308 — "a proper build step hook for
+styling would fix the issue for good"), moves emission onto it, then lands A95's condition values
+behind the existing surface with byte-identical stylesheets as the gate; visibility-a-35 lands
+the bit, the two warnings in the owner's wording, `export *;`, `export(in PATH)`, `export` on an
+impl in the strict form, `[doc(hidden)]` retired, and `#` as a token (row 335 retired), while
+visibility-b-35 lands `only` and the parenthesised selectors with `_`. slots-35 builds A85 and A91
+on the clause B309 landed. Around them, the finds Order 34 filed: the clause's three silent
+corners, two rpc checks and three solver residues (solver-35); the loader's `lib` double name and
+the type-segment scope, census-gated (lang-35); five editor items (editor-35); the base cache's
+ruled budget, measured before its default is set (dx-35); std's stale census, the derive
+fallback's deletion, the harness predicate and the std cache that never pruned (hygiene-35). Eight
+rulings, all as recommended; Order 36's queue named at the sweep: B318 S4 and S6, A95 S2 with
+kolt's migration, S3, S5, M55.

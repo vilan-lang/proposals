@@ -1,0 +1,4 @@
+# Order 35 — running record (integrator)
+
+Opened 2026-09-13 off 36fb64ed (Order 34's sealed tip, the same day). Nine lanes: style-35 (G23 → B308 → A95 S1), visibility-a-35 (B318 S1+S2, B320, B321), visibility-b-35 (S3), slots-35 (A85+A91), solver-35, lang-35, editor-35, dx-35, hygiene-35 (droppable, first). Briefs: briefs35.md. Ledger next id 434. Rulings: ALL as recommended (owner) — R1–R8 stamped on B318/A95/G23/B308/A85/A91/B320–B332/D7/E170–E174/M67–M69/N77/N79/N80/L21.
+- PROCESS (GO): no items to file or close at GO (every item exists); the chronicle OPENING entry appended and grep-verified before the commit; worktrees created off origin/next = 36fb64ed (verified); lanes never push; merges run DETACHED (merge_fold.sh under setsid nohup + an until-grep waiter) — a backgrounded tool call with a timeout SIGTERMs its gates.
