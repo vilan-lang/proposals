@@ -1005,3 +1005,65 @@ declarations across 63. One comment edit.
    formatted, documented, read by no tool).
 3. **M67 (the base cache)** — the owner asked for a recommendation; recorded on the item.
 4. **E163's local `npm ci`** — keep it no; the local gate stays network-free.
+
+---
+
+## 14. As built — Order 35 (2026-09-13, lanes visibility-a-35 and visibility-b-35)
+
+**S1 (bit + warnings), S2 (`#`) and S3 (`only` + selectors) landed; S4 (the per-importer
+namespace), S5 (docs beyond what each slice touched) and S6 (the estate sweep) are Order 36's.**
+
+- **S1.** `Importable.exported: Visibility { Private, Exported, Scoped }`; `export *;` is a
+  node (`Node::ExportAll`, a `*`+`;` lookahead — `export * helper;` is a real deref); `export(in
+  PATH)` rides the export node as an optional scope with `mod`/`pkg` enforced exactly — a
+  GENERAL path parses, stores and reprints but is ADMITTED (the subtree test needs source paths,
+  which live on `Program`; B336). `export (helper);` / `export * helper;` are refused (B321).
+  The exposure warning fires ONCE PER DECLARATION (not per position — B5; the fix is the same
+  edit) in the post-build family, with the ruled wording; the plain-reach warning at the import
+  leaf and, with a second wording, at a qualified path (there is no leaf to mark); a
+  redundant-marker warning. Access is never gated. `[doc(hidden)]` retired outright (the fixed
+  attribute ORDER changed: grammar.md, the marker gate, two doc fences).
+- **Two rollout pieces §8 did not have, both built:** (a) the warnings are SILENT when the
+  importing file is a `std_sources` member — std's 118 cross-file imports would otherwise fire in
+  front of every user (800 warnings in the `todo` example alone); S6's curation lifts it; (b) a
+  module with NO marker is UNCURATED and offers everything to completion, the add-import quickfix
+  and the "import it first" steer — a strict gate on day one would hide every std name; the
+  exemption gates the tooling and the exposure warning and deliberately NOT the plain-reach
+  warning, which is what tells an author to curate. Also: a self-import never warns; a REFUSED
+  import earns no visibility warning on top. Consequence: the exposure warning fires zero times
+  on today's estate; the plain-reach warning fires kolt 272 / website 130 / benchmarks 34 /
+  examples 56 / std 0, every package still compiling.
+- **§9 S1's pin "`export(in pkg)` from a dependency warns at the consumer" contradicts the
+  ruling** (a dependency's private item is no diagnostic) and was not built. §4's "Export `S`"
+  workspace edit is NOT expressible — `Document::QuickFix` is single-file (E177); the two
+  same-file fixes ship (`Import as #leaf`, `Delete the #`), the Export fixes are message steers.
+  vilan-ide's two completion filters are not yet on the bit (E178).
+- **S2.** `Token::Hash`; row 335 DELETED and a new `flagship` row for the css block's `#333`
+  refusal (the head changed, so an edit was not available); `#` on an import leaf; a `#` on an
+  exported item warns (redundant). Taking `#` forced one line in vilan-ide's exhaustive
+  `Token` match.
+- **S3.** `only` as a trailing modifier (contextual, like `as`); the `(impl TYPE)` selector as a
+  brace-set element AND an arm in `parse_namespace_path_inner` (§2.5 named only the set); `_`
+  cost ZERO grammar — B294's anonymous binder already is the hole; a selector COMMITS at its
+  two-token gate so a typo reports inside it; six curated rule statements, no ledger rows (row
+  229's population — §9's "one row" for the `as` refusal was wrong). `Implementation.source`
+  STORED; `file_impls` as `ImportImplRestriction`/`ImportImplSelector` + the post-build pass
+  `check_impl_selector_admission`, subjects walked in the importer's scope, admission unified
+  BOTH WAYS (`subject_applies(impl, selector)` for the concrete reading, `subject_applies(selector,
+  impl)` for the placeholder — §3.4 was incomplete); the FILE-LEVEL admission refusal (one row).
+  E168/E169's predicate re-pointed (`ModuleRescue::{No, Module, Selector}`; the rewrite is
+  `import a::{ (impl T) };` when one subject); `BranchKey::Selector` after names (§7.2 as
+  written); completion after `impl ` and `)::`. `#(impl T)` is NOT built (needed `Token::Hash`
+  from the other lane; the seam is `at_impl_selector`). A selector-only statement's module is
+  looked up by FILE NAME (`module_source_by_name`) because `resolve_import` never walks a
+  statement that binds nothing — S4 should give `resolve_import` a `bind: bool`. A selector
+  admitting no impl is silent (B338).
+- **What S4 receives:** `Implementation.source`, `Program::import_impl_restrictions` and
+  `impl_selector_members`; `check_impl_selector_admission`'s `restricted` map IS `file_impls`
+  inverted — lift it into a `Program` field, feed `candidates_of` / `impl_members_for_bound` /
+  `applying_implementations`, delete the post-hoc call check for the import-site collision
+  refusal; and the `export impl` ruling (an invisible impl contributes no methods; no ambient
+  impls) is RECORDED on the bit but its enforcement is S4's.
+- **Finds filed:** B335 (`source_of` lies on a module segment when `x.vl` and `x/` coexist —
+  Organize Imports probably wrong there), B336, B338, E177, E178, N84 (`cargo test` vs nextest
+  shared state in two prelude-shaped `modules::` tests).

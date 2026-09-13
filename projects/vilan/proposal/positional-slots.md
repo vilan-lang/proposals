@@ -366,3 +366,32 @@ annotation-only generic argument is silently inert — B323); `(self.body)()` in
 `impl Conditional<..> with Slot { fun place }` is an injected call, so `place` becomes a
 needs-context node and `View::child<C: Slot>` inherits an `owner_scope` requirement — check that
 propagation first. B324/B325 are the clause's two silent corners, filed.
+
+### 11. As built — Order 35 (2026-09-13, lane slots-35): A85 and A91
+
+Five free functions returning structs that `impl .. with Slot` — `when → Conditional<S>`, `swap →
+Swap<T, S>`, `each → Each<T, K, S>`, `each_values`, `each_by` — each `place` opening its `Region`
+where the child hole is; the five `View` methods construct the struct literal (NOT literal sugar:
+a method name shadows a same-named free function inside its own impl block and std has no
+qualified escape — B334); the `@process` twin in lockstep, with `Row {}` the empty struct §3d
+predicted. The split recognizer learned the value form through a `Gate.retarget` table; the
+value-form route `swap` splits with a transcript byte-identical to the method's. The `place`
+needs-context probe: `View::child<C: Slot>` inherits the `owner_scope` requirement PER
+INSTANTIATION — a static child outside a boundary still compiles, a value form outside one is
+refused with the threaded diagnostic — pinned twice; no design work was needed. One emission trap
+found by a red pin: the `swap → swap_split` retarget reused the call's arguments after
+`thread_contexts` had made context an ordinary parameter, so the gate is a CLOSURE FIELD built by
+`split_route` and run by `place`; a flagless build emits no chunk machinery.
+
+A91: render closures yield any `C: Slot`; the reconciler's unit is a REGION with one empty-text
+marker per row, cut by span and re-inserted in order; `Region::host()` reads `parentNode` off the
+anchor (a region that remembered a detached fragment host kept nesting into it — a red pin);
+`std::dom` gained a fragment, a range and `parentNode`. Cost: +1 node per row and ~2× DOM
+mutations per reconcile pass (A98 skips unmoved rows). §6's B253 spelling cost grows by one type
+argument (the row shape `C`; a defaulted parameter is applied eagerly at a struct literal and
+shadows inference).
+
+**Kolt:** unmodified kolt builds clean. Row 1 (channel.vl:28) is removed by `{each_values(..)}`;
+row 6 (views.vl:233) by a row closure returning `swap(..)` directly; row 4 (views.vl:151) is NOT
+removed — the outer `swap`'s arms must agree on one `C` (`View` vs `Swap<..>`): B253's, not A91's
+(A91's item named rows 4 and 6; it was wrong by one).

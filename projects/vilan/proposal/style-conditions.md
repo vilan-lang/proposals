@@ -720,3 +720,45 @@ compact-styling reading css-block §15.3 wanted.
 (`within(hover())` for a hovered ancestor, `within(attribute("open"))` for presence). §1's
 table, §1's example and §2.5/§10(ii) are corrected above; the canonical order of a guard's own
 conditions is the set's order, unchanged.
+
+---
+
+## 13. As built — Order 35 (2026-09-13, lane style-35)
+
+**G23, B308 on it, and S1 landed; S2 (the new surface — BREAKING for 37 sites), S3 (tooling) and
+S5 (the estate) are Order 36's.**
+
+- **G23.** `asset::schedule_at_end(finaliser)` — a scheduled function is recorded by its EMITTED
+  name (an anonymous closure is refused: its scope dies with the run that made it) and runs once
+  after the LAST const expression of a compile's const pass, per leg; under `run --watch` that is
+  the end of the ROUND (recompiled legs re-schedule and re-emit, untouched legs keep their sidecar
+  through the artifact record); a finaliser may schedule another; a panic fails the build naming
+  the function. **One correction to §12 (vi) and G23's item:** "the const evaluations push to a
+  GLOBAL" is not achievable with the hook alone — every const site has its own interpreter scopes,
+  so no vilan global spans two `const` expressions; the registry is HOST-held and exposed as two
+  new channel verbs, `asset::stage(kind, token, line)` and `asset::staged(kind)`.
+- **B308 closed.** `Style::rule` stages under its class token and schedules `flush_stylesheet`;
+  a token is LIVE when a const result names it (a string, one of its words — `class_list` joins —
+  or a substring), which is sound and over-approximate in the safe direction. Dead share,
+  controlled: kolt's sheet 12.1 % → 0 (11,986 → 11,020 B), the corpus's `style.css` 31.4 % → 0,
+  `css-block.css` 29.1 % → 0, `theme.css` 24.1 % → 0; the three goldens moved by subtraction only.
+  The retraction design (§5.4) is withdrawn, as ruled.
+- **S1.** `Condition`, `IntoConditions`, `+`, `.not()`, `.eq()`, the free constructors, the
+  canonicaliser with its five refusals, `Style::on<C: IntoConditions>(conditions, inner)`, every
+  combinator re-expressed as a fence pass plus one `on`; `render_rule` walks the canonical tokens
+  once, which is what makes two pseudo-classes on one rule and a guard beside a child relation
+  reachable. **Gate: 145 built artifacts byte-identical** (131 corpus bundles + 5 sheets, two
+  styling examples × 3, kolt × 3), run three times. Sixteen new rows; `"on"` joined
+  `STYLE_BARRIER_METHODS`.
+- **Two forced divergences from §1/§9:** (1) the five condition KINDS are ONE type — `trait
+  Add<B = Self>` returns `Self`, so `Pseudo + Attribute` cannot exist; `Condition` carries its kind
+  in the token, and `.eq()` on a non-attribute or `.not()` on a breakpoint are const-time refusals
+  (§1.1's own precedent); `IntoConditions` has one implementor, kept as S2's seam. (2)
+  `within(condition)` REFUSES a non-attribute condition in S1: the guard's selector travels inside
+  the slot key `media:condition:property`, where a pseudo-class's `:` mis-aligns the split (B311's
+  grammar) — `within(hover())` is refused naming the working form, and widening it needs a KEY
+  change (S2 or later). §12's `within(hover())` example is not yet spellable.
+- **Still to decide before S2:** whether the sugar's six nesting refusals go with the codemod (S1
+  kept them verbatim — deleting them would make refused programs compile with no spelling to steer
+  to); `Condition::eq` vs a future `PartialEq::eq` (rename to `.value(..)` then, or never derive).
+  §8's re-measure exhibits no longer exist in kolt (N85); the number that moved is the sheet.
