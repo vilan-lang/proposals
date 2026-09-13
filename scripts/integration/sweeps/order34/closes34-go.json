@@ -1,0 +1,18 @@
+{
+ "date": "2026-09-13",
+ "order": "Order 34 (at GO)",
+ "closes": [
+  {
+   "id": "A92",
+   "lane": "rpc-33",
+   "commit": "d868feb8",
+   "text": "BUILT in Order 33 — the SYNC unleased handle stub: `[rpc] fun f(..): SignalCell<T>` → `fun f(..): RemoteSource<T>` minting the mirror unleased (channel −1, released), the first 0→1 lease runs `acquire → remint → rebind`; `Status::{Waiting, Ready, Absent, Failed(RpcError)}`; `.or(seed)`; server dedup by `SignalCell.id` with per-demand holds; `std::memo::Memo`. Left open by the sweep for three Qs, RULED at Order 34's GO (R8, as recommended): the `?` surface marker for the `Option` form KEPT (`->RemoteSource<T>?;`), `Absent` RETRIES at the next 0→1 lease like `Failed` (kept), `Memo` stays at `std::memo`. Papers: transport-rpc §9.6b, remote-sources §2d"
+  },
+  {
+   "id": "A79",
+   "lane": "rpc-33",
+   "commit": "74018c52",
+   "text": "BUILT in Order 33 — the keyed RETURN: `KeyedCell<K, T>` → `KeyedSource<K, T>` in A92's sync unleased shape, `handle_key` macro, `reply_source_keyed` over `expose_keyed_cell_dynamic`, a frame-SHAPE discriminator for the keyed dedup, no per-key hop. The key's own Wire check is B319 (filed at Order 34's GO)"
+  }
+ ]
+}

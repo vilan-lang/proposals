@@ -1,0 +1,5 @@
+# Order 34 — running record (integrator)
+
+Opened 2026-09-13 off e4d192e3 (Order 33's sealed tip; nothing landed since). Ten lanes: paper-visibility-34, paper-style-34, solver-34 (TOP: B310), lang-34, editor-34, tm-34, dx-34, rpc-34 (TOP: A96), hygiene-34 (droppable, lands first), slots-34 (B309, R3 ruled). Briefs: briefs34.md. Ledger next id 426. Rulings: ALL as recommended (owner) with one change — A80 spelled `Some(mut x)`; stamped on A85/B309/A91/B316/A67/B274/A80/E163/E164/M63/M64/E166/N67/B311/B308/A93/A95/B318/M62 and the built items. A92/A79 CLOSED at GO (R8); B319/M66/A97 filed at GO (R9).
+- PROCESS (GO): items filed and closes applied (`--check` first, own calls) BEFORE the lanes launched (rpc-34 reads B319, lang-34 reads A80's spelling); the chronicle OPENING entry appended and grep-verified before the commit; worktrees created off origin/next = e4d192e3 (verified before `worktree add`); lanes never push.
+- OWNER ACTION pending: kolt views.vl:165 (`child_relation("not([hidden])", ..)` → `attribute("hidden", None, not(..))`) before A93's fence ships in a toolchain.

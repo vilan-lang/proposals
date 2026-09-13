@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B319",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — a KEYED handle's KEY is not Wire-checked in the method's own vocabulary: `[rpc] fun tasks(..): KeyedCell<NotWire, T>` passes the `[rpc]` return check (which reads the VALUE type only) and fails later inside `reply_source_keyed`'s bound — a generated-code error naming a function the author never wrote. Check `K: Wire` at the attribute (analyzer.rs ~14930, B295's region), one row spanned on the return type",
+   "discussion": "rpc-33's find F1 (2026-09-11), unfiled at the sweep; filed at Order 34's GO (R9); rpc-34 builds it",
+   "status": "OPEN — filed at Order 34's GO (2026-09-13); rpc-34",
+   "body": "The `[rpc]` return check's keyed arm (A79's `handle_element`/`handle_key`) reads `KeyedCell<K, T>`'s second argument for the Wire bound and never the first. Add the `K: Wire` (and `Hashable`, as `KeyedSource` requires) check beside it with the method's vocabulary (\"the key type `NotWire` of `[rpc]` method `tasks` is not Wire\"); pin the refusal and a `KeyedCell<i32, T>` control; `service_layer.rs`."
+  },
+  {
+   "id": "M66",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — every `SignalCell` pays `fresh_id()` for `.id` (A92's server dedup key), so twelve corpus goldens moved and every program mints an id per cell whether or not it is ever exported — a LAZILY-STAMPED identity intrinsic (`Shared::identity`: `o.__id ??= next++`) gives reference identity at zero cost until asked and zero golden churn",
+   "discussion": "rpc-33's find F2 (2026-09-11), unfiled at the sweep; filed at Order 34's GO (R9); not built this order — measure the per-cell cost on kolt's client first",
+   "status": "OPEN — filed at Order 34's GO (2026-09-13); not queued",
+   "body": "Replace the eager `id` field with an intrinsic that stamps on first read; the server's dedup and `LiveForward.holds` read the intrinsic; the `.mjs` goldens return to their pre-A92 shape except where an export actually asks. Measure: Ir per `SignalCell::new` before/after, on kolt's client warm."
+  },
+  {
+   "id": "A97",
+   "section": "A",
+   "kind": "design",
+   "area": "Reactive core & UI",
+   "title": "NEW — HOLD-COUNTING vs remote-sources §3: the server counts a client's leases per channel and revokes at zero (A92), so a RAW client that sends `Subscribe` twice and `Unsubscribe` once holds its channel open until disconnect; the alternative — client-side demand coordination that never double-subscribes — is plumbing the generated client already does and a raw client would have to repeat. Rule whether the wire contract is 'one Unsubscribe per Subscribe' (documented, as built) or the server forgives",
+   "discussion": "rpc-33's find F3 and open Q (4) (2026-09-11), unfiled at the sweep; filed at Order 34's GO (R9); remote-sources §3 was AMENDED at Order 33's sweep to say what the server SENDS holds, not what it relies on — this item is the client-side half",
+   "status": "OPEN — filed at Order 34's GO (2026-09-13); OWNER Q, not queued",
+   "body": "Rec: keep the contract as built (one `Unsubscribe` per `Subscribe`; the generated client keeps it by construction) and document it at the wire page; a forgiving server would need per-client-per-channel dedup that A92 deliberately did not add (a mirror held by two demands must not be revoked under one). Pin the raw double-subscribe as the documented behaviour."
+  }
+ ]
+}

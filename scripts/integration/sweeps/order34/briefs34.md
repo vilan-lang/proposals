@@ -1,7 +1,13 @@
-# Order 34 — the foundations order (drafted 2026-09-13; NOT GO), off vilan next @e4d192e3
+# Order 34 — the foundations order (drafted 2026-09-13; GO 2026-09-13, off vilan next @e4d192e3)
 
-**Status: DRAFT.** Nothing has landed on `next` since Order 33 sealed (e4d192e3 is the tip;
-toolchain at that sha in both locations). Ledger next id 426. Tracker 103 open.
+**GO (2026-09-13).** The owner: "Go with your recommendations on all rulings" — with ONE change:
+A80's sugar is spelled `Some(mut x)`, following the variable declaration syntax (`let x` /
+`mut x`), not `Some(let mut x)`. Every R below is therefore RULED as recommended: slots-34 GO
+(R3: B309 first, shape (1)); B316 accepted (R5); A67 the ambiguity error and B274 the copy
+(R6); E163's CI step (R7); A92/A79 closed at GO (R8); F1/F2/F3 filed as B319/M66/A97 (R9);
+N67's two one-liners (R10); M63 N=2 and M64's `libc` (R4). TEN lanes. Nothing has landed on
+`next` since Order 33 sealed (e4d192e3 is the tip; toolchain at that sha in both locations).
+Ledger next id 426.
 
 The owner's focus, read from 2026-09-12: two DESIGNS filed after a day of writing kolt against
 the shipped surface — B318 (visibility and the import surface: default-private, `export *;`,
@@ -56,7 +62,7 @@ ruling; two (paper lanes) go on the rulings already given; one (slots-34) goes o
   the sweep left them open for rpc-33's Qs: (1) the `?` surface marker for the `Option` form —
   rec keep (built); (2) `Absent` retries at the next 0→1 lease like `Failed` — rec keep
   (built); (3) `Memo`'s home `std::memo` — rec keep. Close both with as-built lines.
-- **R9 — rpc-33's three unfiled finds (file at GO).** F1 (B): a keyed handle's KEY is not
+- **R9 — rpc-33's three unfiled finds (filed at GO as B319 / M66 / A97).** F1 (B319): a keyed handle's KEY is not
   Wire-checked in the method's own vocabulary (`KeyedCell<NotWire, T>` passes the `[rpc]`
   return check and fails inside generated code) — rpc-34 builds it (one row). F2 (M): every
   `SignalCell` pays `fresh_id()` for `.id` — a lazily-stamped identity intrinsic; filed, not
@@ -245,10 +251,13 @@ Sizing M. Model: Opus.
    `use`, a re-export consumed by a second file — the prelude shape, an extension impl's
    static, the `self` refusal, enum variants unchanged, one LSP rename pin). Docs: names.md
    :98–99 gains `import` beside `use`; prelude.md's custom-prelude example gains one line.
-2. **A80 — mutable pattern binding.** The sugar `Some(let mut x)` (rec) — one grammar rule
-   (+ `RULE_STATEMENT_SITES` + `CURATED_RULE_STATEMENTS`), the binder is `mut` in the arm's
-   scope; pins: the `cell.update(|&mut held| match held { Some(let mut list) => list.push(..)
-   })` exhibit, `mut let` still refused with the steer naming the form.
+2. **A80 — mutable pattern binding, RULED spelled `Some(mut x)`** (the owner: it follows the
+   variable declaration syntax — `let x` binds immutable, `mut x` binds mutable, in a pattern
+   exactly as in a declaration; NOT `Some(let mut x)`). One grammar rule (+
+   `RULE_STATEMENT_SITES` + `CURATED_RULE_STATEMENTS`), the binder is `mut` in the arm's scope;
+   pins: the `cell.update(|&mut held| match held { Some(mut list) => list.push(..) })` exhibit,
+   `Some(let mut x)` and `Some(mut let x)` refused with the steer naming `Some(mut x)`; the
+   spec's pattern grammar (names.md / the match page) gains the row.
 3. **B278 — an i-string hole cannot contain an escaped quote.** `i"{x.get(\"k\")}"` lexes;
    pin it and the nested-brace control.
 4. **A67 (R6) — the ambiguity error** when `a.vl` declares `b` and `a/b.vl` exists; one row;
@@ -333,7 +342,7 @@ Sizing M. Model: Opus. Regions: vilan-lsp main.rs/document.rs lifecycle, Cargo.t
    stands down for a method the `[rpc]` attribute already refused (the B189 stand-down set,
    fed from macros.rs); pin one report for the suspending shape, B287's alone for the
    non-suspending.
-4. **F1 (filed at GO) — a keyed handle's KEY is Wire-checked in the method's vocabulary**
+4. **B319 (F1, filed at GO) — a keyed handle's KEY is Wire-checked in the method's vocabulary**
    (`KeyedCell<NotWire, T>` refused at the `[rpc]` return, one row, analyzer.rs ~14930).
 Sizing M. Model: Opus. Regions: rpc.vl, macros.rs service expansion, service_layer.rs, the HMR
 e2e.
@@ -390,7 +399,7 @@ check — solver-34 and lang-34 do not touch these.
   stay visible: rec CLOSE, A95 carries the design) · A93 (after kolt) · B309 (with R3).
   A92/A79 close at GO (R8). B318 and A95 stay OPEN with "PAPER LANDED — slices for Order 35"
   status lines.
-- File: rpc-33's F1/F2/F3 at GO (R9); each lane's FINDS after the reports.
+- Filed at GO: B319 (F1), M66 (F2), A97 (F3); each lane's FINDS after the reports.
 - Papers: visibility.md and style-conditions.md committed as the lanes land them; positional-
   slots.md §10 gains the R3 ruling; transport-rpc §9.6 the A92/A79 close.
 - Goldens: split/corpus/markdown regenerated once over the merged tree when the gate says.
