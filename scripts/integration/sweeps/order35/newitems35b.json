@@ -1,0 +1,194 @@
+{
+ "items": [
+  {
+   "id": "M70",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — SEVEN of kolt's 19 files can NEVER be served by the analyzer's base cache (`app_context, app_overlay, prefs, sidebar, store, styles, theme`): an import cycle reaches the entry's own module, so `entry_alias_module` is set and in `EntryMode::OpenFile` `entry_is_open_module` suppresses the pre-entry resolve AND the store — nothing else stores their key; each pays 0.42–1.43 s of CPU per analysis, per keystroke (paired probe: 0 hits in 7 tries with an unbounded cache). Dwarfs M67's budget question",
+   "discussion": "dx-35's F1 (2026-09-13); M55/M19's territory — the next perf order's top item",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Either store the world for an entry-aliased open module under a key that excludes the entry's own module (the world minus the alias), or resolve the cycle at store time; measure the seven files' per-keystroke CPU before/after with dx-35's paired harness (`base_cache_miss_cost_across_a_sibling_checkout`)."
+  },
+  {
+   "id": "B333",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — an ANNOTATED binding whose initializer is a clause-returning CALL is refused (`let body: (\\|\\| void) context c = make();` → 'a `context`-typed binding takes a closure literal, or a value with the same `context` clause') while the unannotated `let body = make();` runs (B325): the call's `expr_type_ids` entry does not carry the clause — only the binding's inferred type does — so `clause_carried_by` cannot see it; and the mirror shape from slots-35: `let wire = \\|\\| { … };` (unannotated literal) does not carry the clause of the FIELD it later lands in, though an annotated `let` does — two faces of one gap: the clause is inferred from a type but never recorded on the expression",
+   "discussion": "solver-35's F1 + slots-35's F2 (2026-09-13); the annotated-call widening was tried and did not fire (reverted)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Record the clause on a call's own type (from the callee's declared return) and on a literal's type from its landing (`seed_tail_expectations` already carries the annotated case); pin both shapes; the std value forms' `wire` closure is the exhibit."
+  },
+  {
+   "id": "B334",
+   "section": "B",
+   "kind": "design",
+   "area": "Type system & the type solver",
+   "title": "NEW — a METHOD NAME SHADOWS a same-named FREE FUNCTION inside its own `impl` block: `fun when(self, ..) { self.child(when(condition, body)) }` resolves `when` to the method ('`when` expects 3 arguments, but got 2'), and there is no qualified escape from inside std (`pkg::ui::when(..)` → '`pkg` is a namespace, not a value'; a self-import is a cycle) — the value forms' methods had to construct the struct literal inline instead of being the sugar the paper promised",
+   "discussion": "slots-35's F1 (2026-09-13); a ruling: a self-qualified path inside a module, or a rule that a free function is reachable from an impl block by its bare name when the method form does not fit the arity",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Decide the spelling (rec: the free function wins when the call has no receiver — a method needs one); pin the shape; positional-slots §3b's 'sugar' becomes literal."
+  },
+  {
+   "id": "B335",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — `source_of` on an import's MODULE segment lies when the module owns both a file and a directory: `pkg::x` with `x.vl` beside `x/y.vl` resolves its segment to the directory NAMESPACE, an entity minted in the IMPORTING file's id range, so `program.source_of(segment_id)` answers the importer, not `x.vl`; E168/E169's `import_module_is_used` makes the same lookup, so Organize Imports is probably wrong for such a module",
+   "discussion": "visibility-b-35's F1 (2026-09-13); worked around there by `ancestor_module_sources`/`module_source_by_name`",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Resolve the segment to the module's BODY entity (or record the file on the namespace entity); pin `import pkg::x;` with `x.vl` + `x/y.vl` through Organize Imports and `source_of`."
+  },
+  {
+   "id": "B336",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — `export(in <general PATH>)` (`export(in pkg::a)`) parses, stores, formats and reprints, but the visibility test ADMITS it — the subtree test needs source PATHS, which live on `Program`, not the analyzer; only `mod` and `pkg` are enforced; zero estate occurrences",
+   "discussion": "visibility-a-35's F8 (2026-09-13); B318 S1 landed with the general form documented at the site",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Enforce the general path at the post-build family (where `Program`'s paths are in hand); pin `export(in pkg::a)` reached from `pkg::b` warning and from `pkg::a::c` silent."
+  },
+  {
+   "id": "B337",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — A67's message says 'its directory holds a `{name}.vl`' where a DIRECTORY-bodied child holds `{name}/` (`a/b/lib.vl`); and A67's rule does not reach a pure-NAMESPACE child: `a.vl` declaring `c` beside `a/c/x.vl` (no `a/c/lib.vl`) resolves `c` to the declaration with no ambiguity — the same silent winner A67 closed for a file child",
+   "discussion": "lang-35's F1 + F3 (2026-09-13); B331's pin exhibits the wording",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "One row edit (name the directory form) and the namespace arm of `refuse_shadowed_submodules`; pins for both."
+  },
+  {
+   "id": "B338",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — an impl SELECTOR that admits NO implementation is silent (`import a::{ (impl Nothing) }` — almost certainly a typo); a bad selector only surfaces as the admission refusal at the first call; a second row would say so at the import",
+   "discussion": "visibility-b-35's OPEN Q3 (2026-09-13)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "One row at the import when the selector's subject unifies with no impl in the module; pin it and the `(impl _)` control."
+  },
+  {
+   "id": "B339",
+   "section": "B",
+   "kind": "design",
+   "area": "Type system & the type solver",
+   "title": "NEW — the macro-world derive corner after N79: a macro world registers no macros, so a `[derive(..)]` written into one of the eleven std modules a world force-loads (`boolean/list/null/promise/compare/default/debug/json/hash/number/string`) would be refused with the load-ordering text for a perfectly good std; reach EMPTY today (documented at `IN_MACRO_WORLD`) — a `!in_macro_world()` guard is one condition when wanted",
+   "discussion": "hygiene-35's F2 (2026-09-13); no guard added because no branch could exercise it",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Add the guard with a pin that plants a derive into a force-loaded module fixture, or record the trap as a rule in the std authoring page."
+  },
+  {
+   "id": "E175",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — the css-block converter stops at the PACKAGE boundary: kolt's `button_style` converts the prefix its own file's `flex_row` opens and splits at `.script_label()`, declared in `theme.vl`; widening needs the analyzed impl table plus each declaring file's text, not one raw parse",
+   "discussion": "editor-35's F1 (2026-09-13); pinned as the limit (`refactor_does_not_reach_an_impl_style_extension_in_a_sibling_file`)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Feed `StyleSurface::extend` from the program's impl table (each `impl Style` block's source and text); pin the sibling-file case converting."
+  },
+  {
+   "id": "E176",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — a PARENLESS head item has no attribute vocabulary in the TextMate grammar: `disabled` in `<input type(\"checkbox\") disabled />` and the `hidden` of `hidden.show(flag)` paint as nothing; one more rule inside the head region, which must decline the tag name and a `{hole}`",
+   "discussion": "editor-35's F2 (2026-09-13)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "One rule after E170's; scope pins for both shapes and the tag-name control."
+  },
+  {
+   "id": "E177",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — `Document::QuickFix` is SINGLE-FILE, so the visibility warnings' 'Export `S`' / 'Export `hidden`' fixes ship as message steers only (the two same-file fixes — `Import as #leaf`, `Delete the #` — ship); a cross-file fix needs an optional target path + the other file's line index on `QuickFix` and a multi-file `WorkspaceEdit`",
+   "discussion": "visibility-a-35's F5 (2026-09-13)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Widen `QuickFix` with a target document; the Export fix edits `S`'s declaration wherever it lives; pin the cross-file edit through the code-action handler."
+  },
+  {
+   "id": "E178",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — vilan-ide's two completion filters (`OriginListing::completions`, `auto_import_completions`) do not consult the visibility bit — the third tooling consumer B318 S1 named, left because the file was another lane's; and `module_impl_blocks` / the selector member arm should filter unexported subjects once `export impl` is enforced",
+   "discussion": "visibility-a-35's F7 + visibility-b-35's S1 seam (2026-09-13)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Filter on `Importable.exported` under the uncurated-module exemption; pins for a curated and an uncurated module."
+  },
+  {
+   "id": "E179",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — the session summary line carries `memory:` and `programs=` but nothing about the base cache; `base_cache_worlds/weight/budget` belong beside them now that M67 bounds the cache (session_trace's pin text is E174's payload)",
+   "discussion": "dx-35's OPEN Q1 (2026-09-13)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Three fields on the retained-state line; the E166/E174 pins extended."
+  },
+  {
+   "id": "A98",
+   "section": "A",
+   "kind": "perf",
+   "area": "Reactive core & UI",
+   "title": "NEW — A91's region reconciler costs +1 node per row and roughly DOUBLE the DOM mutation calls per reconcile pass (1,000 rows: nodes 1,005 → 2,005; insertions ~4,000 → ~8,000), because the order pass cuts every live row by span and re-inserts it whether or not its index moved; the plan knows `Keep(index)` but not whether the index moved — skip the cut/re-insert for an unmoved row",
+   "discussion": "slots-35's F3 (2026-09-13); the Ir figure there is stub-dominated (O(children) `insertBefore`), so the honest claim is the node and call counts",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Track the previous index in the plan; cut/re-insert only rows whose position changed; measure with the same 1,000-row harness (nodes, insertions, Ir under `--jitless`)."
+  },
+  {
+   "id": "N81",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — the two item-merge tools (`fold_tests_by_name.py`, `merge_items_by_name.py`) mis-split a MULTI-LINE STRING CONST whose first line ends in `\"\\` (a line continuation): the header lines were dropped inside a `use { }` block and the 32-line body vanished (visibility-a-35's merge, lexer errors at the gate's build); they also resurrect a test HEAD RENAMED under its old name and drop an EDITED existing const's changes (the fold carries new consts only)",
+   "discussion": "the integrator's hand repair f48ebd7e (2026-09-13)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Teach the splitter string continuations (a `\"\\` line ends inside the string until the closing `\";`), treat a lane fn absent from HEAD but present in BASE as DELETED-on-HEAD (never resurrect), and fold an edited const when `--allow-edit` names it; pins over the three shapes."
+  },
+  {
+   "id": "N82",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — the inference harness writes its `.mjs` runs into `std::env::temp_dir()`, and `/tmp` is a 12 GiB tmpfs shared by every lane: three `No space left on device` failures in one full run under nine lanes (also seen by slots-35), green on re-run — a spurious red indistinguishable from a real one",
+   "discussion": "solver-35's F2 + slots-35 (2026-09-13)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Write under `target/` (or `CARGO_TARGET_TMPDIR`) and clean eagerly; a guard that names the free space when a run fails with ENOSPC."
+  },
+  {
+   "id": "N83",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — `vilan build` over a corpus program IN PLACE emits four asset artifacts into `vilan/test/` (`.vilan-bundled`, `icons/close.svg`, `logo.<hash>.svg`, `robots.txt`) that `git add -A` sweeps into a commit; none is gitignored",
+   "discussion": "solver-35's housekeeping note (2026-09-13); one commit was amended to drop them",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Gitignore the emitted asset paths under `vilan/test/` (or have the corpus harness build into a temp dir); a hygiene pin that the tree stays clean after `--test corpus`."
+  },
+  {
+   "id": "N84",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — two flakes under lane load: `keystroke::gate::the_entity_table_costs_the_edited_buffer_not_the_program` (32.2 s once, green after) and `rpc_http.rs::a_handle_method_over_the_connectionless_post_leg_fails_naming_the_method` ('note err Waiting' — a lease answer read before the first lease failed); and `cargo test -p vilan-core --test inference -- modules::` fails two prelude-shaped tests that `cargo nextest` passes (threaded-process shared state)",
+   "discussion": "editor-35's F4, style-35's find, visibility-b-35's F2 (2026-09-13)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "A load-aware bound for the cost gate; a settle wait in the rpc pin; find the shared state behind the two `modules::` tests (a global the prelude seeding leaves behind)."
+  },
+  {
+   "id": "N85",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — prelude.md §10.1's OTHER figure is stale too ('169 std-internal import statements … 46 (27%) would vanish'; std has 193 `pkg::` import statements at e4d192e3, visibility.md §6 says 208 intra-package) and cannot be re-derived without redoing the prelude census; css-block.md §15.3's three compact-styling exhibits no longer exist in kolt (`button_style_base` is gone; `default_panel_style` is an empty `const style::style()`), so §8's re-measure plan needs re-anchoring; and the interpreter's `Failure` messages (`asset::emit` outside a const, `check_emit_kind`'s two, `stage`/`staged`) are consistently UNROWED — check (3) enumerates only `Error { msg: <literal> }`",
+   "discussion": "hygiene-35's F1, style-35's finds (2026-09-13)",
+   "status": "OPEN — Order 35's finds (2026-09-13)",
+   "body": "Re-run the prelude census or drop the figure; re-anchor §15.3 on sites that exist (or on the sheet, which is what moved: −8.1%); a ruling on rowing interpreter failures."
+  }
+ ]
+}
