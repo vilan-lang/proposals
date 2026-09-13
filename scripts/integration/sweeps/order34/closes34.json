@@ -1,0 +1,216 @@
+{
+ "date": "2026-09-13",
+ "order": "Order 34",
+ "closes": [
+  {
+   "id": "E163",
+   "lane": "tm-34",
+   "commit": "2328b162",
+   "text": "BUILT — `vscode-textmate`/`vscode-oniguruma` devDependencies (they were NOT added by editor-33), `tests/support/tokenize.js`, a `Painting`/`Scoped` harness in grammar_sync.rs, E161's five regex pins rewritten as SCOPE pins; `npm ci --prefix editors/vscode` in ci.yml's test job and release.yml's gate job; skip prints the command locally, `CI` turns the skip into a failure. Cost: warm `npm ci` 1.96 s, lockfile 41 → 43, 632 KB, 0 advisories"
+  },
+  {
+   "id": "E164",
+   "lane": "tm-34",
+   "commit": "07ec37ba",
+   "text": "BUILT — the generics begin `(?<=[A-Za-z0-9_])<(?!/)` AND the closing tag as its own guardless rule (both halves needed); the opening head is a begin/end region replacing E115's line-start terminator; blast radius measured over 257 .vl + 456 doc fences: exactly 14 characters change scope, every one a head's `>`/`/>`; five scope pins"
+  },
+  {
+   "id": "B311",
+   "lane": "paper-style-34",
+   "commit": "8ceca2b7",
+   "text": "FENCED — `check_wrappable_slot` refuses a `:`-bearing pseudo name at const time when another combinator WRAPS it (the miscompiling case; row 426); the unwrapped raw token still emits and `+` still merges; four pins; no estate program trips it. `pseudo_not` recommended AGAINST — A95's condition values subsume it (style-conditions.md §5); the real fix is A95's build"
+  },
+  {
+   "id": "A93",
+   "lane": "paper-style-34",
+   "commit": "c5228523",
+   "text": "BUILT — `child_relation`'s token checked against `>*`/`>*+*` (row 427); two pins. Non-breaking: kolt's views.vl site had already moved to `attribute(\"hidden\", None, not(..))` before the fence landed"
+  },
+  {
+   "id": "N74",
+   "lane": "hygiene-34",
+   "commit": "98676cfa",
+   "text": "BUILT — `css_style_import_note` deleted with its `.or_else` site; pin `n74_an_unresolved_style_is_reported_without_an_import_steer`; no ledger row (notes are unrowed, as N69's was)"
+  },
+  {
+   "id": "N75",
+   "lane": "hygiene-34",
+   "commit": "9ea794d6",
+   "text": "BUILT (the stub half) — `mount_missing_id.rs` and `hmr_swap.rs` on N73's one DOM (`support/dom/stub.js` + a three-fact `hmr_swap.js`); non-vacuity proved by breaking the stub. The derive-fallback half (`derive_impl_source`'s Json/Wire split) is filed as its own item"
+  },
+  {
+   "id": "N76",
+   "lane": "hygiene-34",
+   "commit": "7fc6eba7",
+   "text": "BUILT — `ROWS_THE_ENUMERATION_CANNOT_REACH` keyed by a TEXT PREFIX of variable length (three `+`-ladder rows share 64 chars, so a 60-char head was unusable), `hand_rowed_row` requires exactly one match; unit pin over a synthetic index with a `NEW` row. (2) as filed was not supported: `LegArtifact.bundled`'s doc was TRUE for the HMR round (`write_bundled` unconditional); `build --watch` is a different struct — the doc now states both loops"
+  },
+  {
+   "id": "N66",
+   "lane": "hygiene-34",
+   "commit": "c955b2bf",
+   "text": "BUILT (the guard half) — `package_root` + `refuse_a_manifest_directory` in the replay harness, both `observe_in_package` twins guarded, pin with the kolt shape + three controls. The `reused_source`/`container_site_visited` one-predicate refactor is filed as its own item"
+  },
+  {
+   "id": "N67",
+   "lane": "hygiene-34",
+   "commit": "proposals 40f93d0",
+   "text": "RULED + WRITTEN (R10) — build-hooks.md §3.3: `dist/.build-hooks.json` is NOT a cache (deleting a cache costs time; deleting the stamp RUNS somebody's code), no move; Q5 rewritten as overtaken by A65 (`generated = \"src/lucide\"` under `root = \"src\"` resolves as `pkg::lucide::*` today; the second search root buys only the sibling form)"
+  },
+  {
+   "id": "N35",
+   "lane": "hygiene-34",
+   "commit": "433d6737",
+   "text": "BUILT — the watcher runs with `VILAN_WATCH_LOG`, the test waits for `round 1 end verdict=` then reads until the bundle PARSES (`node --check`), bounded; pin `n35_a_truncated_bundle_is_not_mistaken_for_a_whole_one`; 10/10 green under load 21–30 beside a cargo build"
+  },
+  {
+   "id": "B314",
+   "lane": "editor-34",
+   "commit": "b5e59047",
+   "text": "BUILT — fixed at the two recording sites (`resolve_import` records nothing for a `pkg` origin segment; the written-type drain files a `Self` mention under no definition); `KEYWORD_SPELLED_ROWS` deleted, INVARIANT 1 holds with no exception; two pins. Wider than filed: renaming any struct/enum/trait with `Self` in its impls was IMPOSSIBLE (a dropped row refused `rename_spans`), now works"
+  },
+  {
+   "id": "E168",
+   "lane": "editor-34",
+   "commit": "72e7304b",
+   "text": "BUILT — `organize_import_runs` gains `keep_module`, asked of a statement the leaf question emptied, at the module segment's span: the statement is REWRITTEN to `import <module>;` when the file resolves something declared in the module's file; never truncates to an origin; a `use` is deleted not widened; six LSP pins + the fmt/organize agreement pin extended; proved red. The leaf's fade text is unchanged (per-leaf text needs publish.rs's group API — filed)"
+  },
+  {
+   "id": "E169",
+   "lane": "editor-34",
+   "commit": "72e7304b",
+   "text": "BUILT — rule (2) subtracts `definitions_bound_by_import_leaves` (aliases included) before counting, so a module import is kept only for what it alone brings (impl methods, qualified paths); pins for the leaf-provided case, the qualified-path edge and the impl-use control"
+  },
+  {
+   "id": "E167",
+   "lane": "editor-34",
+   "commit": "32816069",
+   "text": "BUILT — seed: any path whose last segment is `style` called with no arguments; typed links INLINED from the parsed std style.vl (`StyleSurface`); the first unconvertible link SPLITS the chain into block + postfix chain; an equivalence pin in `style_chain_order.rs` holds the converted block to the chain's stylesheet and slots. Still offers nothing on kolt's `button_style` (its first link is kolt's own `flex_row()` extension) — extending the inliner to the current file's `impl Style` bodies is filed"
+  },
+  {
+   "id": "E165",
+   "lane": "editor-34",
+   "commit": "ec06569c",
+   "text": "BUILT — `scope_at` answers the innermost scope whose EXTENT contains the offset (union of entry-entity spans folded up the parent chain), memoized in `Analysis::scope_extents`; three pins, proved red"
+  },
+  {
+   "id": "M65",
+   "lane": "editor-34",
+   "commit": "552c1623",
+   "text": "BUILT — `DocParagraphs::build`/`AutoImportOrder::build` take `source_lookup` once: `CompletionIndex::build` 15,721,289 → 14,481,886 Ir (−7.88%), warm re-analysis −0.49%; answer-identity pin"
+  },
+  {
+   "id": "E155",
+   "lane": "editor-34",
+   "commit": "82c038d2",
+   "text": "BUILT — `chain_overflows_with_atomic_elements`: a chain is probed with width-driven element breaks suppressed, so an element argument is atomic to the chain-break rule (a structurally split element still breaks); lucide shape restored byte-for-byte; `vilan fmt --check .` over the tree: zero blast radius"
+  },
+  {
+   "id": "M64",
+   "lane": "dx-34",
+   "commit": "ca810fd5",
+   "text": "RULED + BUILT (R4) — `libc` a normal dependency (Linux-gated), `memory::trim()` = `malloc_trim(0)` after a document close and an analysis drop, no-op elsewhere; pin: the trim returns at least half of what a close freed (without it 14,213 KiB went back to the allocator and 0 KiB to the OS). `mallinfo2().fordblks` does not move when a trim returns memory — RSS is the reading"
+  },
+  {
+   "id": "M63",
+   "lane": "dx-34",
+   "commit": "09cb7e94",
+   "text": "RULED + BUILT (R4, N=2) — `Document::release_analysis` drops the program after capturing `ReleasedTables`; diagnostics, symbols, `depends_on`, references union and rename served from the tables; focus = caret traffic. kolt's 19 files open: RSS 1,090 → 510 MiB, heap 855 → 500 MiB, programs 19 → 2, marginal cost per file ~48 → ~5 MB; floor after closing all 363 MiB, of which 270 MiB is the analyzer's BASE CACHE (13 worlds) — the 300 MB target needs that ruling, filed as its own item"
+  },
+  {
+   "id": "E166",
+   "lane": "dx-34",
+   "commit": "bd7d3931",
+   "text": "BUILT — `memory: rss=… heap_in_use=… heap_retained_free=…` + `programs=` on the session summary's retained-state line; five pins. `Show Language Server Status` prints the CLIENT's tally and only opens the channel — an on-demand server summary is filed"
+  },
+  {
+   "id": "A96",
+   "lane": "rpc-34",
+   "commit": "fd77ec7d",
+   "text": "BUILT — the HMR teardown is `close_for_good(duplex)`: `Closed` first, so late lease releases drop at `send`'s guard and `handle_drop` stops at its state guard. CONFIRMED under a recording socket stub: with the bare close, exactly two `Unsubscribe` frames on a CLOSING socket (one per remote source), the old duplex `Reconnecting → Connected`, a zombie redial and two live connections; with the fix zero late transmits, `Closed` once, one live connection, the new bundle's mirrors resynced. Pin in hmr_swap.rs with eight harness assertions"
+  },
+  {
+   "id": "B312",
+   "lane": "rpc-34",
+   "commit": "a29efc51",
+   "text": "BUILT — `service_method_refusals` refuses an `[rpc]`/`[client_service]` method named for a generated member (`dispatcher`, `contract_hash`; `connect`, `connect_with`, `with_handlers`, `verify`) at the attribute, spanned on the method (row 428); `dispatcher_for`/`for_connection` stay legal; pin per name + control"
+  },
+  {
+   "id": "B313",
+   "lane": "rpc-34",
+   "commit": "f56882b8",
+   "text": "BUILT — `rpc_async_mut_self_receivers` recorded beside `collect_rpc_signature` and filtered in `check_invalidation` before both branches, so E3's check stands down for a method `[rpc]` already refused; two pins + three controls; no new row"
+  },
+  {
+   "id": "B319",
+   "lane": "rpc-34",
+   "commit": "f80c8420",
+   "text": "BUILT — `handle_return_key` + `resolved_type_is_hashable` (a hand-written `impl .. with Hashable` counts); the key check in `check_rpc_signatures` spanned on the return type naming the missing half of `Wire + Hashable` (one row, 429); before 5 errors (4 generated), after the refusal alone; pins in inference/traits.rs beside the element twin"
+  },
+  {
+   "id": "B310",
+   "lane": "solver-34",
+   "commit": "25ca2972",
+   "text": "BUILT (MISCOMPILE) — both halves on the INSTANTIATED layout: `tuple_index_paths` per positional access, `ExprPattern::Tuple` carries element TypeIds, the transformer recomputes offset+width under the active substitution at the read and the multi-slot write. The divergence was three-directional (return, argument into a generic, generic struct field — not a call boundary); eight pins; five corpus goldens moved and verified byte-identical in output; kolt unaffected"
+  },
+  {
+   "id": "B315",
+   "lane": "solver-34",
+   "commit": "7f7a4654",
+   "text": "BUILT — `subjects_collide` → `Option<SubjectCollision>`; overlap = jointly inhabitable bounds (a binder admits a written type exactly when the type carries every trait the binder demands — `instantiation_agrees` both ways would have RE-COLLIDED A86's std pair); own message (row 430); six pins. Residue: two binders bounded DIFFERENTLY are still admitted — filed"
+  },
+  {
+   "id": "B302",
+   "lane": "solver-34",
+   "commit": "da4ef2f3",
+   "text": "BUILT — `render_type` gains the `StaticAccessor` arm (path + last-segment generics); four message families printed `_`, red first; codegen callers byte-identical; eight pins. The `[expose]` element refusal renders through `pretty_print_type` and disagrees (`Note` vs `models::Note`) — filed"
+  },
+  {
+   "id": "B279",
+   "lane": "solver-34",
+   "commit": "a16f583a",
+   "text": "CLOSED ON THE SWEEP — the `candidates_of` consumer sweep landed (each consumer's doc names its key and the DIRECTION it reads an edge in; const_eval's three scans justified NOT narrowed); eight pins incl. the widen-only fallback of `refined_edges`. The asserted REFUSAL is NOT an invariant: 'strict, and no refined edge' is ordinary (an uninstantiated impl of a bounded trait; a candidate of a site nothing calls) — built, it fired on 237/3,977 inference pins + 48 others incl. std's `owner_scope`, and was backed out; a real refusal needs a reachability oracle for dispatch-site owners (filed)"
+  },
+  {
+   "id": "B316",
+   "lane": "solver-34",
+   "commit": "9169bcd8",
+   "text": "RULED + BUILT (R5) — two arms in `reconcile_type`: a concrete against a trait-typed position (keep the concrete, bind a parameterized trait's arguments from the value's impl) and a trait against a SUPERTRAIT of it (the item's own exhibit); seven pins; no compile outcome moves (a later check already accepted), non-vacuity by instrumentation (8 + 2 hits). The 18 measured programs were unrecoverable; the `Doubler` exhibit + six shapes are the pin set"
+  },
+  {
+   "id": "B278",
+   "lane": "lang-34",
+   "commit": "237d8f60",
+   "text": "BUILT — `\\\"` opens a string inside an i-string hole (`read_escaped_quote_string`); an unclosed one ends the hole at the quote; seven pins across lexing/inference/formatter; lexical.md's note replaced. (Raw quotes in a hole already lexed — only the escaped spelling failed)"
+  },
+  {
+   "id": "B274",
+   "lane": "lang-34",
+   "commit": "39f67e99",
+   "text": "RULED + BUILT (R6, the copy) — `compute_clone_sites` considers the receiver when `RefMut` + named `self` + `is_shared_read` (a read only, never a place); four pins; the five doc sites were right; `shared.vl`'s two doc comments corrected; corpus and copy-elision census unchanged"
+  },
+  {
+   "id": "A80",
+   "lane": "lang-34",
+   "commit": "42883a86",
+   "text": "RULED + BUILT — spelled `Some(mut x)` (owner: the variable declaration syntax). The premise was stale: `Some(mut x)` already parsed and bound mutably (B53's binders); landed: `PATTERN_BINDER_IS_ONE_WORD` refuses `Some(let mut x)`/`Some(mut let x)` consuming the pair (one diagnostic), `RULE_STATEMENT_SITES` 22 → 23 + the curated row; six pins; grammar.md §3.10, tour/control-flow.md. The sugar binds a COPY (rule 1) — the cell-growing idiom still writes back, pinned both ways"
+  },
+  {
+   "id": "A67",
+   "lane": "lang-34",
+   "commit": "99c022db",
+   "text": "RULED + BUILT (R6, the ambiguity error; row 431) — the premise was INVERTED: the declaration won and `a/b.vl` was unreachable. `refuse_shadowed_submodules` from `finalize_build`, once, `lib` skipped (the file-level rule's case); four pins; names.md §4.2. Loader residue (`import pkg::a::lib` resolves `a/lib.vl` a second time as `a::lib`) filed"
+  },
+  {
+   "id": "B317",
+   "lane": "lang-34",
+   "commit": "e527dce5",
+   "text": "BUILT — impls indexed by subject head + scope (`ImplNamespace`); `resolve_import` descends into a struct/enum's self-less functions AFTER the scope's own members (no resolving path changes meaning); `use` lifts its fence (row 118 edited) and reads the declaring module + the use site's scope; `self` methods refused by name under both forms (row 432); `Importable.statics`; import-path completion descends a struct; 16 pins incl. rename through the alias; names.md §4.3/§4.6, tour/projects.md, prelude.md's custom-prelude example. Residue (a struct segment keeps the module scope, an enum segment replaces it) filed"
+  },
+  {
+   "id": "B309",
+   "lane": "slots-34",
+   "commit": "a75c0f49",
+   "text": "RULED + BUILT (R3, shape (1)) — `Type::Closure` carries the `context` clause as its third component; the four writing positions (parameter, `let` annotation, struct FIELD, function RETURN) peel it, every other position (a generic ARGUMENT above all) meets it in `walk_type_node`; clause resolution moved before the constraint fixpoint (load-bearing); unification ignores the clause; context.rs landing rules at a struct-literal field and a return, field reads yield injected values, `run` accepts a field read; parser: a clause after a closure return type is the type's. 44 forced `_ =>` sites + 43 catch-alls audited; three wall pins flipped positive, the plain-closure control kept; six new pins — the capture-at-creation leak slots-33 measured is impossible by construction. Ledger row 57 deleted, 219/221 edited, one new. A85 and A91 build on it in Order 35 (field spelled WITHOUT `sync`; the constructor takes its body as a clause-carrying parameter; `place` becomes a needs-context node)"
+  }
+ ]
+}

@@ -592,7 +592,7 @@ objection this design has to clear, and it clears it on a real disanalogy:
 
 > **The CSS property vocabulary is not invented. It already exists in the
 > tree, and it is already gated.** `STYLE_PROPERTY_METHODS`
-> (`formatter.rs:574`, ~65 rows) maps every `Style` property method to the
+> (`formatter.rs:~818 (was :574)`, ~65 rows) maps every `Style` property method to the
 > slots it writes, and `crates/vilan-core/tests/style_table_sync.rs` holds it
 > to the method bodies with six tests including
 > `every_style_method_is_claimed_by_the_canonical_order_table` and

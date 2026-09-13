@@ -1,0 +1,254 @@
+{
+ "items": [
+  {
+   "id": "B320",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — a MALFORMED import reports `found 'import' expected an expression` at COLUMN 1 of the statement, whatever the typo (six probes, identical): the import grammar's failure falls back to the expression parser, which points at the keyword — acute once B318's new import forms (`#`, `only`, `(impl T)`, `::*`) multiply the ways an import can be mistyped",
+   "discussion": "paper-visibility-34's F3 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Make the import parser report at the token it stopped on with a curated rule naming the import grammar (one row); pin the six probe shapes; the expression fallback stays for everything that is not `import`-led."
+  },
+  {
+   "id": "B321",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — `export (helper);` and `export * helper;` compile CLEAN and mean nothing: `parse_export` takes any statement, so an export of a parenthesised expression (or of `*` followed by a name) is accepted silently; zero occurrences in the estate; one curated refusal, shippable today, and the rule B318's `export *;`/`export(in PATH)` grammar needs anyway",
+   "discussion": "paper-visibility-34's F4 and probe P2d (2026-09-13); visibility.md §2.2",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "`parse_export` admits a declaration, an `import`/`use`, and (after B318) `*;` / `(in PATH)` — anything else is refused with a steer naming those; one row; pins for the two nonsense forms and the legal controls."
+  },
+  {
+   "id": "N77",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — `vilan/std/vilan.toml` quotes a STALE census in its prelude comment ('264 names across 59 files'; measured at e4d192e3: 664 top-level declarations across 63 files, 118 of them imported by another std file) — the number B318's brief inherited as '364 unexported'",
+   "discussion": "paper-visibility-34's F5 (2026-09-13); visibility.md §6 has the real table",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Replace the comment with the measured numbers and the command that produces them, or drop the number; prelude.md §10.1 carries the same stale figure."
+  },
+  {
+   "id": "E170",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — in an element head a PLAIN attribute name paints as a function call (`<div class(\"row\")>` → `class` is `entity.name.function.vilan`) and a KEYWORD-named attribute paints as the declaration keyword (`<input type(\"checkbox\")>` → `storage.type.vilan`); only `on:` forms and hyphenated names get `entity.other.attribute-name`; E164's head region makes it a one-rule fix (`\\b([a-z][a-zA-Z0-9_]*)(?=\\()` inside the head, before `$self`)",
+   "discussion": "tm-34's F1 + F2 (2026-09-13), tokeniser output in 07ec37ba's exhibits; `type`/`for` as attribute names are a supported spelling (parse_expr_regression fixtures)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "One rule inside `#element-head`; scope pins for `class(..)`, `type(..)`, `for(..)`, an `on:` control and a real call control outside a head."
+  },
+  {
+   "id": "E171",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — the book's highlight.js tag rule (`vilan/docs/theme/vilan.js:123`) carries E164's closing-tag refusal unreachably: `(?<=(?<![A-Za-z0-9_])</?)` declines a closing tag after an identifier character; no doc fence reaches it today (bare text children are a parse error), so it is latent — the one-regex fix is `(?<=</\\|(?<![A-Za-z0-9_])<)`",
+   "discussion": "tm-34's F3 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Apply the regex; a book-side pin if the theme has any (else a note in the file)."
+  },
+  {
+   "id": "B322",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — B311's latent halves: `Style::add` (`+`) also splits an inner slot key at `:` and runs `without_covered` against the mis-split property (benign today — the mis-split field is never a family shorthand name — and deliberately NOT fenced, since kolt merges such styles at views.vl:265–266); and `Style::media`'s `min_width` and `Style::raw`'s property are unfenced against `:` (unreachable through `sm/md/lg/xl` and the typed property methods)",
+   "discussion": "paper-style-34's finds (2026-09-13); style-conditions.md §5.1 — both dissolve under A95's build, where no condition is a string",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Until A95: one small fence on `media`'s width and `raw`'s property (one row), and a doc note on `add`. Pins: the two refusals, the `+` control that must keep merging."
+  },
+  {
+   "id": "N79",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — N75's other half: the Rust DERIVE FALLBACK (`derive_impl_source`'s Json/Wire split — N70's unpinned twin) — a std lacking `json.vl`'s macros is served by hand-written Rust instead of refused; rec: delete it and refuse with a curated message (one row) — a lang change with a ledger row, kept out of the droppable lane",
+   "discussion": "hygiene-34's report (2026-09-13); N75 closed on the stub half",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Delete the fallback; the refusal names the missing macro; pin the refusal and the std control."
+  },
+  {
+   "id": "N80",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — N66's other half: `reused_source` and `container_site_visited` are two spellings of ONE predicate in the replay harness; fold them into one with a name that says what it decides",
+   "discussion": "hygiene-34's report (2026-09-13); N66 closed on the guard half",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "One predicate, one doc comment, the differential pins unchanged."
+  },
+  {
+   "id": "B323",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — an ANNOTATION-ONLY generic argument carrying a `context` clause is silently INERT at the construction site: `let held: Held<(\\|\\| void) context current> = Held { body = \\|\\| print(..) }` inside `current.run(9, ..)`, then `current.run(3, \\|\\| (held.body)())`, prints `saw 9` (measured) — the clause binds `T` from the VALUE's type and a literal is born clause-less, so the annotation never reaches B309's landing rule; not a miscompile (ordinary capture) but silent; the working spelling is a constructor `fun` whose parameter carries the clause (pinned as `b309_a_generic_argument_carries_the_clause_into_the_field_it_binds`)",
+   "discussion": "slots-34's F1 and Q3 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Make the struct-literal field landing consult the annotated EXPECTED type (`seed_tail_expectations` already carries it for an annotated `let`); pin the probe, keep the constructor shape as the control."
+  },
+  {
+   "id": "B324",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — a `context` clause written in a type position that has NO landing rule (`List<(\\|\\| i32) context c>`) is admitted and inert: the literal born there captures at creation and the restriction never sees it — sound, silent; a walk-time position gate is the wrong fix (it cannot see through a generic argument, the position B309 wanted)",
+   "discussion": "slots-34's F2 and Q1 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "A literal-side check in the context pass: 'this literal would be born under a clause the threading cannot follow' — one row; pins for the list element, a map value, and the landing-rule positions as controls."
+  },
+  {
+   "id": "B325",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — `let x = injected_value;` (UNANNOTATED) is still refused by the value-flow restriction although `x`'s type now carries the clause (B309 moved resolution before the fixpoint) and the threading could follow it; the binding landing rule applies only to an annotated `let`",
+   "discussion": "slots-34's F3 and Q2 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Admit the unannotated binding as a forward (the clause comes from the initializer's type); pin it beside the annotated form; the mismatched-clause refusal unchanged."
+  },
+  {
+   "id": "E172",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — E167's css-block converter still offers nothing on kolt's `button_style` (styles.vl:41–65): its FIRST link is kolt's own `flex_row()` extension, so the convertible prefix is empty; the inliner reads std's style.vl only, but `css_spelling_conversion` already raw-parses the current file, so its own `impl Style` bodies are in hand — extending `StyleSurface::build` to them (~10 lines) makes the refactor fire on the exhibit that motivated the item",
+   "discussion": "editor-34's F1 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Feed the current file's `impl Style` self-less-chain bodies into `StyleSurface`; pin `button_style`'s shape converting; the split rule unchanged for a body that is not a chain."
+  },
+  {
+   "id": "E173",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — an unused import LEAF whose module Organize Imports will keep for its impls (E168's rewrite) fades with the generic 'unused import' text; per-leaf text ('unused; the module's impls are in use — Organize Imports rewrites this to `import pkg::a;`') needs `unused_import_spans` to return `Vec<(Span, String)>` and `publish::diagnostic_groups` to carry a per-span message",
+   "discussion": "editor-34's OPEN Q1 (2026-09-13); publish.rs was in no lane's map",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Widen the return type and the group API; one pin on the text; E114's contract (fade == what the action edits) holds either way."
+  },
+  {
+   "id": "M67",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — the analyzer's BASE CACHE holds 13 worlds at 276,267 KiB for ONE 19-file package (kolt; budget 512 MiB resident, M24/M50): after M63 bounded per-document retention (19 open: 1,090 → 510 MiB), the floor after closing every document is 336 MiB in use of which 270 MiB is this cache — M63's '300 MB' target is unreachable without a base-cache retention ruling (worlds keyed by import set; how many a session needs, and for how long)",
+   "discussion": "dx-34's F1 (2026-09-13); `base_cache_worlds`/`base_cache_weight_kib` on the instrument's released row, identical at N=0 and N=2",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "OWNER Q: the ruling (an LRU of N worlds? drop worlds no open document's import set names? a byte budget?). Measure which worlds a kolt session actually reuses (the instrument exists) before choosing; pin the floor under the ruling."
+  },
+  {
+   "id": "M68",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — the release+trim at the analysis-landing seam costs roughly 100 ms per BACKGROUND document at kolt scale (estimated: 17.4 s vs 15.5 s over 19 opens) and runs on the runtime thread after publish; make the trim conditional on how much was released and measure it properly (CPU time)",
+   "discussion": "dx-34's F2 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Threshold the `malloc_trim` on released bytes; measure per-landing cost before/after; pin nothing new (the M64 pin holds the trim's effect)."
+  },
+  {
+   "id": "E174",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — `Vilan: Show Language Server Status` prints the CLIENT's tally and only opens the channel the server's summary goes to, so E166's memory numbers arrive with the 500-request summary rather than on demand; a `workspace/executeCommand` (or custom request) that makes the server log its summary now would finish the item",
+   "discussion": "dx-34's F3 (2026-09-13); regions editors/vscode + main.rs",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Add the command on both sides; the summary line E166 built is the payload; a unit pin on the request handler."
+  },
+  {
+   "id": "B326",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — `Option<KeyedCell<K, T>>` as an `[rpc]` return gets only GENERATED-CODE errors: std's macro deliberately does not treat it as a handle (rpc.vl ~5102, 'left to the ordinary Wire refusal') but `handle_return_element` descends through `Option` into `KeyedCell`, so the ordinary Wire refusal stands down and the author reads `in code generated by this attribute: 'Option<KeyedCell<i32, Task>>' does not implement trait 'Wire'`, twice",
+   "discussion": "rpc-34's F1 (2026-09-13); pre-existing, B319 only added the key test",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Decline to descend through `Option` into a KEYED handle (the macro's own rule is `handle_key(inner) == \"\"`), so the form falls to the Wire refusal in the method's vocabulary; no new row; pin the form and the plain `Option<SignalCell<T>>` control. The alternative — supporting the form with per-key `Absent` — is a design call, not this item."
+  },
+  {
+   "id": "B327",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — the `[derive(Hashable)]` boundary cannot see a HAND-WRITTEN `impl .. with Hashable`: `is_hashable_type` reads scalars + `hashable_names` (derives and backed enums) only, so `[derive(Hashable)] struct Key { inner: Custom }` with `impl Custom with Hashable` is refused 'field `inner` … is `Custom`, which is not `Hashable`' — B289's class for Wire; it only rejects valid programs",
+   "discussion": "rpc-34's F2 (2026-09-13); B319's `resolved_type_is_hashable` is the reusable check",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "`check_hashable_boundary` asks the impl table through `resolved_type_is_hashable`; pin the hand-written impl inside a derive and the missing-impl control."
+  },
+  {
+   "id": "B328",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — `transformer::expr_type_id` is BLIND to a parameter spelled `Expr::Local`: `self.program.variables.get(binding)` misses it (the gap `drop_argument_type_id` documents); harmless after B310 (the `tuple_element_types` fallback answers) but latent for any other consumer",
+   "discussion": "solver-34's F2 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Resolve a parameter's type through the function's parameter table in `expr_type_id`; pin a consumer that reads a parameter's type without the fallback."
+  },
+  {
+   "id": "B329",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — two renderers disagree about a WRITTEN PATH: the `[expose]` element refusal (analyzer.rs ~15364) renders through `pretty_print_type` and says `Note` where the author wrote `models::Note`, while `render_type`'s callers (B302) now say `models::Note` — one annotation, two answers",
+   "discussion": "solver-34's F3 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Route the `[expose]` refusal (and any sibling that prints an annotation) through `render_type`; sweep `pretty_print_type` callers that print a user-written annotation; one pin per moved message."
+  },
+  {
+   "id": "B330",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — two blanket binders bounded DIFFERENTLY (`impl Source<type I: Debug>` vs `impl Source<type J: Clone>`) declaring one member name are still admitted: whether a third type satisfies both bounds is not answerable from the declarations, so B315's duplicate family refuses only what it can see; a type implementing both traits then has two candidates",
+   "discussion": "solver-34's B315 residue (2026-09-13); stated in `generic_bounds_overlap`'s comment",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Either refuse at the CALL when a receiver satisfies both (the per-importer namespace of B318 is where such a check would live) or document the admission; pin the pair and a receiver that satisfies both."
+  },
+  {
+   "id": "B331",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — the loader resolves a module's BODY FILE under two names: `import pkg::a::lib` resolves `a/lib.vl` a second time as the module `a::lib` (`submodules_in_directory` excludes `lib` deliberately; `resolve_module_file`/`longest_module_prefix` do not), so A67's rule had to skip `lib` by hand to avoid a second diagnostic for one root cause",
+   "discussion": "lang-34's F3 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "`resolve_module_file` refuses (or aliases) `lib` as a segment when the directory is a module's body; one row or a silent alias — decide; pin `import pkg::a::lib::x` and `import pkg::a::x` agreeing."
+  },
+  {
+   "id": "B332",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — after a STRUCT segment the import walk keeps the MODULE scope (a module-level `rem` in style.vl would shadow `Length::rem`, because the type's namespace is asked SECOND — B317 preserved every resolving path), while an ENUM segment REPLACES the scope with the variants; the two are inconsistent",
+   "discussion": "lang-34's F4 and Q1 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Decide: a type segment replaces the walk's namespace (breaking for a path that resolved to a module member through a type-named prefix — census first) or the enum walk keeps the module scope too; pin the shadowing pair either way."
+  },
+  {
+   "id": "D7",
+   "section": "D",
+   "kind": "docs",
+   "area": "Documentation",
+   "title": "NEW — `SignalCell::update`'s doc does not name the write-back the cell-growing idiom needs: A80's `Some(mut list)` binds a COPY (rule 1), so `list.push(..)` inside the arm grows the copy; the working spellings are `held = Some(list)` through the `&mut` subject, or `take`/`replace` — one sentence at the method, and A80's refusal steer could name it",
+   "discussion": "lang-34's F5 (2026-09-13); pinned both ways in borrows.rs",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "One doc sentence + the steer; `-p vilan-core --test docs`."
+  },
+  {
+   "id": "M69",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — `impl_namespaces` (B317) clones each impl's `declared_members` (~60 KB over std's closure) and rides the base-cache `Analyzer` clone; small, but M67's accounting should see it",
+   "discussion": "lang-34's F6 (2026-09-13)",
+   "status": "OPEN — Order 34's finds (2026-09-13)",
+   "body": "Index by reference or `Rc`; measure on the base-cache clone path."
+  }
+ ]
+}
