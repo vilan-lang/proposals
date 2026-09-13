@@ -2346,7 +2346,7 @@ owner's kolt `child_relation` site had moved before the fence landed, so the ord
 no owner action pending. One number for the day: kolt's nineteen files open in the language
 server went from 1,090 MiB to 510 MiB, and what remains is the base cache's ruling (M67).
 
-## Order 35 — cycle 53: the papers' first slices (2026-09-13 → )
+## Order 35 — cycle 53: the papers' first slices (2026-09-13 → 2026-09-13)
 
 Opened on the owner's "Go with your recommendations on all rulings" of 2026-09-13, the same day Order
 34 sealed, off 36fb64ed. Both papers are built from their first slices: style-35 lays G23 (the
@@ -2385,3 +2385,24 @@ pinned the world the other was removing), and slots-35 baaa7911 last (A85's valu
 regions, kolt two wrappers lighter, the third B253's). Ledger rows 434–463. Three process lessons
 for the tools: a multi-line string const splits the item folders, a renamed test comes back under
 its old name, and a conflict-unioned constant keeps both lines.
+
+**SEALED (2026-09-13) at vilan next @9b22ec36.** The seal on baaa7911 read union 7409/7411, clippy 0,
+Windows cross-check 0, audit 0, fmt 0, parity 414/414 — the two reds were the new plain-reach
+warning landing where a workspace pin and the benchmark runner demanded silence, fixed with the
+estate's own `export *;` line (3473a550); CI on that tip then went red on both Windows test legs
+for two of S3's selector pins, whose module lookup matched a `/`-joined suffix against canonical
+paths as strings — a `\`-separated path never matched — fixed by comparing path components
+(9b22ec36); CI run 34783… green on all eleven jobs at 9b22ec36. Ledger rows 434–463 (335
+retired, 163 re-keyed; next 464). The sweep closed 29 and filed 19 (M70, the seven kolt files the
+base cache can never serve, at the top; B333–B339; E175–E179; A98; N81–N85, three of them the
+merge tools' own defects); tracker 86 open. Both papers stand amended: visibility.md §14 (S1–S3 as
+built — the std suppression and the uncurated-module exemption the rollout needed, `#` a token,
+`[doc(hidden)]` gone; S4–S6 next) and style-conditions.md §13 (G23 with a host-held registry,
+B308 closed at zero dead share, S1 behind 145 identical artifacts; `Condition` one type,
+`within(hover())` waiting on the slot key; S2, S3, S5 next). A85 and A91 landed on B309, two of
+kolt's three wrappers removable. Toolchain refreshed in both locations (vilan 0.40.0
+(9b22ec364)); nine worktrees reaped. Lessons for the process, all filed: a backgrounded gate
+with a timeout dies at the deadline; a `Claude`-authored commit is refused at the push; the item
+folders split a continued string const, resurrect a renamed test, and drop an edited const;
+the ledger-tuple union keeps both lines of a constant; two lanes can pin contradictory premises
+about one grammar; and the seal's Windows leg compiles but never runs.
