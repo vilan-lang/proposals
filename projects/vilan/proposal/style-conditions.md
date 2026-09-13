@@ -393,6 +393,10 @@ token to the two shipped relations from now until the method goes away.
 
 ### 5.4 B308 — REDUCED and CHEAPENED, not closed. The item's claim is too strong.
 
+> **Superseded by §12 (owner, 2026-09-13):** B308 CLOSES through G23's end-of-evaluation hook
+> — emission moves to a scheduled finaliser that emits the live set once. The analysis below
+> stands as the record of why a chain-time redesign alone could not close it.
+
 A95's item says B308 "dies structurally (a rule set is a value, emitted once at
 application)". **That is not what the mechanism supports, and the paper says so
 rather than letting a slice discover it.**
@@ -651,7 +655,8 @@ Each carries a recommendation, which is what a lane builds if no ruling comes.
    was asked for.
 4. **`style().color(c).on(hover())`** — the postfix reading, unspellable for
    the same reason (no overloading). The block gives it back (§4).
-5. **"B308 dies structurally"** — reduced and cheapened, not closed (§5.4).
+5. **"B308 dies structurally"** — reduced and cheapened, not closed (§5.4). **RULED (§12): closed
+   through G23's build-step hook.**
 
 ### Recorded rejections
 
@@ -677,33 +682,41 @@ Each carries a recommendation, which is what a lane builds if no ruling comes.
 
 ## 12. Rulings (owner, 2026-09-13)
 
-Read against §10's numbering; where the owner's reply numbered fewer questions than §10
-carries, the mapping below is the integrator's and is stated so it can be corrected.
+The owner's five numbered replies answer §11's five divergences (the owner's own correction:
+"I wrote my responses for the paragraph 11 section, not the open questions"); §10's seven
+recommendations are accepted as written ("the recs look good"), with the note that the ruling
+on divergence 5 dissolves some of them too. Recorded:
 
-- **(i) Accepted** — two values of one attribute in a set are admitted in v1 and recorded.
-- **(ii) Accepted** — two ancestor guards in a set are refused in v1, one guard per set.
-- **(iii) Understood** — `on<C: IntoConditions>(self, conditions: C, inner: Style)`, the
-  generic bound; the owner: "`.on(CONDITION, STYLE)` is fine with me" — the two-argument
-  shape §1.1 arrived at is the ruled surface.
-- **(iv) Understood** — the sugar keeps `Option<str>` for one release, then `[deprecated]`.
-- **(v) `+` as the intersection spelling** — not addressed in the reply; the recommendation
-  stands (`+`) unless the owner says otherwise.
-- **(vi) B308 — RULED, and not as §5.4 recommended.** The owner: a proper BUILD-STEP HOOK for
-  styling fixes the whole class for good. The const evaluations push their rules to a GLOBAL;
-  a hook the build runs at the end reads it, processes it (dedupe, drop what no applied class
-  references) and emits the CSS in one go — which dissolves "X is already emitted before Y is
-  known" instead of retracting it. To make it automatic, const evaluation gains a way to
-  SCHEDULE a function to be called at the end of evaluation; multiple scheduling requests call
-  it once. Filed as **G23** (the const-eval end-of-evaluation scheduled callback); B308 is
-  re-pointed at it: `Style::rule` stops emitting at construction and appends to the registry,
-  the scheduled finaliser emits the live set once. This replaces slice 4 (§9): the retraction
-  design is withdrawn. Sequencing: G23 is the first brick of A95's build, since every other
-  slice's emission behaviour is simpler once emission is late.
-- **(vii) `element(name)`** — not addressed; the recommendation stands (the value).
-- **`within` takes a CONDITION, not an attribute name** (owner, on §1's table and §1's
-  example): `within("data-theme").eq("dark")` would lock the ancestor guard to attributes.
-  The spelling is `within(attribute("data-theme").eq("dark"))` — or, through the sugar,
-  `within(attribute("data-theme", Some("dark")))` — so a guard can carry any condition value
-  (`within(hover())` for a hovered ancestor, `within(attribute("open"))` for presence). §1's
-  table, §1's example and §2.5/§10(ii) are corrected above; the canonical order of a guard's
-  own conditions inside the guard is the set's order, unchanged.
+**§11 — the divergences.**
+1. `.pseudo(pseudo("hover"))` → `.on(hover())` — **accepted.**
+2. `.set(property, Length)` as the typed `raw` — **accepted.**
+3. The variadic `.on` cannot be spelled — **understood.**
+4. The postfix reading unspellable, the block gives it back — **understood**; "`.on(CONDITION,
+   STYLE)` is fine with me": the two-argument form is the ruled surface.
+5. "B308 dies structurally" was too strong — **RULED, and further than §5.4 went:** a proper
+   BUILD-STEP HOOK for styling fixes the whole class for good. Const evaluations push their rules
+   to a global; a hook the build runs at the end reads it, processes it (drop what no applied
+   class references) and emits the CSS in one go — which dissolves "X is already emitted before
+   Y is known" instead of retracting it. To make it automatic, const evaluation gains a way to
+   SCHEDULE a function to be called at the end of evaluation; multiple scheduling requests call
+   it once. Filed as **G23**; B308 is re-pointed at it and CLOSES through it — `Style::rule`
+   stops emitting at construction and appends to the registry, the scheduled finaliser emits
+   the live set once. The retraction design is withdrawn; G23 is the FIRST slice of A95's build,
+   because every later slice's emission behaviour is simpler once emission is late.
+
+**§10 — the open questions: every recommendation accepted** — (i) admit, (ii) refuse in v1,
+(iii) the generic bound, (iv) `Option<str>` for one release then `[deprecated]`, (v) `+`,
+(vii) `element(name)`. **(vi) is superseded** by divergence 5's ruling: B308 does not stay open
+as slice 4 — it closes on G23, which becomes slice 1. What else the hook dissolves: §5.4's
+"reduced and cheapened, not closed" (now closed); the recorded rejection "routing a conditioned
+body through `Declarations` to close B308" (no longer a candidate for anything); and §8's
+re-measure gains a second number — the stylesheet after the finaliser drops the dead sets is the
+compact-styling reading css-block §15.3 wanted.
+
+**`within` takes a CONDITION, not an attribute name** (owner, on §1's table and example):
+`within("data-theme").eq("dark")` would lock the ancestor guard to attributes. The spelling is
+`within(attribute("data-theme").eq("dark"))` — or, through the sugar,
+`within(attribute("data-theme", Some("dark")))` — so a guard can carry any condition value
+(`within(hover())` for a hovered ancestor, `within(attribute("open"))` for presence). §1's
+table, §1's example and §2.5/§10(ii) are corrected above; the canonical order of a guard's own
+conditions is the set's order, unchanged.
