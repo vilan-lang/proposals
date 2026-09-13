@@ -800,16 +800,25 @@ export import std::display::Display;
 export import std::print;
 export import std::option::Option::{ self, Some, None };
 export import std::result::Result::{ self, Ok, Err };
+export import std::style::Length::rem as rem;
 
 export fun shout(message: str): void { print(message); }
 ```
 
 re-exports all of it — the plain function `print`, the *types*
 `Option`/`Result` via `self`, the **enum variants** `Some`/`None`/`Ok`/`Err`,
-a **trait** whose methods (`.to_string()`) then work at the consumer, and
+a **trait** whose methods (`.to_string()`) then work at the consumer, a
+type's **static** (`Length::rem`, so `rem(1f)` is spellable bare), and
 its own local `shout` — and a consumer importing those leaf names from
 that module compiles and runs. No new syntax is needed for the mechanism
 this determination rests on.
+
+*The static line is B317's, added to this example in Order 34. When the
+probe above was taken the line did not compile: a path into a type reached
+its variants and nothing else, against `names.md` §4.3's own promise
+("variants, statics"). The probe's conclusion is unchanged — no new syntax
+— but it rested on a mechanism that was one row short of what the spec
+said it was.*
 
 Two seams the implementation must respect, both already visible:
 
