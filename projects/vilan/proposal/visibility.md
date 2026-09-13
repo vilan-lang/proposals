@@ -987,3 +987,21 @@ declarations across 63. One comment edit.
    maximum. Per-importer selection has to reach it, or B57's silent-pick hazard returns
    (§3.5). This is the largest single cost in the feature and it was not in the brief's
    sizing.
+
+---
+
+## 13. Rulings (owner, 2026-09-13)
+
+1. **`#` — pay for it.** `#` becomes a token: the `HASH_IS_NOT_A_TOKEN` curated rule is retired,
+   its quickfix (css-block §7.2 fix 1, keyed on the constant) is re-homed on the css block's own
+   refusal, ledger row 335 is edited. §2.3's bill is the bill.
+2. **`export` on an `impl` block means what it means on every other declaration.** An impl a
+   consumer cannot see contributes NO methods to that consumer; AMBIENT impls do not come
+   through either — the only reach is an explicit `#` import (`{ #(impl T) }`). §10 (j) is
+   answered in the strict direction, which is also the one that makes the per-importer
+   namespace (§3) exact: what a file can call is what it imported, exported or reached.
+   **`[doc(hidden)]` is superseded** — its one purpose (technically available, absent from
+   completion) is what a private item now is; S1 retires it (§11 F1: parsed, stored,
+   formatted, documented, read by no tool).
+3. **M67 (the base cache)** — the owner asked for a recommendation; recorded on the item.
+4. **E163's local `npm ci`** — keep it no; the local gate stays network-free.
