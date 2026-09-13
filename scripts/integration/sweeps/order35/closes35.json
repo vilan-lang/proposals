@@ -1,0 +1,180 @@
+{
+ "date": "2026-09-13",
+ "order": "Order 35",
+ "closes": [
+  {
+   "id": "E170",
+   "lane": "editor-35",
+   "commit": "bb12b4bc",
+   "text": "BUILT — one rule in E164's head region paints a head item's name (plain or keyword-spelled) as `entity.other.attribute-name`; two scope pins; blast radius 7 tokens / 38 characters over 257 .vl + 456 doc fences, all head-item names. Only `vilan/test/element-syntax.vl` writes attributed markup in tracked .vl — the markup form is rare in the estate"
+  },
+  {
+   "id": "E171",
+   "lane": "editor-35",
+   "commit": "d4e82a8a",
+   "text": "BUILT — the book's `ELEMENT_TAG.begin` guards the opening `<` only (`(?<=</|(?<![A-Za-z0-9_])<)`); pin over match positions; the fix gains 10 matches in 6 files, all inside strings/comments that precede the rule — nothing rendered moves"
+  },
+  {
+   "id": "E172",
+   "lane": "editor-35",
+   "commit": "474971b5",
+   "text": "BUILT — `StyleSurface::extend` feeds the current file's `impl Style` self-chain bodies to the converter (std wins a name clash); kolt's `button_style` converts its own `flex_row` prefix and splits at `.script_label()` (declared in theme.vl — the package boundary, pinned as the limit); equivalence twin in style_chain_order.rs"
+  },
+  {
+   "id": "E173",
+   "lane": "editor-35",
+   "commit": "b091f593",
+   "text": "RULED + BUILT (R8) — `unused_import_spans() -> Vec<(Span, String)>`, `publish::diagnostic_groups` carries a message per span; the rewrite case is learned by recording E168's `keep_module` through `organize_import_runs`, so the fade and the action cannot drift; text: 'unused; the module's impls are in use — Organize Imports rewrites this to `import pkg::a;`'; four pins; severity and tag unchanged; no ledger row (LSP paint is unrowed)"
+  },
+  {
+   "id": "E174",
+   "lane": "editor-35",
+   "commit": "675ec9fd",
+   "text": "BUILT — `vilan.logSessionSummary` (`workspace/executeCommand`, declared capability, undeclared commands named at WARNING); `Show Language Server Status` prints the client tally then asks the server for its summary in the same channel; `book_sync` gate holds the declared commands to the extension's; editor.md paragraph"
+  },
+  {
+   "id": "N77",
+   "lane": "hygiene-35",
+   "commit": "11004d8e",
+   "text": "BUILT — std's manifest comment states 664 top-level declarations across 63 files @e4d192e3 (the exact recipe: top-level fun/external fun/struct/trait/enum/let) with the command, and the 118 cross-file reach as §6's table; prelude.md §10.1 moved. §10.1's OTHER figure (169 import statements / 46 would vanish) is stale too and not re-derivable — filed"
+  },
+  {
+   "id": "N79",
+   "lane": "hygiene-35",
+   "commit": "010a444b",
+   "text": "RULED + BUILT (R7) — `derive_impl_source` and 729 lines of Rust derive generators deleted (all six derive names across five std modules, wider than the ruling's `json.vl` wording); a std lacking the declaring module's macro is refused with a curated message naming the by-hand alternative (row 434); `RustFallback` → `SynthesizedMembers` (backed enums only); row 163 re-keyed; pin beside N70's on a real std minus json.vl"
+  },
+  {
+   "id": "N80",
+   "lane": "hygiene-35",
+   "commit": "6a291bd0",
+   "text": "BUILT — one `container_site_visited(site: ContainerSite)` with `File`/`Entity` arms, the census inside the predicate; the differential pins unchanged (13/13). Both predicates lived in analyzer.rs, not the harness files"
+  },
+  {
+   "id": "L21",
+   "lane": "hygiene-35",
+   "commit": "6938bea6",
+   "text": "BUILT — `materialize_into` runs `prune_stale(root, STALE_AFTER)` after a NEW hash lands (the current hash always survives); `cache_entries`/`prune(root, age, dry_run)`; `vilan cache prune [--all] [--dry-run]`; six pins on temp roots; appendix/cli.md + releases.md §3. The vilan-cli suite is the main filler of a developer's real std cache and now prunes it — the first post-merge suite run deletes that box's >7-day trees"
+  },
+  {
+   "id": "B331",
+   "lane": "lang-35",
+   "commit": "b7ea1e41",
+   "text": "RULED + BUILT (R3) — `resolve_module_file` stops answering `a::lib` with `a/lib.vl` (the file was analysed twice under two names); the miss carries a curated steer to `pkg::a` (row 435) via `modules_bodied_by_a_lib_file`; a root-level `lib.vl` and a real `a/lib/` directory unaffected; A67's hand-skip of `lib` removed and its case pinned (a declaration `lib` beside `a/lib/lib.vl` is the ordinary ambiguity); eight pins"
+  },
+  {
+   "id": "B332",
+   "lane": "lang-35",
+   "commit": "2bbea34e",
+   "text": "RULED + BUILT (R2) — CENSUS ZERO over 287 .vl files (std, macro_std, examples, benchmarks, corpus, templates, cli projects, website, playground, kolt) + 457 doc fences; a type segment REPLACES the import walk's namespace (enum and struct alike — `ImportTypeSegment`); the breaking miss is curated (row 436: '`px` is not a member of the type `Length`: it is an item of `pkg::style` … Write `pkg::style::px`'); six pins (the shadowing pair asserts the result type); names.md §4.3/§4.6; `breaking` with the census stated"
+  },
+  {
+   "id": "D7",
+   "lane": "lang-35",
+   "commit": "c4ed1169",
+   "text": "BUILT — `SignalCell::update`'s doc sentence, std/reactive.md's bullet with a COMPILED fence (both spellings verified by running), A80's refusal steer names the write-back; pin beside A80's three"
+  },
+  {
+   "id": "M67",
+   "lane": "dx-35",
+   "commit": "b17c8984",
+   "text": "RULED + BUILT (R6) — MEASURED FIRST (19 kolt files open; scan and working-set walks; release): unbounded 12 worlds / 266 MiB / floor 374 MiB; 192 MiB → 7 worlds / 160 MiB / RSS with 19 open 443 MiB / FLOOR 305 MiB (M63's 300 MB target met at the floor); a miss costs 21–295 ms in a warm process (paired), not M36's 3.5–5 s. The LRU budget already existed (M24/M50): `BASE_CACHE_RESIDENT_BUDGET` 512 → 192 MiB, the live-key exemption (`set_base_cache_live_entries` from the LSP's retained set; `evict_to_budget` never takes a live key), `CHECKED_CACHE_DEFAULT_BUDGET` decoupled; bound pin red-proved. Per-module sharing (M55) stays the real fix; 7 of kolt's 19 files are never cached at all (import-cycle entry-alias suppression) — filed"
+  },
+  {
+   "id": "M68",
+   "lane": "dx-35",
+   "commit": "c4611c08",
+   "text": "BUILT — the landing-seam trim is conditional on released bytes (threshold 4 MiB: a floor for a release that cannot return a page, not a saving — the arena walk costs 3.4–32.6 ms CPU per landing and returns 14–135 MiB of RSS; the item's ~100 ms was wall); `did_close` keeps M64's unconditional trim; policy pin"
+  },
+  {
+   "id": "M69",
+   "lane": "dx-35",
+   "commit": "1b3437cf",
+   "text": "BUILT — `Vec<Arc<ImplNamespace>>` (a stored world crosses threads); `Analyzer::clone` −47,927 Ir on kolt's client.vl warm path; the b317 pins cover the read path"
+  },
+  {
+   "id": "A85",
+   "lane": "slots-35",
+   "commit": "6c75ab53",
+   "text": "BUILT as ruled — five free functions returning `Slot` structs (`when → Conditional`, `swap → Swap`, `each`, `each_values`, `each_by`), each `place` opening its `Region` at the hole; the View methods construct the struct literal (a method name shadows a same-named free fn inside its own impl — filed); `@process` twin in lockstep; the split recognizer learns the value form (`Gate.retarget` table; the value-form route swap splits byte-identically); `View::child<C: Slot>` inherits the owner requirement PER INSTANTIATION (pinned twice); the `swap → swap_split` retarget carries the gate as a closure field (`split_route`), so a flagless build emits no chunk machinery; the §3e ownership property pinned. Kolt: channel.vl:28's wrapper removable"
+  },
+  {
+   "id": "A91",
+   "lane": "slots-35",
+   "commit": "d5c129bf",
+   "text": "BUILT — render closures yield any `C: Slot` on swap/swap_split/when/bind_each ×3 and the value forms; the reconciler's unit is a REGION (one empty-text marker per row; cut by span, re-insert in order); `Region::{open_row, cut_row, insert_row, drop_row, hold_rows, host}`; `std::dom` gains a fragment, a range and `parentNode`; three twin-parity divergences. Cost: +1 node per row and ~2× DOM mutations per reconcile pass (a skip-unmoved-rows follow-up filed). Kolt: views.vl:233's wrapper removable; views.vl:151's is B253's (heterogeneous arms), not this item's — the item's exhibit list was wrong by one. Goldens: split, ssr-render.mjs, markdown anchors, copy-elision census"
+  },
+  {
+   "id": "G23",
+   "lane": "style-35",
+   "commit": "6c77482d",
+   "text": "RULED + BUILT — `asset::schedule_at_end(finaliser)`: a scheduled fn recorded by its emitted name (an anonymous closure refused), run once after the last const expression of a compile's const pass (per leg; under `run --watch` per round — recompiled legs re-schedule, untouched legs keep their sidecar via the artifact record); a finaliser may schedule another; a panic fails the build naming the fn (row 437). The brief's 'accumulate into a global' is not achievable — every const site has its own interpreter scopes — so the registry is host-held and exposed as `asset::stage`/`asset::staged`. Five pins incl. the HMR round"
+  },
+  {
+   "id": "B308",
+   "lane": "style-35",
+   "commit": "9e818c1f",
+   "text": "RULED + BUILT (owner: the build-step hook, not retraction) — `Style::rule` stops emitting: it stages under its class token and schedules `flush_stylesheet`; a token is LIVE when a const result names it (strings, their words, substrings — sound, over-approximate in the safe direction); the finaliser emits the live set once. Dead share, controlled before → after: kolt client.css 12.1% → 0.0% (11,986 → 11,020 B), corpus style.css 31.4% → 0, css-block.css 29.1% → 0, theme.css 24.1% → 0; three .css goldens moved by subtraction only, verified line by line. Five pins"
+  },
+  {
+   "id": "B320",
+   "lane": "visibility-a-35",
+   "commit": "4f786f8f",
+   "text": "BUILT — `Parser::import_path_failure` records how far the import path grammar got (its speculative probes never reach `farthest_failure`), and `emit_failure` reports there with a curated rule instead of `found 'import' expected an expression` at column 1 (row NEW); the six probe shapes pinned; a well-formed import keeps every other reading"
+  },
+  {
+   "id": "B321",
+   "lane": "visibility-a-35",
+   "commit": "068ae50b",
+   "text": "BUILT — `export_takes` admits an item, an `import`/`use`, another `export` and `Node::Error` (attribute wrappers peeled); `export (helper);` and `export * helper;` are refused with a curated rule (row NEW) and KEPT so no name unbinds; zero estate occurrences"
+  },
+  {
+   "id": "B323",
+   "lane": "solver-35",
+   "commit": "b979cbfa",
+   "text": "BUILT — `Program::struct_literal_expectations` carries the walk's expected type at a struct initializer; `field_type_at` resolves an instance's generic arguments annotation-first; the `saw 9` probe now holds; the constructor shape stays the control"
+  },
+  {
+   "id": "B324",
+   "lane": "solver-35",
+   "commit": "4d09b402",
+   "text": "BUILT — `unfollowable_clause` refuses a `context` clause written at a POSITION no landing rule reaches (a list element, a map value), one level in from every known position, stopping at a closure type (row NEW); three pins; nothing in the estate fires it. Refuses the position rather than each literal — strictly wider, and the map-value case has no literal to anchor"
+  },
+  {
+   "id": "B325",
+   "lane": "solver-35",
+   "commit": "edd4075d",
+   "text": "BUILT — the binding landing rule runs over every binding whose TYPE carries a clause, so `let x = injected;` is a forward by construction; the mismatched-clause refusal unchanged; two pins. An ANNOTATED binding whose initializer is a clause-returning CALL is still refused (the call's type entry does not carry the clause) — filed"
+  },
+  {
+   "id": "B326",
+   "lane": "solver-35",
+   "commit": "c15ad25e",
+   "text": "RULED + BUILT (R4) — `handle_return_element` (and its resolved twin) decline a KEYED inner under `Option`, mirroring rpc.vl's `handle_key(inner) == \"\"`; the form falls to the ordinary Wire refusal in the method's vocabulary (two generated-code reports → one); two pins"
+  },
+  {
+   "id": "B327",
+   "lane": "solver-35",
+   "commit": "347c0540",
+   "text": "BUILT — `check_hashable_boundary` asks the impl table through `resolved_type_is_hashable`; the syntactic `is_hashable_type` deleted; the message names the hand-written impl as an option (row 3's text; its truncated key unmoved); two pins"
+  },
+  {
+   "id": "B328",
+   "lane": "solver-35",
+   "commit": "95a5eafd",
+   "text": "BUILT — `expr_type_id`'s `Expr::Local` arm falls back to the parameter table; `drop_argument_type_id`'s private copy deleted; corpus byte-identical; pin non-vacuous"
+  },
+  {
+   "id": "B329",
+   "lane": "solver-35",
+   "commit": "297a8929",
+   "text": "BUILT — the `[expose]` element refusal renders the element as WRITTEN (`written_source_element` + `render_type`), with the resolved spelling as fallback; the `expose_refused_elements` stand-down key keeps `pretty_print_type` deliberately; the sweep found no other message printing a written annotation; two pins"
+  },
+  {
+   "id": "B330",
+   "lane": "solver-35",
+   "commit": "0464161d",
+   "text": "RULED (R5) + DOCUMENTED — `generic_bounds_overlap` states what the rule does not refuse (two differently-bounded blankets; declaration order picks the body for a receiver satisfying both) and that the refusal belongs at the call under B318's per-importer namespace (Order 36); two pins incl. the swapped-order exhibit"
+  }
+ ]
+}
