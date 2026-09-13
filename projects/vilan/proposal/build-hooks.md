@@ -434,6 +434,30 @@ about from a clone, and a stale one is unreachable to `rm -rf`. Putting it in
 `dist/` makes `rm -rf dist` mean *rebuild everything, hooks included*, which is
 the sentence a user already believes. Q2 in §10 puts this to the owner.
 
+*(Ruled 2026-09-13, Order 34, R10 — tracker N67.)* N63 moved the toolchain's
+on-disk **caches** under `dist/.cache/` (`dist/.cache/macro-expansions` is the
+one there today) and left this file at the top of `dist/`, which raised the
+question of whether it belongs under `.cache/` too. **It does not: the stamp is
+not a cache**, and the difference is what deleting one means.
+
+A cache holds work the toolchain did to itself. Deleting it costs time and
+nothing else, which is the promise the name makes and the promise a tool that
+sweeps caches relies on. Deleting the stamp does not cost time — it RUNS
+SOMEBODY'S CODE. A `[[build.hook]]` is an arbitrary command (§4.1: "if a hook
+is dangerous, running it once is the whole of the damage"), and it may fetch
+from the network, write outside `dist/` — into `generated`, into the source
+tree (§12) — or cost minutes of a generator nobody asked to re-run. Filing the
+record of what has already been run beside the toolchain's scratch work would
+put "re-run every hook in this project" behind a gesture that is supposed to be
+free.
+
+It is also the wrong shape for a cache in the ordinary way: a cache holds a
+DERIVED artifact and this holds the RECORD of what produced one — §3.1's digest
+of each hook's declared inputs and outputs. `rm -rf dist` still means *rebuild
+everything, hooks included*, which is the sentence above and is exactly right;
+what the ruling refuses is a narrower gesture that would mean the same thing
+without saying so.
+
 ---
 
 ## 4. Trust — extending E96, not restating it
@@ -1025,16 +1049,27 @@ line, once per build, naming the dependency** — a note, never a warning, never
 an error. The precedent is E96's own fix for tier 1: the answer to an
 undocumented consequence is a sentence.
 
-**Q5. Do generated sources need a declared home?** P6 verified two things that
-bear on this: a generated module must sit directly under `root` (module paths
-are flat — `pkg::generated::icons` does not resolve), and once there it is
-indistinguishable from a hand-written module. A thousand generated icon modules
-in `src/` beside twelve hand-written ones is not a source tree anyone can read.
-*Recommendation:* declare one, as a **second module root** (`[package]
-generated = "generated"`) rather than a subdirectory of `root`, since a
-subdirectory cannot be imported today; auto-`.gitignore` it in `vilan init`.
-Flagged as the question with the most unknown implementation cost in the paper —
-it touches module resolution, which nothing else here does.
+**Q5. Do generated sources need a declared home?** *Ruled as recommended
+(Order 20) and shipped as §12; the reason behind the SHAPE of that
+recommendation is OVERTAKEN — rewritten 2026-09-13, Order 34, R10, tracker
+N67.* The answer to the question itself stands: yes, and `[package] generated`
+is the declaration (§12.2), auto-`.gitignore`d by `vilan init` (§12.5), with
+the formatter as its first consumer (§12.4). What no longer holds is the clause
+that chose a **second module root** over a subdirectory of `root` — "since a
+subdirectory cannot be imported today". A65 (module directories, shipped
+2026-09-08) made `a/b.vl` the module `a::b` whether or not `a` has a body, so
+`generated = "src/lucide"` under `root = "src"` resolves as `pkg::lucide::*`
+today, with no compiler change and without `src/lucide/lib.vl`, which was the
+one spelling §12.6 could offer. The generated root as a second SEARCH root is
+still unbuilt and still costs what §12.6 measured (the `pkg_root` thread, not
+the lookup), but it now buys only the SIBLING form (`generated = "gen"`, beside
+`src/`) rather than importability as such — so the cost is optional where it
+used to be the price of the feature, and this is no longer "the question with
+the most unknown implementation cost in the paper". Nothing in the shipped
+manifest moves: the key is still spelled `generated`, and §12.3's three lexical
+refusals (`manifest.rs`'s `generated_root_problem`) already admit
+`generated = "src/lucide"` beside `root = "src"` — inside the package, not the
+package directory itself, not equal to `root`.
 
 **Q6. Is tier 2's threshold the registry, or the git dependency?**
 `build-trust.md` §4 says the registry, and cites a tracker item that turns out
