@@ -2363,3 +2363,25 @@ ruled budget, measured before its default is set (dx-35); std's stale census, th
 fallback's deletion, the harness predicate and the std cache that never pruned (hygiene-35). Eight
 rulings, all as recommended; Order 36's queue named at the sweep: B318 S4 and S6, A95 S2 with
 kolt's migration, S3, S5, M55.
+
+**MERGED (2026-09-13).** Nine lanes, nine merges: editor-35 c525d303 (E170–E174: a head item's name is an
+attribute, the book's tag regex, the converter reads the file's own `impl Style`, the fade names the
+rewrite, the session summary on demand), hygiene-35 492b1769 (N77's census, N79's derive
+generators deleted — 729 lines, six names, five modules — behind one refusal, N80, L21's cache
+that prunes itself), lang-35 871fd753 (B331: `a/lib.vl` no longer a module under its own
+directory; B332: a type segment replaces the walk's namespace, on a zero-hit census of 287 files;
+D7), dx-35 03df116d (M67 measured before it was set: 192 MiB, seven worlds, M63's floor met at 305
+MiB — and a miss is 21–295 ms, not the 3.5 s the brief expected; M68; M69), style-35 7f05e26f
+(G23 the end-of-evaluation hook, whose registry had to be host-held; B308 closed with every
+sheet's dead share at zero; A95's S1 behind 145 byte-identical artifacts, rows 437–453),
+visibility-a-35 b62c8bf8 (S1 and S2 with two rollout pieces the paper lacked — std's imports
+silent, an uncurated module offers everything — B320, B321, `#` a token, `[doc(hidden)]` retired,
+rows 454–461, row 335 gone), solver-35 592e45d3 (the clause's three corners, B326, B327, B328,
+B329, B330 documented), visibility-b-35 fdaea14b (S3: `only` and the parenthesised selectors,
+`_` free from B294, `file_impls` and the admission refusal, the organizer re-pointed — a hand
+merge of nine files, the two visibility lanes' adjacent additions unioned, one arity threaded,
+two stranded braces closed, and visibility-a's B320 pins re-read against S3, since one lane had
+pinned the world the other was removing), and slots-35 baaa7911 last (A85's value forms and A91's
+regions, kolt two wrappers lighter, the third B253's). Ledger rows 434–463. Three process lessons
+for the tools: a multi-line string const splits the item folders, a renamed test comes back under
+its old name, and a conflict-unioned constant keeps both lines.
