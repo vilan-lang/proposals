@@ -348,3 +348,21 @@ wait on it. The split gate (§8.1) was not touched — there is no value form fo
 Re-ruling asked of the owner: (a) build B309 first, then A85 as ruled (recommended); (b) ship
 with the ownership divergence documented (recommended against); (c) a `Render` trait the app
 implements per body (works, verbose).
+
+### 10.1 Re-ruled and unblocked — Order 34 (2026-09-13, lane slots-34)
+
+The owner ruled (a): B309 first, in shape (1) — the `context` clause IN `Type::Closure`. It
+landed (a75c0f49, merged 36fb64ed): a field, a generic argument and a return carry the clause;
+resolution runs before the constraint fixpoint; the landing rules at a struct-literal field and a
+return, field reads yielding injected values, `run` accepting a field read; 44 forced and 43
+catch-all `_ =>` sites audited. The wall's four pins: three flipped positive, the plain-closure
+control stays (it is a true statement and now the CONTROL for the leak pin). The leak §10
+measured is impossible by construction (`b309_a_context_typed_field_answers_to_the_owner_ambient_at_the_call`).
+What A85/A91 need from Order 35, learned building it: the value forms' field is spelled
+`body: (|| View) context owner_scope` — NO `sync` (`sync` is parameter-only by design: it refuses
+an async ARGUMENT, and a plain closure field already refuses an async store); a value form's
+constructor takes its body as a clause-carrying PARAMETER, not a `let` annotation (an
+annotation-only generic argument is silently inert — B323); `(self.body)()` inside
+`impl Conditional<..> with Slot { fun place }` is an injected call, so `place` becomes a
+needs-context node and `View::child<C: Slot>` inherits an `owner_scope` requirement — check that
+propagation first. B324/B325 are the clause's two silent corners, filed.
