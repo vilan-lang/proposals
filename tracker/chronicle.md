@@ -2302,3 +2302,29 @@ in Order 35. A92 and A79, built in rpc-33 and left open for three questions, clo
 those questions ruled as built; rpc-33's three unfiled finds filed as B319, M66, A97. Ten
 lanes, all Opus; ledger next id 426; the owner's one action at GO is kolt's `child_relation`
 site, which A93's fence will break.
+
+**MERGED (2026-09-13).** Ten lanes, nine merges (the visibility paper lane built nothing): tm-34
+d4ad9d30 (E163's scope pins with the CI step, E164's grammar fixes — 14 characters of scope
+moved across the whole estate, every one a tag's closing bracket), paper-style-34 131cc9ec
+(A95's paper; B311's wrap fence and A93's relation fence, rows 426–427 — kolt's site had already
+moved, so nothing broke), hygiene-34 d06b158d (N74, N75's stubs, N76 keyed by text, N66's guard,
+N35's read-until-parse; N67 written into build-hooks.md), editor-34 16033751 (B314 — which
+turned out to have made renaming any type with `Self` in its impls impossible; E168/E169 as one
+predicate; E167 inlining std's shorthand bodies; E165; M65 −7.9 % on the completion index; E155
+with zero blast radius), dx-34 77f329a6 (M63 at N=2: kolt's 19 files open 1,090 → 510 MiB, the
+floor now the base cache's 270 MiB; M64's `malloc_trim`; E166), rpc-34 b5808e18 (A96 confirmed
+under a socket stub — two `Unsubscribe` frames on a closing socket and a zombie redial, gone;
+B312, B313, B319 — rows 428–429), solver-34 462e049e (B310's tuple layout on the instantiated
+body — three directions, not a call boundary; B315 as jointly-inhabitable bounds, row 430; B302;
+B279's sweep with its refusal backed out as not an invariant; B316's two arms), lang-34
+c059ab81 (B317 through an `ImplNamespace`; A80's two refusals — the sugar already parsed; A67
+as the ambiguity error, row 431 — the declaration had been winning and the file unreachable;
+B274's copy; B278; rows 431–432, row 118 edited), and slots-34 36fb64ed last (B309 in shape
+(1): the clause in `Type::Closure`, resolution before the fixpoint, 87 match sites audited, the
+leak slots-33 measured now impossible by construction; row 57 deleted, 219/221 edited, row 433).
+The papers: visibility.md (989 lines — `#` is a lexer refusal, std is 664/118 not 364, the
+per-importer namespace must reach monomorphization) and style-conditions.md (674 lines — the
+variadic `.on` cannot be spelled, `on<C: IntoConditions>` can; A95 reduces B308 and does not
+delete it). One process lesson: a backgrounded tool call with a timeout SIGTERMs its gates at
+the deadline — hygiene-34's first run died at 600 s with 541 tests unrun and no red gate; every
+later merge ran detached with a waiter. Seal started on 36fb64ed.
