@@ -65,7 +65,7 @@ consumes:
 | `Pseudo` | `hover()`, `focus()`, `active()`, `disabled()`, `first()`, `last()`, `pseudo(name)` | `:hover` … |
 | `Element` (new, §2.4) | `element(name)` | `::selection`, `::before` |
 | `Attribute` | `attribute(name)` (presence), `attribute(name).eq(v)` | `[name]`, `[name="v"]` |
-| `Relation` | `within(name)`, `within(name).eq(v)`, `children()`, `divide()` | `[name] .sX`, `.sX > *`, `.sX > :not(:first-child)` |
+| `Relation` | `within(condition)` — e.g. `within(attribute("data-theme").eq("dark"))`, `within(attribute("open"))`; `children()`, `divide()` | `[name] .sX`, `.sX > *`, `.sX > :not(:first-child)` |
 | `Media` | `sm()`, `md()`, `lg()`, `xl()`, `media(min_width)` | `@media (min-width: …)` |
 
 `.not()` is a method on every kind but `Media` (§5.2), returning the same kind
@@ -88,7 +88,7 @@ let interactive = hover() + active().not() + attribute("disabled").not();
 style()
     .padding(space(4))
     .on(hover() + active().not(), style().color(Color::blue(600)))
-    .on(md() + within("data-theme").eq("dark"), style().background(ink))
+    .on(md() + within(attribute("data-theme").eq("dark")), style().background(ink))
 ```
 
 `inner`'s base declarations become a rule under `conditions`; `inner`'s own
@@ -244,7 +244,7 @@ emits inside `@layer vilan`, whatever else conditions it"*, which is the
 existing rule stated over a set instead of over a nest. `within`'s unlayered
 standing is untouched for every rule that dresses the element.
 
-Two guards, or two child relations, in one set: refuse (`within(a) + within(b)`
+Two guards, or two child relations, in one set: refuse (`within(a) + within(b)` — where `a`/`b` are conditions
 means an ancestor carrying both, which is `[a][b] .sX` — arguably meaningful,
 definitely not ruled; `children() + divide()` is a contradiction). **Open
 question (ii).**
@@ -615,7 +615,7 @@ Each carries a recommendation, which is what a lane builds if no ruling comes.
   `attribute("x").eq("a") + attribute("x").eq("b")` matches nothing.
   *Rec: admit in v1, record.* Refusing it means the canonicaliser reasons about
   value equality, which is a larger claim than the ruled one.
-- **(ii) Two ancestor guards in a set** (§2.5) — `within("a") + within("b")`
+- **(ii) Two ancestor guards in a set** (§2.5) — `within(a) + within(b)` (two conditions)
   renders `[a][b] .sX`, one ancestor carrying both, which is meaningful and
   unruled. *Rec: refuse in v1* (one guard per set), with the message naming the
   attribute-on-the-element form; widen later if a real program asks.
@@ -672,3 +672,38 @@ Each carries a recommendation, which is what a lane builds if no ruling comes.
 - **A `not` free function kept beside `.not()`.** Two spellings of one idea,
   and the method is the one that carries A95's whole argument (the negation is
   applied where it belongs).
+
+---
+
+## 12. Rulings (owner, 2026-09-13)
+
+Read against §10's numbering; where the owner's reply numbered fewer questions than §10
+carries, the mapping below is the integrator's and is stated so it can be corrected.
+
+- **(i) Accepted** — two values of one attribute in a set are admitted in v1 and recorded.
+- **(ii) Accepted** — two ancestor guards in a set are refused in v1, one guard per set.
+- **(iii) Understood** — `on<C: IntoConditions>(self, conditions: C, inner: Style)`, the
+  generic bound; the owner: "`.on(CONDITION, STYLE)` is fine with me" — the two-argument
+  shape §1.1 arrived at is the ruled surface.
+- **(iv) Understood** — the sugar keeps `Option<str>` for one release, then `[deprecated]`.
+- **(v) `+` as the intersection spelling** — not addressed in the reply; the recommendation
+  stands (`+`) unless the owner says otherwise.
+- **(vi) B308 — RULED, and not as §5.4 recommended.** The owner: a proper BUILD-STEP HOOK for
+  styling fixes the whole class for good. The const evaluations push their rules to a GLOBAL;
+  a hook the build runs at the end reads it, processes it (dedupe, drop what no applied class
+  references) and emits the CSS in one go — which dissolves "X is already emitted before Y is
+  known" instead of retracting it. To make it automatic, const evaluation gains a way to
+  SCHEDULE a function to be called at the end of evaluation; multiple scheduling requests call
+  it once. Filed as **G23** (the const-eval end-of-evaluation scheduled callback); B308 is
+  re-pointed at it: `Style::rule` stops emitting at construction and appends to the registry,
+  the scheduled finaliser emits the live set once. This replaces slice 4 (§9): the retraction
+  design is withdrawn. Sequencing: G23 is the first brick of A95's build, since every other
+  slice's emission behaviour is simpler once emission is late.
+- **(vii) `element(name)`** — not addressed; the recommendation stands (the value).
+- **`within` takes a CONDITION, not an attribute name** (owner, on §1's table and §1's
+  example): `within("data-theme").eq("dark")` would lock the ancestor guard to attributes.
+  The spelling is `within(attribute("data-theme").eq("dark"))` — or, through the sugar,
+  `within(attribute("data-theme", Some("dark")))` — so a guard can carry any condition value
+  (`within(hover())` for a hovered ancestor, `within(attribute("open"))` for presence). §1's
+  table, §1's example and §2.5/§10(ii) are corrected above; the canonical order of a guard's
+  own conditions inside the guard is the set's order, unchanged.

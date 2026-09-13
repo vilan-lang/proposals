@@ -86,6 +86,7 @@
 | [G2](items/G2.md) | Const-eval tail | feature | |
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
 | [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
+| [G23](items/G23.md) | NEW — a const-eval END-OF-EVALUATION HOOK: a const-time function can SCHEDULE a callback to run once after every const evaluation of the build has finished (repeat scheduling of the same callback is idempotent — it runs once), so a module can accumulate into a global during evaluation and process + emit the result in one go at the end. The first consumer is styling (B308, RULED): `Style::rule` stops emitting at construction and appends to a registry; the scheduled finaliser drops what no applied class references and emits the stylesheet once — which dissolves the 'X is already emitted before Y is known' class instead of retracting it. Owner: 'a proper build step hook for styling would fix the issue for good' | feature | the owner's ruling on style-conditions.md §10 (vi) (2026-09-13); B308 re-pointed here; A95's build takes it as its first brick (every later slice's emission is simpler once emission is late). The integrator had pushed back on a build hook before (Order 33, B308's retraction design) — withdrawn |
 
 ## I. Collections
 
