@@ -2406,3 +2406,23 @@ with a timeout dies at the deadline; a `Claude`-authored commit is refused at th
 folders split a continued string const, resurrect a renamed test, and drop an edited const;
 the ledger-tuple union keeps both lines of a constant; two lanes can pin contradictory premises
 about one grammar; and the seal's Windows leg compiles but never runs.
+
+## Order 36 — cycle 54: the papers' second slices, the breaking surface, and the callable bridge (2026-09-14 → )
+
+Opened on the owner's "Go with your recommendations on all rulings" of 2026-09-14, the day after Order
+35 sealed, off 9b22ec36. Both Order 34 papers turn their remaining slices into the user-visible half:
+visibility-36 builds B318's S4 (the per-importer method namespace, monomorphization resolving under the
+DECLARING file), sweep-36 the S6 estate sweep with std's curation (R5) and the S5 docs, merged last as
+one revertible diff; style-36 builds A95's S2 (the condition surface, BREAKING: the `not` marker and
+`child_relation` go, `within(hover())` lands on a structured slot key — R1–R3), S3 and S5. The owner's
+rulings of 2026-09-14 become code: lang-a-36 retires the six `View` parent methods for the free slot
+functions (A99) beside A98 and B334 (R4); lang-b-36 builds B340 (`Callable` — in the owner's framing
+"closures are formally callable structs"), then G24 (`const let`/`const fun`, the snapshot as a
+`Callable` struct) and B333; lang-c-36 builds A100 (`lazy` parameters and module bindings — the paper
+ratified 2026-07-21 that never entered the tracker). editor-36 repairs Organize Imports (E180, the
+rescue that broke kolt's lucide file; R9) and gives `export *;` its place (E181) with E175–E179; perf-36
+takes M70 (seven kolt files never cached), M55 (R6) and M66 (R8); hygiene-36 fixes the merge tools
+(N81) and the lane-load flakes; paper-native-36 writes the cell-representation paper (C14) and the
+native-apps paper (F1, R10: emit-Rust, desktop first). Ten Opus lanes; ledger next id 464; tracker 94
+open at GO.
+

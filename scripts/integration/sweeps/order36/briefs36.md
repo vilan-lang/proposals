@@ -1,9 +1,13 @@
-# Order 36 — the papers' second slices, the breaking surface, and the callable bridge (drafted 2026-09-14; NOT GO; off vilan next @9b22ec36)
+# Order 36 — the papers' second slices, the breaking surface, and the callable bridge (drafted 2026-09-14; GO 2026-09-14, off vilan next @9b22ec36)
 
-**Status: DRAFT.** Ten rulings below (R1–R10) each carry a recommendation; "go with the
-recommendations" stamps them all. Order 35 sealed at 9b22ec36 (CI green on all eleven jobs;
-toolchain at that sha in both locations; nothing has landed on `next` since). Ledger next id
-464. Tracker 94 open.
+**GO (2026-09-14).** The owner: "Go with your recommendations on all rulings." Every R below is
+therefore RULED as recommended: R1 the six nesting refusals KEPT with `.on` steers; R2 `.eq()` kept,
+no `PartialEq` on `Condition`; R3 the slot-key change lands in S2; R4 the free function wins a
+receiverless call; R5 std's curation policy as written, then the suppression dropped; R6 M55 measures
+first, builds only on a ≥ 50 % drop; R7 kolt's nine A99 sites at the sweep at the owner's word; R8 M66
+built; R9 E180's third subtraction taken; R10 F1's paper assumes emit-Rust and desktop first. TEN
+lanes. Order 35 sealed at 9b22ec36 (CI green on all eleven jobs; toolchain at that sha in both
+locations; nothing has landed on `next` since). Ledger next id 464. Tracker 94 open.
 
 The shape, read from what Order 35 left and what the owner filed since: B318's S1–S3 and A95's S1
 landed with their surfaces hidden; this order turns both papers' remaining slices into the
