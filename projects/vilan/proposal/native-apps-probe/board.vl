@@ -1,0 +1,62 @@
+import std::reactive::{ Disposable, Owner, Signal, SignalCell, Source };
+
+struct Todo {
+	id: i32,
+	title: str,
+	done: bool,
+}
+
+struct Board {
+	name: str,
+	todos: List<Todo>,
+}
+
+impl Board {
+	fun new(name: str): Board {
+		Board { name, todos = [] }
+	}
+
+	fun add(&mut self, todo: Todo) {
+		self.todos.push(todo);
+	}
+
+	fun open(self): i32 {
+		mut n = 0;
+		for todo in self.todos {
+			if !todo.done {
+				n = n + 1;
+			}
+		}
+		n
+	}
+}
+
+fun main() {
+	mut board = Board::new("inbox");
+	board.add(Todo { id = 1, title = "write the paper", done = false });
+	board.add(Todo { id = 2, title = "read the census", done = true });
+
+	// Rule 1 (spec §6.1): the binding COPIES the list.
+	mut snapshot = board.todos;
+	snapshot.push(Todo { id = 3, title = "ghost", done = false });
+	print(board.todos.len());          // 2
+	print(snapshot.len());             // 3
+
+	let count: SignalCell<i32> = SignalCell::new(board.open());
+	mut seen: List<i32> = [];
+
+	let owner = Owner::new();
+	let _sub = owner.take(count.sub(|value| {
+		// §6.9: a closure captures the BINDING, so this push is visible below.
+		seen.push(value);
+	}));
+
+	board.add(Todo { id = 4, title = "ship it", done = false });
+	count.set(board.open());
+
+	print(seen.len());                 // 2 — sub's immediate call, then one set
+	owner.dispose();
+	count.set(99);
+	print(seen.len());                 // 2 — the subscriber is detached
+	print(count.get());                // 99 — today: the cell outlives its owner
+}

@@ -1,0 +1,84 @@
+{
+ "items": [
+  {
+   "id": "M71",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — 19 FRAME-SCOPED `Shared` cells in std want a `mut` local: cells constructed, mutated and dropped inside ONE function frame (json/binary/fs/rpc_server/rpc — 12.3 % of std's 154 `Shared` declaration sites) pay a box allocation and an indirection for state that never escapes the frame; each is a `mut` local (or a `&mut` parameter) in the language as it stands. The C14 paper's S1 ('the frame-scoped subtraction', size S)",
+   "discussion": "paper-native-36's FIND-1 (2026-09-14; signal-cell-representation.md §2.4 finding 1, §10 S1)",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "Rewrite the 19 sites to `mut` locals; measure Ir on the rpc codec paths before/after; a census pin (the classifier in `native-apps-probe/census.py`) that the frame-scoped class stays at zero."
+  },
+  {
+   "id": "D8",
+   "section": "D",
+   "kind": "documentation",
+   "area": "Documentation",
+   "title": "NEW — `shared.vl`'s headnote says 'prefer an `Arena` + `Handle` whenever an owner exists', and 0 of the 167 `Shared` sites in std and kolt follow it — no cell has an owner today (only `Subscription`, `Owner`, `ReactiveServer`, `ReactiveClient` are `Disposable`); the sentence describes a relation the estate does not have. Rewrite it to what the C14 paper found: `Shared` is the counted box for diffuse ownership, `Arena`/`Handle` is the tier for graphs and stable identities",
+   "discussion": "paper-native-36's FIND-2 (2026-09-14; signal-cell-representation.md §2.4 finding 2)",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "One headnote rewrite in std/src/shared.vl + the memory-model tour's sentence; lands with C14's S1 or alone."
+  },
+  {
+   "id": "F16",
+   "section": "F",
+   "kind": "design",
+   "area": "Native targets & rendering",
+   "title": "NEW — a closure PARAMETER that is both STORED and CALLED must lower to `Rc<dyn Fn>` on any non-JS backend: the F1 probe's hand translation hit `E0382` (use after move) the moment a callback was pushed into a subscriber list and also invoked — JS hides it because a function value is a reference; the emit-Rust backend needs a rule for which closure values are counted (probe R-1)",
+   "discussion": "paper-native-36's FIND-3 (2026-09-14; native-apps.md §2.4 R-1); an S1 (backend) precondition",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "Decide in the backend slice: every closure value that reaches a storing position is `Rc<dyn Fn>`; a closure passed and only called stays `impl Fn`/`&dyn Fn`; the fn-coercion paper's coercible set gains the lowering column. Pin: the probe's `board.vl` builds under the rule."
+  },
+  {
+   "id": "C15",
+   "section": "C",
+   "kind": "design",
+   "area": "Memory model",
+   "title": "NEW — spec §6.9's closure rule ('captures BINDINGS, not values') makes every mutably-captured binding a SHARED CELL on a native backend: the F1 probe (R-2) had to box `let mut count` as `Rc<RefCell<_>>` because two closures assign it — on JS the host boxes the place for free; natively the compiler must decide per binding whether it is captured by value (copied), by counted reference, or refused. Larger than `Shared` (C14) — no item existed",
+   "discussion": "paper-native-36's FIND-4 (2026-09-14; native-apps.md §2.4 R-2); rule with C14's S4 and F1's S1",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "A capture-mode analysis: a binding assigned after capture (or captured by two closures that write it) lowers to a counted cell; a binding never written after capture is copied (spec §6.1); the refusal class if any. Pins over the probe's shapes."
+  },
+  {
+   "id": "J6",
+   "section": "J",
+   "kind": "design",
+   "area": "Concurrency",
+   "title": "NEW — ASYNC on a native backend: `Task`/`Nursery`/`await` need an executor and a cancellation story where JS supplied the event loop; the F1 paper's largest item F1 did not list — `Task` is an `external struct` over the host promise (task.vl:18), so the native runtime must provide the promise, the microtask queue and the turn model (reactive-turns.md) before any `async fun` compiles natively",
+   "discussion": "paper-native-36's NEW-1 (2026-09-14; native-apps.md §2.3, §8: single-threaded executor recommended, `Task` stays `external`)",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "Design in F1's S1: a single-threaded executor with a microtask queue matching the JS turn model; cancellation via the Nursery's drop; `Task` stays external over the executor's handle; pins mirror the async corpus programs byte-for-byte on stdout."
+  },
+  {
+   "id": "C16",
+   "section": "C",
+   "kind": "bug",
+   "area": "Memory model",
+   "title": "NEW — C12 PROMOTED to a native-backend precondition: a captured VIEW of a dead local (C12's closed-as-limit shape) is a use-after-free the moment the host stops boxing places — on JS the escaped view reads a boxed ghost; on the emit-Rust backend it is a dangling borrow rustc will refuse or a freed slot the runtime will read. The limit C12 accepted as 'spec §6.9's honesty limit' must become a refusal before F1's S1",
+   "discussion": "paper-native-36's NEW-2 (2026-09-14; native-apps.md §8); C13 (the storing-callee escape, OPEN) is the same family",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "Make the escape a refusal (the analysis exists as C13's pinned-ignored case); plant the probe's shape red first; sequence before F1 S1."
+  },
+  {
+   "id": "F15",
+   "section": "F",
+   "kind": "design",
+   "area": "Native targets & rendering",
+   "title": "NEW — the THREE-LAYER `std::ui` rule and an N-way twin-parity gate: today two `ui.vl` twins (browser DOM, process SSR) share one public surface and the parity gate is structurally TWO-valued; a native twin makes it three, and nothing today states the rule that every twin exposes the same surface (`ssr.md`'s 'same public surface' is a sentence, not a gate). F1's S2 cannot be sized without the rule",
+   "discussion": "paper-native-36's NEW-3 (2026-09-14; native-apps.md §6.2, §8 — 'should be ruled with this paper'); OWNER RULING wanted",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "State the rule (one surface, N twins; a member added to one twin is added to all in the same commit or refused by the gate); generalize the parity gate from a pair to a list of layers; the docs' 'same public surface' sentence becomes the gate's citation."
+  },
+  {
+   "id": "E182",
+   "section": "E",
+   "kind": "bug",
+   "area": "LSP & tooling",
+   "title": "NEW — `infer_platform` (vilan-core lib.rs:93) is BINARY browser/not-browser: a third `std::ui` twin makes the editor report the PROCESS twin's `View` against native source — the E113 shape its own doc comment describes; latent until F1's S2 adds the `native` platform",
+   "discussion": "paper-native-36's NEW-4 (2026-09-14; native-apps.md §3, §8)",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "Make `infer_platform` answer the manifest's platform for the entry (the E113 lane's own note); sequence with F1 S2."
+  }
+ ]
+}

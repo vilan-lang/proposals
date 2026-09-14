@@ -1,0 +1,15 @@
+[package]
+name = "vilan-native-probe"
+version = "0.0.0"
+edition = "2021"
+
+[[bin]]
+name = "probe_rc"
+path = "src/probe_rc.rs"
+
+[[bin]]
+name = "probe_arena"
+path = "src/probe_arena.rs"
+
+[profile.release]
+panic = "unwind"
