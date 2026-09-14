@@ -150,3 +150,132 @@ in **three homes**: lexer, TextMate grammar, book theme, same commit.
    `expect`/`unwrap_or`, tour "lazy resources" section replacing nothing — the
    eager idiom stays primary).
 3. **S3 — std adoption + the retrofit sweep** per (b).
+
+## 8. As built (Order 36, 2026-09-14, lane lang-c-36)
+
+**S1 — lazy parameters** (`177be8de`). `lazy` is a hard keyword in all three
+homes, landed in one commit: `KEYWORDS` + `Token::Lazy`, the TextMate grammar
+and the book theme, the last two GENERATED from `grammar_sync.rs`'s
+`KEYWORD_ROLES` (one row, `Modifier`). The modifier is accepted on a free
+`fun`, an `impl` method and a `trait` signature — one parse path serves all
+three — and refused on a closure and an `external fun`, and beside `own`, a
+view, `mut` and `...`. A `lazy` written after the prefix it belongs in front
+of is CONSUMED and reported rather than declined, because `Parser::attempt`
+truncates a declining branch's errors.
+
+The lowering is §5's, with one slot added: the memo cell is
+`{ name, state, value, thunk }` — `name` because the cycle and poison messages
+must say WHICH binding and the forcing site has no other way to know — built by
+`__lazy(name, thunk)` and read through `__force(cell)`, states 0 pending,
+1 running, 2 done, 3 poisoned. Both helpers carry their interpreter arms in
+the same commit.
+
+Two analyzer tables decide the call sites and the transformer reads them:
+`lazy_argument_thunks` (the arguments packaged, mapped to the parameter's
+name) and `lazy_argument_forwards` (a bare reference to a binding that already
+holds a cell, standing in another lazy position). They partition the lazy
+positions, so forwarding is one memo however deep the chain and an eager
+position forces, without either being re-derived at emission. A method and a
+free call share the path: `wire_method_call` normalizes a method into a
+`subject -> Expr::Local(member)` call with the receiver prepended, so one
+positional zip serves both. The thunk's expression is walked into the
+CLOSURE's own block, so every statement its lowering needs (temporaries,
+short-circuit slots, scope-end teardown) lands inside the thunk rather than at
+the call site.
+
+§1's three v1 restrictions are refused as written, with two corrections to the
+paper:
+
+- **Data only** is enforced at BOTH ends: at the declaration when the declared
+  type is concretely a resource (a signature nobody calls is still wrong), and
+  at the argument when the value standing there resolves to one. A resource
+  LOCAL named inside a lazy argument is refused by R9 itself, and a view
+  binding by rule 3, in each rule's own words: the thunk is a closure, so the
+  existing scans run over the argument expression with the existing sets and
+  produce the existing violation. Neither needed a new refusal.
+- **Sync only** counts both spellings of the suspension, exactly as E3 counts
+  them — the `await` the author wrote, and the implicit one a call to an async
+  callee performs — and steers to `async <expr>` → pass the `Task`.
+- **Context-free** refuses an expression that calls a context-dependent
+  function and steers to passing a closure. Both of these run in
+  `post_analysis_passes` (`check_lazy_argument_effects`), because
+  `async_functions` and `context_dependent_functions` are only settled there.
+
+**The trait rule is no longer targeted.** §1 asked for a standalone
+arity/laziness check because B29 — name-only conformance — had not landed.
+B29 HAS landed: `check_one_conformance` compares receiver convention, arity,
+per-position conventions and types. Laziness is one more position-wise
+comparison beside the conventions, in both directions, with the trait's
+declaration as the note.
+
+**§5's "grep-verified free of identifier uses" was stale by the time it was
+built.** Three programs in the tree used `lazy` as an identifier — the corpus's
+`reactive-on-change.vl` and two Rust test programs — each a local binding,
+each renamed to `quiet`. That is the whole migration: std, `examples/`, the
+templates, the benchmarks, the docs' fences and kolt spell it nowhere.
+
+**S2 — lazy module bindings** (`4454df49`). `lazy let name: T = init;`, module
+level only. `Node::Let` carries the flag; `record_lazy_bindings` partitions the
+declarations once every scope exists (which scopes are module bodies is not an
+answer the walk has), module-level ones becoming cells and locals being
+refused per §3. The declaration emits `__lazy("name", () => …)` with the
+initializer walked into the thunk's own block; every read emits `__force`,
+through the same arm a lazy parameter's reads take. A binding nothing reads
+emits nothing and runs nothing — which is also why the unused-binding path may
+not fall back to emitting the initializer for its effects.
+
+Everything else about the binding is unchanged, and each was pinned rather than
+assumed: loan-only and write-frozen for a resource (the module-level move
+refusal fires on the lazy form exactly as on the eager one), platform coloring
+flowing from the initializer (the reachability path still reads
+`main → config → read_file_to_str`), process lifetime with no drop, and R9's
+module-level exemption for closures.
+
+**The relation, not the trap.** `init_order`'s load-time relation gives a lazy
+binding NO out-edges: its declaration builds a closure, and creating a closure
+is inert — the same rule that keeps the mutually-recursive module-closure idiom
+legal. That is what leaves §2's reentrancy trap to the runtime, where the paper
+put it: two lazy bindings that reach each other are legal as long as neither is
+forced into its own initialization, and the one that is meets the cell's
+`running` flag and panics ``lazy initialization cycle: `database` ``. A lazy
+binding stays an ordinary TARGET, so its cell is still declared before anything
+reads it.
+
+**Poison** (§6a) is `` lazy `database` is poisoned: its initializer panicked:
+<the original message> `` on every touch after the first, which propagates the
+author's own panic. Only a vilan `panic` poisons, in the interpreter as in the
+emitted JS: fuel, depth, an unsupported capability and an internal bug are the
+expansion environment failing rather than the program throwing.
+
+**Sync and context-free, with one diagnostic each.** The sync half is ALREADY
+the rule every module-level initializer obeys, lazy or not, so `lazy` adds no
+second sentence about the same mistake (B5) — the paper's §2 sentence is
+enforced by the rule that was already there. Only the context half is new on
+the binding side.
+
+§3's exclusions are refused where they are written: a lazy local (an
+end-of-scope drop would need the was-it-initialized flag drop flags were
+ratified out to avoid), `lazy mut`, a lazy destructure, a lazy binding with no
+initializer, and a bare `lazy name = …`. `lazy` fields were never parsed.
+
+**HMR excludes lazy bindings** (`TransferForm::Excluded`). What a swap carries
+is a VALUE, and a lazy binding may not have one yet; adopting the cell would
+hand the new bundle the old bundle's thunk, closed over the old bundle's
+functions. Fresh init on each swap is the honest v1 answer.
+
+**Pins.** 37 in a new `crates/vilan-core/tests/inference/lazy.rs` (22 for S1,
+15 for S2), behaviour-first — a counting side effect proves the memo, its
+absence proves that a parameter never read never runs, print order proves the
+force is the first READ and not the call, a three-hop chain proves the single
+memo — plus two formatter round trips (`formatter.rs`), one hover
+(`vilan-lsp`), and two against the real host database in
+`vilan-cli/tests/database.rs`: a `lazy let database: Database` that opens at
+the first read and stays one handle across three reads through two functions,
+and the loan-only refusal firing on it as on the eager form. Seven ledger rows;
+eight new parser rule statements (`RULE_STATEMENT_SITES` 34 → 42). Docs: spec
+§6.10 and §3.4's production, appendix A.2, the tour's "Lazy parameters" and
+"Lazy resources" sections, and the `Option`/`Result` page's note that the
+retrofit has NOT happened.
+
+**S3 — the std retrofit** (§6b) is not in this order: ruled Order 37's at
+Order 36's GO.
