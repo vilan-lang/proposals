@@ -551,13 +551,18 @@ saying which half transfers:
 Three measurements exist and each has a prediction A95 must be held to. All
 CPU-time or callgrind-Ir, never wall (Order 34 mechanics).
 
-1. **`css-block.md` §15.3 — compact styling.** The three kolt styles as
-   written (button 392 chars chain / 260 block; panel 193 / 158; row 73 / 55).
-   *Prediction:* the block numbers do not move for a style with one condition
-   per rule, and IMPROVE for kolt's button, whose four raw `pseudo` compounds
-   become `.on(hover() + active().not() + attribute("disabled").not()) { … }`
-   heads. Re-run on the same three styles, same method (whitespace kept,
-   newlines dropped), and report the third column (plain-CSS values) as before.
+1. **`css-block.md` §15.3 — compact styling, measured on the SHEET.** The
+   three kolt styles that section counted no longer exist (N85:
+   `button_style_base` gone, `default_panel_style` moved to
+   `src/app_overlay.vl:6`, `views.vl:332` meaningless), so the per-site
+   character counts are an Order 30 record and not a re-run. Measure what
+   survives a refactor instead: kolt's emitted class-rule bytes, **11,020 B
+   at `9b22ec36`** after B308's close took them from 11,986 (§13).
+   *Prediction:* S2 does not move the sheet for a style with one condition per
+   rule, and SHRINKS it for kolt's button, whose four raw `pseudo` compounds
+   become one `.on(hover() + active().not() + attribute("disabled").not())`
+   head — one class where there were four. Report the byte delta and the
+   corpus `.css` goldens' own, and say which styles contributed it.
 2. **A84's class-list cost.** `when` chain 26.8 µs per rendered button, a const
    style 6.7 µs, a const style with the class list hoisted to a `const` str
    0.05 µs. *Prediction: unchanged.* A95 does not touch `class_list` or the

@@ -1482,8 +1482,8 @@ rather than reconciled, because what they agree about is the shape.
 175** characters as a block, the panel **178 → 109**, the row **78 → 75**;
 Tailwind's equivalents **104 / 63 / 34**.
 
-**This lane's own measurement**, after A69 and A70, on the three styles as
-they are actually written in kolt today (whitespace kept, newlines dropped;
+**This lane's own measurement** (Order 30), after A69 and A70, on the three
+styles as they were written in kolt then (whitespace kept, newlines dropped;
 `src/styles.vl:33` `button_style_base`, `src/lib/overlay.vl:450`
 `default_panel_style`, `src/views.vl:332`'s inline row):
 
@@ -1493,8 +1493,30 @@ they are actually written in kolt today (whitespace kept, newlines dropped;
 | panel | 193 | 158 (−18%) | 149 (−23%) |
 | row | 73 | 55 (−25%) | — |
 
-The third column is worth its own line, because it is the honest one: a
-`Length::rem(0.5)` renders `0.5rem` and declares no token, so
+**Those three sites no longer exist, and the table is therefore an Order 30
+reading rather than a re-runnable measurement (N85).** Measured at
+`9b22ec36`: `button_style_base` is gone from `src/styles.vl` (the file now
+carries `button_style(color)`, `selectable_button_style` and
+`icon_button_style(color)`); `default_panel_style` moved from
+`src/lib/overlay.vl:450` to `src/app_overlay.vl:6`, still a five-link chain;
+and `src/views.vl` survives but not at line 332. A per-site character count
+is anchored on the one thing an application refactors most, so it goes stale
+between orders whether or not anything about the LANGUAGE moved — which is
+the whole of why the number that the styling arc actually moved is a
+different one.
+
+**The re-runnable anchor is the SHEET**, and B308's close is what moved it
+(`style-conditions.md` §13, as built at `9b22ec36`): kolt's emitted class
+rules **11,986 → 11,020 B, −966 B (−8.1%)**, with the dead share **12.1% →
+0**; the corpus `style.css` **31.4% → 0**, `css-block.css` **29.1% → 0**,
+`theme.css` **24.1% → 0**; all three goldens moved by SUBTRACTION only. A
+sheet byte count is a property of the whole application, it survives every
+rename and every file split, and it is measured by building — so it is what
+§8's re-measure plan should be held to, in place of three named styles. Use
+the per-style table above as the Order 30 record it is, and do not re-run it.
+
+The third column of that table is still worth its own line, because it is the
+honest one: a `Length::rem(0.5)` renders `0.5rem` and declares no token, so
 `gap: 0.5rem;` is byte-identical on the sheet and shorter on the page. A
 hole earns its keep where the value IS a token (`{space(4)}`,
 `{gray(500)}`), and the block lets the author spend one only there. That is

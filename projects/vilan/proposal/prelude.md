@@ -944,10 +944,40 @@ Three reasons, in order of weight:
    every user of the language is the one proving the "no prelude" path
    works.
 
-The cost is that std keeps its 169 std-internal import statements and
-gains nothing — 46 of them (27%) would otherwise have vanished. That is
-the right trade for a base library, and it is what the census's std
-column exists to price.
+The cost is that std keeps its **194** `pkg::` import statements and
+gains nothing — **49 of them (25%)** bind only names the base prelude
+carries and would otherwise have vanished. That is the right trade for
+a base library, and it is what the census's std column exists to price.
+
+**Re-derived, not inherited (N85).** This figure read "169 statements,
+46 (27%)" for as long as the section has existed, and it could not be
+recomputed from anything written down — the same defect N77 closed one
+paragraph above, in the same section, for the same reason. Measured at
+`9b22ec36`. The denominator is a grep, because std imports nothing but
+`pkg::` — 194 of its 194 import statements, across 49 of its 63 files:
+
+```sh
+grep -rh '^import pkg::' vilan/std/src | wc -l      # 194
+```
+
+Five of those statements span lines; the grep is still right, because
+`^import` selects statement HEADS. The numerator is deliberately NOT a
+grep: it is the statements whose every BOUND name is one of the base
+prelude's seven (`print`, `Option`/`Some`/`None`, `Result`/`Ok`/`Err`),
+where an `as` binds the alias and a `self` binds the module segment, so
+it has to read `{ … }` sets across lines — the same trap §6's reach
+census names. **49.** And the shape is the more useful half: every one
+of the 49 is an `import pkg::option::Option::{ self, None, Some }` or
+an `import pkg::result::Result::{ self, Err, Ok }`. A quarter of std's
+import statements exist to name the two enums the language itself
+manufactures. std imports `print` in exactly one statement —
+`process/build.vl`'s `import pkg::io::{ panic, print }` — which would
+NOT vanish, because `panic` is not ambient.
+
+`export import` is outside both numbers. `prelude.vl`'s three and
+`web.vl`'s eight are the prelude modules' own publication, not std's
+internal resolution: they are what the posture is ABOUT, not what it
+costs.
 
 Stated explicitly rather than left to a special case: a reader of
 `std/vilan.toml` should see the posture, and the compiler should have no

@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B341",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — HIGH: the base-cache KEY omits the DESUGAR-SEEDED std modules, so a two-entry package fails to build: `BaseCacheKey.std_seeds` is `collect_module_paths(&nodes.0, \"std\")` only — the entry's `collect_std_item_modules` seeds (`std::ui` for element syntax, `std::style` for a `css` block) are not in the key — so two entries that differ only in whether they use element/css syntax SHARE a key, and `vilan build` analyzes a multi-entry package in one process: `[entry.aplain]` = `print(\"plain\")`, `[entry.zelement]` = `let _x = <div/>;` → '`view` is not in scope' (rename so the element entry sorts first → both build; the css twin says '`style` is not in scope'). The same shared state reds `cargo test -p vilan-core --test inference -- modules::` on `an_element_needs_no_view_import_at_all` and `b270_…` after any std-free program was analyzed in-process (nextest hides it — N84's third part). Fix, one line: fold `collect_std_item_modules(&nodes.0)` into `entry_seed_names` (analyzer.rs ~53374)",
+   "discussion": "hygiene-36's F1 (2026-09-14; deterministic repro at the lane's scratch `n84repro/`, `n84repro2/`, `n84css/`); handed to perf-36 IN THIS ORDER (the base cache is its file; the integrator's message asked for the fix before M70's measurements); family: miscompile/bug, not hygiene",
+   "status": "OPEN — filed 2026-09-14; BUILD in lane perf-36 (Order 36)",
+   "body": "Fold the desugar seeds into the key; a pin that builds the two-entry package in one process (the repro shape) and one that the two `modules::` tests pass under plain `cargo test`; no ledger row."
+  },
+  {
+   "id": "N86",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — N82's shape survives outside the `inference` binary: `std::env::temp_dir()` is still the scratch root in `module_resolution.rs` (21 sites), `base_cache.rs` (9), `embedded_std.rs` (6), `vilan-cli/tests/corpus.rs` (4 — including `every_corpus_golden_is_byte_identical`'s whole work tree), `interpreter.rs` (2), `intrinsic_binding.rs` (2), `check_scope_differential.rs` (2), `corpus_harness/mod.rs` (2), `watch_lifecycle.rs` (2), `chunks.rs`, `markdown_golden.rs`, `diagnostic_determinism.rs` — each on the 12 GiB tmpfs every lane shares. Each binary needs its own copy of N82's three helpers (`scratch_root`/`scratch_dir`/`ScratchFile`; `CARGO_TARGET_TMPDIR` is per-target)",
+   "discussion": "hygiene-36's F2 (2026-09-14); mechanical, one item",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "Port the three helpers (or lift them into a shared `tests/support` module per crate) and move every site; the ENOSPC guard with them; a grep pin that no test file names `temp_dir()` directly."
+  },
+  {
+   "id": "B342",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — A67's rule cannot see a collision NOBODY walks into: `import pkg::a;` alone, with `a.vl` declaring `b` beside `a/b.vl`, reports nothing — a child's scope exists only for a child something loaded (the doc comment says so), while the section heading above the pins claims the collision is reported 'whether or not anything imports the path' (true only of paths that walk THROUGH the child). Closing it means listing each loaded module's directory (a `read_dir` per module per analysis) — a perf decision",
+   "discussion": "hygiene-36's F4 (2026-09-14, found while fixing B337's namespace half); low",
+   "status": "OPEN — filed 2026-09-14",
+   "body": "Either list the directory once per loaded module (measure the cost on kolt: 24 modules, lucide's directory excluded by the generated root) or correct the heading to the rule as it is; pin whichever."
+  }
+ ]
+}
