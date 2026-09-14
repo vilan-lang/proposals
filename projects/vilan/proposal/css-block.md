@@ -613,6 +613,7 @@ Four positions, four answers:
 | property position, `--\|` | custom properties declared in this build | the block's own declarations in the live parse (v1: nothing; Q4) |
 | dotted head (`.\|`) | condition combinators | `STYLE_CONDITION_METHODS` (14 rows, already gated) |
 | inside a hole (`{\|}`) | ordinary expression completion | unchanged — a hole is an ordinary expression |
+| inside an `.on(<set>)` head — after the `(`, after a `+`, or partway through the name following either | the condition CONSTRUCTORS, as functions (`element` appears here and not in the dotted-head list); past the head's comma it is ordinary expression ground | `STYLE_CONDITION_METHODS` read as values (Order 36, style-36 S3) |
 
 Value-position completion (offering `flex` after `display:`) is deliberately
 **not** v1: it needs a property→enum map that does not exist and would be the

@@ -107,12 +107,14 @@ let narrowed = (const f()) + g();    // parenthesize to narrow the capture
   evaluator predates the feature). A const expression that reaches an
   unavailable capability fails with a **spanned static error**, not a marker
   check.
-- **The result must be plain data**: numbers, strings, bools, lists, maps,
-  tuples, structs, enum values — transitively. A closure, view, `Shared`
-  cell, or promise in the *result* is a static error at the expression
-  (internal use during evaluation is fine — the interpreter models all of it;
-  only the surviving value is constrained). Value semantics makes the
-  snapshot natural.
+- **The result must be plain data, or a closure over plain data**: numbers,
+  strings, bools, lists, maps, tuples, structs, enum values — transitively;
+  and, under a `const let` declaration only (§11), a CLOSURE whose captures
+  are themselves plain data. A closure result anywhere else, and a view,
+  `Shared` cell, or promise in the *result* anywhere at all, is a static error
+  at the expression (internal use during evaluation is fine — the interpreter
+  models all of it; only the surviving value is constrained). Value semantics
+  makes the snapshot natural.
 - **Failures are diagnostics**: a panic during evaluation (`Thrown` — e.g.
   the checked-subscript message), the depth cap (`Depth`), an unavailable
   capability (`Unsupported`), or a non-data result — all report at the
@@ -1618,4 +1620,20 @@ correct at the later site after the earlier site's teardown; the mechanism
 pins (`every_interpreter_scope_dies_with_its_const_run` / `…_macro_expansion`)
 count scopes created minus dropped back to zero; and §10.6's whole pin set,
 the interpreter equivalence suite and the corpus ride unchanged.
+
+## 11. `const let` and `const fun` — G24, built 2026-09-14 (lane lang-b-36)
+
+§1 said "one mechanism, no declaration form", and that was right about the EXPRESSION and wrong about two things it could not express. `const let NAME[: T] = EXPR;` and `const fun NAME(..) { .. }` are those two, and they are declarations for reasons the expression form cannot supply.
+
+**`const let` is `let NAME = const EXPR;` plus one admission.** The binding walks as an ordinary `let`; what the marker records is that its INITIALIZER is const, so `classify` already answers `Known::Const` for it and every later `const` expression reads through it. The addition is §1's amended rule: the result may be a closure over plain data. That closure is const-known — a later `const` expression calls it — and it is EMITTED as a snapshot for runtime code.
+
+**The snapshot is the closure's own body with its captures baked, and the reason is the name generator.** A const site is lowered by a transformer of its own (§10.6), whose generated names are that world's; emitting its arrow into the real output would reference declarations the output does not have. So what survives evaluation is the ANALYZER's closure entity plus the captured values, and the real emitter walks the closure itself with each capture substituted for the binding it closed over. The arrow is therefore monomorphized and named like every other, and `const fun scale_step(rem) { |n| rem * n }` + `const let space = scale_step(0.25)` emits exactly `const space = (n) => 0.25 * n;` — no IIFE, no wrapper, one arrow. The captures arrive keyed by the const world's emitted names, which is the one thing the two emitters cannot share; the world hands the program its `Id → name` table beside the results (`Program::const_snapshot_bindings`) and the emitter finishes the join. Identity is fresh per emission; vilan has no reference equality. (The owner's framing on B340 — a closure is a callable struct of its captures — is the model; the emitted form is the substitution because every capture is plain data and writing the literal where the binding was read is strictly cheaper than a struct literal or an IIFE. One consequence, recorded: an AGGREGATE capture is written inline, so each call of the snapshot builds a fresh one — unobservable without reference equality, a per-call allocation an IIFE would hoist; the branch point is `Transformer::const_value_node` if a real program ever needs it.)
+
+§8.1's value-escape rule is untouched: an R (emit-reaching) closure is still refused as a result. `const let` admits PURE closures over compile-time data, nothing else.
+
+**`const fun` is the opt-in guarantee, checked at the declaration.** The body is walked over the call graph, transitively; reaching a host `[extern]` binding or one of the five impure intrinsics (`scan`, `args`, `env`, the two randoms) is a spanned error on the function's NAME, naming the capability — instead of a failure at whichever distant `const` expression first tried to fold a call to it. This is not a colouring requirement and §1's Zig-shaped rule stands: a plain `fun` is still const-callable, and a `const fun` is still an ordinary function at runtime with runtime arguments.
+
+**`const mut` is refused** — a compile-time value has no runtime mutation; the refusal names `const let` and `mut name = const ..;`.
+
+**Both existing refusals steer here.** "`x` is a runtime value; a `const` expression reads only compile-time-known bindings" gains "Declare it `const let x = ..;`" where that is possible (a parameter or a `mut` gets the refusal alone — B83), and "a `const` result must be plain data; this evaluates to a closure" at a `let x = const ..` names the declaration that admits one. The editor offers both as one quick fix. The old raw leak — `const let x = ..;` dying in the evaluator as `statement node in expression position: ConstVariable(..)` — is gone by construction: the mark is on the initializer, so there is no statement in expression position left to reach the interpreter.
 

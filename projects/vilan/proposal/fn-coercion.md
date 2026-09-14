@@ -74,3 +74,6 @@ marks the function reachable.
   such a binding works as before; passing it later coerces at that later
   position. Nothing new is promised about function-typed VALUES beyond the
   coercion into closure-typed slots.
+
+7. **A `Callable` value coerces on its `call` signature** (B340, Order 36), minus the receiver, when that signature is GROUND. It is lowered as the wrapping closure `|n| value.call(n)` — a struct is a plain JS array and cannot be applied, so unlike a function reference the coercion has a real runtime form, paid only where one was written. A GENERIC impl does not coerce, for rule 2's reason: `impl Box<type T> with Callable` writes `call` in the impl's own binders, and handing those to a closure slot would bind the slot's generics to the impl's. The value's own `x(args)` call is unaffected — it resolves by the method path, where the impl's binders bind from the receiver. Rules 4 and 5 are inherited unchanged: `call`'s clause is not carried onto the coerced type, matching `function_closure_type`.
+

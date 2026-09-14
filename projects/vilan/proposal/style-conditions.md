@@ -767,3 +767,18 @@ S5 (the estate) are Order 36's.**
   kept them verbatim — deleting them would make refused programs compile with no spelling to steer
   to); `Condition::eq` vs a future `PartialEq::eq` (rename to `.value(..)` then, or never derive).
   §8's re-measure exhibits no longer exist in kolt (N85); the number that moved is the sheet.
+
+## 14. As built — Order 36 (2026-09-14, lane style-36)
+
+**S2 (breaking), S3 and S5 landed; A95's arc is complete.** Six commits on `style-36`: `f70f7941` (B311/B322), `7abec3ee` (the surface), `806dbfdf` (the tooling), `e6dd697b` (the estate), `66cf15b8` and `1e8416b8` (two finds).
+
+- **S2.** `pseudo(name)` refuses a `:` at the NAME, steering to the two values the string stood in for; `slot_of` is the one total reader of a slot key and every former `key.split(":")` reads its `Slot` record's fields. The `not` MARKER is retired for `Condition::not` (`Style::not` and its three refusals gone), `child_relation` is DELETED, `element(name)` and the guard+child-relation set are documented, and the free constructors join `std::style::prelude` so the block head `.on(<set>) { … }` needs no import and no lowering change. **R1** kept the six nesting refusals with `.on(<set>)` steers; **R2** kept `.eq()` and wrote "never derive `PartialEq` on `Condition`" at the type.
+- **R3, and one correction to it.** The ruling's purpose — `within(hover())` and `within(attribute("open"))` — lands, and the slot's identity IS a record (`Slot`, read through `slot_of`); what does NOT happen is storing the triple beside each slot, which was built and measured at **+26,201 B (+9.4 %)** on kolt's client bundle for facts no runtime reader asks about. What actually unblocks the guard is that it carries its inner TOKEN (`^hover`) rather than its rendered selector (`^:hover`), which holds no `:` at all; the joined key stays, which is also what keeps every already-minted class name byte-identical. Cost: 438 bytes of code, once.
+- **B311 and B322 close together**, and B322 needed no surviving fence: `Style::add`'s split is the reader's now, and `media`'s width and `raw`'s property pay the property fence the declaration writer always paid.
+- **S3.** `STYLE_CONDITION_METHODS` is read twice — combinator links and condition VALUES — with `ConditionAxis` gaining the model's own split (`Guard`/`Child`/`Element`); `vilan fmt` sorts an `on` head (`sort_on_heads` is the net's matching token pass); css-block §7.1 gains the condition-value row; `style_table_sync` gate 6 holds each row's axis to the byte its constructor builds, in both directions.
+- **S5.** `Style::attribute`/`Style::within`'s `Option<str>` is `[deprecated]` for one release with the `.eq()` steer, and the estate moved ahead of it: the corpus builds with the warning at 0.
+- **GATE: 145 built artifacts, every stylesheet byte-identical** against `9b22ec36` — the 130 guard-free programs and the 4 guard-writing ones alike. Five corpus `.mjs` goldens move by emitted std code and the new `const` bindings; kolt's bundle +54 B, the two examples' −384 B each. Eight ledger rows `NEW`, six retired, one re-keyed.
+- **Three corrections to the paper.** (1) §1's `let interactive = hover() + active().not();` needs `const` — a `const` expression reads only compile-time-known bindings. (2) §2.5's "two guards refuse" is now four refusals, one per non-element axis. (3) S1's guard was a latent MISCOMPILE, not merely a limitation: `within(attribute("x").not())` emitted `![x] .sX{…}`, invalid CSS, in silence.
+
+**kolt (read-only re-census):** one S2-breaking site, `src/styles.vl:138` `.pseudo(":placeholder")` → `.on(style::element("placeholder"))`. Nothing else.
+
