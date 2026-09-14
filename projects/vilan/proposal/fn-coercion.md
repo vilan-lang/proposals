@@ -7,8 +7,9 @@ backend the named function IS the value being constructed.
 
 ## 1. The rule
 
-A reference to a named function may appear wherever a value of **closure
-type** is expected, when all of these hold:
+A reference to a named function — or, since B340 (Order 36), a value whose
+type implements `std::operators::Callable` (rule 7) — may appear wherever a
+value of **closure type** is expected, when all of these hold:
 
 1. **It is a plain vilan `fun`** — not `external`. Extern binding forms
    (`method`/`get`/`set`, dotted paths like `document.getElementById`) have
