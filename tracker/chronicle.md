@@ -2426,3 +2426,30 @@ takes M70 (seven kolt files never cached), M55 (R6) and M66 (R8); hygiene-36 fix
 native-apps paper (F1, R10: emit-Rust, desktop first). Ten Opus lanes; ledger next id 464; tracker 94
 open at GO.
 
+**MERGED (2026-09-15) — all ten lanes at vilan next @da8cb6e0.** hygiene-36 262ee97d (N81's tools landed in
+proposals, N82–N85, B337, B339); editor-36 97623395 (E180 — the organizer's rescue no longer binds a
+taken name and kolt's lucide organizes clean; E181 the marker's slot after the leading import BLOCK;
+E175–E179); lang-c-36 06eba0e5 (A100: `lazy` in three homes, thunk/force/forward, the memo cell, the
+cycle trap and poison; `lazy` was not a free identifier); perf-36 cfc5136e+6c034487 (M70 the entry-aliased
+key — six kolt files served, 8–14 % per keystroke; B341 the desugar seeds in the key; M66 the lazily
+stamped identity; M55 measured and declined: kolt has two legs, the ceiling is 3.4 %; the split golden
+regenerated at the merge); style-36 10e5031a (A95's arc complete — the `not` marker and `child_relation`
+gone, `within(hover())` on the guard's inner token with every stylesheet byte-identical over 145
+artifacts; R3 built for its purpose, the triple-beside-each-slot storage measured at +9.4 % and refused;
+one hand fold in the formatter's pass chain); lang-a-36 49611256 (A99's six methods gone, A98's
+reconciler, B334's receiverless rule; one hand fold in the language server's quick-fix arms); lang-b-36
+365dd9ff (B340 `Callable` with no transformer change, G24's snapshot by substitution, B333; the fixed
+merge tools summed `RULE_STATEMENT_SITES` 34 + 8 + 1 = 43 on their first outing; two merge fixes — the
+thunk closures' `origin`, the editor page's count word); visibility-36 414d5476 (B318 S4 whole: the
+admission map keyed by the pair, the monomorphized body resolving under its declaring file, the
+import-site refusal, the `export impl` gate, `#(impl T)`, B330 at the call; B335/B336/B338; the E178
+`Program` surface; macro_std's ten blocks `export impl`); sweep-36 da8cb6e0 (the 24-file codemod, std's
+curation 548 of 856, the suppression dropped; four marker files hand-folded, and the curation RE-RUN over
+the merged tree — the codec and fetch blocks a derived `Wire` visitor reaches at monomorphization had to
+be exported, and style-36's table-sync reader had to strip the marker). The paper lane landed
+`signal-cell-representation.md` (C14 recommends the counted `Shared`) and `native-apps.md` (F1: emit Rust,
+desktop first, a third `View` twin) with a built Rust probe. Ledger rows 464–499 (next 500); seven
+retired; four re-keyed. Two seal fixes followed: the wasm playground's router fixture (9da581a6) and the
+suite's test threads raised to 8 MiB (d783fbf4) after the Windows shard aborted on a stack overflow in the
+analyzer's walk — the frames grew this order, the recursion did not.
+
