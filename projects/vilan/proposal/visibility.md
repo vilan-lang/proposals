@@ -1067,3 +1067,148 @@ namespace), S5 (docs beyond what each slice touched) and S6 (the estate sweep) a
 - **Finds filed:** B335 (`source_of` lies on a module segment when `x.vl` and `x/` coexist —
   Organize Imports probably wrong there), B336, B338, E177, E178, N84 (`cargo test` vs nextest
   shared state in two prelude-shaped `modules::` tests).
+
+## 15. As built — Order 36 (2026-09-14, lanes visibility-36 and sweep-36)
+
+**S4 landed whole: the per-importer namespace, the import-site refusal, the
+`export impl` gate, `#(impl T)`, and B330's call refusal.** With it, B335, B336
+and B338. S6 (the estate sweep and std's curation) and S5 (the docs) landed from
+sweep-36, merged last. B318's arc is complete.
+
+- **The map is the `restricted` map, INVERTED.** §3.3 wrote `file_impls:
+  HashMap<SourceId, Vec<usize>>`, which every lookup would have to SEARCH; the
+  question every consumer actually asks is "may THIS file take THIS member", and
+  the map that answers it in one probe is keyed by the pair. `ImplAdmission`
+  carries `restricting` (files whose statements restrict anything),
+  `admitted: (importer, declaring file) -> member ids` (absence = unrestricted,
+  an EMPTY entry = `only`), `selector_of` for the message, plus `hidden` and
+  `reached` for the export gate. `check_impl_selector_admission` split into
+  `build_impl_admission` — run at the TOP of `post_analysis_passes`, ahead of
+  `context::thread_contexts` and of emission, because both read it — and
+  `check_call_site_admission`, which is what the old pass's second half became.
+- **The analyzer's in-walk lookup is NOT scoped, and cannot be.** A selector's
+  question is `impl_select::subject_applies`, which reads a FINISHED program, so
+  `impl_member_candidates` stays program-wide and the call is CORRECTED after the
+  build rather than resolved differently. §3.4's "the calling file comes free
+  from the constraint's anchor id" is right about the id and wrong about the
+  timing: the in-walk resolution happens before any of this exists.
+- **File-scoped, each named:** `candidates_of`, `impl_members_for`,
+  `impl_members_for_bound`, `known_receiver_candidates` (which derives the file
+  itself from its call id), `impl_select::applying_implementations`,
+  `select_member`, `select_implementation`, `applying_trait_ids`. Consumers
+  threaded: `context::analyze`'s `dispatch_candidates` and `dispatch_admits`,
+  `const_eval`'s three site scans, `dispatch_refine::refined_edges`, and the
+  transformer's four lookups. `const_eval`'s refusal DIRECTION survives an
+  admission filter, which the receiver narrowing it still refuses does not: an
+  impl the calling file cannot reach has no runtime path there to refuse.
+- **§3.5 built as written.** The transformer carries `current_admitting_file`,
+  set from `enter_instance(function_id)` — the DECLARING file. The pin that
+  fails under "the instantiating file's set" is
+  `b318_a_monomorphized_body_resolves_under_the_file_that_declared_it`, and it
+  needed a new `transform_package` helper: a `select_member` decision is
+  emission's, so analysis alone cannot see it. One thing §3.5 did not foresee: a
+  body-less call target stops being only a compiler bug, so `select_member_here`
+  records the losing lookup and the never-silent check (B55) reports it in the
+  author's terms instead of "internal: … please report this program".
+- **§3.5 met the codecs at the merge.** A derived `Wire` visitor is a generic
+  body declared in `wire.vl`, so at monomorphization it resolves under
+  `wire.vl`'s set — and a codec block the curation had left private
+  (`json`'s `JsonWriter`/`JsonReader`, `binary`'s `BinaryReader`, `fetch`'s
+  three body blocks) contributed nothing to it: sixteen inference pins went red
+  on the merged tree and green once those blocks were `export impl`. The rule
+  is the one the paper wanted; the lesson is that a curation decided on a
+  9b22ec36 tree has to be re-decided on the tree it merges into.
+- **The import-site refusal.** `check_duplicate_inherent_members` keeps the
+  same-module case and banks the rest as `Program::cross_module_collisions`;
+  `refuse_imported_member_collisions` decides them against what each file's
+  statements carried. Two geometries: both blocks imported reports at the LATER
+  statement with a note at the earlier; one block the file's OWN reports at the
+  single import with the note at the declaration, which is the sentence the
+  duplicate family has always shown (`a_duplicate_static_across_modules_names_
+  the_other_module` passes unedited). A compiler-synthesized member belongs to
+  the file whose attribute generated it (`declaring_module_source`), so a backed
+  enum's `value` colliding with a hand-written one stays a same-module pair.
+- **`export impl` and `#(impl T)`.** `Implementation` gains `impl_id` and
+  `module_scope`; `Program::hidden_impls` is the blocks a CURATED module does not
+  export, computed at the commit; the export gate runs BEFORE the selector filter
+  in both predicates, and the call earns its own refusal ahead of the selector arm
+  ("widen your selector" is bad advice about a block no unmarked selector widens
+  onto). The parser seam is `parse_namespace_single_path`, which owns `#` and
+  routes back to `parse_impl_selector` past it; `at_reach_marked_impl_selector`
+  lets the outside-a-set rule earn the same refusal. §14's "the seam is
+  `at_impl_selector`" was right.
+- **BREAKING, one program in the tree.** `vilan/macro_std/src/meta.vl` and
+  `build.vl` are curated and their ten extension blocks carried no marker, so
+  every `[derive(..)]` in the estate lost the builders' methods. They are
+  `export impl` now. Nothing else: std's only curated files declare no impl, and
+  everything the Order 35 migration touched carries `export *;`.
+- **B330 refused at the call, narrowly.** The pair is banked only where
+  `bound_argument_positions_overlap`'s `(Generic, Generic)` arm admits it
+  (`bounds_differ_only_at_binder_bounds`), and decided by
+  `impl_select::declaring_maxima` — how many maxima declare the member for this
+  receiver under THIS file's set. Asking the SELECTION ORDER rather than the
+  subjects is what keeps A86's `Read<type I>` beside `Read<Option<type I>>` —
+  std's own `flatten` pair — out of it: tier 1 ranks them, so there is one
+  maximum and nothing to report. Two fixes: a selector at the import across
+  modules, B315's "narrow one bound" within one.
+- **`resolve_import` gained `bind: bool`** and `module_source_by_name` is
+  deleted. A selector-only statement is queued with `bind: false`, walks, records
+  each segment's reference and stops one line short of binding. The file-name
+  match it replaces was a host-dependent string comparison (the Order 35 seal fix
+  9b22ec36) that also guessed between two packages of the same shape.
+- **Finds closed beside it:** B335 (the namespace placeholder range is corrected
+  in place, which also restores `source_ranges` to disjoint and keeps
+  `source_lookup` on its binary search — three vilan-lsp pins had recorded the
+  lie and now record the fix), B336 (`export(in pkg::a)` was read as
+  `export(in pkg)` because the reserved heads were matched on `scope.first()`;
+  the subtree test is now a post-build pass over banked rows), B338 (two rows at
+  the selector). E178's `Program` surface — `exported_entities` and
+  `curated_modules` — lands here too, for vilan-ide's fourth completion consumer.
+- **Rows:** 9 `NEW` (491–499). **Cost, measured** on kolt's client leg (`vilan
+  check`, CPU user+sys, 15 interleaved pairs against 9b22ec36): **+2.4 % on min,
+  +1.0 % on median**, after hoisting the per-file question
+  (`ImplAdmission::restricts`) out of the per-block loops — it read +3.9 % /
+  +2.3 % before. kolt pays: its `views.vl` writes `import std::map::{ (impl
+  Map<_, _>) };`, the estate's first selector.
+
+**S6 — the estate sweep and std's curation (sweep-36, merged last).** The
+non-std codemod is 24 files in one commit: the examples' 12 modules, the three
+`vilan init` scaffolds, the corpus's three module-directory fixtures, and the
+six benchmark modules whose Order-35 markers moved down from above the module
+comment into E181's slot. The set was taken from the WARNING rather than from
+§6's census — every package checked file by file, the declaring module read off
+each `is not exported by` — which is why `examples/fullstack/common` is absent:
+its only cross-file reach is from a path dependency, and that is silent by the
+ruling. kolt was verified read-only and warns 0; the website's seven modules and
+the playground's two were marked by the integrator (website 130 → 0). **std's
+curation is 548 of 856 declarations exported and 308 private**, over 63 files:
+33 modules answer yes for every item and take the bare `export *;` (162 items),
+27 are curated declaration by declaration (694 items, 386 marked), and
+`lib.vl`/`prelude.vl`/`web.vl` declare nothing and are untouched. 319 `impl`
+blocks carry the marker, because an impl a consumer cannot see contributes no
+methods and a curated module has to say which blocks it publishes. Criterion (a)
+was read out of `check_plain_reaches` with the suppression lifted — **152 items
+across 45 modules**, not §6's 118, which was measured before std grew — and the
+ceiling was the reference plus the estate's imports. The exposure warning is what
+made the pass honest: it fired 44 times over three rounds and every firing was a
+curation error fixed by exporting the type (`arena::Slot` behind `Arena`'s
+field, `fetch::Header` behind http's `Request`, `style::Condition` behind every
+condition constructor), never by quieting the check. The `std_sources` arm of
+`check_plain_reaches` is deleted; std is now held to the rule every other
+package is held to, and `every_std_module_is_clean_under_full_scan` is the proof,
+green under both layers with the plain-reach and exposure warnings at 0 — after
+the integrator re-ran the curation over the MERGED tree, where `cell_identity`
+(M66), the four codec blocks above and `swap_split` (A99's fold) had arrived
+private. **Two S1 defects were in the way.** `export` on a transparent wrapper —
+`export [derive(Wire)] struct Handle` — parsed, formatted and round-tripped
+through `Importable.exported` and was dropped in entity-id space, because the
+wrapper mints an entity of its own and the `Node::Export` arm recorded that one;
+ten of std's marked declarations, `time::Duration` and `rpc::RpcError` among
+them, could not be exported until `transparent_declarations` was added. And
+`needs_semicolon` excluded every `Export`, so `export let x = 1;` printed without
+its terminator, failed to re-parse, and the formatter BAILED — handing back the
+whole file unformatted, silently, since a bail is not a diagnostic and `vilan
+fmt --check` reads a bailed file as already-formatted. §6's own numbers are
+stale by three orders: std is 741 declarations by the manifest's grep, 856
+counting every declaration kind, and its manifest now carries a recipe that
+survives the marker. `::*` is NOT built and not documented.
