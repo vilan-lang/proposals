@@ -2453,3 +2453,14 @@ retired; four re-keyed. Two seal fixes followed: the wasm playground's router fi
 suite's test threads raised to 8 MiB (d783fbf4) after the Windows shard aborted on a stack overflow in the
 analyzer's walk — the frames grew this order, the recursion did not.
 
+**SEALED (2026-09-15) at vilan next @d783fbf4.** The local seal on da8cb6e0 read union 7582/7583 (the one red
+was the wasm playground's router fixture still writing `View::swap`), clippy 0, the Windows cross-check 0,
+audit 0, fmt 0, changelog parity 445/445; the union re-run over the fixed tree 7583/7583. CI on da8cb6e0
+found what the local seal cannot: the second Windows test shard ABORTED on a stack overflow in the
+analyzer's expression walk — nine levels of nesting in a module-cycle pin, the frames grown by this order's
+lazy, const, callable and visibility arms — so the suite now runs on 8 MiB test threads (`.cargo/config.toml`,
+N97 filed for the frame itself). CI on d783fbf4: green on all eleven jobs (run 34913736715). Toolchain
+refreshed in both locations (vilan 0.40.0 (d783fbf4c)). Sweep: 31 closed, 29 filed, tracker 105 open; ten
+worktrees and branches reaped. Kolt owes three edits at the owner's word (the nine A99 sites, one
+`:placeholder` pseudo, a manifest comment); the website carries seven uncommitted `export *;` markers.
+
