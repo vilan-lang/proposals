@@ -1,0 +1,124 @@
+{
+ "items": [
+  {
+   "id": "A104",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — `std::json` has no `Json`/`FromJson` for `Result<T, E>`: `Option` has both (json.vl:23 and :264) and kolt hand-writes the pair at shared.vl:65/80 as a `[kind, value]` array (0 = Ok, 1 = Err); the WIRE twin landed with A82 (variant-name tags) — the JSON twin should match `Option`'s spelling and the wire tags, not kolt's integers",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); the `// FIXME: Implement with std.` pair at shared.vl:65/80; S",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep)",
+   "body": "`export impl Result<type T: Json, type E: Json> with Json` and the `FromJson` twin beside `Option`'s in json.vl (a variant-tagged object, the same tag names the wire codec uses so a value round-trips both codecs by the same spelling); pins in `json_boundary.rs` for both directions and a malformed tag; kolt's two impls go at the owner's word."
+  },
+  {
+   "id": "A105",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — `View::bind_attr` takes `Source<str>` only (browser/ui.vl:259); a `Source<Option<str>>` whose `None` REMOVES the attribute has no std form, so kolt writes `bind_attr_proper` (styles.vl:35: `Some` → `set_attribute`, `None` → `remove_attribute`) and calls std's 'poorly written'; the element syntax admits an `Option` attribute since A89 — the method should match",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); S",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep)",
+   "body": "A second bound (`Source<Option<str>>`, `None` removes) or an `Option`-typed overload — whichever the impl-selection rules admit beside the `str` form without ambiguity at a `SignalCell<str>` receiver; SSR twin writes/omits; pins in `ui_rows.rs` or `dom_events.rs`; the doc row on `bind_attr`."
+  },
+  {
+   "id": "A106",
+   "section": "A",
+   "kind": "design",
+   "area": "Reactive core & UI",
+   "title": "NEW — the style vocabulary is ambient only inside a css HOLE (`std::style::prelude`, names.md §4.7's one-position rule): a `fun` body building a chain imports nine names per function (kolt styles.vl:54/103 — `style as s`, `Length`, `Cursor`, `TextAlign`, `AlignItems`, `active`, `attribute`, `hover`, `pseudo` — under a `// FIXME: Add a prelude to std.`). Doors: (1) document `import std::style::prelude::*;` at file level as the idiom (the module is ordinary outside a hole — but the TYPES `Length`/`Cursor`/`TextAlign`/`AlignItems` are not in it); (2) the `std::web` prelude `export import`s a widened style prelude — ambient in every web file (E180's R9 rule fades it cleanly), gated on a name-collision census over the estate; (3) nothing. Rec: widen the prelude with the types (S), document (1) now, take (2) after the census",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); OWNER Q (door 2)",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep); OWNER QUESTION",
+   "body": "Census first: every name the widened prelude would bind against every identifier declared in std, the examples, the docs, the website and kolt (read-only); then door (1) + the widened module, door (2) only at zero collisions; the tour's styling page names the idiom."
+  },
+  {
+   "id": "A107",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — `[rpc]` RETURN types kolt could not write: `void` ('not supported as an rpc return type', store.vl:182 — `remove_message` returns `bool` instead) and `Result<i53, str>` (store.vl:166's FIXME predates A82, which BUILT `Result` as an rpc return — VERIFY on d783fbf4 and retire the FIXME if it compiles); a `void` rpc is a call whose reply is an empty ack (distinct from `notify`, which has no reply)",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); Order 38 candidate; S–M",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep)",
+   "body": "Verify both shapes on the sealed toolchain; admit `void` in the analyzer's rpc return allowlist and the generated client (`Task<void>` awaiting the ack; the wire carries an empty `Ok`), or refuse it with the steer 'return `bool`, or use `notify` for a fire-and-forget call' — the honest answer decides which; pins in `service_layer.rs` for the ack round-trip and `rpc_http.rs` for the connectionless leg; kolt's `remove_message` at the owner's word."
+  },
+  {
+   "id": "B352",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — closure-parameter typing through Source-shaped generics, three kolt exhibits beside B347's `each_by`: (1) `swap(get_prefs().theme_selection_delay_enabled, \\|enabled\\| …)` over a `StorageSignalCell<bool>` leaves `enabled: T` (theme.vl:269 annotates `: bool`); (2) `error_text.map(\\|x\\| x.unwrap_or_default())` on a `Signal<Option<str>>` needs `\\|x: Option<str>\\|` (channel.vl:178/387 — a METHOD on the receiver path, yet the parameter is unresolved when `unwrap_or_default`'s `Default` bound is looked up); (3) `get_user().map(\\|x\\| x.channels).flatten()` cannot pull `SignalCell<List<i53>>` out (views.vl:212, commented). One seam or three",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); lane solver-37 beside B347",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep)",
+   "body": "Rebuild each exhibit as a twenty-line program against std alone (a `StorageSignalCell<bool>` from `std::storage`; a `Signal<Option<str>>`; a `SignalCell<User>` with a `channels: SignalCell<List<i53>>` field); B347's fix (bind `T` from the source before the closure parameters are typed) is the first thing to try on (1); (2) is the receiver path and needs its own diagnosis (is `map`'s `U` solved before the body is checked, or is the `Default` bound resolved against an abstract `T`?); (3) is `flatten` over a `Source<SignalCell<..>>`. Pin every exhibit un-annotated; drop kolt's three annotations at the owner's word.\n\n- 2026-09-17 (Order 37 GO): BUILD in lane solver-37 (beside B347; the three exhibits pinned)."
+  },
+  {
+   "id": "B353",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — a `set` with a TYPE MISMATCH reconciled without error (kolt views.vl:222, commented): `channels: Signal<List<i53>>`, `incoming: Option<List<i53>>` from a `RemoteSource` effect; `channels.set(incoming)` without the `if incoming is Some(..)` guard 'reconciled without error even though there's a type mismatch'. If it reproduces on d783fbf4 it is UNSOUND — an `Option` stored where a `List` is read, a miscompile class — and the likely mechanism is B352's: the effect closure's parameter left abstract, so `set`'s argument check had nothing to compare",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); HIGH until probed; lane solver-37",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep)",
+   "body": "Probe first with the minimal shape (`Signal<List<i53>>::new([]).set(Some([1i53]))` — expected: refused) and then the exhibit's shape (a `RemoteSource<Option<List<i53>>>`'s `effect(|incoming| channels.set(incoming))`); if the second passes, the closure's parameter is abstract and every call inside it is unchecked — that is the finding, and B352's fix must make the pin red; if neither reproduces, record the probe and close.\n\n- 2026-09-17 (Order 37 GO): PROBE + fix in lane solver-37 (HIGH until probed)."
+  },
+  {
+   "id": "E191",
+   "section": "E",
+   "kind": "diagnostics",
+   "area": "LSP & tooling",
+   "title": "NEW — a diagnostics CASCADE from one arity error in an element head: kolt login.vl:181/286 — `href(href())` (the attribute call given `href()` with its `Route` argument missing) 'caused a ton of error noise'; one wrong call inside `<a href(..) on:click(..) .styled(..)>` should report ONE error at the call, not fan out through the head's desugar (the head lowers to a chain; a failed argument may leave the chain's type unresolved and every later link reports)",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); lane diagnostics-37 beside E189",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep)",
+   "body": "Reproduce (count the errors on the twenty-line shape); if E189's broad gate covers it (a type error present → the dependent family suppressed with the note) record that and pin the count; else fix the head's recovery so a failed attribute argument leaves the element typed (`View`) and the chain continues; one error, pinned.\n\n- 2026-09-17 (Order 37 GO): BUILD in lane diagnostics-37 (reproduce; E189's gate or the head's recovery)."
+  },
+  {
+   "id": "E192",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — the unused-import fade on a TYPE import whose only use is a SELECTOR import's subject: kolt views.vl:2–4 — `import std::map::Map;` fades as unused while `import std::map::{ (impl Map<_, _>) };` names `Map` (the owner: 'considered unused, but it is used for the type below'). Verify which is true: the selector resolves `Map` through the file's import (then the fade is a false positive — count the selector subject as a use) or through the module's own items (then the type import IS unused, the fade is right, and the owner deletes the line)",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); lane editor-37; S",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep)",
+   "body": "Delete the import in a copy and `vilan check`; then either the fade's use-count gains the selector subject (pin: a type import used only by a selector is not faded) or the item records the answer for the owner.\n\n- 2026-09-17 (Order 37 GO): VERIFY + fix in lane editor-37."
+  },
+  {
+   "id": "E193",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — completion inside a STRUCT INITIALIZER body offers nothing: kolt store.vl:238 — `KoltStore { user = …, next_channel_id, … }` gets no field names (nor the shorthand candidates: locals whose name matches a field) at `KoltStore { \\| }` and after a comma; the struct's declaration is in hand from the head",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); lane editor-37; M",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep)",
+   "body": "vilan-ide completion.rs: a `StructInit` position (head resolved through the same path the analyzer uses for `Node::StructInitializer`, B190's `type-path`): offer the REMAINING fields with the field type as detail and `name = ` as the insert, the shorthand where a local of that name is in scope, and `..Default::default()`-shaped completion only if the language has it (it does not today — omit); pins: at the open brace, after a comma, fields already written excluded, a generic struct, the qualified head; the playground reaches it.\n\n- 2026-09-17 (Order 37 GO): BUILD in lane editor-37."
+  },
+  {
+   "id": "I4",
+   "section": "I",
+   "kind": "feature",
+   "area": "Collections",
+   "title": "NEW — `Default` is implemented for the numeric family only (number.vl): `Map`, `List`, `Set` (and `str`, `bool`, `Option<T>` — verify each) have no `Default`, so a `T: Default` bound cannot be met by a container and kolt writes `impl Map<type K, type V> with Default` itself (prefs.vl:100 under `// FIXME: Implement with std.`)",
+   "discussion": "kolt sweep at Order 37 GO (2026-09-17); S",
+   "status": "OPEN — filed 2026-09-17 (the kolt sweep)",
+   "body": "The empty-container impls beside the numeric ones (`export impl Map<type K, type V> with Default`, `List<type T>`, `Set<type T>`; `str` → `\"\"`, `bool` → `false`, `Option<T>` → `None` if absent); a pin per type in `inference/traits.rs` or `std_surface.rs`; the `Default` doc row; kolt's impl goes at the owner's word."
+  },
+  {
+   "id": "F17",
+   "section": "F",
+   "kind": "design",
+   "area": "Native targets & rendering",
+   "title": "NEW — DISCUSSION (the owner's, 2026-09-17): how to write UI code ONCE so it works for native and web simultaneously — with named exceptions (native window chrome: close/minimize/maximize buttons, and whatever else the platforms genuinely do not share). The F1 paper's answer (the DOM-shaped `View` as a third twin, Order 37's R2) is the STARTING POSITION, not the conclusion; the conversation decides the shape of the shared surface, the exception mechanism (platform-colored members? a `native`-only module? separate chrome components?), and what the three-layer rule (F15, R4 recorded) has to gate. Nothing in F1 S3–S5 starts before it",
+   "discussion": "the owner's conversation, 2026-09-17; NOT queued — a conversation, then a paper section",
+   "status": "OPEN — filed 2026-09-17 (the owner's ask at Order 37 GO); DISCUSSION",
+   "body": "Inputs for the conversation: native-apps.md §4.4 (the retained-tree API rejected 'with respect'), §6.2 (the third-twin problem none of the prior art has), F15; the owner's framing: 'drawing windows is much more complicated'; the exceptions list is the first thing to write down. Output: a section of native-apps.md (or its own paper) that F1 S3 reads before it is sized."
+  },
+  {
+   "id": "F18",
+   "section": "F",
+   "kind": "feature",
+   "area": "Native targets & rendering",
+   "title": "NEW — native WEB SERVERS as the first native product after CLI programs (the owner, 2026-09-17: 'more easily achievable in the short term' and 'a huge win in and of itself'): the `@process` family on the Rust backend — `std::fs`, `std::http`, `std::db`, `process/rpc_server.vl`, the service layer — which REVISITS native-apps.md §8 Q2 (`native` does not join `@process` initially): for a server it must, and `check_library_contract`'s base-layer obligation is the cost to size; J6's executor is the precondition (a server is async through and through); the exit test is kolt's server leg built natively and serving its client",
+   "discussion": "the owner's priority, 2026-09-17; Order 38's first native slice; sized by native-b-37's report",
+   "status": "OPEN — filed 2026-09-17 (the owner's ask at Order 37 GO); Order 38 candidate",
+   "body": "native-b-37 reports the sizing: what `vilan-rt` needs beyond S1a (the executor J6, sockets/HTTP, SQLite or the `std::db` shape, the file system, the rpc server's wire path), which `@process` modules resolve for `native` unchanged and which need a native twin, and the order S1b → executor → http → db → rpc. Sequenced BEFORE F1 S2's UI-shaped platform work (F15, E182 wait for F17).\n\n- 2026-09-17 (Order 37 GO): SIZED in lane native-b-37's report (no build this order)."
+  }
+ ]
+}

@@ -2464,3 +2464,25 @@ refreshed in both locations (vilan 0.40.0 (d783fbf4c)). Sweep: 31 closed, 29 fil
 worktrees and branches reaped. Kolt owes three edits at the owner's word (the nine A99 sites, one
 `:placeholder` pseudo, a manifest comment); the website carries seven uncommitted `export *;` markers.
 
+
+## Order 37 — cycle 55: the native foundations, the css call surface, and the honest tools (2026-09-17 → )
+
+Opened on the owner's "you may begin (go)" of 2026-09-17, two days after Order 36 sealed, off d783fbf4.
+The two native papers turn into code under thirteen rulings taken as recommended, two of them steered
+at GO: native-a-37 builds C14's first three slices on JS (R1 = (a), the counted `Shared`: the 19
+frame-scoped cells become locals, `Weak` lands JS-lowered, `observe` and `Subscription` hold weak back
+edges, the SCC gate the exit); native-b-37 lands C16's refusal first and then F1's S1a — a `Backend::Rust`
+arm, the `vilan-rust` emitter and a dependency-free `vilan-rt`, `board.vl` and the platform-free corpus
+byte-identical against the JS backend, no async and no UI — under the owner's amendment that the native
+products come in the order CLI programs → web servers (F18, "a huge win in and of itself") → a UI layer
+only after a design conversation about writing UI once for native and web (F17; R4's three-layer rule
+recorded, not ruled). css-37 builds the owner's A101 (css declarations become calls; BREAKING over 138
+blocks; R10–R12) with E183, merged last. solver-37 takes the A99-reachable value-form family (B351,
+B347) with B349/B350 and, from the GO-day kolt sweep, B352 (three closure-typing exhibits) and B353 (a
+possibly unsound `set`); lazy-37 the retrofit A103 behind its differential, B344/B345 and A102 (R13);
+diagnostics-37 the cascades kolt's upgrade exposed (E189, E190, E185, E191) and B343 (R9: the clause
+stays after the return type); editor-37 the spec-generated attribute completion E69 with E184,
+E186–E188, E192 and E193; perf-37 M72–M75 (kolt's store.vl never cached); dx-37 the three tools that lie
+(B346, N90, N91, N92, B342); hygiene-37 N94–N97, N86–N89, first. The kolt sweep (46 comment lines)
+filed twelve items and found fourteen comments stale against std that shipped in Orders 30–32 — kolt's
+migrations at the owner's word. Ten Opus lanes; ledger next id 500; tracker 120 open at GO.

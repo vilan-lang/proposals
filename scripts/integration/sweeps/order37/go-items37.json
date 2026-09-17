@@ -1,0 +1,61 @@
+{
+ "date": "2026-09-17",
+ "order": "Order 37",
+ "base": "d783fbf4",
+ "lanes": {
+  "hygiene-37": ["N94", "N95", "N96", "N87", "N88", "N89", "N86", "N97 (measure + canary)"],
+  "dx-37": ["B346 (HIGH)", "N90 (HIGH)", "N91", "N92", "B342"],
+  "lazy-37": ["A103 (S3, differential-gated)", "B344", "B345", "A102 (R13)"],
+  "solver-37": ["B351", "B347", "B349", "B350", "B352 (GO)", "B353 (GO; probe)"],
+  "diagnostics-37": ["E189", "E190", "E185", "B343 (R9)", "E191 (GO)"],
+  "editor-37": ["E69 (ruled)", "E184", "E186", "E187", "E188", "E192 (GO)", "E193 (GO)"],
+  "perf-37": ["M72", "M73", "M74", "M75"],
+  "native-a-37": ["C14 S1 (M71)", "D8", "C14 S2 (C1 Weak)", "C14 S3", "R1 = (a)"],
+  "native-b-37": ["C16 (R7, first)", "F1 S1a (R2 amended, R3, R5, R6, R8)", "F16/C15 decided in S1a", "J6 design section", "F18 sizing (report)"],
+  "css-37": ["A101 (BREAKING; R10–R12)", "E183"]
+ },
+ "merge_order": [
+  "hygiene-37", "dx-37", "lazy-37", "solver-37", "diagnostics-37", "editor-37", "perf-37", "native-a-37", "native-b-37", "css-37"
+ ],
+ "rulings": {
+  "R1": "C14 (a) — counted Shared + Weak at two std sites; S1–S3 this order",
+  "R2": "F1's four answers ratified for the build, AMENDED at GO: CLI programs (S1a) → native servers (F18, Order 38) → UI only after the F17 conversation",
+  "R3": "rule 4 under rustc: RefCell for S1, measured",
+  "R4": "three-layer std::ui rule: RECORDED only — waits for F17",
+  "R5": "async: Task stays external; single-threaded executor in vilan-rt; S1a builds none",
+  "R6": "i53/u53: distinct types, native i64/u64, JS range guaranteed",
+  "R7": "C16 blocks S1 — the refusal lands first",
+  "R8": "vilan-rt a separate dependency-free crate; vilan run --backend rust builds debug by default",
+  "R9": "B343: keep the clause after the return type; refuse the un-parenthesized closure-typed form; fix the highlighter",
+  "R10": "A101 Q1: N arguments space-joined; one .raw per declaration",
+  "R11": "A101 Q2: the codemod writes the typed constructor where E167 types, the string otherwise",
+  "R12": "A101 Q3: --name(..) admitted; var(\"--x\") on the value side",
+  "R13": "A102: transfer a lazy cell only when state == done"
+ },
+ "filed_at_go": ["A104", "A105", "A106", "A107", "B352", "B353", "E191", "E192", "E193", "I4", "F17", "F18"],
+ "kolt_owed_at_the_owners_word": [
+  "overlay.vl:67–87 → std::dom query_selector_all / observe_resize (A59)",
+  "views.vl:200 [hidden] HACK → View::show() (A60)",
+  "routes.vl:25 → impl Route with FromPath / parse_path (A62)",
+  "interact.vl:129 magnitude → std::math::Vec2 (A83)",
+  "theme.vl:268 swap HACK → {signal} child (B268)",
+  "store.vl:97 u53 wire (A82); store.vl:166 Result<i53, str> return (A82; verify — A107)",
+  "scale_step.vl:12 → Callable (B340)",
+  "login.vl:71 fetch HACK → std::fetch::post(url, body).send()",
+  "login.vl:1 stale FIXME (the import is commented out and check passes)",
+  "views.vl:94 B351 FIXME (after solver-37)",
+  "the css codemod over kolt's blocks (after css-37)",
+  "shared.vl:65/80, prefs.vl:100, server.vl:92 after A104 / I4 / I3 land"
+ ],
+ "order38_queue": [
+  "F1 S1b (the widened platform-free corpus)",
+  "F18 native servers (the owner's priority; sized by native-b-37) — before F1 S2",
+  "J6 executor (built)",
+  "F1 S2 + F15 N-way gate + E182 — after the F17 conversation",
+  "C14 S4 (counted lowering on the Rust backend) + S5 (optional instrument)",
+  "C15 by-value capture optimisation with R3's measurement",
+  "A107 rpc void return", "A104 Result Json", "A105 bind_attr Option", "A106 style prelude (owner Q)", "I4 Default for containers", "I3 filter_map",
+  "N97's split if measured", "M56/M57/M54", "E121's remaining path", "K14 at the cut", "B348", "B298", "A94", "M60", "L20 (owner)",
+  "the v0.41.0 cut (HELD — the owner's call)"
+ ]
+}

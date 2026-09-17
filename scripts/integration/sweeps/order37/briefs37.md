@@ -1,11 +1,26 @@
-# Order 37 — the native foundations, the css call surface, and the honest tools (drafted 2026-09-17; NOT GO; off vilan next @d783fbf4)
+# Order 37 — the native foundations, the css call surface, and the honest tools (drafted 2026-09-17; GO 2026-09-17, off vilan next @d783fbf4)
 
-**NOT GO (drafted 2026-09-17).** Against vilan next @d783fbf4 — Order 36's seal (CI green on all
-eleven jobs; toolchain at that sha in both locations; nothing has landed on `next` since).
-Proposals @91433c8 plus this file. Ledger next id 500. Tracker 108 open. TEN lanes; thirteen
-rulings below, each with a recommendation. Three lanes (native-a-37, native-b-37, css-37) build
-DIFFERENT things depending on them; the other seven go on no ruling. Kolt is committed at
-0decf84 (the owner's upgrade of 2026-09-15: `vilan check` 0/0); the website's seven `export *;`
+**GO (2026-09-17).** The owner: "Provided none of the above requires clarification or blocks
+the order, you may begin (go)" — with two steers that AMEND the record. (1) The native path is
+"just setting up the Rust backend supporting cli programs for now"; drawing windows "is much
+more complicated" and waits for a design conversation the owner wants first — how to write UI
+code that works for native and web simultaneously, with named exceptions such as native
+close/minimize/maximize buttons (F17 filed as that DISCUSSION; nothing in F1 S3–S5 starts
+before it); and native WEB SERVERS are "more easily achievable in the short term" and "a huge
+win in and of itself" — so the slice after S1a is native servers, not the render layer (F18
+filed; native-apps.md §8 Q2's "`native` does not join `@process`" is REVISITED there — a
+server is exactly the `@process` family on the Rust backend; native-b-37 sizes it in its
+report). (2) A fresh sweep of kolt's TODO/FIXME/HACK comments (46 lines at kolt 0decf84): 12
+items filed at GO (A104–A107, B352, B353, E191–E193, I4, F17, F18), three stamps (A72, I3, A8),
+and 14 comments found STALE against std that already shipped (A59, A60, A62, A82, A83, B268,
+B340, `std::fetch::post(..).send()`) — kolt's migrations at the owner's word, listed at the
+sweep. RULINGS: R1–R13 as recommended, with R2 AMENDED (emit Rust ratified; "desktop first"
+replaced by CLI programs → servers → the UI layer after the F17 conversation) and R4 RECORDED
+only (the three-layer rule is part of that conversation; S2's sizing moves with it). Lane
+additions at GO: solver-37 += B352, B353; diagnostics-37 += E191; editor-37 += E192, E193;
+native-b-37's report sizes F18. TEN lanes. Order 36 sealed at d783fbf4 (CI green on all eleven
+jobs; toolchain at that sha in both locations; nothing has landed on `next` since). Ledger
+next id 500. Tracker 120 open at GO. Kolt committed at 0decf84; the website's seven `export *;`
 files are still uncommitted (the owner's).
 
 The shape, read from what Order 36 left and what the owner owes: the two native papers landed
@@ -34,7 +49,10 @@ rot, one for the three tools that lie (`fmt --check`, `vilan check`'s cache, `VI
   36's R10) and then argued: emit Rust; desktop first; the DOM-shaped `View` as a third
   `std::ui` twin; client-only first with rpc in-process later. Rec: ratify all four as the
   build's premises; the costed rejections (C, wasm-in-a-host, the interpreter, a retained-tree
-  API) stand as written.
+  API) stand as written. **GO AMENDMENT:** "desktop first" is REPLACED — the order of native
+  products is CLI programs (S1a, this order) → native web servers (F18, Order 38) → the UI layer
+  only after the F17 conversation; "emit Rust", the DOM-shaped `View` twin as the STARTING
+  position for that conversation, and client-only-first stand.
 - **R3 — rule 4 under rustc (native-b-37).** rustc sees aliasing the vilan checker already
   proved safe. Rec: ship `RefCell` for S1 and MEASURE (the count of boxed bindings over the exit
   corpus, recorded on the item); a violated invariant is a panic with a message, which is
@@ -45,7 +63,8 @@ rot, one for the three tools that lie (`fmt --check`, `vilan check`'s cache, `VI
   native-apps.md §6.2 states it — one surface, N twins; a member added to one twin is added to
   all in the same commit or refused by the gate; the parity gate becomes N-way;
   `ssr_differential` compares resolved structure for a native leg. NOT built this order (S2 is
-  Order 38's); the ruling is what lets S2 be sized.
+  Order 38's); the ruling is what lets S2 be sized. **GO: RECORDED, not ruled** — the
+  three-layer rule is part of the F17 conversation, and S2's sizing waits with it.
 - **R5 — async on native (J6).** Rec: `Task<T>` stays `external`, bound to a single-threaded
   executor in `vilan-rt` matching the JS turn model (reactive-turns.md); cancellation via the
   Nursery's drop. S1a builds NO async (its scope excludes it); the lane writes the executor's
@@ -272,7 +291,7 @@ Sizing: M + S + S + S = M. Model: Opus. Owns `option.vl`, `result.vl`, the four 
 fns (named in the report), `inference/lazy.rs`, the HMR transfer classification, the lazy docs
 pages.
 
-## Lane solver-37 — B351 (kolt's FIXME), B347, B349, B350
+## Lane solver-37 — B351 (kolt's FIXME), B347, B349, B350 (+ at GO: B352, B353)
 Read B351 (the twenty-line description and the FIVE passing variants; the bisect note: not an
 Order 36 regression — the VALUE forms' closure typing, A85-era, newly reachable via A99), B347,
 B349, B350, positional-slots.md §10–§12, the closure-argument typing in `infer_type_inner`
@@ -296,12 +315,24 @@ if the fix lands there, name the fn and the two lanes' edits are disjoint), the 
    through a selector-restricted import (refused, as §3.5 says). **B350** — the `#`-on-an-
    exported-impl redundancy WARNING (one row; the delete-the-`#` quick fix widened to the
    selector); pin.
-Sizing: M + S + S + S = M. Model: Opus. Owns the closure-argument typing seam in analyzer.rs
+4. **B352 (GO).** Three kolt exhibits of the same family, rebuilt as std-only programs and
+   pinned un-annotated: (1) `swap(cell, |enabled| …)` over a `StorageSignalCell<bool>` leaves
+   `enabled: T` (B347's fix is the first thing to try); (2) `Signal<Option<str>>::map(|x|
+   x.unwrap_or_default())` needs the annotation although it is the RECEIVER path — diagnose
+   whether `map`'s `U` is solved before the body is checked or the `Default` bound is resolved
+   against an abstract `T`; (3) `SignalCell<User>::map(|x| x.channels).flatten()` cannot
+   produce `SignalCell<List<i53>>`. Kolt's three annotations are the integrator's.
+5. **B353 (GO; HIGH until probed).** `Signal<List<i53>>::new([]).set(Some([1i53]))` must be
+   refused — probe it, then the exhibit's shape (a `RemoteSource<Option<List<i53>>>`'s
+   `effect(|incoming| channels.set(incoming))`); if the second passes, the closure's parameter
+   is abstract and every call inside it is unchecked — plant that pin red and make B352's fix
+   turn it green; if neither reproduces, record the probe on the item (close at the sweep).
+Sizing: M + S + S + S + M + S = M–L. Model: Opus. Owns the closure-argument typing seam in analyzer.rs
 (name every fn), `each_by`'s binding, the transformer's module-body seam, the B350 row + fix
 arm (vilan-lsp: one arm, named), `inference/lifetimes.rs` or the module the lane finds for the
 value-form pins, `ui_rows.rs` for B347.
 
-## Lane diagnostics-37 — E189, E190, E185, B343 (R9)
+## Lane diagnostics-37 — E189, E190, E185, B343 (R9) (+ at GO: E191)
 Read E189 (the mechanism: a closure handed to a call that failed to resolve never attaches to
 the clause-carrying parameter, so everything it reaches looks unenclosed — 173 of kolt's 180
 errors), E190, E185, B343 + R9, context.rs (`analyze`'s reach edges), transformer.rs
@@ -331,13 +362,18 @@ the TextMate `context` rule (`(?<=\))\s+(context)\b`), `grammar_sync.rs`, contex
    quick fix parenthesizes); the TextMate lookbehind fixed so `fun f(): i32 context settings`
    paints the keyword; the book theme's copy; grammar_sync scope pins for both shapes;
    contexts.md's §3 sentence is the integrator's (hand back the text).
-Sizing: M + M + S + S = M. Model: Opus. Owns context.rs's reach walk (`analyze` and the fns it
+4. **E191 (GO).** One arity error inside an element head (`<a href(href()) on:click(..)
+   .styled(..)>` — `href()` missing its `Route`) "caused a ton of error noise" in kolt: count
+   the errors on the twenty-line shape; if E189's broad gate covers it, record that and pin the
+   count; else fix the head's recovery so a failed attribute argument leaves the element typed
+   (`View`) and the chain continues — ONE error, pinned.
+Sizing: M + M + S + S + S = M. Model: Opus. Owns context.rs's reach walk (`analyze` and the fns it
 calls — solver-37 may edit `adoptable_closure`/`call_return_clause`, disjoint, both named),
 transformer.rs's `ensure_function_emitted` + the B55 message site, the E185 row's site,
 parsing.rs's B343 refusal (ONE new check in `parse_function`'s head — css-37 owns
 `parse_css_block`), the TextMate `context` rule, the two quick-fix arms in vilan-lsp (named).
 
-## Lane editor-37 — E69 (ruled), E184, E186, E187, E188
+## Lane editor-37 — E69 (ruled), E184, E186, E187, E188 (+ at GO: E192, E193)
 Read E69 (the ruling: GENERATED from the WHATWG HTML attribute index + the SVG index; completion
 only; the desugar stays name-blind), the repo's precedent for a generated-and-gated table —
 `scripts/regen-mime-table.py` + `crates/vilan-core/tests/mime-table.tsv` +
@@ -366,7 +402,16 @@ warning site.
    filesystem; pin: an unsaved sibling edit still lands the `export` at the right line.
    **E188** — record the exposed entity on the exposure warning; the fix reads it; pin the
    two-`S` file.
-Sizing: M + S + S + S + S = M. Model: Opus. Owns vilan-ide `completion.rs`'s head-position
+4. **E192 (GO).** `import std::map::Map;` fades as unused while `import std::map::{ (impl
+   Map<_, _>) };` names `Map` (kolt views.vl:2–4). Delete the type import in a copy and
+   `vilan check`: if the selector needed it, the fade's use-count gains the selector subject
+   (pin); if not, the fade is right — record the answer on the item for the owner.
+5. **E193 (GO).** Completion inside a STRUCT INITIALIZER body: at `S { | }` and after a comma
+   offer the REMAINING fields (type as detail, `name = ` inserted) and the shorthand where a
+   local of that name is in scope; the head resolves through B190's `type-path`. Pins: at the
+   brace, after a comma, written fields excluded, a generic struct, a qualified head; the
+   playground reaches it.
+Sizing: M + S + S + S + S + S + M = L. Model: Opus. Owns vilan-ide `completion.rs`'s head-position
 completion + `AutoImportOrder` (css-37 owns `css_block_completions` + `CssPosition` in the same
 file — disjoint fns, named), the new table + generator + sync test, vilan-lsp document.rs's
 organizer deletion + the two readers + the exposure-warning record (one analyzer field, named).
@@ -479,8 +524,15 @@ backend must provide), AGENTS.md's dependency stop condition.
    the full set runs under `VILAN_NATIVE_DIFFERENTIAL=1` and in the seal — the shared
    `vilan-rt` build is cached under `CARGO_TARGET_TMPDIR`. Docs: `appendix/cli.md`'s
    `--backend` row; a `guide/native.md` stub stating scope and what is not there.
-Sizing: M + L (S1a = the first of S1's two to three lane-orders; S1b = the widened corpus is
-Order 38's). Model: Opus. Owns `target.rs`'s `Backend`, the two NEW crates, vilan-cli's backend
+4. **F18 sizing (GO; report only, no build).** The owner's next native product is a WEB
+   SERVER, before any UI. Your report carries a sizing section for it: what `vilan-rt` needs
+   beyond S1a (J6's executor — write its design here, R5; sockets/HTTP; SQLite or the `std::db`
+   shape; the file system; the rpc server's wire path), which `@process` std modules would
+   resolve for `native` unchanged and which need a native twin (`native` MUST join
+   `@process` for a server — F1 §8 Q2 revisited; name `check_library_contract`'s cost), and the
+   order S1b → executor → http → db → rpc with a size per step. The UI twin (S3–S5) and the
+   `native` PLATFORM's UI-shaped sites (S2, F15, E182) are NOT sized — they wait for F17.
+Sizing: M + L (S1a = the first of S1's two to three lane-orders; S1b + F18 are Order 38's). Model: Opus. Owns `target.rs`'s `Backend`, the two NEW crates, vilan-cli's backend
 validation and run arms (named), the escape rule's fns in analyzer.rs (named; C16), the new
 differential test, `guide/native.md`. Touches NOTHING in transformer.rs, `std`, the platform
 model (S2 is not yours; `infer_platform` stays binary until then).
@@ -579,7 +631,7 @@ rewrites. MERGED LAST, rebased by the integrator if a pin file conflicts.
 
 ## At the sweep (integrator, proposals)
 - Close: M71 D8 C1 (S2 landed; the determinism note points at C14 S4) · C16 · B351 B347 B349
-  B350 · A103 A102 B344 B345 · E189 E190 E185 B343 · E69 E184 E186 E187 E188 · M72 M73 M74
+  B350 B352 B353 (or record the probe) · E191 E192 E193 · A103 A102 B344 B345 · E189 E190 E185 B343 · E69 E184 E186 E187 E188 · M72 M73 M74
   M75 · N94 N95 N96 N87 N88 N89 N86 N97 · B346 N90 N91 N92 B342 · A101 E183 · F16 and C15 as
   DECIDED (their rules built in S1a — close or re-point per the lane's report) · J6 stays
   OPEN with its design section landed · C14 stays OPEN (S1–S3 landed; S4/S5 queued) · F1 stays
@@ -592,15 +644,23 @@ rewrites. MERGED LAST, rebased by the integrator if a pin file conflicts.
   (M72/M73 numbers).
 - Kolt at the owner's word: the css codemod over its blocks (the lane's script; re-census
   first); the B351 FIXME at views.vl:94 dropped (`let shell: View = …` → the direct form);
-  any B347 annotation; `vilan check` 0/0 and `vilan build` clean after.
+  any B347/B352 annotation; `vilan check` 0/0 and `vilan build` clean after. The kolt sweep's
+  STALE comments, migrated at the owner's word (go-items37.json lists them): overlay.vl:67–87
+  → `std::dom`'s `query_selector_all`/`observe_resize` (A59); views.vl:200's `[hidden]` HACK →
+  `View::show()` (A60); routes.vl:25 → `impl Route with FromPath` (A62); interact.vl:129 →
+  `std::math::Vec2` (A83); theme.vl:268's swap HACK → `{signal}` (B268); store.vl:97's `u53`
+  and :166's `Result<i53, str>` (A82; A107 verifies); scale_step.vl:12 → `Callable` (B340);
+  login.vl:71's fetch HACK → `std::fetch::post(url, body).send()`; login.vl:1's stale FIXME.
 - Goldens: regenerated once over the merged tree (native-a-37 moves them; css-37 must not);
   the lowering-identity harness and the S1 stylesheet-identity harness re-run there.
 - The ledger paper re-keyed from the lanes' `NEW` rows (next id 500 →); N94's gate runs over
   the merged tree.
 - Chronicle: Order 37 — cycle 55 entry at GO; MERGED and SEALED paragraphs; toolchain refresh
   both locations; reap ten worktrees.
-- Order 38's queue, written at the sweep: F1 S1b (the widened platform-free corpus) + S2 (the
-  `native` platform's eleven sites, F15's N-way gate, E182); J6's executor (built); C14 S4
+- Order 38's queue, written at the sweep: F1 S1b (the widened platform-free corpus); F18
+  native SERVERS (the owner's priority, sized by native-b-37) BEFORE S2 (the `native`
+  platform's UI-shaped sites, F15's N-way gate and E182 wait for the F17 conversation); J6's
+  executor (built); A104/A105/A106/A107/I4/I3 from the kolt sweep; C14 S4
   (the counted lowering on the Rust backend) + S5 (optional); C15's by-value capture
   optimisation with R3's measurement; N97's split if measured; M56/M57/M54; E121's remaining
   path; K14 at the cut; B348 (behind fn-coercion rule 2's instantiation); B298 (Q3); A94;
