@@ -3,19 +3,89 @@
  "order": "Order 37",
  "base": "d783fbf4",
  "lanes": {
-  "hygiene-37": ["N94", "N95", "N96", "N87", "N88", "N89", "N86", "N97 (measure + canary)"],
-  "dx-37": ["B346 (HIGH)", "N90 (HIGH)", "N91", "N92", "B342"],
-  "lazy-37": ["A103 (S3, differential-gated)", "B344", "B345", "A102 (R13)"],
-  "solver-37": ["B351", "B347", "B349", "B350", "B352 (GO)", "B353 (GO; probe)"],
-  "diagnostics-37": ["E189", "E190", "E185", "B343 (R9)", "E191 (GO)"],
-  "editor-37": ["E69 (ruled)", "E184", "E186", "E187", "E188", "E192 (GO)", "E193 (GO)"],
-  "perf-37": ["M72", "M73", "M74", "M75"],
-  "native-a-37": ["C14 S1 (M71)", "D8", "C14 S2 (C1 Weak)", "C14 S3", "R1 = (a)"],
-  "native-b-37": ["C16 (R7, first)", "F1 S1a (R2 amended, R3, R5, R6, R8)", "F16/C15 decided in S1a", "J6 design section", "F18 sizing (report)"],
-  "css-37": ["A101 (BREAKING; R10–R12)", "E183"]
+  "hygiene-37": [
+   "N94",
+   "N95",
+   "N96",
+   "N87",
+   "N88",
+   "N89",
+   "N86",
+   "N97 (measure + canary)"
+  ],
+  "dx-37": [
+   "B346 (HIGH)",
+   "N90 (HIGH)",
+   "N91",
+   "N92",
+   "B342"
+  ],
+  "lazy-37": [
+   "A103 (S3, differential-gated)",
+   "B344",
+   "B345",
+   "A102 (R13)"
+  ],
+  "solver-37": [
+   "B351",
+   "B347",
+   "B349",
+   "B350",
+   "B352 (GO)",
+   "B353 (GO; probe)"
+  ],
+  "diagnostics-37": [
+   "E189",
+   "E190",
+   "E185",
+   "B343 (R9)",
+   "E191 (GO)"
+  ],
+  "editor-37": [
+   "E69 (ruled)",
+   "E184",
+   "E186",
+   "E187",
+   "E188",
+   "E192 (GO)",
+   "E193 (GO)"
+  ],
+  "perf-37": [
+   "M72",
+   "M73",
+   "M74",
+   "M75"
+  ],
+  "native-a-37": [
+   "C14 S1 (M71)",
+   "D8",
+   "C14 S2 (C1 Weak)",
+   "C14 S3",
+   "R1 = (a)"
+  ],
+  "native-b-37": [
+   "C16 (R7, first)",
+   "F1 S1a (R2 amended, R3, R5, R6, R8)",
+   "F16/C15 decided in S1a",
+   "J6 design section",
+   "F18 sizing (report)"
+  ],
+  "css-37": [
+   "A101 (BREAKING; R10–R12)",
+   "E183"
+  ]
  },
  "merge_order": [
-  "hygiene-37", "dx-37", "lazy-37", "solver-37", "diagnostics-37", "editor-37", "perf-37", "native-a-37", "native-b-37", "css-37"
+  "hygiene-37",
+  "dx-37",
+  "lazy-37",
+  "solver-37",
+  "diagnostics-37",
+  "editor-37",
+  "perf-37",
+  "native-a-37",
+  "native-b-37",
+  "css-37"
  ],
  "rulings": {
   "R1": "C14 (a) — counted Shared + Weak at two std sites; S1–S3 this order",
@@ -32,7 +102,20 @@
   "R12": "A101 Q3: --name(..) admitted; var(\"--x\") on the value side",
   "R13": "A102: transfer a lazy cell only when state == done"
  },
- "filed_at_go": ["A104", "A105", "A106", "A107", "B352", "B353", "E191", "E192", "E193", "I4", "F17", "F18"],
+ "filed_at_go": [
+  "A104",
+  "A105",
+  "A106",
+  "A107",
+  "B352",
+  "B353",
+  "E191",
+  "E192",
+  "E193",
+  "I4",
+  "F17",
+  "F18"
+ ],
  "kolt_owed_at_the_owners_word": [
   "overlay.vl:67–87 → std::dom query_selector_all / observe_resize (A59)",
   "views.vl:200 [hidden] HACK → View::show() (A60)",
@@ -54,8 +137,49 @@
   "F1 S2 + F15 N-way gate + E182 — after the F17 conversation",
   "C14 S4 (counted lowering on the Rust backend) + S5 (optional instrument)",
   "C15 by-value capture optimisation with R3's measurement",
-  "A107 rpc void return", "A104 Result Json", "A105 bind_attr Option", "A106 style prelude (owner Q)", "I4 Default for containers", "I3 filter_map",
-  "N97's split if measured", "M56/M57/M54", "E121's remaining path", "K14 at the cut", "B348", "B298", "A94", "M60", "L20 (owner)",
+  "A107 rpc void return",
+  "A104 Result Json",
+  "A105 bind_attr Option",
+  "A106 style prelude (owner Q)",
+  "I4 Default for containers",
+  "I3 filter_map",
+  "N97's split if measured",
+  "M56/M57/M54",
+  "E121's remaining path",
+  "K14 at the cut",
+  "B348",
+  "B298",
+  "A94",
+  "M60",
+  "L20 (owner)",
   "the v0.41.0 cut (HELD — the owner's call)"
+ ],
+ "merged": {
+  "perf-37": "07eb16b7",
+  "native-b-37": "2de69376",
+  "editor-37": "16cab90b",
+  "diagnostics-37": "88261dda",
+  "hygiene-37": "4aa16957 (+tmpfs merge fix)",
+  "native-a-37": "ae0c2564 (+split golden)",
+  "solver-37": "4ee1003d (+split golden)",
+  "dx-37": "0996563b",
+  "lazy-37": "7d2cf8a5",
+  "css-37": "710e4790 (three hand folds; curated-list fix 56ae157a; E187 pin 710e4790)",
+  "tip": "710e4790",
+  "ledger_rows": "500–545 NEW (457 retired; 158/294/330 re-keyed)",
+  "sweep": "45 closed / 33 filed; tracker 108 open",
+  "reaped": "ten worktrees + local and remote lane branches (2026-09-17)"
+ },
+ "lane_reports_in_order": [
+  "perf-37",
+  "native-b-37",
+  "editor-37",
+  "diagnostics-37",
+  "hygiene-37",
+  "native-a-37",
+  "solver-37",
+  "dx-37 (resumed after the owner's rate limit)",
+  "css-37 (resumed)",
+  "lazy-37 (resumed)"
  ]
 }
