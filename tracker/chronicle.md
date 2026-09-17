@@ -2486,3 +2486,29 @@ E186–E188, E192 and E193; perf-37 M72–M75 (kolt's store.vl never cached); dx
 (B346, N90, N91, N92, B342); hygiene-37 N94–N97, N86–N89, first. The kolt sweep (46 comment lines)
 filed twelve items and found fourteen comments stale against std that shipped in Orders 30–32 — kolt's
 migrations at the owner's word. Ten Opus lanes; ledger next id 500; tracker 120 open at GO.
+
+**MERGED (2026-09-17) — all ten lanes at vilan next @710e4790.** perf-37 07eb16b7 (M72 — a `[service]`
+entry reaches the base cache, kolt's store.vl 482 → 196 ms CPU per keystroke; M75's indexes; M73 measured
+and re-pointed at M79; M74 measured, the factor stays); native-b-37 2de69376 (C16 — a view-capturing closure
+handed to a keeping callee is refused, C13's pin un-ignored; F1 S1a — `Backend::Rust`, the dependency-free
+`vilan-rt` and the `vilan-rust` emitter, 17 corpus programs byte-identical against JS and 0 differing, 51 of
+the 98 refusals being monomorphisation; the J6 executor designed; F18 sized — joining `@process` is free and
+the rpc server is extern-free); editor-37 16cab90b (E69's generated attribute table with an offline gate;
+E184; E186–E188; E192 a false positive that Organize Imports would have turned into a broken build; E193's
+head resolution); diagnostics-37 88261dda (E189's narrow rule at the root — kolt's pre-migration tree
+184 → 9 — with the broad gate built, measured and withheld for B279's soundness face; E190; E185 whose root
+cause is B354; B343 under R9; one hand fold in `analyze_over_world`); hygiene-37 4aa16957 (N94–N97, N86–N89
+— 34 ledger rows, the walk's frame measured at 42,464 bytes per level with a canary, `export const` was
+refused and is not; seven commits re-signed; one tmpfs merge fix for perf-37's new pins); native-a-37
+ae0c2564 (C14 S1–S3 under R1 — eight of nineteen cells, `Weak`, the two back edges weak, a match-capture
+aliasing miscompile found and fixed, the SCC exit test corrected as unachievable on JS; the split golden
+regenerated over the merged tree); solver-37 4ee1003d (B353 unsound and fixed — a method call in an
+unannotated closure body checked once; B351; B347's fill; B349; B350; B352's two bugs with two exhibits that
+do not reproduce; the split golden regenerated again); dx-37 0996563b (B346 — one toolchain root for `std`
+and `macro_std`; N90's `fmt` exit 2; N91 stale, the pin landed; N92's check cache out of the package; B342
+measured, the heading corrected); lazy-37 7d2cf8a5 (A103 behind a 304-program differential with zero
+observable differences, `Option::expect` new; B344; B345; A102 under R13); css-37 710e4790, last (A101 —
+declarations as calls over 227 blocks with no golden moved and three converter bugs fixed on the way; E183;
+three hand folds, the curated-list union's resurrected constant and an E187 pin re-spelled at the merge).
+Ledger rows 500–545 (457 retired; 158/294/330 re-keyed); the split golden regenerated twice; sweep 45 closed
+/ 33 filed; tracker 108 open. Seal and CI running on 710e4790.
