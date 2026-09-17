@@ -2512,3 +2512,17 @@ declarations as calls over 227 blocks with no golden moved and three converter b
 three hand folds, the curated-list union's resurrected constant and an E187 pin re-spelled at the merge).
 Ledger rows 500–545 (457 retired; 158/294/330 re-keyed); the split golden regenerated twice; sweep 45 closed
 / 33 filed; tracker 108 open. Seal and CI running on 710e4790.
+
+**SEALED (2026-09-17) at vilan next @31c13567.** CI 35266821255 green on all eleven jobs; the local seal green
+on the same tip (union 7,739/7,739, clippy, the Windows cross-check, audit, fmt, changelog parity 493/493)
+after two seal fixes: 84cacb87 (AGENTS.md's repo map names the two new crates; two scratch sites in
+split.rs; the native differential stages its corpus per process — its four tests had shared one directory
+and each began by deleting it) and 31c13567 (five Windows-only reds CI found where the local seal cannot
+look: the check-cache pins hashed the package path in Windows' extended-length form where the CLI does not
+— aligned on the CLI's own function — and the M75 shape pin read `/proc`, so it exists only on Linux).
+Toolchain refreshed in both locations (`vilan 0.40.0 (31c13567b)`). Ten worktrees and their branches
+reaped, local and remote. Ledger rows 500–545 (457 retired; 158/294/330 re-keyed); sweep 45 closed / 33
+filed; tracker 108 open. Two miscompiles fixed this order (B353's unchecked closure body; the match-capture
+aliasing under B267's walk) and one breaking surface landed (A101's declarations as calls). Order 38's queue,
+the rulings owed (B355's gate, A108's Wire receivers, the lazy gate's wording, the F17 conversation) and
+kolt's owed migrations are in `sweeps/order37/notes37.md` and `go-items37.json`.
