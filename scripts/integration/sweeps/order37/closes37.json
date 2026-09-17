@@ -2,49 +2,275 @@
  "date": "2026-09-17",
  "order": "Order 37",
  "closes": [
-  {"id": "M72", "lane": "perf-37", "commit": "d3903646", "text": "`base_cacheable` no longer excludes a `[service]` entry — the bypass predated the derive/macro hoist, a service expands through `expand_entry_over_world` after the store — and `std::rpc` joins the key's std seeds; kolt's store.vl 482 → 196 ms CPU per keystroke (−59 %), dist byte-identical; two pins"},
-  {"id": "M74", "lane": "perf-37", "commit": "f10988d2", "text": "MEASURED, no second factor: an entry-shaped world weighs 21.7× its recorded bytes against 24.9× for a resolved one — a 13 % over-charge, 2.6 MiB of kolt's 192 MiB budget, in the conservative direction; the factor stays 24; two shapes cannot be weighed in one process (allocator page reuse) — one shape per test process"},
-  {"id": "M75", "lane": "perf-37", "commit": "c160badb", "text": "three indexes (`carried_at`, `implementation_of_member`, the importer list) hoisted out of the collision × importer product; a shape pin at 1,500 statements / 250 members: scan 80 → 650 ms vs index 10 → 60 ms; the residual is `statement_sources`' one linear pass (M77)"},
-  {"id": "C16", "lane": "native-b-37", "commit": "e56b1227", "text": "a view-capturing closure handed to a callee that KEEPS it (stores, collects, returns, assigns, or passes on to a keeper) is refused with the callee named — an interprocedural retaining-positions summary asked only of view-capturing closure arguments; C13's pinned-ignored case un-ignored as the first exhibit; nothing in the estate fires; both direct shapes were already refused"},
-  {"id": "F16", "lane": "native-b-37", "commit": "7e245e39", "text": "DECIDED and built in F1 S1a: every closure TYPE lowers to `Rc<dyn Fn>` and a closure value read from a binding is retained per use (the probe's R-1 `E0382` reproduced and closed); the `impl Fn` half for only-called closures is deliberately not built until a measurement says the retain costs something — C16's `compute_retaining_positions` is the discriminator if wanted"},
-  {"id": "E69", "lane": "editor-37", "commit": "57598fad", "text": "attribute-name completion at `<tag |>` from a table GENERATED off a vendored extract of the WHATWG HTML and SVG 2 attribute indices (104 tags with own attributes, 31 globals, 1,645 per-tag pairs, 59 SVG presentation, 71 events as `on:` snippets), gated offline by a byte-for-byte sync test; unspellable names dropped, SVG `on…` rows routed to the event table, the SVG root read off the index; the desugar untouched"},
-  {"id": "E184", "lane": "editor-37", "commit": "e406978a", "text": "`AutoImportOrder::build` filters on `Program::exported_entities`/`curated_modules` under the uncurated-module exemption; `module_importables` is not called per keystroke; the four reclaim pins stay green"},
-  {"id": "E186", "lane": "editor-37", "commit": "1e117a6d", "text": "a whole-paragraph import run deletion takes its separator (the rule is 'was this a paragraph', in `Printer::organize_run`); five formatter pins + the lucide shape; four organizer pins that recorded the leading blank corrected"},
-  {"id": "E187", "lane": "editor-37", "commit": "0e4092ea", "text": "E177's Export fixes and E175's sibling reads go through `Document::sibling_text` — the open buffer first, disk second; `document_overlay_get` made pub; two pins red against the disk reader"},
-  {"id": "E188", "lane": "editor-37", "commit": "16ebbd44", "text": "`Program::exposed_private_types` records (source, span, entity) at `check_exposed_unexported_types`; the Export fix reads it and no longer declines — the item's 'two S in one file' is not expressible, the complement (a warning whose type the file never names) is what was pinned"},
-  {"id": "E192", "lane": "editor-37", "commit": "3f5946ad", "text": "VERDICT: a false positive, and a build-breaker — deleting the type import a selector's subject needs took kolt's views.vl from clean to five errors, and the fade and the prune are one predicate; a selector subject now counts as a use exactly when the selector survives; kolt's views.vl:2 FIXME can go"},
-  {"id": "E193", "lane": "editor-37", "commit": "03e58d8e", "text": "the premise was stale — E160 (Order 36) shipped struct-initializer completion and kolt's store.vl:238 shape is its pin; the live residue was the head resolved by a program-wide first-name scan, now the scope chain and, qualified, the namespace (`path_struct_id`); three pins incl. the playground"},
-  {"id": "E190", "lane": "diagnostics-37", "commit": "c6948b45", "text": "the B55 body-less refusal names the frame that asked (`emitting_stack` beside the `emitting` set; `bodyless_emissions` carries the requester) and renders in that frame's file — the CLI reads the note's SourceId instead of assuming the entry; row 330 edited; unit-tested construction (B351's reproduction no longer reaches it on kolt 0decf84)"},
-  {"id": "E185", "lane": "diagnostics-37", "commit": "2ab89967", "text": "'that module' is the module's spelled name and the refusal is placed on the `[derive(..)]` attribute — the root cause (a derive-synthesized body admits under the sentinel source) is B354; `AdmissionMiss` carries the importing body; the §3.5 pin asserts the name"},
-  {"id": "E189", "lane": "diagnostics-37", "commit": "6879cbb5", "text": "the NARROW rule at the root — the call-graph collector read operands off `function_calls`, so an unwired method call dropped everything inside it out of the graph; `Program::unwired_calls` feeds three rules (descend into an unwired call's operands; its subject joins `call_subject_entities`; a closure handed to it is a covered boundary): kolt's pre-migration tree 184 → 9 errors, the nine being the A99 steers; the BROAD gate was built, measured (139 → 1) and WITHHELD because it blinds B279's soundness pin — B355 is its precondition; four pins"},
-  {"id": "B343", "lane": "diagnostics-37", "commit": "f3f86783", "text": "R9: the `context` clause stays after the return type; the un-parenthesized closure-typed return carrying a clause is refused at `parse_function`'s head with both readings spelled and a parenthesizing quick fix, the clause taken off as it is reported (one diagnostic); both grammars guard `context` on both sides; `MISBOUND_RETURN_CLAUSE` (+1 rule site); appendix/editor.md row + count; contexts.md §3"},
-  {"id": "N94", "lane": "hygiene-37", "commit": "219c660e", "text": "both swallowed continuations fixed; gate `no_rowed_diagnostic_literal_swallows_a_line_continuation` over the ledger's enumeration and every TSV key (322 messages; threshold three spaces); the class outside the rowed surface is N98"},
-  {"id": "N95", "lane": "hygiene-37", "commit": "9fa452ce", "text": "`Program::hidden_impls` → `hidden_impls_pending` at six sites + a `debug_assert!` after the drain in `build_impl_admission`; pinned by turning the take into a clone"},
-  {"id": "N96", "lane": "hygiene-37", "commit": "9860e92b", "text": "check (3) widened to `Failure::new(FailureKind::_, <literal>)` and `Failure::unsupported(<literal>)`: 52 sites → 34 rows NEW (33 subjects + one envelope), 11 already rowed, 3 fenced as the host's own text (`MESSAGES_THAT_ARE_THE_HOSTS` with an expiry check); the `unsupported` family rowed on its subject; `KEYS_WITHOUT_A_FRAGMENT` re-keyed by full key; the two still-unreachable messages are N99"},
-  {"id": "N87", "lane": "hygiene-37", "commit": "91aab5e1", "text": "both spec reserved-word lists gated to `lexing::KEYWORDS` — §2.2, the normative one, was missing `lazy` (33 of 34); the tour's extractor shared; planted red four ways"},
-  {"id": "N88", "lane": "hygiene-37", "commit": "f7289fc4", "text": "17 std doc lines (reactive 8, rpc 8, math 1), browser/ui.vl's `child_relation` sentence, `place_swap`'s redundant `context owner_scope` annotation (B333 adopts it; std scan clean, corpus byte-identical), the two formatter layout pins re-spelled; gate `no_std_comment_names_a_retired_method` + `RETIREMENT_NOTES`; the wasm playground's missing steer is E198"},
-  {"id": "N89", "lane": "hygiene-37", "commit": "c816b2f9", "text": "the premise was wrong — `export const fun`/`export const let` were REFUSED outright (`export_takes` did not list `Node::Const`); six peels (parsing, formatter `needs_semicolon` + a `print_item` arm, lib.rs `node_declares` + the macro-world loop, analyzer `hoist_generated_declarations`, vilan-lsp `names_bound_in`), four consumers audited and deliberately not peeled; three pins + a compiling fence in spec/const.md §9.6"},
-  {"id": "N86", "lane": "hygiene-37", "commit": "1fd46341", "text": "88 scratch paths in 39 test files moved to `CARGO_TARGET_TMPDIR` through a shared `tests/scratch/mod.rs` (vilan-core and vilan-embedded-std entirely off /tmp; vilan-cli's `support`, corpus, watch_lifecycle + 24 suites); gate `no_test_file_writes_to_the_shared_tmpfs` naming the 38 unported suites BY FILE (N102); two binary-owned paths fenced after a self-inflicted timeout"},
-  {"id": "N97", "lane": "hygiene-37", "commit": "096cba99", "text": "MEASURED: 42,464 B per walk level in debug (gdb deltas and `VILAN_DEPTH_STATS` agree to the byte — `walk_expr_node_inner` subtracts 41,384 B of coalesced locals in one `sub rsp`), ~4,650 B in release; the canary `a_thirty_level_chain_still_fits_libtests_own_two_mib_thread` (a method chain, 75 % of 2 MiB, planted red at 1 MiB); AGENTS.md gates point 7; the walk is NOT split — the cost is one function's locals, not an arm"},
-  {"id": "M71", "lane": "native-a-37", "commit": "c5b98491", "text": "EIGHT of the 19 frame-scoped cells retired (rpc_server's four latches, rpc.vl's four locals) — std `Shared::new(` 136 → 128, ≈587 Ir per cell per round under `--jitless`, JIT indistinguishable; the ELEVEN json/binary cells are blocked by the Wire visitor's by-value receivers (A108, a breaking item) and fs.vl's cursor by an await across the view; the `shared_census` pin (a committed per-file count with classes) holds the line"},
-  {"id": "D8", "lane": "native-a-37", "commit": "c5b98491", "text": "shared.vl's headnote and the memory-model tour rewritten to what the census found: `Shared` is the counted box for diffuse ownership, `Arena`/`Handle` the tier for graphs and stable identities; 0 of 154 sites followed the old advice"},
-  {"id": "C1", "lane": "native-a-37", "commit": "1379ccdd", "text": "`Weak<T>` lands: `Shared::downgrade(&self)`, `Weak::upgrade(self): Option<Shared<T>>`, `Weak::get(&self): Option<&T> borrows self`; JS lowering allocates no wrapper (`downgrade` = the receiver, `upgrade` = `[0, cell]`, `get` = `[0, cell.v]`) so a native representation stays free; the one missing analyzer seam (a bodiless declaration cannot say `Option<&T>` where a checker sees it) closed for this one extern; 18 pins; the deterministic `None` arrives with C14 S4; a match-capture aliasing miscompile in B267's walk found and fixed on the way"},
-  {"id": "B351", "lane": "solver-37", "commit": "b20498ed", "text": "`bind_callee_own_generics_from_expectation` declines a binding whose VALUE is another call's generic (the hole's expectation `View::child<C>`'s `C` was bound into `run<U>`'s `U`, which `child` then took for its own); the split is METHOD vs FREE generic, not external vs user; the reproduction and the five variants that compiled pinned; kolt's views.vl:94 workaround can go"},
-  {"id": "B347", "lane": "solver-37", "commit": "054c889e", "text": "the seam was the FILL, not the binding: `infer_type_path`'s `Expr::Closure` arm substituted the expected parameter type only when it was a bare `Type::Generic`, so `|SignalCell<T>| C` went into the slot as written — now structural; the four estate annotations dropped; three pins; the `owner_scope` cascade did not appear on the rebuilt shape (pinned at one error)"},
-  {"id": "B349", "lane": "solver-37", "commit": "42175eb7", "text": "`walk_module_binding` sets `current_admitting_file` at both transformer walks; no estate program changes (three shapes probed, refused before and after); pinned"},
-  {"id": "B350", "lane": "solver-37", "commit": "e975dece", "text": "the `#`-on-an-exported-impl-selector warning in `build_impl_admission` (silent when the selector reached nothing and when the block is genuinely hidden); one row NEW; the existing quick-fix arm already reads it; three pins"},
-  {"id": "B352", "lane": "solver-37", "commit": "58e852e5", "text": "exhibit (2) was two bugs: a binding inferred from an argument overwrote one the path had fixed (`None` types as the bare enum with no hole — `record_generic_binding`/`binding_is_weaker` decline a strictly weaker answer; the root fix is B357), and a TRAIT subject's written type arguments were INERT (`Signal<i32>::new(\"x\")` compiled — `seed_trait_static_subject_bindings`; the sweep is B356); exhibits (1) and (3) do NOT reproduce — kolt's theme.vl:269 annotation and views.vl:212 comment are stale; one split golden shares a body it used to split"},
-  {"id": "B353", "lane": "solver-37", "commit": "dbea74f3", "text": "UNSOUND, confirmed and fixed: a METHOD call inside an unannotated closure body was type-checked once while the parameter's one-shot slot was `Unknown`, answered `Resolved`, and never re-asked — a string landed in a `SignalCell<bool>` and an `Option<List<i53>>` in a `SignalCell<List<i53>>` at runtime; `resolve_method_arg_check` defers on an unfilled closure parameter, mirroring the free path; three pins; the minimal `set(Some(..))` shape was already refused"},
-  {"id": "B346", "lane": "dx-37", "commit": "6615f4f3", "text": "the second discovery path was `resolve_macro_std`, which derived `macro_std` from the resolved std's filesystem position — a relocated copy resolved std with no macros behind it, which is exactly the derive load-ordering symptom; `manifest::toolchain_root`/`macro_std_dir`/`split_toolchain` make one root answer for both packages and refuse a second root by design; both missing-macro_std messages name the std and the path looked for (two rows NEW; rows 158/294 reworded); pinned with a byte-identical relocated copy in its own process"},
-  {"id": "N90", "lane": "dx-37", "commit": "8e9e56db", "text": "`formatter::reprint` returns a `Decline { reason, construct, line }` where `format` answered the original bytes; `vilan fmt` prints `declined <file>:<line>  <what it met>` and exits 2 (distinct from 1, outranks it, holds in write mode); the CI leg comment and appendix/cli.md state the three outcomes; six formatter pins + a new `fmt_declines` binary (five); the plant was `macro`"},
-  {"id": "N91", "lane": "dx-37", "commit": "b773f4a4", "text": "the item was STALE — the printer already had the `MacroFun` arm and the export wrapper, and `vilan fmt --check vilan/std` was green and honest; what landed is the pin: hash/json/rpc join `formatter::idempotency` (the fifteen `export macro fun`s) and `assert_fixed_point` reads `reprint` so a bailing fixture fails by name"},
-  {"id": "N92", "lane": "dx-37", "commit": "ab7a08c3", "text": "`vilan check` writes nothing into the package: its macro-expansion table lives under `~/.vilan/check-cache/<hash>` (build keeps `dist/.cache` per N63; `vilan cache prune` sweeps the new root), switched by `CompileGoal::emits_artifacts`; the split test loader skips directories with a message; three pins (one renamed); `vilan run`'s sibling is N103"},
-  {"id": "B342", "lane": "dx-37", "commit": "48e129e1", "text": "MEASURED: listing every loaded module's child directory costs 2.9 ms per analysis on kolt + std (identical at loadavg 105 and 13), paid on every keystroke, to announce an ambiguity the first import announces anyway — the heading is corrected instead: the overclaim lived in `refuse_shadowed_submodules`'s doc and a test named for a shape its own fixture contradicted (renamed); a new pin records the bound"},
-  {"id": "A103", "lane": "lazy-37", "commit": "e493ffb1", "text": "`Option::expect(own self, lazy message: str)` (NEW — Option had no `expect`), `Option::unwrap_or(own self, lazy fallback: T)`, `Result::expect`/`unwrap_or` take their argument lazily; `unwrap_or_else` untouched; the clone stays in the callee. THE GATE: a 304-program differential (131 corpus under node, 155 docs fences, 18 packaged trees, kolt built both ways) — 0 observable differences, 211 call sites examined (every non-literal fallback a bare name), emitted JS moved at 36 programs → 16 corpus goldens regenerated; nine pins; `Result::expect_err` is A109, the inert-argument elision M81"},
-  {"id": "B344", "lane": "lazy-37", "commit": "bc7aaf7a", "text": "three shapes compiled clean and should not have — a resource the caller PRODUCES in the lazy position, the indirect hop through a generic's own `T`, a module-level resource named bare; `lazy_argument_type_id` (the analyzer's twin of B328's fix) plus `check_lazy_parameters_at_instantiation` driven from `check_resource_generic_instantiations`; a resource LOCAL stays R9's and an already-reported instantiation is silent (`b63` asserts one diagnostic); one row NEW; five pins; 0 estate differences"},
-  {"id": "B345", "lane": "lazy-37", "commit": "6191ccfa", "text": "`scan_closure_view_captures`'s `Call` arm walks the subject before the arguments (a computed callee carries the inner expression there); two pins red first; 304 programs + kolt: nothing newly fires, so `fix`"},
-  {"id": "A102", "lane": "lazy-37", "commit": "95058794", "text": "R13: a fourth `TransferForm::LazyValue` — a `lazy let` of a value-transferable type crosses a hot swap only once forced (`__hmr_adopt_lazy` writes the carried value into the NEW bundle's cell and marks it done; the exposing getter `__hmr_lazy_value` throws when the cell is not done, which the swap's capture already skips — pending/poisoned stay Excluded with no new protocol answer); a lazy `SignalCell`/`Shared` stays excluded; three pins + the round harness (forced 41 carries, dormant runs B's initializer once)"},
-  {"id": "A101", "lane": "css-37", "commit": "b32c6131", "text": "the css block's declarations are CALLS (928ccedb the grammar and lowering, e958e948 the tooling, a7e80119 the hand-migrated fixtures, b32c6131 the codemod): `declaration = property \"(\" [ expression { \",\" expression } ] \")\" \";\"`, the value/hole productions deleted, one `.raw` per declaration with N arguments space-joined in the desugar (R10), `var(name: str)` + `piece` in the style prelude (R12), `!important` kept off the argument tokens, row 457 (`#` is not a colour) retired and one flagship row NEW at the `:`; the codemod over 227 blocks / 269 declarations (121 pass-through, 18 typed, 118 string, 4 joined, 8 i-string — R11) with NO `.css` golden moved (the lowering identity holds); the census corrected from 138 to 227; `lexing.rs` untouched (there never were css value tokens); three pre-existing converter bugs found and fixed (B358); kolt's 42 blocks / 59 declarations by the handed-back script at the owner's word; the breaking row's quick fix is E201"},
-  {"id": "E183", "lane": "css-37", "commit": "600d393b", "text": "`CssPosition::Condition` → `DottedHead`: the combinators first, then every reachable `impl Style` method from the analyzed impl table (std, the program, siblings) filtered by the B318 bit under the uncurated exemption, signature as detail, `name() { }` vs `name();`; three lsp pins and the first css block in vilan-wasm (the playground reaches it)"}
+  {
+   "id": "M72",
+   "lane": "perf-37",
+   "commit": "d3903646",
+   "text": "`base_cacheable` no longer excludes a `[service]` entry — the bypass predated the derive/macro hoist, a service expands through `expand_entry_over_world` after the store — and `std::rpc` joins the key's std seeds; kolt's store.vl 482 → 196 ms CPU per keystroke (−59 %), dist byte-identical; two pins"
+  },
+  {
+   "id": "M74",
+   "lane": "perf-37",
+   "commit": "f10988d2",
+   "text": "MEASURED, no second factor: an entry-shaped world weighs 21.7× its recorded bytes against 24.9× for a resolved one — a 13 % over-charge, 2.6 MiB of kolt's 192 MiB budget, in the conservative direction; the factor stays 24; two shapes cannot be weighed in one process (allocator page reuse) — one shape per test process"
+  },
+  {
+   "id": "M75",
+   "lane": "perf-37",
+   "commit": "c160badb",
+   "text": "three indexes (`carried_at`, `implementation_of_member`, the importer list) hoisted out of the collision × importer product; a shape pin at 1,500 statements / 250 members: scan 80 → 650 ms vs index 10 → 60 ms; the residual is `statement_sources`' one linear pass (M77)"
+  },
+  {
+   "id": "C16",
+   "lane": "native-b-37",
+   "commit": "e56b1227",
+   "text": "a view-capturing closure handed to a callee that KEEPS it (stores, collects, returns, assigns, or passes on to a keeper) is refused with the callee named — an interprocedural retaining-positions summary asked only of view-capturing closure arguments; C13's pinned-ignored case un-ignored as the first exhibit; nothing in the estate fires; both direct shapes were already refused"
+  },
+  {
+   "id": "F16",
+   "lane": "native-b-37",
+   "commit": "7e245e39",
+   "text": "DECIDED and built in F1 S1a: every closure TYPE lowers to `Rc<dyn Fn>` and a closure value read from a binding is retained per use (the probe's R-1 `E0382` reproduced and closed); the `impl Fn` half for only-called closures is deliberately not built until a measurement says the retain costs something — C16's `compute_retaining_positions` is the discriminator if wanted"
+  },
+  {
+   "id": "E69",
+   "lane": "editor-37",
+   "commit": "57598fad",
+   "text": "attribute-name completion at `<tag |>` from a table GENERATED off a vendored extract of the WHATWG HTML and SVG 2 attribute indices (104 tags with own attributes, 31 globals, 1,645 per-tag pairs, 59 SVG presentation, 71 events as `on:` snippets), gated offline by a byte-for-byte sync test; unspellable names dropped, SVG `on…` rows routed to the event table, the SVG root read off the index; the desugar untouched"
+  },
+  {
+   "id": "E184",
+   "lane": "editor-37",
+   "commit": "e406978a",
+   "text": "`AutoImportOrder::build` filters on `Program::exported_entities`/`curated_modules` under the uncurated-module exemption; `module_importables` is not called per keystroke; the four reclaim pins stay green"
+  },
+  {
+   "id": "E186",
+   "lane": "editor-37",
+   "commit": "1e117a6d",
+   "text": "a whole-paragraph import run deletion takes its separator (the rule is 'was this a paragraph', in `Printer::organize_run`); five formatter pins + the lucide shape; four organizer pins that recorded the leading blank corrected"
+  },
+  {
+   "id": "E187",
+   "lane": "editor-37",
+   "commit": "0e4092ea",
+   "text": "E177's Export fixes and E175's sibling reads go through `Document::sibling_text` — the open buffer first, disk second; `document_overlay_get` made pub; two pins red against the disk reader"
+  },
+  {
+   "id": "E188",
+   "lane": "editor-37",
+   "commit": "16ebbd44",
+   "text": "`Program::exposed_private_types` records (source, span, entity) at `check_exposed_unexported_types`; the Export fix reads it and no longer declines — the item's 'two S in one file' is not expressible, the complement (a warning whose type the file never names) is what was pinned"
+  },
+  {
+   "id": "E192",
+   "lane": "editor-37",
+   "commit": "3f5946ad",
+   "text": "VERDICT: a false positive, and a build-breaker — deleting the type import a selector's subject needs took kolt's views.vl from clean to five errors, and the fade and the prune are one predicate; a selector subject now counts as a use exactly when the selector survives; kolt's views.vl:2 FIXME can go"
+  },
+  {
+   "id": "E193",
+   "lane": "editor-37",
+   "commit": "03e58d8e",
+   "text": "the premise was stale — E160 (Order 36) shipped struct-initializer completion and kolt's store.vl:238 shape is its pin; the live residue was the head resolved by a program-wide first-name scan, now the scope chain and, qualified, the namespace (`path_struct_id`); three pins incl. the playground"
+  },
+  {
+   "id": "E190",
+   "lane": "diagnostics-37",
+   "commit": "c6948b45",
+   "text": "the B55 body-less refusal names the frame that asked (`emitting_stack` beside the `emitting` set; `bodyless_emissions` carries the requester) and renders in that frame's file — the CLI reads the note's SourceId instead of assuming the entry; row 330 edited; unit-tested construction (B351's reproduction no longer reaches it on kolt 0decf84)"
+  },
+  {
+   "id": "E185",
+   "lane": "diagnostics-37",
+   "commit": "2ab89967",
+   "text": "'that module' is the module's spelled name and the refusal is placed on the `[derive(..)]` attribute — the root cause (a derive-synthesized body admits under the sentinel source) is B354; `AdmissionMiss` carries the importing body; the §3.5 pin asserts the name"
+  },
+  {
+   "id": "E189",
+   "lane": "diagnostics-37",
+   "commit": "6879cbb5",
+   "text": "the NARROW rule at the root — the call-graph collector read operands off `function_calls`, so an unwired method call dropped everything inside it out of the graph; `Program::unwired_calls` feeds three rules (descend into an unwired call's operands; its subject joins `call_subject_entities`; a closure handed to it is a covered boundary): kolt's pre-migration tree 184 → 9 errors, the nine being the A99 steers; the BROAD gate was built, measured (139 → 1) and WITHHELD because it blinds B279's soundness pin — B355 is its precondition; four pins"
+  },
+  {
+   "id": "B343",
+   "lane": "diagnostics-37",
+   "commit": "f3f86783",
+   "text": "R9: the `context` clause stays after the return type; the un-parenthesized closure-typed return carrying a clause is refused at `parse_function`'s head with both readings spelled and a parenthesizing quick fix, the clause taken off as it is reported (one diagnostic); both grammars guard `context` on both sides; `MISBOUND_RETURN_CLAUSE` (+1 rule site); appendix/editor.md row + count; contexts.md §3"
+  },
+  {
+   "id": "N94",
+   "lane": "hygiene-37",
+   "commit": "219c660e",
+   "text": "both swallowed continuations fixed; gate `no_rowed_diagnostic_literal_swallows_a_line_continuation` over the ledger's enumeration and every TSV key (322 messages; threshold three spaces); the class outside the rowed surface is N98"
+  },
+  {
+   "id": "N95",
+   "lane": "hygiene-37",
+   "commit": "9fa452ce",
+   "text": "`Program::hidden_impls` → `hidden_impls_pending` at six sites + a `debug_assert!` after the drain in `build_impl_admission`; pinned by turning the take into a clone"
+  },
+  {
+   "id": "N96",
+   "lane": "hygiene-37",
+   "commit": "9860e92b",
+   "text": "check (3) widened to `Failure::new(FailureKind::_, <literal>)` and `Failure::unsupported(<literal>)`: 52 sites → 34 rows NEW (33 subjects + one envelope), 11 already rowed, 3 fenced as the host's own text (`MESSAGES_THAT_ARE_THE_HOSTS` with an expiry check); the `unsupported` family rowed on its subject; `KEYS_WITHOUT_A_FRAGMENT` re-keyed by full key; the two still-unreachable messages are N99"
+  },
+  {
+   "id": "N87",
+   "lane": "hygiene-37",
+   "commit": "91aab5e1",
+   "text": "both spec reserved-word lists gated to `lexing::KEYWORDS` — §2.2, the normative one, was missing `lazy` (33 of 34); the tour's extractor shared; planted red four ways"
+  },
+  {
+   "id": "N88",
+   "lane": "hygiene-37",
+   "commit": "f7289fc4",
+   "text": "17 std doc lines (reactive 8, rpc 8, math 1), browser/ui.vl's `child_relation` sentence, `place_swap`'s redundant `context owner_scope` annotation (B333 adopts it; std scan clean, corpus byte-identical), the two formatter layout pins re-spelled; gate `no_std_comment_names_a_retired_method` + `RETIREMENT_NOTES`; the wasm playground's missing steer is E198"
+  },
+  {
+   "id": "N89",
+   "lane": "hygiene-37",
+   "commit": "c816b2f9",
+   "text": "the premise was wrong — `export const fun`/`export const let` were REFUSED outright (`export_takes` did not list `Node::Const`); six peels (parsing, formatter `needs_semicolon` + a `print_item` arm, lib.rs `node_declares` + the macro-world loop, analyzer `hoist_generated_declarations`, vilan-lsp `names_bound_in`), four consumers audited and deliberately not peeled; three pins + a compiling fence in spec/const.md §9.6"
+  },
+  {
+   "id": "N86",
+   "lane": "hygiene-37",
+   "commit": "1fd46341",
+   "text": "88 scratch paths in 39 test files moved to `CARGO_TARGET_TMPDIR` through a shared `tests/scratch/mod.rs` (vilan-core and vilan-embedded-std entirely off /tmp; vilan-cli's `support`, corpus, watch_lifecycle + 24 suites); gate `no_test_file_writes_to_the_shared_tmpfs` naming the 38 unported suites BY FILE (N102); two binary-owned paths fenced after a self-inflicted timeout"
+  },
+  {
+   "id": "N97",
+   "lane": "hygiene-37",
+   "commit": "096cba99",
+   "text": "MEASURED: 42,464 B per walk level in debug (gdb deltas and `VILAN_DEPTH_STATS` agree to the byte — `walk_expr_node_inner` subtracts 41,384 B of coalesced locals in one `sub rsp`), ~4,650 B in release; the canary `a_thirty_level_chain_still_fits_libtests_own_two_mib_thread` (a method chain, 75 % of 2 MiB, planted red at 1 MiB); AGENTS.md gates point 7; the walk is NOT split — the cost is one function's locals, not an arm"
+  },
+  {
+   "id": "M71",
+   "lane": "native-a-37",
+   "commit": "c5b98491",
+   "text": "EIGHT of the 19 frame-scoped cells retired (rpc_server's four latches, rpc.vl's four locals) — std `Shared::new(` 136 → 128, ≈587 Ir per cell per round under `--jitless`, JIT indistinguishable; the ELEVEN json/binary cells are blocked by the Wire visitor's by-value receivers (A108, a breaking item) and fs.vl's cursor by an await across the view; the `shared_census` pin (a committed per-file count with classes) holds the line"
+  },
+  {
+   "id": "D8",
+   "lane": "native-a-37",
+   "commit": "c5b98491",
+   "text": "shared.vl's headnote and the memory-model tour rewritten to what the census found: `Shared` is the counted box for diffuse ownership, `Arena`/`Handle` the tier for graphs and stable identities; 0 of 154 sites followed the old advice"
+  },
+  {
+   "id": "C1",
+   "lane": "native-a-37",
+   "commit": "1379ccdd",
+   "text": "`Weak<T>` lands: `Shared::downgrade(&self)`, `Weak::upgrade(self): Option<Shared<T>>`, `Weak::get(&self): Option<&T> borrows self`; JS lowering allocates no wrapper (`downgrade` = the receiver, `upgrade` = `[0, cell]`, `get` = `[0, cell.v]`) so a native representation stays free; the one missing analyzer seam (a bodiless declaration cannot say `Option<&T>` where a checker sees it) closed for this one extern; 18 pins; the deterministic `None` arrives with C14 S4; a match-capture aliasing miscompile in B267's walk found and fixed on the way"
+  },
+  {
+   "id": "B351",
+   "lane": "solver-37",
+   "commit": "b20498ed",
+   "text": "`bind_callee_own_generics_from_expectation` declines a binding whose VALUE is another call's generic (the hole's expectation `View::child<C>`'s `C` was bound into `run<U>`'s `U`, which `child` then took for its own); the split is METHOD vs FREE generic, not external vs user; the reproduction and the five variants that compiled pinned; kolt's views.vl:94 workaround can go"
+  },
+  {
+   "id": "B347",
+   "lane": "solver-37",
+   "commit": "054c889e",
+   "text": "the seam was the FILL, not the binding: `infer_type_path`'s `Expr::Closure` arm substituted the expected parameter type only when it was a bare `Type::Generic`, so `|SignalCell<T>| C` went into the slot as written — now structural; the four estate annotations dropped; three pins; the `owner_scope` cascade did not appear on the rebuilt shape (pinned at one error)"
+  },
+  {
+   "id": "B349",
+   "lane": "solver-37",
+   "commit": "42175eb7",
+   "text": "`walk_module_binding` sets `current_admitting_file` at both transformer walks; no estate program changes (three shapes probed, refused before and after); pinned"
+  },
+  {
+   "id": "B350",
+   "lane": "solver-37",
+   "commit": "e975dece",
+   "text": "the `#`-on-an-exported-impl-selector warning in `build_impl_admission` (silent when the selector reached nothing and when the block is genuinely hidden); one row NEW; the existing quick-fix arm already reads it; three pins"
+  },
+  {
+   "id": "B352",
+   "lane": "solver-37",
+   "commit": "58e852e5",
+   "text": "exhibit (2) was two bugs: a binding inferred from an argument overwrote one the path had fixed (`None` types as the bare enum with no hole — `record_generic_binding`/`binding_is_weaker` decline a strictly weaker answer; the root fix is B357), and a TRAIT subject's written type arguments were INERT (`Signal<i32>::new(\"x\")` compiled — `seed_trait_static_subject_bindings`; the sweep is B356); exhibits (1) and (3) do NOT reproduce — kolt's theme.vl:269 annotation and views.vl:212 comment are stale; one split golden shares a body it used to split"
+  },
+  {
+   "id": "B353",
+   "lane": "solver-37",
+   "commit": "dbea74f3",
+   "text": "UNSOUND, confirmed and fixed: a METHOD call inside an unannotated closure body was type-checked once while the parameter's one-shot slot was `Unknown`, answered `Resolved`, and never re-asked — a string landed in a `SignalCell<bool>` and an `Option<List<i53>>` in a `SignalCell<List<i53>>` at runtime; `resolve_method_arg_check` defers on an unfilled closure parameter, mirroring the free path; three pins; the minimal `set(Some(..))` shape was already refused"
+  },
+  {
+   "id": "B346",
+   "lane": "dx-37",
+   "commit": "6615f4f3",
+   "text": "the second discovery path was `resolve_macro_std`, which derived `macro_std` from the resolved std's filesystem position — a relocated copy resolved std with no macros behind it, which is exactly the derive load-ordering symptom; `manifest::toolchain_root`/`macro_std_dir`/`split_toolchain` make one root answer for both packages and refuse a second root by design; both missing-macro_std messages name the std and the path looked for (two rows NEW; rows 158/294 reworded); pinned with a byte-identical relocated copy in its own process"
+  },
+  {
+   "id": "N90",
+   "lane": "dx-37",
+   "commit": "8e9e56db",
+   "text": "`formatter::reprint` returns a `Decline { reason, construct, line }` where `format` answered the original bytes; `vilan fmt` prints `declined <file>:<line>  <what it met>` and exits 2 (distinct from 1, outranks it, holds in write mode); the CI leg comment and appendix/cli.md state the three outcomes; six formatter pins + a new `fmt_declines` binary (five); the plant was `macro`"
+  },
+  {
+   "id": "N91",
+   "lane": "dx-37",
+   "commit": "b773f4a4",
+   "text": "the item was STALE — the printer already had the `MacroFun` arm and the export wrapper, and `vilan fmt --check vilan/std` was green and honest; what landed is the pin: hash/json/rpc join `formatter::idempotency` (the fifteen `export macro fun`s) and `assert_fixed_point` reads `reprint` so a bailing fixture fails by name"
+  },
+  {
+   "id": "N92",
+   "lane": "dx-37",
+   "commit": "ab7a08c3",
+   "text": "`vilan check` writes nothing into the package: its macro-expansion table lives under `~/.vilan/check-cache/<hash>` (build keeps `dist/.cache` per N63; `vilan cache prune` sweeps the new root), switched by `CompileGoal::emits_artifacts`; the split test loader skips directories with a message; three pins (one renamed); `vilan run`'s sibling is N103"
+  },
+  {
+   "id": "B342",
+   "lane": "dx-37",
+   "commit": "48e129e1",
+   "text": "MEASURED: listing every loaded module's child directory costs 2.9 ms per analysis on kolt + std (identical at loadavg 105 and 13), paid on every keystroke, to announce an ambiguity the first import announces anyway — the heading is corrected instead: the overclaim lived in `refuse_shadowed_submodules`'s doc and a test named for a shape its own fixture contradicted (renamed); a new pin records the bound"
+  },
+  {
+   "id": "A103",
+   "lane": "lazy-37",
+   "commit": "e493ffb1",
+   "text": "`Option::expect(own self, lazy message: str)` (NEW — Option had no `expect`), `Option::unwrap_or(own self, lazy fallback: T)`, `Result::expect`/`unwrap_or` take their argument lazily; `unwrap_or_else` untouched; the clone stays in the callee. THE GATE: a 304-program differential (131 corpus under node, 155 docs fences, 18 packaged trees, kolt built both ways) — 0 observable differences, 211 call sites examined (every non-literal fallback a bare name), emitted JS moved at 36 programs → 16 corpus goldens regenerated; nine pins; `Result::expect_err` is A109, the inert-argument elision M81"
+  },
+  {
+   "id": "B344",
+   "lane": "lazy-37",
+   "commit": "bc7aaf7a",
+   "text": "three shapes compiled clean and should not have — a resource the caller PRODUCES in the lazy position, the indirect hop through a generic's own `T`, a module-level resource named bare; `lazy_argument_type_id` (the analyzer's twin of B328's fix) plus `check_lazy_parameters_at_instantiation` driven from `check_resource_generic_instantiations`; a resource LOCAL stays R9's and an already-reported instantiation is silent (`b63` asserts one diagnostic); one row NEW; five pins; 0 estate differences"
+  },
+  {
+   "id": "B345",
+   "lane": "lazy-37",
+   "commit": "6191ccfa",
+   "text": "`scan_closure_view_captures`'s `Call` arm walks the subject before the arguments (a computed callee carries the inner expression there); two pins red first; 304 programs + kolt: nothing newly fires, so `fix`"
+  },
+  {
+   "id": "A102",
+   "lane": "lazy-37",
+   "commit": "95058794",
+   "text": "R13: a fourth `TransferForm::LazyValue` — a `lazy let` of a value-transferable type crosses a hot swap only once forced (`__hmr_adopt_lazy` writes the carried value into the NEW bundle's cell and marks it done; the exposing getter `__hmr_lazy_value` throws when the cell is not done, which the swap's capture already skips — pending/poisoned stay Excluded with no new protocol answer); a lazy `SignalCell`/`Shared` stays excluded; three pins + the round harness (forced 41 carries, dormant runs B's initializer once)"
+  },
+  {
+   "id": "A101",
+   "lane": "css-37",
+   "commit": "b32c6131",
+   "text": "the css block's declarations are CALLS (928ccedb the grammar and lowering, e958e948 the tooling, a7e80119 the hand-migrated fixtures, b32c6131 the codemod): `declaration = property \"(\" [ expression { \",\" expression } ] \")\" \";\"`, the value/hole productions deleted, one `.raw` per declaration with N arguments space-joined in the desugar (R10), `var(name: str)` + `piece` in the style prelude (R12), `!important` kept off the argument tokens, row 457 (`#` is not a colour) retired and one flagship row NEW at the `:`; the codemod over 227 blocks / 269 declarations (121 pass-through, 18 typed, 118 string, 4 joined, 8 i-string — R11) with NO `.css` golden moved (the lowering identity holds); the census corrected from 138 to 227; `lexing.rs` untouched (there never were css value tokens); three pre-existing converter bugs found and fixed (B358); kolt's 42 blocks / 59 declarations by the handed-back script at the owner's word; the breaking row's quick fix is E201"
+  },
+  {
+   "id": "E183",
+   "lane": "css-37",
+   "commit": "600d393b",
+   "text": "`CssPosition::Condition` → `DottedHead`: the combinators first, then every reachable `impl Style` method from the analyzed impl table (std, the program, siblings) filtered by the B318 bit under the uncurated exemption, signature as detail, `name() { }` vs `name();`; three lsp pins and the first css block in vilan-wasm (the playground reaches it)"
+  },
+  {
+   "id": "B358",
+   "lane": "css-37",
+   "commit": "928ccedb",
+   "text": "filed as the record of three css-block defects live at d783fbf4 and fixed in-lane: the css→chain refactor's `Binary` arm produced an uncompilable block (deleted), the block→chain direction's mixed values (dissolved by A101), and a `css` block inside a declaration's value reaching the analyzer undesugared (`build_value` now desugars; pinned `a_block_inside_a_declarations_argument_is_lowered`)"
+  }
  ]
 }
