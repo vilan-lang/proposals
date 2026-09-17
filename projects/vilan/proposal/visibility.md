@@ -1212,3 +1212,21 @@ fmt --check` reads a bailed file as already-formatted. §6's own numbers are
 stale by three orders: std is 741 declarations by the manifest's grep, 856
 counting every declaration kind, and its manifest now carries a recipe that
 survives the marker. `::*` is NOT built and not documented.
+
+## 16. Order 37 notes (2026-09-17)
+
+- **E185 / B354.** The S4 monomorphization refusal printed `that module` because a
+  `[derive(..)]`-synthesized body's `current_admitting_file` is the sentinel
+  `DERIVED_SOURCE`, outside `sources`; diagnostics-37 threads the importing body through
+  `AdmissionMiss` and places the refusal on the derive attribute. The rule behind it is
+  worse than the message: a derived visitor resolves its members under the sentinel, so
+  §3.5's export gate hides every non-exported impl from every derived body — which is why
+  the Order 36 sweep had to export std's codec blocks. Filed as **B354** (HIGH); the
+  curation those blocks received should be re-examined when it lands.
+- **B349.** A module-level initializer now resolves under the file that DECLARES it
+  (`walk_module_binding` sets the admitting file at both transformer walks); no estate
+  program changed. §3.5's rule has no seam left at the module body.
+- **B350.** The `#` on an `(impl …)` selector whose blocks the module exports is redundant
+  and says so — the impl twin of S2's warning, one row, the existing delete-the-`#` fix.
+- **E184.** `AutoImportOrder::build` filters on `Program::exported_entities` /
+  `curated_modules` — the fourth consumer §14 left to the vilan-ide wiring.

@@ -599,7 +599,11 @@ forfeits (1)–(3), the reasons this session exists). Async drop (out,
 not deferred — claims-and-epochs). Aliasing-XOR-mutability (rejected
 knowingly, stands). Rust-style lifetime annotations as a general surface
 (Tier C's door, closed). Linear (exactly-once) types. Changing `Shared`'s
-JS representation. Any change to mR1–mR12's *rules* — this paper moves
+JS representation **for its own sake** — C14 (RULED 2026-09-17) reopens it only in
+the direction this non-goal never refused: the JS box is where a *native*
+representation is verified, not a place to pay for counting; C14 S2 shipped `Weak`
+with a no-op lowering and no golden movement outside std's own body, and C14 S4's
+counted `Shared` leaves the JS emission byte-identical. Any change to mR1–mR12's *rules* — this paper moves
 *when*, never *whether*.
 
 ## 10. Slices

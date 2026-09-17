@@ -79,6 +79,8 @@ containing a spawn.
 **An undeclared function keeps inference.** The two forms coexist; the
 declaration is an opt-in boundary, not a migration.
 
+B343 (RULED 2026-09-17) kept that position and closed the one hole it leaves: an UN-PARENTHESIZED closure return type carrying a clause (`fun f(): || void context c`) is REFUSED at the head of `parse_function`, because the type grammar's greed takes the clause onto the closure's OWN return type — which cannot carry one — so the declaration means neither of the two readings its writer could have had. The refusal names both (`fun f(): (|| void) context c` for the function's requirement, `fun f(): (|| void context d) context c` for the returned closure's), offers the first as a quick fix, and takes the clause off as it reports it so the analyzer does not refuse the same mistake a second time. The alternative — moving the clause before the `:` — was costed at 0 std / 1 kolt / 2 docs declaration sites either way and declined: the declaration would then read unlike the type it declares.
+
 ## 4. Deferred: trait and `impl` methods
 
 A clause on a member is REFUSED, with a message that says why: a

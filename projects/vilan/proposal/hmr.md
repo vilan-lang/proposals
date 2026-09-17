@@ -637,3 +637,18 @@ Unchanged: the wire. Framing, the `connected` hello, `/refresh`
 (`dev-refresh.md` §5–§6), the artifact routes, and every event the shim handles
 are byte-for-byte what they were; all eleven `tests/hmr.rs` e2e legs pass
 untouched.
+
+## As built (Order 37, 2026-09-17) — the fourth transfer form
+
+`TransferForm::LazyValue` (A102, R13; lane lazy-37, `95058794`): a `lazy let` whose type
+is `transferable_as_value` crosses a swap only once forced. The cell is always the NEW
+bundle's — its thunk closes over the new bundle's functions — so this is the one adopt
+shape that takes the built value rather than a thunk to skip: `__hmr_adopt_lazy(key, fp,
+__lazy(..))` writes the carried value in and marks the cell done on a fingerprint-matching
+seed hit, and the exposing getter `__hmr_lazy_value(cell)` does not force and THROWS when
+the cell is not `done`. The swap's capture already skips a throwing getter — that is how
+the protocol has always said "this key carries nothing" — so a pending or poisoned binding
+stays `Excluded` without a fourth answer in the protocol. A lazy `SignalCell`/`Shared` stays
+excluded (`transferable_as_value` says no to a bare signal). Two new shim globals in
+`crates/vilan-cli/src/hmr_shim.js`; the round harness (`hmr_swap.rs`) carries a forced and
+a dormant lazy binding through a rebuilt bundle. See lazy.md §9.

@@ -611,3 +611,133 @@ layer (S3) stays an XL that nobody should start before S1 and S2 are green.
 - **NEW-4** — `infer_platform` is binary (browser / not-browser) and a third UI twin makes the
   editor report the wrong twin's `View` against native source — the E113 shape its own doc
   comment describes. `bug`, latent until S2. `crates/vilan-core/src/lib.rs:93`.
+
+---
+
+## 10. As built (Order 37, lane native-b-37, 2026-09-17) — S1a, and what the owner changed
+
+**The owner's steer at GO, verbatim:** "For the native path, I assume we're just setting up
+the Rust backend supporting cli programs for now. Drawing windows is much more complicated
+and I want to have a conversation about how to write UI code such that it works for native
+and web simultaneously (with some exceptions; native close, minimize, maximize buttons, for
+example). Being able to run native web servers (which should be more easily achievable in
+the short term) is a huge win in and of itself." So §1's four answers stand for the *build*
+with one replaced: **"desktop first" is gone.** The order of native products is CLI programs
+(S1, this order) → web servers (**F18**, Order 38's first native slice) → a UI layer only
+after that conversation (**F17**, a discussion, not queued). §8 Q3's three-layer rule (F15)
+is *recorded*, not ruled — it belongs to that conversation, and S2's sizing waits with it.
+
+**C16 first** (`e56b1227`). The precondition §8 Q6 named: a closure that captures a view
+and is handed to a callee that KEEPS it (stores it in a field, puts it in a collection or
+an enum payload, assigns it, returns it, or passes it on to a callee that keeps it) is
+refused, with the callee named — an interprocedural summary of *retaining parameter
+positions*, a monotone fixpoint in `infer_bumps`'s shape, asked only of call arguments
+that are view-capturing closures (a bodiless callee keeps everything). C13's
+pinned-ignored case is the first exhibit and is no longer ignored. Both *direct* shapes
+were already refused at `d783fbf4`; the whole remainder was the storing-callee shape, and it
+landed whole. Nothing in the estate fires (131 corpus programs, the examples, the docs,
+kolt), so the family is `fix`.
+
+**S1a** (`7e245e39`). `Backend::Rust` (`--backend rust` on `build` and `run`; the
+help says the build is debug — §8 Q8). Two new workspace crates with **zero crates.io
+dependencies** (§8 Q7): `vilan-rt` (~700 lines: `Rc<str>`, `Vec`, insertion-ordered
+`Map`/`Set`, `Shared`/`Captured` as `Rc<RefCell<_>>`, `guarded` over `catch_unwind`,
+`with_finally`, the `List`/`str` intrinsic bodies, and `Js` — the `console.log` rendering,
+which is where the differential actually lives: `Infinity` not `inf`, `0` not `-0`, the
+`1e-6..1e21` exponential switch, node's `[ a, b ]` spacing, a top-level string bare and a
+nested one quoted, an enum as `[ index, …data ]`) and `vilan-rust` (~1,950 lines: the same
+`Program` in, one `main.rs` out — real structs and enums, `Option`/`Result` onto Rust's,
+`impl` methods, closures, `match`, loops, views, rule-1 copies read off `clone_sites`).
+`vilan-cli/src/native.rs` writes `dist/native/<entry>/{Cargo.toml,src/main.rs}`, runs
+`cargo build`, runs the binary; `--stdout` prints the Rust; `--watch` and a workspace are
+refused by name. **A finding worth recording against §5-S1's sizing:** the analyzer has
+already resolved `p.bump(2)` into a call whose subject is the member and whose first
+argument is the receiver, so a concrete-case backend needs **no impl-selection
+machinery** — that is why S1a was reachable in one lane-order.
+
+**The exit test** — `crates/vilan-cli/tests/native_differential.rs`: every platform-free
+program compiled by both backends, stdout byte-identical. The enumeration
+(`platform_free_programs()` + `PLATFORM_MODULES`) is a support fn, so S1b widens the
+corpus by deleting rows. The default suite runs ten programs (rustc is ~1 s each); the
+whole set runs under `VILAN_NATIVE_DIFFERENTIAL=1`.
+
+| | |
+|---|---|
+| corpus `.vl` | 131 |
+| platform-free | 117 |
+| emitted (accepted by the backend) | 33 |
+| refused by name | 98 |
+| byte-identical (verified) | 17 |
+| differing stdout | **0** |
+| rustc-refused emitted Rust | **0** |
+
+Refusals by construct: generic type parameter 29, named generic fn 17, generic-parameter
+dispatch 5 — **51 of 98 are monomorphisation, which is S1b exactly as §5-S1 predicted**;
+module-level binding 6, overloaded operator 6, intrinsics 3, `resource` 2,
+`JSON.stringify` 2, `?` 2, `async fn main` 2, and singles. Two *differing* outputs were
+found during the lane and closed before it ended (`List::remove` answered an `Option`
+where its signature is `T`; `resource` teardown produced wrong output → refused by name):
+a wrong answer is never left standing, it becomes a refusal or a fix. **`board.vl` cannot
+be S1a's headline** — its first wall is `SignalCell<i32>`, a generic type, so it is pinned
+as a named gap that flips to a comparison when S1b lands.
+
+**§8 Q1 as measured.** `RefCell` shipped; the boxed-binding count over the accepted
+corpus is **0** (sixteen programs measured; no corpus program has a mutably-captured
+binding — the mechanism is proved on a probe, `boxed-bindings=1`, and
+`VILAN_NATIVE_REPORT_BOXED=1` prints it). The by-value capture optimisation (C15) has
+nothing to optimise until S1b's corpus compiles; it should wait. **F16 as built:** every
+closure *type* is `Rc<dyn Fn>` and a closure value read from a binding is retained per use
+(the probe's R-1 reproduced and closed); the `impl Fn` half for only-called closures is
+not built until a measurement says the retain costs something — C16's
+`compute_retaining_positions` is the discriminator if wanted.
+
+**§8 Q4 — the executor, designed (J6).** Read off `transformer.rs::helper_source`, which
+*is* the contract, seven primitives: (1) `Task<T>` stays `external` — a handle into the
+executor's slab (`Pending | Done(T) | Failed(payload)`, a continuation list
+`Vec<Rc<dyn Fn()>>`, an `observed` flag, the spawn origin; eager spawn; a failure latches at
+settle time; an unowned, unobserved failure reports once with its origin, as `__task`
+does); (2) a single-threaded loop with a **microtask queue drained to exhaustion** before
+a deadline-ordered timer heap — observable, `reactive-turns` is the pin — and exit when
+both are empty; no threads, no work stealing; (3) `Nursery` as `Rc<NurseryBody>` with
+`children`, `cancelled`, a fail latch, a wake list and `parent: Option<Weak<…>>`,
+`CancelSignal` the `Weak`; `OwnedNursery`'s `Drop` is already pure vilan, so
+cancellation-on-drop is destruction.md's mechanism and needs no second one; (4) the join
+reproduced exactly — the child list grows mid-drain, each child raced against the
+fail-wake; on failure cancel, absorb every remaining child, then propagate the body's
+error first or the latched winner's with `" (in task spawned in …)"`; (5) detached
+nurseries override `__fail`; (6) `sleep` as an abortable timer registration; (7) `Timer` as
+a memoized verdict plus a waiter list. Emitter side: **emit Rust `async fn` over a
+hand-written single-threaded executor** in `vilan-rt` (`await` → `.await`; the `Waker`
+from a `RawWakerVTable` over an `Rc<Cell<bool>>`; `Pin`/`Send` never surface) — CPS
+rejected. Size M; the precondition for F18.
+
+**§8 Q2 is wrong on its own evidence, and reversed (F18).** "Joining `@process` obligates
+every base-layer module to resolve for native, which is a much larger S1" —
+`check_library_contract` (`analyzer.rs` ~52616) never inspects `[extern]`; it is
+structural. Measured: joining `@process` alone costs **zero** violations (no process
+module imports a browser-only module); joining `all_hosts()` alone costs exactly **one**
+(`web.vl:41`/`:57` re-export `pkg::ui`, which exists only in the platform layers); joining
+**both** costs zero, because `process/ui.vl` then covers `native`. The real gate is
+*emission*: fifteen base modules with JS-only bindings (12,500 lines, `number.vl`'s 81
+`Math.*` and `json.vl`'s 26 dominate) plus eight intrinsic-only modules that already
+have native bodies in `vilan-rt`. **Native servers, sized:** S1b (monomorphisation +
+module-level bindings via `thread_local!` + the remaining intrinsics — 51 of the 98
+refusals; L) → J6 (M) → http (`node:http`'s `createServer` + `node:stream/consumers`, 3
+imports + 22 accessors, plus `node:crypto`'s `createHash` for the RFC 6455 key; M) → db
+(`node:sqlite`'s `DatabaseSync` + the eleven `__db_*` helpers; M) → rpc (**S — nothing
+new**: `process/rpc_server.vl` is 1,306 lines of which 1,303 carry no extern; `ws.vl` (229)
+and `wire.vl` (708) carry none — ~2,240 lines of the server compile natively the day
+generics work, on 28 host bindings) → fs (`node:fs/promises`, 16 imports + 21 accessors;
+M, and **not on the exit test's path**). Of the nine `process/` files four carry zero
+externs (`build`, `watch`, `document`, `ui` — 2,142 lines, no twin needed). **The exit test
+is small**: kolt's server leg is three files, 564 lines, reaching five of the nine process
+modules and no `fs` at all. Total to kolt's server serving its client ≈ two to three
+lane-orders, of which S1b must not be under-scoped.
+
+**Corrections to this paper.** §2.3 (2): 53 intrinsics, not 52 (`analyzer.rs:48629`).
+§2.3 (3): `RESERVED_NAMES` is at `transformer.rs:11291`; the extern-helper registry has 47
+entries, 25 on the server path. §5-S1: no impl selection is needed for the concrete case
+(above). §8 Q2: reversed (above). **F19** (`vilan-rt` is not reachable from a released
+binary — `native.rs` resolves `$VILAN_RT`, else the crate's source sibling) blocks any
+non-from-source use of the backend and is S1b's first item. **What stays out until F17:**
+S2's UI-shaped registration sites, F15's N-way parity gate, E182.

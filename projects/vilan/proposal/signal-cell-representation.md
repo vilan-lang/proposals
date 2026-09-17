@@ -725,3 +725,92 @@ stay where they are.
 - **FIND-4** — spec §6.9's "a closure captures bindings, not values" means every mutably
   captured binding is a shared cell on a native backend (probe R-2). This is a larger surface
   than `Shared` and it has no item. `design`.
+
+---
+
+## 13. As built (Order 37, lane native-a-37, 2026-09-17)
+
+**R1 ruled (a)** — the counted `Shared` with `Weak` at two std sites, `Arena`/`Handle`
+unchanged. S1–S3 landed on JS; S4 waits for F1's backend (S1a shipped the same order,
+native-b-37); S5 is queued as the instrument §10 S3's exit test turns out to need.
+
+**S1 — eight of nineteen** (`c5b98491`). `process/rpc_server.vl`'s `settled`/`expired`
+(the authorize bound) and `closed`/`greeted` (the connection latches); `rpc.vl`'s
+`connection`/`refused` (the dial handshake), the keyed mirror's per-patch `fault`, and
+`connect_split`'s own `connection` — a closure captures the *binding* (spec §6.9), so
+sibling closures in one frame already share a `mut` local. std `Shared::new(` sites
+136 → 128 (§2.2's 131 was counted at `9b22ec36`); the corpus goldens' `__shared_new`
+stayed at 127 (no corpus program reaches `std::rpc`); ≈587 Ir per retired cell per round
+under `node --jitless`, indistinguishable under the JIT (V8 escape-analyses the box).
+**The other eleven are blocked by the language, not by effort**: `json.vl`'s six and
+`binary.vl`'s four are the Wire visitor's state, and `Serialize`/`Deserialize` declare
+every method on a by-value `self` — moving the receivers to `&mut self` and
+`Wire::describe`/`rebuild` to `&mut S`/`&mut D` is a breaking public-surface change,
+proven to compile in a probe with zero `__shared_new`, filed as **A108** for Order 38;
+`process/fs.vl`'s `Reader.cursor` is forced because `next` awaits and a `&mut` view may
+not cross a suspension. Two census corrections: `connect_split`'s `connection`
+(`rpc.vl:260`) is F, filed here inside an O group — the F class was **20** on this
+paper's declaration-site unit; and `census.py` is a hand-curated table, not a
+classifier, so the pin that holds the line is a committed per-file `Shared::new(`
+count with the class each file's cells belong to (`crates/vilan-cli/tests/shared_census.rs`).
+D8 landed with S1: `shared.vl`'s headnote and the memory-model tour say what §2.4
+found.
+
+**S2 — `Weak<T>`** (`1379ccdd`, `f7fa4542`). `Shared::downgrade(&self): Weak<T>`
+(`&self`, as §10 and destruction.md §10 spell it — it says "adds no holder" in the
+signature), `Weak::upgrade(self): Option<Shared<T>>`, `Weak::get(&self): Option<&T>
+borrows self`. The lowering allocates **no wrapper**, so a native representation stays
+free to be a second word on the cell rather than a box around it: `downgrade` is the
+receiver, `upgrade` is `[0, cell]`, `get` is `[0, cell.v]` (the shape `Arena::get`
+already emits). The one analyzer seam that was genuinely missing: a view is a property
+of an *expression*, not of a `Type`, so a bodiless declaration could not say
+`Option<&T>` where any checker could see it — `Some(let view)` over `weak.get()` bound
+a value wearing an ampersand and `out.push(view)` into a `List<&i32>` was allowed where
+the identical `Arena::get` program is refused; `Weak::get` is the one extern with that
+return and gets the one exception, found by the primitive's identity. Eighteen pins in
+`inference/weak.rs`. No HMR arm (a bodiless `external struct` is already excluded
+conservatively — an arm was tried, measured redundant, removed), no interpreter arm
+(`[0, cell]` and `cell.v` are shapes it already evaluates), no hover site.
+
+**A miscompile found on the way** (`7d9427dc`): a `Shared` handle bound by a **match
+capture** aliased the cell it read from. B267's walk follows a handle between four slot
+forms and joins what it cannot follow to `Unknown`; a pattern capture has no
+initializer to follow, and `Weak::upgrade` is the first API in the language that binds
+a `Shared` handle through one — the gap had been unreachable. Measured: `mut copy =
+strong.read(); cell.write().push(9); print(copy.len())` printed 2 where the direct
+form printed 1. An initializer-less capture typed as a `Shared` handle now joins
+`Unknown`, as a `Shared`-typed parameter already did; pinned; no golden moved.
+
+**S3 — the two back edges weak** (`7d9427dc`). `observe` captures
+`signal.value.downgrade()` and upgrades on each notify (`upgrade`, not `get`: the
+observer takes a value and `read()` is the spelling that copies one out);
+`Subscription.subscribers` is a `Weak<List<Subscriber>>` that `dispose` upgrades before
+detaching; `Subscription::teardown`'s signal-less shape mints a cell that dies with the
+call, whose weak answers `None` once anything counts. **§10 S3's exit test is
+unachievable on JS, by construction, and this section corrects it**: `downgrade` lowers
+to the identity, so the emitted heap graph is unchanged — the SCC gate reads mounted
+`reachable=243 cycles=2` and unmounted `reachable=122 cycles=0` on both sides, and the
+brief's plant (restore the strong capture, watch the mounted count rise) cannot move
+either. §4.1 ("the surface and the graph shape change; the JS emission does not")
+already said so. **C14 S5's counted JS mode is the first instrument that can see the
+difference**, and its exit test is the one §10 S3 wanted. Cost, measured: +590.6 Ir per
+notification (+11.7 %) on the interpreter tier for the `[0, cell]` array and its branch,
+indistinguishable under the JIT — a JS cost that buys a native property, which S5 should
+re-measure and decide whether the weak edges want a counted-mode-only spelling. Nine
+corpus goldens moved (reactive's body), `__shared_new` in the goldens 127 → 129 —
+`observe` is now emitted twice in two goldens because the body-sharing key does not
+normalize local gensyms (**M80**). Three S3 pins, one of them §5.2's "a `set` after
+`owner.dispose()` still commits" (`after-dispose=99`), which had been unpinned.
+
+**Q7 answered in the tree** — `compute_shared_cells`'s headnote (`baefa933`) now says
+what a counted `Shared` does to B267's walk: today the approximation is load-bearing for
+*correctness* (nothing counts, so nothing at runtime knows which handles name one cell,
+and every hole in the `Unknown` sink is a copy that should have been taken — the
+match-capture hole above was exactly one); under counting the walk becomes an *elision*
+heuristic over a fact the runtime also holds. The headnote's stale worked example
+(`Subscription`'s `subscribers` initialized from `SignalCell`'s — a union S3 removed) is
+fixed in the same commit. lifetimes.md §9's non-goal carries the clause §12 asked for.
+
+**Numbers at a glance.** std `Shared::new(` 136 → 128 · goldens' `__shared_new`
+127 → 129 · SCC gate 243/2 mounted, 122/0 unmounted, unchanged · `derivations_detach…`
+25 → 0 unchanged · `-p vilan-core` 5,914 passed on the lane's tree.

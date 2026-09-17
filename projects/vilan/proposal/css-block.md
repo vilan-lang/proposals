@@ -1625,3 +1625,87 @@ spells an exhaustive case analysis over a state space. `within` answers a
 different question — "who else's state is this?" — and steering a compound
 own-flag condition there would trade a value for a DOM contract in exactly
 the case where the value is composing correctly.
+
+## 16. The declaration is a CALL (A101, Order 37)
+
+**The change, in one line.** A declaration is `property(value);`, not
+`property: value;` — the strategy element syntax took for attributes
+(`type("checkbox")`, `stroke-width("2")`), arriving on the style side:
+
+    css {
+        outline("none");
+        width(pct(100));
+        margin(px(4), px(8));
+        --brand-ink(gray(900));
+        .script_label();
+        .hover { color(gray(100)); }
+    }
+
+**The lowering does not move.** Every declaration is still exactly one
+`.raw(property, value)` — §5.2's one rule, name-blind and total — and the gate
+that says so is the one this arc has always had: the same program written as a
+block and as the chain it desugars to emits byte-identical CSS and byte-identical
+JS. No golden moved in the migration, over 227 blocks and 269 declarations in the
+tree and 42 blocks / 59 declarations in kolt.
+
+**§4.3's grammar, as built.** `css-item = declaration | method-item |
+nested-rule`; `declaration = property "(" [ expression { "," expression }
+[ "," ] ] ")" ";"`; `property = { "-" } NAME { "-" NAME }` (span-adjacent, as
+before); `method-item` and `nested-rule` unchanged — the method item was already
+there (A69), which is a correction to the item, not a new production. The
+`value`, `value-piece` and `hole` productions are DELETED.
+
+**R10 — several arguments.** N arguments are ONE value joined by a single space,
+CSS's own list separator. `raw`'s arity does not change: the join is built in the
+desugar — the parenthesized concatenation the lexer builds for an i-string, with
+every argument through `std::style::piece` (A34), which carries a token's `:root`
+line onto the sheet. `margin(px(4), px(8))` is `margin:4px 8px`. A comma-separated
+CSS value stays ONE argument (a string); a `list(..)` helper is still a later item.
+
+**R11 — what the codemod wrote.** The typed constructor where the value types
+(`width: 100%;` → `width(pct(100));`), the string literal where it does not
+(`grid-template-columns: repeat(3, 1fr);` → the string). The lowering-identity
+gate makes the two byte-identical, so the choice is readability only. Where a
+value's parts are GLUED rather than spaced (`calc({w} + 2px)`, `{150}ms`), the
+space join would invent a space, so the codemod writes ONE argument: an i-string
+with each part through `piece` — which is exactly what the desugar built for a
+mixed value before. Estate mix: 121 single-argument pass-through, 18 typed, 118
+string, 4 joined, 8 i-string.
+
+**R12 — custom properties.** `--name(..)` is admitted on the property side by the
+production that already read leading hyphens (element attributes do the same). On
+the VALUE side `--x` is not an expression at all, so CSS's `var(--x)` is spelled
+`var("--x")` — a new `str`-valued `std::style` function carrying A90's dash check,
+ambient inside a block through the style prelude, which now also publishes
+`piece`. `Length::var`/`Color::var` stay for the positions that want the type.
+
+**What it bought.** One hole spelling fewer: the `{ }` hole existed only because a
+value was a token span, and there is no span left for one to interrupt. §4.1's
+cost is gone — with a correction the section could not make from outside the
+code: that cost was never the LEXER's. `1px` and `1.5rem` lex as suffixed numbers
+everywhere in the language (`read_optional_suffix` is not css machinery) and `#`
+moved off the lexer at B318 §2.3. What A101 deletes is the value SCANNER in
+`parse_css_value` and the `#`-is-not-a-colour rule that guarded it (ledger row 457,
+retired: a colour is `hex("#333")`, an ordinary typed argument). `@` keeps its
+lexer rule and its message. Value-position completion became ordinary EXPRESSION
+completion — §7.1's Q4 dissolved rather than being answered, because there is no
+value position left to invent a vocabulary for; the property position offers
+`name(` with the paren. §8's value pass became expression formatting, so
+`width( pct( 100 ) )` canonicalizes where a value's own bytes never could, while a
+string value keeps its bytes. And a value whose type is not a raw value is the
+ordinary type error AT the argument, in the same words the chain gives.
+
+**What it cost.** `!important` keeps its curated refusal, read off the
+declaration's argument TOKENS rather than off a value scanner: `color(red
+!important)` is refused as before, while `color("red !important")` is a string and
+is not — which is exactly the chain's own position (`raw("color", "red
+!important")` was never refused), and a block cannot be stricter than the chain
+once its values ARE the chain's. The css→chain converter declines a declaration
+with SEVERAL arguments: its twin needs `piece`, ambient inside a block and nowhere
+else, so the chain it wrote would not resolve in the file it landed in. In
+exchange it lost the backslash refusal, which had no subject left.
+
+**The migration.** The old spelling reports a curated rule at the `:` naming the
+call form — one ledger row, flagship, which is what a whole codebase's worth of
+red should land on. E183 rode the same order: the dotted head completes every
+`impl Style` method the file can reach, not only the fourteen std combinators.

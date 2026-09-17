@@ -2645,3 +2645,27 @@ nine primitives with hover and none of its composition), what the wasm
 retains between calls, and the export's shape are
 `proposal/playground-completion.md`. Future completion behaviour work still
 records here; where the engine lives records there.
+
+### Order 37 as built (2026-09-17, lane editor-37)
+
+- **E69 — attribute-name completion, generated.** `scripts/regen-html-attributes.py`
+  vendors an extract of the WHATWG HTML attribute index and the SVG 2 attribute index
+  (`crates/vilan-ide/src/html-attributes.tsv`, with fetch date, both URLs and a hash per
+  page in its header) and generates `html_attributes.rs`; `html_attributes_sync.rs` is a
+  second, independent implementation of the same arrow that re-renders and diffs byte for
+  byte, offline — the mime-table precedent. Tables: 104 tags with own attributes, 31
+  globals, 1,645 per-tag pairs, 59 SVG presentation attributes, 71 `on:` events (snippets).
+  Two shaping rules the index needed: a name the head cannot *spell* (`xml:space`,
+  `xlink:href`) is dropped, and an SVG `on…` row is an event, not an attribute; "SVG-shaped"
+  is "the SVG index names it, the HTML index does not" plus the SVG root, read off the HTML
+  index's own description cell rather than hand-named. The desugar stays name-blind.
+- **E193 — the initializer head.** E160 (Order 36) already shipped struct-initializer
+  completion; the live residue was the head resolved by scanning `Program::structs` for the
+  first name match, which answered a sibling's twin — it now resolves through the scope chain
+  and, qualified, through the namespace (`path_struct_id`), with the program-wide scan kept
+  only as a last resort for mid-edit buffers. `nominal_id_by_name` still scans (E195).
+- **E192, and the sentence this paper owed.** Because the unused-import FADE and Organize
+  Imports' PRUNE are one predicate (E114), **every false positive in the fade is a code
+  action that breaks a green file** — E192 (a type import used only by a selector's subject)
+  would have deleted a line kolt's views.vl needs, and E168 before it did the same to
+  lucide. A fade rule is a deletion rule and is pinned as one.

@@ -279,3 +279,61 @@ retrofit has NOT happened.
 
 **S3 — the std retrofit** (§6b) is not in this order: ruled Order 37's at
 Order 36's GO.
+
+## 9. As built (Order 37, 2026-09-17, lane lazy-37) — S3, the std retrofit
+
+**Landed** (`e493ffb1`): `Option::expect(own self, lazy message: str)` — **new**, `Option`
+had no `expect` at `d783fbf4` — `Option::unwrap_or(own self, lazy fallback: T)`,
+`Result::expect(self, lazy message: str)`, `Result::unwrap_or(self, lazy fallback: T)`.
+`unwrap_or_else` is untouched and stays the explicit form. The clone stays in the callee
+(`__clone(__force(fallback))`), so a `List` fallback is still copied out of the caller's
+binding — pinned, because the differential's prints cannot see an aliasing regression.
+§8's "S3 is not in this order" line is retired by this section.
+
+**The gate, as run.** A before/after differential over **304 programs** — 131 corpus
+programs run under node, 155 complete docs fences built and run, 18 packaged
+example/template/benchmark trees built — and kolt built both ways (std reverted in-tree,
+never `git stash`, never `VILAN_STD`): **0 observable differences**; the eight non-zero
+exits are identical on both sides and structural by design; kolt's client e2e output is
+byte-identical. **211 call sites examined** (73 in `.vl`, 27 in docs, 97 inside Rust test
+program consts, 14 in kolt): every non-literal fallback in the estate is a **bare name**
+(`missing`, `empty`, `initial_theme`, `default_theme`), not one a call, so there was no
+side effect to lose. Emitted JS moved at 36 of the 304 (the mechanical `__lazy` thunk
+wrap; 114 thunk emissions) → sixteen corpus goldens regenerated. **A correction to §6b's
+gate as the Order 37 brief spelled it:** "a changed golden" cannot be a stop-and-decide
+difference — the retrofit necessarily rewrites every call site's argument into a thunk;
+the gate is about observable *runtime* behaviour (prints, exit codes, side effects), and
+that is what was held at zero.
+
+**Two residues filed.** `Result::expect_err` is not retrofitted and is now asymmetric with
+`expect` (A109, one line). Every `unwrap_or(<literal>)` now allocates a memo cell — 111
+of the 114 thunk emissions carry an inert argument — and an "inert argument stays eager"
+elision in `record_lazy_arguments` would keep most of the sixteen goldens byte-identical
+and remove the `__force` on the hot path (M81).
+
+**B344 and B345, the corners** (`bc7aaf7a`, `6191ccfa`). Three shapes compiled clean and
+should not have: a resource the caller *produces* in the lazy position (`hold(flag,
+make())` — no binding named, so R9 saw nothing), the indirect hop (a generic handing its
+own `T` to another generic's lazy parameter), and a module-level resource named bare (R9
+exempts it for process lifetime). The argument check reads a bare binding's type through
+`variables`/`parameters` (`lazy_argument_type_id`, the analyzer's twin of B328's transformer
+fix), and §1's data-only rule is asked again at every resource instantiation from
+`check_resource_generic_instantiations`'s worklist, which reaches the indirect case by R11's
+own propagation. Two stand-downs keep B5: a resource LOCAL named bare stays R9's, in R9's
+words (§8), and the instantiation check is silent when the call-site value is concretely a
+resource or when the instantiation already produced a diagnostic (`b63_unwrap_or_at_a_
+resource_rejects_the_discarded_fallback` asserts exactly one). B345: the view-capture scan
+walks a call's *subject* before its arguments — a computed callee (`(build(seen.label))()`)
+carries the whole inner expression there. Neither fires on the estate.
+
+**A102 (R13), the HMR question §3 left open** (`95058794`): a `lazy let` of a
+value-transferable type crosses a hot swap only once something has forced it — a fourth
+`TransferForm::LazyValue`; the new bundle's cell (its thunk closes over the new bundle's
+functions) is wrapped in `__hmr_adopt_lazy(key, fp, __lazy(..))`, which writes the carried
+value in and marks the cell done on a fingerprint-matching seed hit, and the exposing
+getter `__hmr_lazy_value` **throws** when the cell is not done — the swap's capture already
+skips a throwing getter, which is how the protocol has always spelled "this key carries
+nothing", so pending and poisoned stay excluded with no fourth answer added. A lazy
+`SignalCell`/`Shared` stays excluded. The round harness shows a forced `lazy let motto`
+reading 41 after the swap while bundle B's initializer never runs, and a never-forced
+`lazy let dormant` running B's initializer for the first time on the other side.
