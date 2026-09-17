@@ -1,0 +1,334 @@
+{
+ "items": [
+  {
+   "id": "A108",
+   "section": "A",
+   "kind": "design",
+   "area": "Reactive core & UI",
+   "title": "NEW — BREAKING candidate: the Wire visitor's BY-VALUE receivers force eleven interior-mutability cells — `Serialize`/`Deserialize` declare every method on a bare `self` and `Wire::describe<S: Serialize>(self, serializer: S)` takes `S` by value, so `JsonWriter`/`JsonReader` (json.vl, 6 cells) and `BinaryWriter`/`BinaryReader` (binary.vl, 4) keep their state in `Shared` boxes a `mut` local cannot replace; C14 S1 retired 8 of the census's 19 frame-scoped cells and stopped here. The replacement shape COMPILES today (native-a-37's probe: `&mut self` trait methods, a generic `tell<S: Sink>(self, sink: &mut S)` forwarding the view down a recursive `List<T>` impl, a closure-record erasure over a `mut` local — zero `__shared_new`); blast radius 17 std `impl … with Wire` + the derive emitters in json.vl + 3 fixtures in `inference/generics.rs` + docs prose + kolt's derives",
+   "discussion": "native-a-37's FIND-1 (2026-09-17); Order 38 breaking candidate, `wire.vl` in the lane's ownership; retires the whole json/binary frame-scoped residue",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Rule it as its own breaking item: `Serialize`/`Deserialize` methods take `&mut self`; `Wire::describe`/`rebuild` take `&mut S`/`&mut D`; the derive emitters and every std impl move in one commit; kolt's derives at the owner's word; the `shared_census` pin's json/binary rows drop to zero. The fs.vl `Reader.cursor` cell is NOT in scope (its `next` awaits — a `&mut` view may not cross a suspension)."
+  },
+  {
+   "id": "B354",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — HIGH: a `[derive(..)]`-SYNTHESIZED generic body resolves its members under the SENTINEL source (`current_admitting_file` → `source_of` → `DERIVED_SOURCE`), not the file the derive was written in — so B318 S4's export gate hides every non-exported impl from every derived visitor. This is WHY E185's placeholder message fired sixteen times at Order 36's sweep merge and why std had to export its codec blocks (`JsonWriter`/`JsonReader`/`BinaryReader`) that it had kept private. E185 fixed the NAME in the message (diagnostics-37); the resolution rule is this item. Reproducible: an exported `Counter` + a non-exported `impl Counter with Serialize` in `w.vl`, `[derive(Wire)]` in `thing.vl`, `.describe(counter)` in a third file",
+   "discussion": "diagnostics-37's FIND 1 (2026-09-17); HIGH — a hidden rule the std curation paid for",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "A derived body's admitting file is the file carrying the `[derive(..)]` attribute (the importing body `AdmissionMiss` now records — E185's plumbing is the seam); pin the three-file shape; then re-examine the codec blocks the sweep exported under the old rule (sweep-36's curation re-run) and re-privatize what only the sentinel rule needed."
+  },
+  {
+   "id": "B355",
+   "section": "B",
+   "kind": "feature",
+   "area": "Type system & the type solver",
+   "title": "NEW — E189's BROAD GATE (drop the `context`-family diagnostics when the list already carries a resolution/type error, with a note) is buildable only after `b279_an_unresolvable_dispatch_site_still_fences_its_candidates` gets a NON-DIAGNOSTIC observation of the fence: that pin observes a SOUNDNESS property (the refined-dispatch fallback widening to the whole candidate list — without it the program compiles and prints `undefined`) only THROUGH the coverage fence, in a program that carries another diagnostic by construction. diagnostics-37 built the gate, measured it (kolt's `href(href())` shape 139 → 1), and removed it because it blinds that pin (AGENTS.md's stop condition). The narrow rule landed; E191's remaining 138 wait on this",
+   "discussion": "diagnostics-37's OPEN Q1 (2026-09-17), the recommended third option; OWNER RULING (gate or no gate) recorded here",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep); OWNER Q",
+   "body": "Give the pass a non-diagnostic face for the fence (the dispatch fallback's candidate set is computed either way — expose it on `Program` or a test-only accessor) and re-pin B279 on it; then land the broad gate behind it, restating `b229_only_…`/`b241_…` as deferrals; E191 closes with it (re-run the kolt copy: expect 1)."
+  },
+  {
+   "id": "B356",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — explicit TYPE ARGUMENTS on an associated-function path were INERT for a TRAIT subject: `Signal<i32>::new(\"x\")` compiled at d783fbf4 because only `Struct`/`Enum` subjects seeded `static_subject_bindings` (fixed for the static path by solver-37's `seed_trait_static_subject_bindings`, B352); whether EVERY path shape checks its written arguments deserves a sweep — B323's family ('an annotation-only generic argument is silently inert')",
+   "discussion": "solver-37's FIND 1 (2026-09-17); a census, then pins per shape",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Enumerate the path shapes that carry written type arguments (static call, struct literal, enum variant, trait static, qualified `pkg::T<..>::f`, `impl`-bound `Self`) and pin each against a contradicting argument; fix the inert ones at their seed."
+  },
+  {
+   "id": "B357",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — a PAYLOAD-LESS variant types as the BARE enum with an EMPTY argument list (`None` is `Option` with no arguments — no hole to test for), so it unifies with every instantiation and carries nothing: `Box<Option<str>>::new(None)` became `Box<Option>` until B352's `binding_is_weaker` special-cased the shape. The root fix — infer `None`'s (any nullary variant's) type against the constraint it lands in, with a real hole — is larger than the special case and is this item",
+   "discussion": "solver-37's FIND 2 (2026-09-17); the special case stays until this lands",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "A nullary variant of a generic enum mints fresh holes for the enum's parameters at the use site (as a constructor call does), solved by the landing constraint; retire `binding_is_weaker`'s special case when the pins (B352's three) stay green without it."
+  },
+  {
+   "id": "E194",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — a HYPHENATED completion label is filtered out by the client's default word pattern: `editors/vscode/language-configuration.json` sets no `wordPattern`, so VS Code's default excludes `-` — at `<svg stroke-w\\|` the client's word is `w` and `stroke-width` does not match; `Completion` carries no `filter_text` and the server sends no `textEdit` range. Pre-existing since E153's css property vocabulary (`flex-` → `flex-direction`, whose pin asserts only the SERVER's list); E69's attribute table makes it visible at every element head",
+   "discussion": "editor-37's FIND 1 (2026-09-17); one fix serves both vocabularies; S–M",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Either a `wordPattern` admitting `-` in the language configuration (vscode_extension pin) or a `filter_text`/edit-range field on `Completion` consumed by both front-ends; a pin at the client level if the harness can express one, else on the server's `filter_text`."
+  },
+  {
+   "id": "E195",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — `Analysis::nominal_id_by_name` (vilan-ide completion.rs) still scans the program for the FIRST name match — the shape E193 fixed for the struct-initializer head (which now resolves through the scope chain and, qualified, through the namespace); its callers (`element_view_nominal_id`'s neighbours, receiver typing) answer the wrong struct in the same two-module fixture (a sibling's twin `Dot` beside this file's own)",
+   "discussion": "editor-37's FIND 4 (2026-09-17); S",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Route it through the same scope-chain/namespace resolution `path_struct_id` uses; pin with the two-module fixture at each caller."
+  },
+  {
+   "id": "E196",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — the HMR overlay still places a TRANSFORMER refusal at the entry: E190 made the CLI read the `SourceId` an `Error`'s note carries (`compile_to_js`'s transform-`Err` arm), but `hmr::OverlayDiagnostic::located(&filename, source_ref, …)` one line above still uses the entry's filename — the overlay shows the B55 refusal against the wrong file",
+   "discussion": "diagnostics-37's FIND 3 (2026-09-17); one line",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Read the note's source there too; pin under the HMR overlay harness with a transformer-time refusal in a non-entry file."
+  },
+  {
+   "id": "E197",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — format-on-save cannot say it DECLINED: `vilan-lsp/src/main.rs` (`formatting`) and `vilan-wasm/src/lib.rs` (`format_program`) both call `formatter::format`, which answers the original bytes on every way out, so a file the printer cannot render returns 'no edit' — indistinguishable from an already-canonical file. N90 closed exactly this silence for the CLI (`reprint` returns a `Decline` with reason, construct and line; `vilan fmt` exits 2 and names it)",
+   "discussion": "dx-37's FIND 3 (2026-09-17); S",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Both sites call `reprint`; the LSP surfaces a `window/showMessage` (or a log line under the session trace) naming the construct and line; the playground shows a status note; one pin each."
+  },
+  {
+   "id": "E198",
+   "section": "E",
+   "kind": "bug",
+   "area": "LSP & tooling",
+   "title": "NEW — the wasm PLAYGROUND's `Program::std_sources` is EMPTY, which is why its A99 steer suffix never appears (`View has no method 'swap'` bare, the N88 check): the playground registers the whole embedded toolchain through the DOCUMENT OVERLAY (vilan-wasm lib.rs ~321–329) and the analyzer records a std source only when `matches!(origin, Origin::Std) && !document_overlay_contains(&module_path)` — `std_sources` conflates 'this source IS std' (what the steer keys on) with 'its definition-site diagnostics are FROZEN' (why the overlay is excluded). Not a one-line fix: vilan-wasm `tests/compile.rs:168` records that filling it naively makes a split-wired playground chunk std",
+   "discussion": "hygiene-37's FIND 4 (2026-09-17); K14's neighbour; M",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Split the two facts into two sets (`std_sources` = origin; a separate `frozen_sources` = overlay-excluded); every consumer picks the one it means; the playground pin asserts the steer suffix; the split-wiring pin stays green."
+  },
+  {
+   "id": "E199",
+   "section": "E",
+   "kind": "diagnostics",
+   "area": "LSP & tooling",
+   "title": "NEW — a refused generic-bound message can name the WRONG `T`: in solver-37's B352 probe a wrong render body was refused as `Swap<str, StorageSignalCell<bool>, View>` does not implement `Slot` — `T` taken from the closure BODY rather than from the SOURCE argument, so the message names a type the author never wrote; the refusal is right, its sentence is not",
+   "discussion": "solver-37's FIND 5 (2026-09-17); S",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Render the bound refusal with the binding the source fixed (the same substitution B347's fill now uses), and name the body's disagreeing type as the second operand; pin the probe's shape."
+  },
+  {
+   "id": "M76",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — the CHECKS phase, not the resolve, is the largest remaining per-keystroke cost on M70's six kolt files: theme.vl at loadavg 40 reads `load+walk 460.7 / base 0.0 / build 632.4 / checks 1,103.2` ms — M19's per-module checks record is deliberately WITHHELD from an entry-shaped world (`analyze_inner`'s store site says why: module checks through the alias may depend on the entry), and `[vilan phase] reused 0/69` on every one of the six confirms nothing is reused; worth MORE than M73 (checks are 1.7× the resolve)",
+   "discussion": "perf-37's F-A (2026-09-17); M70's own recorded follow-up; E121's lane",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Decide which checks an entry-shaped world CAN reuse (those not reaching the alias — the same per-file deferral set M73's design needs) and store that record; measure the six with the paired harness."
+  },
+  {
+   "id": "M77",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — `statement_sources` runs for EVERY import statement program-wide the moment ONE collision is banked (`build_impl_admission`, the `if !collisions.is_empty()` arm): one linear pass, not a product, so M75's indexes leave it — but it is what remains of the large leg's 60 ms and it scales with the whole program's statements; an index keyed on the statement's path spans removes it",
+   "discussion": "perf-37's F-B (2026-09-17); small; only reachable by a program that already has a collision",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Build the span-keyed index beside M75's; extend M75's shape pin to show the residual flat."
+  },
+  {
+   "id": "M78",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — the `[vilan phase]` marks are WALL time (`PhaseClock` is `Instant`), so every perf item that reads the phase line is reading wall — under load the numbers are shares, never absolutes (M73's stage split had to be reported as percentages). `keystroke::gate::process_cpu_now` already has the `CLOCK_PROCESS_CPUTIME_ID` reader for the LSP; a CPU-clocked phase line would let E121's ledger take absolute figures on a loaded box",
+   "discussion": "perf-37's F-C (2026-09-17); cheap; blocks nothing",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "A CPU variant of `PhaseClock` (thread CPU where the phase is single-threaded, process CPU otherwise) printed beside the wall figure; the E121 ledger's P-rows re-taken once."
+  },
+  {
+   "id": "M79",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — M73's BUILD, paper first: an entry-open module's world is stored UNRESOLVED and `resolve_world` is paid on every keystroke (theme.vl 133–145 ms; the constraint FIXPOINT is 79–96 % of the pass on all nine measured files — preludes/use-drain read 0.0 ms, imports 0.4 ms, correcting M70's attribution); a RESOLVED world already runs `resolve_world` TWICE (pre-entry and inside the post-entry `build()`) and the second run costs 1.2–8.9 % of the first, so running it twice is proven safe — the whole prize is moving the FIRST run in front of the store. Design (perf-37's Q1): resolve pre-entry and store the partially-resolved world, letting the post-entry second call finish it; the deferral set is per-FILE, seeded by files carrying `import pkg::<entry-alias>` and closed transitively under 'imports from a deferred file' (kolt: 9 of 26 package files for every one of the six, leaving ~60 of ~69 sources resolvable before the store), with a fallback to today's wholesale deferral if the package PRELUDE module lands in the set; the cost is that eleven queues drained inside `resolve_world` must hold their deferred sources back — B222/B236/B237 live in exactly that machinery",
+   "discussion": "perf-37's OPEN Q1 (2026-09-17): out of proportion to an M slot; its own item, paper first; M73 re-pointed here",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "A short paper (or an analysis-reuse.md section) naming the eleven queues and the deferral rule, then the build with M70's pin green and the six files measured; M73's instrument (the eleven-stage phase split) is the measurement harness."
+  },
+  {
+   "id": "M80",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — `push_or_share`'s body-sharing key does not normalize LOCAL GENSYMS: `canonical_instance_body` normalizes only the instance's own name, so two monomorphizations whose bodies differ only in gensym numbering stop sharing — C14 S3 gave `observe` two compiler-minted temporaries and `observe` is now emitted TWICE in `reactive-flatten.mjs` and `reactive-on-change.mjs` where it was once (`$D`/`$H` identical modulo `$E$F` vs `$I$J`); +2,857 bytes over the corpus goldens, ~+640 each in those two",
+   "discussion": "native-a-37's FIND-4 (2026-09-17); S",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Normalize local gensyms in the canonical key (or number them per body); the two goldens return to one `observe`; a pin that two bodies differing only in gensyms share."
+  },
+  {
+   "id": "N98",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — N94's class SURVIVES outside the rowed surface: swallowed `\\`-continuations (a run of ~15–18 spaces mid-sentence) at `vilan-core/src/macros.rs:1535` (a clippy `#[allow(.., reason = \"…\")]`), `vilan-lsp/src/document.rs:18661` (an assertion), `vilan-core/src/formatter.rs:13388` (a test program const) and ~15 `.vl` program consts in test files (`module_resolution.rs` 1344/5541/5626/5768/5791, `check_scope_differential.rs` 826/833, `hmr.rs` 558, `document.rs` 9312–9434, `inference/generics.rs` 1603, `build_hooks.rs` 1262, `grammar_ebnf.rs` 137/141/145/168); N94's gate covers only what the ledger enumerates",
+   "discussion": "hygiene-37's FIND 1 (2026-09-17)",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "A second gate over prose literals in `src/` (three consecutive spaces inside a string literal) with an exemption list for the aligned tables (`formatter.rs`'s `StyleMethod` rows, `bindgen.rs`'s report columns); fix the sites it names."
+  },
+  {
+   "id": "N99",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — two user-visible messages the ledger's widened walk still cannot reach: (1) `asset::staged`'s registry refusal — `const_eval.rs`'s helpers return `Err(String)` and are re-wrapped at `Err(message) => Err(Failure::new(.., message))`, a variable not a literal; (2) the derive LOAD-ORDERING message (`[derive({name})]` expanded before std's `{module}` declared its `{name}` macro: a compiler load-ordering bug (B21's class); please report how this module is reached`) lives in a `let msg = if … else …` ladder handed over by field shorthand — its sibling arm (row 434) and both `[service]` arms (rows 161, 418) are rowed, this one is not, and it is not in `ROWS_THE_ENUMERATION_CANNOT_REACH` either, so nothing reds",
+   "discussion": "hygiene-37's FIND 2 + dx-37's FIND 1 (2026-09-17); hand-row both",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Row both through `ROWS_THE_ENUMERATION_CANNOT_REACH` (dx-37's report carries the derive message's exact text); the vacuity pin for each."
+  },
+  {
+   "id": "N100",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — the ledger's check (2) searches only the LONGEST fragment of a key: 283 of 558 rows carry more than one searchable fragment, so a reword of a non-longest run does not red its row. Measured: widening the search to EVERY fragment ≥ `MIN_FRAGMENT` would red exactly two rows today (494, 499), both for one cosmetic cause — their keys spell `{{`/`}}` where `normalized()` collapses them",
+   "discussion": "hygiene-37's FIND 3 (2026-09-17); cheap, strengthens 283 rows",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Fix the two keys, then widen check (2) to every fragment; a pin that a reword of a short fragment reds."
+  },
+  {
+   "id": "N101",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — two recorded FRAME figures do not reproduce and one doc claim miscounts: `deep_nesting.rs:108`'s `parse` frame says ~71.8 KiB/level unoptimized but `VILAN_DEPTH_STATS` over 30 → 130 parenthesis levels measures 32.8 KiB/level (0.98 MiB at depth 34, 4.18 MiB at 134) — either the frame shrank or the figure predates the counter's move to `parse_nested_as`; `reactive_lifetimes.rs`'s headnote says the mounted exemplar holds 'V4 plus two live-session loops' (three) where the walk measures 2; N97 re-keyed the walk's figure (42,464 B/level, was '~36 KiB') the same way",
+   "discussion": "hygiene-37's FIND 5 + native-a-37's FIND-5 (2026-09-17); re-measure and re-key",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Re-measure the parse frame with N97's method and re-key the comment (a canary if the parse walk deserves one); fix the reactive_lifetimes headnote to what the walk records."
+  },
+  {
+   "id": "N102",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — 38 vilan-cli test suites remain on the shared tmpfs after N86 (named by FILE in `BINARIES_STILL_ON_THE_SHARED_TMPFS`, so the gate holds the line without blocking a lane that adds a path to a listed file); most do not declare `mod support;`, so porting is a structural edit to ~40 files best done when few lanes are adding tests to them — and the merge lesson of Order 37: a lane that adds a NEW scratch-writing test file after the gate lands reds at the merge (perf-37's M74/M75 pins did; one line per site)",
+   "discussion": "hygiene-37's FIND 6 + the Order 37 merge (2026-09-17)",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Port the 38 in a quiet order (a hygiene lane that owns vilan-cli's tests for the order); the brief template says: new test files write under `scratch::root()`."
+  },
+  {
+   "id": "N103",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — `vilan run` creates a `dist/` that holds nothing but the compiler's memory: N92 moved `vilan check`'s macro-expansion table out of the package, but `run_single` compiles with `CompileGoal::Emit` and writes its script beside the entry, never into `dist/` — yet after `vilan run <package>` the tree holds exactly `dist/.cache/macro-expansions` and nothing else; milder than the check case (`rm -rf dist` still means what it says) but a `dist/` holding no build is misleading",
+   "discussion": "dx-37's FIND 2 (2026-09-17); N92's sibling; S",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "`run` of a single-file program uses the check cache root (it emits no artifacts into `dist/`); pin: the tree is unchanged after `vilan run`."
+  },
+  {
+   "id": "N104",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — three AST doc-comment traps that cost a lane a wrong emission each: `Expr::Number`'s three fields are `(whole, fraction, suffix)` and reading the second as the suffix turned `3.5f` into `3i32` (caught only by rustc); `Expr::StructInitializer`'s FIRST field is not the struct — the JS emitter ignores it (a commented-out `structs.get(struct_id)` still sits at transformer.rs ~6591) and takes the struct from the expression's resolved type; `diagnostics_ledger.rs`'s walk is a HARDCODED four-crate list, so a new crate carrying user-facing diagnostics (`vilan-rust`) is invisible to the ledger until someone remembers",
+   "discussion": "native-b-37's FINDS 2, 3, 5 (2026-09-17); one line each, the last a small derivation",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Doc comments on the two variants naming their fields; derive the ledger's crate list from the workspace members (a pin that every workspace crate is walked)."
+  },
+  {
+   "id": "N105",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — `manifest::toolchain_root` (B346's one-root rule) is latent-wrong for a std whose `[library]` declares `root = \".\"`: it walks up two levels from `base_root`, assuming `<package>/src`, so a source-root-less std would resolve `macro_std` one directory too high — the formula is unchanged from `resolve_macro_std`, no std in the estate does this, and the refusal would name the wrong path rather than a right one",
+   "discussion": "dx-37's FIND 4 (2026-09-17); a line, if a packaged std ever ships that shape",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Compute the toolchain root from the manifest's location, not the source root; pin with a `root = \".\"` std copy."
+  },
+  {
+   "id": "N106",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — `f64` PRINTING is a latent differential hazard the JS side never pins: node prints `Infinity`/`0` where Rust prints `inf`/`-0`, and switches to exponential outside `1e-6..1e21`; `vilan_rt::js_number` documents and implements that boundary for the Rust backend, but no corpus program prints `1e21`, `-0.0` or `Infinity`, so the JS emitter's own behaviour at the boundary is unrecorded; and `str::len` is UTF-16 on JS while the native backend's `str_len` matches it only for the BMP (surrogate pairs diverge — `vilan_rt::str_len` says so)",
+   "discussion": "native-b-37's FINDS 4 and 6 (2026-09-17); a corpus program each; the surrogate case is F1 S1b's",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Two corpus programs (numeric boundaries; a non-BMP string's `len`) with goldens on JS; the native differential names them until S1b answers the surrogate case."
+  },
+  {
+   "id": "N107",
+   "section": "N",
+   "kind": "process",
+   "area": "Hygiene & rot",
+   "title": "NEW — E69 carries TWO implementations of one arrow: the python generator's default mode (TSV → Rust table) and the Rust sync gate `html_attributes_sync.rs`, which re-renders and diffs byte for byte — held equal by the gate, so drift reds on the first `cargo test`, but duplication; and `Error.note` is ONE location by contract, with no channel for a program-level footnote (what made 'a note on the first primary error' unbuildable for E189's broad gate when that error already had a note)",
+   "discussion": "editor-37's FIND 2 + diagnostics-37's FIND 4 (2026-09-17); two small decisions",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Demote the python default mode to `--check`/`--fetch` only (the Rust gate is the authority); give `Error` a `footnotes: Vec<Note>` when the second footnote arrives (B355's gate is the first candidate)."
+  },
+  {
+   "id": "F19",
+   "section": "F",
+   "kind": "feature",
+   "area": "Native targets & rendering",
+   "title": "NEW — `vilan-rt` is NOT REACHABLE from a RELEASED binary: `native.rs::runtime_crate()` resolves `$VILAN_RT`, else this crate's SOURCE sibling — a released toolchain has neither, so `--backend rust` works only from a source checkout. Embed the runtime crate the way `vilan-embedded-std` embeds std (materialize it beside the std cache; the emitted `Cargo.toml` points at the materialized path)",
+   "discussion": "native-b-37's FIND 1 (2026-09-17); S1b-sized; BLOCKS any non-from-source use of the backend",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep); F1 S1b's first item",
+   "body": "A `vilan-embedded-rt` (or the same crate with a second table) materializing `vilan-rt` under `~/.vilan/` keyed by toolchain version; `native.rs` prefers it; a release-gate pin builds `board.vl` natively from an installed toolchain."
+  },
+  {
+   "id": "D9",
+   "section": "D",
+   "kind": "documentation",
+   "area": "Documentation",
+   "title": "NEW — editing-dx.md owes one sentence Order 37 proved twice: because the unused-import FADE and Organize Imports' PRUNE are one predicate (E114), every false positive in the fade is a code action that BREAKS a green file — E192 (a type import used only by a selector subject) would have deleted a line kolt's views.vl needs, and E168 before it; plus the §18 as-built paragraphs for E69 (the generated attribute table, its two shaping rules) and E193 (E160 already shipped the initializer; the head now resolves through the scope chain)",
+   "discussion": "editor-37's FIND 3 + hand-backs (2026-09-17); the integrator's, at the sweep",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Write the three paragraphs from editor-37's report; close when landed."
+  },
+  {
+   "id": "A109",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — `Result::expect_err` is NOT retrofitted to `lazy` while `Result::expect`, `Result::unwrap_or`, `Option::expect` (new) and `Option::unwrap_or` are (A103, Order 37): the same position with the same argument shape, now asymmetric — a trap; the differential shows zero estate call sites, so it is free",
+   "discussion": "lazy-37's FIND 1 (2026-09-17); one line of std + a pin; Order 38",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "`fun expect_err(self, lazy message: str)` beside `expect`; a pin that the message is built only on the `Ok` path; the docs' surface listing."
+  },
+  {
+   "id": "M81",
+   "section": "M",
+   "kind": "perf",
+   "area": "Performance & footprint",
+   "title": "NEW — every `unwrap_or(<literal>)` now allocates a memo cell: 111 of A103's 114 `__lazy` thunk emissions carry an INERT argument (`0`, `-1`, `\"?\"`, `false`, `[]`, an enum constant); an 'inert argument stays eager' elision in `record_lazy_arguments` would keep most of the 16 moved corpus goldens byte-identical, remove the allocation and the `__force` on the hot path, and is unobservable by construction (a literal has no effects)",
+   "discussion": "lazy-37's FIND 2 (2026-09-17); S–M; the 36-program JS delta is the evidence",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "A literal/constant argument in a lazy position is passed eagerly (no thunk, no cell); the callee's `__force` accepts a plain value; pin the elision and the non-elision (a call argument still thunks); regenerate the goldens back."
+  },
+  {
+   "id": "E200",
+   "section": "E",
+   "kind": "diagnostics",
+   "area": "LSP & tooling",
+   "title": "NEW — a DOUBLE report for one mistake, pre-existing and not widened by B344: a lazy argument reaching a resource through a FIELD of a resource binding (`hold(flag, holder.conn)`, and the same through a `&Holder` loan) gets both R9's capture message (naming the binding) and the lazy-argument message (naming the field's type, ledger row 475) — two diagnostics for one shape; closing it means deciding which owns it",
+   "discussion": "lazy-37's FIND 3 (2026-09-17); S",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "Rec: the lazy-argument message owns the shape (it names the type and the position); R9 stands down when the argument check has spoken; pin both forms at one diagnostic; row 475's vacuity pin unchanged."
+  },
+  {
+   "id": "E201",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — A101's breaking diagnostic (`A_CSS_DECLARATION_IS_A_CALL`, the flagship row at the `:`) carries NO quick fix, although the single-argument and plain-text cases are mechanical — exactly the codemod's own rules (`property: value;` → `property(value);`, typed where E167's converter types, string otherwise); it is the message every migrating program hits",
+   "discussion": "css-37's FIND 4 (2026-09-17); S–M; reuse the codemod's rules server-side",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep)",
+   "body": "A quick fix on the row rewriting one declaration (and a code action rewriting the whole block); the `!important` and glued-value shapes decline; pins in vilan-lsp document.rs."
+  },
+  {
+   "id": "B358",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — three css-block bugs css-37 found live at d783fbf4 and FIXED in-lane, recorded so the seal's notes carry them: (1) the css→chain refactor produced a block that did not compile (`inline_argument`'s `Binary` arm unwrapped `i\"{x}\"` to its hole, so `flex_grow(3)` converted to `.raw(\"flex-grow\", 3)` and `f64` is no `CssValue`) — fixed by deleting the arm; (2) the block→chain direction produced an uncompilable chain for a mixed value (`border: 1px solid {Color::gray(500)};` → an i-string hole carrying a struct, refused by row 355) — dissolved by A101; (3) a `css` block INSIDE a declaration's value reached the analyzer undesugared (`build_value` never called `take_and_desugar` on a hole's expression while `nested_link`/`chain_link` did) — three cascading 'could not be resolved' errors on a legal program; fixed and pinned (`css::tests::a_block_inside_a_declarations_argument_is_lowered`)",
+   "discussion": "css-37's FINDS 1–3 (2026-09-17); CLOSED-AT-FILING record — the fixes are in 928ccedb",
+   "status": "OPEN — filed 2026-09-17 (Order 37 sweep); close at the seal (fixed in-lane)",
+   "body": "Nothing to build; the item exists so the archive names the three defects at the sha they lived in. Close at the seal with the three pins."
+  }
+ ]
+}
