@@ -130,6 +130,8 @@
 | [L16](items/L16.md) | NEW — `std::markdown`'s ~20 strict-parse refusals enter the diagnostics ledger | process | |
 | [L18](items/L18.md) | NEW — the pages repo is the one repo in the fleet with unpinned workflow actions | process | |
 | [L20](items/L20.md) | NEW — L19's step 2, the owner's own: the Windows test leg run natively on the WSL2 host (`powershell.exe -c "cargo nextest run --workspace"` with a Windows toolchain), the one leg that is compile-only locally — three seals running, Windows had the last word | process | the owner's 'whenever' (2026-09-04); a `scripts/ci-windows-host.sh` wrapper once it works |
+| [L22](items/L22.md) | NEW — `publish-brew` mints its tap token through `app-id`, an input `actions/create-github-app-token` deprecated at v3.1.0 in favour of `client-id`: the v2 → v3 bump must switch inputs in the same change, and the App's client ID is a different value from the one `TAP_APP_ID` holds | process | the review of vilan-lang/vilan#3 (2026-09-18); needs one secret from the owner |
+| [L23](items/L23.md) | NEW — `release.yml` is exercised by nothing but a real `v*` tag, so a bump to the actions it alone uses is first RUN mid-release: it needs a dry-run lane — build → upload → download → checksum, no publishing step — before upload-artifact v7 / download-artifact v8 land | process | the review of vilan-lang/vilan#3 (2026-09-18) |
 
 ## M. Performance & footprint — NEW SECTION
 
