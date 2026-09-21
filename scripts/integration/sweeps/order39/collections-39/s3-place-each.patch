@@ -1,0 +1,223 @@
+--- vilan/std/src/browser/ui.vl	2026-09-21 17:41:34.431413541 -0400
++++ /tmp/claude-1000/-home-reed-code-vilan-lang/ae2b0352-743d-4446-aedf-1f52ad55831a/scratchpad/collections-39/s3-ui.vl.attempt	2026-09-21 17:41:34.379413540 -0400
+@@ -44,15 +44,18 @@
+ import pkg::io::panic;
+ import pkg::option::Option::{ self, None, Some };
+ import pkg::reactive::{
++	DeltaFeed,
+ 	Disposable,
+ 	Draft,
+ 	FlushPolicy,
+ 	Owner,
+ 	RowStep,
++	SeqOp,
+ 	Signal,
+ 	SignalCell,
+ 	Source,
+ 	comp,
++	defer_to_owner,
+ 	get_owner,
+ 	owner_scope,
+ 	queue_microtask,
+@@ -972,14 +975,14 @@
+ }
+ 
+ /// A keyed reactive run as a child — the `each` slot value (A85/A99).
+-export struct Each<T: PartialEq, K: PartialEq, S: Source<List<T>>, C: Slot> {
++export struct Each<T: PartialEq, K: PartialEq, S: DeltaFeed<T>, C: Slot> {
+ 	source: S,
+ 	key: |T| K,
+ 	render: (|T| C) context owner_scope,
+ }
+ 
+ /// A run keyed by the ITEM ITSELF, as a child (A42).
+-export struct EachValues<T: PartialEq, S: Source<List<T>>, C: Slot> {
++export struct EachValues<T: PartialEq, S: DeltaFeed<T>, C: Slot> {
+ 	source: S,
+ 	render: (|T| C) context owner_scope,
+ }
+@@ -1099,7 +1102,7 @@
+ /// child has no property to bind. `{each(items, key, row)}` reads as markup
+ /// where `{bind_each(..)}` read as a setter that had escaped — which is why A99
+ /// retired the method and left the value form alone.
+-export fun each<T: PartialEq, K: PartialEq, S: Source<List<T>>, C: Slot>(
++export fun each<T: PartialEq, K: PartialEq, S: DeltaFeed<T>, C: Slot>(
+ 	source: S,
+ 	key: sync |T| K,
+ 	render: (sync |T| C) context owner_scope,
+@@ -1108,7 +1111,7 @@
+ }
+ 
+ /// A run keyed by the ITEM ITSELF, as a child (A42).
+-export fun each_values<T: PartialEq, S: Source<List<T>>, C: Slot>(
++export fun each_values<T: PartialEq, S: DeltaFeed<T>, C: Slot>(
+ 	source: S,
+ 	render: (sync |T| C) context owner_scope,
+ ): EachValues<T, S, C> {
+@@ -1191,13 +1194,13 @@
+ 	}
+ }
+ 
+-export impl Each<type T: PartialEq, type K: PartialEq, type S: Source<List<T>>, type C: Slot> with Slot {
++export impl Each<type T: PartialEq, type K: PartialEq, type S: DeltaFeed<T>, type C: Slot> with Slot {
+ 	fun place(self, parent: View) {
+ 		place_each(parent, self.source, self.key, self.render);
+ 	}
+ }
+ 
+-export impl EachValues<type T: PartialEq, type S: Source<List<T>>, type C: Slot> with Slot {
++export impl EachValues<type T: PartialEq, type S: DeltaFeed<T>, type C: Slot> with Slot {
+ 	fun place(self, parent: View) {
+ 		place_each(parent, self.source, |item| item, self.render);
+ 	}
+@@ -1361,7 +1364,7 @@
+ 
+ /// `each`'s body, against a region opened at `parent`'s current end —
+ /// shared by `Each`, `EachValues` and, through them, by the two methods.
+-fun place_each<T: PartialEq, K: PartialEq, S: Source<List<T>>, C: Slot>(
++fun place_each<T: PartialEq, K: PartialEq, S: DeltaFeed<T>, C: Slot>(
+ 	parent: View,
+ 	source: S,
+ 	key: sync |T| K,
+@@ -1383,7 +1386,10 @@
+ 		}
+ 		region.close();
+ 	});
+-	source.effect(|list: List<T>| {
++	// The whole-list pass: read what the run holds, diff it against the new
++	// list, apply the plan. This is `each` as it has always been, and on the
++	// delta path below it is what a `Reset` falls back to.
++	let reconcile_pass = |list: List<T>| {
+ 		let plan = reconcile(row_keys.read(), row_items.read(), list, key, |before, after| {
+ 			before == after
+ 		});
+@@ -1487,7 +1493,128 @@
+ 		row_items.write() = list;
+ 		row_rows.write() = next_rows;
+ 		row_owners.write() = next_owners;
+-	});
++	};
++	// A112 S3: where the source's writes ARE its ops, `each` applies them to
++	// its rows and runs no pass at all. Every list read, every key projection,
++	// every plan and both A98 scans go away, because the op already says where
++	// the change is — 355.1 M Ir per change at 1,000 rows on the pass, against
++	// one row built here.
++	//
++	// The four `Shared` lists are mutated IN PLACE rather than read out and
++	// written back: `Shared::read()` bound to a local is a copy (shared.vl
++	// §6.1), and a delta-driven `each` that copied its row list per change
++	// would be paying the cost the ops exist to delete. `region.rows` is the
++	// same run under `hold_rows`, so it moves with them.
++	let splice_rows = |at: i32, removed: i32, inserted: List<T>| {
++		mut taken = 0;
++		for taken < removed {
++			// The row's extent runs from its own marker to the next boundary,
++			// and the rows after it have not moved, so this is meaningful one
++			// row at a time.
++			let end = if at + 1 < row_rows.read().len() {
++				row_rows.read()[at + 1].marker
++			} else {
++				region.anchor
++			};
++			let _cut = region.cut_row(row_rows.read()[at], end);
++			region.drop_row(row_rows.read()[at]);
++			row_owners.read()[at].dispose();
++			let _gone_row = row_rows.write().remove(at);
++			let _gone_owner = row_owners.write().remove(at);
++			let _gone_key = row_keys.write().remove(at);
++			let _gone_item = row_items.write().remove(at);
++			let _gone_held = region.rows.write().remove(at);
++			taken += 1;
++		}
++		// Everything arriving goes before the marker of the row that will
++		// follow it — the region's anchor when there is none — and each
++		// `open_row_before` lands just inside that boundary, so placing them
++		// in order places them in order.
++		let reference = if at < row_rows.read().len() {
++			row_rows.read()[at].marker
++		} else {
++			region.anchor
++		};
++		mut offset = 0;
++		let arriving = inserted.len();
++		for offset < arriving {
++			match inserted.get(offset) {
++				Some(let item) => {
++					let owner = Owner::new();
++					let row = run_with_owner(owner, || {
++						region.open_row_before(render(item), reference)
++					});
++					row_rows.write().insert(at + offset, row);
++					row_owners.write().insert(at + offset, owner);
++					row_keys.write().insert(at + offset, key(item));
++					row_items.write().insert(at + offset, item);
++					region.rows.write().insert(at + offset, row);
++				},
++				None => {},
++			}
++			offset += 1;
++		}
++	};
++	match source.delta_cursor() {
++		// A plain `Source<List<T>>` keeps today's path, exactly: no log, so
++		// nothing to apply, so the pass is the only answer there is.
++		None => source.effect(reconcile_pass),
++		Some(let cursor) => {
++			// The cursor is the boundary's, like every other subscription here:
++			// a disposed `each` stops pinning the log's history.
++			defer_to_owner(|| source.drop_delta_cursor(cursor));
++			// Attached WITHOUT the immediate call, then seeded — the order
++			// `keyed_cell_forward` takes and for its reason: the cursor was
++			// minted at the sequence the seed is taken at, so the seed is
++			// exactly the state the cursor names and nothing can run in
++			// between.
++			source.effect_on_change(|_published| {
++				for op in source.delta_since(cursor) {
++					match op {
++						SeqOp::Splice(let at, let removed, let inserted) => {
++							splice_rows(at, removed.len(), inserted);
++						},
++						// An element changed IN PLACE. Its key decides whether
++						// the row survives, exactly as the pass's plan does: a
++						// surviving key whose item is unchanged is a `Keep` and
++						// costs nothing, and anything else is the row rebuilt.
++						SeqOp::SetAt(let at, let _was, let value) => {
++							// `.get(at)` rather than `[at]`: a `Shared::read()`
++							// TEMPORARY indexed at a generic element type does
++							// not determine that type (the refusal names the
++							// list), and `get` copies the one element where
++							// binding the read would copy the whole run.
++							let same_key = match row_keys.read().get(at) {
++								Some(let held) => key(value) == held,
++								None => false,
++							};
++							let same_item = match row_items.read().get(at) {
++								Some(let held) => value == held,
++								None => false,
++							};
++							if !same_key || !same_item {
++								mut one: List<T> = [];
++								one.push(value);
++								splice_rows(at, 1, one);
++							}
++						},
++						// The wholesale write, and the lag fallback: the run
++						// has to be diffed against what arrived, which is the
++						// pass.
++						SeqOp::Reset(let items) => reconcile_pass(items),
++						// Nothing in std emits a `Move` yet (A112 §3.1), and a
++						// row-by-row DOM move nothing exercises is worse than a
++						// correct pass. The pass handles a reorder as it always
++						// has, through A98's settled-run scans.
++						SeqOp::Move(let _from, let _count, let _to) => {
++							reconcile_pass(source.get());
++						},
++					}
++				}
++			});
++			reconcile_pass(source.get());
++		},
++	}
+ }
+ 
+ /// `each_by`'s body, against a region opened at `parent`'s current end.

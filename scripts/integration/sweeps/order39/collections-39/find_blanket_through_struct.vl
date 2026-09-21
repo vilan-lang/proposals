@@ -1,0 +1,54 @@
+// FIND: a generic parameter reachable only through a BLANKET impl's trait
+// argument does not propagate out of a struct-RETURNING constructor call,
+// though the same bound infers fine in a plain call.
+import std::compare::PartialEq;
+import std::reactive::{ Signal, SignalCell, Source };
+
+trait Feed<T> {
+	fun feeds(self): bool;
+}
+
+impl type S: Source<List<type T>> with Feed<T> {
+	fun feeds(self): bool {
+		false
+	}
+}
+
+struct Holder<T: PartialEq, S: Feed<T>> {
+	source: S,
+	render: |T| str,
+}
+
+trait Placed {
+	fun place(self): bool;
+}
+
+impl Holder<type T: PartialEq, type S: Feed<T>> with Placed {
+	fun place(self): bool {
+		self.source.feeds()
+	}
+}
+
+// The SAME bound in a plain call infers `T` without help.
+fun direct<T, S: Feed<T>>(source: S): bool {
+	source.feeds()
+}
+
+fun hold<T: PartialEq, S: Feed<T>>(source: S, render: |T| str): Holder<T, S> {
+	Holder { source, render }
+}
+
+fun take<C: Placed>(content: C): bool {
+	content.place()
+}
+
+fun main() {
+	let cell: SignalCell<List<str>> = Signal::new(["a"]);
+	let plain = direct(cell);
+	print(i"direct={plain}");
+	let held = hold(cell, |item| item);
+	let placed = take(held);
+	print(i"through-a-struct={placed}");
+}
+
+main();

@@ -1,0 +1,58 @@
+// FIND: the specificity order does not rank a SUBTRAIT bound above its
+// supertrait bound, so the "optional capability" blanket cannot be written.
+import std::option::Option::{ self, None, Some };
+
+trait Base<T> {
+	fun read(self): T;
+}
+
+trait Narrow<T> with Base<T> {
+	fun extra(self): i32;
+}
+
+struct Cell {
+	n: i32,
+}
+
+impl Cell with Base<i32> {
+	fun read(self): i32 {
+		self.n
+	}
+}
+
+impl Cell with Narrow<i32> {
+	fun extra(self): i32 {
+		self.n * 2
+	}
+}
+
+trait Maybe<T> {
+	fun capability(self): Option<i32>;
+}
+
+impl type S: Base<type T> with Maybe<T> {
+	fun capability(self): Option<i32> {
+		None
+	}
+}
+
+impl type S: Narrow<type T> with Maybe<T> {
+	fun capability(self): Option<i32> {
+		Some(self.extra())
+	}
+}
+
+fun ask<T, S: Base<T> + Maybe<T>>(source: S): i32 {
+	match source.capability() {
+		Some(let value) => value,
+		None => -1,
+	}
+}
+
+fun main() {
+	let cell = Cell { n = 7 };
+	let answer = ask(cell);
+	print(i"{answer}");
+}
+
+main();
