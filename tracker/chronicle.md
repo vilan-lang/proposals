@@ -2581,3 +2581,22 @@ user.signingkey`) and `git commit` died in every worktree for an hour — three 
 plumbing, one repaired it, the lane that did it said so. Ledger rows 546–548; sweep 38 closed / 32 filed +
 the owner's eight.
 
+**SEALED (2026-09-21) at vilan next @c3f7d1a3.** CI 35642858068 green on all eleven jobs; the local seal green
+on the same tip ON ITS FIRST RUN (union 7,867/7,867, the whole-set native differential — a seal leg from this
+order on — clippy, the Windows cross-check, audit, fmt, changelog parity 539/539). Toolchain refreshed in both
+locations (`vilan 0.40.0 (c3f7d1a38)`). Ten worktrees and their branches reaped, local and remote. Ledger rows
+546–548. Sweep: 37 closed (L23 held for a green rehearsal) / 32 filed, plus the owner's eight mid-order
+(E202–E207, A113, A114); tracker 118 open. One miscompile fixed (B359's default-body hijack), two native ones
+(a loaned parameter cloned before a mutating call; a string-literal escape), one leak that was a crash (A110
+door 1), one BREAKING surface (A108's Wire receivers — the wire itself byte-identical). NOT reached: the native
+exit (`board.vl` stops at the host type `Hash` — F20). One admission: `next` was RED for about an hour between
+wire-38's merge and native-b-38's — native-a's boxed-binding pin × A108 — because wire-38's merge gates did
+not include the native differential and newer pushes cancelled the CI runs that would have said so; the second
+release rehearsal is what caught it. The template's merge gates gain `native_differential` for every lane
+touching std. L23's rehearsal: run 1 failed in four seconds (an unguarded changelog step — fixed), run 2 on a
+pre-fix tree failed on that same red, run 3 (35645802713) is on the sealed tip. Kolt on c3f7d1a38: four errors,
+all "std now ships what kolt hand-wrote" (`Default` for `List`/`Map` — model.vl:117, prefs.vl:102; `Json` /
+`FromJson` for `Result` — shared.vl:86/101, whose removal changes kolt's persisted shape from `[0, v]` to
+`{"Ok": v}`) — the owner's word. Order 39's queue, the rulings owed and kolt's owed list are in
+`sweeps/order38/notes38.md` and `go-items38.json`.
+

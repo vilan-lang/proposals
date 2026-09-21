@@ -102,5 +102,80 @@
   "B359"
  ],
  "ledger_next_id": 546,
- "tracker_open_at_go": 115
+ "tracker_open_at_go": 115,
+ "merged": {
+  "std-38": "972e2a1b",
+  "hygiene-38": "3964b830",
+  "editor-38": "a3c78b0a",
+  "perf-38": "e09f5ea6",
+  "solver-38": "5e54eed5 (one hand fold: dispatch_refine.rs)",
+  "reactive-38": "62f401dd (four goldens regenerated over the merged tree)",
+  "native-a-38": "00f396f6 (three commits re-signed by rebase)",
+  "wire-38": "96877ed7 + merge fix 7ef8db82 (census literal 121; B354's fixture)",
+  "native-b-38": "8b94888b + merge fix c3f7d1a3 (rebased by its resumed agent; the boxed-binding count)",
+  "integrator": "0ae32c52 (tmpfs list empty, headnote, M76's entry), 5a124c25 (release.yml's rehearsal gate)",
+  "tip": "c3f7d1a3",
+  "ledger_rows": "546–548"
+ },
+ "lane_reports_in_order": [
+  "papers-38",
+  "native-b-38",
+  "std-38",
+  "hygiene-38",
+  "editor-38",
+  "native-a-38",
+  "reactive-38",
+  "solver-38",
+  "wire-38",
+  "perf-38"
+ ],
+ "owner_mid_order": {
+  "rulings": [
+   "A112 §13 Q1–Q4 as recommended",
+   "A110 door 2 as recommended"
+  ],
+  "filed": [
+   "E202",
+   "E203",
+   "E204",
+   "E205",
+   "E206",
+   "E207",
+   "A113",
+   "A114"
+  ]
+ },
+ "sealed": {
+  "tip": "c3f7d1a3",
+  "ci": "35642858068 green (11/11)",
+  "local_seal": "green on the first run: union 7,867/7,867 + whole-set native + clippy + windows + audit + fmt; parity 539/539",
+  "toolchain": "vilan 0.40.0 (c3f7d1a38) in ~/.cargo/bin and ~/.vilan/bin",
+  "date": "2026-09-21",
+  "sweep": "37 closed (L23 held) / 32 filed + the owner's 8; 118 open"
+ },
+ "kolt_owed_at_the_owners_word": [
+  "model.vl:117 + prefs.vl:102 — drop the hand `Default` impls for `List`/`Map` (I4; ERRORS on c3f7d1a38)",
+  "shared.vl:86/101 — drop the hand `Json`/`FromJson` pair for `Result` (A104; ERRORS on c3f7d1a38) — CHANGES the persisted/wire JSON shape `[0, v]` → `{\"Ok\": v}`",
+  "store.vl:185 — `remove_message` drops its `bool` return (A107's awaited void; callers match `Option<RpcError>`)",
+  "styles.vl:36 `bind_attr_proper` + its one call site views.vl:62 → `bind_attr` over `Source<Option<str>>` (A105)",
+  "styles.vl:54/103 — the nine-name style imports → one `import std::style::prelude::{ … }` brace list (A106; there is NO wildcard import)",
+  "lib/storage.vl `delete_unknown_keys` → `for key in ….keys()` (A73)",
+  "client.vl:77 — one `vilan fmt` (a legitimate chain split; zero declines now, N108)",
+  "views.vl + routes.vl — the shell-key migration and the `page_content` latch, UNCOMMITTED since 2026-09-19; the latch is load-bearing (A110's DOM crash) until door 2 lands",
+  "Order 37's owed list if still owed"
+ ],
+ "order39_queue": [
+  "F18 native servers: http → db → rpc against kolt's server leg (85 measured gaps; sweeps/order38/native-a-38/kolt-server-census.txt) — with F20 (`Hash`, `lazy` parameters, overloaded operators = 29 of 68 refusals; board.vl's flip), F24 (slab free list) before per-request spawns, F23 (context flavour recorded), F21, F22",
+  "A110 door 2 — RULED: nested-forms contract, bucketed, on door 1 (retires kolt's latch)",
+  "A112 S1 (lift the delta log into std::reactive) → S3 (delta-driven `each`) → S2 (`map_each`) — RULED; M82's position index meanwhile",
+  "A114 a first-party scoped effect (design with A87/A111's owner verbs); A113's pins + guide table + its two rulings",
+  "HIGH bugs: A116 (derive(Json) crashes on null), A118 (random::range returns `high`), B360 (bindingless external fun emits a dangling name), B362 (indirect call of a lazy-parameter function), B365 (vacuous drop-planner arm)",
+  "the owner's editor asks: E207 (doubled context clause — S, root cause found), E206 (generic hover shows both signatures; after E207), E204 (`///` on fields), E202/E203 (pairs), E205 (comment reflow, opt-in first)",
+  "C14 S4 + S5 (unblocked by S1b); C15 keeps waiting (1 boxed binding)",
+  "M79 S1+S2 then re-size S4; M83 on a quiet host; M84 if wanted",
+  "E199 (write the repro first), B367 (is B318 S4's admission miss reachable), B363 (a unit literal), A117 then A106 door 2's re-census, A115",
+  "F26 (one shared monomorphisation-resolution module), N109–N112, E208–E212, K15 (website), D9, N106's two remaining halves",
+  "L23 closes on a green rehearsal (run 35645802713 on the sealed tip); then the upload-artifact v7 / download-artifact v8 Dependabot PRs; L22 waits on the App's client-ID secret",
+  "the v0.41.0 cut — HELD (the owner's call): the train now carries A101's and A108's breaking surfaces"
+ ]
 }
