@@ -1,0 +1,20 @@
+import std::ui::{ Region, Slot };
+
+struct Holder<C: Slot> {
+	body: || C,
+}
+
+impl Holder<type C: Slot> with Slot {
+	fun place(self, parent: View) {
+		let region = Region::open(parent);
+		let _row = region.open_row((self.body)());
+	}
+}
+
+fun hold<C: Slot>(body: || C) {
+	Holder { body }
+}
+
+fun main() {
+	let _root = ui::mount_root("app", || <div>{hold(|| <span>{"x"}</span>)}</div>);
+}

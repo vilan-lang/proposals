@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "A119",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — `when_some`: a conditional form that BINDS the value — `when` takes `Source<bool>` and `swap` rebuilds on every distinct value, so 'show this while the source is `Some`, with the payload in hand' has no std spelling; kolt writes it (`lib/conditional_value.vl`: `when_value<T, S: Source<Option<T>>, C: Slot>` — a hand-rolled `Slot` impl over `Region`/`Owner`) under three of its own comments: `FIXME: Implement this file with std`, `BUG: This breaks on HMR`, `FIXME: Implement cache or ignore recompute on every change`",
+   "discussion": "the kolt sweep (kolt working tree, 2026-09-21); B369 is the internal error the same file provokes",
+   "status": "OPEN — filed 2026-09-21 (the kolt sweep before Order 39)",
+   "body": "`when_some(source, |value| view)` beside `when` in both `std::ui` twins, built on `place_swap`'s machinery: dedup on the PRESENCE (None → Some builds, Some → Some with `T: PartialEq` equal does nothing, unequal rebuilds — or hands the body a derived `Source<T>` so the row survives a payload change: rule which; rec the derived source, it is what `each_by`'s row cell already does), a fresh `Owner` per instantiation. The HMR report: reproduce kolt's 'breaks on HMR' on a user-written `Slot` impl first — if a user `Slot` impl cannot survive an HMR round that is its own item (the transfer keys on std's form types?). Pins: `ui_rows` for the three transitions, `ssr_differential`, an HMR round over a `when_some` row."
+  },
+  {
+   "id": "A120",
+   "section": "A",
+   "kind": "design",
+   "area": "Reactive core & UI",
+   "title": "NEW — a `[service]` cannot be used as a PLAIN HTTP API: kolt's login/register must run BEFORE a socket can be authorized, so it hand-writes the whole path — `mod KoltAuth` (store.vl:51 `FIXME: Make into a http api service (no real-time mechanics)`), a hand `match parse_path(request)` building JSON responses (server.vl:31 `FIXME: Support basic http apis as services`), and `fetch::post(\"/api/login\", body)` + `Result<AccountToken, str>::from_json` on the client (comp/login.vl:77/181). The connectionless `POST {mount}rpc` leg EXISTS on the server (transport-rpc; `rpc_http.rs`) — what is missing is a CLIENT that speaks it without a socket, and a story for a service that is ONLY that",
+   "discussion": "the kolt sweep (2026-09-21); transport-rpc.md §9; A78 (a handle service on the connectionless leg is refused at the mount)",
+   "status": "OPEN — filed 2026-09-21 (the kolt sweep before Order 39)",
+   "body": "PAPER first (Order 39, lane papers-39): `KoltAuthClient::connect_http(\"/auth/\")` — a generated stub whose calls are `fetch` POSTs to the existing leg (no handles, no notifications, no `client =`; refused by name at the declaration if the service declares any); `[service(http)]` or a mount-time choice; how `authorize` composes (the token a login returns is what the socket's `rpc_protocols` then carries); status codes for `RpcError`; CSRF/same-origin posture; what kolt's three sites become."
+  },
+  {
+   "id": "A121",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — no std FOCUS MANAGEMENT for an overlay: kolt's panel focuses `[x-autofocus]` or else the panel itself (lib/overlay.vl:536 `FIXME: Focus the panel in such a way that tab moves to the first tab-able thing. Or even better, make the overlay the only tab-able container (opt-in/opt-out), even for menus, without making the top-level container inert`) — a focus TRAP and a first-tabbable query are both hand-work today",
+   "discussion": "the kolt sweep (2026-09-21); A45 (`on_mount`/`autofocus`/`Element::focus`, closed Order 28) is the neighbour",
+   "status": "OPEN — filed 2026-09-21 (the kolt sweep before Order 39)",
+   "body": "`std::dom`: `Element::tabbable(): List<Element>` (the standard tabbable selector + visibility/disabled filter), `Element::focus_first()`; `std::ui`: `View::focus_scope()` — Tab/Shift+Tab cycle within the subtree while mounted, restoring focus to the previously focused element on disposal (the owner's `defer`), WITHOUT `inert` on the rest of the page (kolt's menus need the page live). Paper section first (papers-39) — the trap's interaction with nested overlays and with `autofocus` is the design."
+  },
+  {
+   "id": "B368",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — a TUPLE PATTERN in a `for` header does not parse, and the refusal is unreadable: `for (i, item) in list.iter().enumerate() { .. }` → `found 'for' expected a statement or '}'` anchored on the `for` keyword — no mention of the pattern; kolt writes a manual counter around it (lib/search.vl:26) and destructures inside the body elsewhere (`let (index, message) = pair;`)",
+   "discussion": "the kolt sweep (2026-09-21); reproduced on c3f7d1a38 with a five-line program; B183 (tuple comprehension) and A80 (no mutable pattern binding) are neighbours, neither covers this",
+   "status": "OPEN — filed 2026-09-21 (the kolt sweep before Order 39)",
+   "body": "Admit a PATTERN where the `for` header takes a binder (tuple first; a struct pattern if the grammar's `let` already takes one — read `parse_let`'s pattern production and share it); EBNF + grammar_sync + formatter; the refusal for a still-unsupported pattern names the pattern and says 'bind the element and destructure in the body'. Native backend: the Rust emitter's `for` arm takes the same pattern (F20 owns the `Iterator` `for`)."
+  },
+  {
+   "id": "B369",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — an INTERNAL error on a user-written generic `Slot` impl: kolt's working tree (2026-09-21) — `lib/conditional_value.vl`'s `impl ConditionalValue<type T, type S: Source<Option<T>>, type C: Slot> with Slot`, whose `place` calls `region.open_row((self.body)(value))` with `body: (\\|T\\| C) context owner_scope`, used from channel.vl as `when_value(reactive::combine((message, author)).map(..zip..), \\|(message, author)\\| <div>..</div>)` — fails `vilan check` with `internal: a call resolved to Slot's requirement place, which has no body … The receiver's type could not be resolved to a concrete implementation at this call`, anchored in std (`browser/ui.vl:675 open_row_before<C: Slot>`). B55's guard doing its job — the bug is whatever left `C` unresolved",
+   "discussion": "the kolt sweep (2026-09-21); NOT minimized — a two-file package with the same file and the same call shape (combine/map/zip, a destructuring closure parameter, inside an `each` row) compiles clean; the failing tree is kept at proposals `projects/kolt.local/exhibits/b368-slot-place-no-body-2026-09-21.tar.gz` (gitignored; read-only evidence, never copied into vilan)",
+   "status": "OPEN — filed 2026-09-21 (the kolt sweep before Order 39)",
+   "body": "Bisect the exhibit down (start from channel.vl's call sites — there may be a second `when_value` call whose body's type is not a single `C`, e.g. a `match` or a fragment; B348/B351's generic-closure-return family is the likely neighbour); the fix lands with a pin of the minimized shape; whatever the cause, the diagnostic should anchor at the USER's call, not in std (E190's rule)."
+  }
+ ]
+}

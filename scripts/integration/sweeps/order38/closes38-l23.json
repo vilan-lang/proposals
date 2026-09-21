@@ -5,8 +5,8 @@
   {
    "id": "L23",
    "lane": "hygiene-38",
-   "commit": "3964b830",
-   "text": "`release.yml` gains `workflow_dispatch` + five tag guards + the asset-list check; the FIRST rehearsal failed in four seconds at the gate's unguarded changelog step (`## vnext`) — fixed by the integrator on next; closed on the second rehearsal's verdict (run 35640592931)"
+   "commit": "5a124c25",
+   "text": "`release.yml` gains `workflow_dispatch` + five tag guards + the asset-list check (hygiene-38, 53fc9913); rehearsal 1 failed in FOUR SECONDS at the gate's unguarded changelog step (`## vnext`) — the integrator's fix 5a124c25 asks `## Unreleased` on a non-tag ref; rehearsal 2 ran on a pre-fix tree and surfaced the hour `next` was red; rehearsal 3 (35645802713, on the sealed tip c3f7d1a3) GREEN — both gate legs, five platform builds, wasm, vsix, the asset list, the four publishing jobs and the publish job's two release steps SKIPPED, no release and no tag created (verified). The precondition for the upload-artifact v7 / download-artifact v8 Dependabot PRs is met"
   }
  ]
 }
