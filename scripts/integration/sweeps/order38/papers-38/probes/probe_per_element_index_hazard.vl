@@ -1,0 +1,261 @@
+// A112 — the INDEX HAZARD, recorded as a probe of its own.
+// vilan 0.40.0 (0fa109eb7), lane papers-38.
+//
+// The obvious per-element derivation gives each element an OWNER and lets the
+// element's effect write its result back AT ITS INDEX. That is wrong, and
+// this probe is the crash: `g`'s effect captures `at` when the element is
+// inserted, the next `Splice` shifts every later element one place, and the
+// effect then writes to a position that is not its own — here, past the end:
+//
+//   3 pushes: g=3 owners=3 derived=[2 3 4 ]
+//   scale=10: element effects fired 3 derived=[20 30 40 ]
+//   index out of bounds: the length is 2 but the index is 2
+//
+// So a per-element owner is NECESSARY and NOT SUFFICIENT: the element also
+// needs a stable HANDLE. `probe_per_element_owner.vl` is the corrected shape
+// (a per-element cell, which is `each_by`'s row-cell discipline one layer
+// down); this file is kept as the evidence for the paper's §6.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{
+	Owner, Signal, SignalCell, Source, Subscription, fresh_id, owner_scope,
+};
+import std::shared::Shared;
+
+enum SeqOp<T> {
+	Splice(i32, i32, List<T>),
+	Reset(List<T>),
+}
+
+struct SeqCursor {
+	id: i32,
+	at: Shared<i32>,
+}
+
+struct ListCell<T> {
+	elements: SignalCell<List<T>>,
+	log: Shared<List<SeqOp<T>>>,
+	version: Shared<i32>,
+	cursors: Shared<List<SeqCursor>>,
+}
+
+impl ListCell<type T> {
+	fun new(initial: List<T>): ListCell<T> {
+		ListCell {
+			elements = SignalCell::new(initial),
+			log = Shared::new([]),
+			version = Shared::new(0),
+			cursors = Shared::new([]),
+		}
+	}
+
+	fun record(self, op: SeqOp<T>) {
+		self.version.write() = self.version.read() + 1;
+		self.log.write().push(op);
+	}
+
+	fun cursor(self): SeqCursor {
+		let minted = SeqCursor {
+			id = fresh_id(),
+			at = Shared::new(self.version.read()),
+		};
+		self.cursors.write().push(minted);
+		minted
+	}
+
+	fun since(self, cursor: SeqCursor): List<SeqOp<T>> {
+		let at = cursor.at.read();
+		let version = self.version.read();
+		mut ops: List<SeqOp<T>> = [];
+		if at >= version {
+			ret ops;
+		}
+		cursor.at.write() = version;
+		mut index = at;
+		let held = self.log.read();
+		for index < held.len() {
+			match held.get(index) {
+				Some(let op) => ops.push(op),
+				None => {},
+			}
+			index += 1;
+		}
+		ops
+	}
+
+	fun splice(self, at: i32, removed: i32, inserted: List<T>) {
+		self.elements.update(|&mut list| {
+			mut taken = 0;
+			for taken < removed {
+				let _dropped = list.remove(at);
+				taken += 1;
+			}
+			mut offset = 0;
+			for offset < inserted.len() {
+				match inserted.get(offset) {
+					Some(let value) => list.insert(at + offset, value),
+					None => {},
+				}
+				offset += 1;
+			}
+			self.record(SeqOp::Splice(at, removed, inserted));
+		});
+	}
+
+	fun push(self, value: T) {
+		self.splice(self.elements.get().len(), 0, [value]);
+	}
+
+	fun remove_at(self, at: i32) {
+		self.splice(at, 1, []);
+	}
+
+	fun reset(self, value: List<T>) {
+		self.elements.update(|&mut list| {
+			list = value;
+			self.record(SeqOp::Reset(value));
+		});
+	}
+}
+
+impl ListCell<type T> with Source<List<T>> {
+	fun get(self): List<T> {
+		self.elements.get()
+	}
+
+	[must_use]
+	fun on_change(self, observer: |List<T>| void): Subscription {
+		self.elements.on_change(observer)
+	}
+}
+
+let owners_made: Shared<i32> = Shared::new(0);
+let owners_disposed: Shared<i32> = Shared::new(0);
+let g_calls: Shared<i32> = Shared::new(0);
+let element_effects: Shared<i32> = Shared::new(0);
+
+/// `map_each` with a PER-ELEMENT OWNER: `g` is called under an owner minted
+/// for that element and disposed when the element leaves. The element owners
+/// are themselves `take`n by the boundary that made the derivation, so the
+/// whole run dies with it.
+fun map_each_owned(
+	source: ListCell<i32>,
+	boundary: Owner,
+	scale: SignalCell<i32>,
+): ListCell<i32> {
+	let cursor = source.cursor();
+	let out: ListCell<i32> = ListCell<i32>::new([]);
+	let owners: Shared<List<Owner>> = Shared::new([]);
+
+	// The per-element derivation. `g` runs ONCE; what keeps tracking `scale`
+	// is the effect it registers under its own element owner.
+	let derive = |value: i32, at: i32| {
+		let owner = Owner::new();
+		owners_made.write() = owners_made.read() + 1;
+		let _held = boundary.take(owner);
+		owner_scope.run(owner, || {
+			g_calls.write() = g_calls.read() + 1;
+			scale.effect_on_change(|factor| {
+				element_effects.write() = element_effects.read() + 1;
+				out.splice(at, 1, [value * factor]);
+			});
+		});
+		owners.write().insert(at, owner);
+		value * scale.get()
+	};
+
+	let dispose_range = |at: i32, count: i32| {
+		mut taken = 0;
+		for taken < count {
+			match owners.read().get(at) {
+				Some(let owner) => {
+					owner.dispose();
+					owners_disposed.write() = owners_disposed.read() + 1;
+				},
+				None => {},
+			}
+			let _dropped = owners.write().remove(at);
+			taken += 1;
+		}
+	};
+
+	let _owned = boundary.take(source.on_change(|_list| {
+		for op in source.since(cursor) {
+			match op {
+				SeqOp::Splice(let at, let removed, let inserted) => {
+					dispose_range(at, removed);
+					mut mapped: List<i32> = [];
+					mut offset = 0;
+					for offset < inserted.len() {
+						match inserted.get(offset) {
+							Some(let value) => mapped.push(derive(value, at + offset)),
+							None => {},
+						}
+						offset += 1;
+					}
+					out.splice(at, removed, mapped);
+				},
+				SeqOp::Reset(let items) => {
+					// Every live element owner goes before any new one is made.
+					dispose_range(0, owners.read().len());
+					mut mapped: List<i32> = [];
+					mut offset = 0;
+					for offset < items.len() {
+						match items.get(offset) {
+							Some(let value) => mapped.push(derive(value, offset)),
+							None => {},
+						}
+						offset += 1;
+					}
+					out.reset(mapped);
+				},
+			}
+		}
+	}));
+	out
+}
+
+fun render(list: List<i32>): str {
+	mut out = "";
+	for value in list {
+		out = out + i"{value} ";
+	}
+	out
+}
+
+fun main() {
+	let boundary = Owner::new();
+	let scale: SignalCell<i32> = SignalCell::new(1);
+	let source: ListCell<i32> = ListCell<i32>::new([]);
+	let derived = owner_scope.run(boundary, || map_each_owned(source, boundary, scale));
+
+	source.push(2);
+	source.push(3);
+	source.push(4);
+	print(i"3 pushes: g={g_calls.read()} owners={owners_made.read()} derived=[{render(derived.get())}]");
+
+	// (2) one change of the SECOND signal fires one effect per live element.
+	let before = element_effects.read();
+	scale.set(10);
+	print(i"scale=10: element effects fired {element_effects.read() - before} derived=[{render(derived.get())}]");
+
+	// Remove the middle element: its owner goes, and its effect leaves the wave.
+	source.remove_at(1);
+	let after_removal = element_effects.read();
+	scale.set(100);
+	print(i"after remove_at(1), scale=100: effects fired {element_effects.read() - after_removal} derived=[{render(derived.get())}] g={g_calls.read()}");
+
+	// (4) a `Reset` disposes every live element owner first.
+	let disposals_before_reset = owners_disposed.read();
+	source.reset([7, 8]);
+	print(i"reset([7,8]): disposed {owners_disposed.read() - disposals_before_reset} owners, made {owners_made.read()} total, derived=[{render(derived.get())}]");
+
+	// (3) the boundary goes, and nothing is left subscribed.
+	boundary.dispose();
+	let quiet = element_effects.read();
+	scale.set(1000);
+	print(i"after boundary.dispose(), scale=1000: effects fired {element_effects.read() - quiet} (expected 0)");
+	print(i"owners made={owners_made.read()} disposed-by-hand={owners_disposed.read()} (the rest went with the boundary)");
+}
+
+main();

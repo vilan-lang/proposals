@@ -1,0 +1,131 @@
+papers-38's own A110 door-2 measurement.
+Captured 2026-09-21, vilan 0.40.0 (0fa109eb7), node v24.2.0, valgrind-3.24.0.
+
+Lane reactive-38's `scratchpad/reactive-38/door2-measurement.md` had not
+appeared when this paper was written, so the section stands on this. The
+instrument is a RELOCATED std copy reached through `$VILAN_STD` (with its
+`macro_std` sibling beside it — see the FIND below), patched by
+`door2/patch_door2.py`. No compiler build is involved and nothing in the vilan
+tree was touched.
+
+FIVE stds under `scratchpad/papers-38/door2/`:
+
+  baseline/      0fa109eb's std, unchanged (the control)
+  vilan/         door 2: derivations to a fixpoint, then effects ascending by
+                 id, phase 2 off a SNAPSHOT of the parked queue
+  popped/        as `vilan`, phase 2 popping off the LIVE queue
+  popped-scrub/  as `popped`, plus `dispose` resolving the DRAINING turn
+  scrubonly/     baseline + only the draining-turn scrub (isolates the FIND)
+  fast/          the realistic shape: a keyed park SET for O(1) dedup and
+                 liveness, one insertion sort per settle, the draining-turn
+                 scrub. Used for the cost numbers and the corpus sweep.
+  nosort/        as `fast` without the id ordering (the cost split)
+
+=============================================================================
+1. ORDERING — `probes/probe_a110_door2_nesting.vl`
+=============================================================================
+See `probes/door2_variants.out` for the full transcript.
+
+baseline        inner fires BEFORE the outer, LIVE     (built=3 live=2 dead=0)
+vilan           outer first, but the inner still fires (built=3 live=0 dead=2)
+popped          outer first, but the inner still fires (built=3 live=0 dead=2)
+popped-scrub    outer first, inner fires ZERO times    (built=3 live=0 dead=0)
+fast            outer first, inner fires ZERO times    (built=3 live=0 dead=0)
+
+So door 2's ordering rule WORKS and is NOT SUFFICIENT on its own: the parked
+effect has to be reachable by `dispose` (a live queue or a liveness set) AND
+`dispose` has to resolve the draining turn.
+
+=============================================================================
+2. THE FIND — `probes/probe_scrub_misses_draining_turn.vl`
+=============================================================================
+baseline    VICTIM fired with 10 — BOUNDARY ALREADY DISPOSED   (dead=1)
+scrubonly   the victim does not fire                            (dead=0)
+fast        the victim does not fire                            (dead=0)
+control (dispose from the turn's BODY): correct under all three.
+
+`Subscription::dispose` reads its turn with `turn_scope.get_safe()` only,
+where `notify` and `defer_to_turn` read "the ambient turn, else the currently
+DRAINING one". `turn` calls `drain(fresh)` AFTER `turn_scope.run` returns, so
+the scrub is a no-op for every dispose reached from inside a settle — which is
+every form's teardown. Independent of either door; a one-line fix.
+
+=============================================================================
+3. COST — callgrind Ir, `probes/door2_cost_template.vl`
+=============================================================================
+One source, one derivation, 40 effects on the source and 10 on the derived
+(50 parked per settle), one `set` per turn inside `turn(AtEnd, ..)`.
+Per-settle Ir is the slope between 1 and 201 turns.
+
+  loadavg 8.6–24.0 across the runs (nine other lanes building; Ir is an
+  instruction count and does not move with load).
+
+  std              Ir @1 turn      Ir @201 turns     per settle    vs baseline
+  baseline        171,341,182      255,009,385          418,341         1.00x
+  nosort          172,223,399      352,006,722          898,917         2.15x
+  fast            173,722,118      619,298,528        2,227,882         5.33x
+  popped-scrub    187,067,233    2,954,511,267       13,837,220        33.07x
+
+Read:
+  * the PHASE SPLIT alone (park set + two phases, append order) is +115%
+    — +480,576 Ir per settle over 50 effects, ~9,600 Ir per parked effect,
+    most of it the second `NativeMap` (50 contains+insert, 50 contains+remove)
+    which a real build reuses from the existing `queued` map;
+  * the ASCENDING-ID ORDER adds a further +1,328,965 Ir (60% of `fast`'s
+    total) — an insertion sort, 1,275 comparisons plus ~1,250 element moves at
+    k=50, i.e. O(k^2); a bucketed insert or a real sort is the fix;
+  * `popped-scrub`'s 33x is a SCRATCH ARTIFACT, not door 2's cost: it reads
+    and rewrites the whole `Shared<List>` per park and per pop, which is
+    O(k^2) ELEMENT COPIES per settle. It is recorded only to say why the
+    honest number is `fast`'s.
+
+So: door 2 costs roughly 5x the per-settle scheduler Ir on a 50-effect wave in
+a scratch implementation, ~2x of which is the phase split and ~3x the naive
+sort. Both halves have a known cheaper shape, so 5.33x is an UPPER BOUND, and
+the absolute figure is 2.2M Ir per settle at 50 effects against a corpus
+program that costs ~170M Ir to start node at all.
+
+=============================================================================
+4. WHICH PINS CHANGE OUTPUT ORDER — the sweep
+=============================================================================
+Every `.vl` program in `vilan/test` (131 files, 130 run clean), plus every
+`.vl` in `vilan/examples` and `vilan/benchmarks` (36 files, 4 run clean on
+this host — the rest need a browser, a port or a fixture), run under
+`baseline/std` and under `fast/std`, exit codes and stdout compared.
+
+  test corpus:            131 programs, 130 clean — ZERO output differences,
+                          ZERO exit-code differences
+  examples + benchmarks:   36 programs,   4 clean — 2 files differ, both NOISE
+                          (`benchmarks/src/main` prints wall-clock rates;
+                          `examples/walkthrough/src/server` prints node's pid
+                          in an ExperimentalWarning)
+
+**No runtime output order changes anywhere in the estate.** The shape door 2
+reorders is the nested-form one (`probe_a110_door2_nesting.vl`) and no corpus
+program contains it — which is both the argument for the build (nothing
+regresses) and the reason the pin must be ADDED with it.
+
+NOTE on goldens: the corpus GATE is a byte-comparison of EMITTED JS, not of
+runtime output, so door 2 moves every golden that carries `std::reactive`'s
+`drain` — a regeneration, not a stop-and-decide, because the runtime output is
+byte-identical (Order 38 Mechanics' R8 wording).
+
+=============================================================================
+5. FIND (separate) — a relocated std with no `macro_std` sibling
+=============================================================================
+Setting up this instrument hit B346's own failure on the path B346's pin does
+not cover. Repro, two commands:
+
+  cp -r <toolchain>/vilan/std /tmp/half-std
+  VILAN_STD=/tmp/half-std vilan run anything.vl
+
+  Error: 'Instant' does not implement trait 'PartialOrd': missing 'eq';
+  declare `fun eq(self, b: Instant): bool`
+     ╭─[ /tmp/half-std/src/compare.vl:6:6 ]
+
+Nothing names `macro_std`, nothing names the root that was searched, and the
+error points into std's own `compare.vl` — which is the exact class of untruth
+`crates/vilan-core/tests/relocated_std.rs` was written to prevent ("a root
+that carries only half a toolchain is refused by a message naming BOTH
+paths"). A symlink at the same path fails identically, so it is the ROOT that
+is wrong, not the copy. Copying `macro_std` in beside it fixes it.

@@ -1,0 +1,10 @@
+--- case 1: INLINE (no ambient turn) ---
+inline: outer disposes the inner boundary
+inline: INNER fired with 200 (boundary disposed: true)
+--- case 2: IN A TURN ---
+turn:   INNER fired with 200 (boundary disposed: false)
+turn:   outer disposes the inner boundary
+--- case 3: subscriber ids vs subscription order ---
+parent effect id=7  child effect id=8  (parent < child: true)
+route's subscriber count = 2 (the derivation and the child; the parent rides the derived cell)
+exit=0

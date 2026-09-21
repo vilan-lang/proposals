@@ -1,0 +1,274 @@
+// A112 — PURITY and the PER-ELEMENT OWNER.
+// vilan 0.40.0 (0fa109eb7), lane papers-38.
+//
+// `map_each(g)` runs `g` once per element, ever. So a `g` that reads ANOTHER
+// signal cannot be re-run by the collection operator when that signal changes
+// — the element's own reactive graph has to do it. That needs TWO things per
+// element, and `probe_per_element_index_hazard.vl` is what happens with only
+// the first:
+//
+//   * an OWNER, minted on insert and disposed on remove and on `Reset`, itself
+//     `take`n by the enclosing boundary;
+//   * a stable per-element CELL, because a position is not an identity: an
+//     index captured at insert is invalidated by the next `Splice`, and the
+//     element's effect then writes to somebody else's slot (or past the end —
+//     the hazard probe crashes with "the length is 2 but the index is 2").
+//
+// So the derived cell for an impure `g` holds per-element CELLS —
+// `ListCell<SignalCell<U>>` — which is exactly `each_by`'s row-cell
+// discipline one layer down (browser/ui.vl `place_each_by`).
+//
+// What this probe asserts:
+//   1. `g` runs once per inserted element and never again, even though what it
+//      produced keeps tracking a second signal;
+//   2. a change of that second signal fires one effect per LIVE element, so a
+//      removal takes its element out of the wave (3 → 2);
+//   3. a `Reset` disposes every live element owner before minting new ones;
+//   4. after the boundary is disposed, a change of the second signal fires
+//      ZERO element effects.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{
+	Owner, Signal, SignalCell, Source, Subscription, fresh_id, owner_scope,
+};
+import std::shared::Shared;
+
+enum SeqOp<T> {
+	Splice(i32, i32, List<T>),
+	Reset(List<T>),
+}
+
+struct SeqCursor {
+	id: i32,
+	at: Shared<i32>,
+}
+
+struct ListCell<T> {
+	elements: SignalCell<List<T>>,
+	log: Shared<List<SeqOp<T>>>,
+	version: Shared<i32>,
+	cursors: Shared<List<SeqCursor>>,
+}
+
+impl ListCell<type T> {
+	fun new(initial: List<T>): ListCell<T> {
+		ListCell {
+			elements = SignalCell::new(initial),
+			log = Shared::new([]),
+			version = Shared::new(0),
+			cursors = Shared::new([]),
+		}
+	}
+
+	fun record(self, op: SeqOp<T>) {
+		self.version.write() = self.version.read() + 1;
+		self.log.write().push(op);
+	}
+
+	fun cursor(self): SeqCursor {
+		let minted = SeqCursor {
+			id = fresh_id(),
+			at = Shared::new(self.version.read()),
+		};
+		self.cursors.write().push(minted);
+		minted
+	}
+
+	fun since(self, cursor: SeqCursor): List<SeqOp<T>> {
+		let at = cursor.at.read();
+		let version = self.version.read();
+		mut ops: List<SeqOp<T>> = [];
+		if at >= version {
+			ret ops;
+		}
+		cursor.at.write() = version;
+		mut index = at;
+		let held = self.log.read();
+		for index < held.len() {
+			match held.get(index) {
+				Some(let op) => ops.push(op),
+				None => {},
+			}
+			index += 1;
+		}
+		ops
+	}
+
+	fun splice(self, at: i32, removed: i32, inserted: List<T>) {
+		self.elements.update(|&mut list| {
+			mut taken = 0;
+			for taken < removed {
+				let _dropped = list.remove(at);
+				taken += 1;
+			}
+			mut offset = 0;
+			for offset < inserted.len() {
+				match inserted.get(offset) {
+					Some(let value) => list.insert(at + offset, value),
+					None => {},
+				}
+				offset += 1;
+			}
+			self.record(SeqOp::Splice(at, removed, inserted));
+		});
+	}
+
+	fun push(self, value: T) {
+		self.splice(self.elements.get().len(), 0, [value]);
+	}
+
+	fun remove_at(self, at: i32) {
+		self.splice(at, 1, []);
+	}
+
+	fun reset(self, value: List<T>) {
+		self.elements.update(|&mut list| {
+			list = value;
+			self.record(SeqOp::Reset(value));
+		});
+	}
+}
+
+impl ListCell<type T> with Source<List<T>> {
+	fun get(self): List<T> {
+		self.elements.get()
+	}
+
+	[must_use]
+	fun on_change(self, observer: |List<T>| void): Subscription {
+		self.elements.on_change(observer)
+	}
+}
+
+let owners_made: Shared<i32> = Shared::new(0);
+let owners_disposed: Shared<i32> = Shared::new(0);
+let g_calls: Shared<i32> = Shared::new(0);
+let element_effects: Shared<i32> = Shared::new(0);
+
+/// `map_each` with a per-element OWNER and a per-element CELL.
+fun map_each_owned(
+	source: ListCell<i32>,
+	boundary: Owner,
+	scale: SignalCell<i32>,
+): ListCell<SignalCell<i32>> {
+	let cursor = source.cursor();
+	let out: ListCell<SignalCell<i32>> = ListCell<SignalCell<i32>>::new([]);
+	let owners: Shared<List<Owner>> = Shared::new([]);
+
+	// `g` runs ONCE per element. What keeps tracking `scale` afterwards is the
+	// effect it registered under this element's own owner, writing through this
+	// element's own cell — never through a captured index.
+	let derive = |value: i32| {
+		let owner = Owner::new();
+		owners_made.write() = owners_made.read() + 1;
+		let _held = boundary.take(owner);
+		let cell: SignalCell<i32> = SignalCell::new(value * scale.get());
+		owner_scope.run(owner, || {
+			g_calls.write() = g_calls.read() + 1;
+			scale.effect_on_change(|factor| {
+				element_effects.write() = element_effects.read() + 1;
+				cell.set(value * factor);
+			});
+		});
+		owners.write().push(owner);
+		cell
+	};
+
+	// The owners stay in step with the elements positionally, which is safe
+	// because only THIS loop ever reads them and it reads them at the moment
+	// the op names the position.
+	let dispose_at = |at: i32, count: i32| {
+		mut taken = 0;
+		for taken < count {
+			match owners.read().get(at) {
+				Some(let owner) => {
+					owner.dispose();
+					owners_disposed.write() = owners_disposed.read() + 1;
+				},
+				None => {},
+			}
+			let _dropped = owners.write().remove(at);
+			taken += 1;
+		}
+	};
+
+	let _owned = boundary.take(source.on_change(|_list| {
+		for op in source.since(cursor) {
+			match op {
+				SeqOp::Splice(let at, let removed, let inserted) => {
+					dispose_at(at, removed);
+					mut mapped: List<SignalCell<i32>> = [];
+					mut offset = 0;
+					for offset < inserted.len() {
+						match inserted.get(offset) {
+							Some(let value) => mapped.push(derive(value)),
+							None => {},
+						}
+						offset += 1;
+					}
+					out.splice(at, removed, mapped);
+				},
+				SeqOp::Reset(let items) => {
+					// Every live element owner goes before any new one is made.
+					dispose_at(0, owners.read().len());
+					mut mapped: List<SignalCell<i32>> = [];
+					mut offset = 0;
+					for offset < items.len() {
+						match items.get(offset) {
+							Some(let value) => mapped.push(derive(value)),
+							None => {},
+						}
+						offset += 1;
+					}
+					out.reset(mapped);
+				},
+			}
+		}
+	}));
+	out
+}
+
+fun render(cells: List<SignalCell<i32>>): str {
+	mut out = "";
+	for cell in cells {
+		out = out + i"{cell.get()} ";
+	}
+	out
+}
+
+fun main() {
+	let boundary = Owner::new();
+	let scale: SignalCell<i32> = SignalCell::new(1);
+	let source: ListCell<i32> = ListCell<i32>::new([]);
+	let derived = owner_scope.run(boundary, || map_each_owned(source, boundary, scale));
+
+	source.push(2);
+	source.push(3);
+	source.push(4);
+	print(i"3 pushes: g={g_calls.read()} owners={owners_made.read()} derived=[{render(derived.get())}]");
+
+	// (2) one change of the SECOND signal fires one effect per live element.
+	let before = element_effects.read();
+	scale.set(10);
+	print(i"scale=10: element effects fired {element_effects.read() - before} derived=[{render(derived.get())}]");
+
+	// Remove the middle element: its owner goes, and its effect leaves the wave.
+	source.remove_at(1);
+	let after_removal = element_effects.read();
+	scale.set(100);
+	print(i"after remove_at(1), scale=100: effects fired {element_effects.read() - after_removal} derived=[{render(derived.get())}] g={g_calls.read()}");
+
+	// (4) a `Reset` disposes every live element owner first.
+	let disposals_before_reset = owners_disposed.read();
+	source.reset([7, 8]);
+	print(i"reset([7,8]): disposed {owners_disposed.read() - disposals_before_reset} owners, made {owners_made.read()} total, derived=[{render(derived.get())}]");
+
+	// (3) the boundary goes, and nothing is left subscribed.
+	boundary.dispose();
+	let quiet = element_effects.read();
+	scale.set(1000);
+	print(i"after boundary.dispose(), scale=1000: effects fired {element_effects.read() - quiet} (expected 0)");
+	print(i"owners made={owners_made.read()} disposed-by-hand={owners_disposed.read()} (the rest went with the boundary)");
+}
+
+main();

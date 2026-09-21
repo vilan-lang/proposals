@@ -1,0 +1,70 @@
+// A112 probe B, re-run on vilan 0.40.0 (0fa109eb7) — lane papers-38.
+//
+// THIS PROBE IS B359, not a design question. `List<T>` itself adopting the
+// `&mut self` trait would let one generic body serve a plain list and a
+// recorder alike; it TYPE-CHECKS and MISCOMPILES, because a trait default
+// body's `self.push(..)` is hijacked by `List`'s own `external fun push` and
+// then emitted by a mangled name nothing defines. R1 of Order 38 rules the
+// hijack (a default body's `self.name` is the TRAIT's member, always) and
+// lane solver-38 fixes it; the paper reads this probe as a ruled bug, and
+// does NOT design around it.
+//
+// Run order: face 1 (the vilan-bodied inherent, a wrong ANSWER), then face 2
+// (the `external` inherent, a `ReferenceError`). Face 2 is last because it
+// aborts the program.
+import std::io::print;
+
+// --- Face 1: the hijack, with a vilan-bodied inherent member ---------------
+
+struct Bag {
+	count: i32,
+}
+
+impl Bag {
+	fun push(&mut self, value: str) {
+		print(i"inherent push {value}");
+		self.count += 1;
+	}
+}
+
+trait Pusher<T> {
+	fun push(&mut self, value: T) {
+		print("trait push");
+	}
+
+	fun push_twice(&mut self, value: T) {
+		self.push(value);
+		self.push(value);
+	}
+}
+
+impl Bag with Pusher<str> {}
+
+// The generic-bound route: B359 records that THIS one resolves to the trait's
+// member correctly, so the two routes to one default disagree.
+fun through_bound<S: Pusher<str>>(target: &mut S) {
+	target.push("bound");
+}
+
+// --- Face 2: the miscompile, with an `external` inherent member ------------
+
+impl List<type T> with Pusher<T> {}
+
+fun main() {
+	mut bag = Bag { count = 0 };
+	print("face 1 — direct route:");
+	bag.push_twice("x");
+	print(i"count {bag.count}");
+
+	print("face 1 — generic-bound route:");
+	mut other = Bag { count = 0 };
+	through_bound(&mut other);
+	print(i"count {other.count}");
+
+	print("face 2 — List adopting the trait (expect ReferenceError):");
+	mut plain: List<str> = [];
+	plain.push_twice("x");
+	print(i"len {plain.len()}");
+}
+
+main();

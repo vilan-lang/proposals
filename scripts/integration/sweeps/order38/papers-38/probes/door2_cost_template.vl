@@ -1,0 +1,52 @@
+// A110 door 2 — the per-settle COST, measured against the same program under
+// the baseline std and under the two-phase std.
+//
+// The graph is the one door 2 costs most on: one source, one derivation, and
+// many effects, so the parked queue is long and the ascending-id insert is
+// paid per effect. 40 effects on the source and 10 on the derived (50 parked
+// per settle); `__TURNS__` turns, one `set` each. Per-settle Ir is the slope
+// between two turn counts, so node's startup and the graph's construction
+// cancel.
+//
+// Run:
+//   vilan build door2_cost_<n>.vl
+//   valgrind --tool=callgrind node --jitless door2_cost_<n>.mjs
+// once with VILAN_STD at the baseline std and once at the patched one.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{ FlushPolicy, Signal, SignalCell, Source, Subscription, turn };
+import std::shared::Shared;
+
+let sink: Shared<i32> = Shared::new(0);
+
+fun main() {
+	let source: SignalCell<i32> = SignalCell::new(0);
+	let derived = source.map(|value| value * 2);
+
+	mut held: List<Subscription> = [];
+	mut made = 0;
+	for made < 40 {
+		held.push(source.on_change(|value| {
+			sink.write() = sink.read() + value;
+		}));
+		made += 1;
+	}
+	made = 0;
+	for made < 10 {
+		held.push(derived.on_change(|value| {
+			sink.write() = sink.read() + value;
+		}));
+		made += 1;
+	}
+
+	mut round = 1;
+	for round <= __TURNS__ {
+		turn(FlushPolicy::AtEnd, || {
+			source.set(round);
+		});
+		round += 1;
+	}
+	print(i"turns=__TURNS__ subscriptions={held.len()} sink={sink.read()}");
+}
+
+main();

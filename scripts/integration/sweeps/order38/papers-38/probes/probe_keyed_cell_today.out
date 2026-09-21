@@ -1,0 +1,9 @@
+no cursor: log=1 version=2 base=1
+fresh cursor: since= (empty)
+one turn, four writes: since=Insert(4@3) Update(3) Remove(1) Insert(5@3) 
+after drain: log=4 (trimmed to what the one cursor is owed)
+parked past keyed_log_limit: since=Reset(1104)  base=1031 version=1106
+two live cursors, one op: log=76
+no cursors again: log=1
+collection holds 1106 rows
+exit=0

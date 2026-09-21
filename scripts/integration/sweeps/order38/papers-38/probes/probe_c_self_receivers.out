@@ -1,0 +1,9 @@
+seeded: calls=0
+3 pushes: calls=3 derived=[4 4 1 ] law=true
+remove_at(1): calls=3 derived=[4 1 ] law=true
+extend x2: calls=5 derived=[4 1 2 4 ] law=true
+insert_at: calls=6 derived=[4 2 1 2 4 ] law=true
+set_at: calls=7 derived=[6 2 1 2 4 ] law=true
+clear: calls=7 derived=[] law=true
+set(whole) = Reset: calls=10 derived=[1 2 3 ] law=true
+exit=0

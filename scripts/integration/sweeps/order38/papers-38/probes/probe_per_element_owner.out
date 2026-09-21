@@ -1,0 +1,7 @@
+3 pushes: g=3 owners=3 derived=[2 3 4 ]
+scale=10: element effects fired 3 derived=[20 30 40 ]
+after remove_at(1), scale=100: effects fired 2 derived=[200 400 ] g=3
+reset([7,8]): disposed 2 owners, made 5 total, derived=[700 800 ]
+after boundary.dispose(), scale=1000: effects fired 0 (expected 0)
+owners made=5 disposed-by-hand=3 (the rest went with the boundary)
+exit=0

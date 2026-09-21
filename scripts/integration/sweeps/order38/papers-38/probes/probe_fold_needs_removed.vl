@@ -1,0 +1,304 @@
+// A112 — why `Splice` must carry the REMOVED VALUES, not just a count.
+// vilan 0.40.0 (0fa109eb7), lane papers-38.
+//
+// A112 as filed writes the sequence primitive `Splice(at, removed, inserted)`
+// without saying what `removed` is. It has to be a `List<T>`, and this probe
+// is the reason: the O(1) derivative of a fold over a GROUP — `sum`, `count`,
+// `mean` — is "add what arrived, subtract what left", and a COUNT cannot say
+// what left. With `removed: i32` the operator has to read the collection,
+// which is the O(N) rerun the item exists to delete.
+//
+// Two derived values over one random op walk (400 turns, 1..4 ops per turn):
+//   * `total` — a group fold, updated in O(1) per op from the op's own
+//     payload; asserted against the naive sum every turn;
+//   * `ops_cost` — the number of ELEMENTS the derivative looked at, against
+//     `naive_cost`, the number the rerun looked at.
+//
+// The same payload is what makes the op INVERTIBLE, which is the other thing
+// a change structure wants it for (undo, and the keyed translation:
+// `Delta::Remove(key)` needs the key of the element that left).
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{ SignalCell, Signal, Source, Subscription, batch, fresh_id };
+import std::shared::Shared;
+
+// `removed` is a `List<T>`, not an `i32`.
+enum SeqOp<T> {
+	Splice(i32, List<T>, List<T>),
+	SetAt(i32, T, T),
+	Reset(List<T>),
+}
+
+struct SeqCursor {
+	id: i32,
+	at: Shared<i32>,
+}
+
+struct ListCell<T> {
+	elements: SignalCell<List<T>>,
+	log: Shared<List<SeqOp<T>>>,
+	version: Shared<i32>,
+	base: Shared<i32>,
+	cursors: Shared<List<SeqCursor>>,
+	limit: Shared<i32>,
+}
+
+impl ListCell<type T> {
+	fun new(initial: List<T>): ListCell<T> {
+		ListCell {
+			elements = SignalCell::new(initial),
+			log = Shared::new([]),
+			version = Shared::new(0),
+			base = Shared::new(0),
+			cursors = Shared::new([]),
+			limit = Shared::new(256),
+		}
+	}
+
+	fun record(self, op: SeqOp<T>) {
+		self.trim();
+		let next = self.version.read() + 1;
+		self.version.write() = next;
+		if self.log.read().len() >= self.limit.read() {
+			self.log.write() = [];
+			self.base.write() = next;
+		} else {
+			self.log.write().push(op);
+		}
+	}
+
+	fun trim(self) {
+		mut lowest = self.version.read();
+		for cursor in self.cursors.read() {
+			let at = cursor.at.read();
+			if at < lowest {
+				lowest = at;
+			}
+		}
+		let base = self.base.read();
+		if lowest > base {
+			let dropped = lowest - base;
+			mut kept: List<SeqOp<T>> = [];
+			mut index = dropped;
+			let held = self.log.read();
+			for index < held.len() {
+				match held.get(index) {
+					Some(let op) => kept.push(op),
+					None => {},
+				}
+				index += 1;
+			}
+			self.log.write() = kept;
+			self.base.write() = lowest;
+		}
+	}
+
+	fun cursor(self): SeqCursor {
+		let minted = SeqCursor { id = fresh_id(), at = Shared::new(self.version.read()) };
+		self.cursors.write().push(minted);
+		minted
+	}
+
+	fun since(self, cursor: SeqCursor): List<SeqOp<T>> {
+		let at = cursor.at.read();
+		let version = self.version.read();
+		mut ops: List<SeqOp<T>> = [];
+		if at >= version {
+			ret ops;
+		}
+		cursor.at.write() = version;
+		let base = self.base.read();
+		if at < base {
+			ops.push(SeqOp::Reset(self.elements.get()));
+			ret ops;
+		}
+		mut index = at - base;
+		let held = self.log.read();
+		for index < held.len() {
+			match held.get(index) {
+				Some(let op) => ops.push(op),
+				None => {},
+			}
+			index += 1;
+		}
+		ops
+	}
+
+	/// The primitive. `removed` is read out of the list BEFORE the splice, so
+	/// the op carries what left.
+	fun splice(self, at: i32, count: i32, inserted: List<T>) {
+		self.elements.update(|&mut list| {
+			mut taken: List<T> = [];
+			mut index = 0;
+			for index < count {
+				match list.get(at) {
+					Some(let value) => taken.push(value),
+					None => {},
+				}
+				let _dropped = list.remove(at);
+				index += 1;
+			}
+			mut offset = 0;
+			for offset < inserted.len() {
+				match inserted.get(offset) {
+					Some(let value) => list.insert(at + offset, value),
+					None => {},
+				}
+				offset += 1;
+			}
+			self.record(SeqOp::Splice(at, taken, inserted));
+		});
+	}
+
+	/// `SetAt` carries BOTH values for the same reason.
+	fun set_at(self, at: i32, value: T) {
+		self.elements.update(|&mut list| {
+			let previous = list[at];
+			list[at] = value;
+			self.record(SeqOp::SetAt(at, previous, value));
+		});
+	}
+
+	fun set(self, value: List<T>) {
+		self.elements.update(|&mut list| {
+			list = value;
+			self.record(SeqOp::Reset(value));
+		});
+	}
+
+	fun size(self): i32 {
+		self.elements.get().len()
+	}
+
+	fun push(self, value: T) {
+		self.splice(self.size(), 0, [value]);
+	}
+
+	fun insert_at(self, at: i32, value: T) {
+		self.splice(at, 0, [value]);
+	}
+
+	fun remove_at(self, at: i32) {
+		self.splice(at, 1, []);
+	}
+
+	fun clear(self) {
+		self.splice(0, self.size(), []);
+	}
+}
+
+impl ListCell<type T> with Source<List<T>> {
+	fun get(self): List<T> {
+		self.elements.get()
+	}
+
+	[must_use]
+	fun on_change(self, observer: |List<T>| void): Subscription {
+		self.elements.on_change(observer)
+	}
+}
+
+let seed: Shared<i53> = Shared::new(7i53);
+
+fun next_random(bound: i32): i32 {
+	let state = (seed.read() * 16807i53) % 2147483647i53;
+	seed.write() = state;
+	(state % bound.as_i53()).as_i32()
+}
+
+let total: Shared<i32> = Shared::new(0);
+let ops_cost: Shared<i32> = Shared::new(0);
+let naive_cost: Shared<i32> = Shared::new(0);
+let failures: Shared<i32> = Shared::new(0);
+let checks: Shared<i32> = Shared::new(0);
+let resets: Shared<i32> = Shared::new(0);
+
+fun main() {
+	let source: ListCell<i32> = ListCell<i32>::new([1, 2, 3]);
+	total.write() = 6;
+	let cursor = source.cursor();
+	let _owned = source.on_change(|_list| {
+		for op in source.since(cursor) {
+			match op {
+				// The GROUP fold's derivative: + what arrived, - what left.
+				// O(|op|), and it never touches the collection.
+				SeqOp::Splice(let _at, let removed, let inserted) => {
+					for value in removed {
+						ops_cost.write() = ops_cost.read() + 1;
+						total.write() = total.read() - value;
+					}
+					for value in inserted {
+						ops_cost.write() = ops_cost.read() + 1;
+						total.write() = total.read() + value;
+					}
+				},
+				SeqOp::SetAt(let _at, let previous, let value) => {
+					ops_cost.write() = ops_cost.read() + 2;
+					total.write() = total.read() - previous + value;
+				},
+				SeqOp::Reset(let items) => {
+					resets.write() = resets.read() + 1;
+					mut sum = 0;
+					for value in items {
+						ops_cost.write() = ops_cost.read() + 1;
+						sum += value;
+					}
+					total.write() = sum;
+				},
+			}
+		}
+	});
+
+	mut turn_index = 1;
+	for turn_index <= 400 {
+		let op_count = 1 + next_random(4);
+		batch(|| {
+			mut made = 0;
+			for made < op_count {
+				let size = source.size();
+				let choice = next_random(20);
+				if choice < 9 || size == 0 {
+					source.push(next_random(100));
+				} else if choice < 13 {
+					source.insert_at(next_random(size), next_random(100));
+				} else if choice < 16 {
+					source.remove_at(next_random(size));
+				} else if choice < 18 {
+					source.set_at(next_random(size), next_random(100));
+				} else if choice < 19 && size > 15 {
+					mut fresh: List<i32> = [];
+					mut fill = 0;
+					let length = 1 + next_random(8);
+					for fill < length {
+						fresh.push(next_random(100));
+						fill += 1;
+					}
+					source.set(fresh);
+				} else if size > 25 {
+					source.clear();
+				} else {
+					source.push(next_random(100));
+				}
+				made += 1;
+			}
+		});
+
+		mut reference = 0;
+		for value in source.get() {
+			naive_cost.write() = naive_cost.read() + 1;
+			reference += value;
+		}
+		checks.write() = checks.read() + 1;
+		if total.read() != reference {
+			failures.write() = failures.read() + 1;
+			print(i"turn {turn_index}: FAIL total={total.read()} expected={reference}");
+		}
+		turn_index += 1;
+	}
+
+	print(i"turns=400 checks={checks.read()} failures={failures.read()} resets={resets.read()}");
+	print(i"elements looked at: derivative={ops_cost.read()} naive-rerun={naive_cost.read()}");
+	print(i"final total={total.read()} length={source.size()}");
+}
+
+main();

@@ -1,0 +1,102 @@
+// A110, both faces, plus the evidence door 2's rule needs.
+// vilan 0.40.0 (0fa109eb7), lane papers-38.
+//
+// Case 1 — INLINE (no ambient turn): `SignalCell::notify`'s inline arm walks a
+//   SNAPSHOT of the subscriber list, so an observer whose owner was disposed
+//   EARLIER IN THE SAME NOTIFY still fires. That is face 2, the leak, and it
+//   is lane reactive-38's door 1.
+//
+// Case 2 — IN A TURN: `drain` runs a wave in SUBSCRIPTION order, so the inner
+//   effect (a direct subscriber of `route`) runs in wave 1 while the outer
+//   effect — which reaches `route` through the `map` derivation — is only
+//   ENQUEUED for wave 2. The child settles before the parent. That is face 1,
+//   and door 2 is the rule that fixes it.
+//
+// Case 3 — SUBSCRIBER IDS: `fresh_id` is monotonic and a parent form's effect
+//   is created before anything its render creates, so ascending id IS
+//   parent-before-child. This case prints the ids to show it, and shows that
+//   SUBSCRIPTION order on one cell does NOT carry that information (the
+//   derivation subscribes first and the effect that depends on it has the
+//   HIGHER id, so id order and wave order disagree exactly where face 1 bites).
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{
+	FlushPolicy, Owner, Signal, SignalCell, Source, Subscription, owner_scope, turn,
+};
+import std::shared::Shared;
+
+fun shell_of(route: i32): i32 {
+	// The coarse key: everything under 100 is one shell.
+	if route < 100 {
+		0
+	} else {
+		1
+	}
+}
+
+fun case_inline() {
+	print("--- case 1: INLINE (no ambient turn) ---");
+	let route: SignalCell<i32> = SignalCell::new(1);
+	let shell = route.map(shell_of);
+	let boundary = Owner::new();
+	// The INNER form: a direct subscriber of `route`, owned by the boundary.
+	owner_scope.run(boundary, || {
+		route.effect_on_change(|value| {
+			print(i"inline: INNER fired with {value} (boundary disposed: {boundary.is_disposed()})");
+		});
+	});
+	// The OUTER form: reaches `route` through the derivation, and tears the
+	// inner boundary down when the shell changes.
+	let _outer = shell.on_change(|_shell| {
+		print("inline: outer disposes the inner boundary");
+		boundary.dispose();
+	});
+	route.set(200);
+}
+
+fun case_turn() {
+	print("--- case 2: IN A TURN ---");
+	let route: SignalCell<i32> = SignalCell::new(1);
+	let shell = route.map(shell_of);
+	let boundary = Owner::new();
+	owner_scope.run(boundary, || {
+		route.effect_on_change(|value| {
+			print(i"turn:   INNER fired with {value} (boundary disposed: {boundary.is_disposed()})");
+		});
+	});
+	let _outer = shell.on_change(|_shell| {
+		print("turn:   outer disposes the inner boundary");
+		boundary.dispose();
+	});
+	turn(FlushPolicy::AtEnd, || {
+		route.set(200);
+	});
+}
+
+fun case_ids() {
+	print("--- case 3: subscriber ids vs subscription order ---");
+	let route: SignalCell<i32> = SignalCell::new(1);
+	// The PARENT form's derivation subscribes to `route` first…
+	let shell = route.map(shell_of);
+	// …and the parent's own effect, which reads the derivation, is created
+	// next, so it holds a HIGHER id than the derivation's subscriber.
+	let parent = shell.on_change(|_value| {});
+	// A child form born inside the parent's render subscribes to `route`
+	// afterwards, so its id is higher still.
+	let child = route.on_change(|_value| {});
+	print(i"parent effect id={parent.id}  child effect id={child.id}  (parent < child: {parent.id < child.id})");
+	// `route`'s own subscriber list, in SUBSCRIPTION order, is
+	// [derivation, child] — the parent is not on it at all, which is why a
+	// wave over one cell's list cannot order parent before child.
+	print(i"route's subscriber count = {route.subscribers.read().len()} (the derivation and the child; the parent rides the derived cell)");
+	parent.dispose();
+	child.dispose();
+}
+
+fun main() {
+	case_inline();
+	case_turn();
+	case_ids();
+}
+
+main();

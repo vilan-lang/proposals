@@ -1,0 +1,87 @@
+// A110 door 2 — the FAITHFUL nesting shape, run against both stds.
+// vilan 0.40.0 (0fa109eb7), lane papers-38.
+//
+// A110's own probe (reproduced in `probe_a110_wave_order.vl` case 2) creates
+// the INNER effect before the OUTER one, because it is written as two
+// independent subscriptions on one cell. A real nested form does not: the
+// outer form's effect is created when the outer form is placed, and the inner
+// form's effect is created by the OUTER's render closure, so it is created
+// later and its `fresh_id` is higher. Door 2's claim — "ascending subscriber
+// id IS parent-before-child" — is a claim about THAT order, so it has to be
+// probed on that shape.
+//
+// The shape here is `place_swap`'s, reduced to the scheduler:
+//
+//   route ──(map)──> shell ──> OUTER effect ──(render)──> a fresh boundary,
+//                                                        under which the
+//                                                        INNER effect
+//                                                        subscribes to route
+//
+// Run it twice:
+//   VILAN_STD=<door2>/baseline/std   vilan run probe_a110_door2_nesting.vl
+//   VILAN_STD=<door2>/vilan/std      vilan run probe_a110_door2_nesting.vl
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{
+	FlushPolicy, Owner, Signal, SignalCell, Source, Subscription, owner_scope, turn,
+};
+import std::shared::Shared;
+
+fun shell_of(route: i32): i32 {
+	if route < 100 {
+		0
+	} else {
+		1
+	}
+}
+
+let inner_builds: Shared<i32> = Shared::new(0);
+let inner_fires: Shared<i32> = Shared::new(0);
+let inner_fires_dead: Shared<i32> = Shared::new(0);
+
+fun main() {
+	let route: SignalCell<i32> = SignalCell::new(1);
+	let shell = route.map(shell_of);
+	let live: Shared<Option<Owner>> = Shared::new(None);
+
+	// The OUTER form. `sub` builds once now — the mount — and again on every
+	// change of the projected key, exactly like `place_swap`'s `source.effect`.
+	// Its subscriber id is therefore LOWER than any id its render mints.
+	let _outer = shell.sub(|value| {
+		print(i"outer: shell={value} — dispose the old boundary, render the new one");
+		match live.read() {
+			Some(let previous) => previous.dispose(),
+			None => {},
+		}
+		let boundary = Owner::new();
+		live.write() = Some(boundary);
+		owner_scope.run(boundary, || {
+			// The INNER form, born inside the outer's render: a direct
+			// subscriber of `route`, owned by this boundary.
+			inner_builds.write() = inner_builds.read() + 1;
+			route.effect_on_change(|inner_value| {
+				if boundary.is_disposed() {
+					inner_fires_dead.write() = inner_fires_dead.read() + 1;
+					print(i"  INNER fired with {inner_value} — BOUNDARY ALREADY DISPOSED");
+				} else {
+					inner_fires.write() = inner_fires.read() + 1;
+					print(i"  INNER fired with {inner_value} (live)");
+				}
+			});
+		});
+	});
+
+	print("--- one set that CHANGES the shell, inside a turn ---");
+	turn(FlushPolicy::AtEnd, || {
+		route.set(200);
+	});
+
+	print("--- one set that does NOT change the shell, inside a turn ---");
+	turn(FlushPolicy::AtEnd, || {
+		route.set(250);
+	});
+
+	print(i"inner boundaries built={inner_builds.read()} inner fired live={inner_fires.read()} inner fired dead={inner_fires_dead.read()}");
+}
+
+main();

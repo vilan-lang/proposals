@@ -1,0 +1,321 @@
+// A112 probe C, re-run on vilan 0.40.0 (0fa109eb7) — lane papers-38.
+//
+// `SequenceCell<T>` with `self` receivers: ONE primitive (`splice`) plus
+// `size`, every other mutator a trait DEFAULT one-liner. `ListCell<T>` is the
+// implementor; `map_each` is a derived cell that drains the op log and calls
+// `g` once per inserted/updated element and ZERO times for anything else.
+//
+// What this probe asserts:
+//   1. the defaults reach the implementor's `splice` (`self` receivers work);
+//   2. k pushes → exactly k calls of `g`;
+//   3. a `remove_at` → zero calls of `g`;
+//   4. the derived list equals `source.map(g)` after every settle;
+//   5. `clear` (a default over `size` + `splice`) → zero calls of `g`.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{ SignalCell, Source, Signal, Subscription, fresh_id };
+import std::shared::Shared;
+
+// === The op vocabulary for the SEQUENCE shape ===============================
+
+enum SeqOp<T> {
+	// `at`, how many were removed, what was inserted there.
+	Splice(i32, i32, List<T>),
+	SetAt(i32, T),
+	Reset(List<T>),
+}
+
+// === The delta source: an op log plus cursors ================================
+
+struct SeqCursor {
+	id: i32,
+	at: Shared<i32>,
+}
+
+struct ListCell<T> {
+	elements: SignalCell<List<T>>,
+	log: Shared<List<SeqOp<T>>>,
+	version: Shared<i32>,
+	base: Shared<i32>,
+	cursors: Shared<List<SeqCursor>>,
+	// Deliberately small, so the lag→`Reset` path is reachable in a probe.
+	limit: Shared<i32>,
+}
+
+impl ListCell<type T> {
+	fun new(initial: List<T>): ListCell<T> {
+		ListCell {
+			elements = SignalCell::new(initial),
+			log = Shared::new([]),
+			version = Shared::new(0),
+			base = Shared::new(0),
+			cursors = Shared::new([]),
+			limit = Shared::new(1024),
+		}
+	}
+
+	fun record(self, op: SeqOp<T>) {
+		self.trim();
+		let next = self.version.read() + 1;
+		self.version.write() = next;
+		if self.log.read().len() >= self.limit.read() {
+			self.log.write() = [];
+			self.base.write() = next;
+		} else {
+			self.log.write().push(op);
+		}
+	}
+
+	fun trim(self) {
+		mut lowest = self.version.read();
+		for cursor in self.cursors.read() {
+			let at = cursor.at.read();
+			if at < lowest {
+				lowest = at;
+			}
+		}
+		let base = self.base.read();
+		if lowest > base {
+			let dropped = lowest - base;
+			mut kept: List<SeqOp<T>> = [];
+			mut index = dropped;
+			let held = self.log.read();
+			let length = held.len();
+			for index < length {
+				match held.get(index) {
+					Some(let op) => kept.push(op),
+					None => {},
+				}
+				index += 1;
+			}
+			self.log.write() = kept;
+			self.base.write() = lowest;
+		}
+	}
+
+	fun cursor(self): SeqCursor {
+		let minted = SeqCursor { id = fresh_id(), at = Shared::new(self.version.read()) };
+		self.cursors.write().push(minted);
+		minted
+	}
+
+	fun drop_cursor(self, cursor: SeqCursor) {
+		mut kept: List<SeqCursor> = [];
+		for held in self.cursors.read() {
+			if held.id != cursor.id {
+				kept.push(held);
+			}
+		}
+		self.cursors.write() = kept;
+	}
+
+	fun since(self, cursor: SeqCursor): List<SeqOp<T>> {
+		let at = cursor.at.read();
+		let version = self.version.read();
+		mut ops: List<SeqOp<T>> = [];
+		if at >= version {
+			ret ops;
+		}
+		cursor.at.write() = version;
+		let base = self.base.read();
+		if at < base {
+			ops.push(SeqOp::Reset(self.elements.get()));
+			ret ops;
+		}
+		mut index = at - base;
+		let held = self.log.read();
+		let length = held.len();
+		for index < length {
+			match held.get(index) {
+				Some(let op) => ops.push(op),
+				None => {},
+			}
+			index += 1;
+		}
+		ops
+	}
+
+	// The wholesale write — records `Reset`, which costs N derivations.
+	fun set(self, value: List<T>) {
+		self.elements.update(|&mut list| {
+			list = value;
+			self.record(SeqOp::Reset(value));
+		});
+	}
+
+	fun set_at(self, at: i32, value: T) {
+		self.elements.update(|&mut list| {
+			list[at] = value;
+			self.record(SeqOp::SetAt(at, value));
+		});
+	}
+
+	fun get_list(self): List<T> {
+		self.elements.get()
+	}
+}
+
+impl ListCell<type T> with Source<List<T>> {
+	fun get(self): List<T> {
+		self.elements.get()
+	}
+
+	[must_use]
+	fun on_change(self, observer: |List<T>| void): Subscription {
+		self.elements.on_change(observer)
+	}
+}
+
+// === The DRY surface: one primitive, the rest are defaults ==================
+
+trait SequenceCell<T> {
+	fun size(self): i32;
+	fun splice(self, at: i32, removed: i32, inserted: List<T>);
+
+	fun push(self, value: T) {
+		self.splice(self.size(), 0, [value])
+	}
+
+	fun insert_at(self, at: i32, value: T) {
+		self.splice(at, 0, [value])
+	}
+
+	fun remove_at(self, at: i32) {
+		self.splice(at, 1, [])
+	}
+
+	fun extend(self, values: List<T>) {
+		self.splice(self.size(), 0, values)
+	}
+
+	fun clear(self) {
+		self.splice(0, self.size(), [])
+	}
+
+	fun truncate(self, length: i32) {
+		let size = self.size();
+		if size > length {
+			self.splice(length, size - length, [])
+		}
+	}
+}
+
+// The implementor writes exactly TWO members.
+impl ListCell<type T> with SequenceCell<T> {
+	fun size(self): i32 {
+		self.elements.get().len()
+	}
+
+	fun splice(self, at: i32, removed: i32, inserted: List<T>) {
+		// The op is recorded INSIDE `update`, before `update`'s single notify,
+		// so any observer that wakes sees a log that already explains the list
+		// it is about to read. (This is `KeyedCell`'s discipline verbatim.)
+		self.elements.update(|&mut list| {
+			mut taken = 0;
+			for taken < removed {
+				let _dropped = list.remove(at);
+				taken += 1;
+			}
+			mut offset = 0;
+			let count = inserted.len();
+			for offset < count {
+				match inserted.get(offset) {
+					Some(let value) => list.insert(at + offset, value),
+					None => {},
+				}
+				offset += 1;
+			}
+			self.record(SeqOp::Splice(at, removed, inserted));
+		});
+	}
+}
+
+// === `map_each`: the derivative of `map g` ==================================
+
+fun map_each<T, U>(source: ListCell<T>, g: |T| U): ListCell<U> {
+	let cursor = source.cursor();
+	let seeded = source.get().map(g);
+	let out: ListCell<U> = ListCell<U>::new(seeded);
+	let _owned = source.on_change(|_list| {
+		for op in source.since(cursor) {
+			match op {
+				SeqOp::Splice(let at, let removed, let inserted) => {
+					// The derivative of `Splice(at, r, xs)` under `map g` is
+					// `Splice(at, r, xs.map(g))` — `g` runs once per inserted
+					// element and NOTHING else is looked at.
+					out.splice(at, removed, inserted.map(g));
+				},
+				SeqOp::SetAt(let at, let value) => out.set_at(at, g(value)),
+				SeqOp::Reset(let items) => out.set(items.map(g)),
+			}
+		}
+	});
+	out
+}
+
+let calls: Shared<i32> = Shared::new(0);
+
+fun counted(text: str): i32 {
+	calls.write() = calls.read() + 1;
+	text.len()
+}
+
+fun show(label: str, derived: ListCell<i32>, source: ListCell<str>) {
+	// THE LAW, spot-checked: the derived list must equal the naive rerun.
+	mut naive: List<i32> = [];
+	for value in source.get_list() {
+		naive.push(value.len());
+	}
+	let held = derived.get_list();
+	mut rendered = "";
+	for value in held {
+		rendered = rendered + i"{value} ";
+	}
+	mut same = held.len() == naive.len();
+	mut index = 0;
+	for index < naive.len() {
+		if held.get(index).ne(naive.get(index)) {
+			same = false;
+		}
+		index += 1;
+	}
+	print(i"{label}: calls={calls.read()} derived=[{rendered}] law={same}");
+}
+
+fun main() {
+	let source: ListCell<str> = ListCell<str>::new([]);
+	let derived = map_each(source, counted);
+	print(i"seeded: calls={calls.read()}");
+
+	// (2) k pushes → exactly k calls.
+	source.push("10.5");
+	source.push("12.4");
+	source.push("7");
+	show("3 pushes", derived, source);
+
+	// (3) a removal runs `g` zero times.
+	source.remove_at(1);
+	show("remove_at(1)", derived, source);
+
+	// A default over the primitive, two elements at once: 2 calls.
+	source.extend(["aa", "bbbb"]);
+	show("extend x2", derived, source);
+
+	// `insert_at` in the middle: 1 call.
+	source.insert_at(1, "zz");
+	show("insert_at", derived, source);
+
+	// `set_at` is the in-place update: 1 call.
+	source.set_at(0, "999999");
+	show("set_at", derived, source);
+
+	// (5) `clear` — a default over `size` + `splice` — runs `g` zero times.
+	source.clear();
+	show("clear", derived, source);
+
+	// The compat path: a wholesale `set` records `Reset`, which costs N.
+	source.set(["a", "bb", "ccc"]);
+	show("set(whole) = Reset", derived, source);
+}
+
+main();

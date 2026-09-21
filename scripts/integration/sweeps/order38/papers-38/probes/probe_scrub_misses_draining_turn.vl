@@ -1,0 +1,104 @@
+// FIND — `Subscription::dispose`'s pending-queue scrub is DEAD CODE for every
+// dispose reached from inside a settle.
+// vilan 0.40.0 (0fa109eb7), lane papers-38.
+//
+// `dispose` reads its turn with `turn_scope.get_safe()` and nothing else.
+// `notify` and `defer_to_turn` both resolve "the ambient turn, ELSE the
+// currently DRAINING one" (`draining_turns`), because a closure reached during
+// a drain has no ambient turn: `turn` calls `drain(fresh)` AFTER
+// `turn_scope.run(fresh, body)` has returned, so the drain runs OUTSIDE the
+// turn's context extent. A dispose from inside a notify — which is every
+// form's teardown, since a form's own effect is what disposes the previous
+// instantiation — therefore reads `None` and scrubs nothing.
+//
+// The shape that shows it, one cell and two waves:
+//
+//   trigger ──(map)──> derived ──> VICTIM  (enqueued for wave 2)
+//   trigger ──> DISPOSER effect            (later in wave 1; disposes the
+//                                           boundary the victim is owned by)
+//
+// The victim is ENQUEUED for wave 2 by the derivation, and disposed during
+// wave 1. `dispose` removes it from `derived`'s subscriber LIST, but the
+// pending entry is a copy of the `Subscriber` struct, so only the scrub can
+// stop it — and the scrub never sees the turn.
+//
+// Expected, with today's std:   "VICTIM fired … BOUNDARY ALREADY DISPOSED"
+// Expected, with the fallback:  the victim does not fire.
+//
+// The doc comment on the scrub promises "a disposed observer never fires, even
+// if a `set` earlier in the same extent already enqueued it". That promise
+// holds only for a dispose made from the turn's BODY.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{
+	FlushPolicy, Owner, Signal, SignalCell, Source, Subscription, owner_scope, turn,
+};
+import std::shared::Shared;
+
+let victim_live: Shared<i32> = Shared::new(0);
+let victim_dead: Shared<i32> = Shared::new(0);
+
+fun main() {
+	let trigger: SignalCell<i32> = SignalCell::new(0);
+	let boundary = Owner::new();
+
+	// The derivation subscribes FIRST, so in wave 1 it runs first and ENQUEUES
+	// the victim for wave 2 …
+	let derived = trigger.map(|value| value * 10);
+
+	// … and the DISPOSER subscribes second, so it runs later in the SAME wave,
+	// while the victim is already sitting in the turn's pending queue. This is
+	// the only arrangement in which the scrub has anything to do — and it is
+	// the arrangement a nested form has, because the enclosing form reaches its
+	// source through a projection (A110's shape).
+	let _disposer = trigger.on_change(|value| {
+		print(i"disposer: trigger={value} — disposing the boundary");
+		boundary.dispose();
+	});
+
+	owner_scope.run(boundary, || {
+		derived.effect_on_change(|value| {
+			if boundary.is_disposed() {
+				victim_dead.write() = victim_dead.read() + 1;
+				print(i"  VICTIM fired with {value} — BOUNDARY ALREADY DISPOSED");
+			} else {
+				victim_live.write() = victim_live.read() + 1;
+				print(i"  VICTIM fired with {value} (live)");
+			}
+		});
+	});
+
+	print("--- one set inside a turn ---");
+	turn(FlushPolicy::AtEnd, || {
+		trigger.set(1);
+	});
+	print(i"victim fired live={victim_live.read()} dead={victim_dead.read()}");
+
+	// The control: the SAME dispose, made from the turn's BODY rather than
+	// from inside the settle. Here `turn_scope` IS established, so today's
+	// scrub works and the second victim never fires.
+	let second_trigger: SignalCell<i32> = SignalCell::new(0);
+	let second_boundary = Owner::new();
+	let second_derived = second_trigger.map(|value| value * 10);
+	let before_live = victim_live.read();
+	let before_dead = victim_dead.read();
+	owner_scope.run(second_boundary, || {
+		second_derived.effect_on_change(|value| {
+			if second_boundary.is_disposed() {
+				victim_dead.write() = victim_dead.read() + 1;
+				print(i"  CONTROL fired with {value} — BOUNDARY ALREADY DISPOSED");
+			} else {
+				victim_live.write() = victim_live.read() + 1;
+				print(i"  CONTROL fired with {value} (live)");
+			}
+		});
+	});
+	print("--- control: dispose from the turn's BODY ---");
+	turn(FlushPolicy::AtEnd, || {
+		second_trigger.set(1);
+		second_boundary.dispose();
+	});
+	print(i"control fired live={victim_live.read() - before_live} dead={victim_dead.read() - before_dead}");
+}
+
+main();

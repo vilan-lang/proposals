@@ -1,0 +1,35 @@
+Captured 2026-09-21, lane papers-38, vilan 0.40.0 (0fa109eb7), node v24.2.0,
+valgrind-3.24.0. Reproduce with `./run_all.sh --cost` (the door2 leg).
+
+Command per program:
+  VILAN_STD=<door2>/<variant>/std vilan build door2_cost_<turns>.vl
+  valgrind --tool=callgrind --callgrind-out-file=/dev/null node --jitless <program>.mjs
+
+ 10:28:42 up  1:09,  1 user,  load average: 23.95, 37.00, 30.37
+ 10:29:06 up  1:10,  1 user,  load average: 18.80, 35.00, 29.85
+ 10:29:54 up  1:11,  1 user,  load average: 10.06, 30.14, 28.47
+ 10:30:32 up  1:11,  1 user,  load average:  8.61, 27.17, 27.53
+
+door2_baseline_1         I   refs:      171,341,182
+door2_baseline_201       I   refs:      255,009,385
+door2_nosort_1           I   refs:      172,223,399
+door2_nosort_201         I   refs:      352,006,722
+door2_fast_1             I   refs:      173,722,118
+door2_fast_201           I   refs:      619,298,528
+door2_popped-scrub_1     I   refs:      187,067,233
+door2_popped-scrub_201   I   refs:    2,954,511,267
+
+Per-settle Ir = (Ir@201 - Ir@1) / 200; 50 effects parked per settle.
+
+  baseline       (255,009,385 -   171,341,182) / 200 =    418,341    1.00x
+  nosort           (352,006,722 - 172,223,399) / 200 =    898,917    2.15x
+  fast             (619,298,528 - 173,722,118) / 200 =  2,227,882    5.33x
+  popped-scrub   (2,954,511,267 - 187,067,233) / 200 = 13,837,220   33.07x
+
+`nosort` is `fast` without the ascending-id order, so the SORT's share is
+2,227,882 - 898,917 = 1,328,965 Ir (60% of door 2's measured cost) and the
+PHASE SPLIT's is 898,917 - 418,341 = 480,576 Ir (~9,600 per parked effect).
+
+`popped-scrub` reads and rewrites the whole `Shared<List>` per park and per
+pop — O(k^2) ELEMENT COPIES per settle. It is recorded to name the trap, not
+as door 2's cost.

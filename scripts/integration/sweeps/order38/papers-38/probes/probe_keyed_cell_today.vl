@@ -1,0 +1,99 @@
+// A112 — the machinery the lift moves, exercised where it already lives:
+// `KeyedCell<K, T>` in `std::rpc` (A54).
+//
+// What this probe establishes for the paper's "what `KeyedCell` is after the
+// lift" section:
+//   1. `cursor()` mints at the CURRENT version, so a fresh consumer is owed
+//      nothing;
+//   2. with NO cursor the log holds nothing at all (`trim` drops everything
+//      that nobody is owed) — the "a derivation with no subscribers should
+//      hold no cursor" rule already pays off here;
+//   3. `since(cursor)` returns exactly the ops written since that cursor last
+//      looked, and coalesces a whole turn's writes into one drain;
+//   4. a cursor that falls past the log's `base` is answered with a single
+//      `Reset` carrying the collection — the lag path, reachable here only
+//      because `keyed_log_limit` is 1024, so this probe drives 1,100 writes
+//      against a parked cursor to reach it;
+//   5. `drop_cursor` releases the history the log was holding for it.
+//
+// Point 4 is the one the paper needs measured rather than argued: it is the
+// same fallback a lifted `ListCell` inherits, and it is what makes the log
+// bounded.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{ FlushPolicy, Source, turn };
+import std::rpc::{ KeyedCell, KeyedCursor };
+import std::wire::{ Delta, Keyed };
+
+struct Row {
+	id: i32,
+	text: str,
+}
+
+impl Row with Keyed<i32> {
+	fun key(self): i32 {
+		self.id
+	}
+}
+
+fun describe(ops: List<Delta<i32, Row>>): str {
+	mut out = "";
+	for op in ops {
+		let rendered = match op {
+			Delta::Reset(let items) => i"Reset({items.len()}) ",
+			Delta::Insert(let key, let _value, let index) => i"Insert({key}@{index}) ",
+			Delta::Update(let key, let _value) => i"Update({key}) ",
+			Delta::Remove(let key) => i"Remove({key}) ",
+		};
+		out = out + rendered;
+	}
+	out
+}
+
+fun main() {
+	let cell: KeyedCell<i32, Row> = KeyedCell<i32, Row>::new([Row { id = 1, text = "a" }]);
+
+	// (2) No cursor: the log holds nothing, whatever is written.
+	cell.insert(Row { id = 2, text = "b" });
+	cell.insert(Row { id = 3, text = "c" });
+	print(i"no cursor: log={cell.log.read().len()} version={cell.version.read()} base={cell.base.read()}");
+
+	// (1) A fresh cursor is owed nothing.
+	let watcher = cell.cursor();
+	print(i"fresh cursor: since={describe(cell.since(watcher))} (empty)");
+
+	// (3) One turn, four writes, one drain.
+	turn(FlushPolicy::AtEnd, || {
+		cell.insert(Row { id = 4, text = "d" });
+		cell.update(3, |&mut row| {
+			row.text = "c2";
+		});
+		cell.remove(1);
+		cell.insert(Row { id = 5, text = "e" });
+	});
+	print(i"one turn, four writes: since={describe(cell.since(watcher))}");
+	print(i"after drain: log={cell.log.read().len()} (trimmed to what the one cursor is owed)");
+
+	// (4) A PARKED cursor pushed past the log limit (1024) — one `Reset`.
+	let parked = cell.cursor();
+	mut written = 0;
+	for written < 1100 {
+		cell.insert(Row { id = 1000 + written, text = "x" });
+		written += 1;
+	}
+	let answer = cell.since(parked);
+	print(i"parked past keyed_log_limit: since={describe(answer)} base={cell.base.read()} version={cell.version.read()}");
+
+	// (5) Retiring a cursor releases the history held for it.
+	let spare = cell.cursor();
+	cell.insert(Row { id = 9001, text = "y" });
+	print(i"two live cursors, one op: log={cell.log.read().len()}");
+	cell.drop_cursor(spare);
+	cell.drop_cursor(watcher);
+	cell.drop_cursor(parked);
+	cell.insert(Row { id = 9002, text = "z" });
+	print(i"no cursors again: log={cell.log.read().len()}");
+	print(i"collection holds {cell.get().len()} rows");
+}
+
+main();

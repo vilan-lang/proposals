@@ -1,0 +1,271 @@
+// A112 probe A, re-run on vilan 0.40.0 (0fa109eb7) — lane papers-38.
+//
+// `Sequence<T>` with `&mut self` receivers: the BATCH surface. A `Tracked<T>`
+// recorder implements only `size` + `splice` and inherits `push`/`insert_at`/
+// `remove_at`/`clear`; `cell.edit(|&mut list| ..)` hands out `&mut Tracked<T>`,
+// then appends the recorded ops and writes the value ONCE.
+//
+// What this probe asserts:
+//   1. `&mut self` defaults reach the recorder's `splice`;
+//   2. four mutations inside one `edit` produce ONE notification and FOUR ops;
+//   3. a body written against the BOUND (`fun fill<S: Sequence<str>>`) runs on
+//      the recorder — the generic-bound route B359 says is already correct;
+//   4. `map_each` over the batched cell calls `g` once per inserted element,
+//      so the batch and the incremental derivation compose.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{ SignalCell, Source, Signal, Subscription, fresh_id };
+import std::shared::Shared;
+
+enum SeqOp<T> {
+	Splice(i32, i32, List<T>),
+	Reset(List<T>),
+}
+
+// === The `&mut self` trait ==================================================
+
+trait Sequence<T> {
+	fun size(self): i32;
+	fun splice(&mut self, at: i32, removed: i32, inserted: List<T>);
+
+	fun push(&mut self, value: T) {
+		self.splice(self.size(), 0, [value])
+	}
+
+	fun insert_at(&mut self, at: i32, value: T) {
+		self.splice(at, 0, [value])
+	}
+
+	fun remove_at(&mut self, at: i32) {
+		self.splice(at, 1, [])
+	}
+
+	fun clear(&mut self) {
+		self.splice(0, self.size(), [])
+	}
+}
+
+// === The recorder: a plain list plus the ops that produced it ===============
+
+struct Tracked<T> {
+	list: List<T>,
+	ops: List<SeqOp<T>>,
+}
+
+impl Tracked<type T> with Sequence<T> {
+	fun size(self): i32 {
+		self.list.len()
+	}
+
+	fun splice(&mut self, at: i32, removed: i32, inserted: List<T>) {
+		mut taken = 0;
+		for taken < removed {
+			let _dropped = self.list.remove(at);
+			taken += 1;
+		}
+		mut offset = 0;
+		let count = inserted.len();
+		for offset < count {
+			match inserted.get(offset) {
+				Some(let value) => self.list.insert(at + offset, value),
+				None => {},
+			}
+			offset += 1;
+		}
+		self.ops.push(SeqOp::Splice(at, removed, inserted));
+	}
+}
+
+// A body written against the BOUND, not against any concrete cell — what the
+// two-trait answer buys: one algorithm serving a recorder and (once B359 is
+// fixed) a plain `List`.
+fun fill<S: Sequence<str>>(target: &mut S) {
+	target.push("from-fill-1");
+	target.push("from-fill-2");
+}
+
+// === The cell, with `edit` as its batch door ================================
+
+struct BatchCell<T> {
+	elements: SignalCell<List<T>>,
+	log: Shared<List<SeqOp<T>>>,
+	version: Shared<i32>,
+	base: Shared<i32>,
+	cursors: Shared<List<i32>>,
+	cursor_at: Shared<List<i32>>,
+}
+
+impl BatchCell<type T> {
+	fun new(initial: List<T>): BatchCell<T> {
+		BatchCell {
+			elements = SignalCell::new(initial),
+			log = Shared::new([]),
+			version = Shared::new(0),
+			base = Shared::new(0),
+			cursors = Shared::new([]),
+			cursor_at = Shared::new([]),
+		}
+	}
+
+	// One cursor per consumer, as an index into the two parallel lists — this
+	// probe only needs one, so the machinery stays minimal.
+	fun cursor(self): i32 {
+		let at = self.cursors.read().len();
+		self.cursors.write().push(fresh_id());
+		self.cursor_at.write().push(self.version.read());
+		at
+	}
+
+	fun since(self, cursor: i32): List<SeqOp<T>> {
+		let at = match self.cursor_at.read().get(cursor) {
+			Some(let value) => value,
+			None => 0,
+		};
+		let version = self.version.read();
+		mut ops: List<SeqOp<T>> = [];
+		if at >= version {
+			ret ops;
+		}
+		self.cursor_at.write()[cursor] = version;
+		let base = self.base.read();
+		if at < base {
+			ops.push(SeqOp::Reset(self.elements.get()));
+			ret ops;
+		}
+		mut index = at - base;
+		let held = self.log.read();
+		let length = held.len();
+		for index < length {
+			match held.get(index) {
+				Some(let op) => ops.push(op),
+				None => {},
+			}
+			index += 1;
+		}
+		ops
+	}
+
+	/// The BATCH door: hand the body a recorder, then publish its work as one
+	/// value write and one op run.
+	fun edit(self, body: sync |&mut Tracked<T>| void) {
+		mut recorder = Tracked { list = self.elements.get(), ops = [] };
+		body(&mut recorder);
+		let produced = recorder.list;
+		let recorded = recorder.ops;
+		self.elements.update(|&mut list| {
+			list = produced;
+			for op in recorded {
+				let next = self.version.read() + 1;
+				self.version.write() = next;
+				self.log.write().push(op);
+			}
+		});
+	}
+
+	fun get_list(self): List<T> {
+		self.elements.get()
+	}
+}
+
+impl BatchCell<type T> with Source<List<T>> {
+	fun get(self): List<T> {
+		self.elements.get()
+	}
+
+	[must_use]
+	fun on_change(self, observer: |List<T>| void): Subscription {
+		self.elements.on_change(observer)
+	}
+}
+
+let notifications: Shared<i32> = Shared::new(0);
+let ops_seen: Shared<i32> = Shared::new(0);
+let calls: Shared<i32> = Shared::new(0);
+let derived: Shared<List<i32>> = Shared::new([]);
+
+fun main() {
+	let cell: BatchCell<str> = BatchCell<str>::new(["seed"]);
+	let cursor = cell.cursor();
+	derived.write() = ["seed".len()];
+	let _owned = cell.on_change(|_list| {
+		notifications.write() = notifications.read() + 1;
+		for op in cell.since(cursor) {
+			ops_seen.write() = ops_seen.read() + 1;
+			match op {
+				SeqOp::Splice(let at, let removed, let inserted) => {
+					// `map_each`'s derivative, inline.
+					derived.write() = apply(derived.read(), at, removed, inserted);
+				},
+				SeqOp::Reset(let items) => {
+					mut mapped: List<i32> = [];
+					for item in items {
+						calls.write() = calls.read() + 1;
+						mapped.push(item.len());
+					}
+					derived.write() = mapped;
+				},
+			}
+		}
+	});
+
+	// (2) FOUR mutations in one `edit`.
+	cell.edit(|&mut list| {
+		list.push("aa");
+		list.push("bbb");
+		list.insert_at(0, "c");
+		list.remove_at(2);
+	});
+	report("one edit, four mutations", cell);
+
+	// (3) a body written against the bound.
+	cell.edit(|&mut list| {
+		fill(&mut list);
+	});
+	report("fill<S: Sequence<str>>", cell);
+
+	// (1) `clear`, a default over `size` + `splice`, in its own edit.
+	cell.edit(|&mut list| {
+		list.clear();
+	});
+	report("clear", cell);
+}
+
+fun apply(current: List<i32>, at: i32, removed: i32, inserted: List<str>): List<i32> {
+	mut out = current;
+	mut taken = 0;
+	for taken < removed {
+		let _dropped = out.remove(at);
+		taken += 1;
+	}
+	mut offset = 0;
+	let count = inserted.len();
+	for offset < count {
+		match inserted.get(offset) {
+			Some(let value) => {
+				calls.write() = calls.read() + 1;
+				out.insert(at + offset, value.len());
+			},
+			None => {},
+		}
+		offset += 1;
+	}
+	out
+}
+
+fun report(label: str, cell: BatchCell<str>) {
+	mut rendered = "";
+	for value in cell.get_list() {
+		rendered = rendered + i"{value} ";
+	}
+	mut mapped = "";
+	for value in derived.read() {
+		mapped = mapped + i"{value} ";
+	}
+	mut naive = "";
+	for value in cell.get_list() {
+		naive = naive + i"{value.len()} ";
+	}
+	print(i"{label}: notifications={notifications.read()} ops={ops_seen.read()} calls={calls.read()} list=[{rendered}] derived=[{mapped}] law={mapped == naive}");
+}
+
+main();

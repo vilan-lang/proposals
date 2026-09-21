@@ -1,0 +1,63 @@
+### probe_a110_door2_nesting.vl, four stds
+--- VILAN_STD=door2/baseline/std
+outer: shell=0 — dispose the old boundary, render the new one
+--- one set that CHANGES the shell, inside a turn ---
+  INNER fired with 200 (live)
+outer: shell=1 — dispose the old boundary, render the new one
+--- one set that does NOT change the shell, inside a turn ---
+  INNER fired with 250 (live)
+outer: shell=1 — dispose the old boundary, render the new one
+inner boundaries built=3 inner fired live=2 inner fired dead=0
+--- VILAN_STD=door2/vilan/std
+outer: shell=0 — dispose the old boundary, render the new one
+--- one set that CHANGES the shell, inside a turn ---
+outer: shell=1 — dispose the old boundary, render the new one
+  INNER fired with 200 — BOUNDARY ALREADY DISPOSED
+--- one set that does NOT change the shell, inside a turn ---
+outer: shell=1 — dispose the old boundary, render the new one
+  INNER fired with 250 — BOUNDARY ALREADY DISPOSED
+inner boundaries built=3 inner fired live=0 inner fired dead=2
+--- VILAN_STD=door2/popped/std
+outer: shell=0 — dispose the old boundary, render the new one
+--- one set that CHANGES the shell, inside a turn ---
+outer: shell=1 — dispose the old boundary, render the new one
+  INNER fired with 200 — BOUNDARY ALREADY DISPOSED
+--- one set that does NOT change the shell, inside a turn ---
+outer: shell=1 — dispose the old boundary, render the new one
+  INNER fired with 250 — BOUNDARY ALREADY DISPOSED
+inner boundaries built=3 inner fired live=0 inner fired dead=2
+--- VILAN_STD=door2/popped-scrub/std
+outer: shell=0 — dispose the old boundary, render the new one
+--- one set that CHANGES the shell, inside a turn ---
+outer: shell=1 — dispose the old boundary, render the new one
+--- one set that does NOT change the shell, inside a turn ---
+outer: shell=1 — dispose the old boundary, render the new one
+inner boundaries built=3 inner fired live=0 inner fired dead=0
+--- VILAN_STD=door2/fast/std
+outer: shell=0 — dispose the old boundary, render the new one
+--- one set that CHANGES the shell, inside a turn ---
+outer: shell=1 — dispose the old boundary, render the new one
+--- one set that does NOT change the shell, inside a turn ---
+outer: shell=1 — dispose the old boundary, render the new one
+inner boundaries built=3 inner fired live=0 inner fired dead=0
+
+### probe_scrub_misses_draining_turn.vl
+--- VILAN_STD=door2/baseline/std
+--- one set inside a turn ---
+disposer: trigger=1 — disposing the boundary
+  VICTIM fired with 10 — BOUNDARY ALREADY DISPOSED
+victim fired live=0 dead=1
+--- control: dispose from the turn's BODY ---
+control fired live=0 dead=0
+--- VILAN_STD=door2/scrubonly/std
+--- one set inside a turn ---
+disposer: trigger=1 — disposing the boundary
+victim fired live=0 dead=0
+--- control: dispose from the turn's BODY ---
+control fired live=0 dead=0
+--- VILAN_STD=door2/fast/std
+--- one set inside a turn ---
+disposer: trigger=1 — disposing the boundary
+victim fired live=0 dead=0
+--- control: dispose from the turn's BODY ---
+control fired live=0 dead=0

@@ -1,0 +1,225 @@
+// A112 — the cost of ONE push into 1,000 rows: `each`'s SCAN half today
+// (`reconcile` + A98's settled-run scan + the bookkeeping loops) against a
+// DELTA-driven `each` (apply one `Splice` to the row list).
+//
+// Every DOM call is excluded from both sides, deliberately: A98 already
+// measured and pinned the DOM half (1,000 rows, append: row cuts 1,000 → 0,
+// one `insertBefore`), and a probe cannot call the DOM under node anyway. What
+// is left is exactly the work the delta path DELETES rather than shrinks.
+//
+// Both paths keep their state where `place_each` keeps it — in `Shared` cells
+// — so the copies each one really pays are counted:
+//   * the scan path reads `row_keys`/`row_items`/`row_rows` out (three
+//     1,000-element copies, exactly `place_each`'s `.read()`s), runs the
+//     reconcile plan and the two A98 scans, and writes three fresh lists back;
+//   * the delta path inserts ONE row handle in place and holds no keys and no
+//     items at all — there is nothing to diff against.
+//
+// `settled_steps` and `row_references` are PRIVATE to browser/ui.vl, so they
+// are copied here verbatim (A98's bodies) with `Text` markers modelled as
+// `i32` row handles — the scans are identical in shape and count.
+//
+// Generated with MODE = __MODE__ (0 = scan, 1 = delta) and
+// REPEATS = __REPEATS__; per-change Ir is the SLOPE between two REPEATS
+// values, so node's startup and the 1,000-row build cancel out.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{ ReconcilePlan, RowStep, reconcile };
+import std::shared::Shared;
+
+let rows_total: i32 = 1000;
+
+fun settled_steps(steps: List<RowStep>): List<bool> {
+	mut forward: List<bool> = [];
+	mut forward_count = 0;
+	mut highest = -1;
+	for step in steps {
+		match step {
+			RowStep::Keep(let index) => {
+				if index > highest {
+					highest = index;
+					forward_count += 1;
+					forward.push(true);
+				} else {
+					forward.push(false);
+				}
+			},
+			_ => {
+				forward.push(false);
+			},
+		}
+	}
+	mut backward: List<bool> = [];
+	mut backward_count = 0;
+	mut lowest = steps.len();
+	mut at = steps.len() - 1;
+	for at >= 0 {
+		match steps[at] {
+			RowStep::Keep(let index) => {
+				if index < lowest {
+					lowest = index;
+					backward_count += 1;
+					backward.push(true);
+				} else {
+					backward.push(false);
+				}
+			},
+			_ => {
+				backward.push(false);
+			},
+		}
+		at -= 1;
+	}
+	if forward_count >= backward_count {
+		forward
+	} else {
+		backward.reverse()
+	}
+}
+
+fun row_references(
+	steps: List<RowStep>,
+	rows: List<i32>,
+	settled: List<bool>,
+	anchor: i32,
+): List<i32> {
+	mut references: List<i32> = [];
+	mut reference = anchor;
+	mut at = steps.len() - 1;
+	for at >= 0 {
+		references.push(reference);
+		if settled[at] {
+			match steps[at] {
+				RowStep::Keep(let index) => {
+					reference = rows[index];
+				},
+				_ => {},
+			}
+		}
+		at -= 1;
+	}
+	references.reverse()
+}
+
+let row_keys: Shared<List<i32>> = Shared::new([]);
+let row_items: Shared<List<i32>> = Shared::new([]);
+let row_rows: Shared<List<i32>> = Shared::new([]);
+
+/// `place_each`'s effect body, with the DOM calls removed and nothing else.
+fun scan_pass(list: List<i32>, next_handle: i32) {
+	let previous_keys = row_keys.read();
+	let previous_items = row_items.read();
+	let previous_rows = row_rows.read();
+	let plan = reconcile(previous_keys, previous_items, list, |item| item, |before, after| {
+		before == after
+	});
+	let settled = settled_steps(plan.steps);
+	let references = row_references(plan.steps, previous_rows, settled, -1);
+	mut staying: List<bool> = [];
+	mut fill = 0;
+	for fill < previous_rows.len() {
+		staying.push(false);
+		fill += 1;
+	}
+	mut settled_at = 0;
+	for step in plan.steps {
+		if settled[settled_at] {
+			match step {
+				RowStep::Keep(let index) => {
+					staying[index] = true;
+				},
+				_ => {},
+			}
+		}
+		settled_at += 1;
+	}
+	mut cut: List<bool> = [];
+	mut at = 0;
+	for _row in previous_rows {
+		if staying[at] {
+			cut.push(false);
+		} else {
+			// `region.cut_row(..)` would happen here.
+			cut.push(true);
+		}
+		at += 1;
+	}
+	mut next_rows: List<i32> = [];
+	mut position = 0;
+	for step in plan.steps {
+		let _reference = references[position];
+		match step {
+			RowStep::Keep(let index) => {
+				next_rows.push(previous_rows[index]);
+			},
+			RowStep::Refresh(let index) => {
+				let _replaced = previous_rows[index];
+				next_rows.push(next_handle + position);
+			},
+			RowStep::Fresh => {
+				next_rows.push(next_handle + position);
+			},
+		}
+		position += 1;
+	}
+	mut next_keys: List<i32> = [];
+	for item in list {
+		next_keys.push(item);
+	}
+	row_keys.write() = next_keys;
+	row_items.write() = list;
+	row_rows.write() = next_rows;
+}
+
+/// The delta path: one op, applied to the row list IN PLACE. No keys, no
+/// items, nothing scanned.
+fun delta_pass(at: i32, removed: i32, inserted: List<i32>) {
+	mut taken = 0;
+	for taken < removed {
+		let _dropped = row_rows.write().remove(at);
+		taken += 1;
+	}
+	mut offset = 0;
+	let count = inserted.len();
+	for offset < count {
+		match inserted.get(offset) {
+			Some(let handle) => row_rows.write().insert(at + offset, handle),
+			None => {},
+		}
+		offset += 1;
+	}
+}
+
+fun main() {
+	mut keys: List<i32> = [];
+	mut items: List<i32> = [];
+	mut rows: List<i32> = [];
+	mut seed = 0;
+	for seed < rows_total {
+		keys.push(seed);
+		items.push(seed);
+		rows.push(seed);
+		seed += 1;
+	}
+	row_keys.write() = keys;
+	row_items.write() = items;
+	row_rows.write() = rows;
+
+	mut round = 0;
+	mut handle = rows_total;
+	for round < __REPEATS__ {
+		// ONE push at the end of the list — the commonest change there is.
+		if __MODE__ == 0 {
+			mut list = row_items.read();
+			list.push(handle);
+			scan_pass(list, handle + 1);
+		} else {
+			delta_pass(row_rows.read().len(), 0, [handle]);
+		}
+		handle += 1;
+		round += 1;
+	}
+	print(i"mode=__MODE__ repeats=__REPEATS__ rows={row_rows.read().len()}");
+}
+
+main();

@@ -1,0 +1,42 @@
+Captured 2026-09-21, lane papers-38, vilan 0.40.0 (0fa109eb7), node v24.2.0,
+valgrind-3.24.0. Reproduce with `./run_all.sh --cost`.
+
+Command per program:
+  vilan build <program>.vl
+  valgrind --tool=callgrind --callgrind-out-file=/dev/null node --jitless <program>.mjs
+
+ 10:05:21 up 46 min,  1 user,  load average: 20.71, 14.09, 6.68
+ 10:07:15 up 48 min,  1 user,  load average: 17.95, 15.30, 7.96
+ 10:09:24 up 50 min,  1 user,  load average: 16.31, 15.22, 8.85
+
+(loadavg is high because nine other Order 38 lanes were building; Ir is
+instruction COUNT, so it is insensitive to load — the loadavg is recorded
+per the Mechanics rule, not because it enters the number.)
+
+each_cost_scan_1        I   refs:        523,525,905
+each_cost_scan_21       I   refs:      7,692,622,869
+each_cost_delta_1       I   refs:        169,537,118
+each_cost_delta_21      I   refs:        169,984,056
+
+each_scale_500_1        I   refs:        265,273,889
+each_scale_500_11       I   refs:      1,216,117,393
+each_scale_2000_1       I   refs:      1,536,365,826
+each_scale_2000_11      I   refs:     15,235,304,665
+
+Per-change Ir = slope between the two repeat counts (node startup and the
+initial N-row build cancel):
+
+  scan path, 1,000 rows   (7,692,622,869 - 523,525,905) / 20 = 358,454,848
+  delta path, 1,000 rows    (169,984,056 - 169,537,118) / 20 =      22,347
+  ratio                                                       ≈ 16,040x
+
+  scan path,   500 rows  (1,216,117,393 -   265,273,889) / 10 =  95,084,350
+  scan path, 2,000 rows (15,235,304,665 - 1,536,365,826) / 10 = 1,369,893,884
+
+  500 -> 1,000  3.77x     1,000 -> 2,000  3.82x     => QUADRATIC in N.
+
+Cross-check on the 1,000-row scan figure without the slope: the delta run's
+baseline is (169,537,118 - 22,347) = 169,514,771 Ir of node startup plus the
+1,000-row build, so one scan pass on top of the same baseline is
+523,525,905 - 169,514,771 = 354,011,134 Ir — within 1.2% of the slope, and the
+residual is the list growing 1,000 -> 1,021 across the 21 rounds.
