@@ -1,0 +1,47 @@
+import std::reactive::{ Owner, owner_scope, Signal, SignalCell, Source, get_owner, run_with_owner };
+import std::shared::Shared;
+
+// `effect`, but each run gets its own Owner: whatever the body registers
+// (defer, take, a nested effect) is torn down BEFORE the next run and when
+// the enclosing owner goes.
+fun scoped_effect<T>(source: SignalCell<T>, body: (sync |T| void) context owner_scope) {
+	let current: Shared<Option<Owner>> = Shared::new(None);
+	let run = |value: T| {
+		match current.read() {
+			Some(let previous) => previous.dispose(),
+			None => {},
+		}
+		let fresh = Owner::new();
+		current.write() = Some(fresh);
+		run_with_owner(fresh, || body(value));
+	};
+	source.effect(run);
+	get_owner().defer(|| {
+		match current.read() {
+			Some(let last) => last.dispose(),
+			None => {},
+		}
+	});
+}
+
+fun main() {
+	let id = Signal::new(1);
+	let other = Signal::new("a");
+	let boundary = Owner::new();
+	run_with_owner(boundary, || {
+		scoped_effect(id, |value| {
+			print(i"run {value}");
+			get_owner().defer(|| print(i"  cleanup {value}"));
+			// a nested subscription made per run: dies with the run
+			other.effect(|text| print(i"  inner {value} sees {text}"));
+		});
+	});
+	id.set(2);
+	other.set("b");
+	id.set(3);
+	print("dispose boundary");
+	boundary.dispose();
+	id.set(4);
+	other.set("c");
+	print("done");
+}
