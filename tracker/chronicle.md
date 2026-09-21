@@ -2547,3 +2547,37 @@ E194–E197, E200, E201; hygiene-38 N98–N105, N107, L23, first; wire-38 A108 a
 A112 incremental-collections paper (the receiver question already probed: two traits over one `splice`
 primitive) and door 2's section. Filed since the seal and committed at GO: A110, A111, A112, B359. Ten
 Opus lanes; ledger next id 546; tracker 115 open at GO.
+
+**MERGED (2026-09-21) — all nine code lanes at vilan next @c3f7d1a3; papers-38's two documents in proposals.**
+std-38 972e2a1b (A104 — `Result` crosses JSON in the codecs' own `{"Ok":…}` spelling; A109; I4 — three
+containers were missing `Default`, not six; I3's `filter_map` twice; A106's door 1, with R7 CORRECTED — the
+language has no wildcard import — and door 2 shut on a 6/40 collision census); hygiene-38 3964b830 (N98's
+prose-literal gate over eight crates, 38 sites; N99–N105, N107; N102 38 → 3, → 0 by the integrator; L23's
+dispatch rehearsal, whose FIRST run failed in four seconds at an unguarded changelog step — fixed on next);
+editor-38 a3c78b0a (E198's residence/frozen split; N108, whose diagnosis was wrong — a `const { … };`
+statement lost its terminator and the decline named the file's first item; E194–E197, E200, E201); perf-38
+e09f5ea6 (M78's CPU phase marks; M76 — kolt reused 0/69 → 59/69, −10 to −14 % thread CPU per keystroke on a
+quiet box; M77; M80 — eleven goldens back; M81 — `__lazy(` 84 → 19; M79 as a paper that re-sizes itself);
+solver-38 5e54eed5 (B359 under R1 — one affected shape in the estate, `Ord::clamp` over the integers; B354 —
+three of six codec blocks private again; B356; B357; B355's broad gate behind a non-diagnostic face — kolt
+copy 35 → 1, E191 closed; E199 not built; one hand fold in `dispatch_refine.rs` against perf-38); reactive-38
+62f401dd (A110 door 1 — THREE faces, and the DOM face is a hard crash on the base, so kolt's latch is
+load-bearing; the scrub fix papers-38 found and relayed mid-order; A105; A73; door 2 measured at +23.5 %
+bucketed; four goldens regenerated over the merged tree, runtime-identical); native-a-38 00f396f6 (F19; F1 S1b
+— generics by reproducing the JS emitter's mechanism; the whole-set differential 29 → 47 byte-identical and
+4 broken → 0, the base having been RED where §10 said 0; three unsigned commits re-signed by rebase); wire-38
+7ef8db82 (A108 BREAKING — `Shared::new(` 128 → 118, the wire byte-identical, kolt migrates by rebuilding;
+A107 — an awaited `void` answers `Option<RpcError>` because the language has no unit literal; the census
+literal hand-folded to a MEASURED 121; solver-38's B354 fixture migrated at the merge); native-b-38 c3f7d1a3
+(J6's executor, dependency-free with no `unsafe`; rebased onto S1b by the lane's own RESUMED agent — `nursery.vl`
+byte-identical, the whole set at 49; `board.vl`'s recorded wall was a FALSE POSITIVE and its real one is the
+host type `Hash`, so THE ORDER'S NATIVE EXIT IS NOT REACHED — F20; one merge fix, the boxed-binding count ×
+A108). papers-38: `incremental-collections.md` (the law over 555 randomized checks; a delta-driven `each`
+16,040× cheaper at 1,000 rows, today's `reconcile` scan quadratic — M82) and reactive-turns §7. The owner
+ruled both papers mid-order (A112 §13 Q1–Q4, A110 door 2 — all as recommended) and filed E202–E207, A113,
+A114. Five cross-lane folds, every one green on both branches and red or conflicted only on the merged tree.
+One process incident: a lane typed a READ as a WRITE into the shared `.git/config` (`commit.gpgsign =
+user.signingkey`) and `git commit` died in every worktree for an hour — three lanes committed through
+plumbing, one repaired it, the lane that did it said so. Ledger rows 546–548; sweep 38 closed / 32 filed +
+the owner's eight.
+
