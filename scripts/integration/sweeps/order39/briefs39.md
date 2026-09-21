@@ -1,6 +1,8 @@
-# Order 39 — the native server's first request, the rulings built, and the bugs kolt keeps finding (DRAFTED 2026-09-21; NOT GO; off vilan next @c3f7d1a3)
+# Order 39 — the native server's first request, the rulings built, and the bugs kolt keeps finding (drafted 2026-09-21; GO 2026-09-21, off vilan next @c3f7d1a3)
 
-**DRAFT.** Nothing is launched. Order 38 sealed at c3f7d1a3 the same day (CI 35642858068 green on
+**GO (2026-09-21).** The owner: "Go" — answering the integrator's "waiting for R1–R9, or a 'go with
+all recs'". R1–R9 are therefore RECORDED AS RECOMMENDED and the record-only defaults stand; any of
+them the owner re-rules mid-order is relayed to its lane by SendMessage. TEN lanes. Order 38 sealed at c3f7d1a3 the same day (CI 35642858068 green on
 all eleven jobs; the local seal green on its first run; toolchain `vilan 0.40.0 (c3f7d1a38)` in
 both locations; nothing has landed on `next` since). Ledger next id 549. Tracker 123 open. Kolt is
 migrated to c3f7d1a38 and committed by the owner at 8c3f84f, plus two uncommitted files (B369's
@@ -39,7 +41,7 @@ A114's scoped effect beside it, and A112's S1 (the delta log lifted into `std::r
 kolt sweep just produced (B368, B369), and the owner's seven editor asks (E202–E207 + E205 in its
 own formatter lane, merged last).
 
-## Rulings asked at GO (owner) — the ones that change what a lane BUILDS
+## Rulings at GO (owner: "Go") — ALL as recommended; the ones that change what a lane BUILDS
 - **R1 — native dependencies (native-b-39).** `vilan-rt` is dependency-free (Order 37 R8). HTTP/1.1
   + the WebSocket upgrade can honour that over `std::net` (SHA-1 for RFC 6455 is ~60 lines by
   hand). SQLite cannot. Rec: `vilan-rt` STAYS dependency-free and gains `http`; `std::db` natively

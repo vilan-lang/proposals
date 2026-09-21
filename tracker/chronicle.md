@@ -2600,3 +2600,23 @@ all "std now ships what kolt hand-wrote" (`Default` for `List`/`Map` — model.v
 `{"Ok": v}`) — the owner's word. Order 39's queue, the rulings owed and kolt's owed list are in
 `sweeps/order38/notes38.md` and `go-items38.json`.
 
+## Order 39 — cycle 57: the native server's first request, the rulings built, and the bugs kolt keeps finding (2026-09-21 → )
+
+Opened on the owner's "Go" the evening Order 38 sealed, off c3f7d1a3, with R1–R9 recorded as recommended.
+Between the seal and GO the owner gave kolt's word twice: the migration to c3f7d1a38 (committed at 8c3f84f) and
+a sweep of kolt's 28 TODO/FIXME/BUG lines — five items filed, of which B369 had BROKEN kolt's build: an
+internal error, minimized from the app to twenty lines (a generic constructor function with an undeclared
+return type loses its parameter), with a one-line workaround in kolt. The order takes one slice of each kind
+of work Order 38 left. NATIVE: native-a-39 finishes the emitter's three large refusal classes (F20 — `Hash`,
+`lazy` parameters, overloaded operators, 29 of 68) to flip `board.vl`, the exit Order 38 missed; native-b-39
+builds the first host a server needs — HTTP over `std::net`, by hand, because `vilan-rt` stays
+dependency-free (R1; SQLite is a separate crate and Order 40's) — after F23 and F24. THE RULED PAPERS: reactive-39
+builds A110 door 2 (nested-forms ordering, bucketed, on door 1) with A114's scoped effect (R2) and A113's pins
+and guide table (R3); collections-39 builds A112 S1 (the delta log lifted into `std::reactive`) and S3 (the
+delta-driven `each`) with M82's index for the quadratic scan. THE BUGS: solver-39 (B369 first; the three
+refusals of R4; B365, B368 under R5, B367, E199, E208); std-39 (A116's `derive(Json)` crash, A118 under R7,
+A117, A115, A119 `when_some` under R6, A72). THE OWNER'S EDITOR ASKS: editor-39 (E207 first, E206, E204,
+E202/E203 under R9, E211, E212) and fmt-39, merged last (E209, E210, E205's comment reflow under R8).
+hygiene-39 first (N109–N112, B366, D9); papers-39 writes A120, A121 and B363. Ten Opus lanes; ledger next id
+549; tracker 122 open at GO.
+

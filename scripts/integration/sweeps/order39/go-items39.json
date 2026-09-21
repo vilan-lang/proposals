@@ -1,0 +1,108 @@
+{
+ "date": "2026-09-21",
+ "order": "Order 39",
+ "base": "c3f7d1a3",
+ "lanes": {
+  "hygiene-39": [
+   "N109 (vilan-core half)",
+   "N110",
+   "N111",
+   "N112",
+   "B366",
+   "D9"
+  ],
+  "editor-39": [
+   "E207",
+   "E206",
+   "E204",
+   "E202",
+   "E203",
+   "E211",
+   "E212"
+  ],
+  "std-39": [
+   "A116 (HIGH)",
+   "A118 (R7)",
+   "A117",
+   "A115",
+   "A119 (R6)",
+   "A72"
+  ],
+  "solver-39": [
+   "B369",
+   "B360 (R4)",
+   "B362 (R4)",
+   "B361 (R4)",
+   "B365",
+   "B368 (R5)",
+   "B367",
+   "E199",
+   "E208"
+  ],
+  "reactive-39": [
+   "A110 door 2",
+   "A114 (R2)",
+   "A113 (R3)",
+   "M83 (re-measure)"
+  ],
+  "collections-39": [
+   "A112 S1",
+   "A112 S3",
+   "M82"
+  ],
+  "native-a-39": [
+   "F20",
+   "F21",
+   "N106",
+   "Map/Set impl Js"
+  ],
+  "native-b-39": [
+   "F23",
+   "F24",
+   "F18 slice 1 (HTTP over std::net; R1)",
+   "F25"
+  ],
+  "fmt-39": [
+   "E209",
+   "E210",
+   "E205 (R8)"
+  ],
+  "papers-39": [
+   "A120",
+   "A121",
+   "B363"
+  ]
+ },
+ "merge_order": [
+  "hygiene-39",
+  "editor-39",
+  "std-39",
+  "solver-39",
+  "reactive-39",
+  "collections-39",
+  "native-a-39",
+  "native-b-39",
+  "fmt-39"
+ ],
+ "rulings": {
+  "R1": "vilan-rt stays dependency-free; HTTP by hand this order; SQLite in a separate crate, Order 40",
+  "R2": "A114: Source::scoped_effect + scoped_effect_on_change; free on_cleanup = get_owner().defer; forms not rebased this order",
+  "R3": "an ownerless derivation stays leak-as-today; documented + pinned",
+  "R4": "refuse a bindingless user external fun (B360), a lazy-parameter function as a closure value (B362), Self<i32> (B361)",
+  "R5": "B368: tuple (and let's) patterns in a for header; others refused by name",
+  "R6": "when_some keeps the row and hands the body a derived Source<T>",
+  "R7": "random::range: the doc ([low, high)) is the contract",
+  "R8": "E205 opt-in [fmt] wrap_comments, default off; words-in-order net; a code action",
+  "R9": "E202 server-placed > in type context + surroundingPairs; E203 global backtick pair notIn string",
+  "how": "the owner said \"Go\" to the integrator's 'waiting for R1–R9, or a go with all recs' — recorded as recommended"
+ },
+ "filed_before_go": [
+  "B368",
+  "B369",
+  "A119",
+  "A120",
+  "A121"
+ ],
+ "ledger_next_id": 549,
+ "tracker_open_at_go": 122
+}
