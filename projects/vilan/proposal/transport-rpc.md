@@ -1544,7 +1544,8 @@ could have. The generated stub (`rpc.vl::call_ack`) AWAITS the ack and answers *
 `Result<void, RpcError>`. **CORRECTED 2026-09-21 (Order 39, papers-39):** the reason recorded here — "the
 language has no unit literal" — was FALSE. `void` is the unit value and `Ok(void)` builds and runs; the lane's
 probe had tried only the `()` spelling. The stub's `Option<RpcError>` is therefore an accident of that probe, and
-tracker B363 asks to make it `Result<void, RpcError>` like its siblings (breaking, unreleased). The handler runs to completion BEFORE the
+the owner ruled it the same day and it is BUILT (next @0976fd19): the stub answers `Result<void, RpcError>` —
+`Ok(void)` is the ack — like every other stub; no wire byte and no hash moved. The handler runs to completion BEFORE the
 ack, which is the whole difference from a notification and is what the pin asserts (ORDER, over a real
 socket, and over the connectionless POST leg). `[client_service]` is unchanged — there is no reverse reply
 lane, omission is that direction's only spelling and `: void` is still refused there — so the same
