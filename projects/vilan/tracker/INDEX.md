@@ -122,6 +122,7 @@
 |----|-------|------|------------|
 | [I2](items/I2.md) | Fixed-arrays tail | design | |
 | [I3](items/I3.md) | Iterator adapters — the remainder | feature | |
+| [I5](items/I5.md) | NEW — ONE spelling for an index: `usize`. std spells positions, lengths and counts as `i32` almost everywhere (~100 signature sites — `List::len(): i32`, `insert(index: i32, ..)`, `remove(index: i32)`, `get(index: i32)`, `str::len`/`repeat(count: i32)`, `Bytes::slice(from: i32, to: i32)`, `Iterator::take(count: i32)`, `index_of(): Option<i32>`, `Map::len`, `Set::len`) and as `i53` in a dozen more, so a position can be NEGATIVE by type, two halves of std disagree, and ids (`u53`) and indexes meet with casts. The owner's ruling-in-waiting (2026-09-21): switch std to `usize` for every index — one spelling everywhere — with `usize` = `u53` on JS targets unless revisited | design (breaking) | the owner's ask, mid-Order 39; `usize` does not exist in the language today (no hit in std or spec/types.md); census on c3f7d1a3: ~100 index-ish `i32` sites, ~13 `i53`, 0 `u32`/`u53` |
 
 ## J. Concurrency
 
