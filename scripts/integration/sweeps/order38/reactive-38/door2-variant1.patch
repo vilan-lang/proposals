@@ -1,0 +1,201 @@
+diff --git a/vilan/std/src/reactive.vl b/vilan/std/src/reactive.vl
+index 7610f8c7..1e6d2abc 100644
+--- a/vilan/std/src/reactive.vl
++++ b/vilan/std/src/reactive.vl
+@@ -50,6 +50,8 @@ export struct Subscriber {
+ 	/// the owning `Subscription` holds, so lowering is O(1) and does not depend
+ 	/// on finding the entry in any list.
+ 	live: Shared<bool>,
++	// DOOR 2 INSTRUMENT (never merged): is this subscriber a DERIVATION?
++	derived: bool,
+ }
+ 
+ /// The liveness cell every DEFERRAL subscriber shares — `at_settle`'s and
+@@ -64,6 +66,34 @@ export struct Subscriber {
+ /// `observe` does.
+ let always_live: Shared<bool> = Shared::new(true);
+ 
++// DOOR 2 INSTRUMENT (never merged). Tagging derivations at their `on_change`
++// call is awkward through the trait — `map` calls `Source::on_change`, which
++// for a generic source is not `observe` — so the instrument sets a flag around
++// the call instead and `observe` reads it. A real build would carry a
++// `Subscriber.kind` set by an `on_change_derived` primitive; the ORDER this
++// produces is the same either way, which is what is being measured.
++let minting_derivation: Shared<bool> = Shared::new(false);
++
++fun as_derivation<T>(build: sync || T): T {
++	minting_derivation.write() = true;
++	let made = build();
++	minting_derivation.write() = false;
++	made
++}
++
++/// Ascending subscriber id, by insertion — the wave's effect half.
++fun sorted_by_id(subscribers: List<Subscriber>): List<Subscriber> {
++	mut sorted: List<Subscriber> = [];
++	for subscriber in subscribers {
++		mut index = 0;
++		for index < sorted.len() && sorted[index].id <= subscriber.id {
++			index += 1;
++		}
++		sorted.insert(index, subscriber);
++	}
++	sorted
++}
++
+ /// Monotonic ids for subscribers — module-level, one counter for the program.
+ let next_subscriber_id: Shared<i32> = Shared::new(0);
+ 
+@@ -245,20 +275,40 @@ export fun drain(turn: Turn) {
+ 		with_finally(|| {
+ 			mut budget = 100000;
+ 			for !turn.pending.read().is_empty() && budget > 0 {
+-				let wave = turn.pending.read();
++				// DOOR 2 INSTRUMENT (never merged), phase 1: DERIVATIONS to a
++				// fixpoint. A derivation's own `set` enqueues into this same turn,
++				// so the loop re-partitions until no derivation is left pending.
++				for budget > 0 {
++					mut derivations: List<Subscriber> = [];
++					mut effects: List<Subscriber> = [];
++					for subscriber in turn.pending.read() {
++						if subscriber.derived {
++							derivations.push(subscriber);
++						} else {
++							effects.push(subscriber);
++						}
++					}
++					if derivations.is_empty() {
++						jump break;
++					}
++					turn.pending.write() = effects;
++					for subscriber in derivations {
++						turn.queued.write().remove(subscriber.id.hash());
++					}
++					for subscriber in derivations {
++						if subscriber.live.read() {
++							(subscriber.notify)();
++						}
++						budget -= 1;
++					}
++				}
++				// Phase 2: EFFECTS, ascending subscriber id. `fresh_id` is
++				// monotonic and a parent form's effect is created before anything
++				// its render creates, so id order IS parent-before-child.
++				let wave = sorted_by_id(turn.pending.read());
+ 				turn.pending.write() = [];
+-				// The wave is out of the queue, so its ids are free to
+-				// re-enter it — a cascade re-enqueuing an observer this
+-				// wave already ran is the propagation `drain`'s loop
+-				// exists for.
+ 				turn.queued.write() = NativeMap::new();
+ 				for subscriber in wave {
+-					// A subscriber disposed since this wave was taken OUT of the
+-					// queue does not fire (A110 door 1, `Subscriber.live`).
+-					// `dispose`'s scrub cannot reach it — the wave is no longer
+-					// in `pending` — and neither can a disposer whose own ambient
+-					// turn is not this one. The budget is charged either way: it
+-					// is a cascade cutoff, not a count of work done.
+ 					if subscriber.live.read() {
+ 						(subscriber.notify)();
+ 					}
+@@ -322,7 +372,7 @@ export fun at_release_settle(id: i32, action: || void) {
+ /// difference between the two callers above is which turn they resolve, and
+ /// that question belongs at the seam, not in here.
+ fun defer_to_turn(turn: Option<Turn>, id: i32, action: || void) {
+-	let deferred = [Subscriber { id, notify = action, live = always_live }];
++	let deferred = [Subscriber { id, notify = action, live = always_live, derived = false }];
+ 	match turn {
+ 		Some(let ambient) => enqueue(ambient, deferred),
+ 		None => {
+@@ -810,9 +860,9 @@ export trait Source<T> {
+ 	/// wants.
+ 	fun map<U>(self, transform: sync |T| U): SignalCell<U> {
+ 		let derived = SignalCell::new(transform(self.get()));
+-		let _owned = register_with_owner(self.on_change(|value| {
++		let _owned = as_derivation(|| register_with_owner(self.on_change(|value| {
+ 			derived.set(transform(value));
+-		}));
++		})));
+ 		derived
+ 	}
+ }
+@@ -950,6 +1000,7 @@ export fun observe<T>(signal: SignalCell<T>, observer: |T| void): Subscription {
+ 	signal.subscribers.write().push(Subscriber {
+ 		id,
+ 		live,
++		derived = minting_derivation.read(),
+ 		notify = || {
+ 			match cell.upgrade() {
+ 				// `upgrade` rather than `get`: `observer` takes a VALUE, and
+@@ -1118,9 +1169,9 @@ export fun combine<T: (2..)>(sources: (U in T: SignalCell<U>)): SignalCell<T> {
+ 	// `on_change` attaches without the call. The handles are the AMBIENT
+ 	// OWNER's from here on — the tuple itself is what is dropped, not the
+ 	// subscriptions.
+-	let _owned = (source in sources => register_with_owner(source.on_change(|_| {
++	let _owned = (source in sources => as_derivation(|| register_with_owner(source.on_change(|_| {
+ 		derived.set(snapshot());
+-	})));
++	}))));
+ 	derived
+ }
+ 
+@@ -1167,7 +1218,7 @@ export struct Selector<T> {
+ export fun selector<T: Hashable + PartialEq, S: Source<T>>(source: S): Selector<T> {
+ 	let cells: Shared<NativeMap<SignalCell<bool>>> = Shared::new(NativeMap::new());
+ 	let current: Shared<T> = Shared::new(source.get());
+-	let _owned = register_with_owner(source.on_change(|value| {
++	let _owned = as_derivation(|| register_with_owner(source.on_change(|value| {
+ 		let previous = current.read();
+ 		current.write() = value;
+ 		// Two writes, whatever the row count: the key that left goes false,
+@@ -1181,7 +1232,7 @@ export fun selector<T: Hashable + PartialEq, S: Source<T>>(source: S): Selector<
+ 			Some(let arriving) => arriving.set(true),
+ 			None => {},
+ 		}
+-	}));
++	})));
+ 	Selector { cells, current }
+ }
+ 
+@@ -1229,12 +1280,12 @@ export impl type S: Source<type I: Source<type U>> {
+ 		let derived = SignalCell::new(self.get().get());
+ 		let inner_subscription: Shared<Option<Subscription>> = Shared::new(None);
+ 		// `sub` runs its observer immediately, so the first inner wires here too.
+-		let _outer = register_with_owner(self.sub(|inner| {
++		let _outer = as_derivation(|| register_with_owner(self.sub(|inner| {
+ 			inner_subscription.read()?.dispose();
+-			inner_subscription.write() = Some(inner.sub(|value| {
++			inner_subscription.write() = Some(as_derivation(|| inner.sub(|value| {
+ 				derived.set(value);
+-			}));
+-		}));
++			})));
++		})));
+ 		// The outer handle detaches this signal from the outer; whichever inner
+ 		// is current at that moment needs releasing too, and it is not a handle
+ 		// anyone else holds.
+@@ -1262,20 +1313,20 @@ export impl type S: Source<Option<type I: Source<type U>>> {
+ 			None => None,
+ 		});
+ 		let inner_subscription: Shared<Option<Subscription>> = Shared::new(None);
+-		let _outer = register_with_owner(self.sub(|held| {
++		let _outer = as_derivation(|| register_with_owner(self.sub(|held| {
+ 			inner_subscription.read()?.dispose();
+ 			match held {
+ 				Some(let inner) => {
+-					inner_subscription.write() = Some(inner.sub(|value| {
++					inner_subscription.write() = Some(as_derivation(|| inner.sub(|value| {
+ 						derived.set(Some(value));
+-					}));
++					})));
+ 				},
+ 				None => {
+ 					inner_subscription.write() = None;
+ 					derived.set(None);
+ 				},
+ 			}
+-		}));
++		})));
+ 		defer_to_owner(|| {
+ 			inner_subscription.read()?.dispose();
+ 			inner_subscription.write() = None;
