@@ -1,0 +1,106 @@
+{
+ "date": "2026-09-21",
+ "order": "Order 38",
+ "base": "0fa109eb",
+ "lanes": {
+  "hygiene-38": [
+   "N98",
+   "N99",
+   "N100",
+   "N101",
+   "N102 (slice)",
+   "N103",
+   "N104",
+   "N105",
+   "N107",
+   "L23"
+  ],
+  "editor-38": [
+   "E198",
+   "N108",
+   "E194",
+   "E195",
+   "E196",
+   "E197",
+   "E200",
+   "E201"
+  ],
+  "std-38": [
+   "A104",
+   "A109",
+   "I4",
+   "I3",
+   "A106 (R7)"
+  ],
+  "perf-38": [
+   "M78",
+   "M76",
+   "M77",
+   "M80",
+   "M81",
+   "M79 (paper section)"
+  ],
+  "solver-38": [
+   "B359 (R1; miscompile)",
+   "B354 (HIGH)",
+   "B356",
+   "B357",
+   "B355 (R3)",
+   "E199",
+   "E191 (closes with B355)"
+  ],
+  "reactive-38": [
+   "A110 door 1 (R4)",
+   "A105",
+   "A73",
+   "A110 door 2 (measure only)"
+  ],
+  "native-a-38": [
+   "F19",
+   "F1 S1b",
+   "N106",
+   "C15 (measure)"
+  ],
+  "native-b-38": [
+   "J6 (R5)"
+  ],
+  "wire-38": [
+   "A108 (R2; BREAKING)",
+   "A107 (R6)"
+  ],
+  "papers-38": [
+   "A112 (paper)",
+   "A110 door 2 (reactive-turns section)"
+  ]
+ },
+ "merge_order": [
+  "hygiene-38",
+  "editor-38",
+  "std-38",
+  "perf-38",
+  "solver-38",
+  "reactive-38",
+  "native-a-38",
+  "native-b-38",
+  "wire-38"
+ ],
+ "rulings": {
+  "R1": "B359 (a): a default body's self.name(..) is the TRAIT's member, always",
+  "R2": "A108 YES — breaking, own lane, merged last",
+  "R3": "B355 third option: non-diagnostic face for B279's fence, then the broad gate",
+  "R4": "A110 door 1 built; door 2 a reactive-turns.md section, ruled after, built Order 39",
+  "R5": "S1b and J6 in parallel; J6 merges after; F18 http/db/rpc is Order 39",
+  "R6": "A107: admit a void rpc return (Task<void> awaiting the ack)",
+  "R7": "A106: widen std::style::prelude + document the idiom; door 2 only at a zero-collision census",
+  "R8": "gate wording: a changed golden whose RUNTIME output differs is stop-and-decide",
+  "record_only": "C14 S5 with S4; C15 measured not built; F1 S2/F15/E182 wait for F17; A111 not queued; L22 waits on the owner's secret; cut HELD"
+ },
+ "filed_at_go": [
+  "A110",
+  "A111",
+  "A112",
+  "B359"
+ ],
+ "ledger_next_id": 546,
+ "tracker_open_at_go": 115
+}

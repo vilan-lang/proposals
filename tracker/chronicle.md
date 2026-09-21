@@ -2526,3 +2526,24 @@ filed; tracker 108 open. Two miscompiles fixed this order (B353's unchecked clos
 aliasing under B267's walk) and one breaking surface landed (A101's declarations as calls). Order 38's queue,
 the rulings owed (B355's gate, A108's Wire receivers, the lazy gate's wording, the F17 conversation) and
 kolt's owed migrations are in `sweeps/order37/notes37.md` and `go-items37.json`.
+
+## Order 38 — cycle 56: generics on the native backend, the scheduler's dead observers, and the breaking Wire receivers (2026-09-21 → )
+
+Opened on the owner's "Go with all recs (including the before go points)" of 2026-09-21, four days after
+Order 37 sealed, off 0fa109eb — the sealed tip plus the 1.98.1 toolchain pin, pushed at GO with the
+worktrees cut only after its CI run reads green. Eight rulings, all as recommended: B359's default-body
+receiver is the TRAIT's member, always (R1); A108's Wire receivers move to `&mut self`, BREAKING, merged
+last (R2); B355's broad gate behind a non-diagnostic face for B279's fence (R3); A110's door 1 — a
+subscriber liveness flag, so a disposed observer never fires inline or in a later wave — is built while
+door 2's ordering rule is a `reactive-turns.md` section ruled afterwards (R4); F1 S1b and J6's executor
+run in parallel with F18's http/db/rpc left to Order 39 (R5); a `void` rpc return is admitted (R6);
+`std::style::prelude` gains its four types with the ambient door only at a zero-collision census (R7);
+the golden gate reads "runtime output" (R8). native-a-38 takes F19 and then S1b whole (generics — 51 of
+the backend's 98 refusals — module-level bindings, operators, `?`, the intrinsics; `board.vl` flips to a
+byte-identical comparison); native-b-38 J6; solver-38 B359 with B354 (HIGH), B355–B357 and E199;
+reactive-38 A110 door 1, A105, A73 and door 2's measurement; std-38 the kolt sweep's gaps (A104, A109,
+I4, I3, A106); perf-38 M78 first, then M76, M77, M80, M81 and M79's paper section; editor-38 E198, N108,
+E194–E197, E200, E201; hygiene-38 N98–N105, N107, L23, first; wire-38 A108 and A107, last; papers-38 the
+A112 incremental-collections paper (the receiver question already probed: two traits over one `splice`
+primitive) and door 2's section. Filed since the seal and committed at GO: A110, A111, A112, B359. Ten
+Opus lanes; ledger next id 546; tracker 115 open at GO.
