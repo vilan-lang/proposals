@@ -1,0 +1,10 @@
+# A121 probe — the three DOM reads a focus scope needs and `std::dom` does not
+# have: `document.activeElement`, a `focusout`'s `relatedTarget`, and a COMPUTED
+# style. Each is attempted with the binding forms `std::dom` already uses; what
+# each EMITS is the probe's answer.
+[package]
+name = "probe"
+prelude = "std::web"
+
+[entry.client]
+target = "browser"

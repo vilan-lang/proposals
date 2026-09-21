@@ -1,0 +1,9 @@
+$ vilan run 07_void_shadowing.vl
+Error: Expected i32, but got void instead.
+   ╭─[ 07_void_shadowing.vl:6:15 ]
+   │
+ 6 │     let y: i32 = void;
+   │                  ──┬─  
+   │                    ╰─── Expected i32, but got void instead.
+───╯
+[exit 1]

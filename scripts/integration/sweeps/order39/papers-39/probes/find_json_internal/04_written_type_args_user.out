@@ -1,0 +1,9 @@
+$ vilan run 04_written_type_args_user.vl
+Error: internal: a call resolved to `Json`'s requirement `to_json`, which has no body — emitting it would produce an empty function and a runtime `TypeError`. The receiver's type could not be resolved to a concrete implementation at this call. It was first reached while emitting `to_json` (/home/reed/.vilan/std-cache/eef0e1791d7ccda2/std/src/json.vl); please report this program
+      ╭─[ /home/reed/.vilan/std-cache/eef0e1791d7ccda2/std/src/json.vl:1356:6 ]
+      │
+ 1356 │     fun to_json(self): str {
+      │         ───┬───  
+      │            ╰───── internal: a call resolved to `Json`'s requirement `to_json`, which has no body — emitting it would produce an empty function and a runtime `TypeError`. The receiver's type could not be resolved to a concrete implementation at this call. It was first reached while emitting `to_json` (/home/reed/.vilan/std-cache/eef0e1791d7ccda2/std/src/json.vl); please report this program
+──────╯
+[exit 1]

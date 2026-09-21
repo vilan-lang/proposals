@@ -1,0 +1,21 @@
+// The customer, rewritten: kolt's overlay panel, with the hand `[x-autofocus]`
+// lookup and the bare `panel_element.focus()` fallback replaced by one scope.
+import std::dom::{ Element, get_element_by_id };
+import std::reactive::{ owner_scope, Owner, run_with_owner };
+import pkg::focus::{ focus_first, focus_scope, tabbable, FocusContainment, FocusScope };
+
+fun main() {
+	let panel = get_element_by_id("panel");
+	let owner = Owner::new();
+	run_with_owner(owner, || {
+		let modal = focus_scope(panel, FocusContainment::Contain);
+		let menu = focus_scope(panel, FocusContainment::Wrap);
+		// What the overlay's `relayout` would call at the flip to visible.
+		if !modal.focus_initial() {
+			print("focus_scope: not focusable yet — the show will ask again");
+		}
+		print(i"tabbable={tabbable(panel).len()}");
+		print(i"focus_first={focus_first(panel)}");
+	});
+	owner.dispose();
+}

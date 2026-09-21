@@ -1,0 +1,9 @@
+$ vilan run 01_ok_unit_paren.vl
+Error: found ')' expected an expression
+   ╭─[ 01_ok_unit_paren.vl:4:39 ]
+   │
+ 4 │     let outcome: Result<void, str> = Ok(());
+   │                                          ┬  
+   │                                          ╰── found ')' expected an expression
+───╯
+[exit 1]

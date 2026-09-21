@@ -1,0 +1,78 @@
+import std::fetch;
+import std::http::{ Response, Server };
+import std::process::exit;
+import std::rpc::RpcError;
+import std::json::json_codec;
+import std::rpc_server::{ Reject, Service };
+import pkg::store::{ Auth, auth_at, auth_over_http };
+
+async fun main() {
+	let auth = Auth { pepper = "" };
+	Server::builder()
+		.port(59778)
+		.with_service(Service::new(auth.dispatcher().into_protocol(json_codec())).at("/auth/"))
+		.with_service(Service::factory(|connection| Auth { pepper = "" }, json_codec()).at("/perconn/"))
+		.with_service(Service::new(auth.dispatcher().into_protocol(json_codec()))
+			.at("/gated/")
+			.authorize(|handshake| Result::Err(Reject::Unauthorized)))
+		.on_request(|request| Response::builder().code(404).body("nope").build())
+		.on_start(|server| {
+			let client = auth_over_http("http://localhost:59778");
+			print("--- the generated stub over HttpTransport, no socket");
+			match client.login("ada", "hunter2") {
+				Ok(let outcome) => match outcome {
+					Ok(let token) => print(i"login: token={token.token} user={token.user}"),
+					Err(let message) => print(i"login: app error {message}"),
+				},
+				Err(let failure) => print("login: rpc failure"),
+			}
+			match client.login("ada", "wrong") {
+				Ok(let outcome) => match outcome {
+					Ok(let token) => print(i"login2: token={token.token}"),
+					Err(let message) => print(i"login2: app error {message}"),
+				},
+				Err(let failure) => print("login2: rpc failure"),
+			}
+			match client.echo(41) {
+				Ok(let value) => print(i"echo: {value}"),
+				Err(let failure) => print("echo: rpc failure"),
+			}
+			print("--- the awaited void stub (A107) over HttpTransport");
+			match client.touch("via-stub") {
+				Some(let failure) => print("touch: failed"),
+				None => print("touch: acked"),
+			}
+			print("--- verify(): the contract check an http client CAN make");
+			match client.verify() {
+				Ok(let agrees) => print(i"verify: {agrees}"),
+				Err(let failure) => print("verify: rpc failure"),
+			}
+			print("--- a client pointed at a mount that is not there (404 + a text body)");
+			let missing = auth_at("http://localhost:59778/nowhere/rpc");
+			match missing.echo(1) {
+				Ok(let value) => print(i"404 echo: {value}"),
+				Err(let failure) => print(i"404 echo: {failure.debug()}"),
+			}
+			print("--- a client pointed at the FACTORY mount (501 + a text body)");
+			let perconn = auth_at("http://localhost:59778/perconn/rpc");
+			match perconn.echo(1) {
+				Ok(let value) => print(i"501 echo: {value}"),
+				Err(let failure) => print(i"501 echo: {failure.debug()}"),
+			}
+			print("--- a client pointed at the GATED mount (401 + a Failure envelope)");
+			let gated = auth_at("http://localhost:59778/gated/rpc");
+			match gated.echo(1) {
+				Ok(let value) => print(i"401 echo: {value}"),
+				Err(let failure) => print(i"401 echo: {failure.debug()}"),
+			}
+			print("--- a client pointed at a WRONG url");
+			let broken = auth_over_http("http://localhost:59999");
+			match broken.echo(1) {
+				Ok(let value) => print(i"broken echo: {value}"),
+				Err(let failure) => print(i"broken echo: failure {failure.debug()}"),
+			}
+			exit(0);
+		})
+		.build()
+		.start();
+}

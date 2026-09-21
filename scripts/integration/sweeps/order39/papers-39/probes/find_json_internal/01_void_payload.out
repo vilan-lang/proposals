@@ -1,0 +1,15 @@
+$ vilan run 01_void_payload.vl
+Error: 'void' does not implement trait 'Json', required by a generic bound of this call
+      ╭─[ 01_void_payload.vl:7:8 ]
+      │
+    7 │     print(outcome.to_json());
+      │           ────────┬────────  
+      │                   ╰────────── 'void' does not implement trait 'Json', required by a generic bound of this call
+      │
+      ├─[ /home/reed/.vilan/std-cache/eef0e1791d7ccda2/std/src/json.vl:1355:25 ]
+      │
+ 1355 │ export impl Result<type T: Json, type E: Json> with Json {
+      │                         ┬  
+      │                         ╰── the bound is declared here
+──────╯
+[exit 1]

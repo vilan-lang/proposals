@@ -1,0 +1,16 @@
+$ vilan run 02_bare_unit_paren.vl
+Error: found ')' expected an expression
+   ╭─[ 02_bare_unit_paren.vl:4:17 ]
+   │
+ 4 │     let nothing = ();
+   │                    ┬  
+   │                    ╰── found ')' expected an expression
+───╯
+Error: found ')' expected an expression
+   ╭─[ 02_bare_unit_paren.vl:5:9 ]
+   │
+ 5 │     print(());
+   │            ┬  
+   │            ╰── found ')' expected an expression
+───╯
+[exit 1]

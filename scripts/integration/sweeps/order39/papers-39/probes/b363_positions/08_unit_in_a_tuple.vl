@@ -1,0 +1,12 @@
+// GREEN — `void` inside a tuple, a Map value (the set-shaped use), and the
+// empty-tuple TYPE's uninhabited twin beside it.
+import std::map::Map;
+
+fun main() {
+	let pair = (void, 1);
+	print(i"1. (void, 1).1 = {pair.1}");
+	let seen: Map<str, void> = Map::new();
+	print(i"2. Map<str, void> as a set: len={seen.len()}");
+	let holes: List<()> = [];
+	print(i"3. List<()> — the type is writable, the ELEMENT is not: len={holes.len()}");
+}

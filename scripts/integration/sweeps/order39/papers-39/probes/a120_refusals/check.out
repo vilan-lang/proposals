@@ -1,0 +1,20 @@
+$ vilan check .
+Error: `ExposedClient` expects 3 fields, but got 2 instead: `tally` is missing.
+    ╭─[ ./src/main.vl:55:31 ]
+    │
+ 55 │ ╭─▶     ExposedClient<HttpTransport> {
+    ┆ ┆   
+ 58 │ ├─▶     }
+    │ │           
+    │ ╰─────────── `ExposedClient` expects 3 fields, but got 2 instead: `tally` is missing.
+────╯
+Error: `HandleyClient` expects 3 fields, but got 2 instead: `reactive` is missing.
+    ╭─[ ./src/main.vl:62:31 ]
+    │
+ 62 │ ╭─▶     HandleyClient<HttpTransport> {
+    ┆ ┆   
+ 65 │ ├─▶     }
+    │ │           
+    │ ╰─────────── `HandleyClient` expects 3 fields, but got 2 instead: `reactive` is missing.
+────╯
+[exit 1]

@@ -1,0 +1,6 @@
+// B363 as FILED — `Ok(())`. RED. The item records the refusal as
+// "unclosed ( in expression"; the toolchain says something else (see .out).
+fun main() {
+	let outcome: Result<void, str> = Ok(());
+	print("unreachable");
+}

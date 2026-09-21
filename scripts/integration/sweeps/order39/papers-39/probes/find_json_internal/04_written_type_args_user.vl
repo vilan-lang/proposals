@@ -1,0 +1,12 @@
+// The control for 03: a user type with no `Json` impl, same written-type-argument
+// spelling. If this ALSO reads `internal:`, the bug is the written type
+// arguments and has nothing to do with `void`.
+import std::json::Json;
+
+struct Opaque {
+	seed: i32,
+}
+
+fun main() {
+	print(Ok<Opaque, str>(Opaque { seed = 1 }).to_json());
+}

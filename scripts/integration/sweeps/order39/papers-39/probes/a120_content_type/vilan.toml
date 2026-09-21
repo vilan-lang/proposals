@@ -1,0 +1,8 @@
+# A120 probe — what `Content-Type` does `HttpTransport` actually send? The
+# answer decides the CSRF posture: a cross-site HTML form can only produce the
+# three CORS-safelisted content types, so a leg that REQUIRES `application/json`
+# is CSRF-proof for free — but only if the shipped client sends one.
+[package]
+name = "probe"
+target = "node"
+prelude = "std::web"

@@ -1,0 +1,29 @@
+$ vilan run 06_traits_on_void.vl
+Error: 'void' does not implement trait 'PartialEq', required by a generic bound of this call
+     ╭─[ 06_traits_on_void.vl:7:11 ]
+     │
+   7 │     print(i"{Some(void) == Some(void)}");
+     │              ────────────┬───────────  
+     │                          ╰───────────── 'void' does not implement trait 'PartialEq', required by a generic bound of this call
+     │
+     ├─[ /home/reed/.vilan/std-cache/eef0e1791d7ccda2/std/src/option.vl:277:18 ]
+     │
+ 277 │ impl Option<type T: PartialEq> with PartialEq {
+     │                  ┬  
+     │                  ╰── the bound is declared here
+─────╯
+Error: `==` needs a value on the left, and this operand is `void`: the expression it comes from produces no value — a function that returns nothing, an `if` with no `else`, a statement
+   ╭─[ 06_traits_on_void.vl:6:11 ]
+   │
+ 6 │     print(i"{void == void}");
+   │              ──────┬─────  
+   │                    ╰─────── `==` needs a value on the left, and this operand is `void`: the expression it comes from produces no value — a function that returns nothing, an `if` with no `else`, a statement
+───╯
+Error: `+` on `str` concatenates, and `void` has no string form: concatenating it renders the value's runtime shape — a struct is a tuple, an enum a tagged array — not the value. Call `.to_string()` on it, implementing `Display` for its type if it has none; an i-string hole is this same concatenation, so it needs the same call — but a `css` block's hole is not, and a typed style value belongs in one: `border: 1px solid {Color::gray(500)};` keeps the value typed and carries its `:root` line onto the sheet
+   ╭─[ 06_traits_on_void.vl:8:13 ]
+   │
+ 8 │     let hole = i"{void}";
+   │                ────┬───  
+   │                    ╰───── `+` on `str` concatenates, and `void` has no string form: concatenating it renders the value's runtime shape — a struct is a tuple, an enum a tagged array — not the value. Call `.to_string()` on it, implementing `Display` for its type if it has none; an i-string hole is this same concatenation, so it needs the same call — but a `css` block's hole is not, and a typed style value belongs in one: `border: 1px solid {Color::gray(500)};` keeps the value typed and carries its `:root` line onto the sheet
+───╯
+[exit 1]

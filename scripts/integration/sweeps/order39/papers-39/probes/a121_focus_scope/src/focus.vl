@@ -1,0 +1,251 @@
+// The proposed `std::dom` + `std::ui` focus surface, prototyped in userland.
+// Every call below is a shipped `std::dom`/`std::reactive` member except the two
+// the report names as std additions, which are declared here as externs.
+
+import std::dom::{ Element, Event, query_selector, window };
+import std::reactive::{ Owner, Subscription, get_owner };
+import std::shared::Shared;
+
+export *;
+
+/// The standard tabbable selector set. `[tabindex]` is included WITHOUT a value
+/// filter and the negatives are dropped in `tabbable`, because a selector cannot
+/// read a NUMBER: `[tabindex="-1"]` is exact-match only and an author may write
+/// `-2`.
+export fun tabbable_selector(): str {
+	"a[href], area[href], button, input, select, textarea, iframe, object, embed, "
+		+ "summary, audio[controls], video[controls], [contenteditable], [tabindex]"
+}
+
+/// Whether `element` can take sequential focus: not disabled, not hidden, not
+/// inert, laid out, and not opted out with a negative `tabindex`.
+export fun is_tabbable(element: Element): bool {
+	if element.matches("[disabled], [hidden], [inert]") {
+		ret false;
+	}
+	// An `inert`/`hidden` ANCESTOR disables the subtree, and a selector cannot
+	// walk upwards — `:is(...) *` does that in one selector instead.
+	if element.matches("[inert] *, [hidden] *, details:not([open]) > *:not(summary)") {
+		ret false;
+	}
+	if element.tab_index() < 0 {
+		ret false;
+	}
+	// `display: none` (and a `display: none` ancestor) measures 0×0.
+	// `visibility: hidden` does NOT, which is the case a computed style is
+	// needed for — the report says so.
+	if element.offset_width() == 0f && element.offset_height() == 0f {
+		ret false;
+	}
+	true
+}
+
+/// Every tabbable descendant, in the order Tab visits them: positive
+/// `tabindex` first, ascending, then document order.
+export fun tabbable(root: Element): List<Element> {
+	let matched = root.query_selector_all(tabbable_selector()).filter(|x| is_tabbable(x));
+	mut positive: List<Element> = [];
+	mut natural: List<Element> = [];
+	for element in matched {
+		if element.tab_index() > 0 {
+			positive.push(element);
+		} else {
+			natural.push(element);
+		}
+	}
+	mut ordered = positive.sort_by(|a, b| a.tab_index().compare(b.tab_index()));
+	for element in natural {
+		ordered.push(element);
+	}
+	ordered
+}
+
+/// Focus the first tabbable descendant, or the root itself. Answers whether it
+/// focused anything — `focus()` is a request, so the caller may want to retry
+/// on a later frame (B271).
+export fun focus_first(root: Element): bool {
+	let candidates = tabbable(root);
+	match candidates.get(0) {
+		Some(let first) => {
+			first.focus();
+			first.matches(":focus")
+		},
+		None => {
+			// The fallback kolt writes by hand: a `tabindex="-1"` root is
+			// PROGRAMMATICALLY focusable and not tabbable, which is exactly
+			// what a panel with nothing to focus wants.
+			root.set_attribute("tabindex", "-1");
+			root.focus();
+			root.matches(":focus")
+		},
+	}
+}
+
+/// What a scope does with a Tab that would leave it.
+export enum FocusContainment {
+	/// Tab cycles inside the subtree, and focus that reaches the scope from
+	/// anywhere else is pulled back in. A modal.
+	Contain,
+	/// Tab cycles inside the subtree WHILE focus is inside it; focus that
+	/// leaves by any other route is allowed to leave. A menu.
+	Wrap,
+}
+
+/// The live scope stack — topmost last. Only the topmost `Contain` scope
+/// guards `focusin`, and a `Wrap` scope's "inside" includes every scope BELOW
+/// it, which is what makes a submenu inside a menu one region rather than two
+/// (kolt's `is_within_or_above`, read for focus instead of for pointers).
+let scopes: Shared<List<(i32, Element, FocusContainment)>> = Shared::new([]);
+let next_scope = Shared::new(0);
+
+fun scope_contains_or_below(id: i32, target: Element): bool {
+	mut reached = false;
+	mut within = false;
+	for entry in scopes.read() {
+		let (scope_id, root, containment) = entry;
+		if scope_id == id {
+			reached = true;
+		}
+		if reached && root.contains(target) {
+			within = true;
+		}
+	}
+	within
+}
+
+fun topmost_contain(): Option<(i32, Element, FocusContainment)> {
+	mut found: Option<(i32, Element, FocusContainment)> = None;
+	for entry in scopes.read() {
+		let (scope_id, root, containment) = entry;
+		if containment is FocusContainment::Contain {
+			found = Some(entry);
+		}
+	}
+	found
+}
+
+/// Make `root` a focus scope for as long as `owner` lives. Returns the handle
+/// the SHOW hook calls `focus_initial` on — focus is a consequence of the show,
+/// not of the mount (B271), so the scope never focuses anything by itself.
+export struct FocusScope {
+	id: i32,
+	root: Element,
+	restore: Element,
+	focused: Shared<bool>,
+}
+
+export fun focus_scope(root: Element, containment: FocusContainment): FocusScope {
+	let owner = get_owner();
+	let id = next_scope.read() + 1;
+	next_scope.write() = id;
+	// Remembered BEFORE the scope takes focus. `query_selector(":focus")` is
+	// the read available today; `document.activeElement` is the honest one and
+	// needs a runtime helper (see the report).
+	let restore = query_selector(":focus");
+	scopes.write().push((id, root, containment));
+	owner.defer(|| {
+		let kept = scopes.read().filter(|entry| {
+			let (scope_id, _root, _containment) = entry;
+			scope_id != id
+		});
+		scopes.write() = kept;
+		// Restore only if focus is still OURS and the remembered element is
+		// still in the document: an app that moved focus deliberately keeps it.
+		if root.contains(query_selector(":focus")) && restore.is_connected() {
+			restore.focus();
+		}
+	});
+	// The wrap: a Tab that would leave the subtree is answered inside it. In
+	// the CAPTURE phase on the window so that a handler inside the panel cannot
+	// swallow it first, and gated on the target so a Tab pressed elsewhere on a
+	// live page is untouched (which is the whole of A121's "without `inert`").
+	owner.take(window().listen_capture("keydown", |event| {
+		if event.key() != "Tab" {
+			ret;
+		}
+		if !scope_contains_or_below(id, event.target()) {
+			ret;
+		}
+		let order = tabbable(root);
+		if order.len() == 0 {
+			ret;
+		}
+		let backwards = event.shift_key();
+		let current = query_selector(":focus");
+		mut index = 0 - 1;
+		mut position = 0;
+		for candidate in order {
+			if candidate.matches(":focus") {
+				index = position;
+			}
+			position = position + 1;
+		}
+		let last = order.len() - 1;
+		if backwards && index == 0 {
+			event.prevent_default();
+			match order.get(last) {
+				Some(let target) => target.focus(),
+				None => {},
+			}
+		} else if !backwards && index == last {
+			event.prevent_default();
+			match order.get(0) {
+				Some(let target) => target.focus(),
+				None => {},
+			}
+		}
+	}));
+	// The containment guard: focus that lands anywhere else is pulled back.
+	// Registered once per `Contain` scope and consulted against the STACK, so a
+	// nested scope's guard wins by being topmost.
+	if containment is FocusContainment::Contain {
+		owner.take(window().listen_capture("focusin", |event| {
+			match topmost_contain() {
+				Some(let entry) => {
+					let (top_id, top_root, _containment) = entry;
+					if top_id == id && !top_root.contains(event.target()) {
+						let _took = focus_first(top_root);
+					}
+				},
+				None => {},
+			}
+		}));
+	}
+	FocusScope { id, root, restore, focused = Shared::new(false) }
+}
+
+export impl FocusScope {
+	/// Take the initial focus — called by the driver at the SHOW, once. An
+	/// `[x-autofocus]`-marked descendant wins over the first tabbable one,
+	/// because it is the author saying so.
+	fun focus_initial(self): bool {
+		if self.focused.read() {
+			ret true;
+		}
+		match self.root.query_selector_all("[autofocus], [x-autofocus]").get(0) {
+			Some(let marked) => {
+				marked.focus();
+				if marked.matches(":focus") {
+					self.focused.write() = true;
+					ret true;
+				}
+				false
+			},
+			None => {
+				let took = focus_first(self.root);
+				if took {
+					self.focused.write() = true;
+				}
+				took
+			},
+		}
+	}
+}
+
+impl Element {
+	/// The DOM's own answer to "is this in the tab order": `-1` for an element
+	/// that is not, `0` for a natively focusable one, the written value
+	/// otherwise. A property read — no runtime helper needed.
+	[extern(get, "tabIndex")]
+	external fun tab_index(self): i32;
+}

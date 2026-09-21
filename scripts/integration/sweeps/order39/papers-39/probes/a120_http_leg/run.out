@@ -1,0 +1,37 @@
+$ vilan build .
+Compiled ./src/main.vl -> ./src/main.mjs
+[build exit 0]
+[artifact src/main.mjs: 71783 bytes]
+$ node src/main.mjs
+base=http://localhost:59777
+--- 1. a plain method over POST
+echo(7): status=200 body={"Success":107}
+--- 2. a Result-returning method, both arms
+login ok: status=200 body={"Success":{"Ok":{"token":"tok-ada","user":"ada"}}}
+login err: status=200 body={"Success":{"Err":"wrong password"}}
+--- 3. the awaited void (A107) over POST
+  [server] touch(from-http)
+touch: status=200 body={"Success":true}
+--- 4. the contract route
+__contract: status=200 body={"Success":"d82b084e"}
+--- 5. __attach over POST (the mirror handshake)
+__attach: status=200 body={"Failure":{"Remote":"unknown connection"}}
+--- 6. an unknown method
+nosuch: status=200 body={"Failure":{"Remote":"unknown method: nosuch"}}
+--- 7. a garbled body
+garbled: status=200 body={"Failure":{"Decode":"malformed JSON"}}
+--- 8. wrong arity
+echo(): status=200 body={"Success":NaN}
+--- 9. a handle method on this leg (A78)
+plain_too: status=200 body={"Success":1}
+watch: status=200 body={"Failure":{"Remote":"`watch` returns a signal handle, and this request arrived on no connection: a handle's reply is a channel id minted in the CONNECTION's capability table, and the connectionless legs — the `{mount}rpc` POST route, and a `local_rpc` transport no `for_connection` stamped — have none. Reach this method over the socket transport, which is what every generated `Client::connect` uses"}}
+--- 10. a gated service's POST leg
+gated echo: status=401 body={"Failure":"Unauthorized"}
+--- 11. a factory service's POST leg
+perconn echo: status=501 body=this service builds one instance per connection (Service::factory), and a POST rpc frame carries no connection to build for — connect over the WebSocket transport instead
+--- 12. GET on the rpc route, and the other two legs
+GET /plain/rpc: status=200 body={"Failure":{"Decode":"malformed JSON"}}
+POST /plain/send: status=204 body=
+--- 13. an unmounted path
+POST /nope/rpc: status=404 body=nope path=/nope/rpc method=POST
+[run exit 0]

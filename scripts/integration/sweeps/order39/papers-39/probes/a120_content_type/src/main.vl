@@ -1,0 +1,63 @@
+import std::fetch;
+import std::http::{ Response, Server };
+import std::json::json_codec;
+import std::process::exit;
+import std::rpc::{ HttpTransport, Transport };
+import std::rpc_server::Service;
+import std::wire::Frame;
+
+export *;
+
+[service(EchoClient)]
+struct Echo {
+	seed: i32,
+}
+
+impl Echo {
+	[rpc]
+	fun echo(self, value: i32): i32 {
+		value
+	}
+}
+
+fun echo_over_http(url: str): EchoClient<HttpTransport> {
+	EchoClient<HttpTransport> {
+		transport = HttpTransport { url },
+		codec = json_codec(),
+	}
+}
+
+async fun main() {
+	Server::builder()
+		.port(59779)
+		.on_request(|request| {
+			let seen = match request.header("content-type") {
+				Some(let value) => value,
+				None => "(none)",
+			};
+			print(i"  [server] {request.method()} {request.path()} content-type={seen}");
+			Response::builder()
+				.set_header("Content-Type", "application/json")
+				.body("{\"Success\":1}")
+				.build()
+		})
+		.on_start(|server| {
+			print("--- the SHIPPED HttpTransport, text frame (json codec)");
+			let client = echo_over_http("http://localhost:59779/rpc");
+			let _first = client.echo(1);
+			print("--- HttpTransport::call directly, a Binary frame");
+			let transport = HttpTransport { url = "http://localhost:59779/rpc-bytes" };
+			let _second = await transport.call(Frame::Text("{}"));
+			print("--- a hand fetch with NO header chained");
+			let bare = fetch::post("http://localhost:59779/bare", "{}").send();
+			print(i"  bare status={bare.status()}");
+			print("--- a hand fetch with the header chained");
+			let typed = fetch::post("http://localhost:59779/typed", "{}")
+				.header("Content-Type", "application/json")
+				.send();
+			print(i"  typed status={typed.status()}");
+			exit(0);
+		})
+		.build()
+		.start();
+}

@@ -1,0 +1,33 @@
+// FIND (minimised) — `[service]` over an `export impl` block generates a
+// dispatcher with NO ROUTES and a contract hash over the EMPTY surface, with no
+// diagnostic. The same module with a plain `impl` and a module-level `export *;`
+// generates both routes. A service whose impl block is written `export impl`
+// therefore builds, connects (the two sides agree on the empty hash) and
+// answers every call with `unknown method`.
+import std::json::json_codec;
+import std::wire::Frame;
+
+[service(EchoClient)]
+struct Echo {
+	seed: i32,
+}
+
+export impl Echo {
+	[rpc]
+	fun add(self, left: i32, right: i32): i32 {
+		left + right
+	}
+}
+
+async fun main() {
+	let service = Echo { seed = 0 };
+	let protocol = service.dispatcher().into_protocol(json_codec());
+	let quote = "\"";
+	let body = "{" + quote + "method" + quote + ":" + quote + "add" + quote + "," + quote + "args" + quote + ":[1,2]}";
+	match protocol.respond(Frame::Text(body)) {
+		Frame::Text(let reply) => print(i"reply={reply}"),
+		Frame::Binary(let _bytes) => print("binary"),
+	}
+	let hash = service.contract_hash();
+	print(i"contract_hash={hash}");
+}

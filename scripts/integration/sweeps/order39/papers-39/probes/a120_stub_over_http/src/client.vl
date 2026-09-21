@@ -1,0 +1,14 @@
+// The BROWSER leg: does the hand-built client compile for the browser, reaching
+// only the generated stubs and no server body?
+import pkg::store::{ AccountToken, auth_over_http };
+
+async fun main() {
+	let client = auth_over_http("");
+	match client.login("ada", "hunter2") {
+		Ok(let outcome) => match outcome {
+			Ok(let token) => print(i"browser: token {token.token}"),
+			Err(let message) => print(i"browser: {message}"),
+		},
+		Err(let failure) => print("browser: rpc failed"),
+	}
+}

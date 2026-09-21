@@ -1,0 +1,12 @@
+// The real trigger of the `internal:` error: WRITTEN type arguments on a
+// variant constructor, `Ok<T, E>(..)`. The same expression with the type
+// arguments inferred from an annotation refuses cleanly (01/02).
+import std::json::Json;
+
+struct Opaque {
+	seed: i32,
+}
+
+fun main() {
+	print(Ok<void, str>(void).to_json());
+}

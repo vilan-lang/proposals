@@ -1,0 +1,8 @@
+// `to_json()` on a `Result<void, str>` — an `internal: … please report this
+// program` error where a clean "`void` does not implement `Json`" is owed.
+import std::json::Json;
+
+fun main() {
+	let outcome: Result<void, str> = Ok(void);
+	print(outcome.to_json());
+}

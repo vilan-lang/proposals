@@ -1,0 +1,8 @@
+# A120 probe 3 — what STOPS a hand-built client over `HttpTransport`: a service
+# with an `[expose]`d field, one with a handle-returning method, and one with a
+# reverse `client = H`. Each is compiled in its own commented-in variant; the
+# build log is the probe's output.
+[package]
+name = "probe"
+target = "node"
+prelude = "std::web"

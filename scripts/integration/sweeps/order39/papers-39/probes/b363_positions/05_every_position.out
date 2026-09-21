@@ -1,0 +1,12 @@
+$ vilan run 05_every_position.vl
+1. `void` as a declared-void function's tail: ok
+2. `fun f(): Result<void, E>` + a match on Ok: bound
+3. a generic instantiated at void (`id<T>(T) -> T` at void): ok
+   (the body ran)
+4. a closure returning nothing where `|| T` is expected: T = void
+5. a declared `void` PARAMETER, called with `void`: true
+6. List<void> holds 3
+7. Option<Option<void>>: true
+8. `!` through a Result<void, E>: true
+9. `.map(|_| void)` — Option<void> from a derivation: true
+[exit 0]

@@ -1,0 +1,9 @@
+// `()` as a TYPE parses, prints as `()` in diagnostics, and NOTHING satisfies
+// it — not `void`, not `{}`. `spec/types.md` line 15 says `()` "does not exist
+// as a distinct type"; the compiler has one. RED, and a FIND.
+fun main() {
+	let a: () = void;
+	let b: () = {};
+	let c: Option<()> = None;
+	print("unreachable");
+}

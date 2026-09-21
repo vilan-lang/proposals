@@ -1,0 +1,12 @@
+// The control: the SAME shape with a user struct that is not `Json` either.
+// If this refuses cleanly, the `internal:` error is `void`-specific.
+import std::json::Json;
+
+struct Opaque {
+	seed: i32,
+}
+
+fun main() {
+	let outcome: Result<Opaque, str> = Ok(Opaque { seed = 1 });
+	print(outcome.to_json());
+}

@@ -1,0 +1,16 @@
+// GREEN, and the whole answer to B363: `void` IS a unit literal today.
+// `parsing.rs:3503` calls it that in its own comment ("the unit value — a bare
+// `void` identifier in expression position"), and `spec/types.md:27` declares
+// the type ("`void`: the unit; one value, also written `void`").
+fun main() {
+	let bare = void;
+	let annotated: void = void;
+	let empty_block: void = {};
+	mut reassigned = void;
+	reassigned = void;
+	let ok: Result<void, str> = Ok(void);
+	let ok_block: Result<void, str> = Ok({});
+	let some: Option<void> = Some(void);
+	let none: Option<void> = None;
+	print(i"Ok(void).is_ok()={ok.is_ok()} Some(void).is_some()={some.is_some()} None.is_none()={none.is_none()}");
+}

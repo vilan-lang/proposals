@@ -1,0 +1,58 @@
+// The service the two entries meet at: plain methods only, no handles, no
+// exposes, no client service. Exactly kolt's `KoltAuth` shape.
+import std::json::json_codec;
+import std::rpc::{ HttpTransport, RpcError };
+import std::wire::Wire;
+
+export *;
+
+export [derive(Wire, Json)]
+struct AccountToken {
+	token: str,
+	user: str,
+}
+
+[service(AuthClient)]
+struct Auth {
+	pepper: str,
+}
+
+impl Auth {
+	[rpc]
+	fun login(self, username: str, password: str): Result<AccountToken, str> {
+		if password == "hunter2" + self.pepper {
+			Ok(AccountToken { token = "tok-" + username, user = username })
+		} else {
+			Err("wrong password")
+		}
+	}
+
+	[rpc]
+	fun echo(self, value: i32): i32 {
+		value
+	}
+
+	[rpc]
+	fun touch(self, label: str) {
+		print(i"  [server] touch({label})");
+	}
+}
+
+/// The hand-written stand-in for the `connect_http` this item asks for: build
+/// the generated client struct over an `HttpTransport` pointed at the mount's
+/// POST route. No socket, no handshake, no contract check.
+export fun auth_over_http(base: str): AuthClient<HttpTransport> {
+	AuthClient<HttpTransport> {
+		transport = HttpTransport { url = base + "/auth/rpc" },
+		codec = json_codec(),
+	}
+}
+
+/// The same client, over an EXPLICIT endpoint url — for pointing a stub at a
+/// route that is not an rpc route at all.
+export fun auth_at(url: str): AuthClient<HttpTransport> {
+	AuthClient<HttpTransport> {
+		transport = HttpTransport { url },
+		codec = json_codec(),
+	}
+}

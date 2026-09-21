@@ -1,0 +1,16 @@
+$ vilan build .
+Compiled ./src/main.vl -> ./src/main.mjs
+[build exit 0]
+[artifact src/main.mjs: 51747 bytes]
+$ node src/main.mjs
+--- the SHIPPED HttpTransport, text frame (json codec)
+  [server] POST /rpc content-type=text/plain;charset=UTF-8
+--- HttpTransport::call directly, a Binary frame
+  [server] POST /rpc-bytes content-type=text/plain;charset=UTF-8
+--- a hand fetch with NO header chained
+  [server] POST /bare content-type=text/plain;charset=UTF-8
+  bare status=200
+--- a hand fetch with the header chained
+  [server] POST /typed content-type=application/json
+  typed status=200
+[run exit 0]

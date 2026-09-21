@@ -1,0 +1,34 @@
+// FIND (minimised to `std::json`'s codec reader, no rpc in sight) — reading an
+// `i32` out of a JSON list that is SHORT, or whose element is a string, yields
+// NaN and leaves the deserializer UNPOISONED: `failed()` answers `None`, so
+// every gate written on it (the `[rpc]` route's `decode_failed`) passes.
+import std::json::json_codec;
+import std::wire::{ Frame, Wire };
+
+export *;
+
+fun read_two(text: str): str {
+	let codec = json_codec();
+	mut deserializer = (codec.reader)(Frame::Text(text));
+	(deserializer.begin_struct)();
+	(deserializer.field)("args");
+	let arity = (deserializer.begin_list)();
+	let left: i32 = i32::rebuild(&mut deserializer);
+	let right: i32 = i32::rebuild(&mut deserializer);
+	let failure = match (deserializer.failed)() {
+		Some(let reason) => reason,
+		None => "(not poisoned)",
+	};
+	i"arity={arity} left={left} right={right} failed={failure}"
+}
+
+fun main() {
+	let quote = "\"";
+	print(i"[1,2]     {read_two(\"{\" + quote + \"args\" + quote + \":[1,2]}\")}");
+	print(i"[1]       {read_two(\"{\" + quote + \"args\" + quote + \":[1]}\")}");
+	print(i"[]        {read_two(\"{\" + quote + \"args\" + quote + \":[]}\")}");
+	print(i"[\"x\",2]   {read_two(\"{\" + quote + \"args\" + quote + \":[\" + quote + \"x\" + quote + \",2]}\")}");
+	print(i"[null,2]  {read_two(\"{\" + quote + \"args\" + quote + \":[null,2]}\")}");
+	print(i"[true,2]  {read_two(\"{\" + quote + \"args\" + quote + \":[true,2]}\")}");
+	print(i"[1.5,2]   {read_two(\"{\" + quote + \"args\" + quote + \":[1.5,2]}\")}");
+}

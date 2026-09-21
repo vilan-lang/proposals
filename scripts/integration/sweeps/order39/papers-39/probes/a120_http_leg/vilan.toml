@@ -1,0 +1,7 @@
+# A120 probe — what the connectionless `POST {mount}rpc` leg answers TODAY to a
+# hand-written `fetch`. One node package, one entry; the server mounts four
+# services and then calls itself.
+[package]
+name = "probe"
+target = "node"
+prelude = "std::web"

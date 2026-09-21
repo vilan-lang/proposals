@@ -1,0 +1,8 @@
+// RED, and a FIND — `void` is lexed as an IDENT (`Token::Ident("void")`), not
+// a keyword, so `let void = 3;` is accepted and the binding is UNREADABLE:
+// every `void` in expression position is the literal.
+fun main() {
+	let void = 3;
+	let y: i32 = void;
+	print(i"{y}");
+}

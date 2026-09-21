@@ -1,0 +1,11 @@
+$ vilan build .
+Compiled ./src/main.vl -> ./src/main.mjs
+[build exit 0]
+[artifact src/main.mjs: 16412 bytes]
+$ node src/main.mjs
+{"method":"add","args":[1,2]}  ->  {"Success":3}
+{"method":"add","args":[1]}  ->  {"Success":NaN}
+{"method":"add","args":[]}  ->  {"Failure":{"Decode":"unexpected end of document"}}
+{"method":"add","args":[1,2,3]}  ->  {"Success":3}
+{"method":"add","args":["x",2]}  ->  {"Success":NaN}
+[run exit 0]

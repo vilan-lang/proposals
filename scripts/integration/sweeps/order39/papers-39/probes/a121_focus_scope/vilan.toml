@@ -1,0 +1,10 @@
+# A121 probe — the proposed `focus-scope.md` surface, written in USERLAND
+# against today's `std::dom` and `std::ui`. It proves the surface COMPILES and
+# that nothing in it needs a language change; it does NOT prove the behaviour,
+# because there is no browser on this host.
+[package]
+name = "probe"
+prelude = "std::web"
+
+[entry.client]
+target = "browser"

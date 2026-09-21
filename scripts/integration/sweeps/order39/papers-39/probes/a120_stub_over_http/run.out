@@ -1,0 +1,43 @@
+$ vilan build .
+Compiled ./src/client.vl -> ./dist/client.js
+Compiled ./src/server.vl -> ./dist/server.mjs
+[build exit 0]
+[artifact dist/server.mjs: 74439 bytes]
+$ node dist/server.mjs
+--- the generated stub over HttpTransport, no socket
+login: token=tok-ada user=ada
+login2: app error wrong password
+echo: 41
+--- the awaited void stub (A107) over HttpTransport
+  [server] touch(via-stub)
+touch: acked
+--- verify(): the contract check an http client CAN make
+verify: true
+--- a client pointed at a mount that is not there (404 + a text body)
+404 echo: Decode("unrecognized reply envelope")
+--- a client pointed at the FACTORY mount (501 + a text body)
+501 echo: Decode("unrecognized reply envelope")
+--- a client pointed at the GATED mount (401 + a Failure envelope)
+401 echo: Unauthorized
+--- a client pointed at a WRONG url
+node:internal/deps/undici/undici:15482
+      Error.captureStackTrace(err);
+            ^
+
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:15482:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async send (file:///tmp/claude-1000/-home-reed-code-vilan-lang/ae2b0352-743d-4446-aedf-1f52ad55831a/scratchpad/papers-39/probes/a120_stub_over_http/dist/server.mjs:148:9)
+    at async file:///tmp/claude-1000/-home-reed-code-vilan-lang/ae2b0352-743d-4446-aedf-1f52ad55831a/scratchpad/papers-39/probes/a120_stub_over_http/dist/server.mjs:889:21 {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:59999
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -111,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 59999
+  }
+}
+
+Node.js v24.2.0
+[run exit 1]

@@ -1,0 +1,13 @@
+$ vilan build .
+Compiled ./src/main.vl -> ./src/main.mjs
+[build exit 0]
+[artifact src/main.mjs: 9790 bytes]
+$ node src/main.mjs
+[1,2]     arity=2 left=1 right=2 failed=(not poisoned)
+[1]       arity=1 left=1 right=NaN failed=(not poisoned)
+[]        arity=0 left=NaN right=0 failed=unexpected end of document
+["x",2]   arity=2 left=NaN right=2 failed=(not poisoned)
+[null,2]  arity=2 left=0 right=2 failed=(not poisoned)
+[true,2]  arity=2 left=1 right=2 failed=(not poisoned)
+[1.5,2]   arity=2 left=1.5 right=2 failed=(not poisoned)
+[run exit 0]

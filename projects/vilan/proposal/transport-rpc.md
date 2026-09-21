@@ -1541,8 +1541,10 @@ A `void` rpc return is ADMITTED on a server `[service]`, in both spellings (an o
 an explicit `: void`). The reply is §9.3's existing ack envelope — no new wire shape, no new `Serialize`
 method, no frame moved; the contract entry is `name(args)->void;`, which no service that compiled before
 could have. The generated stub (`rpc.vl::call_ack`) AWAITS the ack and answers **`Option<RpcError>`**, not
-`Result<void, RpcError>`: the language has no unit literal (`Ok(())` does not parse — tracker B363), so a
-`Result` whose success arm is `void` has no constructible `Ok`. The handler runs to completion BEFORE the
+`Result<void, RpcError>`. **CORRECTED 2026-09-21 (Order 39, papers-39):** the reason recorded here — "the
+language has no unit literal" — was FALSE. `void` is the unit value and `Ok(void)` builds and runs; the lane's
+probe had tried only the `()` spelling. The stub's `Option<RpcError>` is therefore an accident of that probe, and
+tracker B363 asks to make it `Result<void, RpcError>` like its siblings (breaking, unreleased). The handler runs to completion BEFORE the
 ack, which is the whole difference from a notification and is what the pin asserts (ORDER, over a real
 socket, and over the connectionless POST leg). `[client_service]` is unchanged — there is no reverse reply
 lane, omission is that direction's only spelling and `: void` is still refused there — so the same

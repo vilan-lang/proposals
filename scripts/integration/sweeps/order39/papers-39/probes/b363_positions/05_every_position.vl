@@ -1,0 +1,47 @@
+// GREEN — every position the brief asks about, each printing what it did.
+// `Ok(())`'s six siblings all already work with `void` in the hole.
+fun unit(): void {
+	void
+}
+
+fun okvoid(): Result<void, str> {
+	Ok(void)
+}
+
+fun id<T>(value: T): T {
+	value
+}
+
+fun apply<T>(body: || T): T {
+	body()
+}
+
+fun takes(value: void): bool {
+	true
+}
+
+fun try_it(): Result<void, str> {
+	let _inner = okvoid()!;
+	Ok(void)
+}
+
+fun main() {
+	let _tail = unit();
+	print("1. `void` as a declared-void function's tail: ok");
+	match okvoid() {
+		Ok(let inner) => print("2. `fun f(): Result<void, E>` + a match on Ok: bound"),
+		Err(let failure) => print(i"2. Err {failure}"),
+	}
+	let _generic = id(void);
+	print("3. a generic instantiated at void (`id<T>(T) -> T` at void): ok");
+	let _closure = apply(|| print("   (the body ran)"));
+	print("4. a closure returning nothing where `|| T` is expected: T = void");
+	print(i"5. a declared `void` PARAMETER, called with `void`: {takes(void)}");
+	let list: List<void> = [void, void, void];
+	print(i"6. List<void> holds {list.len()}");
+	let nested: Option<Option<void>> = Some(Some(void));
+	print(i"7. Option<Option<void>>: {nested.is_some()}");
+	print(i"8. `!` through a Result<void, E>: {try_it().is_ok()}");
+	let mapped = Some(1).map(|_| void);
+	print(i"9. `.map(|_| void)` — Option<void> from a derivation: {mapped.is_some()}");
+}

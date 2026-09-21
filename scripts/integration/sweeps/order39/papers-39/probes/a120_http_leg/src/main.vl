@@ -1,0 +1,162 @@
+// A120 probe — the connectionless `POST {mount}rpc` leg, read with a
+// hand-written `fetch`. Four mounts, one process: a plain shared service, one
+// with a handle-returning method, one behind `authorize`, and a `factory` one.
+// Every request is a hand-built JSON envelope; every answer is printed with its
+// STATUS and its BODY, which is what the paper needs to write down.
+
+import std::fetch;
+import std::http::{ Response, Server };
+import std::json::json_codec;
+import std::process::exit;
+import std::rpc_server::{ Handshake, Reject, Service, Session };
+import std::wire::Wire;
+
+export *;
+
+export [derive(Wire, Json)]
+struct AccountToken {
+	token: str,
+	user: str,
+}
+
+// --- the plain service: no handles, no exposes, no notifications ------------
+
+[service(PlainClient)]
+struct Plain {
+	seed: i32,
+}
+
+impl Plain {
+	[rpc]
+	fun login(self, username: str, password: str): Result<AccountToken, str> {
+		if password == "hunter2" {
+			Ok(AccountToken { token = "tok-" + username, user = username })
+		} else {
+			Err("wrong password")
+		}
+	}
+
+	[rpc]
+	fun echo(self, value: i32): i32 {
+		value + self.seed
+	}
+
+	// A107's awaited void.
+	[rpc]
+	fun touch(self, label: str) {
+		print(i"  [server] touch({label})");
+	}
+}
+
+// --- a service with a HANDLE method (A78's case on this leg) ----------------
+
+[service(HandleClient)]
+struct Handled {
+	live: SignalCell<i32>,
+}
+
+impl Handled {
+	[rpc]
+	fun plain_too(self): i32 {
+		1
+	}
+
+	[rpc]
+	fun watch(self): SignalCell<i32> {
+		self.live
+	}
+}
+
+// --- a gated service, and a per-connection one -----------------------------
+
+[service(GatedClient)]
+struct Gated {
+	seed: i32,
+}
+
+impl Gated {
+	[rpc]
+	fun echo(self, value: i32): i32 {
+		value
+	}
+}
+
+[service(PerConnClient)]
+struct PerConn {
+	who: str,
+}
+
+impl PerConn {
+	[rpc]
+	fun echo(self, value: i32): i32 {
+		value
+	}
+}
+
+fun envelope(method: str, args: str): str {
+	let quote = "\"";
+	"{" + quote + "method" + quote + ":" + quote + method + quote + "," + quote + "args" + quote + ":" + args + "}"
+}
+
+fun show(label: str, url: str, body: str) {
+	let response = fetch::post(url, body).header("Content-Type", "application/json").send();
+	let text = response.text();
+	print(i"{label}: status={response.status()} body={text}");
+}
+
+async fun main() {
+	let plain = Plain { seed = 100 };
+	let handled = Handled { live = Signal::new(7) };
+	let gated = Gated { seed = 0 };
+	Server::builder()
+		.port(59777)
+		.with_service(Service::new(plain.dispatcher().into_protocol(json_codec())).at("/plain/"))
+		.with_service(Service::new(handled.dispatcher().into_protocol(json_codec())).at("/handle/"))
+		.with_service(Service::new(gated.dispatcher().into_protocol(json_codec()))
+			.at("/gated/")
+			.authorize(|handshake| match handshake.token() {
+				Some(let found) => Ok(Session::of(found)),
+				None => Err(Reject::Unauthorized),
+			}))
+		.with_service(Service::factory(|connection| PerConn { who = "x" }, json_codec()).at("/perconn/"))
+		.on_request(|request| Response::builder().code(404).body(i"nope path={request.path()} method={request.method()}").build())
+		.on_start(|server| {
+			let base = "http://localhost:59777";
+			print(i"base={base}");
+			print("--- 1. a plain method over POST");
+			show("echo(7)", base + "/plain/rpc", envelope("echo", "[7]"));
+			print("--- 2. a Result-returning method, both arms");
+			show("login ok", base + "/plain/rpc", envelope("login", "[\"ada\",\"hunter2\"]"));
+			show("login err", base + "/plain/rpc", envelope("login", "[\"ada\",\"nope\"]"));
+			print("--- 3. the awaited void (A107) over POST");
+			show("touch", base + "/plain/rpc", envelope("touch", "[\"from-http\"]"));
+			print("--- 4. the contract route");
+			show("__contract", base + "/plain/rpc", envelope("__contract", "[]"));
+			print("--- 5. __attach over POST (the mirror handshake)");
+			show("__attach", base + "/plain/rpc", envelope("__attach", "[0]"));
+			print("--- 6. an unknown method");
+			show("nosuch", base + "/plain/rpc", envelope("nosuch", "[]"));
+			print("--- 7. a garbled body");
+			show("garbled", base + "/plain/rpc", "not json at all");
+			print("--- 8. wrong arity");
+			show("echo()", base + "/plain/rpc", envelope("echo", "[]"));
+			print("--- 9. a handle method on this leg (A78)");
+			show("plain_too", base + "/handle/rpc", envelope("plain_too", "[]"));
+			show("watch", base + "/handle/rpc", envelope("watch", "[]"));
+			print("--- 10. a gated service's POST leg");
+			show("gated echo", base + "/gated/rpc", envelope("echo", "[7]"));
+			print("--- 11. a factory service's POST leg");
+			show("perconn echo", base + "/perconn/rpc", envelope("echo", "[7]"));
+			print("--- 12. GET on the rpc route, and the other two legs");
+			let getr = fetch::get(base + "/plain/rpc").send();
+			print(i"GET /plain/rpc: status={getr.status()} body={getr.text()}");
+			let sendr = fetch::post(base + "/plain/send", "hi").send();
+			print(i"POST /plain/send: status={sendr.status()} body={sendr.text()}");
+			print("--- 13. an unmounted path");
+			let miss = fetch::post(base + "/nope/rpc", envelope("echo", "[7]")).send();
+			print(i"POST /nope/rpc: status={miss.status()} body={miss.text()}");
+			exit(0);
+		})
+		.build()
+		.start();
+}

@@ -1,0 +1,44 @@
+// FIND (minimised) — a `[rpc]` route does not check ARITY: a request envelope
+// with too FEW arguments runs the handler on garbage and answers `Success`.
+// `arg`'s doc says a missing argument poisons the deserializer and that
+// `decode_failed` is the gate; the generated route for a value-returning
+// method does not consult it, and the JSON reader does not poison on a short
+// argument list.
+import std::json::json_codec;
+import std::rpc::{ LocalTransport, local_rpc };
+import std::wire::Frame;
+
+export *;
+
+[service(EchoClient)]
+struct Echo {
+	seed: i32,
+}
+
+impl Echo {
+	[rpc]
+	fun add(self, left: i32, right: i32): i32 {
+		left + right
+	}
+}
+
+fun ask(protocol_url: str, body: str) {
+	print(body);
+}
+
+async fun main() {
+	let echo = Echo { seed = 0 };
+	let protocol = echo.dispatcher().into_protocol(json_codec());
+	let quote = "\"";
+	let two = "{" + quote + "method" + quote + ":" + quote + "add" + quote + "," + quote + "args" + quote + ":[1,2]}";
+	let one = "{" + quote + "method" + quote + ":" + quote + "add" + quote + "," + quote + "args" + quote + ":[1]}";
+	let none = "{" + quote + "method" + quote + ":" + quote + "add" + quote + "," + quote + "args" + quote + ":[]}";
+	let three = "{" + quote + "method" + quote + ":" + quote + "add" + quote + "," + quote + "args" + quote + ":[1,2,3]}";
+	let wrong = "{" + quote + "method" + quote + ":" + quote + "add" + quote + "," + quote + "args" + quote + ":[" + quote + "x" + quote + ",2]}";
+	for body in [two, one, none, three, wrong] {
+		match protocol.respond(Frame::Text(body)) {
+			Frame::Text(let reply) => print(i"{body}  ->  {reply}"),
+			Frame::Binary(let _bytes) => print("binary"),
+		}
+	}
+}

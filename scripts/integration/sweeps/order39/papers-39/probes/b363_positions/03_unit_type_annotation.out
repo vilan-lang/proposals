@@ -1,0 +1,16 @@
+$ vilan run 03_unit_type_annotation.vl
+Error: Expected (), but got void instead.
+   ╭─[ 03_unit_type_annotation.vl:5:14 ]
+   │
+ 5 │     let a: () = void;
+   │                 ──┬─  
+   │                   ╰─── Expected (), but got void instead.
+───╯
+Error: Expected (), but got void instead.
+   ╭─[ 03_unit_type_annotation.vl:6:14 ]
+   │
+ 6 │     let b: () = {};
+   │                 ─┬  
+   │                  ╰── Expected (), but got void instead.
+───╯
+[exit 1]

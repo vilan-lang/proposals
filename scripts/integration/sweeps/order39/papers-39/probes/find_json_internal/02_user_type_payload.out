@@ -1,0 +1,15 @@
+$ vilan run 02_user_type_payload.vl
+Error: 'Opaque' does not implement trait 'Json', required by a generic bound of this call
+      ╭─[ 02_user_type_payload.vl:11:8 ]
+      │
+   11 │     print(outcome.to_json());
+      │           ────────┬────────  
+      │                   ╰────────── 'Opaque' does not implement trait 'Json', required by a generic bound of this call
+      │
+      ├─[ /home/reed/.vilan/std-cache/eef0e1791d7ccda2/std/src/json.vl:1355:25 ]
+      │
+ 1355 │ export impl Result<type T: Json, type E: Json> with Json {
+      │                         ┬  
+      │                         ╰── the bound is declared here
+──────╯
+[exit 1]

@@ -1,0 +1,10 @@
+// RED — `void` is a value with NO traits: no `PartialEq`, no `Display`, no
+// `Json`, no `Wire`. Each line below is its own refusal (see .out). The
+// `==` one is the interesting text: the analyzer calls `void` "no value",
+// which is the tension the paper has to settle.
+fun main() {
+	print(i"{void == void}");
+	print(i"{Some(void) == Some(void)}");
+	let hole = i"{void}";
+	print(hole);
+}

@@ -1,0 +1,41 @@
+import std::dom::{ Element, Event, get_element_by_id };
+
+/// Attempt 1 — a module-level extern over a property PATH, the shape
+/// `get_element_by_id` uses for a method path.
+[extern("document.activeElement")]
+external fun active_element_direct(): Element;
+
+/// Attempt 2 — the helper shape `window()` uses for exactly this reason ("a
+/// global property has no function form"). The helper does not exist in the
+/// runtime, so this names what std would have to add.
+[extern("__dom_active_element")]
+external fun active_element_helper(): Element;
+
+impl Event {
+	/// Attempt 3 — `relatedTarget`: on a `focusout` it is where focus WENT,
+	/// which is the one read that tells a scope "focus left me, and to there".
+	[extern(get, "relatedTarget")]
+	external fun related_target(self): Element;
+}
+
+impl Element {
+	/// Attempt 4 — the COMPUTED style, which is what decides whether an
+	/// element is really visible (`visibility: hidden` keeps its box, so
+	/// `offset_width` cannot answer).
+	[extern("__dom_computed_style")]
+	external fun computed_style(self, property: str): str;
+
+	/// Attempt 5 — `tabIndex` as a property read: `-1` for a non-tabbable
+	/// element, `0` for a native one, the written value otherwise. The DOM
+	/// reflects the ATTRIBUTE here, and the attribute is what a selector sees.
+	[extern(get, "tabIndex")]
+	external fun tab_index(self): i32;
+}
+
+fun main() {
+	let root = get_element_by_id("app");
+	let a = active_element_direct();
+	let b = active_element_helper();
+	print(i"tabIndex={root.tab_index()}");
+	print(i"visibility={root.computed_style(\"visibility\")}");
+}

@@ -1,0 +1,53 @@
+// B363 part 2 — `Result<void, E>` where A107 would put it, and where a USER
+// might: as a `call_ack` return (works, no Wire needed) and as an `[rpc]`
+// return type (needs `void: Wire`).
+import std::json::json_codec;
+import std::rpc::RpcError;
+
+export *;
+
+/// What `rpc.vl::call_ack` would answer if B363 landed. No `Wire` is asked of
+/// `void`: only the ack's `bool` crosses.
+fun call_ack_shaped(ok: bool): Result<void, RpcError> {
+	if ok {
+		Ok(void)
+	} else {
+		Err(RpcError::Unavailable)
+	}
+}
+
+[service(VoidClient)]
+struct VoidService {
+	seed: i32,
+}
+
+impl VoidService {
+	/// A107's shipped spelling: an omitted return type.
+	[rpc]
+	fun touch(self) {
+		print("touched");
+	}
+
+	// The spelling a USER would write if `Result<void, E>` were a return
+	// type is REFUSED today — kept as a comment, its diagnostic recorded in
+	// `b363_rpc_void.refusal.out`:
+	//
+	//   [rpc]
+	//   fun try_touch(self): Result<void, str> { Ok(void) }
+	//
+	// "return type of `[rpc]` method `try_touch` is `Result<void, str>`, which
+	//  is not Wire: every `[rpc]` parameter and return must be Wire (...)"
+}
+
+fun main() {
+	match call_ack_shaped(true) {
+		Ok(let nothing) => print("ack: Ok"),
+		Err(let failure) => print("ack: Err"),
+	}
+	// The call site that only wants the wait discards it.
+	let _ignored = call_ack_shaped(true);
+	match call_ack_shaped(false) {
+		Ok(let nothing) => print("ack2: Ok"),
+		Err(let failure) => print(i"ack2: {failure.debug()}"),
+	}
+}

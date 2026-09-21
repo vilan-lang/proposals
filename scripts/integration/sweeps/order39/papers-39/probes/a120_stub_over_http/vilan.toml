@@ -1,0 +1,12 @@
+# A120 probe 2 — is the GENERATED client already usable over `HttpTransport`,
+# with no socket? Two entries so the CLIENT half is compiled for the browser
+# too (the real customer is a browser login form); the server entry is what runs.
+[package]
+name = "probe"
+prelude = "std::web"
+default-entry = "server"
+
+[entry.client]
+target = "browser"
+
+[entry.server]

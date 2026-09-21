@@ -1,0 +1,77 @@
+import std::json::json_codec;
+import std::rpc::{ HttpTransport, RemoteSource, RpcError };
+import std::wire::Wire;
+
+export *;
+
+[service(ExposedClient)]
+struct Exposed {
+	[expose]
+	tally: SignalCell<i32>,
+}
+
+impl Exposed {
+	[rpc]
+	fun echo(self, value: i32): i32 {
+		value
+	}
+}
+
+[service(HandleyClient)]
+struct Handley {
+	live: SignalCell<i32>,
+}
+
+impl Handley {
+	[rpc]
+	fun watch(self): SignalCell<i32> {
+		self.live
+	}
+}
+
+[service(PeerClient, client = PeerHandlers)]
+struct Peer {
+	seed: i32,
+}
+
+impl Peer {
+	[rpc]
+	fun echo(self, value: i32): i32 {
+		value
+	}
+}
+
+[client_service]
+struct PeerHandlers {}
+
+impl PeerHandlers {
+	[rpc]
+	fun ping(self) {
+		print("ping");
+	}
+}
+
+fun exposed_over_http(base: str): ExposedClient<HttpTransport> {
+	ExposedClient<HttpTransport> {
+		transport = HttpTransport { url = base + "/rpc" },
+		codec = json_codec(),
+	}
+}
+
+fun handley_over_http(base: str): HandleyClient<HttpTransport> {
+	HandleyClient<HttpTransport> {
+		transport = HttpTransport { url = base + "/rpc" },
+		codec = json_codec(),
+	}
+}
+
+fun peer_over_http(base: str): PeerClient<HttpTransport> {
+	PeerClient<HttpTransport> {
+		transport = HttpTransport { url = base + "/rpc" },
+		codec = json_codec(),
+	}
+}
+
+fun main() {
+	print("built");
+}

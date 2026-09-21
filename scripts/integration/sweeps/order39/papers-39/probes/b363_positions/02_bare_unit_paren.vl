@@ -1,0 +1,6 @@
+// `()` in any expression position at all. RED — the `()` SPELLING is what
+// does not parse, in an argument, in a `let`, anywhere.
+fun main() {
+	let nothing = ();
+	print(());
+}
