@@ -1,0 +1,28 @@
+import std::io::print;
+import std::shared::Shared;
+
+let seen: Shared<i32> = Shared::new(0);
+
+fun note(value: i32): i32 {
+	seen.write() = seen.read() + value;
+	value
+}
+
+fun over_a_block<T: (2..)>(values: (U in T: U)): i32 {
+	let _mapped = (value in values => {
+		note(1);
+		value
+	});
+	seen.read()
+}
+
+fun over_a_call<T: (2..)>(values: (U in T: U)): i32 {
+	let _mapped = (value in values => note(1));
+	seen.read()
+}
+
+fun main() {
+	print(i"block={over_a_block((1, 2, 3))}");
+	seen.write() = 0;
+	print(i"call={over_a_call((1, 2, 3))}");
+}
