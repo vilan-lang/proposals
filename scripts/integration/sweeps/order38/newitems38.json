@@ -1,0 +1,324 @@
+{
+ "items": [
+  {
+   "id": "A115",
+   "section": "A",
+   "kind": "feature",
+   "area": "Reactive core & UI",
+   "title": "NEW — element syntax does not admit an `Option` attribute: `AttrValue` has arms for `str` and `Source<str>` only, so `<div data-dragging(maybe)>` is refused while `bind_attr` (A105) takes `Source<Option<str>>` — A105's own text claimed A89 had built it (A89 gave `Option<str>` to `Style::attribute`/`within`)",
+   "discussion": "reactive-38's FIND-3",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "`AttrValue` arms for `Option<str>` and `Source<Option<str>>` (`None` omits/removes), both twins, an element-syntax pin beside A105's; kolt's `bind_attr_proper` call site then becomes element syntax."
+  },
+  {
+   "id": "A116",
+   "section": "A",
+   "kind": "bug",
+   "area": "Reactive core & UI",
+   "title": "NEW — HIGH: `[derive(Json)]` on an ENUM crashes on a non-object document — `Shape::from_json(\"null\")` throws `TypeError: Cannot convert undefined or null to object` out of `__json_tag` (`Object.keys(null)`), against `FromJson`'s stated never-crash contract (json.vl:142); a frame off a socket can abort the process",
+   "discussion": "std-38's FIND-1; one line in transformer.rs's helper table + the interpreter.rs:2293 twin; moves every derive-using golden",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "`__json_tag` answers `\"\"` for anything neither a string nor an object, so the derive's `_` arm reports `unknown variant in JSON for enum X`; pins: `null`, a number, an array, an empty object; goldens regenerated and judged by runtime output. A104's `Result` impl already carries its own guard."
+  },
+  {
+   "id": "A117",
+   "section": "A",
+   "kind": "design",
+   "area": "Reactive core & UI",
+   "title": "NEW — `std::style::prelude` publishes 21 internal ALIAS spellings nobody designed as surface: `export *;` re-exports an ALIASED import, so `open_style`, `scale_step`, `value_piece`, `custom_property` and seventeen `*_condition` names resolve from outside — 21 of the module's 67 exports, and A106 door 2's largest objection",
+   "discussion": "std-38's FIND-2; A106 door 2 re-censuses after this",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Hide them (`#hidden`, or move the aliasing into each one-line body); a pin that the module's export set is the designed 46; then re-run std-38's census script (kept in its report) for A106 door 2 — it read 6 file-level / 40 local shadows at 67 names."
+  },
+  {
+   "id": "A118",
+   "section": "A",
+   "kind": "bug",
+   "area": "Reactive core & UI",
+   "title": "NEW — HIGH-ish: `std::random::range(low, high)` can return `high` — `random::range(1, 7)` answered 7 in 1 of 8 runs while the doc says `[low, high)`; docs/std/numbers.md's own fence prints `false` intermittently and no gate can see it (the fence prints a bool, it asserts nothing)",
+   "discussion": "perf-38's FIND-1 (found by the lazy differential's one differing program)",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Read the implementation against the doc and fix whichever is wrong (rec: the implementation — half-open is the documented contract); a pin over a seeded or exhaustive small range; the docs fence becomes output-asserting when N47 lands."
+  },
+  {
+   "id": "B360",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — MISCOMPILE-class: a user-written `external fun` with no `[extern]` binding and no compiler lowering emits a DANGLING mangled name at an ORDINARY call site — `external struct Thing; impl Thing { external fun poke(&mut self, v: str); }` then `t.poke(\"x\")` emits `$b(t, \"x\")` with `$b` undefined, clean at check",
+   "discussion": "solver-38's FIND-1 (B359 closed only the dispatch half, for `List::new`/`push`)",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "REFUSE it: an `external fun` with no binding is meaningful only inside std (B265's rule) — a row at the declaration naming `[extern(..)]`; pins for the method and the free-function forms; census std for bindingless externals that are NOT lowered."
+  },
+  {
+   "id": "B361",
+   "section": "B",
+   "kind": "design",
+   "area": "Type system & the type solver",
+   "title": "NEW — `Self<i32>` is an accepted spelling with no use: it parses in type, static-path and literal positions, nothing in std/examples/docs/kolt writes it, and in a type position it means `Cell<i32>` inside `impl Cell<type T>` — coherent, redundant with naming the type",
+   "discussion": "solver-38's FIND-3",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Refuse it with the steer `write the type's name` (rec), or document it; one row, three position pins."
+  },
+  {
+   "id": "B362",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — UNSOUND: a function with a `lazy` parameter called INDIRECTLY — `record_lazy_arguments` skips dispatched/indirect callees, so the call passes a plain value while the callee emits `__force(param)` → `cell.state` on a non-object, a TypeError at runtime; M81 made the NO-direct-call case correct (the parameter becomes eager) and left the MIXED case as it was",
+   "discussion": "perf-38's FIND-2",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Refuse at the COERCION (a `lazy`-parameter function is not a closure value — lazy.md's rule to write) or thunk at indirect sites through the callee's recorded convention; pins: a function value, a trait-object dispatch, the mixed direct + indirect case."
+  },
+  {
+   "id": "B363",
+   "section": "B",
+   "kind": "design",
+   "area": "Type system & the type solver",
+   "title": "NEW — vilan has NO UNIT LITERAL: `Ok(())` does not parse (`unclosed ( in expression`), so `Result<void, E>`, `Option<void>` and any generic instantiated at nothing have no constructible value — which is why A107's awaited-void stub answers `Option<RpcError>` rather than `Result<void, RpcError>`",
+   "discussion": "wire-38's FIND-2",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Decide: a unit literal (`()`), `void` as an expression, or nothing (document the limit). If it lands, A107's surface becomes `Result<void, RpcError>` — one line in `rpc.vl::call_ack` plus each caller's match (breaking for callers written against `Option`)."
+  },
+  {
+   "id": "B364",
+   "section": "B",
+   "kind": "design",
+   "area": "Type system & the type solver",
+   "title": "NEW — a CLOSURE RECORD cannot be built over a `&mut self` receiver (`a view cannot escape its scope`): 'erase a stateful thing behind a bag of closures' has one spelling — own a `mut` local in the frame that mints the record (spec §6.9's binding capture) — which is what deleted `JsonWriter::serializer()` and its three siblings under A108",
+   "discussion": "wire-38's FIND-5; relevant to C14 S4 and the native backend",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Record the limit in lifetimes.md with A108's example; decide whether a `dyn`-style erasure over a `&mut` receiver is wanted (trait-objects.md's territory). Low priority; no build."
+  },
+  {
+   "id": "B365",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — a VACUOUS arm in the drop planner's resource-reaching gate: analyzer.rs:11946 `Some(Expr::StructInitializer(struct_id, _)) => nominals.contains(struct_id)` compares the INITIALIZER's id against struct DEFINITION ids — always false (the `EnumVariant` arm beside it is right); the type check above it catches the common case, so the live hole is 'type not yet recorded' — a body reaching a resource can be skipped",
+   "discussion": "hygiene-38's FIND-1 (N104's doc-comment trap biting for real)",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "`self.struct_initializer_to_def.get(initializer_id).is_some_and(|def| nominals.contains(def))`; a pin that reaches the arm (a struct literal of a resource-holding type whose type slot is unrecorded at the gate) planted red."
+  },
+  {
+   "id": "B366",
+   "section": "B",
+   "kind": "hygiene",
+   "area": "Type system & the type solver",
+   "title": "NEW — a nominal declaration's GENERIC PARAMETER arrives in two spellings: a generic ENUM's payload records the constraint id itself (typed `Any`), a generic STRUCT's fields record `Generic(..)` nodes — invisible on JS, ~40 lines of double handling in the Rust emitter",
+   "discussion": "native-a-38's Q2",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "One spelling (rec: `Generic(..)` everywhere); the Rust emitter's `bind_parameters` loses a branch; corpus byte-identical is the gate."
+  },
+  {
+   "id": "B367",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "title": "NEW — B318 S4's ADMISSION MISS may be unreachable: a four-module reproducer (trait in A, `impl` in B, a generic body in C importing only the trait, the entry importing `(impl _)`) compiled CLEAN, so the generic body resolved under a file that does not admit the impl — either the refusal is dead code or visibility.md §3.5's rule is looser than written; and neither source-carrying transformer note (the admission miss, B55) has any pin",
+   "discussion": "editor-38's FIND-3 (found hunting an end-to-end pin for E196); B354's new pins are the nearest neighbours",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Re-derive the reproducer against B354's three-file fixture (which DOES refuse); if the four-module shape is a hole in the rule, it is a visibility soundness item; if the refusal is reachable only via derives, say so in §3.5. An HMR end-to-end pin for E196 rides on whichever reproducer refuses."
+  },
+  {
+   "id": "E208",
+   "section": "E",
+   "kind": "diagnostics",
+   "area": "LSP & tooling",
+   "title": "NEW — a two-diagnostic cascade after B356: `Option<i32>::Some(\"y\")` refuses at the payload (right line) but the expression's type still settles `Option<str>`, so a later `unwrap_or(3)` reports too — both are type errors, so E189's narrow rule does not suppress the second",
+   "discussion": "solver-38's FIND-4",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "On a refused written type argument, settle the expression's type from the WRITTEN arguments (the user's stated intent), so downstream checks run against `Option<i32>`; a pin asserting exactly one diagnostic."
+  },
+  {
+   "id": "E209",
+   "section": "E",
+   "kind": "tooling",
+   "area": "LSP & tooling",
+   "title": "NEW — `reprint` compares TOKEN STREAMS and never re-parses its own output: N108's bug printed a `const { … }` with no `;` and was caught only because the token count differed — a lost-and-gained pair would print a file that does not parse",
+   "discussion": "editor-38's FIND-1",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "`reprint` parses its output (one more parse per format) and declines with a distinct `DeclineReason` on failure; a pin with a planted printer bug that keeps the token count."
+  },
+  {
+   "id": "E210",
+   "section": "E",
+   "kind": "tooling",
+   "area": "LSP & tooling",
+   "title": "NEW — `DeclineReason::WouldChangeTheCode` names the WRONG construct: the net has no span, so it reports the file's FIRST item — which sent N108's investigation thirty lines off and into the wrong grammar (kolt client.vl:7 was just the first import)",
+   "discussion": "editor-38's FIND-2",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Bisect the two normalized token streams for the first divergence and report the source span at that token (the lane did it by hand in ~50 lines of scratch); pin on N108's repro naming the `};`."
+  },
+  {
+   "id": "E211",
+   "section": "E",
+   "kind": "editor",
+   "area": "LSP & tooling",
+   "title": "NEW — E194's non-VS-Code half: `Completion` carries no `filter_text` and the server sends no `textEdit` range, so every other LSP client filters a hyphenated candidate (`stroke-width`, `--card-gap`) by its own word rules",
+   "discussion": "editor-38's FIND-4",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "`filter_text` + an edit range on `Completion`, consumed by both front-ends — a server-side fix that also makes E194's client-side `wordPattern` pin redundant (keep it)."
+  },
+  {
+   "id": "E212",
+   "section": "E",
+   "kind": "diagnostics",
+   "area": "LSP & tooling",
+   "title": "NEW — a `$VILAN_STD` pointing at a `std` with no `macro_std` sibling is not refused by name: the derive silently fails to expand and std's own compare.vl is blamed (`'Instant' does not implement trait 'PartialOrd': missing 'eq'`) — B346's promise ('a root that carries only half a toolchain is refused by a message naming BOTH paths') unkept on the one path a user actually configures",
+   "discussion": "papers-38's FIND-3; adjacent to N105's `std_package_dir`",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Refuse at toolchain resolution naming the std root and the `macro_std` path it looked for; a `relocated_std.rs` pin with a half copy (two commands reproduce it)."
+  },
+  {
+   "id": "F20",
+   "section": "F",
+   "kind": "feature",
+   "area": "Native targets & rendering",
+   "title": "NEW — the path to `board.vl` (Order 38's unreached native exit): three constructs are 29 of the backend's 68 refusals — the host type `Hash` (10 programs; `std::reactive`'s `CanonicalHash`, board.vl's one remaining wall), `lazy` parameters (12; the whole `Option`/`Result` combinator surface since A103 — a thunk at the call, `Rc<OnceCell>`-shaped force in the callee; M81's eager set shrinks it), overloaded operators (7; `binary_op_dispatch` is already read by the refusal); then backed enums (5), `for` over an `Iterator` impl (5), the `?` lift behind `lazy`",
+   "discussion": "native-a-38 + native-b-38's censuses; Order 39 with F18",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "In that order; exit: `board.vl` byte-identical on both backends and the whole set at 0 differing / 0 rustc-refused; `JSON.stringify` needs its OWN renderer (`Js` is `console.log`-shaped); `Map`/`Set` gain `impl Js`."
+  },
+  {
+   "id": "F21",
+   "section": "F",
+   "kind": "bug",
+   "area": "Native targets & rendering",
+   "title": "NEW — `Option<&mut T>` — a VIEW inside an enum payload — is a latent wrong TYPE natively: `returns_mut_view` is applied to the outer return type only, so `fun inner_mut(&mut self): Option<&mut Inner>` would emit `-> Option<Inner_…>`; refused BY NAME since native-b-38 (`option-view.vl`, `transparent-references.vl`)",
+   "discussion": "native-a-38's FIND-3 / native-b-38's FIND-2",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Carry viewness into the payload type the way it is carried into a return type — one slice; it is what a view-returning `Arena::get` needs natively."
+  },
+  {
+   "id": "F22",
+   "section": "F",
+   "kind": "feature",
+   "area": "Native targets & rendering",
+   "title": "NEW — ADAPTED INSTANCES are unmodelled natively: `adapt.vl` calls one `map` with an async closure at one site and a sync one at another (async-polymorphism.md A.1); the Rust emitter monomorphizes on TYPES and asyncness is not one — refused by name as 'an async closure as a VALUE'",
+   "discussion": "native-b-38's FIND-3",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Key an emitted instance on `(id, type key, async bits)` reading `adapted_instances`; an async closure type spelled `Rc<dyn Fn(P) -> vilan_rt::executor::Boxed<R>>` with `pin_future` at the literal (both exist)."
+  },
+  {
+   "id": "F23",
+   "section": "F",
+   "kind": "hygiene",
+   "area": "Native targets & rendering",
+   "title": "NEW — `context.rs` mints a needs-context function's hidden parameter RECORD-LESS, so the Rust emitter INFERS its `Option`-vs-bare flavour from call sites (a worklist, extended through clause-typed parameters for `nursery.vl`) and defaults to the strict reading",
+   "discussion": "native-b-38's OQ-5 / FIND-4; rec YES",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Record the flavour where the parameter is minted (one bool beside `context_hidden_parameters`, ~5 lines); `context_parameter_type`/`context_clause_type` become lookups and `compute_context_flavours` is deleted."
+  },
+  {
+   "id": "F24",
+   "section": "F",
+   "kind": "performance",
+   "area": "Native targets & rendering",
+   "title": "NEW — the native executor never REUSES a settled task's slab slot (set to `None`), so the slab grows one word per spawn for the program's lifetime — fine for CLI programs, unbounded for a server spawning per request",
+   "discussion": "native-b-38's FIND; before F18's per-request spawns",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "A free list with a generation counter on the handle; a vilan-rt pin that N spawn/settle rounds keep the slab bounded."
+  },
+  {
+   "id": "F25",
+   "section": "F",
+   "kind": "design",
+   "area": "Native targets & rendering",
+   "title": "NEW — native EXIT and PRINT corners: a failing `async fun main` (and a sync panic) exits 101 with Rust's panic banner where node exits 1 with its own; printing a host handle (`Task`, `Nursery`, `CancelSignal`, `TimerHandle`) or a value holding a function PANICS at runtime with the reason rather than inventing node's inspection text",
+   "discussion": "native-b-38's OQ-1/OQ-4, native-a-38's Q5",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Rule the native exit code + panic rendering (rec: exit 1, the message without Rust's banner); make the two print cases an emitter-side COMPILE-TIME refusal (the standing preference). `settle_all` raising the first failure in ORDER where `Promise.all` raises the first to SETTLE is documented as accepted."
+  },
+  {
+   "id": "F26",
+   "section": "F",
+   "kind": "design",
+   "area": "Native targets & rendering",
+   "title": "NEW — the monomorphisation RESOLUTION half now exists twice: `resolve_type_id`, `type_key`, `collect_type_generics`, `inherited_substitution`, `call_substitution`, `trait_parameter_substitution`, `resolve_inherited_default`, `trait_default_member` are `&self`-over-`Program` in transformer.rs and re-written in vilan-rust, held together only by the differential; and `analyzer::RENDER_MEMBER` + `transformer::unescape_string` are `pub(crate)`, so the backend crate carries copies",
+   "discussion": "native-a-38's FINDS 1–2 (the JS emitter's instance SET cannot be shared — it is minted during the JS walk with `js::Node` values)",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Lift the eight into a shared vilan-core module both emitters call; widen the two to `pub` and delete the copies; corpus + the whole-set differential byte-identical is the gate. Also: rename `vilan-embedded-std` → `vilan-embedded` (it embeds std, macro_std and vilan-rt)."
+  },
+  {
+   "id": "K15",
+   "section": "K",
+   "kind": "feature",
+   "area": "Web presence",
+   "title": "NEW — the playground does not say when the formatter DECLINED: vilan-wasm now exports `format_checked` → `{ text, declined }` (E197), but the deployed glue calls the String-shaped `format`",
+   "discussion": "editor-38's hand-back; the WEBSITE repo's",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Call `format_checked` where present (feature-detect by name) and show the decline sentence in the status note."
+  },
+  {
+   "id": "M82",
+   "section": "M",
+   "kind": "performance",
+   "area": "Performance & footprint",
+   "title": "NEW — `reconcile`'s key-matching scan is O(N²) per change, so EVERY `each` over a `List`-valued source pays a quadratic pass whatever changed: 95.1 M / 358.5 M / 1,369.9 M Ir at 500 / 1,000 / 2,000 rows (3.77× and 3.82× per doubling; callgrind, `node --jitless`) against 22,347 Ir on the delta path — A98 fixed the DOM half of the pass and left the scan",
+   "discussion": "papers-38's FIND-1 (`sweeps/order38/papers-38/probes/each_cost_template.vl`)",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Either A112 S3 deletes it (the delta-driven `each`) or a position index inside `reconcile` closes it for non-delta sources (a plain `SignalCell<List<T>>` keeps the scan) — rec both: the index now (S), S3 on A112's schedule."
+  },
+  {
+   "id": "M83",
+   "section": "M",
+   "kind": "performance",
+   "area": "Performance & footprint",
+   "title": "NEW — `drain` allocates a fresh dedup `NativeMap` per wave (`turn.queued.write() = NativeMap::new()`); a per-id `remove` measured −35.9 % under the JIT and +11.5 % jitless — under loadavg 8–40, as door 2's control only",
+   "discussion": "reactive-38's FIND-5",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Re-measure on a quiet host (thread CPU + `--jitless` Ir, both); land it only if the JIT direction survives; rides with A110 door 2's bucketed queue."
+  },
+  {
+   "id": "M84",
+   "section": "M",
+   "kind": "performance",
+   "area": "Performance & footprint",
+   "title": "NEW — `Ord::clamp` over an integer costs two `compare` calls since B359 (R1: a default body reaches the TRAIT's `min`/`max`, not the inherent `Math.min`/`Math.max` externs) — semantics identical, JS larger, every integer type",
+   "discussion": "solver-38's OPEN Q1; rec leave it",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "If the host intrinsics are wanted back: `min`/`max` overrides in each `impl <int> with Ord` (~12 types × 2, number.vl) — the override wins inside a default body by R1's own rule; `number-math.mjs` moves back."
+  },
+  {
+   "id": "N109",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — `List::new` / `List::push` are the only compiler-lowered externals OUTSIDE the `intrinsics` map (two `Program` fields keyed by function id) — which is why B359's emit hole existed and why solver-38 added `Dispatch::ListNew`/`ListPush`",
+   "discussion": "solver-38's FIND-2; touches vilan-rust lib.rs",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Make them `Intrinsic` rows; delete the two fields and the two `Dispatch` variants; zero output change (corpus + whole-set native differential byte-identical)."
+  },
+  {
+   "id": "N110",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — a gensym-naming `// witness:` cannot survive a regeneration: `corpus::every_declared_witness_is_in_its_golden` is a literal substring test, so a pure gensym shift reds it (reactive-on-change.vl:60 re-keyed once in Order 38 and survived the merged-tree regeneration by luck) while the byte gate is judged gensym-normalized",
+   "discussion": "reactive-38's FIND-4",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Normalize `$name` runs on both sides of the witness comparison, or admit a `$*` placeholder in a witness; pin both directions."
+  },
+  {
+   "id": "N111",
+   "section": "N",
+   "kind": "hygiene",
+   "area": "Hygiene & rot",
+   "title": "NEW — Order 38's smalls: analyzer.rs:28280 still records the walk frame as '~36 KiB / ~4.5 KiB' (N97 re-keyed it to 42,464 B / ~4,650 B everywhere else); `vilan build` exits before `depth_stats::report()` on a parse-bound refusal, so the depth line is missing for exactly the analyses the bound exists for; `vilan run <package>` writes `/tmp/vilan-run-<pid>.mjs` (N103's family); `json_boundary.rs` is a usage census, not a behaviour harness (fix the pin-location list); `Map`/`Set` have no `impl Js` in vilan-rt (rides F20)",
+   "discussion": "hygiene-38 FIND-2/3, solver-38, std-38 FIND-3, native-a-38 FIND-7",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "One line each; a lane's first hour."
+  },
+  {
+   "id": "N112",
+   "section": "N",
+   "kind": "design",
+   "area": "Hygiene & rot",
+   "title": "NEW — `Error.footnotes: Vec<Note>` — N107's second face: a diagnostic can carry ONE note today, and B355's broad gate is the first place a second footnote is wanted (the deferral count beside the primary error rather than a separate WARNING)",
+   "discussion": "hygiene-38 (N107) + solver-38's OPEN Q2",
+   "status": "OPEN — filed 2026-09-21 (Order 38 sweep)",
+   "body": "Decide with B355's warning in hand: keep the warning (rec, as landed) or grow `footnotes`; if grown, the HMR overlay, the LSP's related-information and the terminal renderer each read the list."
+  }
+ ]
+}

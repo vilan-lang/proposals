@@ -14,7 +14,7 @@ fixed this order by lane solver-38), `proposal/reactive-traits.md` §2–§4,
 `proposal/transport-rpc.md` §8, `proposal/positional-slots.md` §3e,
 `proposal/signal-cell-representation.md` §6.
 
-Probes: `scratchpad/papers-38/probes/` — nine programs and a generated-cost template,
+Probes: `scripts/integration/sweeps/order38/papers-38/probes/` — nine programs and a generated-cost template,
 each with its captured output, re-runnable with `probes/run_all.sh` (add `--cost` for
 the callgrind leg). Every claim below that a probe can check is named beside its
 probe.
@@ -738,6 +738,13 @@ Sizing: S1 M + S2 M–L + S3 M + S4 M+ — the first three are one order's work,
 demand-driven. B359 rides beside, not in front.
 
 ## 13. Open questions, each with a recommendation
+
+> **RULED (the owner, 2026-09-21) — all four as recommended.** Q1 `map_each` / `filter_each`; Q2 two
+> hand-written default lists, no macro; Q3 `Move` is an op from S1 (the wire translator lowers it to
+> `Delta::Reset`); Q4 `KeyedCursor` → `DeltaCursor` in `std::reactive`, with a deprecated re-export in
+> `std::rpc` for one release. The two decisions this paper made without asking stand (`Splice` carries the
+> removed VALUES; `set(whole)` records `Reset`, the diff door is `reconcile_to`). Slice order: S1 (the
+> lift) → S3 (the delta-driven `each`) → S2 (`map_each`). Order 39's.
 
 **Q1 — the names.** `map_each` / `filter_each` beside `each`, or `map_collection`
 (the owner's word), or `map_incremental`?

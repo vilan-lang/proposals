@@ -1534,6 +1534,22 @@ knows which sentences are now history.
   coordination to restore §3's letter; the seed now arrives one round trip later (the mint and
   a concurrent write in flight together — `examples/rpc` lost its `note = (empty)` line).
 
+
+### 9.6c As built — Order 38 (2026-09-21, lane wire-38: A107, an awaited `void`)
+
+A `void` rpc return is ADMITTED on a server `[service]`, in both spellings (an omitted return type and
+an explicit `: void`). The reply is §9.3's existing ack envelope — no new wire shape, no new `Serialize`
+method, no frame moved; the contract entry is `name(args)->void;`, which no service that compiled before
+could have. The generated stub (`rpc.vl::call_ack`) AWAITS the ack and answers **`Option<RpcError>`**, not
+`Result<void, RpcError>`: the language has no unit literal (`Ok(())` does not parse — tracker B363), so a
+`Result` whose success arm is `void` has no constructible `Ok`. The handler runs to completion BEFORE the
+ack, which is the whole difference from a notification and is what the pin asserts (ORDER, over a real
+socket, and over the connectionless POST leg). `[client_service]` is unchanged — there is no reverse reply
+lane, omission is that direction's only spelling and `: void` is still refused there — so the same
+spelling means "awaited" on a server service and "notification" on a client one; `send_notification` and
+`call_ack` sit side by side in `rpc.vl` as the two void calls. `Result<i53, str>` needed nothing: A82
+built it and `an_rpc_answering_a_result_over_a_u53_id_round_trips_both_arms` has pinned it since.
+
 ## 10. Where it lives
 
 A `[library]` package, `std::rpc` (or a standalone `rpc` library), providing the stable

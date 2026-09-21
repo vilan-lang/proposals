@@ -814,3 +814,32 @@ fixed in the same commit. lifetimes.md §9's non-goal carries the clause §12 as
 **Numbers at a glance.** std `Shared::new(` 136 → 128 · goldens' `__shared_new`
 127 → 129 · SCC gate 243/2 mounted, 122/0 unmounted, unchanged · `derivations_detach…`
 25 → 0 unchanged · `-p vilan-core` 5,914 passed on the lane's tree.
+
+## 14. As built (Order 38, 2026-09-21) — the ten blocked cells retired, and three added on purpose
+
+**A108 (lane wire-38, 141bea80) retired the ten cells §13 filed as blocked** — json.vl's six and
+binary.vl's four — by moving `Serialize`/`Deserialize` to `&mut self` and `Wire::describe`/`rebuild` to
+`&mut S`/`&mut D` (BREAKING; the value stays by-value `self`, and inside a `describe`/`rebuild` body the
+parameter already IS the view, so nested forwarding is bare — seventeen std impls and both derive
+emitters at one line each). std `Shared::new(` 128 → 118; the F class is one file, `process/fs.vl`'s
+`Reader.cursor`, and §13's reason for it holds unchanged (`next` awaits; a `&mut` view may not cross a
+suspension) — which is why the receiver change reached the other ten and not that one. The census pin
+asserts the ABSENCE in both codec files and the ten plain field declarations by spelling
+(`VISITOR_STATE_UNBOXED`). **The wire did not move**: the handle-free service hash `78bdada7` is
+byte-identical and every frame-level pin is green. Two corpus goldens moved (crypto.vl −227 B, time.vl
+−310 B) and both print byte-identically; `__shared_new` in the goldens 129 → 111. Kolt migrates by
+REBUILDING — zero hand-written visitor impls, two `[derive(Wire)]`.
+
+**The one surface casualty:** `JsonWriter::serializer()`, `JsonReader::deserializer()` and their two
+binary siblings are deleted. A record's closures may capture a `mut` local of their own frame but not a
+`&mut self` view (`a view cannot escape its scope`), so the records are built in `json_codec` /
+`binary_codec` over the `mut` local of the frame that mints them — §6.9's binding capture is the relation
+the cells were buying (tracker B364 records the limit).
+
+**Three cells were ADDED the same order, deliberately** (A110 door 1, lane reactive-38, 2f93d7a2): one
+liveness `Shared<bool>` per `observe` subscription, shared between the `Subscriber` and its
+`Subscription` and lowered by `dispose` before any removal, so a disposed observer never fires from an
+inline notify's snapshot or from a wave the drain already took out. Deferrals share one module-level
+`always_live`. reactive.vl 26 → 29; **the merged tree's census reads 121** (128 − 10 + 3). Cost
++9.1 % Ir per 12-notification wave (≈1,162 Ir per notification — the order of S3's +590 for its weak
+upgrade). S4 (the counted lowering on the Rust backend) is unblocked by F1 S1b; S5 rides with it.

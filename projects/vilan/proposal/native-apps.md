@@ -741,3 +741,76 @@ entries, 25 on the server path. §5-S1: no impl selection is needed for the conc
 binary — `native.rs` resolves `$VILAN_RT`, else the crate's source sibling) blocks any
 non-from-source use of the backend and is S1b's first item. **What stays out until F17:**
 S2's UI-shaped registration sites, F15's N-way parity gate, E182.
+
+## 11. As built (Order 38, lanes native-a-38 + native-b-38, 2026-09-21) — generics, the executor, and an exit not reached
+
+**The base was red, and §10's table did not say so.** §10 reports "17 byte-identical, 0 differing, 0
+rustc-refused". That was the DEFAULT suite's view — ten programs. Under `VILAN_NATIVE_DIFFERENTIAL=1` the
+whole set at Order 37's sealed tip read 117 enumerated / 29 identical / 84 refused by name / **4 broken**: a
+native MISCOMPILE (`side-effect-let.vl` printed `0 0` where JS prints `1 2` — rule 1's copy applied to a
+loaned parameter in argument position, including the receiver of a mutating intrinsic: `(xs).clone().push(..)`),
+two rustc refusals (`mut-parameters.vl` — no `mut` on the binder; `option-view.vl` — a view inside an enum
+payload) and a harness defect (`stage()` copied files only, so `module-dirs.vl` could not resolve). All four are
+closed, and **the seal now runs the whole set** (`scripts/integration/seal.sh`).
+
+**F19** — `vilan-rt` is reachable from an installed toolchain: `vilan-embedded-std` carries a second table
+(own hash, `~/.vilan/rt-cache/<hash>/vilan-rt/`, a GENERATED manifest — the crate's own is a workspace
+member); `runtime_crate` is three roots in B346's order and `$VILAN_RT` never falls through; pinned in
+`install`.
+
+**S1b** (835c29d2) — monomorphisation by reproducing the JS emitter's MECHANISM: substitution threaded through
+the walk, a structural instance key, reservation before the body so recursion works. §5-S1's hope that the
+Rust emitter could CONSUME the JS instance set is wrong: `Transformer::instances` is minted during the JS walk
+with `js::Node` values. What is shared is `impl_select::*` and the dispatch helpers; the resolution half now
+exists twice and tracker F26 lifts it. Also built: generic structs/enums as one Rust item per instantiation
+with their own `impl Js`; generic-parameter dispatch and trait-default specialization; module-level bindings as
+`thread_local!` `RefCell`s; `Weak<T>` and six `Shared`/`Option` intrinsics; `if x is P(let y)` → `if let`; a
+return type inferred where none was written; a string-literal ESCAPE miscompile found and fixed.
+
+| whole set (117 platform-free) | Order 37's tip | after S1b | after J6's rebase |
+|---|---|---|---|
+| byte-identical | 29 | 47 | **49** |
+| refused by name | 84 | 70 | 68 |
+| differing stdout | 1 | 0 | **0** |
+| rustc-refused | 2 | 0 | **0** |
+| broken (incl. harness) | 4 | 0 | **0** |
+
+**J6, as built** (native-b-38; 5b810d06, 3bcaa083) — `vilan-rt/src/executor.rs`, dependency-free,
+`#![forbid(unsafe_code)]` intact. Four corrections to §10's design: (2) it is ONE timer per turn — the single
+earliest entry — then the microtask queue again; firing every DUE timer in one pass puts a second
+`setTimeout(_, 0)` callback ahead of the first's continuations, a different program (proven red); (3) a `Weak`
+cannot WAKE a parked `sleep`, so a nursery body also carries a cancel-waiter list and a descendant list; the
+`RawWakerVTable` over an `Rc<Cell<bool>>` is reversed — it would cost `unsafe` and buys nothing, since every
+waitable object already owns a wake list: `Waker::noop()` plus the current task's id is the whole mechanism;
+(4) the body's own failure CANCELS the nursery before the drain. A panic is caught at the poll boundary
+(`catch_unwind` over `Future::poll`), which latches a task's failure and gives the nursery join and
+`with_finally_async` their catch-across-an-await; a cancellation is its own payload TYPE. 25 `vilan-rt` pins,
+one per ordering rule, four proven red against the rule removed. Emitted Rust never spells `Pin`, `Send` or
+`Box::pin`. After the rebase onto S1b: `nursery.vl` and `await-postfix.vl` are byte-identical, `Promise.all` /
+`Promise.race` are wired and pinned, and five async programs are refused BY NAME — three for node host
+bindings (F18's), `reactive-turns.vl` for the host type `Hash`, `adapt.vl` for an async closure as a VALUE
+(adapted instances are unmodelled natively — F22).
+
+**The exit was not reached.** The order's native exit was "`board.vl` flips to a byte-identical comparison".
+S1b removed every wall S1a named, and the one it then recorded — "an `is`-test capture outside an `if`" —
+was a FALSE POSITIVE: "a binding in neither `variables` nor `parameters`" also describes a context-threaded
+hidden parameter, which `context.rs` keeps out of `parameters` deliberately. With that fixed, `board.vl` stops
+at a real wall, the host type `Hash` (`std::reactive`'s `CanonicalHash`). Three constructs are 29 of the 68
+remaining refusals — `Hash` (10), `lazy` parameters (12), overloaded operators (7) — and they are F20,
+Order 39's, beside F18.
+
+**Measurements.** C15: ONE boxed binding over the 47-program accepted corpus (iterator.vl) — keep waiting; and
+the count measures what the walk EMITTED (it had scanned every closure the program loads, and A108's two
+mutably-captured codec locals made a two-line probe read 2 — a merge fix). Compile CPU per accepted program,
+debug, loadavg 58–64: emit 0.353 s mean, cargo+rustc +0.521 s mean. **F18's brief is measured**: kolt's server
+leg has 85 gaps (`VILAN_NATIVE_HOST_CENSUS=1 vilan build --backend rust --stdout src/server.vl` — a refusal in
+expression or type position becomes a recorded `unimplemented!()` and the walk continues): 55 host bindings, 11
+host types, 10 intrinsics, 9 language constructs. The list is kept at
+`scripts/integration/sweeps/order38/native-a-38/kolt-server-census.txt`.
+
+**Open from this order:** F20 (the three constructs), F21 (`Option<&mut T>` in a payload — refused by name
+today), F22 (adapted instances), F23 (`context.rs` records the hidden parameter's flavour; the emitter infers it
+today), F24 (the executor's slab never reuses a slot — before F18's per-request spawns), F25 (exit codes, panic
+rendering, printing a host handle), F26 (the shared resolution module), N106 (the f64-boundary and non-BMP
+halves).
+
