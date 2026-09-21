@@ -10,3 +10,13 @@ FAILS (2):
   "`+` adds two values of the same type, but the operands are `i32` and `u53` … suffix the literal or convert"
 - the elements of an annotated LIST literal — `let xs: List<u53> = [1, 2, 3];` →
   "Expected List<u53>, but got List<i32> instead."
+
+## MISCOMPILE — an EXPRESSION of literals in a typed position (the owner's kolt report: `Length::rem(4f / 16)`)
+
+`fun rem(value: f64)`: `rem(4 / 16)` prints **0**, no diagnostic. Same for `let x: f64 = 4 / 16;` (0),
+a return (`fun half(): f64 { 4 / 16 }` → 0), a method argument (`List<f64>::push(1 / 4)` → 0), a struct
+field (`S { v = 1 / 4 }` → 0). Emitted JS: `const x = Math.trunc(4 / 16);` beside `const y = 4 / 16;` for
+`4f / 16`. The checker RE-TYPES the literals from the context (the expression is accepted as `f64`) AFTER
+the operator was dispatched as INTEGER division. Controls: an `i32` VARIABLE in the same positions is
+correctly refused ("Expected f64, but got i32"); `rem(4 * 2)`, `1 + 2`, `10 - 3`, `7 % 2`, `-4`, `(4)`
+give the right VALUE only because integer and float agree there — the same wrong dispatch is underneath.
