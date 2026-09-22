@@ -741,14 +741,18 @@ Three things S1 found that the design did not predict:
    overrides, which is why §2.3 spells it as one.
 2. **One id per leaf chain is not free** (§2.3's finding) — `observe` mints the
    id, so S2 owes a threaded one.
-3. **A malformed impl subject poisons dispatch for the whole trait.** While
+3. **A malformed impl subject cascades into every dispatch of its trait.** While
    building S1, an impl subject written with one type argument too many
-   (`Switch<S, T, I, U>` against `struct Switch<S, T, I>`) was not refused at its
-   own spelling: it became an impl with an UNKNOWN subject, and every later
-   dispatch of that trait failed with *"both `SignalCell<T>` and `unknown`
-   provide it and neither impl subject is more specific"*, pointing at innocent
-   call sites in user code. Filed separately; the repro is one struct, one
-   over-applied impl, one call.
+   (`Switch<S, T, I, U>` against `struct Switch<S, T, I>`) IS refused at its own
+   spelling — but the refused impl still enters the candidate set with an
+   UNKNOWN subject, so every later dispatch of that trait also fails, with
+   *"both `SignalCell<T>` and `unknown` provide it and neither impl subject is
+   more specific"*, pointed at innocent call sites in USER code while the real
+   error sits last in the list. `inference/traits.rs` already pins the
+   corresponding rule for fields (`a_refused_field_does_not_cascade_through_its_uses`);
+   a refused impl subject wants the same. Repro:
+   `sweeps/order40/reactive-40/unknown_impl_subject_cascades.vl` — one struct,
+   one over-applied impl, one call.
 
 ## 8. What is NOT a derivation, and stays an effect
 

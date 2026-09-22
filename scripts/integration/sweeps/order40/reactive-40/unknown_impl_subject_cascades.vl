@@ -1,0 +1,37 @@
+// An impl subject written with ONE TYPE ARGUMENT TOO MANY is not refused at its
+// own spelling: it becomes an impl with an UNKNOWN subject, and every later
+// dispatch of that trait fails at an innocent call site.
+trait Src<T> {
+	fun get(self): T;
+}
+
+struct Root {
+	v: i32,
+}
+
+struct Two<A, B> {
+	a: A,
+	b: B,
+}
+
+impl Root with Src<i32> {
+	fun get(self): i32 {
+		self.v
+	}
+}
+
+// `Two` has TWO parameters; this subject writes THREE.
+impl Two<type A: Src<type T>, T, type B> with Src<T> {
+	fun get(self): T {
+		self.a.get()
+	}
+}
+
+fun read<T, S: Src<T>>(source: S): T {
+	source.get()
+}
+
+fun main() {
+	let root = Root { v = 3 };
+	print(i"{read(root)}");
+}
