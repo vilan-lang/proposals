@@ -1,0 +1,11 @@
+import std::reactive::SignalCell;
+import std::shared::Shared;
+
+enum SignalMapper<type T, type U, type O> {
+	Base(SignalCell<O>),
+	Map(Shared<SignalMapper<any, T, O>>, |T| U),
+	Filter(SignalCell<O>, |T| Option<U>),
+	And(SignalCell<O>, |T| SignalCell<U>),
+}
+
+fun main() {}

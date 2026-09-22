@@ -1,0 +1,6 @@
+import std::reactive::SignalCell;
+enum M<type T> {
+	Base(T),
+	Map(List<M<T>>),
+}
+fun main() {}
