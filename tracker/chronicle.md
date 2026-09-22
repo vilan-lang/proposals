@@ -2668,3 +2668,16 @@ unsigned); the integrator edited std in the integration worktree while a merge h
 running (set aside within seconds; the rule: never); an `until ! pgrep -f "<helper>"` loop that matched
 itself. Score on "the item's text is a hypothesis": papers-39 1 false + 1 half wrong of 3; hygiene-39 1 wrong,
 1 stale, 1 mis-sited of 6; solver-39 three premise corrections of nine; native-a's one wall was five.
+
+**SEALED (2026-09-22, tip 49de3915).** One commit after MERGED: the owner reported the language server
+aborting on a recursive `SignalMapper` enum mid-seal, and it was the compiler — R10's resource-in-container
+walk descends a GENERIC recursive type forever because each substitution mints a fresh type id for the inner
+application; a head-keyed guard beside the instantiation-keyed one, four pins (three abort without it; the
+fourth keeps R10's diagnostic through a recursive generic's member), B385 filed and fixed in the same hour.
+Seal green twice (051e2254, then 49de3915): union 8,093/8,093, the native whole set 119 → 69 identical / 50
+refused by name / 0 / 0 / 0, clippy, Windows, audit, fmt, changelog parity 588. CI 35683785688 green 10/10.
+Toolchain `vilan 0.40.0 (49de39157)` in both locations; kolt checks clean on it. Ten worktrees reaped. The
+sweep: 38 closed, 28 filed (A125, B373–B385, E215–E217, F29–F32, M85, N113–N118), 8 stamped; 123 open.
+Papers as built: transport-rpc §9.7 (A120), native-apps §12, diagnostics-standard C3 (N112), the A122/A123/A124
+reads on their items. Order 40's queue is in `sweeps/order39/go-items39.json`; the v0.41.0 cut stays HELD
+behind one release note for four breaking entries.
