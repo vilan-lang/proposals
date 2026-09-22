@@ -556,3 +556,80 @@ Order among INDEPENDENT observers of one source is explicitly NOT part of the co
 Built bucketed, on top of door 1's liveness flag, in Order 39. The inline (no-turn) notify
 forming a wave — one rule for both cadences — is NOT Order 39's; it is recorded here as
 the rule's boundary. Kolt's `page_content` latch retires when the build lands.
+
+### 7.11 The boundary as BUILT — two notes from Order 39 (lane reactive-39)
+
+Door 2 landed in Order 39. Two things the build learned sit here rather than in a
+tracker item, because both are about what the contract does and does not say.
+
+**The inline cadence is not covered, and looks as if it is.** Outside a turn every
+`set` notifies inline: there is no pending queue, so there is no wave, so there is
+nothing for ascending id to order. Yet the nested shape §7.3 pins behaves CORRECTLY
+inline as well — a parent form's effect is observed to run before anything its render
+created. That is a coincidence of two mechanisms, not the contract:
+
+1. **subscription order** happens to agree with id order on this shape, because the
+   parent form subscribes when it is placed and the render's own subscriptions are
+   made inside that placement, so they are both later in the list and later in id;
+2. **door 1's liveness flag** suppresses the observer a re-render disposed, which is
+   what would otherwise make the inline run visibly wrong rather than merely
+   unordered.
+
+Both are implementation, and the first fails the moment a source is subscribed in an
+order the shape does not dictate — which is exactly the case the contract declines to
+cover for independent observers. So: **the contract is about a wave, and inline
+notification forms no wave.** An app that wants the guarantee writes a turn. Making
+the inline notify form a one-shot wave — one rule for both cadences — is the recorded
+follow-on above; until it is built, this paragraph is the honest statement of the
+boundary, and it is the sentence to quote when an inline program is reported as
+"relying on door 2".
+
+**`at_settle` deferrals are effect-class, ordered by a held id (OPEN, Q3).** A
+deferred action rides the turn's pending queue as an ordinary `Subscriber` and is
+EFFECT-class by construction (`defer_to_turn` in `reactive.vl`: "a deferred action
+acts, it does not publish"), which is right. Its position *among* the effects,
+however, is its `id`'s — and that id is the CALLER's, minted once and kept for the
+action's lifetime so the dedup is per action rather than per call. A long-lived
+deferrer therefore holds a very LOW id, and runs before effects created long after
+it, whatever the nesting looks like. A remote mirror's `Unsubscribe` (`remote-sources.md`
+§2a) is the live example: minted at the mirror's creation, deferred at every release.
+
+Nothing in the estate moved on this — no pin changes, and the two shipped deferrers
+are release hooks whose ordering against a row's effects is not observable — so it is
+RECORDED, not changed. The question for the owner, when something does observe it:
+
+> Is a deferral's place among the effects its creation id (today) or the settle it was
+> deferred IN (a second id, minted at `at_settle`, kept only for the turn)?
+
+> **Rec: leave it.** The creation id is what makes the per-action dedup work, and a
+> per-turn id would have to be reconciled with it rather than replacing it. "A
+> deferral runs with the effects, in an unspecified position among them" is the
+> statement the contract can afford — it is the independent-observer rule (§7.9)
+> applied to deferrals, and it is already true. Revisit if a deferral is ever made to
+> carry a nesting relationship, which none does today.
+
+### 7.12 The cross-reference A124 owes this section (lane reactive-40, Order 40)
+
+`proposal/reactive-pipeline.md` §2.3 re-derives door 2 against a reactive core
+whose combinators are COLD NODES rather than cells. Two things change and one
+does not, and they are recorded here so that §7's rule is read with them:
+
+- **What does not change: the rule.** Derivations to a fixpoint, then effects in
+  ascending subscriber id, is exactly as stated above. A cold chain mints no
+  subscriber of its own, so it has no class; the only subscribers in a pipeline
+  are the root registration a leaf threads down and `.cell()`'s, and `.cell()`
+  marks its own `as_derivation()` exactly as `map` does today.
+- **What gets easier: the glitch.** §7.1's fixpoint half exists because an
+  effect can read a derivation that has not been written yet. Under a no-payload
+  notification every read is a PULL of the root's settled value, so the stale
+  read is unrepresentable rather than ordered away: the pin at
+  `reactive_lifetimes.rs:1036` cannot read `5/3` under cold arms whatever the
+  order is. The fixpoint rule still earns its keep for `.cell()` nodes, which are
+  cells and do have the problem.
+- **What gets harder: the duplicate.** A diamond over one root reaches its leaf
+  once per arm. `enqueue`'s dedup is keyed on `subscriber.id`, and `observe`
+  mints a fresh id per attach, so two arms mint two ids and the leaf is called
+  twice — with a settled pair both times, measured
+  (`vilan/std/src/reactive_pipeline.vl` and its four pins, Order 40). A124's R2
+  ("one subscriber id per leaf chain") is what collapses it, and it is a change
+  to `observe`/`on_settle` in `reactive.vl` rather than to this section's rule.

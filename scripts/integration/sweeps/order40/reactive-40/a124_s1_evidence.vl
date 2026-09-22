@@ -1,0 +1,80 @@
+import std::reactive::{ Signal, SignalCell, Source, Owner, owner_scope, Disposable };
+import std::reactive_pipeline::{ Cold, watch };
+import std::shared::Shared;
+
+fun five_deep(root: SignalCell<i32>, evals: Shared<i32>) {
+	let chain = root
+		.map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+		.map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+		.map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+		.map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+		.map_node(|x| { evals.write() = evals.read() + 1; x + 1 });
+	print(i"built evals={evals.read()}");
+	root.set(2);
+	root.set(3);
+	root.set(4);
+	print(i"cold, no subscriber: evals={evals.read()}");
+	print(i"one pull: {chain.get()} evals={evals.read()}");
+}
+
+fun main() {
+	// (1) a five-deep cold chain with NO subscriber evaluates nothing, ever.
+	let root: SignalCell<i32> = Signal::new(1);
+	let evals: Shared<i32> = Shared::new(0);
+	five_deep(root, evals);
+
+	// (2) one leaf subscriber: five evaluations per settle, none per node.
+	let root2: SignalCell<i32> = Signal::new(1);
+	let evals2: Shared<i32> = Shared::new(0);
+	let chain2 = root2
+		.map_node(|x| { evals2.write() = evals2.read() + 1; x + 1 })
+		.map_node(|x| { evals2.write() = evals2.read() + 1; x + 1 })
+		.map_node(|x| { evals2.write() = evals2.read() + 1; x + 1 })
+		.map_node(|x| { evals2.write() = evals2.read() + 1; x + 1 })
+		.map_node(|x| { evals2.write() = evals2.read() + 1; x + 1 });
+	let _one = watch(chain2, |_value| {});
+	evals2.write() = 0;
+	root2.set(2);
+	print(i"one leaf sub: evals={evals2.read()}");
+
+	// (3) TWO leaf subscribers on one chain: twice, by contract (cold).
+	let _two = watch(chain2, |_value| {});
+	evals2.write() = 0;
+	root2.set(3);
+	print(i"two leaf subs: evals={evals2.read()}");
+
+	// (4) a `.cell()` in the middle: the segment above it runs ONCE however
+	// many leaves stand below.
+	let root3: SignalCell<i32> = Signal::new(1);
+	let upper: Shared<i32> = Shared::new(0);
+	let lower: Shared<i32> = Shared::new(0);
+	let cached = root3
+		.map_node(|x| { upper.write() = upper.read() + 1; x + 1 })
+		.map_node(|x| { upper.write() = upper.read() + 1; x + 1 })
+		.cell();
+	let below = cached
+		.map_node(|x| { lower.write() = lower.read() + 1; x + 1 })
+		.map_node(|x| { lower.write() = lower.read() + 1; x + 1 })
+		.map_node(|x| { lower.write() = lower.read() + 1; x + 1 });
+	let _a = watch(below, |_value| {});
+	let _b = watch(below, |_value| {});
+	upper.write() = 0;
+	lower.write() = 0;
+	root3.set(2);
+	print(i"cell between: upper={upper.read()} lower={lower.read()}");
+
+	// (5) the DIAMOND: two arms over one root, joined. Every read PULLS, so
+	// the pair is never torn; the duplicate is a duplicate CALL.
+	let source: SignalCell<i32> = Signal::new(1);
+	let pairs: Shared<str> = Shared::new("");
+	let diamond = source
+		.map_node(|x| x * 10)
+		.combine_node(source.map_node(|x| x + 100));
+	let _d = watch(diamond, |pair| {
+		let (left, right) = pair;
+		pairs.write() = i"{pairs.read()}({left},{right})";
+	});
+	pairs.write() = "";
+	source.set(2);
+	print(i"diamond: {pairs.read()}");
+}
