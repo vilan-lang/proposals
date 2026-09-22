@@ -7,6 +7,9 @@ W=${VILAN_INTEGRATION:-$HOME/code/vilan-lang/vilan/.claude/worktrees/integration
 cd "$W" || exit 1
 tip=$(git rev-parse --short=8 HEAD); echo "tip=$tip loadavg=$(cut -d' ' -f1-3 /proc/loadavg)"
 cargo nextest run --workspace > "$S/suite-$tip.log" 2>&1; u=$?; grep -E '^\s+Summary' "$S/suite-$tip.log" | tail -1; echo "union exit=$u"
+# The DOC-TESTS: nextest skips them, CI's test leg runs them (Order 40: two indented lowering sketches in
+# vilan-rust's doc comments compiled as Rust and reddened CI after a green seal). ~1 min.
+cargo test -q --doc --workspace > "$S/doctest-$tip.log" 2>&1; d=$?; echo "doc-tests exit=$d"
 # The WHOLE-SET native differential (Order 38's lesson: the default suite is ten programs; the
 # whole set was red at the base for a whole order and no seal looked). ~1 min.
 VILAN_NATIVE_DIFFERENTIAL=1 cargo nextest run -p vilan-cli --test native_differential > "$S/native-$tip.log" 2>&1; n=$?; echo "native whole-set exit=$n"
@@ -21,4 +24,4 @@ s = next(i for i, l in enumerate(ls) if l.startswith("## Unreleased"))
 e = next((i for i in range(s + 1, len(ls)) if ls[i].startswith("## ")), len(ls))
 print("changelog parity", sum(l.startswith("<!-- family:") for l in ls[s:e]), "/", sum(l.startswith("**") for l in ls[s:e]))
 PY
-echo "verdict: union=$u native=$n clippy=$c windows=$w audit=$a fmt=$f"
+echo "verdict: union=$u doctests=$d native=$n clippy=$c windows=$w audit=$a fmt=$f"
