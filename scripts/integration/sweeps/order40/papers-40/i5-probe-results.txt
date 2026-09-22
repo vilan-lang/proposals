@@ -1,0 +1,76 @@
+I5 + B382 probe results — lane papers-40, Order 40, vilan next @49de3915 (vilan 0.40.0 (49de39157)).
+Re-runnable: each script takes <worktree> <scratch-dir>. Captured 2026-09-22T15:21Z.
+
+=== i5_wire_flip.sh — the WIRE proof (paper §6) ===
+=== A  Delta::Insert(K, T, i32) — std as it is
+patch	binary	104	050000005061746368050000000400000006000000496e73657274070000000500000068656c6c6f0300000006000000557064617465070000000500000074686572650600000052656d6f7665070000000500000052657365740200000001000000610100000062
+patch	text	96	{"Patch":[5,[{"Insert":[7,"hello",3]},{"Update":[7,"there"]},{"Remove":7},{"Reset":["a","b"]}]]}
+roundtrip	ok	7	hello	3
+=== B  Delta::Insert(K, T, u53) — the naive migration (CONTROL: must move)
+patch	binary	108	050000005061746368050000000400000006000000496e73657274070000000500000068656c6c6f000000000000084006000000557064617465070000000500000074686572650600000052656d6f7665070000000500000052657365740200000001000000610100000062
+patch	text	96	{"Patch":[5,[{"Insert":[7,"hello",3]},{"Update":[7,"there"]},{"Remove":7},{"Reset":["a","b"]}]]}
+roundtrip	ok	7	hello	3
+=== C  Delta::Insert(K, T, u53) with the i32 wire width
+patch	binary	104	050000005061746368050000000400000006000000496e73657274070000000500000068656c6c6f0300000006000000557064617465070000000500000074686572650600000052656d6f7665070000000500000052657365740200000001000000610100000062
+patch	text	96	{"Patch":[5,[{"Insert":[7,"hello",3]},{"Update":[7,"there"]},{"Remove":7},{"Reset":["a","b"]}]]}
+roundtrip	ok	7	hello	3
+
+=== A vs B (the control — expect a difference)
+1c1
+< patch	binary	104	050000005061746368050000000400000006000000496e73657274070000000500000068656c6c6f0300000006000000557064617465070000000500000074686572650600000052656d6f7665070000000500000052657365740200000001000000610100000062
+---
+> patch	binary	108	050000005061746368050000000400000006000000496e73657274070000000500000068656c6c6f000000000000084006000000557064617465070000000500000074686572650600000052656d6f7665070000000500000052657365740200000001000000610100000062
+=== A vs C (the claim — expect no difference)
+BYTE-IDENTICAL: the frame did not move
+
+=== i5_contract_hash.sh — the contract hash (paper §7) ===
+--- 1. the rpc parameter's written type
+i32	contract	be3fd1fe
+u53	contract	5b458905
+i53	contract	a7d0d499
+u32	contract	c8e7a262
+i16	contract	fa24f7f8
+--- 2. a position INSIDE a std frame type (Delta::Insert's index)
+std-as-is	contract	be3fd1fe
+delta-index-u53	contract	be3fd1fe
+
+=== i5_literal_positions.sh — literal inference under B370 (paper §4) ===
+PASS	argument
+PASS	annotated_let
+PASS	binary_right
+FAIL	binary_left	Error: `+` adds two values of the same type, but the operands are `i32` and `u53`: there are no implicit conve
+FAIL	list_elements	Error: Expected List<u53>, but got List<i32> instead.
+PASS	struct_field
+PASS	return_position
+PASS	comparison
+PASS	compound_assign
+FAIL	match_literal	Error: literal pattern of type i32 cannot match type u53
+PASS	tuple_element
+PASS	closure_parameter
+FAIL	generic_call	Error: Expected u53, but got i32 instead.
+FAIL	bare_let_then_use	Error: Expected u53, but got i32 instead.
+PASS	option_some
+PASS	list_index_literal
+PASS	list_index_u53
+FAIL	list_get_u53	Error: Expected i32, but got u53 instead.
+FAIL	len_into_u53	Error: Expected u53, but got i32 instead.
+PASS	downward_loop
+PASS	underflow_runs
+
+=== b382_aliases.sh — B382's premise ===
+--- 1. type alias
+type X = Y;                        Error: cannot find type 'KeyedCursor'
+--- 2. import … as
+import … as, alias used          ACCEPTED
+import … as, ORIGINAL used       Error: cannot find type 'Map'; import it first (`import std::map::Map;`)
+--- 3. [deprecated]
+on a fun (control)                 ACCEPTED
+on a struct                        Error: cannot find 'deprecated' in this scope
+on an export                       Error: cannot find 'deprecated' in this scope
+--- the deprecation warning a fun DOES get
+Warning: `a` is deprecated; use b
+   ╭─[ probe.vl:4:23 ]
+   │
+--- 4. export import … as, across a package, over every item kind
+3
+duo 2 L

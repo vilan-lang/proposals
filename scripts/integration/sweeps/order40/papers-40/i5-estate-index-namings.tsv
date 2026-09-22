@@ -1,0 +1,252 @@
+area	kind	file	line	owner	function	position	type
+corpus	SIG	vilan/test/capture-clones.vl	171		first_or_guarded	limit	i32
+corpus	SIG	vilan/test/delta-law.vl	63	impl ListCell<type T>	bounded	limit	i32
+corpus	SIG	vilan/test/delta-law.vl	77	impl ListCell<type T>	set_at	at	i32
+corpus	SIG	vilan/test/delta-law.vl	125	trait SequenceCell	size	<ret>	i32
+corpus	SIG	vilan/test/delta-law.vl	127	trait SequenceCell	splice	at	i32
+corpus	SIG	vilan/test/delta-law.vl	133	trait SequenceCell	insert_at	at	i32
+corpus	SIG	vilan/test/delta-law.vl	137	trait SequenceCell	remove_at	at	i32
+corpus	SIG	vilan/test/delta-law.vl	147	impl ListCell<type T> with SequenceCell<T>	size	<ret>	i32
+corpus	SIG	vilan/test/delta-law.vl	151	impl ListCell<type T> with SequenceCell<T>	splice	at	i32
+corpus	FIELD	vilan/test/derive-default.vl	7	struct Config		count	i32
+corpus	FIELD	vilan/test/for-mut-container.vl	10	struct Counter		pos	i32
+corpus	SIG	vilan/test/generic-adapter-dispatch.vl	15	trait Iter	taken	count	i32
+corpus	FIELD	vilan/test/generic-adapter-dispatch.vl	29	struct Counting		at	i32
+corpus	FIELD	vilan/test/generic-adapter-dispatch.vl	30	struct Counting		limit	i32
+corpus	FIELD	vilan/test/iterator-adapters.vl	14	struct Naturals		at	i32
+corpus	FIELD	vilan/test/iterator-protocol.vl	11	struct Naturals		limit	i32
+corpus	SIG	vilan/test/match-patterns.vl	52		ranked	count	i32
+corpus	SIG	vilan/test/match-patterns.vl	63		aligned	count	i32
+corpus	SIG	vilan/test/option-view.vl	40	impl Outer	item_mut	index	i32
+corpus	LET	vilan/test/reactive-on-change.vl	35		main	count	SignalCell<i32>
+corpus	FIELD	vilan/test/resource.vl	165	struct Counted		count	i32
+corpus	FIELD	vilan/test/shared.vl	8	struct Counter		count	i32
+corpus	FIELD	vilan/test/time.vl	15	struct Stamp		at	i53
+corpus	SIG	vilan/examples/walkthrough/src/store.vl	31		random_bytes_sync	length	i32
+corpus	SIG	vilan/benchmarks/src/payload.vl	26		sample_list	count	i32
+corpus	SIG	vilan/benchmarks/src/payload.vl	48		measure	count	i32
+corpus	FIELD	vilan/benchmarks/src/realtime.vl	35	struct Board		count	SignalCell<i32>
+corpus	SIG	vilan/benchmarks/src/report.vl	16		rate	count	i32
+corpus	SIG	vilan/macro_std/src/meta.vl	343	impl Arguments	len	<ret>	i32
+corpus	SIG	vilan/macro_std/src/meta.vl	348	impl Arguments	get	index	i32
+corpus	SIG	vilan/macro_std/src/meta.vl	353	impl Arguments	as_i32	index	i32
+corpus	SIG	vilan/macro_std/src/meta.vl	362	impl Arguments	as_str_literal	index	i32
+corpus	SIG	vilan/macro_std/src/meta.vl	378	impl Arguments	as_identifier	index	i32
+docs	LET	vilan/docs/guide/reactive.md#fence@57	2			count	Signal<i32>
+docs	FIELD	vilan/docs/guide/services.md#fence@1300	8	struct Todos		count	Shared<i32>
+docs	FIELD	vilan/docs/std/collections.md#fence@470	8	struct Down		at	i32
+docs	FIELD	vilan/docs/std/collections.md#fence@521	1	struct Cursor		index	i32
+docs	FIELD	vilan/docs/std/collections.md#fence@576	5	struct Naturals		at	i32
+docs	FIELD	vilan/docs/std/process.md#fence@332	29	struct Stat		size	i32
+docs	FIELD	vilan/docs/std/process.md#fence@332	67	struct Reader		cursor	Shared<i53>
+docs	SIG	vilan/docs/tour/platforms.md#fence@111	3		random_bytes_sync	length	i32
+rustconsts	SIG	crates/vilan-cli/tests/infer_preset/project/src/main.vl	13		scale	count	i32
+rustconsts	FIELD	crates/vilan-cli/tests/macro_std.rs#const@142	6	struct Widget		size	i32
+rustconsts	FIELD	crates/vilan-cli/tests/macro_std.rs#const@172	6	struct Widget		size	i32
+rustconsts	SIG	crates/vilan-cli/tests/reactive_channels.rs#const@380	20		corpus	count	i32
+rustconsts	SIG	crates/vilan-cli/tests/reactive_channels.rs#const@463	20		corpus	count	i32
+rustconsts	SIG	crates/vilan-cli/tests/reactive_channels.rs#const@1336	20		corpus	count	i32
+rustconsts	LET	crates/vilan-cli/tests/reactive_lifetimes.rs#const@352	5		main	count	SignalCell<i32>
+rustconsts	LET	crates/vilan-cli/tests/reactive_lifetimes.rs#const@414	24		main	count	SignalCell<i32>
+rustconsts	LET	crates/vilan-cli/tests/reactive_selection.rs#const@74	4		main	count	SignalCell<i32>
+rustconsts	SIG	crates/vilan-cli/tests/reactive_selection.rs#const@333	4		wave_millis	count	i32
+rustconsts	FIELD	crates/vilan-cli/tests/rpc_http.rs#const@196	13	struct Counter		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/rpc_http.rs#const@277	22	struct Board		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/rpc_http.rs#const@405	15	struct Board		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/rpc_http.rs#const@588	22	struct Board		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/rpc_http.rs#const@719	21	struct Board		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/rpc_http.rs#const@862	22	struct Board		count	SignalCell<i32>
+rustconsts	SIG	crates/vilan-cli/tests/rpc_http.rs#const@1153	27	impl Ledger	count	<ret>	i32
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@241	12	struct Counter		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@327	12	struct Notes		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@327	25	struct Board		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@431	12	struct Notes		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@431	25	struct Board		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@646	9	struct Counter		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@846	12	struct Notes		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@1090	11	struct Notes		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@2112	12	struct Notes		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@2887	19	struct Ledger		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-cli/tests/service_layer.rs#const@2887	41	struct TalkingLedger		count	SignalCell<i32>
+rustconsts	SIG	crates/vilan-cli/tests/service_layer.rs#const@4420	36	impl Store	count	<ret>	i32
+rustconsts	SIG	crates/vilan-cli/tests/service_layer.rs#const@4677	34	impl Bus	arg	index	i32
+rustconsts	LET	crates/vilan-cli/tests/ui_rows.rs#const@1881	7		main	count	SignalCell<i32>
+rustconsts	LET	crates/vilan-cli/tests/ui_rows.rs#const@1960	13		main	count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/backed_enums.rs#const@1296	9	struct Holder		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/backed_enums.rs#const@2314	7	struct Slot		index	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3038	3		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3060	3		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3081	2		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3101	2		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3118	2		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3136	2		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3152	2		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3172	2		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3194	3		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3216	4		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3244	4		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3276	4		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3300	4		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3396	5		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3430	4		f	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/backed_enums.rs#const@3887	4		f	count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/borrows.rs#const@1119	3	struct Pair		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/borrows.rs#const@3490	2	struct Pair		count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/bounds.rs#const@5594	3		rank	index	i32
+rustconsts	LET	crates/vilan-core/tests/inference/bounds.rs#const@7362	5		main	count	Signal<i32>
+rustconsts	SIG	crates/vilan-core/tests/inference/bounds.rs#const@8111	2		count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/bounds.rs#const@8126	2		count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/bounds.rs#const@8191	2		count	<ret>	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/bounds.rs#const@9123	4	struct Sized		size	(i32) context owner_scope
+rustconsts	LET	crates/vilan-core/tests/inference/bounds.rs#const@11102	5		main	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/generics.rs#const@1178	12	impl Pair<type A, type B>	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/generics.rs#const@1207	12	impl Pair<type A: Named, type B>	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/generics.rs#const@1305	4	trait Counter	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/generics.rs#const@1305	7	impl Hello with Counter	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/generics.rs#const@1399	11	trait Sized2	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/generics.rs#const@1399	13	impl Pair with Sized2	size	<ret>	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@2733	5	struct Store		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@2885	13	struct Session		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@2945	10	struct Counter		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@2986	9	struct Alpha		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@2986	15	struct Beta		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@3075	10	struct Mixed		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@4111	11	struct Counter		count	Shared<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@4232	17	struct Board		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@5735	9	struct Tagged		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/generics.rs#const@5762	7	struct Tagged		count	i32
+rustconsts	LET	crates/vilan-core/tests/inference/hmr.rs#const@394	7		main	count	Option<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@24	6	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@24	6	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1067	7	struct Cursor		index	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1207	5	struct Bag		cursor	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1310	4	struct Cursor		index	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1419	4	struct Odd		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1449	4	struct Cursor		index	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1556	14	struct Inherent		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1638	10	struct Down		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1672	10	struct Bag		cursor	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1710	10	struct Bag2		cursor	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1751	7	struct Two		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1783	8	struct Both		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1816	8	struct Twin		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1852	8	struct Twin		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1868	8	struct Twin		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1904	8	struct Three		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1936	8	struct One		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1967	8	struct Bag3		cursor	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@1998	6	struct Nope		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@2014	7	struct H		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@2038	8	struct Q		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@2073	4	struct Odd		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@2122	5	struct Two		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@2150	4	struct Num		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@2173	6	struct Empty3		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@2196	4	struct Num2		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@2282	15	struct Holder		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@2282	18	struct Basket		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@3124	26	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@3124	26	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/iterators.rs#const@3196	15	struct Slow		at	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/iterators.rs#const@4629	4		ready	count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/lazy.rs#const@612	32	struct Pack		count	i32
+rustconsts	LET	crates/vilan-core/tests/inference/lifetimes.rs#const@263	5			count	SignalCell<i32>
+rustconsts	SIG	crates/vilan-core/tests/inference/liveness.rs#const@273	5		size	<ret>	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/macros.rs#const@548	36	struct Pack		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/macros.rs#const@653	18	struct Widget		size	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/macros.rs#const@1441	16	struct Widget		size	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/macros.rs#const@2674	5		watch	count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/macros.rs#const@5089	18	struct Widget		size	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/macros.rs#const@5144	18	struct Widget		size	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/macros.rs#const@5336	10		counter	count	SignalCell<i32>
+rustconsts	SIG	crates/vilan-core/tests/inference/macros.rs#const@5336	15		link	count	SignalCell<i32>
+rustconsts	SIG	crates/vilan-core/tests/inference/markdown.rs#const@3433	3		cut	start	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/markdown.rs#const@3433	3		cut	end	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/modules.rs#const@243	2		at	index	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/modules.rs#const@263	2		at	index	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/modules.rs#const@283	3		at	index	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/modules.rs#const@305	2		at	index	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/modules.rs#const@397	3	struct Bag		cursor	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/modules.rs#const@432	3	struct Bag		cursor	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/modules.rs#const@5451	4		labels	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/modules.rs#const@5451	15		total	count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/platform.rs#const@987	8	struct Audited		limit	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/platform.rs#const@2245	11	impl Ticker	record	at	i53
+rustconsts	LET	crates/vilan-core/tests/inference/platform.rs#const@4718	4		main	count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/platform.rs#const@5355	12		bump	start	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/platform.rs#const@6737	8	struct Handle		index	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/platform.rs#const@8460	10	struct Steps		count	i32
+rustconsts	LET	crates/vilan-core/tests/inference/platform.rs#const@9248	6		main	count	i32
+rustconsts	LET	crates/vilan-core/tests/inference/resources.rs#const@477	4		main	count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/resources.rs#const@965	3	struct Sink		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/resources.rs#const@5403	6	struct Store		count	SignalCell<i32>
+rustconsts	FIELD	crates/vilan-core/tests/inference/resources.rs#const@5789	6	struct Cursor		position	i53
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@5789	9	impl Cursor	next	size	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@6923	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7052	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7292	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7313	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7335	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7356	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7381	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7552	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7575	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7599	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7620	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7643	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7692	6	impl Res	size	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/resources.rs#const@7715	3	impl Inert	size	<ret>	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/returns.rs#const@1173	5	struct Two		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/returns.rs#const@1200	4	struct Num		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/returns.rs#const@3289	4	struct Config		limit	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/returns.rs#const@5034	2		count_up	limit	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/std_surface.rs#const@867	4	impl List<type T>	count	<ret>	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1103	7	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1103	7	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1136	7	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1136	7	struct Counting		limit	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/std_surface.rs#const@1170	9	trait Iter	taken	count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1170	22	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1170	22	struct Counting		limit	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/std_surface.rs#const@1259	10	trait Iter	taken	count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1259	33	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1259	33	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1338	7	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1338	7	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1374	15	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1374	15	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1407	7	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1407	7	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1460	7	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1460	7	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1497	5	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1537	7	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1537	7	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1571	10	struct Counting		at	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/std_surface.rs#const@1571	10	struct Counting		limit	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/styling.rs#const@6412	2	struct Cursor		index	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/traits.rs#const@2554	2		count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/traits.rs#const@3125	12	impl Store<type T: Wire + PartialEq>	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/traits.rs#const@3181	18	impl Store	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/traits.rs#const@3281	18	impl Store	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/traits.rs#const@3376	17	impl Store	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/traits.rs#const@4216	16	impl Store	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/traits.rs#const@4248	17	impl Store	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/traits.rs#const@6348	5	trait Sized2	size	<ret>	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/traits.rs#const@6749	4	struct Bag		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/traits.rs#const@6784	4	struct Bag		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/traits.rs#const@6880	4	struct Bag		count	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/tuples.rs#const@865	24	impl Counter<type K: Hashable>	count	<ret>	i32
+rustconsts	SIG	crates/vilan-core/tests/inference/tuples.rs#const@2489	3		count	<ret>	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/tuples.rs#const@4050	29	struct Holder		start	|| i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/tuples.rs#const@4169	3	struct Holder		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/tuples.rs#const@4184	3	struct Holder		count	i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/tuples.rs#const@6404	21	struct Holder		start	|| i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/tuples.rs#const@6443	20	struct Holder		start	|| i32
+rustconsts	FIELD	crates/vilan-core/tests/inference/tuples.rs#const@6481	20	struct Holder		start	|| i32
+rustconsts	LET	crates/vilan-core/tests/inference/weak.rs#const@399	6		main	count	SignalCell<i32>
+rustconsts	SIG	crates/vilan-core/tests/intrinsic_binding.rs#const@165	5	impl Bag	remove	index	i32
+rustconsts	FIELD	crates/vilan-core/tests/release_emission.rs#const@249	8	struct Naturals		limit	i32
+kolt	LET	/home/reed/code/kolt/src/lib/reactive2.vl	34		example	count	Signal<i32>
+kolt	SIG	/home/reed/code/kolt/src/lib/rotary.vl	53	impl Rotary	focus	offset	i32
+kolt	SIG	/home/reed/code/kolt/worktrees/connection-v3/vilan/server/src/main.vl	34		random_bytes_sync	length	i32

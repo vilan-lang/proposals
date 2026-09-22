@@ -1,0 +1,41 @@
+// I5's second wire question (Order 40, lane papers-40): does a SERVICE's
+// contract hash move when an rpc signature's index type is respelled?
+//
+// `std::rpc`'s `service_hash` folds a surface string built from
+// `parameter.type_.render()` — the type AS WRITTEN (rpc.vl ~§5310). This probe
+// prints the hash for a service whose rpc method takes a position. Re-run it
+// with the position respelled (`i5_contract_hash.sh`) and compare.
+//
+//   VILAN_STD=<std> vilan run i5_contract_hash.vl
+
+import std::reactive::{ Signal, SignalCell };
+import std::shared::Shared;
+
+[derive(Wire, PartialEq, Debug)]
+struct Row {
+	id: i32,
+	text: str,
+}
+
+[service(PageClient)]
+struct Pages {
+	[expose] rows: SignalCell<List<Row>>,
+	served: Shared<i32>,
+}
+
+impl Pages {
+	// THE POSITION UNDER TEST. `i5_contract_hash.sh` respells `at`'s type.
+	[rpc]
+	fun page(self, at: i32): str {
+		self.served.write() = self.served.read() + 1;
+		i"{at}"
+	}
+}
+
+fun main() {
+	let pages = Pages {
+		rows = Signal::new([]),
+		served = Shared::new(0),
+	};
+	print(i"contract\t{pages.contract_hash()}");
+}

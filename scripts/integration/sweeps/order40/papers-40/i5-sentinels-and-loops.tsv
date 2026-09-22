@@ -1,0 +1,171 @@
+area	kind	file	line	function	detail
+std	NEG1	vilan/std/src/browser/ui.vl	1282	settled_steps	-1
+std	DOWNLOOP	vilan/std/src/browser/ui.vl	1307	settled_steps	for at >= 0
+std	DEC	vilan/std/src/browser/ui.vl	1322	settled_steps	at -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/browser/ui.vl	1347	row_references	for at >= 0
+std	DEC	vilan/std/src/browser/ui.vl	1357	row_references	at -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/iterator.vl	281	next	for self.pending > 0
+std	DOWNLOOP	vilan/std/src/json.vl	636	begin_list	for index >= 0
+std	DEC	vilan/std/src/json.vl	638	begin_list	index -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/json.vl	685	begin_variant	for index >= 0
+std	DEC	vilan/std/src/json.vl	687	begin_variant	index -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/list.vl	81	reverse	for index >= 0
+std	DEC	vilan/std/src/list.vl	83	reverse	index -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/markdown.vl	210	heading_content	for end > 0 && text.code_at(end - 1) == 35
+std	DEC	vilan/std/src/markdown.vl	211	heading_content	end -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/path.vl	204	basename	for end > 0 && path.substring(end - 1, end) == "/"
+std	DEC	vilan/std/src/path.vl	205	basename	end -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/path.vl	208	basename	for start > 0 && path.substring(start - 1, start) != "/"
+std	DEC	vilan/std/src/path.vl	209	basename	start -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/path.vl	222	dirname	for end > 0 && path.substring(end - 1, end) == "/"
+std	DEC	vilan/std/src/path.vl	223	dirname	end -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/path.vl	231	dirname	for cut > 0 && path.substring(cut - 1, cut) != "/"
+std	DEC	vilan/std/src/path.vl	232	dirname	cut -= 1 (loop depth 1)
+std	DOWNLOOP	vilan/std/src/path.vl	240	dirname	for stop > 0 && path.substring(stop - 1, stop) == "/"
+std	DEC	vilan/std/src/path.vl	241	dirname	stop -= 1 (loop depth 1)
+std	DEC	vilan/std/src/path.vl	273	extname	index -= 1 (loop depth 1)
+std	NEG1	vilan/std/src/process/db.vl	331	refuse_inserted_migration	-1
+std	DOWNLOOP	vilan/std/src/reactive.vl	348	enqueue	for index > 0 && turn.pending.write()[index - 1].id > subscriber.id
+std	DEC	vilan/std/src/reactive.vl	349	enqueue	index -= 1 (loop depth 2)
+std	DOWNLOOP	vilan/std/src/reactive.vl	396	drain	for !turn.is_quiescent() && budget > 0
+std	DOWNLOOP	vilan/std/src/reactive.vl	405	drain	for !turn.pending_derived.read().is_empty() && budget > 0
+std	DEC	vilan/std/src/reactive.vl	413	drain	budget -= 1 (loop depth 3)
+std	DEC	vilan/std/src/reactive.vl	445	drain	budget -= 1 (loop depth 2)
+std	NEG1	vilan/std/src/reactive.vl	1699	reconcile	-1
+std	DOWNLOOP	vilan/std/src/reactive.vl	1702	reconcile	for build >= 0
+std	DEC	vilan/std/src/reactive.vl	1709	reconcile	build -= 1 (loop depth 1)
+std	NEG1	vilan/std/src/reactive.vl	1725	reconcile	-1
+std	DOWNLOOP	vilan/std/src/reactive.vl	1727	reconcile	for head >= 0
+std	NEG1	vilan/std/src/reactive.vl	1734	reconcile	-1
+std	DOWNLOOP	vilan/std/src/reactive.vl	1736	reconcile	for walk >= 0
+corpus	NEG1	vilan/test/arena.vl	33	main	-1
+corpus	NEG1	vilan/test/arena.vl	36	main	-1
+corpus	NEG1	vilan/test/arena.vl	38	main	-1
+corpus	NEG1	vilan/test/arena.vl	42	main	-1
+corpus	NEG1	vilan/test/arena.vl	44	main	-1
+corpus	NEG1	vilan/test/expression-lift.vl	53	main	-1
+corpus	NEG1	vilan/test/expression-lift.vl	54	main	-1
+corpus	NEG1	vilan/test/expression-lift.vl	58	main	-1
+corpus	NEG1	vilan/test/expression-lift.vl	63	main	-1
+corpus	NEG1	vilan/test/expression-lift.vl	78	main	-1
+corpus	NEG1	vilan/test/expression-lift.vl	80	main	-1
+corpus	NEG1	vilan/test/expression-lift.vl	81	main	-1
+corpus	NEG1	vilan/test/expression-lift.vl	84	main	-1
+corpus	NEG1	vilan/test/generic-method-return.vl	30	main	-1
+corpus	NEG1	vilan/test/iterator-adapters.vl	58	main	-1
+corpus	NEG1	vilan/test/list-search.vl	10	main	-1
+corpus	NEG1	vilan/test/list-search.vl	15	main	-1
+corpus	NEG1	vilan/test/map.vl	16	main	-1
+corpus	NEG1	vilan/test/numeric-types.vl	55	main	-1
+corpus	NEG1	vilan/test/parse-f64.vl	8	main	-1
+corpus	NEG1	vilan/test/unary-minus.vl	8	main	-1
+corpus	NEG1	vilan/examples/walkthrough/src/store.vl	101	add_note	-1
+corpus	NEG1	vilan/examples/walkthrough/src/store.vl	121	retitle_note	-1
+corpus	NEG1	vilan/examples/walkthrough/src/store.vl	140	rewrite_note	-1
+corpus	NEG1	vilan/examples/walkthrough/src/store.vl	153	delete_note	-1
+docs	NEG1	vilan/docs/guide/walkthrough.md#fence@125	15	retitle_note	-1
+docs	NEG1	vilan/docs/spec/types.md#fence@179	9	main	-1
+docs	NEG1	vilan/docs/spec/types.md#fence@787	6	sign	-1
+docs	DOWNLOOP	vilan/docs/std/browser.md#fence@581	9	main	for index > 0
+docs	DEC	vilan/docs/std/browser.md#fence@581	18	main	index -= 1 (loop depth 1)
+docs	NEG1	vilan/docs/std/cells.md#fence@213	9	main	-1
+docs	NEG1	vilan/docs/std/cells.md#fence@213	10	main	-1
+docs	NEG1	vilan/docs/std/collections.md#fence@99	5	main	-1
+docs	DEC	vilan/docs/std/collections.md#fence@431	13	next	self.remaining -= 1 (loop depth 0)
+docs	DEC	vilan/docs/std/collections.md#fence@470	12	tick	self.at -= 1 (loop depth 0)
+docs	NEG1	vilan/docs/std/collections.md#fence@679	10	main	-1
+docs	NEG1	vilan/docs/std/numbers.md#fence@141	3	main	-1
+docs	NEG1	vilan/docs/std/strings.md#fence@84	12	main	-1
+docs	NEG1	vilan/docs/tour/control-flow.md#fence@355	6	main	-1
+docs	NEG1	vilan/docs/tour/control-flow.md#fence@355	7	main	-1
+docs	NEG1	vilan/docs/tour/control-flow.md#fence@355	9	main	-1
+docs	NEG1	vilan/docs/tour/functions-and-closures.md#fence@36	3	sign	-1
+docs	NEG1	vilan/docs/tour/functions-and-closures.md#fence@154	20	main	-1
+rustconsts	NEG1	crates/vilan-cli/tests/debug_dumps.rs#const@51	10	main	-1
+rustconsts	NEG1	crates/vilan-cli/tests/hmr_swap.rs#const@168	60	main	-1
+rustconsts	NEG1	crates/vilan-cli/tests/hmr_swap.rs#const@246	60	main	-1
+rustconsts	NEG1	crates/vilan-cli/tests/reactive_channels.rs#const@38	42	held_by	-1
+rustconsts	NEG1	crates/vilan-cli/tests/reactive_channels.rs#const@38	51	watch	-1
+rustconsts	NEG1	crates/vilan-cli/tests/reactive_channels.rs#const@2372	35	main	-1
+rustconsts	NEG1	crates/vilan-cli/tests/reactive_channels.rs#const@2372	51	main	-1
+rustconsts	DOWNLOOP	crates/vilan-cli/tests/storage_handle.rs#const@117	38	main	for index > 0
+rustconsts	DEC	crates/vilan-cli/tests/storage_handle.rs#const@117	43	main	index -= 1 (loop depth 1)
+rustconsts	NEG1	crates/vilan-core/tests/inference/backed_enums.rs#const@1227	7	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/backed_enums.rs#const@2730	13	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/backed_enums.rs#const@2730	17	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/backed_enums.rs#const@2759	11	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/backed_enums.rs#const@2810	13	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/backed_enums.rs#const@2940	13	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/backed_enums.rs#const@2940	17	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@805	16	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@834	6	read	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@862	11	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@862	12	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@964	14	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@991	13	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@991	16	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@1020	14	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@1136	13	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@1136	19	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@1136	20	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@1169	8	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@1169	10	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@1169	12	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@1169	13	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@2557	9	grow	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@2584	13	step	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@2616	14	step	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@2652	16	peek	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@2718	12	peek	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@9282	6	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/borrows.rs#const@9424	6	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@84	18	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@84	19	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@115	12	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@115	13	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@115	14	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@186	7	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@186	8	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@186	9	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@490	9	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@1110	15	main	-1
+rustconsts	DEC	crates/vilan-core/tests/inference/iterators.rs#const@1556	10	next	self.remaining -= 1 (loop depth 0)
+rustconsts	DEC	crates/vilan-core/tests/inference/iterators.rs#const@1638	13	tick	self.at -= 1 (loop depth 0)
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@2235	7	probe	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@2984	9	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/iterators.rs#const@2984	10	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/macros.rs#const@2045	6	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/markdown.rs#const@3241	15	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/markdown.rs#const@3273	3	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/markdown.rs#const@3287	3	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/markdown.rs#const@3330	3	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/markdown.rs#const@3585	4	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/markdown.rs#const@3585	5	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/markdown.rs#const@3585	6	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/platform.rs#const@4097	7	main	-1
+rustconsts	DOWNLOOP	crates/vilan-core/tests/inference/platform.rs#const@4205	12	main	for n > 0
+rustconsts	DEC	crates/vilan-core/tests/inference/platform.rs#const@9057	4	main	c -= 3 (loop depth 0)
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@610	9	sign	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@2503	14	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@2640	14	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@2692	15	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@2720	15	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4223	7	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4223	9	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4243	10	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4269	11	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4269	15	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4437	7	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4526	7	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4572	9	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4572	10	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/returns.rs#const@4591	7	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/std_surface.rs#const@59	7	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/std_surface.rs#const@59	8	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/std_surface.rs#const@245	4	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/std_surface.rs#const@339	9	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/std_surface.rs#const@1136	21	main	-1
+rustconsts	NEG1	crates/vilan-core/tests/inference/std_surface.rs#const@1170	31	main	-1
+rustconsts	DEC	crates/vilan-core/tests/inference/traits.rs#const@7002	28	next	self.n -= 1 (loop depth 0)
+kolt	NEG1	/home/reed/code/kolt/src/lib/rotary.vl	29	bind	-1
+kolt	NEG1	/home/reed/code/kolt/src/lib/rotary.vl	41	bind	-1

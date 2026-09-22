@@ -1,0 +1,593 @@
+verdict	kind	module	line	owner	function	position	type	reason
+INDEX	FIELD	arena.vl	26	struct Handle		index	i32	a slot position [field]
+NOT	FIELD	arena.vl	27	struct Handle		generation	i32	a generation counter [field]
+NOT	FIELD	arena.vl	36	struct Slot		generation	i32	a generation counter [field]
+INDEX	FIELD	arena.vl	45	struct Arena		free	List<i32>	free slot positions [field]
+NOT	FIELD	arena.vl	46	struct Arena		brand	i32	an arena identity [field]
+INDEX	SIG	arena.vl	136	impl Arena<type T>	len	<ret>	i32	a length [override]
+NOT	SIG	base64.vl	11		char_at	value	i32	an alphabet code [override]
+NOT	SIG	base64.vl	43		digit	code	u32	a status / character code
+NOT	SIG	base64.vl	43		digit	<ret>	i32	an alphabet code [override]
+INDEX	FIELD	binary.vl	23	struct BinaryWriter		used	i32	bytes used of the buffer [field]
+INDEX	SIG	binary.vl	32	impl BinaryWriter	ensure	extra	i32	a byte count of buffer capacity [override]
+NOT	SIG	binary.vl	45	impl BinaryWriter	write_byte	value	i32	the byte written [override]
+NOT	SIG	binary.vl	53	impl BinaryWriter	write_i32	value	i32	a protocol integer [override]
+NOT	SIG	binary.vl	60	impl BinaryWriter	write_byte_u32	value	u32	an element value
+NOT	SIG	binary.vl	66	impl BinaryWriter	write_u32	value	u32	an element value
+WIRE	SIG	binary.vl	99	impl BinaryWriter with Serialize	begin_struct	fields	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	binary.vl	105	impl BinaryWriter with Serialize	begin_list	length	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	binary.vl	111	impl BinaryWriter with Serialize	begin_variant	arity	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	binary.vl	129	impl BinaryWriter with Serialize	i32_value	value	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	binary.vl	133	impl BinaryWriter with Serialize	u32_value	value	u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	binary.vl	140	impl BinaryWriter with Serialize	i53_value	value	i53	the Serialize/Deserialize protocol seam (§6)
+INDEX	FIELD	binary.vl	162	struct BinaryReader		cursor	i32	a byte position in the frame [field]
+INDEX	SIG	binary.vl	188	impl BinaryReader	expect	count	i32	a byte count into the frame buffer [override]
+NOT	SIG	binary.vl	199	impl BinaryReader	read_byte	<ret>	i32	the byte read [override]
+NOT	SIG	binary.vl	208	impl BinaryReader	read_i32	<ret>	i32	a protocol integer [override]
+NOT	SIG	binary.vl	221	impl BinaryReader	read_u32	<ret>	u32	`read_u32` answers a value
+INDEX	SIG	binary.vl	246	impl BinaryReader	read_length	<ret>	i32	a wire length read back as a count [override]
+WIRE	SIG	binary.vl	284	impl BinaryReader with Deserialize	begin_list	<ret>	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	binary.vl	294	impl BinaryReader with Deserialize	begin_variant	arity	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	binary.vl	319	impl BinaryReader with Deserialize	i32_value	<ret>	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	binary.vl	323	impl BinaryReader with Deserialize	u32_value	<ret>	u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	binary.vl	327	impl BinaryReader with Deserialize	i53_value	<ret>	i53	the Serialize/Deserialize protocol seam (§6)
+NOT	SIG	dom.vl	537	impl Event	button	<ret>	i32	a mouse button code [override]
+INDEX	SIG	storage.vl	86	impl Storage	len	<ret>	i32	a length [override]
+INDEX	SIG	storage.vl	98	impl Storage	key_at	index	i32	a storage position [override]
+INDEX	SIG	storage.vl	179	impl Storage	raw_key_at	index	i32	a storage position [override]
+NOT	SIG	ui.vl	507		chunk_arm	<ret>	i32	a chunk arm id [override]
+NOT	SIG	ui.vl	512		chunk_ready	arm	i32	a chunk arm id
+NOT	SIG	ui.vl	518		chunk_load	arm	i32	a chunk arm id
+NOT	SIG	ui.vl	524		chunk_preload_arm	arm	i32	a chunk arm id
+INDEX	SIG	bytes.vl	15	impl Bytes	alloc	size	i32	a byte-length [override]
+INDEX	SIG	bytes.vl	19	impl Bytes	len	<ret>	i32	`len` answers a position or a count
+INDEX	SIG	bytes.vl	23	impl Bytes	get	index	i32	`index` is a position or a length
+NOT	SIG	bytes.vl	23	impl Bytes	get	<ret>	i32	the byte read (I5 §2: a byte VALUE is not an index) [override]
+INDEX	SIG	bytes.vl	28	impl Bytes	get_u32	index	i32	`index` is a position or a length
+NOT	SIG	bytes.vl	28	impl Bytes	get_u32	<ret>	u32	`get_u32` answers a value
+NOT	SIG	bytes.vl	46	impl Bytes	fill	value	i32	the byte written [override]
+INDEX	SIG	bytes.vl	46	impl Bytes	fill	from	i32	`from` is a position or a length
+INDEX	SIG	bytes.vl	46	impl Bytes	fill	to	i32	`to` is a position or a length
+INDEX	SIG	bytes.vl	51	impl Bytes	copy_into	offset	i32	`offset` is a position or a length
+INDEX	SIG	bytes.vl	55	impl Bytes	slice	from	i32	`from` is a position or a length
+INDEX	SIG	bytes.vl	55	impl Bytes	slice	to	i32	`to` is a position or a length
+INDEX	SIG	bytes.vl	58	impl Bytes	set	index	i32	`index` is a position or a length
+NOT	SIG	bytes.vl	58	impl Bytes	set	value	i32	the byte written [override]
+NOT	SIG	bytes.vl	65	impl Bytes	fill_u32	value	u32	an element value
+INDEX	SIG	bytes.vl	65	impl Bytes	fill_u32	from	i32	`from` is a position or a length
+INDEX	SIG	bytes.vl	65	impl Bytes	fill_u32	to	i32	`to` is a position or a length
+INDEX	SIG	bytes.vl	67	impl Bytes	set_u32	index	i32	`index` is a position or a length
+NOT	SIG	bytes.vl	67	impl Bytes	set_u32	value	u32	an element value
+INDEX	SIG	bytes.vl	107	impl DataView	read_f64	offset	i32	a byte offset [override]
+INDEX	SIG	bytes.vl	110	impl DataView	write_f64	offset	i32	a byte offset [override]
+INDEX	SIG	compare.vl	113	impl List<type T: PartialEq>	index_of	<ret>	Option<i32>	a list position [override]
+NOT	SIG	crypto.vl	20		pbkdf2_sha512	iterations	i32	a work factor
+NOT	SIG	crypto.vl	20		pbkdf2_sha512	bits	i32	a key size in bits
+INDEX	SIG	crypto.vl	42		random_bytes	length	i32	a byte-length [override]
+NOT	FIELD	delta.vl	58	struct DeltaCursor		id	i32	a consumer identity [field]
+SEQUENCE	FIELD	delta.vl	59	struct DeltaCursor		at	Shared<i32>	a delta sequence number [field]
+SEQUENCE	FIELD	delta.vl	142	struct DeltaLog		version	Shared<i32>	a delta sequence number [field]
+SEQUENCE	FIELD	delta.vl	145	struct DeltaLog		base	Shared<i32>	a delta sequence number [field]
+INDEX	FIELD	delta.vl	151	struct DeltaLog		limit	i32	a bound on the log's LENGTH [field]
+INDEX	SIG	delta.vl	168	impl DeltaLog<type O>	with_limit	limit	i32	a log LENGTH bound [override]
+INDEX	SIG	delta.vl	289	impl DeltaLog<type O>	held	<ret>	i32	how many ops are held — a count [override]
+SEQUENCE	SIG	delta.vl	294	impl DeltaLog<type O>	at	<ret>	i32	a delta SEQUENCE NUMBER — monotonic, not a position [override]
+SEQUENCE	SIG	delta.vl	299	impl DeltaLog<type O>	oldest	<ret>	i32	a delta sequence number [override]
+NOT	SIG	fetch.vl	38	impl Response	status	<ret>	i32	an HTTP status [override]
+INDEX	SIG	iterator.vl	35	trait Iterator	take	count	i32	an element count [override]
+INDEX	SIG	iterator.vl	41	trait Iterator	skip	count	i32	an element count [override]
+INDEX	SIG	iterator.vl	98	trait Iterator	count	<ret>	i32	an element count [override]
+INDEX	FIELD	iterator.vl	163	struct ListIterator		index	i32	a list position [field]
+INDEX	FIELD	iterator.vl	259	struct Taken		remaining	i32	an element count [field]
+INDEX	FIELD	iterator.vl	274	struct Skipped		pending	i32	an element count [field]
+INDEX	FIELD	iterator.vl	294	struct Enumerated		index	i32	the enumerate counter [field]
+NOT	SIG	iterator.vl	298	impl Enumerated<type I: Iterator<T>, type T> with Iterator<(i32, T)>	next	<ret>	Option<(i32, T)>	`next` answers a value
+NOT	SIG	json.vl	170		coerce_i32	<ret>	i32	`coerce_i32` answers a value
+NOT	SIG	json.vl	172		coerce_u32	<ret>	u32	`coerce_u32` answers a value
+NOT	SIG	json.vl	174		coerce_i53	<ret>	i53	`coerce_i53` answers a value
+NOT	SIG	json.vl	176		coerce_u53	<ret>	u53	`coerce_u53` answers a value
+NOT	SIG	json.vl	199	impl i32 with FromJson	from_json	<ret>	Result<i32, str>	`from_json` answers a value
+NOT	SIG	json.vl	205	impl i32 with FromJson	from_json_value	<ret>	Result<i32, str>	`from_json_value` answers a value
+NOT	SIG	json.vl	215	impl u32 with FromJson	from_json	<ret>	Result<u32, str>	`from_json` answers a value
+NOT	SIG	json.vl	221	impl u32 with FromJson	from_json_value	<ret>	Result<u32, str>	`from_json_value` answers a value
+WIRE	FIELD	json.vl	325	struct JsonWriter		variant_arities	List<i32>	the protocol's arities [field]
+WIRE	SIG	json.vl	375	impl JsonWriter with Serialize	begin_struct	fields	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	json.vl	391	impl JsonWriter with Serialize	begin_list	length	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	json.vl	399	impl JsonWriter with Serialize	begin_variant	arity	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	json.vl	440	impl JsonWriter with Serialize	i32_value	value	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	json.vl	444	impl JsonWriter with Serialize	u32_value	value	u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	json.vl	450	impl JsonWriter with Serialize	i53_value	value	i53	the Serialize/Deserialize protocol seam (§6)
+INDEX	FIELD	json.vl	479	struct JsonReader		list_marks	List<i32>	per-depth element counts [field]
+WIRE	SIG	json.vl	628	impl JsonReader with Deserialize	begin_list	<ret>	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	json.vl	675	impl JsonReader with Deserialize	begin_variant	arity	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	json.vl	719	impl JsonReader with Deserialize	i32_value	<ret>	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	json.vl	728	impl JsonReader with Deserialize	u32_value	<ret>	u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	json.vl	737	impl JsonReader with Deserialize	i53_value	<ret>	i53	the Serialize/Deserialize protocol seam (§6)
+NOT	SIG	json.vl	1384	impl i53 with FromJson	from_json	<ret>	Result<i53, str>	`from_json` answers a value
+NOT	SIG	json.vl	1390	impl i53 with FromJson	from_json_value	<ret>	Result<i53, str>	`from_json_value` answers a value
+NOT	SIG	json.vl	1405	impl u53 with FromJson	from_json	<ret>	Result<u53, str>	`from_json` answers a value
+NOT	SIG	json.vl	1411	impl u53 with FromJson	from_json_value	<ret>	Result<u53, str>	`from_json_value` answers a value
+INDEX	SIG	list.vl	25	impl List<type T>	len	<ret>	i32	`len` answers a position or a count
+INDEX	SIG	list.vl	99	impl List<type T>	insert	index	i32	`index` is a position or a length
+INDEX	SIG	list.vl	109	impl List<type T>	remove	index	i32	`index` is a position or a length
+INDEX	SIG	map.vl	46	impl Map<type K: Hashable, type V>	len	<ret>	i32	`len` answers a position or a count
+NOT	FIELD	markdown.vl	80	struct ParseError		line	i32	a line number [field]
+INDEX	SIG	markdown.vl	95		index_of	from	i32	a string position [override]
+INDEX	SIG	markdown.vl	95		index_of	<ret>	Option<i32>	a string position [override]
+INDEX	SIG	markdown.vl	109		leading_spaces	<ret>	i32	a column width [override]
+INDEX	SIG	markdown.vl	120		dedent	columns	i32	a column width [override]
+NOT	SIG	markdown.vl	132		is_ascii_digit	c	u32	a character code
+NOT	SIG	markdown.vl	137		is_ascii_punctuation	c	u32	a character code
+NOT	SIG	markdown.vl	156		same_char_line	code	u32	a character code [override]
+INDEX	SIG	markdown.vl	156		same_char_line	minimum	i32	a minimum RUN LENGTH [override]
+NOT	SIG	markdown.vl	186		heading_level	<ret>	i32	a heading level [override]
+NOT	SIG	markdown.vl	207		heading_content	level	i32	a heading level [override]
+INDEX	SIG	markdown.vl	230		list_item_content_offset	<ret>	i32	`list_item_content_offset` answers a position or a count
+INDEX	SIG	markdown.vl	272		is_fence_close	indent	i32	a column position [override]
+NOT	SIG	markdown.vl	282		parse_inline	line	i32	a line number carried for diagnostics [override]
+NOT	SIG	markdown.vl	519		is_word_code	c	u32	a character code
+INDEX	SIG	markdown.vl	573		entity_length	i	i32	a scan position [override]
+INDEX	SIG	markdown.vl	573		entity_length	<ret>	i32	`entity_length` answers a position or a count
+NOT	SIG	markdown.vl	586		is_slug_whitespace	c	u32	a character code
+NOT	SIG	markdown.vl	606		is_dropped_symbol	c	u32	a character code
+NOT	SIG	markdown.vl	781		parse_row	line_number	i32	a line number [override]
+INDEX	SIG	markdown.vl	820		parse_blocks	first_line	i32	a line index [override]
+INDEX	SIG	memo.vl	91	impl Memo<type K: Hashable, type V>	len	<ret>	i32	`len` answers a position or a count
+INDEX	SIG	native_map.vl	33	impl NativeMap<type V>	len	<ret>	i32	`len` answers a position or a count
+NOT	SIG	number.vl	11	impl u32	pow	exponent	u32	the numeric type's own algebra
+NOT	SIG	number.vl	11	impl u32	pow	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	14	impl u32	min	other	u32	the numeric type's own algebra
+NOT	SIG	number.vl	14	impl u32	min	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	17	impl u32	max	other	u32	the numeric type's own algebra
+NOT	SIG	number.vl	17	impl u32	max	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	19	impl u32	rem	m	u32	the numeric type's own algebra
+NOT	SIG	number.vl	19	impl u32	rem	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	25	impl u32 with Default	default	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	33	impl i32	diff	other	i32	the numeric type's own algebra
+NOT	SIG	number.vl	33	impl i32	diff	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	44	impl i32	abs	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	47	impl i32	pow	exponent	i32	the numeric type's own algebra
+NOT	SIG	number.vl	47	impl i32	pow	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	50	impl i32	min	other	i32	the numeric type's own algebra
+NOT	SIG	number.vl	50	impl i32	min	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	53	impl i32	max	other	i32	the numeric type's own algebra
+NOT	SIG	number.vl	53	impl i32	max	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	57	impl i32	rem	m	i32	the numeric type's own algebra
+NOT	SIG	number.vl	57	impl i32	rem	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	63	impl i32 with Default	default	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	217	impl i32 with PartialOrd	partial_compare	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	231	impl i32 with Ord	compare	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	247	impl u32 with PartialOrd	partial_compare	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	261	impl u32 with Ord	compare	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	397	impl i53 with PartialOrd	partial_compare	b	i53	the numeric type's own algebra
+NOT	SIG	number.vl	411	impl i53 with Ord	compare	b	i53	the numeric type's own algebra
+NOT	SIG	number.vl	427	impl u53 with PartialOrd	partial_compare	b	u53	the numeric type's own algebra
+NOT	SIG	number.vl	441	impl u53 with Ord	compare	b	u53	the numeric type's own algebra
+NOT	SIG	number.vl	536	impl i32 with PartialEq	eq	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	542	impl u32 with PartialEq	eq	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	560	impl i32 with Add	add	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	560	impl i32 with Add	add	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	566	impl i32 with Sub	sub	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	566	impl i32 with Sub	sub	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	572	impl i32 with Mul	mul	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	572	impl i32 with Mul	mul	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	578	impl i32 with Div	div	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	578	impl i32 with Div	div	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	584	impl u32 with Add	add	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	584	impl u32 with Add	add	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	590	impl u32 with Sub	sub	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	590	impl u32 with Sub	sub	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	596	impl u32 with Mul	mul	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	596	impl u32 with Mul	mul	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	602	impl u32 with Div	div	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	602	impl u32 with Div	div	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	660	impl i32 with Shl	shl	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	660	impl i32 with Shl	shl	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	666	impl i32 with Shr	shr	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	666	impl i32 with Shr	shr	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	672	impl i32 with BitAnd	bit_and	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	672	impl i32 with BitAnd	bit_and	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	678	impl i32 with BitOr	bit_or	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	678	impl i32 with BitOr	bit_or	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	684	impl i32 with BitXor	bit_xor	b	i32	the numeric type's own algebra
+NOT	SIG	number.vl	684	impl i32 with BitXor	bit_xor	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	690	impl u32 with Shl	shl	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	690	impl u32 with Shl	shl	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	696	impl u32 with Shr	shr	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	696	impl u32 with Shr	shr	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	702	impl u32 with BitAnd	bit_and	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	702	impl u32 with BitAnd	bit_and	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	708	impl u32 with BitOr	bit_or	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	708	impl u32 with BitOr	bit_or	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	714	impl u32 with BitXor	bit_xor	b	u32	the numeric type's own algebra
+NOT	SIG	number.vl	714	impl u32 with BitXor	bit_xor	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	793		label_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	796		label_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	799		label_i64	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	802		label_u64	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	905	impl i8	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	910	impl i8	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	915	impl i8	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	920	impl i8	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	979	impl u8	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	984	impl u8	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	989	impl u8	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	994	impl u8	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1056	impl i16	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1061	impl i16	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1066	impl i16	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1071	impl i16	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1130	impl u16	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1135	impl u16	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1140	impl u16	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1145	impl u16	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1159	impl i32	max_value	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1165	impl i32	min_value	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1192	impl i32	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1196	impl i32	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1201	impl i32	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1206	impl i32	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1220	impl u32	max_value	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1226	impl u32	min_value	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1253	impl u32	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1258	impl u32	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1262	impl u32	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1267	impl u32	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1282	impl i53	max_value	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1290	impl i53	min_value	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1295	impl i53	abs	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1298	impl i53	pow	exponent	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1298	impl i53	pow	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1301	impl i53	min	other	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1301	impl i53	min	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1304	impl i53	max	other	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1304	impl i53	max	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1306	impl i53	rem	m	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1306	impl i53	rem	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1333	impl i53	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1338	impl i53	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1343	impl i53	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1347	impl i53	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1362	impl u53	max_value	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1368	impl u53	min_value	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1373	impl u53	pow	exponent	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1373	impl u53	pow	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1376	impl u53	min	other	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1376	impl u53	min	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1379	impl u53	max	other	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1379	impl u53	max	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1381	impl u53	rem	m	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1381	impl u53	rem	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1408	impl u53	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1413	impl u53	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1418	impl u53	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1423	impl u53	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1495	impl f32	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1500	impl f32	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1505	impl f32	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1510	impl f32	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1541	impl f64	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1546	impl f64	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1551	impl f64	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1556	impl f64	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1595	impl BigInt	as_i32	<ret>	i32	the numeric type's own algebra
+NOT	SIG	number.vl	1600	impl BigInt	as_u32	<ret>	u32	the numeric type's own algebra
+NOT	SIG	number.vl	1605	impl BigInt	as_i53	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1610	impl BigInt	as_u53	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1766	impl i53 with Default	default	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1772	impl i53 with PartialEq	eq	b	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1778	impl i53 with Add	add	b	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1778	impl i53 with Add	add	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1784	impl i53 with Sub	sub	b	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1784	impl i53 with Sub	sub	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1790	impl i53 with Mul	mul	b	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1790	impl i53 with Mul	mul	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1796	impl i53 with Div	div	b	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1796	impl i53 with Div	div	<ret>	i53	the numeric type's own algebra
+NOT	SIG	number.vl	1802	impl u53 with Default	default	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1808	impl u53 with PartialEq	eq	b	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1814	impl u53 with Add	add	b	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1814	impl u53 with Add	add	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1820	impl u53 with Sub	sub	b	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1820	impl u53 with Sub	sub	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1826	impl u53 with Mul	mul	b	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1826	impl u53 with Mul	mul	<ret>	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1832	impl u53 with Div	div	b	u53	the numeric type's own algebra
+NOT	SIG	number.vl	1832	impl u53 with Div	div	<ret>	u53	the numeric type's own algebra
+NOT	SIG	option.vl	316	impl str	parse_i32	<ret>	Option<i32>	a parsed VALUE [override]
+INDEX	SIG	option.vl	383	impl str	raw_index_of	<ret>	i32	`raw_index_of` answers a position or a count
+INDEX	SIG	option.vl	386	impl str	raw_last_index_of	<ret>	i32	`raw_last_index_of` answers a position or a count
+INDEX	SIG	option.vl	401	impl str	index_of	<ret>	Option<i32>	`index_of` answers a position or a count
+INDEX	SIG	option.vl	414	impl str	last_index_of	<ret>	Option<i32>	`last_index_of` answers a position or a count
+INDEX	SIG	option.vl	428	impl List<type T>	get	index	i32	`index` is a position or a length
+NOT	SIG	db.vl	65		statement_run	<ret>	i32	rows affected [override]
+NOT	SIG	db.vl	77		column_integer	<ret>	i32	a column VALUE [override]
+NOT	SIG	db.vl	80		column_big_integer	<ret>	i53	a column VALUE [override]
+NOT	SIG	db.vl	92	impl Statement	run	<ret>	i32	rows affected — a database count, not a position [override]
+NOT	SIG	db.vl	111	impl Row	integer	<ret>	i32	a column VALUE [override]
+NOT	SIG	db.vl	118	impl Row	big_integer	<ret>	i53	a column VALUE [override]
+NOT	SIG	db.vl	312		refuse_database_ahead	count	i32	a migration count, not a sequence position [override]
+INDEX	FIELD	document.vl	232	struct Document		splice	i32	a byte position [field]
+INDEX	SIG	document.vl	531		splice_point	<ret>	i32	`splice_point` answers a position or a count
+INDEX	SIG	document.vl	543		closing_point	<ret>	Option<i32>	`closing_point` answers a position or a count
+INDEX	SIG	document.vl	578		spliced	insertions	List<(i32, str)>	positions inside a tuple list [override]
+INDEX	FIELD	document.vl	654	struct Tag		start	i32	a byte position [field]
+INDEX	FIELD	document.vl	657	struct Tag		end	i32	a byte position [field]
+INDEX	SIG	document.vl	810		past	found	Option<i32>	a found POSITION [override]
+INDEX	SIG	document.vl	810		past	offset	i32	a byte offset [override]
+INDEX	SIG	document.vl	810		past	fallback	i32	a fallback POSITION [override]
+INDEX	SIG	document.vl	810		past	<ret>	i32	`past` answers a position or a count
+INDEX	SIG	document.vl	819		attributes_of	from	i32	`from` is a position or a length
+INDEX	SIG	document.vl	819		attributes_of	<ret>	(List<(str, str)>, i32)	`attributes_of` answers a position or a count
+INDEX	SIG	document.vl	881		skip_raw_text	from	i32	`from` is a position or a length
+INDEX	SIG	document.vl	881		skip_raw_text	<ret>	i32	`skip_raw_text` answers a position or a count
+INDEX	SIG	document.vl	900		matches_ascii_insensitive	at	i32	`at` is a position or a length
+NOT	SIG	document.vl	915		lowered_unit	unit	u32	a character code
+NOT	SIG	document.vl	915		lowered_unit	<ret>	u32	`lowered_unit` answers a value
+INDEX	SIG	document.vl	924		skip_spaces	from	i32	`from` is a position or a length
+INDEX	SIG	document.vl	924		skip_spaces	<ret>	i32	`skip_spaces` answers a position or a count
+INDEX	SIG	document.vl	935		index_of	from	i32	`from` is a position or a length
+INDEX	SIG	document.vl	935		index_of	<ret>	Option<i32>	`index_of` answers a position or a count
+STREAM	SIG	fs.vl	407	impl RawStat	size	<ret>	i32	a FILE length [override]
+STREAM	FIELD	fs.vl	423	struct Stat		size	i32	a FILE length [field]
+INDEX	SIG	fs.vl	486	impl RawReadResult	bytes_read	<ret>	i32	`bytes_read` answers a position or a count
+INDEX	SIG	fs.vl	494	impl RawWriteResult	bytes_written	<ret>	i32	`bytes_written` answers a position or a count
+INDEX	SIG	fs.vl	535	impl File	raw_read	offset	i32	a BUFFER offset [override]
+INDEX	SIG	fs.vl	535	impl File	raw_read	length	i32	a buffer length [override]
+STREAM	SIG	fs.vl	535	impl File	raw_read	position	i53	a FILE offset — see §2.1's open sub-question [override]
+INDEX	SIG	fs.vl	538	impl File	raw_write	offset	i32	a BUFFER offset [override]
+INDEX	SIG	fs.vl	538	impl File	raw_write	length	i32	a buffer length [override]
+STREAM	SIG	fs.vl	538	impl File	raw_write	position	i53	a FILE offset [override]
+STREAM	SIG	fs.vl	549	impl File	read_at	position	i53	a FILE offset [override]
+INDEX	SIG	fs.vl	549	impl File	read_at	<ret>	i32	bytes read into a buffer [override]
+STREAM	SIG	fs.vl	557	impl File	write_at	position	i53	a FILE offset [override]
+INDEX	SIG	fs.vl	557	impl File	write_at	<ret>	i32	bytes written from a buffer [override]
+STREAM	SIG	fs.vl	579	impl File	truncate	length	i53	a FILE length [override]
+STREAM	FIELD	fs.vl	743	struct Reader		cursor	Shared<i53>	a FILE offset [field]
+INDEX	SIG	fs.vl	787	impl Reader	next	size	i32	a read chunk length in memory [override]
+STREAM	SIG	fs.vl	797	impl Reader	position	<ret>	i53	a FILE offset [override]
+STREAM	SIG	fs.vl	805	impl Reader	seek	position	i53	a FILE offset [override]
+NOT	SIG	fs.vl	941		start_watch	interval_ms	i32	a duration
+NOT	SIG	http.vl	25	impl NodeServer	listen	port	i32	a port [override]
+NOT	SIG	http.vl	50	impl NodeAddress	port	<ret>	i32	a port [override]
+NOT	SIG	http.vl	93	impl NodeSocket	set_timeout	millis	i32	a duration [override]
+NOT	SIG	http.vl	137	impl NodeResponse	set_status_code	code	i32	an HTTP status [override]
+NOT	FIELD	http.vl	232	struct Response		status	i32	an HTTP status [field]
+NOT	FIELD	http.vl	275	struct ResponseBuilder		status	i32	an HTTP status [field]
+NOT	SIG	http.vl	287	impl ResponseBuilder	code	code	i32	an HTTP status [override]
+NOT	FIELD	http.vl	493	struct Server		port	i32	a port [field]
+NOT	FIELD	http.vl	515	struct ServerBuilder		port	i32	a port [field]
+NOT	SIG	http.vl	559	impl Server	port	<ret>	i32	a port [override]
+NOT	SIG	http.vl	642		bound_port	<ret>	i32	a port [override]
+NOT	SIG	http.vl	647	impl ServerBuilder	port	port	i32	a port [override]
+NOT	SIG	process.vl	10		exit	code	i32	an exit code [override]
+NOT	FIELD	rpc_server.vl	117	struct Connection		id	i32	a connection identity [field]
+NOT	FIELD	rpc_server.vl	425	struct Service		on_connect	|i32, DuplexEnd| void	a closure over a connection id [field]
+NOT	FIELD	rpc_server.vl	426	struct Service		on_disconnect	|i32| void	a closure over a connection id [field]
+NOT	FIELD	rpc_server.vl	440	struct Service		live	Shared<i32>	live connections, not a sequence [field]
+NOT	FIELD	rpc_server.vl	441	struct Service		max_connections	i32	a connection budget [field]
+NOT	FIELD	rpc_server.vl	444	struct Service		handshake_rate	i32	a rate [field]
+NOT	FIELD	rpc_server.vl	452	struct Service		handshake_timeout	i32	a duration [field]
+NOT	FIELD	rpc_server.vl	458	struct Service		authorize_timeout	i32	a duration [field]
+NOT	SIG	rpc_server.vl	562	impl Service	on_connect	handler	|i32, DuplexEnd| void	a closure
+NOT	SIG	rpc_server.vl	567	impl Service	on_disconnect	handler	|i32| void	a closure
+NOT	SIG	rpc_server.vl	619	impl Service	max_connections	limit	i32	a connection budget, not a sequence [override]
+NOT	SIG	rpc_server.vl	632	impl Service	handshake_rate	attempts	i32	a rate limit in attempts
+NOT	SIG	rpc_server.vl	662	impl Service	handshake_timeout	millis	i32	a duration
+NOT	SIG	rpc_server.vl	701	impl Service	authorize_timeout	millis	i32	a duration
+NOT	SIG	rpc_server.vl	845		fresh_connection	<ret>	i32	a connection id [override]
+NOT	SIG	rpc_server.vl	1291		drop_connection	target	i32	a connection id
+NOT	SIG	random.vl	14		range_i32	low	i32	a range bound of values
+NOT	SIG	random.vl	14		range_i32	high	i32	a range bound of values
+NOT	SIG	random.vl	14		range_i32	<ret>	i32	`range_i32` answers a value
+NOT	SIG	random.vl	15		range_u32	low	u32	a range bound of values
+NOT	SIG	random.vl	15		range_u32	high	u32	a range bound of values
+NOT	SIG	random.vl	15		range_u32	<ret>	u32	`range_u32` answers a value
+NOT	SIG	random.vl	24	impl i32 with Random	range	low	i32	a range bound of values
+NOT	SIG	random.vl	24	impl i32 with Random	range	high	i32	a range bound of values
+NOT	SIG	random.vl	24	impl i32 with Random	range	<ret>	i32	a random VALUE [override]
+NOT	SIG	random.vl	30	impl u32 with Random	range	low	u32	a range bound of values
+NOT	SIG	random.vl	30	impl u32 with Random	range	high	u32	a range bound of values
+NOT	SIG	random.vl	30	impl u32 with Random	range	<ret>	u32	a random VALUE [override]
+NOT	FIELD	range.vl	10	struct Range		current	i32	a range of VALUES [field]
+NOT	FIELD	range.vl	11	struct Range		end	i32	a range of VALUES [field]
+NOT	SIG	range.vl	15	impl Range	new	start	i32	a range of VALUES, not positions (I5 §2) [override]
+NOT	SIG	range.vl	15	impl Range	new	end	i32	a range of VALUES [override]
+NOT	SIG	range.vl	21	impl Range with Iterator<i32>	next	<ret>	Option<i32>	a range of VALUES [override]
+NOT	FIELD	reactive.vl	41	struct Subscriber		id	i32	a subscriber identity [field]
+NOT	SIG	reactive.vl	158		fresh_id	<ret>	i32	an identity [override]
+NOT	SIG	reactive.vl	481		at_settle	id	i32	an identity
+NOT	SIG	reactive.vl	492		at_release_settle	id	i32	an identity
+NOT	SIG	reactive.vl	504		defer_to_turn	id	i32	an identity
+NOT	FIELD	reactive.vl	605	struct Subscription		id	i32	a subscription identity [field]
+NOT	SIG	reactive.vl	1201		cell_identity	<ret>	i32	an identity [override]
+INDEX	FIELD	reactive.vl	1655	struct ReconcilePlan		removed	List<i32>	the positions removed [field]
+NOT	FIELD	reactive.vl	1823	struct Draft		generation	Shared<i32>	a generation counter [field]
+NOT	FIELD	reactive.vl	1827	struct Draft		debounce_millis	Shared<i32>	a duration [field]
+NOT	SIG	reactive.vl	1933	impl Draft<type T: PartialEq>	debounce	millis	i32	a duration [override]
+NOT	SIG	reactive.vl	1985	impl Draft<type T: PartialEq>	settle	mine	i32	a subscriber id
+NOT	FIELD	reactive.vl	2067	struct Optimistic		generation	Shared<i32>	a generation counter [field]
+NOT	FIELD	reactive.vl	2070	struct Optimistic		confirmed_generation	Shared<i32>	a generation counter [field]
+NOT	FIELD	rpc.vl	199	struct SplitDuplex		connection	i32	a connection id [field]
+NOT	SIG	rpc.vl	316		parse_announced	<ret>	i32	a channel id [override]
+NOT	FIELD	rpc.vl	436	struct PendingCall		request	i32	a request id [field]
+NOT	SIG	rpc.vl	450		tag_rpc_bytes	request	i32	a request id
+NOT	SIG	rpc.vl	469		tag_client_bytes	request	i32	a request id
+NOT	FIELD	rpc.vl	502	struct SocketDuplex		connection	Shared<i32>	a connection id [field]
+NOT	FIELD	rpc.vl	508	struct SocketDuplex		next_request	Shared<i32>	a request id [field]
+NOT	SIG	rpc.vl	578		settle_pending	request	i32	a request id
+NOT	SIG	rpc.vl	719		route_socket_frame	pending_settle	|i32, Frame| void	a closure
+NOT	SIG	rpc.vl	755		route_socket_bytes	pending_settle	|i32, Frame| void	a closure
+NOT	SIG	rpc.vl	827		dial	settle	|i32, Frame| void	a closure
+NOT	SIG	rpc.vl	830		dial	<ret>	Result<(WebSocket, i32), DialFailure>	`dial` answers a value
+NOT	SIG	rpc.vl	880		dial_with_backoff	settle	|i32, Frame| void	a closure
+NOT	SIG	rpc.vl	883		dial_with_backoff	<ret>	Result<(WebSocket, i32), DialFailure>	`dial_with_backoff` answers a value
+WIRE	FIELD	rpc.vl	1094	struct RpcRequest		arity	i32	the protocol's arity [field]
+NOT	FIELD	rpc.vl	1103	struct RpcRequest		connection	i32	a connection id [field]
+NOT	SIG	rpc.vl	1110	impl RpcRequest	on_connection	connection	i32	a connection id
+NOT	FIELD	rpc.vl	1228	struct RpcProtocol		connection	i32	a connection id [field]
+NOT	SIG	rpc.vl	1242	impl RpcProtocol	for_connection	connection	i32	a connection id
+INDEX	SIG	rpc.vl	1365		arg	index	i32	an argument position in a request [override]
+NOT	SIG	rpc.vl	1653		encode_control	channel	i32	a channel id
+NOT	SIG	rpc.vl	1669		encode_control_keyed	channel	i32	a channel id
+NOT	SIG	rpc.vl	1682		encode_update	channel	i32	a channel id
+NOT	SIG	rpc.vl	1695		encode_patch	channel	i32	a channel id
+NOT	SIG	rpc.vl	1715		register_session	connection	i32	a connection id
+NOT	SIG	rpc.vl	1721		drop_session	connection	i32	a connection id
+NOT	SIG	rpc.vl	1735		session_of	connection	i32	a connection id
+NOT	SIG	rpc.vl	1764		register_client_channel	connection	i32	a connection id
+NOT	SIG	rpc.vl	1770		drop_client_channel	connection	i32	a connection id
+NOT	SIG	rpc.vl	1781		client_channel_of	connection	i32	a connection id
+NOT	SIG	rpc.vl	1800		notify	connection	i32	a connection id
+NOT	SIG	rpc.vl	1816	trait ClientProxy	for_connection	connection	i32	a connection id
+NOT	SIG	rpc.vl	1823		fresh_channel	<ret>	i32	a channel id [override]
+NOT	FIELD	rpc.vl	1859	struct Capability		identity	i32	an identity [field]
+NOT	FIELD	rpc.vl	1888	struct LiveForward		channel	i32	a channel id [field]
+NOT	FIELD	rpc.vl	1911	struct LiveForward		holds	Shared<i32>	a reference count [field]
+NOT	FIELD	rpc.vl	1938	struct ReactiveServer		sources	Shared<List<(i32, Capability)>>	channel ids [field]
+NOT	SIG	rpc.vl	1962	impl ReactiveServer	expose	<ret>	i32	`expose` answers a value
+NOT	SIG	rpc.vl	2009	impl ReactiveServer	expose_dynamic	<ret>	i32	`expose_dynamic` answers a value
+NOT	SIG	rpc.vl	2042	impl ReactiveServer	dynamic_channel_for	identity	i32	an identity
+NOT	SIG	rpc.vl	2042	impl ReactiveServer	dynamic_channel_for	<ret>	Option<i32>	`dynamic_channel_for` answers a value
+NOT	SIG	rpc.vl	2077	impl ReactiveServer	expose_keyed	<ret>	i32	`expose_keyed` answers a value
+NOT	SIG	rpc.vl	2088	impl ReactiveServer	expose_keyed_map	<ret>	i32	`expose_keyed_map` answers a value
+NOT	SIG	rpc.vl	2101	impl ReactiveServer	expose_keyed_with	<ret>	i32	`expose_keyed_with` answers a value
+NOT	SIG	rpc.vl	2137	impl ReactiveServer	expose_keyed_cell	<ret>	i32	`expose_keyed_cell` answers a value
+NOT	SIG	rpc.vl	2168	impl ReactiveServer	expose_keyed_cell_dynamic	<ret>	i32	`expose_keyed_cell_dynamic` answers a value
+NOT	SIG	rpc.vl	2192	impl ReactiveServer	capability_of	channel	i32	a channel id
+NOT	SIG	rpc.vl	2203	impl ReactiveServer	forward_for	channel	i32	a channel id
+NOT	SIG	rpc.vl	2219	impl ReactiveServer	open_forward	channel	i32	a channel id
+NOT	SIG	rpc.vl	2234	impl ReactiveServer	close_forward	channel	i32	a channel id
+NOT	SIG	rpc.vl	2265	impl ReactiveServer	start	channel	i32	a channel id
+NOT	SIG	rpc.vl	2277	impl ReactiveServer	start_key	channel	i32	a channel id
+NOT	SIG	rpc.vl	2286	impl ReactiveServer	resolve_key	channel	i32	a channel id
+NOT	SIG	rpc.vl	2316	impl ReactiveServer	release_demand	channel	i32	a channel id
+NOT	SIG	rpc.vl	2330	impl ReactiveServer	release_hold	channel	i32	a channel id
+NOT	SIG	rpc.vl	2338	impl ReactiveServer	dynamic_channel	channel	i32	a channel id
+NOT	SIG	rpc.vl	2353	impl ReactiveServer	stop	channel	i32	a channel id
+NOT	SIG	rpc.vl	2359	impl ReactiveServer	stop_key	channel	i32	a channel id
+NOT	SIG	rpc.vl	2379	impl ReactiveServer	revoke	channel	i32	a channel id
+NOT	SIG	rpc.vl	2436		send_patch	channel	i32	a channel id
+NOT	SIG	rpc.vl	2452		keyed_forward	channel	i32	a channel id
+NOT	SIG	rpc.vl	2482		keyed_key_forward	channel	i32	a channel id
+NOT	SIG	rpc.vl	2549		keyed_cell_forward	channel	i32	a channel id
+NOT	SIG	rpc.vl	2590		keyed_cell_key_forward	channel	i32	a channel id
+NOT	FIELD	rpc.vl	2797	struct ReactiveClient		routes	Shared<List<(Shared<i32>, |Frame| void)>>	channel ids [field]
+NOT	SIG	rpc.vl	2843	impl ReactiveClient	source	channel	i32	a channel id
+NOT	SIG	rpc.vl	2873	impl ReactiveClient	minted_source	channel	i32	a channel id
+NOT	SIG	rpc.vl	2932	impl ReactiveClient	attached_source	channel	i32	a channel id
+NOT	SIG	rpc.vl	2939	impl ReactiveClient	mirror_of	channel	i32	a channel id
+NOT	SIG	rpc.vl	2980	impl ReactiveClient	attached_keyed_source	channel	i32	a channel id
+NOT	SIG	rpc.vl	2991	impl ReactiveClient	keyed_mirror_of	channel	i32	a channel id
+NOT	SIG	rpc.vl	3067	impl ReactiveClient	keyed_source	channel	i32	a channel id
+NOT	FIELD	rpc.vl	3239	struct Origin		reissue	async |str, List<|Serializer| void>| Result<Option<i32>, RpcError>	a closure answering a channel id [field]
+NOT	FIELD	rpc.vl	3246	struct RemoteSource		channel	Shared<i32>	a channel id [field]
+INDEX	FIELD	rpc.vl	3252	struct RemoteSource		count	Shared<i32>	the mirrored list's element count [field]
+NOT	FIELD	rpc.vl	3258	struct RemoteSource		settle_id	i32	a settle identity [field]
+NOT	SIG	rpc.vl	3687	impl RemoteSource<type T>	rebind	channel	i32	a channel id
+INDEX	FIELD	rpc.vl	3770	struct KeyedCell		positions	Shared<Map<Hash, i32>>	where each key sits [field]
+INDEX	SIG	rpc.vl	3888	impl KeyedCell<type K: Hashable, type T: Keyed<K>>	locate	<ret>	Option<(i32, T)>	a list position (in a tuple) [override]
+INDEX	SIG	rpc.vl	3899	impl KeyedCell<type K: Hashable, type T: Keyed<K>>	reindex	from	i32	a list position [override]
+NOT	FIELD	rpc.vl	4088	struct KeyLease		count	Shared<i32>	a reference count [field]
+NOT	FIELD	rpc.vl	4090	struct KeyLease		settle_id	i32	a settle identity [field]
+NOT	FIELD	rpc.vl	4114	struct KeyedSource		channel	Shared<i32>	a channel id [field]
+INDEX	FIELD	rpc.vl	4125	struct KeyedSource		count	Shared<i32>	the mirrored list's element count [field]
+NOT	FIELD	rpc.vl	4127	struct KeyedSource		settle_id	i32	a settle identity [field]
+INDEX	FIELD	rpc.vl	4137	struct KeyedSource		positions	Shared<Map<Hash, i32>>	where each key sits [field]
+NOT	SIG	rpc.vl	4278	impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>>	demand	<ret>	i32	a channel id [override]
+INDEX	SIG	rpc.vl	4576	impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>>	index_of	<ret>	Option<i32>	a list position [override]
+INDEX	SIG	rpc.vl	4590	impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>>	reindex	from	i32	a list position [override]
+NOT	SIG	rpc.vl	4690	impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>>	rebind	channel	i32	a channel id
+NOT	SIG	rpc.vl	4827		reattach_mirrors	rebinds	List<|i32, Frame| void>	a list of closures
+NOT	SIG	rpc.vl	4900		u32_of_nibble	value	i32	an element value
+NOT	SIG	rpc.vl	4900		u32_of_nibble	<ret>	u32	`u32_of_nibble` answers a value
+NOT	SIG	rpc.vl	4925		nibble_char	digit	u32	a nibble value [override]
+INDEX	SIG	set.vl	37	impl Set<type T: Hashable>	len	<ret>	i32	`len` answers a position or a count
+NOT	SIG	shared.vl	90	impl Shared<type T>	identity	<ret>	i32	an identity [override]
+INDEX	SIG	string.vl	8	impl str	len	<ret>	i32	`len` answers a position or a count
+INDEX	SIG	string.vl	96	impl str	repeat	count	i32	a repetition count [override]
+INDEX	SIG	string.vl	109	impl str	substring	start	i32	`start` is a position or a length
+INDEX	SIG	string.vl	109	impl str	substring	end	i32	`end` is a position or a length
+INDEX	SIG	string.vl	115	impl str	code_at	index	i32	a string position [override]
+NOT	SIG	string.vl	115	impl str	code_at	<ret>	u32	`code_at` answers a value
+NOT	SIG	prelude.vl	86		space	step	i32	a design-token step
+NOT	SIG	prelude.vl	109		gray	step	i32	a design-token step
+NOT	SIG	prelude.vl	113		blue	step	i32	a design-token step
+NOT	SIG	prelude.vl	117		red	step	i32	a design-token step
+NOT	SIG	prelude.vl	121		green	step	i32	a design-token step
+NOT	SIG	prelude.vl	125		rgba	red	i32	a colour channel
+NOT	SIG	prelude.vl	125		rgba	green	i32	a colour channel
+NOT	SIG	prelude.vl	125		rgba	blue	i32	a colour channel
+NOT	SIG	style.vl	140		space	step	i32	a design-token step
+NOT	SIG	style.vl	166		ramp	step	i32	a design-token step
+NOT	SIG	style.vl	211	impl Color	gray	step	i32	a design-token step
+NOT	SIG	style.vl	227	impl Color	blue	step	i32	a design-token step
+NOT	SIG	style.vl	243	impl Color	red	step	i32	a design-token step
+NOT	SIG	style.vl	259	impl Color	green	step	i32	a design-token step
+NOT	SIG	style.vl	278	impl Color	rgba	red	i32	a colour channel
+NOT	SIG	style.vl	278	impl Color	rgba	green	i32	a colour channel
+NOT	SIG	style.vl	278	impl Color	rgba	blue	i32	a colour channel
+NOT	SIG	style.vl	313		check_channel	value	i32	a colour channel [override]
+INDEX	FIELD	style.vl	456	struct Gradient		stop_count	i32	the stop list's element count [field]
+NOT	SIG	style.vl	811		encode36	value	u32	an element value
+NOT	SIG	style.vl	1070		token_axis	<ret>	i32	a design-token step [override]
+NOT	SIG	style.vl	2096	impl Style	font_weight	value	i32	a CSS weight [override]
+NOT	FIELD	time.vl	35	struct Instant		millis	i53	a duration [field]
+NOT	FIELD	time.vl	42	struct Duration		millis	i53	a duration [field]
+NOT	SIG	time.vl	77	impl Duration	millis	count	i53	a duration [override]
+NOT	SIG	time.vl	81	impl Duration	seconds	count	i53	a duration [override]
+NOT	SIG	time.vl	85	impl Duration	minutes	count	i53	a duration [override]
+NOT	SIG	time.vl	89	impl Duration	hours	count	i53	a duration [override]
+NOT	SIG	time.vl	93	impl Duration	days	count	i53	a duration [override]
+NOT	SIG	time.vl	98	impl Duration	as_seconds	<ret>	i53	`as_seconds` answers a value
+NOT	SIG	time.vl	102	impl Duration	as_minutes	<ret>	i53	`as_minutes` answers a value
+NOT	SIG	time.vl	106	impl Duration	as_hours	<ret>	i53	`as_hours` answers a value
+NOT	SIG	time.vl	110	impl Duration	as_days	<ret>	i53	`as_days` answers a value
+NOT	SIG	time.vl	124		split_units	millis	i53	a duration [override]
+NOT	SIG	time.vl	142		join_units	count	i53	a duration [override]
+NOT	SIG	time.vl	173		host_date	millis	i53	a duration
+NOT	SIG	time.vl	185		__sleep	ms	i32	a duration
+NOT	SIG	time.vl	192		sleep	ms	i32	a duration
+NOT	SIG	time.vl	223		__timer	ms	i32	a duration
+NOT	SIG	time.vl	260	impl Timer	after	ms	i32	a duration
+WIRE	SIG	wire.vl	37	trait Serialize	begin_struct	fields	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	40	trait Serialize	begin_list	length	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	42	trait Serialize	begin_variant	arity	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	47	trait Serialize	i32_value	value	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	48	trait Serialize	u32_value	value	u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	49	trait Serialize	i53_value	value	i53	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	59	trait Deserialize	begin_list	<ret>	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	62	trait Deserialize	begin_variant	arity	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	67	trait Deserialize	i32_value	<ret>	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	68	trait Deserialize	u32_value	<ret>	u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	69	trait Deserialize	i53_value	<ret>	i53	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	98	struct Serializer		begin_struct	|i32| void	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	101	struct Serializer		begin_list	|i32| void	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	103	struct Serializer		begin_variant	|str, i32| void	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	111	struct Serializer		i32_value	|i32| void	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	112	struct Serializer		u32_value	|u32| void	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	116	struct Serializer		i53_value	|i53| void	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	135	struct Deserializer		begin_list	|| i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	138	struct Deserializer		begin_variant	|str, i32| void	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	143	struct Deserializer		i32_value	|| i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	144	struct Deserializer		u32_value	|| u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	FIELD	wire.vl	145	struct Deserializer		i53_value	|| i53	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	157	impl Serializer with Serialize	begin_struct	fields	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	169	impl Serializer with Serialize	begin_list	length	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	177	impl Serializer with Serialize	begin_variant	arity	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	197	impl Serializer with Serialize	i32_value	value	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	201	impl Serializer with Serialize	u32_value	value	u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	205	impl Serializer with Serialize	i53_value	value	i53	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	231	impl Deserializer with Deserialize	begin_list	<ret>	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	243	impl Deserializer with Deserialize	begin_variant	arity	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	263	impl Deserializer with Deserialize	i32_value	<ret>	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	267	impl Deserializer with Deserialize	u32_value	<ret>	u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	271	impl Deserializer with Deserialize	i53_value	<ret>	i53	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	309	impl i32 with Wire	rebuild	<ret>	i32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	319	impl u32 with Wire	rebuild	<ret>	u32	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	329	impl i53 with Wire	rebuild	<ret>	i53	the Serialize/Deserialize protocol seam (§6)
+WIRE	SIG	wire.vl	421	impl u53 with Wire	rebuild	<ret>	u53	the Serialize/Deserialize protocol seam (§6)
+NOT	SIG	ws.vl	20		encode_frame	opcode	i32	a websocket opcode [override]
+NOT	FIELD	ws.vl	76	struct WsParser		fragment_opcode	Shared<i32>	an opcode [field]
+NOT	SIG	ws.vl	176	impl WsParser	dispatch	opcode	i32	a websocket opcode
+NOT	SIG	ws.vl	222	impl WsParser	emit	opcode	i32	a websocket opcode

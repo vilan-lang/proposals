@@ -1,0 +1,74 @@
+// I5's WIRE proof (Order 40, lane papers-40).
+//
+// Builds a REAL `Patch` frame — `std::rpc`'s `encode_patch` over a
+// `List<Delta<i32, str>>`, the frame a keyed exposure sends — under BOTH
+// codecs, dumps the bytes, and round-trips the ops through the binary codec so
+// the READ half is exercised too.
+//
+//   VILAN_STD=<scratch std> vilan run i5_wire_patch.vl
+//
+// `i5_wire_flip.sh` runs it three times: against std as it is, against a std
+// whose `Delta::Insert` position is `u53` with the natural `Wire` impl, and
+// against one where the position is `u53` but its wire width is pinned at
+// `i32_value`. The point: the frame's bytes are decided by the `Wire` IMPL the
+// position's type carries (`i32` → `i32_value` → 4 bytes; `u53` → `i53_value`
+// → 8 bytes), not by the type's NAME — so `usize`'s wire width is a choice
+// this paper has to make explicitly.
+
+import std::rpc::{ encode_patch };
+import std::wire::{ Delta, Frame, Serializer };
+import std::binary::{ binary_codec, encode_binary, decode_binary };
+import std::json::json_codec;
+import std::bytes::Bytes;
+
+fun hex_of(bytes: Bytes): str {
+	let digits = "0123456789abcdef";
+	mut out = "";
+	mut index = 0;
+	for index < bytes.len() {
+		let byte = bytes.get(index);
+		out = out + digits.substring(byte / 16, byte / 16 + 1);
+		out = out + digits.substring(byte % 16, byte % 16 + 1);
+		index = index + 1;
+	}
+	out
+}
+
+fun dump(label: str, frame: Frame) {
+	match frame {
+		Frame::Binary(let bytes) => print(i"{label}\tbinary\t{bytes.len()}\t{hex_of(bytes)}"),
+		Frame::Text(let text) => print(i"{label}\ttext\t{text.len()}\t{text}"),
+	}
+}
+
+fun ops(): List<Delta<i32, str>> {
+	[
+		Delta::Insert(7, "hello", 3),
+		Delta::Update(7, "there"),
+		Delta::Remove(7),
+		Delta::Reset(["a", "b"]),
+	]
+}
+
+fun main() {
+	dump("patch", encode_patch(binary_codec(), 5, |mut serializer: Serializer| {
+		ops().describe(&mut serializer);
+	}));
+	dump("patch", encode_patch(json_codec(), 5, |mut serializer: Serializer| {
+		ops().describe(&mut serializer);
+	}));
+	// The read half: the same ops out of the binary codec and back.
+	let encoded = encode_binary(ops());
+	match decode_binary<List<Delta<i32, str>>>(encoded) {
+		Ok(let back) => match back.get(0) {
+			Some(let first) => match first {
+				Delta::Insert(let key, let value, let at) => {
+					print(i"roundtrip\tok\t{key}\t{value}\t{at}")
+				},
+				_ => print("roundtrip\tunexpected-arm"),
+			},
+			None => print("roundtrip\tempty"),
+		},
+		Err(let reason) => print(i"roundtrip\tERR\t{reason}"),
+	}
+}
