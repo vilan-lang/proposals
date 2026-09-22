@@ -433,7 +433,7 @@ a return, and a generic member. Against today's trait:
 | member | kind | object-safe? |
 |---|---|---|
 | `get(self): T` | requirement | **yes** — receiver, no `Self`, no generic |
-| `on_change(self, observer: |T| void): Subscription` | requirement | **yes** |
+| `on_change(self, observer: \|T\| void): Subscription` | requirement | **yes** |
 | `sub`, `effect`, `effect_on_change`, `scoped_effect`, `scoped_effect_on_change` | defaults over the two | yes, and they need no slot — a default is emitted once over the object |
 | `map`, `switch`, `and_then`, `combine`, `flatten`, `cell` | BLANKETS, not members | not slots at all — §3.4 |
 
