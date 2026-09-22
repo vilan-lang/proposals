@@ -2620,3 +2620,51 @@ E202/E203 under R9, E211, E212) and fmt-39, merged last (E209, E210, E205's comm
 hygiene-39 first (N109–N112, B366, D9); papers-39 writes A120, A121 and B363. Ten Opus lanes; ledger next id
 549; tracker 122 open at GO.
 
+
+**MERGED (2026-09-22, tip 051e2254).** Every lane reported and every lane is on `next`, in the brief's order
+with one addition: void-result-39 (0976fd19) went first, because papers-39's first report proved B363's premise
+FALSE — `void` IS the unit value, `Ok(void)` builds, only the `()` spelling fails — and the owner ruled A107's
+stub to `Result<void, RpcError>` the same hour. Then hygiene (a7cc20f4), editor (b5958d7f), std (ca5edca7),
+solver (6b4f2f2b + a707bb63 — one hand fold in ui_rows.rs where two lanes appended at the file's end and the
+conflict's common suffix fell outside the hunks; and a stale E16 pin re-pointed at E212's contract), reactive
+(87c2ee6c + 4f990aa2 — nine goldens runtime-identical; the shared census 121 → 128), collections (0630f769 —
+the census 132 MEASURED on the merged tree, the copy-elision TSV regenerated 325 → 349, `delta-law.mjs` the one
+golden that moved and runtime-identical), native-a (5d85ac37, clean), native-b (fec0b1fa, clean, after its
+agent's own rebase), fmt LAST (051e2254, clean; markdown golden regenerated into the merge). One integrator
+commit between: reactive-39's find 2 (1d8dfbb2 — a mirror's `map` is a derivation too; `as_derivation`
+exported).
+
+What the order built, in one line each. **`board.vl` FLIPPED** and then a native `std::http` server answered
+`GET /` over a real socket byte-for-byte with node on every compared field — the whole set 49 → 69 identical
+of 119, 0 differing, 0 broken; the premise "one wall" was wrong (five gaps, six defects, a live native
+miscompile fixed on the way), and the host census under-reported (F29). **A110 door 2** made effect order a
+contract (derivations to a fixpoint, effects ascending by id) at +23.5 % Ir per wave, and kolt's latch went in
+full; **A114** `scoped_effect`; **A113**'s rows measured by subscriber count. **A112 S1** lifted `KeyedCell`'s
+log into `std::reactive` without moving a wire byte, with THE LAW in the suite (400 randomized turns); S3 was
+WRITTEN and held back by two solver gaps (B378, B379) rather than shipped weakened; **M82** took `reconcile`
+from quadratic to linear (355 M → 29 M Ir at 1,000 rows). **B370** was a MISCOMPILE from the owner's kolt
+report (`rem(4 / 16)` → 0); **B369**'s and **B366**'s and **B361**'s premises were each wrong in a way the fix
+had to correct. The editor got the owner's seven (E207's root cause, both hover lines, field docs, `<` and the
+backtick pairing, the completion edit, the macro refusal once); the formatter reads its own output back,
+names the diverging line, and can reflow comments behind an opt-in key. std shipped `when_some`, `AttrValue`
+for `Option<str>`, `navigate_replace`, `[low, high)`, a 67 → 46 prelude, and — from a papers-39 find — a JSON
+reader that poisons on the wrong kind. Papers: A120 (§9.7 of transport-rpc — half wrong as filed, the client
+already works), A121 (focus scope), and B363's correction.
+
+The owner asked, mid-order, and each was filed and most ruled the same day: `usize` everywhere (I5 — a
+distinct type, literal inference a general law), the `[platform]`/layer question (F27, F28), `[doc(internal)]`
+(E213), the `<` overtype VS Code cannot give a server (E214), the reverse of `combine` (A122 — a `std::tuple`
+design), and "are we missing signal primitives?" (A123 `and_then`/`switch`, probed working; A124 the
+read-tracked `computed` paper with the totality argument against a lazy pipeline; B371, B372 found probing).
+Kolt migrated twice at the owner's word (c3f7d1a38, then 4f990aa2c: the latch retired, `when_some` from std,
+`conditional_value.vl` deleted, `navigate_replace`, 77 `Nf / M` suffixes dropped with the fold verified in the
+emitted JS).
+
+Incidents, each with its rule: the integrator TRUNCATED 25 tracker items with an `open(p,'w')` over a
+read of the same file (restored from git; `stamp_items.py` now reads-all-then-writes-then-asserts); a lane typed
+`git config <key> <value>` as a read and broke every worktree's signing for an hour (lanes never run `git
+config`); 1Password locked mid-order (stop, merge from local branches, stage, sign after unlock — nothing
+unsigned); the integrator edited std in the integration worktree while a merge helper's split gate was still
+running (set aside within seconds; the rule: never); an `until ! pgrep -f "<helper>"` loop that matched
+itself. Score on "the item's text is a hypothesis": papers-39 1 false + 1 half wrong of 3; hygiene-39 1 wrong,
+1 stale, 1 mis-sited of 6; solver-39 three premise corrections of nine; native-a's one wall was five.
