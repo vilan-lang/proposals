@@ -1,0 +1,14 @@
+// (g) a trait-typed FIELD grounded per literal with TWO DIFFERENT node types, then one List of both
+trait Src<T> { fun get(self): T; }
+struct Root { v: i32 }
+struct Dbl<S> { up: S }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+impl Dbl<type S: Src<i32>> with Src<i32> { fun get(self): i32 { self.up.get() * 2 } }
+struct Holder { s: Src<i32> }
+fun main() {
+	let h1 = Holder { s = Root { v = 1 } };
+	let h2 = Holder { s = Dbl<Root> { up = Root { v = 1 } } };
+	print(i"{h1.s.get()} {h2.s.get()}");
+	let both = [h1, h2];
+	print(i"{both.len()}");
+}

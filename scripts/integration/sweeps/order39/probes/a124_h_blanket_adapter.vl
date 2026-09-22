@@ -1,0 +1,21 @@
+// (h) the no-new-feature spelling: adapters as BLANKET methods returning concrete nodes, a bare-trait param consumer
+trait Src<T> { fun get(self): T; }
+struct Root { v: i32 }
+struct Dbl<S> { up: S }
+struct MapN<S, U> { up: S, f: |i32| U }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+impl Dbl<type S: Src<i32>> with Src<i32> { fun get(self): i32 { self.up.get() * 2 } }
+impl MapN<type S: Src<i32>, type U> with Src<U> { fun get(self): U { (self.f)(self.up.get()) } }
+impl type S: Src<i32> {
+	fun dbl(self): Dbl<S> { Dbl<S> { up = self } }
+	fun mapn<U>(self, f: sync |i32| U): MapN<S, U> { MapN<S, U> { up = self, f = f } }
+}
+fun inspect<T>(label: str, source: Src<T>): T { source.get() }
+struct Holder { s: Src<str> }
+fun main() {
+	let r = Root { v = 3 };
+	let chain = r.dbl().dbl().mapn(|x| i"v={x}");
+	print(inspect("chain", chain));
+	let h = Holder { s = chain };
+	print(h.s.get());
+}

@@ -1,0 +1,7 @@
+// (e) the bare-trait PARAMETER (B186) taking a derived source
+import std::reactive::{ Source, Signal };
+fun inspect<T>(source: Source<T>): T { source.get() }
+fun main() {
+	let a = Signal::new(5);
+	print(i"{inspect(a)} {inspect(a.map(|x| x * 3))}");
+}

@@ -1,0 +1,11 @@
+// (c) a trait-typed FIELD holding a derived source; two literals with different pipelines in one List
+import std::reactive::{ Source, Signal, SignalCell };
+struct Holder { s: Source<i32> }
+fun main() {
+	let a = Signal::new(1);
+	let h1 = Holder { s = a };
+	let h2 = Holder { s = a.map(|x| x + 1) };
+	print(i"{h1.s.get()} {h2.s.get()}");
+	let both = [h1, h2];
+	print(i"{both.len()}");
+}

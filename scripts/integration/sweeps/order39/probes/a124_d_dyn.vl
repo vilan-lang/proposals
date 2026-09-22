@@ -1,0 +1,4 @@
+// (d) does `dyn` parse at all
+import std::reactive::{ Source, Signal };
+fun inspect<T>(source: dyn Source<T>): T { source.get() }
+fun main() { print(i"{inspect(Signal::new(5))}"); }

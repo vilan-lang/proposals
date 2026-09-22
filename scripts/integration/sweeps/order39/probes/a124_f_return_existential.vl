@@ -1,0 +1,4 @@
+// (f) a FREE function returning the bare trait (R25 today?)
+import std::reactive::{ Source, Signal };
+fun doubled(): Source<i32> { Signal::new(2).map(|x| x * 2) }
+fun main() { print(i"{doubled().get()}"); }

@@ -1,0 +1,7 @@
+// (b) the let annotation as a bound, then a method on it
+import std::reactive::{ Source, Signal, SignalCell };
+fun main() {
+	let count: Source<i32> = Signal::new(0);
+	let double: Source<i32> = count.map(|x| x * 2);
+	print(i"{double.get()}");
+}
