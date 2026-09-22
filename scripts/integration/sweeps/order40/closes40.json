@@ -1,0 +1,222 @@
+{
+ "date": "2026-09-22",
+ "order": "Order 40",
+ "closes": [
+  {
+   "id": "A123",
+   "lane": "reactive-40",
+   "commit": "e162ddfa",
+   "text": "`and_then` on `Source<Option<T>>` and `switch` on `Source<T>` as blankets written DIRECTLY over `on_change` (one derived cell each, not the composed form's three subscribers); eight pins non-vacuous by plant incl. two door-2 diamonds; the `Option` `flatten`'s doc names `and_then`; guide + std page. B371 fixed separately by solver-40 so the generic composed form also works. Kolt owed at the owner's word: channel.vl:35 → `message.and_then(|m| m.author.user())`; model.vl's `map_safe` retires — SEVEN call sites (36, 46, 76, 84, 97, 111, 120), census in sweeps/order40/reactive-40/kolt_census_2026-09-22.md"
+  },
+  {
+   "id": "A125",
+   "lane": "collections-40",
+   "commit": "c11a6edc",
+   "text": "BREAKING: `K: PartialEq + Hashable` on `reconcile` and the `each*` family in both twins; the `==` reorder scan deleted; a 1,000-row reversal 738 M → 14.6 M Ir and linear (pin red at 31,375 comparisons with the scan planted back; `reconcile-index.vl` 1,415 plans compared); estate: one site (ui_rows.rs B255 `Row`, hand impl). Kolt's two keys `Theme` (theme.vl:285) and `Command` (views.vl:546) define `==` by id, so the derive would contradict equality — the owner writes `impl … with Hashable { fun hash(self): Hash { self.id.hash() } }` for each"
+  },
+  {
+   "id": "A121",
+   "lane": "ui-40",
+   "commit": "e4570ffb",
+   "text": "S1 + S2 built as focus-scope.md ruled (Q1–Q6): the DOM reads (`tab_index`, `parent`, `has_attribute`, `computed_style`, `related_target`, `active_element` + the `__dom_active_element`/`__dom_computed_style` helpers, a4f780dc), the tabbable WALK, `FocusScope` with `Contain`/`Wrap`, the scope STACK in std, `focus_initial` called by the show, `View::focus_scope` sugar, `View::autofocus()` writing the attribute (9a0bed40, e4570ffb, 182fe505); twelve pins planted red first; the module lives INSIDE browser/ui.vl + process/ui.vl; the process twin does not write `autofocus` (a served one would focus before the client build). S3 (`focusout`) → A128. Kolt owed at the owner's word: overlay.vl:514 latch, :531–542 the `[x-autofocus]` block → `scope.focus_initial()` in relayout after `visibility: visible`, the `focus_scope(panel_element, ..)` install, the comment at :510–513, six markup sites → the standard `autofocus` attribute (channel.vl:182,318,390; views.vl:461,726; theme.vl:173)"
+  },
+  {
+   "id": "B374",
+   "lane": "std-40",
+   "commit": "c0eb0d07",
+   "text": "`HttpTransport` wraps the `fetch` and the body read in `__guarded_async` (transformer.rs + interpreter.rs glue) and answers `Err(Transport(..))` with the host's cause; pin against a closed port, red with the guard removed"
+  },
+  {
+   "id": "B375",
+   "lane": "std-40",
+   "commit": "e2358ed9",
+   "text": "`[service]` reads through the `Export` wrapper and an EMPTY contract surface is refused at the attribute (two NEW ledger rows); follow-up 9b84d93c: `service_method_refusals` also reads through `export impl` (four checks `export` had silenced)"
+  },
+  {
+   "id": "B373",
+   "lane": "std-40",
+   "commit": "1becc367",
+   "text": "the scalar `FromJson` impls share one lane check (`integer_lane_failure`); five pins; four goldens moved (`derive-enum`, `derive-json`, `json-roundtrip`, `time`) printing identically (ff90ada3)"
+  },
+  {
+   "id": "B383",
+   "lane": "std-40",
+   "commit": "5d8fcd98",
+   "text": "every generated route checks its arity through `rpc::decode_args_failed` then closes the list (A120 S1's other half); a seven-row pin over the POST leg; 94ae491b re-keys the generics pin's sentence"
+  },
+  {
+   "id": "N117",
+   "lane": "std-40",
+   "commit": "bd1d4fe7",
+   "text": "the binary reader's kind-mismatch audit: three real holes (an Option marker other than 0/1, a bool byte other than 0/1, bytes left over after the value); six pins, three red with the gates removed"
+  },
+  {
+   "id": "A120",
+   "lane": "std-40",
+   "commit": "c7127a23",
+   "text": "S1–S5 BUILT as §9.7 ruled: the decode/arity gate (5d8fcd98), `<Name>Client::over_http(mount, codec)` (633d5567), the status table — 405 on non-POST, 501 as an envelope, a required content type, non-envelope answers read as `Transport`, `Response::header` + `post_bytes_typed`, the CORS recipe (39f993bb), `Service::authorize_request(async |Request| Result<Session, Reject>)` after the 405/content-type checks with 401/403 → `Unauthorized` envelope, 503 → `Unavailable`, 429 bare; `Session` moved to std::rpc and re-exported; `RpcRequest`/`RpcProtocol` carry a session stamp (269231ac), the `[service(Client, http)]` marker refusing an `[expose]` field, a `SignalCell`/`KeyedCell` return and `client = H` (c7127a23; the `http` EBNF terminal registered at the merge). Recorded, not built: a generated `[rpc]` method cannot read the POST session (only a hand-written route sees `RpcRequest.session`); a header credential → A127; the SSE legs follow the socket column. Kolt's rewrite (§9.7.10) at the owner's word"
+  },
+  {
+   "id": "N119",
+   "lane": "hygiene-40",
+   "commit": "13e44b7c",
+   "text": "the 128 MiB analysis thread + `catch_unwind` + the `join` `Err` arm ALREADY existed, unpinned — now pinned (`a_panicked_analysis_answers_a_diagnostic_naming_the_file_and_the_next_analysis_works`, red with `resume_unwind` planted in both fences) and the internal-error diagnostic names the file (row 292 re-keyed). A STACK OVERFLOW aborts the process (exit 134) with no `Err` to observe → N121"
+  },
+  {
+   "id": "N113",
+   "lane": "hygiene-40",
+   "commit": "fc16c3aa",
+   "text": "edges 1–3: `()` in type position refused by name pointing at `void`; a binder named `void` refused in `let`/`for`/parameters/match captures; `void` in the EBNF's literal production + lexical.md's exception; `RULE_STATEMENT_SITES` 46 → 48 (f39d489d); `g<()>()` moved to the parse decliners. Edge 4 by ui-40 30c20147: `check_global_property_externs` refuses a global host PROPERTY bound in the function form (row 550)"
+  },
+  {
+   "id": "N114",
+   "lane": "hygiene-40",
+   "commit": "2292a7f7",
+   "text": "`hover_at_cursor` asserts exactly one `|` (a `should_panic` pin); E9's pin was already on `hover_at_marker`"
+  },
+  {
+   "id": "N115",
+   "lane": "hygiene-40",
+   "commit": "8b401ddd",
+   "text": "`crates/vilan-ide/src/completion/tests.rs`: five in-crate pins building an `Analysis` inside vilan-ide (ranking, filter-text, replace-span)"
+  },
+  {
+   "id": "N116",
+   "lane": "hygiene-40",
+   "commit": "03d83f9b",
+   "text": "M75 loses its millisecond half (the count half stays); the spawn probe's deadlines 1/12 → 5/500 ms and it asserts its stdout; 'no assertion reads a clock' written at the head of both suites"
+  },
+  {
+   "id": "N118",
+   "lane": "hygiene-40",
+   "commit": "0c37536b",
+   "text": "`std_twin_parity`'s contract at its head: the surface is the EXPORTED names (`is_exported_in`) plus every member of every type; 14 of 26 allowlist entries retired; pin red with the export filter removed"
+  },
+  {
+   "id": "B376",
+   "lane": "hygiene-40",
+   "commit": "8f420b47",
+   "text": "an unknown derive is refused at the attribute listing the six derivable names, in macros.rs (`unknown_derive_refusal`); the table held to std's `macro fun`s both ways; ledger row 551; the estate derives only PartialEq/Json/Wire/Debug"
+  },
+  {
+   "id": "B384",
+   "lane": "hygiene-40",
+   "commit": "e4070eef",
+   "text": "the counter and its vacuous pin deleted; the arm stays with its reasoning written at it; B365's surviving pin states it pins the route"
+  },
+  {
+   "id": "M85",
+   "lane": "hygiene-40",
+   "commit": "1901e91c",
+   "text": "`Document::field_spans`, a sorted table built with the analysis, bisected per hover: 6.5–12.7 µs → 0.02–0.09 µs at 5,070 fields, the whole hover 10–13 → 3.5 µs (thread CPU, release, loadavg 9–11, re-taken in a58605fe); pin red at 283 rows against 16 with the entry filter removed"
+  },
+  {
+   "id": "B377",
+   "lane": "solver-40",
+   "commit": "f7a08dab",
+   "text": "the unused-`let` effect predicate is exhaustive over `Expr` (fallback 'may have effects'); eight pins (six red with the old fallback); `side-effect-let.vl` gained six shapes, its golden moved runtime-judged"
+  },
+  {
+   "id": "B378",
+   "lane": "solver-40",
+   "commit": "42323dda",
+   "text": "specificity compares each bound's supertrait CLOSURE, in the analyzer and `impl_select`; five pins"
+  },
+  {
+   "id": "B379",
+   "lane": "solver-40",
+   "commit": "5c9a554c",
+   "text": "`trait_args_for` grounds a blanket subject's bound binders and prefers a candidate with concrete arguments; two pins"
+  },
+  {
+   "id": "B362",
+   "lane": "solver-40",
+   "commit": "c86db7e3",
+   "text": "the dispatched half as RULED: a trait declaration and all its impls share ONE `lazy` convention, so the dispatched call site thunks; the un-ignored pin plus two mixed pins"
+  },
+  {
+   "id": "B380",
+   "lane": "solver-40",
+   "commit": "3078a259",
+   "text": "a declared return that is no container has no element hole to freshen, so `cells.read()[at]` keeps its `K`; three pins"
+  },
+  {
+   "id": "B372",
+   "lane": "solver-40",
+   "commit": "62b52ff8",
+   "text": "PREMISE PARTLY FALSE — not B162's receiverless path: the inner call bound `T` to `Unknown` and kept it; the argument now waits for the closure parameter's type (B288's rule), with a `fixpoint_stalled` extra round so a let-bound closure still commits; a silent WRONG-TYPE program (`i32` into a `str`) is now refused; five pins"
+  },
+  {
+   "id": "B381",
+   "lane": "solver-40",
+   "commit": "ecdcf9b3",
+   "text": "PREMISE FALSE — the nested-`match` shapes check fine on 49de3915; collections-39 hit B379; four pins (two blanket-reached red with 5c9a554c reverted, two controls)"
+  },
+  {
+   "id": "B371",
+   "lane": "solver-40",
+   "commit": "bf0c806e",
+   "text": "`flatten`'s `I` came back as the caller's own generic and `bind_pattern_binders` rejected it as unresolvable; a caller's own generic parameter now counts as an answer and the worklist reads `U` from the declared `I: Source<U>` — the generic `switch` body no longer needs its result annotated; six pins"
+  },
+  {
+   "id": "F30",
+   "lane": "native-b-40",
+   "commit": "2fce56b4",
+   "text": "a module-level `mut` aggregate mutated in place is mutated in its CELL natively (`&mut self` methods, fields, index targets, `&mut` arguments; a mutating call's arguments hoisted); pin over seven spellings, red on five lines without the module arm"
+  },
+  {
+   "id": "F29",
+   "lane": "native-b-40",
+   "commit": "ed60ff90",
+   "text": "the host census walks into a refused call's arguments, an async closure refused as a value, and a view inside an enum payload; kolt's server.vl re-census: 69 gaps / 50 rows vs 53 / 34 (16 bindings low); Order 38's '55' was a different measure"
+  },
+  {
+   "id": "F31",
+   "lane": "native-b-40",
+   "commit": "beb51d83",
+   "text": "native LIVENESS: a value read at its binding's last use is MOVED unless the read sits deeper in a loop/closure/spawn/comprehension than the declaration; 111.7 M → 56.5 M Ir on a 200k-iteration loop; `native-copy-census.tsv` + two pins (red with the region rule removed)"
+  },
+  {
+   "id": "F21",
+   "lane": "native-b-40",
+   "commit": "c6192fb2",
+   "text": "`returns_mut_view` reaches an enum payload: `option-view.vl` flips byte-identical and joins the default suite; a phantom-parameter struct literal is grounded from the return type; `arena.vl` (an Option view passed to `unwrap_or`) and `transparent-references.vl` (a view aliasing a view) are different shapes, each refused under its own name"
+  },
+  {
+   "id": "F22",
+   "lane": "native-b-40",
+   "commit": "f48979cf",
+   "text": "the native backend monomorphises on ASYNCNESS as well as types (`Program::adapted_instances`); `adapt.vl` byte-identical; covers rpc_server.vl's `turn(.., || protocol.respond(..))` shape (two probes print the same on both backends) — `Server::builder()` natively now waits on F33 + two seams"
+  },
+  {
+   "id": "F32",
+   "lane": "native-a-40",
+   "commit": "0e816010",
+   "text": "RULED (b) built: `BigInt` is a newtype over `i128` natively; a literal past the range refused at compile time (row 559); an overflow traps (pin red with a wrapping `add` planted in vilan-rt); `remainder.vl` + `numeric-types.vl` flip; the book states the limit"
+  },
+  {
+   "id": "E216",
+   "lane": "editor-40",
+   "commit": "850c9114",
+   "text": "format-on-save reads `[fmt] wrap_comments` through `wrap_comments_covering` and prints via `reprint_with`; `format_checked_with(source, wrap_comments)` for the playground; 'Reflow this comment' (REFACTOR_REWRITE) built on `reprint_with` twice as the 'would it change anything' test, the edit is the whole buffer (30d0bc6d); at fmt-40's merge the `comment_width` is passed at vilan-lsp main.rs `formatting` and `Document::comment_reflow`'s two calls"
+  },
+  {
+   "id": "E215",
+   "lane": "fmt-40",
+   "commit": "11fd28ec",
+   "text": "R1–R3 built: `FormatOptions::comment_width` (default `DEFAULT_COMMENT_WIDTH` = `LINE_BUDGET`), one manifest walk `fmt_opinions_covering` answering both `[fmt]` keys, the four-file set (manifest.rs, `TABLES`, the JSON schema, the CLI walk) held by `schema_and_listing_agree`; std opts in at 84 (`wrap_comments = true`, `comment_width = 84`) — the ONE reflow: 61 of 64 files, comment lines 11,495 → 11,233, zero non-comment lines and zero comment WORDS changed, a fixed point, 21 lines remain over 84; the book's `[fmt]` section states the ten never-reflow classes. NOTE for the owner: std's written margin is ~80 (p95 80, p99 82), so 84 JOINS lines (net −262)"
+  },
+  {
+   "id": "E217",
+   "lane": "fmt-40",
+   "commit": "ce55652b",
+   "text": "a hand-wrapped generic `impl` header PRINTS: the tail generic-argument list (the last `with` trait, else the subject) one argument per line with trailing commas, `>` at the header's indent; `drop_trailing_commas` + `parse_differential::normalized_tokens` gain `>` latitude together; six pins (five red with both halves planted back); one estate line moved (rpc.vl:4173)"
+  },
+  {
+   "id": "E213",
+   "lane": "editor-40",
+   "commit": "b4021651",
+   "text": "S1 as the ITEM's stamp ruled — `[internal(\"reason\")]` (not the brief's `[doc(internal)]`), reason required, on a function/method/`external` and a struct FIELD (a fourth `StructField` element); the formatter prints both; completion drops the name unless the typed prefix is an exact ≥3-char prefix (the struct-initializer position exempt), survivors sort last with the reason as detail; an `internal` semantic-token modifier dims the declaration and every use; hover leads with the reason; std's `Region.anchor` + five row methods carry it in both twins; `[doc(hidden)]`'s refusal names it; EBNF + §3.3; both grammar fragments regenerated. S2 → E221"
+  }
+ ]
+}
