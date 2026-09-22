@@ -828,14 +828,39 @@ window and no sleep.
 
 **THE TABLE** (whole set, `VILAN_NATIVE_DIFFERENTIAL=1`):
 
-| | Order 38 seal | after native-a-39 | after native-b-39 |
-|---|---|---|---|
-| enumerated | 117 | 117 | **119** |
-| byte-identical | 49 | 67 | **69** |
-| refused by name | 68 | 50 | **50** |
-| differing stdout | 0 | 0 | **0** |
-| rustc-refused | 0 | 0 | **0** |
-| broken | 0 | 0 | **0** |
+| | Order 38 seal | after native-a-39 | after native-b-39 | after native-a-40 |
+|---|---|---|---|---|
+| enumerated | 117 | 117 | 119 | **119** |
+| byte-identical | 49 | 67 | 69 | **82** |
+| refused by name | 68 | 50 | 50 | **37** |
+| differing stdout | 0 | 0 | 0 | **0** |
+| rustc-refused | 0 | 0 | 0 | **0** |
+| broken | 0 | 0 | 0 | **0** |
+
+**Order 40, native-a-40 (the fourth column; F18 slice 2 + F32, 2026-09-22).** Commits 735a0813 (`std::json`:
+`vilan_rt::json`, a hand-written ECMA-404 reader, depth-bounded at 512, with `Undefined` as a seventh arm),
+a0ac30dc (`Math` as one table over the declared return type, the number labels, `charCodeAt`, `process.env`,
+the option-free `node:fs/promises` set, SHA-256 by hand; a `void` closure that awaits FLOATS), 0e816010 (F32:
+`BigInt` is a newtype over `i128` — a literal past it refused at compile time, overflow traps, `remainder.vl`
+and `numeric-types.vl` flip), 54d42be9 (`std::db` through the SEPARATE crate `vilan-rt-sqlite`, `rusqlite`
+`bundled`, named by the generated manifest ONLY when the program reaches `std::db`; `any` natively for the bind
+list alone; a `for` over an `Iterator` impl), b9f8d3ab (the repo map). `vilan-rt` still has an empty
+`[dependencies]`. Five latent defects were first REACHED by slice-2 features, one a wrong answer (a JSON array
+answered `undefined` for the numeric string key `[derive(Json)]`'s multi-payload decoder reads — `derive-enum.vl`
+printed `false` for node's `true`). **The exit, as reached:** a program with the SHAPE of kolt's server leg (a
+`std::db` store behind a `Server` STRUCT LITERAL, an `/api/login` POST decoded with `List<str>::from_json`, a
+salted SHA-256 checked against a stored row, a `[derive(Json)]` outcome, a shell for every other path) answers
+three exchanges over one real socket byte-identically with node (pin
+`the_kolt_server_shape_answers_a_login_over_a_real_socket`; non-vacuous by a planted wrong column reader). The
+host census (`VILAN_NATIVE_HOST_CENSUS=1`, the PRE-F29 census) on that exit program: **0 host gaps**. **NOT
+reached: `Server::builder()`, and with it the rpc server and the keyed rpc pins against a native server.** The
+same census on a bare `Server::builder().port(0).on_request(..).on_start(..).build().start()` reports 6 (a
+floor, F29): the `async` closure as a VALUE — `std::rpc_server` hands `turn<T>(policy, body)` an awaiting
+closure where `turn` is declared synchronous and answers a value, which is F22's adapted instance (native-b's
+item) — the three MUTATING `Bytes` bindings `alloc`/`fill`/`copy_into` that `std::ws`'s codec reaches (a
+`Uint8Array` is a mutable reference type and native `Bytes` an immutable refcounted buffer: a representation
+decision, not a host body), `now_millis` and node:crypto's `digest` (SHA-1 for the WebSocket accept key; both
+small). Kolt's `server.vl` unmodified is therefore Order 41's, after F22 and a ruling on mutable `Bytes`.
 
 By construct at native-a's exit: `Hash` 10 → 0, `lazy` 12 → 0, overloaded operators 7 → 0, backed enums 5 → 0; `for`
 over an `Iterator` impl 5 → 7 (earlier walls lifted — now the largest class), destructuring 2 → 5 → 0 (native-b's
