@@ -1,0 +1,254 @@
+{
+ "items": [
+  {
+   "id": "B386",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "CLOSED 2026-09-22 (Order 40, solver-40 8258b73c, filed at the sweep for the record)",
+   "title": "MISCOMPILE — a list subscript did NOT type-check its index: `xs[at]` with `at: f64` (or a `str`, a `bool`; the write form too) passed `vilan check` and crashed at run time (`Cannot read properties of undefined`); the native backend refused it with an unrelated rustc error so the differential could not see it",
+   "discussion": "papers-40 (find F-a, on the way to the I5 census); solver-40 (the fix, as an add-on); I5 (the index type this refusal names is `i32` today and `usize` after S2)",
+   "body": "Landed as solver-40's add-on: the subscript operator requires the positional index type for a `List` and a fixed array, reads and writes; six pins in `inference/std_surface.rs`; one ledger row (558). Filed closed so the ledger row and the CHANGELOG entry have an item."
+  },
+  {
+   "id": "B387",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "CLOSED 2026-09-22 (Order 40, solver-40 a6bf7c43, filed at the sweep for the record)",
+   "title": "COMPILER STACK OVERFLOW — a trait whose supertrait is the bound of its own blanket impl (`trait DeltaFeed<T> with Source<List<T>>` + `impl type S: Source<List<type T>> with DeltaFeed<T>`) sent `provides_trait → subject_applies → provides_trait` into infinite recursion; with the shape in std EVERY program importing `std::reactive` aborted, and a std-free sibling was refused wrongly ('missing read'). Pre-existing on 49de39157; the wall A112 S3 stopped on",
+   "discussion": "collections-40 (the find, repros at sweeps/order40/probes/a112-s3/); solver-40 (gdb-located; a thread-local in-progress set answers a self-reaching question 'no'; a blanket subject's bound supplies the supertrait's members; spec/types.md §5.5); A112 S3 (unblocked — lands in the S3 lane); B385 (the previous abort of this class)",
+   "body": "Four pins abort with the guard planted out; three fail with the conformance rule removed. No refusal added, no ledger row. After the fix A112 S3's held supertrait form checks and builds (`logged=true plain=false ops=1`)."
+  },
+  {
+   "id": "B388",
+   "section": "B",
+   "kind": "bug",
+   "area": "Native targets & rendering",
+   "status": "CLOSED 2026-09-22 (Order 40, native-b-40 940e5b97, filed at the sweep for the record)",
+   "title": "native — an assignment's RHS literal was emitted at the DEFAULT width: `mut i: u53 = 5; i -= 1;` failed rustc with `expected u64, found i32` (also `i = i - 1`, and for `i53`/`u32`/`u8`; `let j = i + 1` was fine; JS was fine) — the B370 class on the assignment and compound-assignment paths of vilan-rust, and a wall for every downward `usize` loop under I5",
+   "discussion": "papers-40 (find F-b); native-b-40 (the fix, as an add-on: four assignment paths; 23 rustc errors without it); B370; I5",
+   "body": "Pin `a_literal_assigned_to_a_narrow_binding_takes_the_bindings_width`, red as 23 rustc errors with the fix removed."
+  },
+  {
+   "id": "B389",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "INFERENCE — FIVE literal positions B370's ruling covers and B370's fix did not deliver: a literal on the LEFT of a binary operator, the elements of an ANNOTATED list literal, a literal MATCH pattern, a GENERIC call's return, and a bare `let n = 0` used later at the type — all five fail for `i53`/`u32`/`f64` and pass for `i32`. This is I5 S1's real content: `usize` cannot be the index type until an unsuffixed literal takes it in every position",
+   "discussion": "papers-40 (the I5 paper §4; `probes/i5_literal_positions.sh`, 21 one-case files, 14 pass / 7 fail); B370 (CLOSED — its text is about emission verdicts, so a NEW item rather than a reopen); I5 (S1 depends on this)",
+   "body": "Pins: one per position, red-first, for `i53`, `u32` and `f64`; the 14 passing positions become controls. Sizing M; solver lane, Order 41, ahead of I5 S1."
+  },
+  {
+   "id": "B390",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "a REFUSED impl subject (one type argument too many) is refused at its own spelling AND still enters the candidate set with an `unknown` subject, so every later dispatch of that trait fails with 'both `Root` and `unknown` provide it and neither impl subject is more specific', pointed at an innocent call site while the real error sits LAST in the list. The field analogue is already pinned (`a_refused_field_does_not_cascade_through_its_uses`); an impl subject wants the same",
+   "discussion": "reactive-40 (found building the A124 S1 probe; repro sweeps/order40/reactive-40/unknown_impl_subject_cascades.vl — one struct, one over-applied impl, one call); `inference/traits.rs` (the field pin to mirror)",
+   "body": "Fix: a refused impl subject does not enter the candidate set (or enters as poisoned and is skipped by specificity). Pin: the repro reports ONE error at the impl. Sizing S."
+  },
+  {
+   "id": "B391",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "a SPURIOUS refusal on an exported service impl: a `[service]` with `client = Peer` written as `export impl Door`, beside a plain `impl Peer` holding an `[rpc] fun ping`, reports \"'ping' is provided by an `impl` in module `main` that `main` does not export\" — and the error goes away when `export` is removed from `impl Door`. Pre-existing on 49de39157",
+   "discussion": "std-40 (find, on the way to B375 — which fixed `[service]` reading through `export impl`; this is the visibility check's twin); B318 (the visibility surface the message belongs to)",
+   "body": "Repro in std-40's report; pin red-first; the fix is in the exported-impl admission of the peer's members, not in `[service]`. Sizing S."
+  },
+  {
+   "id": "B392",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "a LET-BOUND closure whose unannotated parameter feeds a generic position is refused: `let f = \\|m\\| wrap(m); f(4)` and `let f = \\|m\\| Holder { value = m * 2 }; f(4)` both answer 'type of variable f could not be resolved' — pre-existing on 49de3915, in the bare-parameter call and in B288's struct literal alike; the root cause is that a closure's type waits on its body while the body waits on the parameter",
+   "discussion": "solver-40 (find, while fixing B372 — whose `fixpoint_stalled` fallback is the one-round escape for the closure-argument case, not for a binding); B288; B372",
+   "body": "Fix candidate: a let-bound closure whose parameter is unannotated takes its type from its first call site (one round after the fixpoint stalls). Pins: both shapes, plus a control where the parameter is annotated. Sizing M."
+  },
+  {
+   "id": "B393",
+   "section": "B",
+   "kind": "bug (probe)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "PROBE — the JS emitter's `inherited_substitution` does not bind a callee's generic parameters that its signature never mentions (a `T::describe()` in a body whose `T` comes only from the enclosing instance), and its `call_substitution` ignores `own_generic_call_bindings` — while the native emitter binds both. No repro yet; F26 left these two per-emitter BECAUSE they differ, so a wrong JS answer is possible",
+   "discussion": "native-b-40 (F26's report; the two functions deliberately not shared, with the reason in `mono.rs`'s header); F26",
+   "body": "Write the probe program (a trait static reached through an instance-only generic); if JS answers wrongly it is a MISCOMPILE and the fix is to bind as native does, then share the function in `mono.rs`. Sizing S to probe."
+  },
+  {
+   "id": "E218",
+   "section": "E",
+   "kind": "diagnostics",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "`Expected u53, but got i32 instead.` carries NO `as_*` steer, while the binary-operator path (ledger 357) does — under I5 every `let n: i32 = list.len()` will meet this message, so it needs the conversion named (`as_i32()` / `as_usize()`) and a quick fix",
+   "discussion": "papers-40 (the I5 paper §8.2 has the wording; find F-d); I5 S2 (the migration's diagnostic + quick fix); ledger 357 (the steer to mirror)",
+   "body": "Sizing S; lands with I5 S2 or before it."
+  },
+  {
+   "id": "E219",
+   "section": "E",
+   "kind": "formatter",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "fmt — a LONG ATTRIBUTE LINE splits the signature below it: `[deprecated(\"…110 chars…\")] fun one(a: i32, b: i32): i32` reprints one parameter per line because the declaration's budget counts the attribute line that precedes it. Pre-existing (not E213's); std's `[internal]` reasons were kept short to dodge it",
+   "discussion": "editor-40 (find; repro in its scratchpad `fmtprobe`); E213 (the attribute that made it visible); fmt-40's area",
+   "body": "The attribute line and the signature are separate lines with separate budgets. Pin: the repro reprints unchanged. Sizing S."
+  },
+  {
+   "id": "E220",
+   "section": "E",
+   "kind": "diagnostics",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "the MISSING-MEMBER sentence for a supertrait reached with a CONSTRUCTED argument shows the wrong argument: `trait Feed<T> with Base<List<T>>` + `impl Cell with Feed<i32> {}` says 'declare `fun read(self): i32`' where it must say `List<i32>`",
+   "discussion": "solver-40 (find, beside B387's conformance rule)",
+   "body": "Substitute the supertrait's arguments before rendering the missing member. Pin red-first. Sizing S."
+  },
+  {
+   "id": "E221",
+   "section": "E",
+   "kind": "feature (editor)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "E213 S2 — `[internal(\"reason\")]` on the remaining positions (nominals, enum variants, traits, module bindings), the docs generator's collapsed 'Internal' heading, and the opt-in `[lints] internal_use = \"warn\"` (a new `[lints]` manifest section). S1 shipped functions/methods/externals and struct fields",
+   "discussion": "editor-40 (S1 b4021651: completion hides unless a ≥3-char exact prefix, sorts last; `internal` semantic modifier dims; hover leads with the reason; std's `Region.anchor` + five row methods carry it); E213 (the ruling stamp: the item's `[internal(\"reason\")]` spelling, not the brief's `[doc(internal)]`)",
+   "body": "Sizing M."
+  },
+  {
+   "id": "E222",
+   "section": "E",
+   "kind": "ruling + feature (editor)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "RULING — E214's ruled approach CANNOT WORK: VS Code's `autoClosingPairs.notIn` takes only string/comment/regex and decides on the token LEFT of the caret (an identifier for `List<`, whitespace for `a < b` — both `Other`), so no grammar scope separates a generic from a comparison; editor-39 had pinned exactly this (`e202_the_angle_pair_surrounds_but_does_not_auto_close`). The priced alternative: a client-side `type` override in extension.ts behind `vilan.autoClosing.generics` (default on) asking the server `opens_a_generic_list`, inserting `<>` and swallowing the next `>` (that map IS the overtype); the extension declares the capability in `initializationOptions` and `on_type_edits` stands down for `<` when set, so non-VS-Code clients keep today's `onTypeFormatting`. S–M; the TS half is textually pinnable",
+   "discussion": "editor-40 (STOPPED E214, premise false; the design priced); E214 (stamped stopped); E202 (the server placement that stays for other clients); the owner (rules the override)",
+   "body": "Ask: build the override as priced, or leave `<` unpaired in VS Code (the pinned status quo). Rec: build; coexistence with Vim emulation is why it is a setting."
+  },
+  {
+   "id": "A126",
+   "section": "A",
+   "kind": "feature (std)",
+   "area": "Standard library",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "the SIZED numeric family has NO `Display`: `display.vl` covers `str`/`i32`/`f64`/`bool`/`u32`/`BigInt` only, so `fun show<T: Display>(v: T)` refuses a `u53` while `print(i\"{n}\")` works — `i53`, `u53`, `u8`, `i8`, `i16`, `u16`, `i64`, `u64` want the impls, and `usize` (I5) must not inherit the gap",
+   "discussion": "papers-40 (find F-f); I5 (the `usize` family in number.vl)",
+   "body": "One impl per type in display.vl, both twins where they exist; a pin per type through a `T: Display` bound. Sizing S."
+  },
+  {
+   "id": "A127",
+   "section": "A",
+   "kind": "feature (std)",
+   "area": "Standard library",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "`over_http_with(mount, codec, headers)` — `HttpTransport` cannot send a CREDENTIAL: cookies ride from a same-origin page, but a header token does not, so an `over_http` client cannot pass `authorize_request`'s gate from a page that holds its token in storage. A second constructor rather than a field on `HttpTransport` (a field would break existing struct literals)",
+   "discussion": "std-40 (open question 2 with the rec); A120 S4 (`authorize_request`, landed 269231ac); A120 S2 (`over_http`)",
+   "body": "Sizing S; the headers are sent on every POST of that client; a pin over the S4 table's 401 row turning 200 with the header."
+  },
+  {
+   "id": "A128",
+   "section": "A",
+   "kind": "feature (std::ui)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "A121 S3 (LOW) — the `focusout` path: `Event::related_target` is bound and pinned (ui-40), so a `Contain` scope can learn 'focus left me, and to there' and a `Wrap` scope can dismiss on Tab-out if an app wants it; deferred by focus-scope.md §S3 and by ui-40, `Contain` is correct without it",
+   "discussion": "ui-40 (S1+S2 landed; S3 deferred, rec close A121 and file S3 LOW); proposal/focus-scope.md §S3",
+   "body": "Sizing S."
+  },
+  {
+   "id": "N120",
+   "section": "N",
+   "kind": "hygiene (CLI)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "the CLI reports a rustc `arithmetic_overflow` refusal as 'a BACKEND defect, not a defect in the vilan program' — under I5 ruling 2 (an underflowing `usize` subtraction is unspecified, never memory-unsafe) that sentence becomes a FALSE ACCUSATION of the backend: the program overflowed and the native build said so at compile time",
+   "discussion": "papers-40 (the I5 paper §11 Q4); I5 ruling 2; F32 (the `i128` limit's own compile-time refusal is the model)",
+   "body": "Reword: name the overflowing expression from rustc's span and say the JS backend would have run on. Sizing S."
+  },
+  {
+   "id": "N121",
+   "section": "N",
+   "kind": "hygiene (LSP)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "N119's other half — a STACK OVERFLOW aborts the whole `vilan-lsp` process (exit 134) and no `join` `Err` can observe it, so the analysis fence N119 pinned catches panics only; wanted: a stack-remaining probe in the analyzer's recursive walks (`stacker`-style remaining-stack check turning a deep recursion into a diagnostic) and a pin at the playground's fence `lib.rs:472` (ledger row 293), which N119 could not reach (vilan-ide runs no analysis)",
+   "discussion": "hygiene-40 (N119 as built: the 128 MiB thread + `catch_unwind` already existed, now pinned; the item's B385-shape-via-`join` claim was false); B385, B387 (the two overflows this order and last)",
+   "body": "Sizing M (the probe touches every recursive walk in analyzer.rs — or one `ensure_sufficient_stack` at the four entry points B385/B387 went through)."
+  },
+  {
+   "id": "N122",
+   "section": "N",
+   "kind": "hygiene (tests)",
+   "area": "Hygiene & rot",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "the shared DOM test stub's `focus()` accepted ANY element and dispatched nothing (ui-40 fixed it: the focusable-area rule, the `visibility` rule, a `focusin` with `relatedTarget`) — B271's own suite still carries a PRIVATE focus override that can now retire onto the shared stub; and `crates/vilan-cli/tests/support/dom/stub.js` is shared by eight suites, so its two new fidelity rules are a behaviour change every focus pin should know",
+   "discussion": "ui-40 (find + the stub fix a4f780dc); B271 (CLOSED Order 30; its suite)",
+   "body": "Retire the override; one pin that the stub refuses a `focus()` the platform would refuse. Sizing S."
+  },
+  {
+   "id": "N123",
+   "section": "N",
+   "kind": "process",
+   "area": "Hygiene & rot",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "AGENTS.md lines owed from Order 40's lanes: (1) `cargo fmt` JOINS a `\\`-continued string literal and leaves the indentation inside the string — every lane writing a multi-line `.vl` fixture meets `no_prose_literal_swallows_a_line_continuation` (editor-40, hygiene-40 both hit it; the fix is a `concat!` or a one-line program); (2) `Document::semantic_tokens` returns `(Span, TokenKind, u32)` while several test helpers assume line/character — a trap for the next modifier pin; (3) any lane editing `vilan/docs/spec/grammar.md` gates `grammar_ebnf` + `grammar_sync` (std-40's `http` terminal reddened the merge); (4) `shared_census` is in every std gate list (A123 + A121 both moved it at the merge)",
+   "discussion": "editor-40, hygiene-40, std-40, the integrator's merge log (notes40)",
+   "body": "Four sentences in AGENTS.md's lane section. Sizing XS."
+  },
+  {
+   "id": "N124",
+   "section": "N",
+   "kind": "hygiene (tests)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "F26's impl-ADMISSION parameter is UNPINNED: the shared `resolve_inherited_default` takes the admitting file as a parameter (JS passes `current_admitting_file`, native `None`) because the half-work had silently passed `None` on both — and planting `None` on the JS side passes the WHOLE estate, since nothing in it restricts an import. Wanted: a B354-style multi-file pin in `module_resolution.rs` where an `only` import declines one of two traits' same-named defaults",
+   "discussion": "native-b-40 (F26 e03d7e98: the bug it found and fixed in the inherited half-work; the pin it could not write); B318 S4 (admission); B354 (the fixture shape)",
+   "body": "Sizing S."
+  },
+  {
+   "id": "N125",
+   "section": "N",
+   "kind": "hygiene (crates)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "F26's remainder — rename `vilan-embedded-std` to `vilan-embedded` (22 files across cli/lsp/wasm + the release scripts) now that native-a-40's `vilan-rt-sqlite` embeds beside it; and the four resolution functions F26 left per-emitter (`type_key`, the active-substitution resolvers, `inherited_substitution`, `call_substitution`) with the reasons written in `mono.rs`'s header — share them only when B393 says JS and native must agree",
+   "discussion": "native-b-40 (F26 partial: six functions shared, 384/384 emits byte-identical; the rename declined as outside its map); F26 (stays open on this); B393",
+   "body": "Sizing S for the rename (mechanical, one commit, release_scripts gate); the four functions wait on B393."
+  },
+  {
+   "id": "F33",
+   "section": "F",
+   "kind": "ruling (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "RULING — MUTABLE `Bytes` natively: `std::ws`'s codec needs `alloc`, `fill` and `copy_into` (the three `Bytes` bindings that mutate) but native `Bytes` is an immutable refcounted buffer while JS's `Uint8Array` is mutable; with F22 landed this is the LAST wall between `Server::builder()` and a native rpc server (plus two seams: `now_millis` and SHA-1 `digest` for the WebSocket accept key)",
+   "discussion": "native-a-40 (the exit as reached: a login server from the `Server` struct literal answers over a real socket; `Server::builder()` refused on these; host census on a bare builder = 6 gaps); native-b-40 (F22 covers the `turn(.., \\|\\| protocol.respond(..))` shape — two probes print the same on both backends); F18 (slice 3 = the builder + the rpc server natively + kolt's `server.vl` as written)",
+   "body": "Options: (a) a shared `Rc<RefCell<Vec<u8>>>`-style buffer — JS's semantics (rec); (b) copy-on-write with the three bindings returning a new `Bytes` (breaks aliasing programs); (c) refuse the three natively for good. Rec (a), with the two seams landed alongside, as F18 slice 3 in Order 41."
+  },
+  {
+   "id": "F34",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "native — the two reactive COMBINATORS are refused: `SignalCell::new(1).map(\\|n\\| n * 10)` answers 'unbound generic type parameter (parameter 1 of `map`)' and `outer.flatten()` over any `Source` is refused on a `?` lift — so no derived signal builds natively today, which the A124 pipeline (S2) will make the common case",
+   "discussion": "dyn-40 (finds, on the way to the `dyn Source<T>` corpus program); A124 S2; F1 (the native reactive core)",
+   "body": "Sizing M; the `map` half is a generic-parameter binding through a trait default with a closure argument (B379's neighbour); the `flatten` half is the `?` on an `Option` payload inside a blanket. Both differential-pinned when fixed."
+  },
+  {
+   "id": "M86",
+   "section": "M",
+   "kind": "performance",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-09-22 (Order 40 sweep)",
+   "title": "a `ListCell` WRITE still copies the whole list: `size()` goes through `SignalCell::get`, which deep-clones (the emitted `$y` in `list-cell.mjs`), and every notify hands each observer a copy — so A112 S2's `map_each` saves calls of `g`, not copies, and any per-push Ir claim S3 makes must subtract this first",
+   "discussion": "collections-40 (find, A112 S2 f917da4e); A112 S3 (the delta-driven `each` — measure with this in view); C14 (the cell representation — a borrow-on-read is the fix's shape)",
+   "body": "Measure a 1,000-row push's Ir split between the derivation and the copies; then a read path that borrows (`with(|list| ..)`) or a `DeltaSource` consumer that never reads the whole. Sizing M."
+  }
+ ]
+}
