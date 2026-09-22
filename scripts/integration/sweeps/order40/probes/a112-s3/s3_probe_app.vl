@@ -1,0 +1,96 @@
+import std::io::print;
+import std::reactive::{ ListCell, SequenceCell, Signal, SignalCell, Source };
+import std::shared::Shared;
+import std::ui::{ View, each, mount_root, view };
+
+[derive(PartialEq, Hashable)]
+struct Row {
+	id: i32,
+	text: str,
+}
+
+fun row(id: i32, text: str): Row {
+	Row { id = id, text = text }
+}
+
+let keys: Shared<i32> = Shared::new(0);
+
+fun keyed(item: Row): i32 {
+	keys.write() = keys.read() + 1;
+	item.id
+}
+
+fun spent(): str {
+	let line = i"{cost()} keys={keys.read()}";
+	keys.write() = 0;
+	line
+}
+
+fun main() {
+	let rows: ListCell<Row> = ListCell<Row>::of([row(1, "a"), row(2, "b"), row(3, "c"), row(4, "d")]);
+	let _root = mount_root("app", || {
+		view("ul")
+			.child(view("li").text("H"))
+			.child(each(rows, keyed, |item: Row| view("li").text(item.text)))
+			.child(view("li").text("F"))
+	});
+	print(i"mount|{tree()}|{spent()}");
+	rows.push(row(5, "e"));
+	print(i"push|{tree()}|{spent()}");
+	rows.prepend(row(0, "z"));
+	print(i"prepend|{tree()}|{spent()}");
+	rows.remove_at(2);
+	print(i"remove|{tree()}|{spent()}");
+	rows.set_at(1, row(1, "A"));
+	print(i"set_at|{tree()}|{spent()}");
+	rows.set_at(1, row(1, "A"));
+	print(i"set_at-same|{tree()}|{spent()}");
+	rows.insert_all(2, [row(7, "g"), row(8, "h")]);
+	print(i"insert_all|{tree()}|{spent()}");
+	rows.edit(|&mut list| {
+		list.push(row(9, "i"));
+		list.remove_at(0);
+		list.insert_at(1, row(6, "f"));
+	});
+	print(i"edit|{tree()}|{spent()}");
+	rows.move_range(0, 1, 3);
+	print(i"move|{tree()}|{spent()}");
+	rows.set([row(1, "a"), row(2, "b")]);
+	print(i"set|{tree()}|{spent()}");
+	rows.clear();
+	print(i"clear|{tree()}|{spent()}");
+
+	// The control: a plain cell keeps the pass.
+	let plain: SignalCell<List<Row>> = Signal::new([row(1, "a"), row(2, "b"), row(3, "c")]);
+	let _second = mount_root("app", || {
+		view("ol").child(each(plain, keyed, |item: Row| view("li").text(item.text)))
+	});
+	let _reset = spent();
+	plain.update(|&mut list| { list.push(row(4, "d")); });
+	print(i"plain-push|{spent()}");
+
+	// At scale: one push into 1,000 rows.
+	mut many: List<Row> = [];
+	mut index = 0;
+	for index < 1000 {
+		many.push(row(index, "r"));
+		index += 1;
+	}
+	let big: ListCell<Row> = ListCell<Row>::of(many);
+	let _third = mount_root("app", || {
+		view("ol").child(each(big, keyed, |item: Row| view("li").text(item.text)))
+	});
+	let _mounted = spent();
+	big.push(row(1000, "new"));
+	print(i"big-push|{spent()}");
+	big.remove_at(500);
+	print(i"big-remove|{spent()}");
+}
+
+[extern("__tree")]
+external fun tree(): str;
+
+[extern("__cost")]
+external fun cost(): str;
+
+main();

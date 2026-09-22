@@ -1,0 +1,35 @@
+// GAP, std-free sibling of the overflow: a blanket impl over a trait's own
+// SUPERTRAIT bound is refused — "'S' does not implement trait 'Feed<T>':
+// missing 'read'" — though `S: Base<T>` is the impl's bound and so already
+// provides `read`. Same answer on 49de39157 and collections-40 + solver-40.
+// With `Source<List<T>>` as the supertrait (std's trait, default members and
+// its own blankets) the same check recurses instead: the overflow repro.
+trait Base<T> {
+	fun read(self): T;
+}
+
+trait Feed<T> with Base<T> {
+	fun feeds(self): bool;
+}
+
+impl type S: Base<type T> with Feed<T> {
+	fun feeds(self): bool {
+		false
+	}
+}
+
+struct Cell {
+	n: i32,
+}
+
+impl Cell with Base<i32> {
+	fun read(self): i32 {
+		self.n
+	}
+}
+
+fun main() {
+	print("hello");
+}
+
+main();

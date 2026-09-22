@@ -1,0 +1,30 @@
+// GAP (A112 S3's third): a trait whose SUPERTRAIT is the very bound its own
+// blanket impl is over — `trait Feed<T> with Source<List<T>>` plus
+// `impl type S: Source<List<type T>> with Feed<T>` — overflows the compiler's
+// stack (`fatal runtime error: stack overflow, aborting`), on 49de39157 AND on
+// collections-40 + solver-40 (B378/B379 merged). Pre-existing; not a
+// solver-40 regression. The held S3 patch's `DeltaFeed` is exactly this shape,
+// so with it in std EVERY program importing std::reactive overflows.
+// Control: drop `with Source<List<T>>` and it compiles and runs.
+import std::reactive::{ Signal, SignalCell, Source };
+
+trait Feed<T> with Source<List<T>> {
+	fun feeds(self): bool;
+}
+
+impl type S: Source<List<type T>> with Feed<T> {
+	fun feeds(self): bool {
+		false
+	}
+}
+
+fun direct<T, S: Feed<T>>(source: S): bool {
+	source.feeds()
+}
+
+fun main() {
+	let cell: SignalCell<List<str>> = Signal::new(["a"]);
+	print(i"direct={direct(cell)}");
+}
+
+main();
