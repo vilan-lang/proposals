@@ -120,7 +120,7 @@ rule has to be about meaning rather than about the module.
 ### 2.3 The type's family in `number.vl`
 
 `usize` is declared the way every sized integer is
-(`vilan/std/src/number.vl:744-810`): `export external struct usize;` beside
+(`vilan/std/src/number.vl:759-810`): `export external struct usize;` beside
 `i53`/`u53`, with a `label_usize` extern (`[extern("Number")]`, the identity at
 the JS level) and the `fold_unsigned` conversion shape the family already has.
 

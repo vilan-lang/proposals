@@ -33,7 +33,10 @@ export import pkg::inner::DeltaCursor as KeyedCursor;
 import pkg::re::KeyedCursor;
 import pkg::inner::DeltaCursor;
 fun takes(c: DeltaCursor): i32 { c.at }
-fun main() { print(i"{takes(KeyedCursor { at = 3 })}"); }   // prints 3
+fun main() {
+	let cursor = KeyedCursor { at = 3 };
+	print(i"{takes(cursor)}");        // prints 3
+}
 ```
 
 Compiles and runs. The alias is **transparent** — a `KeyedCursor` value passes
@@ -61,7 +64,7 @@ about a feature that does not exist.
 ### What (3) costs
 
 `deprecated` is already in the parser's `KNOWN_ATTRIBUTE_MARKERS`
-(`parsing.rs:1088`), but `parse_deprecated_attribute` (`parsing.rs:7320`) is
+(`parsing.rs:1088`), but `parse_deprecated_attribute` (`parsing.rs:7321`) is
 called only on the function path, and `Func` is the only node with a
 `deprecated: Option<&str>` field (`node.rs:86`). The machinery that USES it —
 the non-fatal warning carrying the steer verbatim — already works and is
@@ -76,8 +79,9 @@ Warning: `a` is deprecated; use b
 
 So admitting it elsewhere is: call the same parse helper on the
 struct/enum/trait/import/export item paths, carry the string on those nodes
-(`Struct` and `Enum` are already boxed for `node_size`'s ceiling — check
-`node_size` in the gate list), and raise the same warning from the name-lookup
+(a new field on `Struct`/`Enum` counts against `node_size`'s 96-byte ceiling,
+so that lane's gate list needs `-p vilan-core --test node_size`), and raise the
+same warning from the name-lookup
 site instead of the call site. The editor half is E213's greying, which Order
 40's editor lane is already building for `[doc(internal)]` — the same mechanism,
 a different tag.
