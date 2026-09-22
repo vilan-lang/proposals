@@ -249,6 +249,16 @@
    "title": "a `ListCell` WRITE still copies the whole list: `size()` goes through `SignalCell::get`, which deep-clones (the emitted `$y` in `list-cell.mjs`), and every notify hands each observer a copy — so A112 S2's `map_each` saves calls of `g`, not copies, and any per-push Ir claim S3 makes must subtract this first",
    "discussion": "collections-40 (find, A112 S2 f917da4e); A112 S3 (the delta-driven `each` — measure with this in view); C14 (the cell representation — a borrow-on-read is the fix's shape)",
    "body": "Measure a 1,000-row push's Ir split between the derivation and the copies; then a read path that borrows (`with(|list| ..)`) or a `DeltaSource` consumer that never reads the whole. Sizing M."
+  },
+  {
+   "id": "B394",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "CLOSED 2026-09-22 (Order 40, solver-40b 55464670, filed at the sweep for the record)",
+   "title": "UNSOUND — a blanket whose bound is a trait's own supertrait satisfied that bound for ANYTHING: `trait Feed<T> with Base<T>` + `impl type S: Base<type T> with Feed<T>` made `fun takes<T, S: Base<T>>(s: S)` accept a plain struct (`satisfies_trait_bound` found the blanket providing `Base` through `Feed`, bound `S := Other`, asked itself the same question until the 32-level depth cap answered YES); with A112 S3's `DeltaFeed` shape in std every `S: Source<T>` bound accepted an `i32`. Exposed by B387's fix a6bf7c43 (before it the blanket itself was refused) and found by the s3-40 lane before the seal",
+   "discussion": "s3-40 (the find + the read-only diagnosis, confirmed); solver-40b (the fix: a structural in-progress guard in the analyzer's bound check answering NO on re-entry, and the DEPTH CAP NOW ANSWERS NO — a bound undecided in 32 steps is not satisfied; nothing in the estate moved); B387; A112 S3",
+   "body": "Five pins in `inference/bounds.rs`, red on 3e4e6c51 and green with either half alone. LESSON for the solver: a cap that answers 'yes' when it gives up is a soundness hole waiting for the next cycle — every such leniency in analyzer.rs is worth a census (N-item candidate)."
   }
  ]
 }
