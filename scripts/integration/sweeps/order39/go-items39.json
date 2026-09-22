@@ -104,5 +104,47 @@
   "A121"
  ],
  "ledger_next_id": 549,
- "tracker_open_at_go": 122
+ "tracker_open_at_go": 122,
+ "merged": {
+  "tip_after_lanes": "051e2254",
+  "tip_sealed": "49de3915",
+  "order": [
+   "void-result-39 0976fd19",
+   "hygiene-39 a7cc20f4",
+   "editor-39 b5958d7f",
+   "std-39 ca5edca7",
+   "solver-39 6b4f2f2b+a707bb63",
+   "reactive-39 87c2ee6c+4f990aa2",
+   "collections-39 0630f769",
+   "integrator FIND-2 1d8dfbb2",
+   "native-a-39 5d85ac37",
+   "native-b-39 fec0b1fa (after its own rebase)",
+   "fmt-39 051e2254",
+   "integrator B385 49de3915"
+  ]
+ },
+ "sealed": {
+  "date": "2026-09-22",
+  "tip": "49de3915",
+  "seal": "union 8,093/8,093 (32 skipped), native whole-set 0 (119: 69 identical / 50 refused / 0 / 0 / 0), clippy 0, windows 0, audit 0, fmt 0, changelog parity 588/588",
+  "ci": "35683785688 (6/10 green at the sweep; four test shards running)",
+  "toolchain": "vilan 0.40.0 (49de39157) both locations",
+  "sweep": "38 closed, 28 filed (27 sweep + B385), 8 stamped; 123 open",
+  "kolt": "migrated on 4f990aa2c, checks clean on 49de39157, UNCOMMITTED (the owner commits)"
+ },
+ "order40_queue": [
+  "B385-class FIRST in the solver lane if the owner sees another abort; otherwise: B377 (MISCOMPILE: a mapped-tuple comprehension with a BLOCK element is dropped), B378 + B379 (the two gaps blocking A112 S3 — then land the HELD S3 patch unchanged), B371 (generic `switch` internal error), B372 (`Signal::new` in closure-return position), B380/B381 (generic-body inference losses), B376 (`[derive(PartialOrd)]` silently accepted), B384",
+  "F18 slice 2: std::json natively (→ `Server::builder()`), then std::db as R1's SEPARATE SQLite crate, the rpc server, kolt's server leg; with F29 (the census walks refused arguments), F30 (module-level `mut` aggregate = a copy natively, HIGH latent), F31 (native liveness), F32 ruling (BigInt), the field-read destructure copy find, F21, F22 (the adapted-instance shape; A40's upgrade handler), F26",
+  "A123 `and_then`/`switch` (S; the generic `and_then` runs today — direct-over-`on_change` bodies), then kolt: channel.vl:41 and model.vl `map_safe` retire",
+  "A124 PAPER (read-tracked `computed`; R1/R2 ruled before code — probe in std first, measure the `get` branch)",
+  "I5 PAPER (`usize` everywhere; a distinct type; literal inference as a general law; the breaking train with A125's `K: Hashable`)",
+  "A122 (std::tuple: `TupleKey<T, U>`, `Tuple` trait with `entries()/get(key)/map`; the comprehension as its desugar) — M–L, after I5's paper",
+  "F27 R6 + R2 (the diagnostic says why; member-name evidence) and E213 (`[doc(internal)]`), E214 (grammar-scoped `<` auto-close with `notIn` the operator scope), E215 ruling + E216 (fmt in the LSP/playground + 'Reflow this comment'), E217",
+  "std: B373 (scalar FromJson half), B374 (HttpTransport crash — HIGH), B375 (`[service]` over `export impl` → zero routes), B383 (rpc long-list arity), N117 (binary reader audit); A120 S2+S3 after B374/B375; A121 after the DOM stub grows tabIndex/parentElement/focusin",
+  "reactive: A125 ruling (K: Hashable on reconcile/each — breaking, with I5's train), A112 S2 (`ListCell`/`map_each`) after S3; reactive-turns.md gets FIND-3 + Q3 (inline cadence is order + door 1, not a contract; at_settle deferrals are effect-class by a held id)",
+  "hygiene: N113 (the void/`()` edges ×4), N114 (`hover_at_cursor` trap), N115 (vilan-ide tests), N116 (two wall-clock pins), N118 (std_twin_parity's contract written), M85 (measure first); B382 (a type alias — the inexpressible deprecated re-export)",
+  "process rules for briefs40: a lane must not rebuild while its own whole-crate run is in flight; `-p vilan-core --test node_size` for any lane touching node.rs; any lane touching vilan/docs gates markdown_golden + lsp book_sync; run the host census on the EXIT program before an item claims a wall; no edits in the integration worktree while a merge helper runs; `pgrep -f` loops match themselves",
+  "the v0.41.0 cut: HELD (three BREAKING entries this order — A117, A118, B361, plus A108's from Order 38 — the cut wants one release note across them; L22)",
+  "kolt owed at the owner's word: A123's two sites; nothing else — kolt checks clean on 49de39157"
+ ]
 }
