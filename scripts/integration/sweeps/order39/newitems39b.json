@@ -1,0 +1,274 @@
+{
+  "items": [
+    {
+      "id": "A125",
+      "section": "A",
+      "kind": "ruling (breaking)",
+      "area": "Reactive core & UI",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; collections-39's open Q-A)",
+      "title": "RULING — add `K: Hashable` to `reconcile` and the `each*` family so REORDERS go linear too (M82 made the common path linear with a `PartialEq` position index; a coarse `==` still scans `[low, candidate)` on a reorder). BREAKING: kolt's two `each_values` over structs need `[derive(Hashable)]`",
+      "discussion": "collections-39 (Q-A, rec yes, Order 40, with I5's train); M82 (the index, landed 0630f769); I5 (`usize` indexes — the same breaking train); kolt channel.vl/views.vl (the two `each_values` sites)",
+      "body": "M82's plan is identical for every `K` and needs no bound; what it cannot do without a hash is find an old position for a key that MOVED — that case scans `[low, candidate)` with `==`, which is empty for every key type in the estate today (keys are ids, rows append or delete) and quadratic the day a list is sorted in place. Rec: rule YES and land it in Order 40 beside I5, since both touch every `each` caller's signature once. Alternative: leave it and pin the scan's cost so the day arrives with a number. Pins: a 1,000-row reverse is linear in Ir; kolt's two struct keys derive `Hashable` and build."
+    },
+    {
+      "id": "B373",
+      "section": "B",
+      "kind": "bug (std codec)",
+      "area": "std::json / wire",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; std-39's find 2)",
+      "title": "`FromJson`'s SCALAR impls have the other half of the JSON-reader hole std-39 closed: `i32::from_json(\"1.5\")` → `Ok(1.5)` — an integer lane accepts a fractional. The reader (2321790e) now poisons on kind mismatch; the scalar `from_json` entry points do not go through it",
+      "discussion": "std-39 (find 2; OPEN Q on integer MAGNITUDE — rec leave, its own item if wanted); papers-39 (the original HIGH find — `[\"x\",2]` read `NaN`); A116 (`__json_tag` on non-objects — the same family)",
+      "body": "Repro: `i32::from_json(\"1.5\")` answers `Ok(1.5)`; `u32::from_json(\"-1\")` likely `Ok(-1)`. The typed READER checks whole-number / non-negative since 2321790e; the scalar impls parse and hand the number through. Fix: route the scalars through the same lane checks (or share the predicate); pins per scalar lane (fractional into integer, negative into unsigned, string into number). Out of scope, recorded: integer MAGNITUDE (a `u32` reading 2^40) — rec leave until I5 lands `usize`, then decide with the width story in hand."
+    },
+    {
+      "id": "B374",
+      "section": "B",
+      "kind": "bug (std, HIGH)",
+      "area": "std::rpc / transport",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; papers-39's HIGH find)",
+      "title": "`HttpTransport` CRASHES THE PROCESS on an unreachable host — an unhandled `fetch failed` rejection — against `Transport`'s own contract, which is `Err(reason)` for a transport failure",
+      "discussion": "papers-39 (found while probing A120's hand-built `AuthClient<HttpTransport>`); A120 (the http client design — this and B375 are 'the TWO bugs first'); A96 (socket teardown — the transport family's other lifecycle hole)",
+      "body": "Repro: `AuthClient<HttpTransport>` against a port nothing listens on → node exits with an unhandled rejection; the caller's `match` never runs. Fix: the `fetch` call wrapped, the rejection mapped to `Err(Transport(reason))` (or whatever the `Transport` error variant is named); a `rpc_http` pin against a closed port, asserting the typed `Err` and the process alive. Sized S."
+    },
+    {
+      "id": "B375",
+      "section": "B",
+      "kind": "bug (macro engine / std::rpc, MEDIUM)",
+      "area": "Macros & services",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; papers-39's find; solver-39 declined by ownership)",
+      "title": "`[service]` over an `export impl` generates a dispatcher with ZERO routes and the empty contract hash `00001505`, SILENTLY — the attribute walks the impl's members and finds none because the exported form is a different node shape",
+      "discussion": "papers-39 (found; RELAYED to solver-39, which did not build it — macro engine / rpc.vl are not its ownership); A120 (a factory service answering 501 is the sibling symptom); L-family (the contract hash is what a release compares)",
+      "body": "Repro: `export impl AuthService { … }` under `[service]` → the generated dispatcher has no routes; the hash is the empty-set hash; a client call answers 'unknown method' at runtime with nothing said at compile time. Fix: EITHER the walker reads through `export` (rec — `export` is visibility, not shape), OR the attribute REFUSES an `export impl` by name until it does. Either way a `[service]` producing zero routes must be a compile-time refusal ('a service with no methods'), because the empty hash is never what anyone meant. Pins: `service_layer` over an exported impl (routes present, hash non-empty); the zero-route refusal with a planted empty impl."
+    },
+    {
+      "id": "B376",
+      "section": "B",
+      "kind": "bug (attributes)",
+      "area": "Macros & derives",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; editor-39's find 1)",
+      "title": "`[derive(PartialOrd)]` is SILENTLY ACCEPTED and expands to NOTHING — `STD_DERIVE_MACROS` lists six names but `compare.vl` declares only a `PartialEq` macro; a derive name std declares no macro for should be refused BY NAME at the attribute. Likely the shape behind the owner's original E212 report",
+      "discussion": "editor-39 (find 1); E212 (closed this order — B346's refusal now fires once at the entry; this is the case it does not cover at all); B346 (the macro-registration refusal)",
+      "body": "Repro: `[derive(PartialOrd)] struct P { x: i32 }` → clean; `a < b` on `P` then fails with 'no operator', pointing nowhere near the derive. Fix: the derive expander refuses a name with no registered macro ('`PartialOrd` is not a derivable trait; std derives: …'), anchored on the attribute; a ledger row. `STD_DERIVE_MACROS` and the registry should be ONE list (the test that keeps them in step is the pin). Sized S."
+    },
+    {
+      "id": "B377",
+      "section": "B",
+      "kind": "bug (MISCOMPILE, HIGH)",
+      "area": "Emitter / mapped tuples",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; reactive-39's FIND-1, reproduced by the integrator on 0976fd194)",
+      "title": "MISCOMPILE — a mapped-tuple comprehension whose element is a BLOCK expression is DROPPED from the emitted JS, statements and side effects included, clean at check: `(value in values => { note(1); value })` emits NOTHING (`block=0`) where the call form `(value in values => f(value))` emits `values.map(..)`",
+      "discussion": "reactive-39 (found building `combine`'s per-input marks; worked around with `as_derivation_for` in argument position — see reactive.vl's doc on it); A122/B183 (the comprehension family this must be solid under before it grows); probe `sweeps/order39/probes/tuple_comprehension_block_dropped.vl`",
+      "body": "Repro is the probe: two comprehensions over one mapped tuple, one with a call element, one with a block element that prints; the block one's output is absent from the `.mjs` and nothing runs. The check passes. Fix direction: the comprehension lowering has an element-shape match that lacks a `Block` arm (or the desugar discards a block's statements and keeps only its tail, then drops an 'empty' tail). Pins: a corpus program with a block element whose side effect is witnessed; the emitter's arm coverage for every element shape (call, block, literal, closure, `match`, `if`). Priority: FIRST in Order 40's solver lane — a silent drop with a clean check is the worst class we have."
+    },
+    {
+      "id": "B378",
+      "section": "B",
+      "kind": "bug (impl selection, HIGH — blocks A112 S3)",
+      "area": "Type system & the type solver",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; collections-39's FIND 1)",
+      "title": "SPECIFICITY — the impl-selection order does not rank a SUBTRAIT bound above its supertrait bound: `impl type S: Narrow<T>` vs `impl type S: Base<T>` where `trait Narrow<T> with Base<T>` → 'neither impl subject is more specific'. This is the optional-capability dispatch A112 S3 needs (`each` over a `DeltaSource` vs a plain `Source<List<T>>`), and both of the lane's spellings were refused",
+      "discussion": "collections-39 (FIND 1; the S3 patch is WRITTEN and held at `sweeps/order39/collections-39/`); A112 (S3 lands unchanged once this and B379 are fixed — rec Q-B); B318 (the specificity order's home); B379 (the second gap)",
+      "body": "Repro (with a control): `trait Base<T> { fun f(self) }`, `trait Narrow<T> with Base<T> { fun g(self) }`, `impl type S: Base<T> { fun h(self) }`, `impl type S: Narrow<T> { fun h(self) }` — a call `x.h()` on a type implementing both → 'neither impl subject is more specific'. `Narrow<T>` implies `Base<T>` by declaration, so `S: Narrow<T>` is strictly the smaller set and must win. Fix: the specificity comparison consults the trait inheritance graph (a subject bound by a subtrait is more specific than one bound by any of its supertraits). Pins: the repro selects `Narrow`'s; the reverse declaration order too; an unrelated pair still ties. Rec (collections' Q-B): rule B378 + B379 defects, fix both, land the held S3 patch unchanged; alternative an explicit `each_delta(..)` form — rejected as a second vocabulary."
+    },
+    {
+      "id": "B379",
+      "section": "B",
+      "kind": "bug (inference, HIGH — blocks A112 S3)",
+      "area": "Type system & the type solver",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; collections-39's FIND 2)",
+      "title": "a generic parameter reachable ONLY through a BLANKET impl's trait argument does not bind through a STRUCT-RETURNING constructor call: '`T` is missing the bound `: PartialEq`' — while the nominal-impl route binds, and a non-struct-returning call binds (with a control)",
+      "discussion": "collections-39 (FIND 2); B378 (its sibling; both block A112 S3); B300 (closed — bound binders grounded from the receiver as a worklist; this is the CONSTRUCTOR-RETURN face of the same binding); B369 (closed — the caller's unsubstituted return type; check the seam)",
+      "body": "Shape: `impl type S: DeltaSource<List<T>, SeqOp<T>> { fun rows(self): Rows<T> { Rows::new(..) } }` — `Rows::new` returns a struct generic in `T`; inside the blanket body `T` is known only via the bound's trait argument, and the constructor call reports `T` missing a bound the blanket's own where-clause carries. Replace the struct-returning call with a plain function returning `T` and it binds; write the impl nominally and it binds. Fix: the blanket body's binder environment must be the one `bind_subject_bound_binders` grounds, at CONSTRUCTOR calls too (the struct-literal/constructor path apparently re-derives from the nominal environment). Pins: the lane's repro + control; the held S3 patch compiles."
+    },
+    {
+      "id": "B380",
+      "section": "B",
+      "kind": "bug (inference)",
+      "area": "Type system & the type solver",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; collections-39's FIND 3)",
+      "title": "indexing a `Shared<List<K>>::read()` TEMPORARY at a generic element type is refused ('element type is never determined') while `.get(at)` on the same temporary infers — `cells.read()[i]` vs `cells.read().get(i)` inside a generic body",
+      "discussion": "collections-39 (FIND 3; worked around with `.get`); B300 family (a temporary's type through a blanket read)",
+      "body": "The index operator's receiver typing loses `K` when the receiver is a `read()` temporary (a `Shared<T>::read` answers `T` through the blanket; the subscript then asks the element type of an unresolved `T`), where the method call path resolves the same `T` first. Fix: the subscript path types its receiver through the same resolution the method-call path uses. Pins: the repro and its `.get` control agree; a concrete `Shared<List<i32>>` unchanged."
+    },
+    {
+      "id": "B381",
+      "section": "B",
+      "kind": "bug (inference)",
+      "area": "Type system & the type solver",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; collections-39's FIND 4)",
+      "title": "`==` on a `T: PartialEq` LOSES its bound inside a nested `match` arm within a closure — the same comparison one level up type-checks",
+      "discussion": "collections-39 (FIND 4, inside `reconcile`'s index; worked around by hoisting); B300 family; the closure-body binder environment (B372 is another closure-position loss this order)",
+      "body": "Shape: `fun f<K: PartialEq>(..) { xs.each(|x| match x { Some(let k) => if k == key { .. }, None => .. }) }` → 'no operator `==` for `K`' (or the bound-missing form) inside the arm; `if k == key` written outside the `match`, or the `match` outside the closure, both check. Fix: the closure body's generic environment must carry the enclosing function's bounds into nested pattern-arm scopes (the arm scope appears to be built from the closure's OWN parameters only). Pins: the nested shape; two levels of nesting; a control outside the closure."
+    },
+    {
+      "id": "B382",
+      "section": "B",
+      "kind": "feature (type alias)",
+      "area": "Type system & the type solver",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; collections-39's FIND 7 / Q4)",
+      "title": "there is NO TYPE ALIAS — `type KeyedCursor = DeltaCursor;` cannot be written, `import … as` cannot re-export under another name, and `[deprecated]` is a function attribute — so A112's RULED 'deprecated `KeyedCursor` re-export' was inexpressible and the lane did a HARD RENAME with a `breaking` note instead",
+      "discussion": "collections-39 (Q4 — the rename shipped in b850d369; the owner is told); A112 §13 (the ruling that assumed an alias existed); B318 (import surface — where an `as` re-export would live); N-family (a deprecation story needs the attribute on types too)",
+      "body": "Three missing pieces, any one of which would have served: (1) a `type Alias = Existing;` declaration (transparent, no new nominal identity — the everyday one); (2) `export { Existing as Alias }` / `import X::Y as Z;` at module level; (3) `[deprecated(\"use …\")]` admitted on types and re-exports, rendered by the editor (E213's greying is the same mechanism). Rec: (1) first as the smallest general feature, sized M (parser, a `Type::Alias` resolved at name lookup, printer, EBNF, the formatter, hover shows the target); (3) rides on E213. Pins: alias to a generic with parameters; alias in an impl subject; alias across a re-export; hover renders `= Existing`."
+    },
+    {
+      "id": "B383",
+      "section": "B",
+      "kind": "bug (std::rpc)",
+      "area": "std::rpc / wire",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; std-39's find 3)",
+      "title": "the rpc route's LONG argument list is unchecked — `open_request` never closes the list and `RpcRequest.arity` is ignored, so a call with MORE arguments than the method takes decodes cleanly and the extras are dropped silently (the SHORT list now poisons since 2321790e)",
+      "discussion": "std-39 (find 3 — noted while landing the reader add-on; rpc.vl, Order 40); B373 (the scalar half); A120 (an http client is exactly where a mismatched arity arrives from the outside)",
+      "body": "Fix: the route decoder calls `end_list` after the last declared parameter (which 2321790e made hold the list to being read whole) and compares `RpcRequest.arity` to the method's declared count, answering the typed Decode failure on mismatch. Pin in `service_layer`: one extra argument → Decode, not Success; the arity field read at least once (a planted wrong arity reds). Sized S."
+    },
+    {
+      "id": "B384",
+      "section": "B",
+      "kind": "note (analysis reuse)",
+      "area": "Type system & the type solver",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; solver-39's find 2)",
+      "title": "B365's repaired arm (`struct_initializer_to_def`) is UNREACHABLE from a clean `analyze_source` — seven shapes tried, `literal_evidence()` = 0 — the type check refuses first; it fires only on the WARM path (E-family analysis reuse), so its counter is wired but its pin is vacuous from cold",
+      "discussion": "solver-39 (B365 landed 9eaf5320 with the counter; 'the warm path item'); analysis-reuse.md §6.16 (the warm path's contract); B365 (closed)",
+      "body": "Either the arm is dead (the cold refusal always wins → delete it and the counter, with a pin that the refusal fires) or it is live only under retained-program re-analysis (→ a warm-path pin in the LSP test harness that drives an edit through the retained program and asserts the counter moved). Rec: write the warm-path pin first; if it cannot be made to fire in three shapes, delete the arm. Sized S."
+    },
+    {
+      "id": "E215",
+      "section": "E",
+      "kind": "ruling + feature (formatter)",
+      "area": "LSP & tooling",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; fmt-39's finds 1 and 3)",
+      "title": "`[fmt] comment_width` — std's comment width (~80–88) is not the code width (100), so `wrap_comments = true` over std REFLOWS 6,719 → 5,573 comment lines to a width nobody chose; THE thing between the key and a default flip is either a `comment_width` key or a ruling that std never opts in. Also: `wrap_comments = true` does not mean 'no comment over the budget' (hanging-indent lists and the ten never-reflow classes stay) — the book must say so",
+      "discussion": "fmt-39 (E205 landed 066dfabb with the key default OFF; the two counts — std 61/63 files, kolt 14/27 — neither tree opted in; recs: the default does NOT flip at v0.41.0, std does not opt in this order, the commented-out-code heuristic stays tuned to bail); E205 (closed); E216 (the editor half)",
+      "body": "Rulings asked: R1 a `comment_width` key (default = the code width) vs a fixed ratio vs none; R2 does std opt in, and at which width (the measured ~84 keeps the prose as written); R3 when, if ever, `wrap_comments` flips on by default (rec: not before std has run under it for one order). Pins: the key parsed and completed (the manifest schema/LSP `TABLES` — the four-file set fmt-39 named); a width other than 100 respected; the book's `[fmt]` section states the ten never-reflow classes and 'over-budget comments can remain'. Sized S once ruled."
+    },
+    {
+      "id": "E216",
+      "section": "E",
+      "kind": "feature (editor)",
+      "area": "LSP & tooling",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; fmt-39's find 2 + R8's undone half)",
+      "title": "the LSP and the playground do not READ `[fmt] wrap_comments` — format-on-save will not wrap for an opted-in package (safe: reflow only adds wrapping) — and R8's 'Reflow this comment' code action is unbuilt; vilan-lsp was editor-39's this order, so fmt-39 left the recipe in its report",
+      "discussion": "fmt-39 (the recipe: `manifest::wrap_comments_covering(path)` exists; the server's format path calls `reprint` not `reprint_with`); E205 (closed); E215 (the width ruling — build after it so the action reflows to the right width)",
+      "body": "Two pieces: (1) `document.rs`'s formatting path resolves the covering manifest's `[fmt]` and calls `reprint_with(options)`; the playground threads its own option; (2) a code action on a comment run over the budget, 'Reflow this comment', which applies `comment_reflow` to that run alone — regardless of the package's opt-in, since an explicit action is consent. Pins: lsp `formatting` over an opted-in fixture wraps; over a non-opted one does not; the action offered only on an over-budget run and never inside the ten never-reflow classes. Sized S–M."
+    },
+    {
+      "id": "E217",
+      "section": "E",
+      "kind": "bug (formatter)",
+      "area": "LSP & tooling",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; collections-39's FIND 5)",
+      "title": "`vilan fmt` DECLINES a hand-wrapped generic `impl` header — `impl type S: DeltaSource<\\n\\tList<T>,\\n\\tSeqOp<T>,\\n> { … }` is refused (a decline, not a reprint), so a header longer than the width has no formatted spelling at all",
+      "discussion": "collections-39 (FIND 5, hit writing `DeltaSource`'s impls; kept the header on one over-long line); E209 (the reprint safety net — a decline is its refusal path, so this is a printer gap the net catches rather than a mis-format); E181 (the formatter's other header cases)",
+      "body": "The printer has no wrapping rule for an `impl` subject's generic argument list (declarations and calls have one), so a wrapped input reprints differently and the token/parse net declines. Fix: the impl-header printer shares the declaration's argument-list breaking (one per line, trailing comma) when the header exceeds the width. Pins: the reprint of the wrapped header is idempotent; an over-width single-line header is BROKEN by the formatter; the decline count over std is 0 (it is today — the lane kept the line long)."
+    },
+    {
+      "id": "F29",
+      "section": "F",
+      "kind": "tooling (native census)",
+      "area": "Native targets & rendering",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; native-b-39's find)",
+      "title": "the native HOST CENSUS (`VILAN_NATIVE_HOST_CENSUS=1`) UNDER-REPORTS: a refused call's ARGUMENTS are never walked, so `createServer(..)` hid NINE bindings behind it and the brief's '55 host bindings' was low; the census must walk into a refused call's arguments (and its closure bodies) anyway",
+      "discussion": "native-b-39 (found reaching `std::http`: 23 of 25 raw `node:http` bindings after the walk); native-a-39 (PREMISE CORRECTION: board.vl had FIVE gaps behind the one the item named — 'run the census on the EXIT program before an item claims a single wall' is briefs40's rule); F1 §11",
+      "body": "Fix: on a refusal, the emitter records the name and CONTINUES into the call's arguments and any closure bodies among them, recording their bindings too (emit nothing for them; the program is refused regardless). Pin: a program whose only host bindings sit inside a refused call's arguments reports all of them; the whole-set census total moves up and is re-baselined once. Sized S."
+    },
+    {
+      "id": "F30",
+      "section": "F",
+      "kind": "bug (native, latent MISCOMPILE class)",
+      "area": "Native targets & rendering",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; native-a-39's find 1)",
+      "title": "a MODULE-LEVEL `mut` AGGREGATE mutated in place is a COPY natively — `read_module_binding_or_local` answers a VALUE, so `counts.push(x)` on a module-level `let mut counts: List<i32>` pushes into a temporary; invisible today only because every mutated module binding in the estate holds a `Shared`. The boxed-binding class (the live one native-a-39 fixed for locals) at module scope",
+      "discussion": "native-a-39 (find 1 — found while fixing the LIVE boxed-binding miscompile at local scope: `board` printed `0 0` for `2 2`); C15 (boxed bindings, 1 remaining over 67 programs); F1 §11",
+      "body": "Repro: a corpus program with a module-level `let mut xs: List<i32> = [];` and a function that pushes, printed after — JS prints the pushed list, native prints `[]` (or the program is refused if the read is loaned). Fix: module-level mutable bindings read as PLACES through the same `mutable_place` path locals use (a `thread_local!`/`static` cell in the emission, or the existing boxed form). Pins: the repro flips byte-identical; the whole-set differential re-run. Priority: HIGH for Order 40's native lane — it is a silent wrong answer the differential cannot see until a program hits it."
+    },
+    {
+      "id": "F31",
+      "section": "F",
+      "kind": "perf (native)",
+      "area": "Native targets & rendering",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; native-a-39's find 2)",
+      "title": "`clone_sites`' LAST-USE ELISION does not transfer to the native backend — the JS emitter elides a copy at a binding's last use; the Rust emitter must copy conservatively (four such copies in the exit program), so a native LIVENESS pass is C15's neighbour: compute last uses per binding and `move` there instead of `clone`",
+      "discussion": "native-a-39 (find 2); C15 (boxed bindings — the same analysis gives both); copy-elision census (`copy_elision_census.tsv` is the JS-side ledger; the native side has none yet); F1 §11",
+      "body": "Build: a per-function liveness over the lowered body (bindings are few and blocks are structured, so a backward walk suffices); at a use that is the last, emit a move; a NATIVE copy census beside the JS one so the number is watched. Pins: the four sites in `board.vl` become moves with the program still byte-identical; a program where the last use is inside a loop keeps its clone (the classic trap); the census file. Sized M."
+    },
+    {
+      "id": "F32",
+      "section": "F",
+      "kind": "ruling (native)",
+      "area": "Native targets & rendering",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; native-a-39's find 3)",
+      "title": "RULING — `BigInt` has NO native representation: the `n` suffix is arbitrary precision on JS, and it had been emitting `…993i32` (a WRONG value, silently) until native-a-39 made it a refusal BY NAME (2 programs). Rule: a bignum in `vilan-rt` (dependency-free — its own limbs), or a documented limit (`i128`, refused past it), or 'not on native'",
+      "discussion": "native-a-39 (find 3; the refusal is the interim); F1 (vilan-rt dependency-free — R1 of Order 39 — so no `num-bigint`); the spec's numeric section",
+      "body": "Options: (a) a small dependency-free bignum in `vilan-rt` (add/sub/mul/div/compare/format — a few hundred lines; the corpus uses BigInt for two hashing-shaped programs); (b) `i128` with a compile-time refusal for a literal past it and a runtime trap on overflow — a LIMIT the book states; (c) BigInt stays JS-only and the refusal is permanent. Rec (b) now, (a) if a real program needs it: the two programs are contrived. Pins: whichever is ruled, the two programs flip or their refusal names the rule."
+    },
+    {
+      "id": "M85",
+      "section": "M",
+      "kind": "perf (editor, LOW)",
+      "area": "Performance & footprint",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; editor-39's find 4)",
+      "title": "`field_at_offset` is a LINEAR SCAN over every struct field in the program per hover — fine at std's size, quadratic-feeling at a large workspace with hover-on-move; an offset→field index keyed by file, built with the program",
+      "discussion": "editor-39 (find 4 — noticed building E204's field hover); E69 (the hover cost census — the numbers to compare against)",
+      "body": "Measure first (E69's harness): hover latency over a 5,000-field synthetic workspace, before/after. Build only if the scan shows; otherwise close with the number. Sized S."
+    },
+    {
+      "id": "N113",
+      "section": "N",
+      "kind": "hygiene (spec + parser, four small holes)",
+      "area": "Hygiene & rot",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; papers-39's LOW finds ×4, found on the way to B363's correction)",
+      "title": "the `void`/`()` edges, four holes: (1) `()` is accepted as a TYPE and is uninhabited — nothing can be written at it — where `void` is the unit; refuse it by name pointing at `void`; (2) `void` is missing from the EBNF's literal production though the lexer and spec have it; (3) `let void = 3;` is ACCEPTED — the unit value's name is shadowable; (4) `[extern(\"document.activeElement\")]` emits a CALL to a PROPERTY (the `[extern(get, …)]` form is the spelling — the book does not say so)",
+      "discussion": "papers-39 (B363's premise check — `void` IS the unit value; only `()` fails); B363 (corrected, closed S3 via void-result-39); E-family (the EBNF is `grammar_ebnf`'s golden — (2) moves it); D-family ((4) is a doc line)",
+      "body": "(1) parser: `()` in type position → 'the unit type is spelled `void`'; a ledger row. (2) EBNF + `grammar_sync`. (3) `void` joins the reserved words (or the binder refuses it by name); the `specs_reserved_words_are_the_lexers_keywords` pin moves. (4) one paragraph in the extern chapter with the property form. Four pins, one commit each; sized S total."
+    },
+    {
+      "id": "N114",
+      "section": "N",
+      "kind": "hygiene (test trap)",
+      "area": "Hygiene & rot",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; editor-39's find 2)",
+      "title": "vilan-lsp's `hover_at_cursor` test helper MANGLES its fixture — it strips every `\\|` to find the cursor, so a fixture containing a closure (`\\|x\\| …`) or a union-shaped comment is analyzed as a DIFFERENT program; E9's pin was VACUOUS for this reason (it asserted a clause only the deleted E207 append could produce). `hover_at_marker` was added beside it; retire `hover_at_cursor` or make it refuse a fixture with a second `\\|`",
+      "discussion": "editor-39 (find 2; E207's root-cause hunt exposed it); E207 (closed); N-family (vacuous pins are this section's business)",
+      "body": "Sweep every `hover_at_cursor` caller: fixtures with one `|` migrate mechanically to `hover_at_marker`; the helper then asserts exactly one `|` or panics with the fixture's name. Pin: the helper's own guard. Sized S."
+    },
+    {
+      "id": "N115",
+      "section": "N",
+      "kind": "hygiene (coverage)",
+      "area": "Hygiene & rot",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; editor-39's find 3)",
+      "title": "`vilan-ide` has NO in-crate tests for the completion engine — every completion pin lives in vilan-lsp's integration tests, so the engine's ranking, filter-text and replace-span logic (E211) is tested only through the protocol layer",
+      "discussion": "editor-39 (find 3, while landing E211's `filter_text` + `replace_span`); E211 (closed)",
+      "body": "Add `crates/vilan-ide/src/completion/tests.rs` (or a `tests/` dir) with the engine driven directly: member completion detail (E204), filter text and replace span (E211), the prelude/OI cases (E180). Not a big-bang: each future completion item adds its pin here rather than in vilan-lsp. Sized S to seed."
+    },
+    {
+      "id": "N116",
+      "section": "N",
+      "kind": "hygiene (flaky pins)",
+      "area": "Hygiene & rot",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; collections-39's FIND 6 + solver-39's find 1)",
+      "title": "TWO WALL-CLOCK pins red under load and must lose their wall half: `m75_a_collisions_refusal_does_not_scale_…` (perf-38 made its COUNT half; the wall half remains — '-10 ms' under a parallel lane) and `native_differential::the_spawn_and_sleep_ordering_…` (a sleep-ordering RACE in the executor under load, native-b-39's). Rule for the suite: no assertion reads a clock",
+      "discussion": "collections-39 (FIND 6); solver-39 (find 1 — LOAD-FLAKY; ten lanes running is exactly the load); M75/M77 (the count half is the pin); J6 (the executor's ordering rules — the sleep pin must assert ORDER by a deterministic clock, not by elapsed time)",
+      "body": "(1) delete the wall half of the M75 pin (the count is the claim). (2) the spawn-and-sleep pin: drive the executor with a virtual clock (vilan-rt's timers already take a deadline — inject `now`) so the order is asserted with no real sleep; if the runtime pin must sleep, the tolerance is ≥ 10× the interval. Pins: both green under `cargo nextest run -j 32` with a CPU burner beside them. Sized S."
+    },
+    {
+      "id": "N117",
+      "section": "N",
+      "kind": "hygiene (audit)",
+      "area": "Hygiene & rot",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; std-39's find 4)",
+      "title": "`std::binary`'s READER is UNAUDITED for the kind-mismatch class the JSON reader just closed (2321790e: a typed read that never poisoned on the wrong kind or a short list) — the same audit, the same ten pin shapes, over the binary codec",
+      "discussion": "std-39 (find 4); A116 / papers-39's HIGH find (the JSON half); the wire's byte-identity pins (the audit must not move a byte)",
+      "body": "Audit each typed read in binary.vl: short buffer, wrong tag, a list read past its declared count, a string length past the buffer; poison naming both sides as the JSON reader does. Pins planted red per shape; the wire goldens unchanged. Sized S–M."
+    },
+    {
+      "id": "N118",
+      "section": "N",
+      "kind": "hygiene (doc a gate's semantics)",
+      "area": "Hygiene & rot",
+      "status": "OPEN — filed 2026-09-21 (Order 39 sweep; std-39's find 5)",
+      "title": "`std_twin_parity` COUNTS PRIVATE DECLARATIONS — a helper `fun` added in one ui twin and inlined in the other reddens the gate, so std-39 had to NAME the server twin's body (`place_when_some`) to match; the gate's contract must be written at its head (and F27's 'the parity gate learns fields' must not make it worse)",
+      "discussion": "std-39 (find 5; A119's second commit exists because of it); F27 (R-ruled: the parity gate learns fields); the twins (`browser/ui.vl` / `process/ui.vl`)",
+      "body": "Either the gate compares EXPORTED surface only (rec — a private helper is an implementation choice) or its header says 'every declaration, private ones included, so the twins read alike'. Decide, write it at the test's head, and add a pin that shows the choice (a private helper in one twin passes or reds by design). Sized S."
+    }
+  ]
+}
