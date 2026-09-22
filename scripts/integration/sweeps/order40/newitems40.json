@@ -259,6 +259,16 @@
    "title": "UNSOUND — a blanket whose bound is a trait's own supertrait satisfied that bound for ANYTHING: `trait Feed<T> with Base<T>` + `impl type S: Base<type T> with Feed<T>` made `fun takes<T, S: Base<T>>(s: S)` accept a plain struct (`satisfies_trait_bound` found the blanket providing `Base` through `Feed`, bound `S := Other`, asked itself the same question until the 32-level depth cap answered YES); with A112 S3's `DeltaFeed` shape in std every `S: Source<T>` bound accepted an `i32`. Exposed by B387's fix a6bf7c43 (before it the blanket itself was refused) and found by the s3-40 lane before the seal",
    "discussion": "s3-40 (the find + the read-only diagnosis, confirmed); solver-40b (the fix: a structural in-progress guard in the analyzer's bound check answering NO on re-entry, and the DEPTH CAP NOW ANSWERS NO — a bound undecided in 32 steps is not satisfied; nothing in the estate moved); B387; A112 S3",
    "body": "Five pins in `inference/bounds.rs`, red on 3e4e6c51 and green with either half alone. LESSON for the solver: a cap that answers 'yes' when it gives up is a soundness hole waiting for the next cycle — every such leniency in analyzer.rs is worth a census (N-item candidate)."
+  },
+  {
+   "id": "B395",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-22 (Order 40, the s3-40 lane's blocker #2; the THIRD solver gap on A112 S3's ruled shape — S3 shipped on the two-bound fallback)",
+   "title": "a DEFAULT member of a supertrait, called on a type that implements the supertrait at OTHER arguments, is resolved through a SUBTRAIT's blanket and then refused on that blanket's bound: `trait Base<T> { fun read(self): T; fun twice(self): i32 { 2 } }  trait Feed<T> with Base<List<T>> {..}  impl type S: Base<List<type T>> with Feed<T> {..}  impl Cell with Base<i32> {..}` → `cell.twice()` fails \"'Cell' does not implement trait 'Base<List<T>>'\" (prints 2 without the supertrait clause, and with `Base<T>` — the ARGUMENT mismatch is the trigger). With A112 S3's ruled `DeltaFeed<T> with Source<List<T>>` in std it breaks `reactive-on-change.vl` (`Stored<i32>`'s `sub`/`map`), `reactive_channels::a_keyed_mirror_is_a_source_over_the_shipped_counted_lease` (a `KeyedSource`'s `effect_on_change`) and the native differential's corpus leg. Likely the B268 id-vs-arguments gap `impl_select.rs` documents at `subject_applies`: the blanket is taken as applicable at the trait-ID level (Cell provides `Base`, at `i32`)",
+   "discussion": "s3-40 (the find, reproduced std-free; S3 SHIPPED on the two-bound spelling `S: Source<List<T>> + DeltaFeed<T>` as the declared fallback); B387 + B394 (the two previous gaps on the same shape, both fixed this order); B268; A112 (S3 as ruled = the supertrait spelling, waits on this)",
+   "body": "Fix: member selection through a blanket must check the blanket's bound at the ARGUMENTS the supertrait is implemented at, not the trait id; pins: the repro prints 2; the three reds above turn green with the supertrait form in std (a fixture with the shape, since std ships the fallback). Then A112's declaration switches to the ruled spelling (one std commit). Sizing S–M; solver lane, Order 41, FIRST."
   }
  ]
 }
