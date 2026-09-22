@@ -814,3 +814,102 @@ today), F24 (the executor's slab never reuses a slot — before F18's per-reques
 rendering, printing a host handle), F26 (the shared resolution module), N106 (the f64-boundary and non-BMP
 halves).
 
+
+## 12. As built (Order 39, lanes native-a-39 + native-b-39, 2026-09-21/22) — `board.vl` flips, and a native `std::http` server answers a GET
+
+**The two exits Order 38 named are reached.** native-a-39 (F20, five commits ec1811bd … 8f9b8038, merged
+5d85ac37): `board.vl` is byte-identical on both backends. native-b-39 (F23/F24/F25 + F18 slice 1, seven commits
+f6b232a8 … 42985e3d, rebased onto native-a and merged fec0b1fa): a `std::http` server built from the `Server`
+struct literal answers `GET /` over a real socket, and the pin compares the status line, the header the
+program set, `Content-Length` and the body byte for byte against node — with node's `Date` and the order the
+two write `Connection`/`Content-Length` deliberately NOT compared, written at the pin rather than normalised
+away. The harness binds port 0 and reads the announced number, so there is no fixed port, no bind-release-rebind
+window and no sleep.
+
+**THE TABLE** (whole set, `VILAN_NATIVE_DIFFERENTIAL=1`):
+
+| | Order 38 seal | after native-a-39 | after native-b-39 |
+|---|---|---|---|
+| enumerated | 117 | 117 | **119** |
+| byte-identical | 49 | 67 | **69** |
+| refused by name | 68 | 50 | **50** |
+| differing stdout | 0 | 0 | **0** |
+| rustc-refused | 0 | 0 | **0** |
+| broken | 0 | 0 | **0** |
+
+By construct at native-a's exit: `Hash` 10 → 0, `lazy` 12 → 0, overloaded operators 7 → 0, backed enums 5 → 0; `for`
+over an `Iterator` impl 5 → 7 (earlier walls lifted — now the largest class), destructuring 2 → 5 → 0 (native-b's
+`Expr::Destructure`). A NEW class: the `BigInt` literal (`n` suffix — arbitrary precision, not a width; it had
+been emitting `…993i32`, a wrong value silently) is refused by name (2 programs; the ruling is F32).
+
+**PREMISE CORRECTION, and a rule for briefs.** §11 said `board.vl`'s wall was the host type `Hash`. The census
+on the EXIT program showed five gaps (`Hash`, `CanonicalHash`, `__guarded`, `__with_finally`, `queueMicrotask`)
+and behind them six move/copy defects plus the await turn-model difference; and `lazy` (12) was the largest
+class, not `Hash`. RULE: run `VILAN_NATIVE_HOST_CENSUS=1` on the exit program before an item claims a single
+wall. And the census itself UNDER-REPORTED: a refused call's arguments were never walked, so `createServer`
+hid nine bindings behind it (the fix is F29).
+
+**What native-a built, each general.** `vilan_rt::Hash` over the four JS primitive kinds; a `Json` trait
+(`JSON.stringify` + `canonical_hash`) emitted beside every `impl Js`; `Js` for `Map`/`Set`; `__guarded`,
+`__with_finally`, `queueMicrotask` wired; a sync `main` ends with the event loop. Behind `Hash`, NINE defects —
+including a LIVE NATIVE MISCOMPILE (a boxed binding pushed through a COPY of its value: board printed `0 0`
+for `2 2`), `Shared::write()` as a place wiping the cell, the `Map`/`Set`/`SignalCell` NAME shortcuts claiming
+vilan structs of the same name (now gated on `external`), `move` closures taking captures the frame still
+needed. `vilan_rt::Lazy<T>` is lazy.md §5's four-state cell (cycle trap, poison-and-re-panic, the thunk dropped
+on success); M81's eager set is excluded. The four lowering classes native-b's Order 38 note named were FIXED,
+not refused (the async closure TYPE via `expects_async`; `PartialEq` asked REACHABLE with `ReferenceEq` through
+`Option`/`Vec`; the enum-payload guard; the loaned-field move follows a place spine). Overloaded operators via
+`binary_op_dispatch`; a backed enum IS its backing value on both backends; `List::sort_by` stable both sides.
+
+**Turn-model finding (recorded, not changed).** JS `await` always costs a microtask hop; Rust's does not. Every
+emitted `await` therefore runs "one hop early" natively relative to node, and a program whose output depends on
+that interleaving differs. None of the 119 does; the executor's J6 ordering pins hold. If one ever does, the
+emitter inserts a `YieldOnce` at each `await` — the primitive exists in `executor.rs` — and pays node's price.
+
+**What native-b built.** F23: `context.rs` records the hidden parameter's flavour where it mints it
+(`Program::context_optional_hidden_parameters`; `Plan::param_nodes` carries `holds_bare`); `compute_context_flavours`
+and two helpers deleted (98 lines); mint order unchanged, corpus byte-identical. F24: `TaskId {index, generation}`,
+a free list at reap, the generation bumped as the slot is freed (200 rounds bounded; two stale-handle pins red
+without the check). F25: `main` inside `vilan_rt::main_guard` — exit 1 with the message alone on stderr (was 101
+plus Rust's panic banner), sync and `async fun main`; printing a host handle or a function-holding value is a
+COMPILE-TIME refusal, the runtime panic kept as the nested-case backstop. `run_pending()` is emitted INSIDE the
+guard, deliberately: a microtask panicking after the body returns is the program failing and owes the exit code.
+
+**`vilan-rt::http` — R1's design AS BUILT** (dependency-free, `forbid(unsafe_code)` intact, ~1,050 lines,
+15 pins). `std::net` offers `set_nonblocking` and nothing else, so the executor gained `trait IoSource { poll,
+is_live }`, `register_io`, and `advance_macrotasks()`: with NO source registered it IS `advance_timers` (one
+early return — every J6 ordering rule unchanged for a program that does no I/O); with one, poll the sources (a
+`true` is a macrotask), else fire the earliest DUE timer, else sleep `min(1 ms, next deadline)`. THE PRICE,
+written at the trait: an idle server wakes ~1,000×/s and a request waits ≤ 1 ms longer than under readiness
+notification (`IO_POLL_INTERVAL = 1 ms`, kept — Q2). HTTP/1.1: request line, lowercased fields (repeats joined),
+`Content-Length` bodies, `Connection: close`; four wire refusals 431 / 400 / 411 (any `Transfer-Encoding`) / 413;
+streaming responses; the UPGRADE handover (socket + head reach the handler). Nothing computes an RFC 6455
+accept key — WebSocket is Order 40's, and `UpgradeHandler` is synchronous because `std::http` declares it so
+(A40's suspending upgrade handler is F22's adapted-instance shape).
+
+**The four defects only a RUNNING server reaches** (42985e3d): `impl Json` for the http host types (the five
+handles answer `{}` as the executor's four do; `Bytes` a real rendering, because a typed array stringifies as an
+OBJECT — its indices are own enumerable properties); the request handle retained at the body read
+(`node:stream/consumers`' `buffer` consumes it and `Server::start` builds `Request { node = … }` from the same
+handle — `place_argument` + `.clone()`); **`run_pending` asked only the deadline list** — a sync `main` that
+bound a server left an I/O SOURCE, not a timer, so the loop saw nothing to do and the process exited with the
+listener open, announcing its port and then refusing every connection (this is the plant that proves the exit
+pin non-vacuous); a tuple parameter's destructured binders were not in `closure.parameters`, so native-a's
+capture scan read `|(value, factor)| ..`'s binders as captures and cloned them before they existed
+(`closure_parameter_bindings` seeds both scans; `destructuring.vl` caught it twice).
+
+**The emitter reaches `std::http`**: 23 of the 25 raw `node:http` bindings are native; the two left (`headers`,
+`remoteAddress`) answer a `JsonValue`, and `Server::builder()` also reaches `serve_build`'s conditional-GET arm,
+which needs `std::json` natively — Order 40's first slice, and what makes the builder form work.
+
+**Not native from the census, by name (Order 40's list):** the `Number`/`String`/`Boolean` coercions,
+`now_millis`, `queue_microtask` (native-b's brief; HTTP took the slice), `with_finally`, `random_bytes`, the
+`Bytes`/codec set, the six `__db_*` (R1: a separate crate), the seven fs bindings.
+
+**Open from this order:** F18 slice 2 (json → db → rpc server → kolt's server leg), F21, F22, F26, F29 (the
+census walks refused arguments), F30 (a module-level `mut` aggregate mutated in place is a COPY natively — the
+boxed-binding class at module scope, latent), F31 (a native liveness pass — `clone_sites`' last-use elision
+does not transfer; four conservative copies in `board.vl`), F32 (`BigInt`), N106's two halves, and native-b's
+new find: a destructure of a FIELD read is not copied (`copy_a_consumed_place_read` covers `Local`/`Parameter`
+only; nothing in the 119 reaches it — widening wants a corpus census since the helper is on the call-argument
+path too).
