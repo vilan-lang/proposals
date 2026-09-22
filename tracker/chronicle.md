@@ -2681,3 +2681,8 @@ sweep: 38 closed, 28 filed (A125, B373–B385, E215–E217, F29–F32, M85, N113
 Papers as built: transport-rpc §9.7 (A120), native-apps §12, diagnostics-standard C3 (N112), the A122/A123/A124
 reads on their items. Order 40's queue is in `sweeps/order39/go-items39.json`; the v0.41.0 cut stays HELD
 behind one release note for four breaking entries.
+
+## Order 40 — GO 2026-09-22 (cycle 58) off vilan next @49de3915
+
+The owner ruled everything the seal left open in one sitting — A124 R1–R5 after rewriting the item from a read-tracked `computed` into the push-pull pipeline their `reactive2.vl` sketch describes (cold nodes, `get` pulls, no-payload notify, `.cell()` where sharing is wanted, a `Resource` family outside the trait, `dyn Source<T>` at fields with the bare-trait field refused), A125 yes, I5's wire width kept, F32 the `i128` limit, E215 R1–R3, B362 thunk, A120 Q1–Q5 and A121 Q1–Q6 as their papers recommend, N119 wanted — and said "Go with all recs" to briefs40's three GO questions (dyn this order; the cut holds; B382 a recommendation). Twelve Opus lanes: hygiene, solver (B377 first; B378/B379 unblock A112 S3), reactive (A123 + the A124 paper and its S1 probe), collections (A125, A112 S3/S2), dyn (the one language feature), native-a (F18 slice 2: json, the SQLite crate, the rpc server, kolt's server leg), native-b (F30/F29/F31/F21/F22/F26), std (B374/B375 then A120 S1–S5), ui (A121), editor (F27/E213/E214/E216), fmt (E215/E217, last), papers (I5, B382). Ledger next id 550; 124 open.
+
