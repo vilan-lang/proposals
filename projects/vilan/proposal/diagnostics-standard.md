@@ -88,6 +88,24 @@ boundary sketch, and this week's diagnostics (the B13 origin-naming, the
   preceded it in the noted file. Pinned in
   `vilan-cli/tests/diagnostics.rs` (`e76_*`).
 
+  **N112 (2026-09-21, lane hygiene-39; ruled as recommended)** — "one, not
+  a list" is now a RULE with its test: **a second fact that is not a second
+  LOCATION for THIS error is its own diagnostic, not another line under this
+  one.** The first place a second footnote looked wanted was B355's broad
+  gate — with diagnostics already standing, the context pass pushes nothing
+  and reports one WARNING counting the checks that did not run. Attaching
+  that count to the primary error would be a footnote about a *different
+  subject* (the error is one wrong expression; the deferral is a statement
+  about a pass), hung off whichever diagnostic happened to be last — not a
+  relation a reader can read. So B355's warning STAYS a warning,
+  `Error.note` stays one note, and `footnotes: Vec<Note>` is not built: the
+  field is one line, and every consumer (terminal renderer, HMR overlay,
+  LSP related-information, playground) would gain a list to order and to
+  truncate while the terseness rule stopped being enforced by the type. The
+  one shape that genuinely IS a chain has its own field — C3a's `trace`,
+  deliberately not this one. Written at `error::Note`'s doc and at B355's
+  gate in `context.rs` (vilan 839f50e4).
+
 - **C3a — The requirement trace (E78; ruled in 2026-08-22).** Beside the C3 note,
   `Error` carries `trace: Vec<TraceHop>` — one `Note` per uncovered
   user-written call between the diagnostic's anchor and the offending site,
