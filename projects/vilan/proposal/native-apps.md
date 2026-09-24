@@ -828,14 +828,16 @@ window and no sleep.
 
 **THE TABLE** (whole set, `VILAN_NATIVE_DIFFERENTIAL=1`):
 
-| | Order 38 seal | after native-a-39 | after native-b-39 | after native-a-40 |
-|---|---|---|---|---|
-| enumerated | 117 | 117 | 119 | **119** |
-| byte-identical | 49 | 67 | 69 | **82** |
-| refused by name | 68 | 50 | 50 | **37** |
-| differing stdout | 0 | 0 | 0 | **0** |
-| rustc-refused | 0 | 0 | 0 | **0** |
-| broken | 0 | 0 | 0 | **0** |
+| | Order 38 seal | after native-a-39 | after native-b-39 | after native-a-40 | | Order 40 seal | after native-41 (Order 41) |
+|---|---|---|---|---|---|---|
+| enumerated | 117 | 117 | 119 | **119** | | 121 | **122** |
+| byte-identical | 49 | 67 | 69 | **82** | | 83 | **89** |
+| refused by name | 68 | 50 | 50 | **37** | | 38 | **33** |
+| differing stdout | 0 | 0 | 0 | **0** | | 0 | **0** |
+| rustc-refused | 0 | 0 | 0 | **0** | | 0 | **0** |
+| broken | 0 | 0 | 0 | **0** | | 0 | **0** |
+
+> **After native-41 (Order 41, 2026-09-24).** 122 / 89 / 33 / 0 / 0 / 0: the rpc server and kolt's server-leg shape are native and byte-identical with node over the wire (`kolt_shape_server.vl`: register, login, wrong password, 400, deep link, `/client.js` with its ETag, a keyed subscription `who:ada`/`m2:ada:*` and never `m1`, a bogus token → `err:Unauthorized`; the contract hash `43077e29` on both backends); kolt's own `server.vl` censuses 4 gaps (PBKDF2 + its `toString`, `random_bytes`, one generic `map`) down from 69; still not native by name: SHA-384/512, PBKDF2, `random_bytes` (the runtime has no OS randomness without `unsafe` — a decision), the fs options-object calls, the browser platform, `resource`. `bytes-aliasing.vl` added; `delta-law`, `reactive`, `reactive-on-change`, `reactive-flatten`, `iterator-adapters` flipped to identical. Async set 7 / 4 / 3 / 0.
 
 **Order 40, native-a-40 (the fourth column; F18 slice 2 + F32, 2026-09-22).** Commits 735a0813 (`std::json`:
 `vilan_rt::json`, a hand-written ECMA-404 reader, depth-bounded at 512, with `Undefined` as a seventh arm),
