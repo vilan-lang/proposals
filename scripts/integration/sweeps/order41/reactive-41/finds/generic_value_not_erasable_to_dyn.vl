@@ -1,0 +1,16 @@
+// Inside a generic body, a value whose type is a parameter bounded on the trait
+// cannot be erased to `dyn Trait`: "Expected dyn Source<X>, but got S instead."
+// The bound guarantees the impl, and the table is known at every instantiation.
+import std::reactive::{ Signal, SignalCell, Source };
+
+impl type S: Source<type X> {
+	fun erased(self): dyn Source<X> {
+		let object: dyn Source<X> = self;
+		object
+	}
+}
+
+fun main() {
+	let a = Signal::new(1);
+	print(a.erased().get());
+}

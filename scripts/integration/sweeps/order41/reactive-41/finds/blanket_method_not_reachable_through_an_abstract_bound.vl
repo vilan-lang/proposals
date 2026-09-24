@@ -1,0 +1,13 @@
+// A blanket impl's method is not reachable on a receiver whose type is a type
+// parameter bounded on the blanket's trait: "S has no method 'twice'". The same
+// call on a concrete receiver works. std: `fun f<S: Source<i32>>(s: S) { s.cell() }`
+// is refused the same way, and a blanket `map` (A124 S2c) would be too.
+trait Src<T> { fun get(self): T; }
+struct Root { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+impl type S: Src<type T> { fun twice(self): (T, T) { (self.get(), self.get()) } }
+fun through<S: Src<i32>>(s: S): i32 {
+	let (a, b) = s.twice();
+	a + b
+}
+fun main() { print(through(Root { v = 2 })); }

@@ -1,0 +1,28 @@
+// A mapped-tuple position over `dyn Trait<U>` does not coerce its elements: the
+// raw values are passed where `[value, table]` pairs are expected, and the program
+// crashes at run time (`source[1].get is not a function`) instead of either
+// coercing or being refused. A concrete tuple of `dyn` (a parameter or an
+// annotated binding) DOES coerce.
+import std::reactive::{ Signal, SignalCell, Source };
+
+struct Both<T: (2..)> {
+	sources: (U in T: dyn Source<U>),
+}
+
+impl Both<type T> {
+	fun read(self): T {
+		(source in self.sources => source.get())
+	}
+}
+
+fun make<T: (2..)>(sources: (U in T: dyn Source<U>)): Both<T> {
+	Both<T> { sources }
+}
+
+fun main() {
+	let a = Signal::new(1);
+	let b = Signal::new("x");
+	let both = make((a, b));
+	let (n, s) = both.read();
+	print(i"{n} {s}");
+}

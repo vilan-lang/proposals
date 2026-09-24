@@ -1,0 +1,3787 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 48d8f98..559fa51 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -25,6 +25,9 @@ written down.
+ 
+ ## Unreleased
+ 
++<!-- family: breaking -->
++**BREAKING: `map`, `switch`, `flatten` and `and_then` return cold pipeline nodes instead of a `SignalCell` — a derivation is a description that computes when read, and `.cell()` is where a cached cell is wanted.** A124 S2c, riding v0.41.0 with I5 S2 (Q5). `map` leaves `Source`'s defaults for a blanket over `S: Source<T>` and returns a `Map` node; `switch` and the total `flatten` return a `Switch`; the `Option` `flatten` and `and_then` return the new `FlattenOption` and `AndThen` nodes. A node stores nothing and registers nothing until something reads or subscribes; each reader pays one evaluation per change, and two readers pay two — `.cell()` is the priced answer where a derivation is shared or read hot. Because the combinators are blankets, they reach through a `dyn Source<T>`: `object.map(f)` builds a node over the object (dyn-40's refusal pin is a pass). **What breaks:** an annotation, parameter, field or return type that names a combinator's result as `SignalCell<U>` — drop it, or add `.cell()` where the cell is what you meant (the estate census is in the Order 41 sweep); a derivation handed to a `Signal<T>` (writable) bound — `.cell()` it. `combine` still returns a `SignalCell` (its flip waits on a mapped-tuple `dyn` coercion defect). The mirror's own `map` (`RemoteSource`, `KeyedSource`) is gone — it could not stand beside a blanket `map` — and `or` returns a node: the lease is taken by whatever subscribes to it, owner-tied there. The `_node` spellings (`map_node`, `switch_node`) are removed. Tracker A124 S2c.
++
+ <!-- family: feature -->
+ **The reactive guide says where a derivation lives: a chain is cold, `.cell()` where it is shared or read hot, `dyn Source<T>` where it is stored.** A124's guide deliverable, written for the names S2b shipped. The derived-state section gains "Where a derivation lives", with the three rules and one compiled example — a `.cell()` under a value two readers share, and a `List` of structs whose `dyn Source<str>` field holds a root cell in one element and a derivation in the other — and it is plain about this release: `map` and its siblings still hand back a `SignalCell`, v0.41.0 makes them cold nodes, and `.cell()`/`dyn Source<T>` written now are right on both sides of that change. `.distinct()` is named there as the node that compares, since `.cell()` does not. Tracker A124.
+ 
+diff --git a/crates/vilan-cli/tests/copy-elision-census.tsv b/crates/vilan-cli/tests/copy-elision-census.tsv
+index 79447dc..ef2fccc 100644
+--- a/crates/vilan-cli/tests/copy-elision-census.tsv
++++ b/crates/vilan-cli/tests/copy-elision-census.tsv
+@@ -1,7 +1,7 @@
+ # Emitted `__clone` call sites per corpus golden — the copy-elision
+ # census (lifetimes.md §11, slice S2). Regenerate with
+ # VILAN_REGENERATE_COPY_ELISION_CENSUS=1 cargo test -p vilan-cli --test copy_elision_census
+-# total	405
++# total	400
+ adapt	0
+ arena	6
+ asset_bundle	0
+@@ -93,10 +93,10 @@ preflight	1
+ prelude	1
+ process-env	2
+ range	0
+-reactive	12
+-reactive-flatten	13
++reactive	11
++reactive-flatten	10
+ reactive-keyed	1
+-reactive-on-change	12
++reactive-on-change	11
+ reactive-owner	10
+ reactive-selector	14
+ reactive-turns	6
+diff --git a/crates/vilan-cli/tests/reactive_lifetimes.rs b/crates/vilan-cli/tests/reactive_lifetimes.rs
+index 9f1f13f..69b826c 100644
+--- a/crates/vilan-cli/tests/reactive_lifetimes.rs
++++ b/crates/vilan-cli/tests/reactive_lifetimes.rs
+@@ -227,7 +227,7 @@ import std::rpc::{ ReactiveClient, ReactiveServer, RemoteSource, duplex_pair };
+ import std::ui::{ View, each, mount_root, view };
+ 
+ let path: SignalCell<str> = Signal::new("/");
+-let route: SignalCell<str> = path.map(|value| "route" + value);
++let route: SignalCell<str> = path.map(|value| "route" + value).cell();
+ 
+ fun row(item: str): View {
+ 	view("li").text(item)
+@@ -619,7 +619,7 @@ import std::reactive::{ Disposable, Owner, Signal, SignalCell, Source, owner_sco
+ 
+ fun main() {
+ 	let route: SignalCell<i32> = Signal::new(0);
+-	let shell: SignalCell<i32> = route.map(|value| value / 10);
++	let shell: SignalCell<i32> = route.map(|value| value / 10).cell();
+ 	let boundary = Owner::new();
+ 	let fired: SignalCell<i32> = Signal::new(0);
+ 
+@@ -719,7 +719,7 @@ fun main() {
+ 	// it from inside that wave. The outer is created FIRST, so ascending
+ 	// subscriber id runs it first (A110 door 2).
+ 	let path: SignalCell<i32> = Signal::new(0);
+-	let gate: SignalCell<i32> = path.map(|value| value / 10);
++	let gate: SignalCell<i32> = path.map(|value| value / 10).cell();
+ 	let later_boundary = Owner::new();
+ 	let later_fired: SignalCell<i32> = Signal::new(0);
+ 	let _later_outer = path.on_change(|_value: i32| {
+@@ -848,7 +848,7 @@ fun main() {
+ 	// `turn_scope` IS established and the scrub always worked.
+ 	let second_turn = Turn::new();
+ 	let second_trigger: SignalCell<i32> = Signal::new(0);
+-	let second_derived: SignalCell<i32> = second_trigger.map(|value| value * 10);
++	let second_derived: SignalCell<i32> = second_trigger.map(|value| value * 10).cell();
+ 	let second_boundary = Owner::new();
+ 	let second_fired: Shared<i32> = Shared::new(0);
+ 	owner_scope.run(second_boundary, || {
+@@ -944,7 +944,7 @@ import std::reactive::{
+ fun main() {
+ 	// --- order: the outer runs first, and both run.
+ 	let source: SignalCell<i32> = Signal::new(0);
+-	let coarse: SignalCell<i32> = source.map(|value| value / 10);
++	let coarse: SignalCell<i32> = source.map(|value| value / 10).cell();
+ 	let host = Owner::new();
+ 	mut wired = false;
+ 	run_with_owner(host, || {
+@@ -965,7 +965,7 @@ fun main() {
+ 	// --- nested: the outer's run replaces the instantiation the inner belongs
+ 	// to, so the inner never runs at all.
+ 	let route: SignalCell<i32> = Signal::new(0);
+-	let shell: SignalCell<i32> = route.map(|value| value / 10);
++	let shell: SignalCell<i32> = route.map(|value| value / 10).cell();
+ 	let boundary = Owner::new();
+ 	let built: SignalCell<i32> = Signal::new(0);
+ 	let torn: SignalCell<i32> = Signal::new(0);
+@@ -1052,8 +1052,8 @@ import std::reactive::{
+ 
+ fun main() {
+ 	let root: SignalCell<i32> = Signal::new(1);
+-	let once: SignalCell<i32> = root.map(|value| value * 2);
+-	let twice: SignalCell<i32> = once.map(|value| value + 1);
++	let once: SignalCell<i32> = root.map(|value| value * 2).cell();
++	let twice: SignalCell<i32> = once.map(|value| value + 1).cell();
+ 	let seen: SignalCell<str> = Signal::new("");
+ 	let watcher = Owner::new();
+ 	run_with_owner(watcher, || {
+@@ -1108,7 +1108,7 @@ import std::reactive::{
+ 
+ fun main() {
+ 	let root: SignalCell<i32> = Signal::new(1);
+-	let twice = root.map_node(|value| value * 2).map_node(|value| value + 1);
++	let twice = root.map(|value| value * 2).map(|value| value + 1);
+ 	let arms: (dyn Source<i32>, dyn Source<i32>) = (root, twice);
+ 	let pair = combine_node(arms);
+ 	let seen: SignalCell<str> = Signal::new("");
+diff --git a/crates/vilan-cli/tests/router.rs b/crates/vilan-cli/tests/router.rs
+index 9dffd31..f1405ff 100644
+--- a/crates/vilan-cli/tests/router.rs
++++ b/crates/vilan-cli/tests/router.rs
+@@ -145,7 +145,7 @@ fun app(route: SignalCell<Route>): View {
+ }
+ 
+ fun main() {
+-	let route = current_path().map(parse);
++	let route = current_path().map(parse).cell();
+ 	let _root = mount_root("app", || app(route));
+ }
+ "#;
+diff --git a/crates/vilan-cli/tests/shared_census.rs b/crates/vilan-cli/tests/shared_census.rs
+index fb074e2..0da1e09 100644
+--- a/crates/vilan-cli/tests/shared_census.rs
++++ b/crates/vilan-cli/tests/shared_census.rs
+@@ -83,7 +83,7 @@ const CENSUS: &[(&str, usize, &str)] = &[
+     ),
+     (
+         "reactive.vl",
+-        39,
++        37,
+         "R + O + E: turns, owners, cells, drafts, the subscriber liveness flag \
+          (A110 door 1 — one per OBSERVER, minted by `subscriber_of` and \
+          shared with every handle to it, since A124 S2a split `observe` into \
+@@ -102,7 +102,10 @@ const CENSUS: &[(&str, usize, &str)] = &[
+          nodes; `Distinct`'s last-passed value, one per attach; a \
+          `Resource`'s latest settled value and its load generation, the \
+          `Draft` shape). `.cell()` adds NONE: its state is a `SignalCell`, \
+-         whose two cells are `SignalCell::new`'s",
++         whose two cells are `SignalCell::new`'s. −2 at A124 S2c: the four \
++         cell-returning joins (`switch`, both `flatten`s, `and_then`) each held \
++         a rolling inner subscription; the total `flatten` is a `Switch` now and \
++         the other two are the `FlattenOption`/`AndThen` nodes, one each",
+     ),
+     (
+         "rpc.vl",
+@@ -225,7 +228,7 @@ fn the_shared_census_matches_the_committed_table() {
+ 
+     let total: usize = measured.iter().map(|(_, count)| count).sum();
+     assert_eq!(
+-        total, 143,
++        total, 141,
+         "the total number of `Shared` construction sites in std changed"
+     );
+ 
+diff --git a/crates/vilan-cli/tests/split/golden/app.Route_Docs.js b/crates/vilan-cli/tests/split/golden/app.Route_Docs.js
+index e0d5714..554ce59 100644
+--- a/crates/vilan-cli/tests/split/golden/app.Route_Docs.js
++++ b/crates/vilan-cli/tests/split/golden/app.Route_Docs.js
+@@ -1,13 +1,13 @@
+ const __vilan_chunks = globalThis.__vilan_chunks;
+-const $ag = __vilan_chunks.fn.$ag;
+-const $au = __vilan_chunks.fn.$au;
++const $aG = __vilan_chunks.fn.$aG;
++const $as = __vilan_chunks.fn.$as;
+ const panel = __vilan_chunks.fn.panel;
+ const view = __vilan_chunks.fn.view;
+-function docs_page(page, $bg, $bh) {
+-	return $au($au(view("article"), panel("Docs", "page " + page, $bg, $bh), $bg, $bh), docs_nav(page, $bg, $bh), $bg, $bh);
++function docs_page(page, $bJ, $bK) {
++	return $aG($aG(view("article"), panel("Docs", "page " + page, $bJ, $bK), $bJ, $bK), docs_nav(page, $bJ, $bK), $bJ, $bK);
+ }
+-function docs_nav(page, $bi, $bj) {
+-	return $au(view("nav"), $ag("Next", [ 1, page + 1 ], $bi, $bj), $bi, $bj);
++function docs_nav(page, $bL, $bM) {
++	return $aG(view("nav"), $as("Next", [ 1, page + 1 ], $bL, $bM), $bL, $bM);
+ }
+ __vilan_chunks.fn.docs_nav = docs_nav;
+ __vilan_chunks.fn.docs_page = docs_page;
+diff --git a/crates/vilan-cli/tests/split/golden/app.Route_Home.js b/crates/vilan-cli/tests/split/golden/app.Route_Home.js
+index 66f49ff..841d494 100644
+--- a/crates/vilan-cli/tests/split/golden/app.Route_Home.js
++++ b/crates/vilan-cli/tests/split/golden/app.Route_Home.js
+@@ -1,7 +1,7 @@
+ const __vilan_chunks = globalThis.__vilan_chunks;
+ const LABEL = __vilan_chunks.fn.LABEL;
+ const panel = __vilan_chunks.fn.panel;
+-function home_page($bc, $bd) {
+-	return panel("Home", LABEL, $bc, $bd);
++function home_page($bF, $bG) {
++	return panel("Home", LABEL, $bF, $bG);
+ }
+ __vilan_chunks.fn.home_page = home_page;
+diff --git a/crates/vilan-cli/tests/split/golden/app.Route_NotFound.js b/crates/vilan-cli/tests/split/golden/app.Route_NotFound.js
+index 87f19fa..7443d7d 100644
+--- a/crates/vilan-cli/tests/split/golden/app.Route_NotFound.js
++++ b/crates/vilan-cli/tests/split/golden/app.Route_NotFound.js
+@@ -1,6 +1,6 @@
+ const __vilan_chunks = globalThis.__vilan_chunks;
+ const panel = __vilan_chunks.fn.panel;
+-function not_found_page($bk, $bl) {
+-	return panel("Nothing here", "try /docs/1", $bk, $bl);
++function not_found_page($bN, $bO) {
++	return panel("Nothing here", "try /docs/1", $bN, $bO);
+ }
+ __vilan_chunks.fn.not_found_page = not_found_page;
+diff --git a/crates/vilan-cli/tests/split/golden/app.js b/crates/vilan-cli/tests/split/golden/app.js
+index 25b9966..70114a7 100644
+--- a/crates/vilan-cli/tests/split/golden/app.js
++++ b/crates/vilan-cli/tests/split/golden/app.js
+@@ -104,14 +104,14 @@ function __with_finally(body, after) {
+ 	}
+ }
+ const __vilan_chunks = __chunk_registry();
+-function home_page($bc, $bd) {
+-	return __vilan_chunks.fn.home_page($bc, $bd);
++function home_page($bF, $bG) {
++	return __vilan_chunks.fn.home_page($bF, $bG);
+ }
+-function docs_page(page, $bg, $bh) {
+-	return __vilan_chunks.fn.docs_page(page, $bg, $bh);
++function docs_page(page, $bJ, $bK) {
++	return __vilan_chunks.fn.docs_page(page, $bJ, $bK);
+ }
+-function not_found_page($bk, $bl) {
+-	return __vilan_chunks.fn.not_found_page($bk, $bl);
++function not_found_page($bN, $bO) {
++	return __vilan_chunks.fn.not_found_page($bN, $bO);
+ }
+ function hash(self) {
+ 	return __hash(self);
+@@ -203,27 +203,67 @@ function drain(turn) {
+ 		});
+ 	}
+ }
++function defer_subscriber(turn, subscriber) {
++	const $M = turn;
++	let $N = null;
++	if ($M[0] === 0) {
++		const ambient = $M[1];
++		$N = enqueue(ambient, [ reissued(subscriber) ]);
++	} else {
++		const $O = $n(draining_turns.v);
++		let $P = null;
++		if ($O[0] === 0) {
++			const draining = $O[1];
++			$P = enqueue(draining, [ reissued(subscriber) ]);
++		} else {
++			if (subscriber[2].v) {
++				subscriber[1]();
++			}
++			$P = undefined;
++		}
++		$N = $P;
++	}
++	return $N;
++}
+ function reissued(subscriber) {
+ 	return [ subscriber[0], subscriber[1], subscriber[2], subscriber[3] ];
+ }
+-function dispose(self, $R) {
+-	const $S = $R;
+-	let $T = null;
+-	if ($S[0] === 0) {
+-		const established = $S[1];
+-		$T = [ 0, established ];
++function wake(subscriber) {
++	defer_subscriber([ 1 ], subscriber);
++}
++function also_retiring(handle, subscriber) {
++	const previous = handle[3].v;
++	handle[3].v = [ 0, () => {
++		subscriber[2].v = false;
++		const $V = previous;
++		let $W = null;
++		if ($V[0] === 0) {
++			const release = $V[1];
++			$W = release();
++		} else {
++			$W = undefined;
++		}
++		return $W;
++	} ];
++}
++function dispose(self, $ad) {
++	const $ae = $ad;
++	let $af = null;
++	if ($ae[0] === 0) {
++		const established = $ae[1];
++		$af = [ 0, established ];
+ 	} else {
+-		$T = $n(draining_turns.v);
++		$af = $n(draining_turns.v);
+ 	}
+-	const ambient = $T;
++	const ambient = $af;
+ 	release_under(self, ambient);
+ }
+ function release_under(handle, ambient) {
+ 	handle[2].v = false;
+-	const $U = [ 0, handle[0] ];
+-	let $V = null;
+-	if ($U[0] === 0) {
+-		const subscribers = $U[1];
++	const $ag = [ 0, handle[0] ];
++	let $ah = null;
++	if ($ag[0] === 0) {
++		const subscribers = $ag[1];
+ 		let kept = [  ];
+ 		for (const subscriber of subscribers.v) {
+ 			if (subscriber[0] !== handle[1]) {
+@@ -231,15 +271,15 @@ function release_under(handle, ambient) {
+ 			}
+ 		}
+ 		subscribers.v = kept;
+-		$V = undefined;
++		$ah = undefined;
+ 	} else {
+-		$V = undefined;
++		$ah = undefined;
+ 	}
+-	$V;
+-	const $W = ambient;
+-	let $X = null;
+-	if ($W[0] === 0) {
+-		const turn = $W[1];
++	$ah;
++	const $ai = ambient;
++	let $aj = null;
++	if ($ai[0] === 0) {
++		const turn = $ai[1];
+ 		let kept_pending = [  ];
+ 		for (const subscriber2 of turn[0].v) {
+ 			if (subscriber2[0] !== handle[1]) {
+@@ -256,26 +296,26 @@ function release_under(handle, ambient) {
+ 		}
+ 		turn[1].v = kept_derived;
+ 		turn[3].v.delete(hash(handle[1]));
+-		$X = undefined;
++		$aj = undefined;
+ 	} else {
+-		$X = undefined;
++		$aj = undefined;
+ 	}
+-	$X;
+-	const $Y = handle[3].v;
+-	let $Z = null;
+-	if ($Y[0] === 0) {
+-		const release = $Y[1];
++	$aj;
++	const $ak = handle[3].v;
++	let $al = null;
++	if ($ak[0] === 0) {
++		const release = $ak[1];
+ 		handle[3].v = [ 1 ];
+ 		releasing_turns.v.push(ambient);
+ 		__with_finally(release, () => {
+ 			__list_pop(releasing_turns.v);
+ 			return;
+ 		});
+-		$Z = undefined;
++		$al = undefined;
+ 	} else {
+-		$Z = undefined;
++		$al = undefined;
+ 	}
+-	return $Z;
++	return $al;
+ }
+ function new3() {
+ 	return [ __shared_new([  ]), __shared_new(false) ];
+@@ -288,52 +328,52 @@ function defer(self, cleanup) {
+ 	}
+ }
+ function dispose2(self) {
+-	let $cq = null;
++	let $cM = null;
+ 	if (!(self[1].v)) {
+ 		self[1].v = true;
+ 		let failure = [ 1 ];
+ 		for (const cleanup of self[0].v) {
+-			const $ck = __guarded(cleanup);
+-			let $cl = null;
+-			if ($ck[0] === 0) {
+-				const message = $ck[1];
+-				if ($cm(failure)) {
++			const $cG = __guarded(cleanup);
++			let $cH = null;
++			if ($cG[0] === 0) {
++				const message = $cG[1];
++				if ($cI(failure)) {
+ 					failure = [ 0, message ];
+ 				}
+-				$cl = undefined;
++				$cH = undefined;
+ 			} else {
+-				$cl = undefined;
++				$cH = undefined;
+ 			}
+-			$cl;
++			$cH;
+ 		}
+ 		self[0].v = [  ];
+-		const $co = failure;
+-		let $cp = null;
+-		if ($co[0] === 0) {
+-			const message2 = $co[1];
+-			$cp = (() => {
++		const $cK = failure;
++		let $cL = null;
++		if ($cK[0] === 0) {
++			const message2 = $cK[1];
++			$cL = (() => {
+ 				throw message2;
+ 			})();
+ 		} else {
+-			$cp = undefined;
++			$cL = undefined;
+ 		}
+-		$cq = $cp;
++		$cM = $cL;
+ 	}
+-	return $cq;
++	return $cM;
+ }
+-function get_owner($aO) {
+-	return $aO;
++function get_owner($aU) {
++	return $aU;
+ }
+-function register_with_owner(subscription, $L, $M) {
+-	const $N = $M;
+-	let $O = null;
+-	if ($N[0] === 0) {
+-		const owner = $N[1];
+-		$O = $P(owner, subscription, $L);
++function register_with_owner(subscription, $X, $Y) {
++	const $Z = $Y;
++	let $aa = null;
++	if ($Z[0] === 0) {
++		const owner = $Z[1];
++		$aa = $ab(owner, subscription, $X);
+ 	} else {
+-		$O = __clone(subscription);
++		$aa = __clone(subscription);
+ 	}
+-	return $O;
++	return $aa;
+ }
+ function ensure_wired($e) {
+ 	if (!(wired.v)) {
+@@ -351,10 +391,10 @@ function current_path($d) {
+ 	ensure_wired($d);
+ 	return path_signal;
+ }
+-function navigate(path, $as) {
+-	ensure_wired($as);
++function navigate(path, $aE) {
++	ensure_wired($aE);
+ 	history.pushState("", "", path);
+-	$f(path_signal, path, $as);
++	$f(path_signal, path, $aE);
+ }
+ function segments(path) {
+ 	let parts = [  ];
+@@ -376,87 +416,87 @@ function chunk_error() {
+ 	return chunk_failure();
+ }
+ function view(tag) {
+-	let $af = null;
++	let $ar = null;
+ 	if (is_svg_tag(tag)) {
+-		$af = [ document.createElementNS("http://www.w3.org/2000/svg", tag) ];
++		$ar = [ document.createElementNS("http://www.w3.org/2000/svg", tag) ];
+ 	} else {
+-		$af = [ document.createElement(tag) ];
++		$ar = [ document.createElement(tag) ];
+ 	}
+-	return $af;
++	return $ar;
+ }
+ function is_svg_tag(tag) {
+-	const $ad = tag;
+-	let $ae = null;
+-	if ($ad === "svg") {
+-		$ae = true;
+-	} else if ($ad === "path") {
+-		$ae = true;
+-	} else if ($ad === "circle") {
+-		$ae = true;
+-	} else if ($ad === "ellipse") {
+-		$ae = true;
+-	} else if ($ad === "rect") {
+-		$ae = true;
+-	} else if ($ad === "line") {
+-		$ae = true;
+-	} else if ($ad === "polyline") {
+-		$ae = true;
+-	} else if ($ad === "polygon") {
+-		$ae = true;
+-	} else if ($ad === "g") {
+-		$ae = true;
+-	} else if ($ad === "defs") {
+-		$ae = true;
+-	} else if ($ad === "use") {
+-		$ae = true;
+-	} else if ($ad === "symbol") {
+-		$ae = true;
+-	} else if ($ad === "marker") {
+-		$ae = true;
+-	} else if ($ad === "pattern") {
+-		$ae = true;
+-	} else if ($ad === "mask") {
+-		$ae = true;
+-	} else if ($ad === "clipPath") {
+-		$ae = true;
+-	} else if ($ad === "linearGradient") {
+-		$ae = true;
+-	} else if ($ad === "radialGradient") {
+-		$ae = true;
+-	} else if ($ad === "stop") {
+-		$ae = true;
+-	} else if ($ad === "text") {
+-		$ae = true;
+-	} else if ($ad === "tspan") {
+-		$ae = true;
+-	} else if ($ad === "textPath") {
+-		$ae = true;
+-	} else if ($ad === "filter") {
+-		$ae = true;
+-	} else if ($ad === "foreignObject") {
+-		$ae = true;
+-	} else if ($ad === "feGaussianBlur") {
+-		$ae = true;
+-	} else if ($ad === "feColorMatrix") {
+-		$ae = true;
+-	} else if ($ad === "feOffset") {
+-		$ae = true;
+-	} else if ($ad === "feMerge") {
+-		$ae = true;
+-	} else if ($ad === "feMergeNode") {
+-		$ae = true;
+-	} else if ($ad === "feFlood") {
+-		$ae = true;
+-	} else if ($ad === "feComposite") {
+-		$ae = true;
+-	} else if ($ad === "feBlend") {
+-		$ae = true;
+-	} else if ($ad === "feDropShadow") {
+-		$ae = true;
++	const $ap = tag;
++	let $aq = null;
++	if ($ap === "svg") {
++		$aq = true;
++	} else if ($ap === "path") {
++		$aq = true;
++	} else if ($ap === "circle") {
++		$aq = true;
++	} else if ($ap === "ellipse") {
++		$aq = true;
++	} else if ($ap === "rect") {
++		$aq = true;
++	} else if ($ap === "line") {
++		$aq = true;
++	} else if ($ap === "polyline") {
++		$aq = true;
++	} else if ($ap === "polygon") {
++		$aq = true;
++	} else if ($ap === "g") {
++		$aq = true;
++	} else if ($ap === "defs") {
++		$aq = true;
++	} else if ($ap === "use") {
++		$aq = true;
++	} else if ($ap === "symbol") {
++		$aq = true;
++	} else if ($ap === "marker") {
++		$aq = true;
++	} else if ($ap === "pattern") {
++		$aq = true;
++	} else if ($ap === "mask") {
++		$aq = true;
++	} else if ($ap === "clipPath") {
++		$aq = true;
++	} else if ($ap === "linearGradient") {
++		$aq = true;
++	} else if ($ap === "radialGradient") {
++		$aq = true;
++	} else if ($ap === "stop") {
++		$aq = true;
++	} else if ($ap === "text") {
++		$aq = true;
++	} else if ($ap === "tspan") {
++		$aq = true;
++	} else if ($ap === "textPath") {
++		$aq = true;
++	} else if ($ap === "filter") {
++		$aq = true;
++	} else if ($ap === "foreignObject") {
++		$aq = true;
++	} else if ($ap === "feGaussianBlur") {
++		$aq = true;
++	} else if ($ap === "feColorMatrix") {
++		$aq = true;
++	} else if ($ap === "feOffset") {
++		$aq = true;
++	} else if ($ap === "feMerge") {
++		$aq = true;
++	} else if ($ap === "feMergeNode") {
++		$aq = true;
++	} else if ($ap === "feFlood") {
++		$aq = true;
++	} else if ($ap === "feComposite") {
++		$aq = true;
++	} else if ($ap === "feBlend") {
++		$aq = true;
++	} else if ($ap === "feDropShadow") {
++		$aq = true;
+ 	} else {
+-		$ae = false;
++		$aq = false;
+ 	}
+-	return $ae;
++	return $aq;
+ }
+ function text(self, content) {
+ 	self[0].textContent = content;
+@@ -468,8 +508,8 @@ function class2(self, name) {
+ }
+ function on_event(self, event, handler) {
+ 	self[0].addEventListener(event, (dispatched) => {
+-		return $r([ 1 ], ($at) => {
+-			return handler(dispatched, $at);
++		return $r([ 1 ], ($aF) => {
++			return handler(dispatched, $aF);
+ 		});
+ 	});
+ 	return __clone(self);
+@@ -480,21 +520,21 @@ function chunk_pending() {
+ function chunk_failure() {
+ 	return chunk_error_signal;
+ }
+-function set_chunk_pending(busy, $bJ) {
+-	if ($y(chunk_pending_signal) !== busy) {
+-		$bs(chunk_pending_signal, busy, $bJ);
++function set_chunk_pending(busy, $cf) {
++	if ($B(chunk_pending_signal) !== busy) {
++		$bZ(chunk_pending_signal, busy, $cf);
+ 	}
+ }
+-function clear_chunk_error($bA) {
+-	const $bB = $y(chunk_error_signal);
+-	let $bC = null;
+-	if ($bB[0] === 0) {
+-		const _reason = $bB[1];
+-		$bC = $bs(chunk_error_signal, [ 1 ], $bA);
++function clear_chunk_error($bW) {
++	const $bX = $B(chunk_error_signal);
++	let $bY = null;
++	if ($bX[0] === 0) {
++		const _reason = $bX[1];
++		$bY = $bZ(chunk_error_signal, [ 1 ], $bW);
+ 	} else {
+-		$bC = undefined;
++		$bY = undefined;
+ 	}
+-	return $bC;
++	return $bY;
+ }
+ function open(parent) {
+ 	const anchor = document.createTextNode("");
+@@ -524,13 +564,13 @@ function close(self) {
+ 	const rows = __clone(self[2].v);
+ 	let at = 0;
+ 	for (const row of rows) {
+-		let $cr = null;
++		let $cN = null;
+ 		if (at + 1 < rows.length) {
+-			$cr = __at(rows, at + 1)[0];
++			$cN = __at(rows, at + 1)[0];
+ 		} else {
+-			$cr = self[0];
++			$cN = self[0];
+ 		}
+-		const end = $cr;
++		const end = $cN;
+ 		cut_row(self, row, end);
+ 		drop_row(self, row);
+ 		at = at + 1;
+@@ -559,11 +599,11 @@ function mount(id, view2) {
+ 	element.appendChild(view2[0]);
+ }
+ function mount_root(id, body) {
+-	const $cL = $r([ 1 ], ($cI) => {
+-		return $cJ(body);
++	const $dh = $r([ 1 ], ($de) => {
++		return $df(body);
+ 	});
+-	const built = $cL[0];
+-	const root = $cL[1];
++	const built = $dh[0];
++	const root = $dh[1];
+ 	mount(id, built);
+ 	if (__hmr_active()) {
+ 		const element = document.getElementById(id);
+@@ -601,17 +641,17 @@ function parse(path) {
+ 	return [ 2 ];
+ }
+ function href(route2) {
+-	const $am = route2;
+-	let $an = null;
+-	if ($am[0] === 0) {
+-		$an = "/";
+-	} else if ($am[0] === 1) {
+-		const page = $am[1];
+-		$an = "/docs/" + page;
++	const $ay = route2;
++	let $az = null;
++	if ($ay[0] === 0) {
++		$az = "/";
++	} else if ($ay[0] === 1) {
++		const page = $ay[1];
++		$az = "/docs/" + page;
+ 	} else {
+-		$an = "/404";
++		$az = "/404";
+ 	}
+-	return $an;
++	return $az;
+ }
+ function to_path(self) {
+ 	return href(self);
+@@ -620,64 +660,64 @@ function announce(name, value) {
+ 	console.log("init " + name + "=" + value);
+ 	return value;
+ }
+-function panel(title, body, $be, $bf) {
+-	return $au($au(view("section"), text(view("h2"), title), $be, $bf), text(view("p"), body), $be, $bf);
++function panel(title, body, $bH, $bI) {
++	return $aG($aG(view("section"), text(view("h2"), title), $bH, $bI), text(view("p"), body), $bH, $bI);
+ }
+-function app(route2, $ab, $ac) {
+-	$bm(route2);
+-	return $bZ($au($au($au(view("main"), $au($au(view("nav"), $ag("Home", [ 0 ], $ab, $ac), $ab, $ac), $ag("Docs", [ 1, 1 ], $ab, $ac), $ab, $ac), $ab, $ac), $aF(class2(view("p"), "pending"), $ay(pending(), (busy) => {
+-		let $ax = null;
++function app(route2, $an, $ao) {
++	$bP(route2);
++	return $cv($aG($aG($aG(view("main"), $aG($aG(view("nav"), $as("Home", [ 0 ], $an, $ao), $an, $ao), $as("Docs", [ 1, 1 ], $an, $ao), $an, $ao), $an, $ao), $aL(class2(view("p"), "pending"), $v(pending(), (busy) => {
++		let $aJ = null;
+ 		if (busy) {
+-			$ax = "...";
++			$aJ = "...";
+ 		} else {
+-			$ax = "";
++			$aJ = "";
+ 		}
+-		return $ax;
+-	}, $ab, [ 0, $ac ]), $ab, $ac), $ab, $ac), $aF(class2(view("p"), "failed"), $aS(chunk_error(), (reason) => {
+-		const $aP = reason;
+-		let $aQ = null;
+-		if ($aP[0] === 0) {
+-			const text2 = $aP[1];
+-			let $aR = null;
++		return $aJ;
++	}), $an, $ao), $an, $ao), $bm(class2(view("p"), "failed"), $v(chunk_error(), (reason) => {
++		const $bi = reason;
++		let $bj = null;
++		if ($bi[0] === 0) {
++			const text2 = $bi[1];
++			let $bk = null;
+ 			if (text2.length > 0) {
+-				$aR = "!";
++				$bk = "!";
+ 			} else {
+-				$aR = "?";
++				$bk = "?";
+ 			}
+-			$aQ = $aR;
++			$bj = $bk;
+ 		} else {
+-			$aQ = "";
++			$bj = "";
+ 		}
+-		return $aQ;
+-	}, $ab, [ 0, $ac ]), $ab, $ac), $ab, $ac), $bo(route2, (current, $aZ) => {
+-		const $ba = current;
+-		let $bb = null;
+-		if ($ba[0] === 0) {
+-			$bb = home_page($ab, $aZ);
+-		} else if ($ba[0] === 1) {
+-			const page = $ba[1];
+-			$bb = docs_page(page, $ab, $aZ);
++		return $bj;
++	}), $an, $ao), $an, $ao), $bR(route2, (current, $bC) => {
++		const $bD = current;
++		let $bE = null;
++		if ($bD[0] === 0) {
++			$bE = home_page($an, $bC);
++		} else if ($bD[0] === 1) {
++			const page = $bD[1];
++			$bE = docs_page(page, $an, $bC);
+ 		} else {
+-			$bb = not_found_page($ab, $aZ);
++			$bE = not_found_page($an, $bC);
+ 		}
+-		return $bb;
+-	}), $ab, $ac);
++		return $bE;
++	}), $an, $ao);
+ }
+ function eq(self, other) {
+-	const $cu = [ self, other ];
+-	let $cv = null;
+-	if ($cu[0][0] === 0 && $cu[1][0] === 0) {
+-		$cv = true;
+-	} else if ($cu[0][0] === 1 && $cu[1][0] === 1) {
+-		const s0 = $cu[0][1];
+-		const o0 = $cu[1][1];
+-		$cv = s0 === o0;
+-	} else if ($cu[0][0] === 2 && $cu[1][0] === 2) {
+-		$cv = true;
++	const $cQ = [ self, other ];
++	let $cR = null;
++	if ($cQ[0][0] === 0 && $cQ[1][0] === 0) {
++		$cR = true;
++	} else if ($cQ[0][0] === 1 && $cQ[1][0] === 1) {
++		const s0 = $cQ[0][1];
++		const o0 = $cQ[1][1];
++		$cR = s0 === o0;
++	} else if ($cQ[0][0] === 2 && $cQ[1][0] === 2) {
++		$cR = true;
+ 	} else {
+-		$cv = false;
++		$cR = false;
+ 	}
+-	return $cv;
++	return $cR;
+ }
+ function $a(value) {
+ 	let subscribers = [  ];
+@@ -724,200 +764,273 @@ function $r(policy, body) {
+ 	fresh[5].v = true;
+ 	return result;
+ }
+-function $y(self) {
++function $v(self, transform) {
++	return [ __clone(self), transform ];
++}
++function $B(self) {
+ 	return __clone(self[0].v);
+ }
+-function $B(self, $i) {
+-	const $C = $i;
+-	let $D = null;
+-	if ($C[0] === 0) {
+-		const turn = $C[1];
+-		$D = enqueue(turn, self[1].v);
++function $A(self) {
++	return $B(self);
++}
++function $z(self) {
++	return self[1]($A(self[0]));
++}
++function $E(self, $i) {
++	const $F = $i;
++	let $G = null;
++	if ($F[0] === 0) {
++		const turn = $F[1];
++		$G = enqueue(turn, self[1].v);
+ 	} else {
+-		const $E = $n(draining_turns.v);
+-		let $F = null;
+-		if ($E[0] === 0) {
+-			const draining = $E[1];
+-			$F = enqueue(draining, self[1].v);
++		const $H = $n(draining_turns.v);
++		let $I = null;
++		if ($H[0] === 0) {
++			const draining = $H[1];
++			$I = enqueue(draining, self[1].v);
+ 		} else {
+ 			for (const subscriber of self[1].v) {
+ 				if (subscriber[2].v) {
+ 					subscriber[1]();
+ 				}
+ 			}
+-			$F = undefined;
++			$I = undefined;
+ 		}
+-		$D = $F;
++		$G = $I;
+ 	}
+-	return $D;
++	return $G;
+ }
+-function $A(self, value, $g) {
++function $D(self, value, $g) {
+ 	self[0].v = __clone(value);
+-	$B(self, $g);
++	$E(self, $g);
+ }
+-function $K(signal, subscriber) {
++function $U(signal, subscriber) {
+ 	signal[1].v.push(reissued(subscriber));
+ 	return [ signal[1], subscriber[0], subscriber[2], __shared_new([ 1 ]) ];
+ }
+-function $H(signal, observer) {
++function $R(signal, observer) {
+ 	const cell = signal[0];
+-	return $K(signal, mint_subscriber(() => {
+-		const $I = [ 0, cell ];
+-		let $J = null;
+-		if ($I[0] === 0) {
+-			const live = $I[1];
+-			$J = observer(live.v);
++	return $U(signal, mint_subscriber(() => {
++		const $S = [ 0, cell ];
++		let $T = null;
++		if ($S[0] === 0) {
++			const live = $S[1];
++			$T = observer(live.v);
+ 		} else {
+-			$J = undefined;
++			$T = undefined;
+ 		}
+-		return $J;
++		return $T;
+ 	}));
+ }
+-function $G(self, observer) {
+-	return $H(self, observer);
++function $Q(self, observer) {
++	return $R(self, observer);
++}
++function $L(self, subscriber) {
++	as_derivation();
++	const relayed = $Q(self, (_value) => {
++		return wake(subscriber);
++	});
++	also_retiring(relayed, subscriber);
++	return relayed;
++}
++function $K(self, subscriber) {
++	return $L(self, subscriber);
++}
++function $J(self, subscriber) {
++	return $K(self[0], subscriber);
+ }
+-function $P(self, item, $Q) {
++function $ab(self, item, $ac) {
+ 	if (self[1].v) {
+-		dispose(item, $Q);
++		dispose(item, $ac);
+ 	} else {
+ 		self[0].v.push(() => {
+-			dispose(item, $Q);
++			dispose(item, $ac);
+ 			return;
+ 		});
+ 	}
+ 	return __clone(item);
+ }
+-function $v(self, transform, $w, $x) {
+-	const derived = $a(transform($y(self)));
++function $w(self, $x, $y) {
++	const cached = $a($z(self));
+ 	as_derivation();
+-	register_with_owner($G(self, (value) => {
+-		$A(derived, transform(value), $w);
++	register_with_owner($J(self, mint_subscriber(() => {
++		$D(cached, $z(self), $x);
+ 		return;
+-	}), $w, $x);
+-	return derived;
++	})), $x, $y);
++	return cached;
+ }
+-function $ao(self, name, value, $ap, $aq) {
+-	apply(value, self, name, $ap, $aq);
++function $aA(self, name, value, $aB, $aC) {
++	apply(value, self, name, $aB, $aC);
+ 	return __clone(self);
+ }
+-function $aj(self, route2, $ak, $al) {
++function $av(self, route2, $aw, $ax) {
+ 	const path = to_path(route2);
+-	return on_event($ao($ao(self, "href", path, $ak, $al), "draggable", "false", $ak, $al), "click", (event, $ar) => {
++	return on_event($aA($aA(self, "href", path, $aw, $ax), "draggable", "false", $aw, $ax), "click", (event, $aD) => {
+ 		if (plain_left_click(event)) {
+ 			event.preventDefault();
+-			navigate(path, [ 0, $ar ]);
++			navigate(path, [ 0, $aD ]);
+ 		}
+ 		return;
+ 	});
+ }
+-function $ag(label, route2, $ah, $ai) {
+-	return text($aj(view("a"), route2, $ah, $ai), label);
++function $as(label, route2, $at, $au) {
++	return text($av(view("a"), route2, $at, $au), label);
+ }
+-function $au(self, content, $av, $aw) {
+-	place(content, self, $av, $aw);
++function $aG(self, content, $aH, $aI) {
++	place(content, self, $aH, $aI);
+ 	return __clone(self);
+ }
+-function $aB(signal, observer) {
++function $aY(self) {
++	return $B(self);
++}
++function $aX(self) {
++	return self[1]($aY(self[0]));
++}
++function $aW(source, observer) {
++	return mint_subscriber(() => {
++		return observer($aX(source));
++	});
++}
++function $be(signal, observer) {
+ 	const cell = signal[0];
+-	return $K(signal, mint_subscriber(() => {
+-		const $aC = [ 0, cell ];
+-		let $aD = null;
+-		if ($aC[0] === 0) {
+-			const live = $aC[1];
+-			$aD = observer(live.v);
++	return $U(signal, mint_subscriber(() => {
++		const $bf = [ 0, cell ];
++		let $bg = null;
++		if ($bf[0] === 0) {
++			const live = $bf[1];
++			$bg = observer(live.v);
+ 		} else {
+-			$aD = undefined;
++			$bg = undefined;
+ 		}
+-		return $aD;
++		return $bg;
+ 	}));
+ }
+-function $aA(self, observer) {
+-	return $aB(self, observer);
++function $bd(self, observer) {
++	return $be(self, observer);
+ }
+-function $ay(self, transform, $w, $x) {
+-	const derived = $a(transform($y(self)));
++function $bc(self, subscriber) {
+ 	as_derivation();
+-	register_with_owner($aA(self, (value) => {
+-		$A(derived, transform(value), $w);
+-		return;
+-	}), $w, $x);
+-	return derived;
++	const relayed = $bd(self, (_value) => {
++		return wake(subscriber);
++	});
++	also_retiring(relayed, subscriber);
++	return relayed;
++}
++function $bb(self, subscriber) {
++	return $bc(self, subscriber);
+ }
+-function $aL(self, observer, $aM, $aN) {
+-	$P(get_owner($aN), $G(self, observer), $aM);
++function $ba(self, subscriber) {
++	return $bb(self[0], subscriber);
+ }
+-function $aI(self, observer, $aJ, $aK) {
+-	$aL(self, observer, $aJ, $aK);
+-	observer($y(self));
++function $aV(self, observer) {
++	return $ba(self, $aW(self, observer));
+ }
+-function $aF(self, source, $aG, $aH) {
++function $aR(self, observer, $aS, $aT) {
++	$ab(get_owner($aT), $aV(self, observer), $aS);
++}
++function $aO(self, observer, $aP, $aQ) {
++	$aR(self, observer, $aP, $aQ);
++	observer($aX(self));
++}
++function $aL(self, source, $aM, $aN) {
+ 	const element = __clone(self[0]);
+-	$aI(source, (value) => {
++	$aO(source, (value) => {
+ 		element.textContent = value;
+ 		return;
+-	}, $aG, $aH);
++	}, $aM, $aN);
+ 	return __clone(self);
+ }
+-function $aU(self, observer) {
+-	return $aB(self, observer);
++function $br(self) {
++	return self[1]($aY(self[0]));
++}
++function $bq(source, observer) {
++	return mint_subscriber(() => {
++		return observer($br(source));
++	});
++}
++function $bx(self, observer) {
++	return $be(self, observer);
+ }
+-function $aS(self, transform, $w, $x) {
+-	const derived = $a(transform($y(self)));
++function $bw(self, subscriber) {
+ 	as_derivation();
+-	register_with_owner($aU(self, (value) => {
+-		$A(derived, transform(value), $w);
++	const relayed = $bx(self, (_value) => {
++		return wake(subscriber);
++	});
++	also_retiring(relayed, subscriber);
++	return relayed;
++}
++function $bv(self, subscriber) {
++	return $bw(self, subscriber);
++}
++function $bu(self, subscriber) {
++	return $bv(self[0], subscriber);
++}
++function $bp(self, observer) {
++	return $bu(self, $bq(self, observer));
++}
++function $bo(self, observer, $aS, $aT) {
++	$ab(get_owner($aT), $bp(self, observer), $aS);
++}
++function $bn(self, observer, $aP, $aQ) {
++	$bo(self, observer, $aP, $aQ);
++	observer($br(self));
++}
++function $bm(self, source, $aM, $aN) {
++	const element = __clone(self[0]);
++	$bn(source, (value) => {
++		element.textContent = value;
+ 		return;
+-	}), $w, $x);
+-	return derived;
++	}, $aM, $aN);
++	return __clone(self);
+ }
+-function $bm(source) {
+-	__chunk_preload(__chunk_arm($y(source)));
++function $bP(source) {
++	__chunk_preload(__chunk_arm($B(source)));
+ }
+-function $bs(self, value, $g) {
++function $bZ(self, value, $g) {
+ 	self[0].v = __clone(value);
+-	$B(self, $g);
++	$E(self, $g);
+ }
+-function $bT(self, observer, $aM, $aN) {
+-	$P(get_owner($aN), $aU(self, observer), $aM);
++function $cp(self, observer, $aS, $aT) {
++	$ab(get_owner($aT), $bx(self, observer), $aS);
+ }
+-function $bS(self, observer, $aJ, $aK) {
+-	$bT(self, observer, $aJ, $aK);
+-	observer($y(self));
++function $co(self, observer, $aP, $aQ) {
++	$cp(self, observer, $aP, $aQ);
++	observer($B(self));
+ }
+-function $bo(source, render, $bp) {
+-	const gated = $a($y(source));
++function $bR(source, render, $bS) {
++	const gated = $a($B(source));
+ 	const armed = __shared_new(false);
+ 	const generation = __shared_new(0);
+-	const advance = (value, $br) => {
++	const advance = (value, $bT) => {
+ 		armed.v = true;
+-		$bs(gated, value, [ 0, $br ]);
++		$D(gated, value, [ 0, $bT ]);
+ 		return;
+ 	};
+-	const wire = ($by) => {
+-		$bS(source, (value) => {
+-			return $r([ 1 ], ($bz) => {
++	const wire = ($bU) => {
++		$co(source, (value) => {
++			return $r([ 1 ], ($bV) => {
+ 				const mine = generation.v + 1;
+ 				generation.v = mine;
+-				clear_chunk_error([ 0, $bz ]);
++				clear_chunk_error([ 0, $bV ]);
+ 				const arm = __chunk_arm(value);
+ 				if (__chunk_ready(arm)) {
+-					set_chunk_pending(false, [ 0, $bz ]);
+-					advance(value, $bz);
++					set_chunk_pending(false, [ 0, $bV ]);
++					advance(value, $bV);
+ 				} else {
+-					set_chunk_pending(true, [ 0, $bz ]);
++					set_chunk_pending(true, [ 0, $bV ]);
+ 					__chunk_load(arm, () => {
+-						return $r([ 1 ], ($bQ) => {
++						return $r([ 1 ], ($cm) => {
+ 							if (generation.v === mine) {
+-								set_chunk_pending(false, [ 0, $bQ ]);
+-								advance(value, $bQ);
++								set_chunk_pending(false, [ 0, $cm ]);
++								advance(value, $cm);
+ 							}
+ 							return;
+ 						});
+ 					}, (reason) => {
+-						return $r([ 1 ], ($bR) => {
++						return $r([ 1 ], ($cn) => {
+ 							if (generation.v === mine) {
+-								set_chunk_pending(false, [ 0, $bR ]);
+-								$bs(chunk_error_signal, [ 0, reason ], [ 0, $bR ]);
++								set_chunk_pending(false, [ 0, $cn ]);
++								$bZ(chunk_error_signal, [ 0, reason ], [ 0, $cn ]);
+ 							}
+ 							return;
+ 						});
+@@ -925,79 +1038,79 @@ function $bo(source, render, $bp) {
+ 				}
+ 				return;
+ 			});
+-		}, $bp, $by);
++		}, $bS, $bU);
+ 		return;
+ 	};
+ 	return [ __clone(source), render, [ 0, __clone(gated) ], armed, wire ];
+ }
+-function $cm(self) {
+-	const $cn = self;
+-	return $cn[0] === 1;
++function $cI(self) {
++	const $cJ = self;
++	return $cJ[0] === 1;
+ }
+-function $cE(self, content, end, $cF, $cG) {
++function $da(self, content, end, $db, $dc) {
+ 	const marker = document.createTextNode("");
+ 	host(self).insertBefore(marker, end);
+ 	const staging = document.createDocumentFragment();
+-	place(content, [ __clone(staging) ], $cF, $cG);
++	place(content, [ __clone(staging) ], $db, $dc);
+ 	host(self).insertBefore(staging, end);
+ 	return [ marker ];
+ }
+-function $cB(self, content, $cC, $cD) {
+-	return $cE(self, content, self[0], $cC, $cD);
++function $cX(self, content, $cY, $cZ) {
++	return $da(self, content, self[0], $cY, $cZ);
+ }
+-function $cH(owner, body) {
++function $dd(owner, body) {
+ 	return body(owner);
+ }
+-function $cf(parent, source, render, armed, $cg, $ch) {
++function $cB(parent, source, render, armed, $cC, $cD) {
+ 	const region = open(parent);
+ 	const last_value = __shared_new([ 1 ]);
+ 	const live_row = __shared_new([ 1 ]);
+ 	const live_owner = __shared_new([ 1 ]);
+-	defer(get_owner($ch), () => {
+-		const $ci = live_owner.v;
+-		let $cj = null;
+-		if ($ci[0] === 1) {
+-			$cj = $ci;
++	defer(get_owner($cD), () => {
++		const $cE = live_owner.v;
++		let $cF = null;
++		if ($cE[0] === 1) {
++			$cF = $cE;
+ 		} else {
+-			$cj = [ 0, dispose2($ci[1]) ];
++			$cF = [ 0, dispose2($cE[1]) ];
+ 		}
+-		$cj;
++		$cF;
+ 		close(region);
+ 		return;
+ 	});
+-	$bS(source, (value) => {
+-		const $cs = last_value.v;
+-		let $ct = null;
+-		if ($cs[0] === 0) {
+-			const previous = $cs[1];
+-			$ct = eq(previous, value);
++	$co(source, (value) => {
++		const $cO = last_value.v;
++		let $cP = null;
++		if ($cO[0] === 0) {
++			const previous = $cO[1];
++			$cP = eq(previous, value);
+ 		} else {
+-			$ct = false;
++			$cP = false;
+ 		}
+-		const unchanged = $ct;
++		const unchanged = $cP;
+ 		if (armed.v && !(unchanged)) {
+-			const $cw = live_owner.v;
+-			let $cx = null;
+-			if ($cw[0] === 1) {
+-				$cx = $cw;
++			const $cS = live_owner.v;
++			let $cT = null;
++			if ($cS[0] === 1) {
++				$cT = $cS;
+ 			} else {
+-				$cx = [ 0, dispose2($cw[1]) ];
++				$cT = [ 0, dispose2($cS[1]) ];
+ 			}
+-			$cx;
+-			const $cy = live_row.v;
+-			let $cz = null;
+-			if ($cy[0] === 0) {
+-				const row = $cy[1];
++			$cT;
++			const $cU = live_row.v;
++			let $cV = null;
++			if ($cU[0] === 0) {
++				const row = $cU[1];
+ 				cut_row(region, row, region[0]);
+ 				drop_row(region, row);
+-				$cz = undefined;
++				$cV = undefined;
+ 			} else {
+-				$cz = undefined;
++				$cV = undefined;
+ 			}
+-			$cz;
++			$cV;
+ 			const owner = new3();
+-			const row2 = $cH(owner, ($cA) => {
+-				return $cB(region, render(value, $cA), $cg, $cA);
++			const row2 = $dd(owner, ($cW) => {
++				return $cX(region, render(value, $cW), $cC, $cW);
+ 			});
+ 			hold_rows(region, [ __clone(row2) ]);
+ 			last_value.v = [ 0, __clone(value) ];
+@@ -1005,25 +1118,25 @@ function $cf(parent, source, render, armed, $cg, $ch) {
+ 			live_owner.v = [ 0, owner ];
+ 		}
+ 		return;
+-	}, $cg, $ch);
+-}
+-function $ca(self, parent, $cb, $cc) {
+-	self[4]($cc);
+-	const $cd = self[2];
+-	let $ce = null;
+-	if ($cd[0] === 0) {
+-		const gated = $cd[1];
+-		$ce = $cf(parent, gated, self[1], self[3], $cb, $cc);
++	}, $cC, $cD);
++}
++function $cw(self, parent, $cx, $cy) {
++	self[4]($cy);
++	const $cz = self[2];
++	let $cA = null;
++	if ($cz[0] === 0) {
++		const gated = $cz[1];
++		$cA = $cB(parent, gated, self[1], self[3], $cx, $cy);
+ 	} else {
+-		$ce = $cf(parent, self[0], self[1], self[3], $cb, $cc);
++		$cA = $cB(parent, self[0], self[1], self[3], $cx, $cy);
+ 	}
+-	return $ce;
++	return $cA;
+ }
+-function $bZ(self, content, $av, $aw) {
+-	$ca(content, self, $av, $aw);
++function $cv(self, content, $aH, $aI) {
++	$cw(content, self, $aH, $aI);
+ 	return __clone(self);
+ }
+-function $cJ(body) {
++function $df(body) {
+ 	const scope = new3();
+ 	const result = body(scope);
+ 	return [ result, scope ];
+@@ -1042,12 +1155,12 @@ const LABEL = "scale " + SCALED;
+ __vilan_chunks.url[0] = "app.Route_Home.js";
+ __vilan_chunks.url[1] = "app.Route_Docs.js";
+ __vilan_chunks.url[2] = "app.Route_NotFound.js";
+-__vilan_chunks.fn.$ag = $ag;
+-__vilan_chunks.fn.$au = $au;
++__vilan_chunks.fn.$aG = $aG;
++__vilan_chunks.fn.$as = $as;
+ __vilan_chunks.fn.LABEL = LABEL;
+ __vilan_chunks.fn.panel = panel;
+ __vilan_chunks.fn.view = view;
+-const route = $v(current_path([ 1 ]), parse, [ 1 ], [ 1 ]);
+-mount_root("app", ($aa) => {
+-	return app(route, [ 1 ], $aa);
++const route = $w($v(current_path([ 1 ]), parse), [ 1 ], [ 1 ]);
++mount_root("app", ($am) => {
++	return app(route, [ 1 ], $am);
+ });
+diff --git a/crates/vilan-cli/tests/split/project/app.vl b/crates/vilan-cli/tests/split/project/app.vl
+index e754e57..c329e2f 100644
+--- a/crates/vilan-cli/tests/split/project/app.vl
++++ b/crates/vilan-cli/tests/split/project/app.vl
+@@ -121,6 +121,6 @@ fun app(route: SignalCell<Route>): View {
+ }
+ 
+ fun main() {
+-	let route = current_path().map(parse);
++	let route = current_path().map(parse).cell();
+ 	let _root = mount_root("app", || app(route));
+ }
+diff --git a/crates/vilan-core/tests/inference/dyn_objects.rs b/crates/vilan-core/tests/inference/dyn_objects.rs
+index 73e2f3d..daa9b72 100644
+--- a/crates/vilan-core/tests/inference/dyn_objects.rs
++++ b/crates/vilan-core/tests/inference/dyn_objects.rs
+@@ -688,8 +688,8 @@ fn a_dyn_source_field_holds_a_root_a_map_node_and_a_cell() {
+ struct Holder { s: dyn Source<i32> }
+ fun main() {
+ \tlet root = SignalCell::new(1);
+-\tlet cold = root.map_node(|n| n + 100);
+-\tlet cached = root.map_node(|n| n * 10).cell();
++\tlet cold = root.map(|n| n + 100);
++\tlet cached = root.map(|n| n * 10).cell();
+ \tlet hs: List<Holder> = [ Holder { s = root }, Holder { s = cold }, Holder { s = cached } ];
+ \tfor h in hs { print(h.s.get()); }
+ \troot.set(5);
+@@ -721,28 +721,27 @@ fun main() {
+     );
+ }
+ 
+-/// dyn-40's ruling, pinned where A124 S2c will flip it: `map` is a GENERIC
+-/// DEFAULT on `Source` today, so it has no table slot and a call through a
+-/// `dyn Source` is refused by name. The flip moves `map` to a blanket over
+-/// `S: Source<T>`, which an object satisfies — and this pin becomes a pass in
+-/// the saved S2c patch.
++/// dyn-40's ruling, flipped by A124 S2c: `map` was a GENERIC DEFAULT on
++/// `Source`, with no table slot, and a call through a `dyn Source` was refused
++/// by name. It is a blanket over `S: Source<T>` now, which an object satisfies,
++/// so the call reaches through the object and builds a cold node over it.
+ #[test]
+-fn a124_map_through_a_dyn_source_is_refused_until_the_flip() {
+-    assert_fails_with(
++fn a124_map_through_a_dyn_source_is_the_blanket_node() {
++    assert_compiles_and_runs(
+         "import std::reactive::{ Source, SignalCell };
+ fun main() {
+ \tlet cell = SignalCell::new(1);
+ \tlet object: dyn Source<i32> = cell;
+ \tlet mapped = object.map(|n| n + 1);
++\tcell.set(4);
+ \tprint(mapped.get());
+ }
+ ",
+-        "`Source::map` is generic, so it is not reachable through `dyn Source<i32>`",
++        "5\n",
+     );
+ }
+ 
+-/// ...while the BLANKET spelling of the same node already reaches the object —
+-/// the shape S2c gives `map` itself (`proposal/reactive-pipeline.md` §3.4): a
++/// The blanket reaches the object — `proposal/reactive-pipeline.md` §3.4: a
+ /// cold node over a `dyn Source<i32>` upstream, read by pull, notified through
+ /// the object's `on_settle` slot, and materialised by `.cell()`.
+ #[test]
+@@ -752,7 +751,7 @@ fn a124_the_blanket_node_spelling_reaches_through_a_dyn_source() {
+ fun main() {
+ \tlet cell = SignalCell::new(1);
+ \tlet object: dyn Source<i32> = cell;
+-\tlet mapped = object.map_node(|n| n + 1);
++\tlet mapped = object.map(|n| n + 1);
+ \tlet cached = mapped.cell();
+ \tlet watch = mapped.on_change(|n| print(i\"saw {n}\"));
+ \tcell.set(5);
+diff --git a/crates/vilan-core/tests/inference/generics.rs b/crates/vilan-core/tests/inference/generics.rs
+index 5566ca4..caaebed 100644
+--- a/crates/vilan-core/tests/inference/generics.rs
++++ b/crates/vilan-core/tests/inference/generics.rs
+@@ -6171,7 +6171,7 @@ fn b225_the_kolt_shape_two_fields_of_one_parameter_in_the_subjects_own_impl() {
+         struct Searchable<T> { list: SignalCell<List<T>>, table: SignalCell<List<T>> }
+         impl Searchable<type T> {
+             fun new(list: SignalCell<List<T>>, key: sync |T| str) {
+-                Searchable { table = list.map(|l| l.map(|x| key(x).to_lowercase())), list }
++                Searchable { table = list.map(|l| l.map(|x| key(x).to_lowercase())).cell(), list }
+             }
+         }
+         fun main() {
+diff --git a/crates/vilan-core/tests/inference/lifetimes.rs b/crates/vilan-core/tests/inference/lifetimes.rs
+index c34d499..bb8606b 100644
+--- a/crates/vilan-core/tests/inference/lifetimes.rs
++++ b/crates/vilan-core/tests/inference/lifetimes.rs
+@@ -265,7 +265,7 @@ fn a_derivation_outside_every_owner_still_tracks_its_source() {
+         import std::reactive::{ Signal, SignalCell };
+ 
+         let count: SignalCell<i32> = Signal::new(1);
+-        let doubled: SignalCell<i32> = count.map(|n| n * 2);
++        let doubled: SignalCell<i32> = count.map(|n| n * 2).cell();
+ 
+         fun main() {
+             print(doubled.get());
+@@ -471,8 +471,8 @@ fn a_switch_is_a_derivation_so_an_effect_reads_its_chain_settled() {
+             let which: SignalCell<i32> = Signal::new(0);
+             let first: SignalCell<i32> = Signal::new(10);
+             let second: SignalCell<i32> = Signal::new(20);
+-            let picked: SignalCell<i32> = which.switch(|n| if n == 0 { first } else { second });
+-            let plus: SignalCell<i32> = picked.map(|value| value + 1);
++            let picked: SignalCell<i32> = which.switch(|n| if n == 0 { first } else { second }).cell();
++            let plus: SignalCell<i32> = picked.map(|value| value + 1).cell();
+             let seen: SignalCell<str> = Signal::new("");
+             let watcher = Owner::new();
+             run_with_owner(watcher, || {
+@@ -508,8 +508,8 @@ fn an_and_then_is_a_derivation_so_an_effect_reads_its_chain_settled() {
+             let outer: SignalCell<Option<i32>> = Signal::new(Some(1));
+             let one: SignalCell<Option<i32>> = Signal::new(Some(10));
+             let two: SignalCell<Option<i32>> = Signal::new(Some(20));
+-            let followed: SignalCell<Option<i32>> = outer.and_then(|id| if id == 1 { one } else { two });
+-            let plus: SignalCell<i32> = followed.map(|value| value.unwrap_or(0) + 1);
++            let followed: SignalCell<Option<i32>> = outer.and_then(|id| if id == 1 { one } else { two }).cell();
++            let plus: SignalCell<i32> = followed.map(|value| value.unwrap_or(0) + 1).cell();
+             let seen: SignalCell<str> = Signal::new("");
+             let watcher = Owner::new();
+             run_with_owner(watcher, || {
+@@ -586,8 +586,7 @@ fn switch_and_and_then_mint_two_subscribers_where_the_composed_form_mints_three(
+ // The paper's S1 probe (`proposal/reactive-pipeline.md` §7) measured the
+ // cold-node model over today's `Source` in a module of its own. Its nodes are
+ // `std::reactive`'s since S2b and the probe file is gone; these four pins are
+-// its numbers, now held against the real nodes (built through the `[internal]`
+-// `_node` spellings until the flip, S2c).
++// its numbers, now held against the real nodes.
+ 
+ #[test]
+ fn a124_s1_a_cold_chain_with_no_subscriber_evaluates_nothing() {
+@@ -605,11 +604,11 @@ fn a124_s1_a_cold_chain_with_no_subscriber_evaluates_nothing() {
+             let root: SignalCell<i32> = Signal::new(1);
+             let evals: Shared<i32> = Shared::new(0);
+             let chain = root
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 });
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 })
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 })
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 })
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 })
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 });
+             print(evals.read());
+             root.set(2);
+             root.set(3);
+@@ -641,11 +640,11 @@ fn a124_s1_a_cold_chain_evaluates_once_per_leaf_subscriber() {
+             let root: SignalCell<i32> = Signal::new(1);
+             let evals: Shared<i32> = Shared::new(0);
+             let chain = root
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 })
+-                .map_node(|x| { evals.write() = evals.read() + 1; x + 1 });
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 })
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 })
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 })
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 })
++                .map(|x| { evals.write() = evals.read() + 1; x + 1 });
+             let _one = chain.on_change(|_value| {});
+             evals.write() = 0;
+             root.set(2);
+@@ -678,13 +677,13 @@ fn a124_s1_a_cell_between_runs_the_segment_above_it_once() {
+             let upper: Shared<i32> = Shared::new(0);
+             let lower: Shared<i32> = Shared::new(0);
+             let cached = root
+-                .map_node(|x| { upper.write() = upper.read() + 1; x + 1 })
+-                .map_node(|x| { upper.write() = upper.read() + 1; x + 1 })
++                .map(|x| { upper.write() = upper.read() + 1; x + 1 })
++                .map(|x| { upper.write() = upper.read() + 1; x + 1 })
+                 .cell();
+             let below = cached
+-                .map_node(|x| { lower.write() = lower.read() + 1; x + 1 })
+-                .map_node(|x| { lower.write() = lower.read() + 1; x + 1 })
+-                .map_node(|x| { lower.write() = lower.read() + 1; x + 1 });
++                .map(|x| { lower.write() = lower.read() + 1; x + 1 })
++                .map(|x| { lower.write() = lower.read() + 1; x + 1 })
++                .map(|x| { lower.write() = lower.read() + 1; x + 1 });
+             let _a = below.on_change(|_value| {});
+             let _b = below.on_change(|_value| {});
+             upper.write() = 0;
+@@ -719,8 +718,8 @@ fn a124_s1_a_diamond_pulls_a_settled_pair_and_fires_twice() {
+             let source: SignalCell<i32> = Signal::new(1);
+             let seen: Shared<str> = Shared::new("");
+             let arms: (dyn Source<i32>, dyn Source<i32>) = (
+-                source.map_node(|x| x * 10),
+-                source.map_node(|x| x + 100)
++                source.map(|x| x * 10),
++                source.map(|x| x + 100)
+             );
+             let diamond = combine_node(arms);
+             let _leaf = diamond.on_change(|pair| {
+@@ -764,8 +763,8 @@ fn a124_s2a_a_diamond_in_a_turn_fires_once_with_the_settled_pair() {
+             let source: SignalCell<i32> = Signal::new(1);
+             let seen: Shared<str> = Shared::new("");
+             let arms: (dyn Source<i32>, dyn Source<i32>) = (
+-                source.map_node(|x| x * 10),
+-                source.map_node(|x| x + 100)
++                source.map(|x| x * 10),
++                source.map(|x| x + 100)
+             );
+             let diamond = combine_node(arms);
+             let _leaf = diamond.on_change(|pair| {
+@@ -806,7 +805,7 @@ fn a124_s2a_a_leaf_disposed_by_an_earlier_effect_in_its_wave_does_not_fire() {
+                 held.read()?.dispose();
+                 print("first disposed the leaf");
+             });
+-            held.write() = Some(source.map_node(|x| x * 10).on_change(|value| {
++            held.write() = Some(source.map(|x| x * 10).on_change(|value| {
+                 print(i"leaf saw {value}");
+             }));
+             turn(FlushPolicy::AtEnd, || {
+@@ -857,8 +856,8 @@ fn a124_s2a_the_default_bridge_dedups_a_diamond_over_a_root_that_only_has_on_cha
+             let root = Stored { inner = cell };
+             let seen: Shared<str> = Shared::new("");
+             let arms: (dyn Source<i32>, dyn Source<i32>) = (
+-                root.map_node(|x| x * 10),
+-                root.map_node(|x| x + 100)
++                root.map(|x| x * 10),
++                root.map(|x| x + 100)
+             );
+             let diamond = combine_node(arms);
+             let _leaf = diamond.on_change(|pair| {
+@@ -882,10 +881,9 @@ fn a124_s2a_the_default_bridge_dedups_a_diamond_over_a_root_that_only_has_on_cha
+ 
+ // --- A124 S2b: the nodes, `.cell()`, `.distinct()` and `Resource<T>` ---------
+ //
+-// The node types are `std::reactive`'s; `map`/`switch`/`combine` still return
+-// cells until the flip (S2c), so the nodes are built through the `[internal]`
+-// `map_node`/`switch_node`/`combine_node` spellings, and `.cell()` and
+-// `.distinct()` are public.
++// The node types are `std::reactive`'s; since the flip (S2c) `map` and `switch`
++// build them, `combine_node` still builds the n-ary `Combine` over erased inputs,
++// and `.cell()` and `.distinct()` are public.
+ 
+ #[test]
+ fn a124_s2b_a_cell_does_not_compare_and_a_distinct_does() {
+@@ -903,11 +901,11 @@ fn a124_s2b_a_cell_does_not_compare_and_a_distinct_does() {
+             let root: SignalCell<i32> = Signal::new(1);
+             let cell_log: Shared<str> = Shared::new("");
+             let distinct_log: Shared<str> = Shared::new("");
+-            let cached = root.map_node(|x| x / 10).cell();
++            let cached = root.map(|x| x / 10).cell();
+             let _c = cached.on_change(|value| {
+                 cell_log.write() = i"{cell_log.read()}{value},";
+             });
+-            let _d = root.map_node(|x| x / 10).distinct().on_change(|value| {
++            let _d = root.map(|x| x / 10).distinct().on_change(|value| {
+                 distinct_log.write() = i"{distinct_log.read()}{value},";
+             });
+             root.set(2);
+@@ -947,7 +945,7 @@ fn a124_s2b_a_cell_is_a_derivation_an_effect_reads_settled() {
+                     None => {},
+                 }
+             });
+-            holder.write() = Some(root.map_node(|x| x * 2 + 1).cell());
++            holder.write() = Some(root.map(|x| x * 2 + 1).cell());
+             turn(FlushPolicy::AtEnd, || {
+                 root.set(5);
+             });
+@@ -974,7 +972,7 @@ fn a124_s2b_a_cell_made_under_an_owner_releases_its_upstream_with_it() {
+         fun main() {
+             let root: SignalCell<i32> = Signal::new(1);
+             let owner = Owner::new();
+-            let cached = run_with_owner(owner, || root.map_node(|x| x * 10).cell());
++            let cached = run_with_owner(owner, || root.map(|x| x * 10).cell());
+             root.set(2);
+             print(i"before={root.subscribers.read().len()} cell={cached.get()}");
+             owner.dispose();
+@@ -1010,7 +1008,7 @@ fn a124_s2b_the_owners_disposal_releases_a_switchs_rolling_inner_registration()
+             let owner = Owner::new();
+             run_with_owner(owner, || {
+                 which
+-                    .switch_node(|n| if n == 0 { first } else { second })
++                    .switch(|n| if n == 0 { first } else { second })
+                     .effect_on_change(|value| {
+                         log.write() = i"{log.read()}{value},";
+                     });
+@@ -1056,9 +1054,9 @@ fn a124_s2b_a_default_inherited_by_a_node_types_its_observer_from_the_node() {
+         fun main() {
+             let which: SignalCell<i32> = Signal::new(0);
+             let first: SignalCell<i32> = Signal::new(10);
+-            let _switched = which.switch_node(|n| first).sub(|value| print(value + 1));
++            let _switched = which.switch(|n| first).sub(|value| print(value + 1));
+             let _distinct = which.distinct().sub(|value| print(value + 2));
+-            let labelled = which.map_node(|n| i"n{n}").map(|label| label.len());
++            let labelled = which.map(|n| i"n{n}").map(|label| label.len());
+             print(labelled.get());
+         }
+ 
+@@ -1083,8 +1081,8 @@ fn a124_s2b_combine_over_the_tuple_bound_joins_three_kinds_of_source() {
+             let count: SignalCell<i32> = Signal::new(1);
+             let arms: (dyn Source<i32>, dyn Source<str>, dyn Source<bool>) = (
+                 count,
+-                count.map_node(|n| i"n{n}"),
+-                count.map_node(|n| n > 2).cell()
++                count.map(|n| i"n{n}"),
++                count.map(|n| n > 2).cell()
+             );
+             let all = combine_node(arms);
+             let _leaf = all.on_change(|triple| {
+diff --git a/crates/vilan-core/tests/inference/markdown.rs b/crates/vilan-core/tests/inference/markdown.rs
+index 3796d78..071c973 100644
+--- a/crates/vilan-core/tests/inference/markdown.rs
++++ b/crates/vilan-core/tests/inference/markdown.rs
+@@ -2148,7 +2148,7 @@ fn b129_a_map_on_a_let_bound_signal_types_its_closure_parameter() {
+                         }
+                     }
+                     open
+-                });
++                }).cell();
+                 remaining.get()
+             });
+             print(n);
+diff --git a/crates/vilan-core/tests/inference/returns.rs b/crates/vilan-core/tests/inference/returns.rs
+index 1176e37..95daf9f 100644
+--- a/crates/vilan-core/tests/inference/returns.rs
++++ b/crates/vilan-core/tests/inference/returns.rs
+@@ -1632,7 +1632,7 @@ fn missing_return_value_regime_3_through_a_signal_maps_generic_binding() {
+         		let count = Signal::new(1);
+         		let doubled: SignalCell<i32> = count.map(|n| {
+         			n * 2;
+-        		});
++        		}).cell();
+         		doubled.get()
+         	});
+         	print(n);
+diff --git a/vilan/docs/guide/reactive.md b/vilan/docs/guide/reactive.md
+index 22ba1e0..95482f1 100644
+--- a/vilan/docs/guide/reactive.md
++++ b/vilan/docs/guide/reactive.md
+@@ -109,7 +109,8 @@ feature.)
+ 
+ Build state as a graph and let it recompute itself:
+ 
+-- `signal.map(transform)` gives a signal of the transformed value:
++- `signal.map(transform)` gives a source of the transformed value, computed
++  when it is read:
+ 
+   ```vilan
+   import std::reactive::{ Signal, SignalCell };
+@@ -152,8 +153,8 @@ A dependency is **static** when the expression fixes what the result reads —
+ that is `map` and `combine` — and **dynamic** when the current value decides
+ *which* source to follow next, which is what "the selected channel's unread
+ count" needs. `flatten` is the primitive underneath the dynamic half; two
+-combinators are its everyday spelling, and each is one derived cell rather
+-than a chain:
++combinators are its everyday spelling, and each is one node rather than a
++chain:
+ 
+ - `source.switch(select)` follows whichever source `select` answers for the
+   current value and re-follows when this one changes — Rx's `switchMap`. It
+@@ -236,11 +237,9 @@ fun main() {
+ notifies. When an unchanged value should stay quiet, `.distinct()` is the node
+ that compares (it asks `T: PartialEq`, and nothing else in the chain does).
+ 
+-In this release `map`, `combine`, `flatten`, `switch` and `and_then` still hand
+-back a `SignalCell` — every step of a chain is still a cell, as it always was.
+-v0.41.0 makes them return the cold nodes. Writing `.cell()` today where a value
+-is shared or read hot, and `dyn Source<T>` where one is stored, is the code that
+-is right on both sides of that change.
++`map`, `switch`, `flatten` and `and_then` hand back these nodes (`combine` still
++builds a cell). A derivation annotated `SignalCell<U>` is a type error now: drop
++the annotation, or write `.cell()` where a cached cell is what you meant.
+ 
+ ### Selection over a list: `selector`
+ 
+diff --git a/vilan/docs/std/reactive.md b/vilan/docs/std/reactive.md
+index 75bf8a5..39da22f 100644
+--- a/vilan/docs/std/reactive.md
++++ b/vilan/docs/std/reactive.md
+@@ -21,10 +21,10 @@ import std::reactive::{
+ 
+ | Item | Kind | One line |
+ |---|---|---|
+-| `Source<T>` | trait | anything readable + subscribable (requires `get`/`on_change`; `on_settle`/`sub`/`effect`/`effect_on_change`/`scoped_effect`/`scoped_effect_on_change`/`map` are defaults) |
++| `Source<T>` | trait | anything readable + subscribable (requires `get`/`on_change`; `on_settle`/`sub`/`effect`/`effect_on_change`/`scoped_effect`/`scoped_effect_on_change` are defaults; `map`/`switch`/`flatten`/`and_then`/`cell`/`distinct` are blankets over it) |
+ | `Subscriber` | struct | one observer's record — its id (a turn's dedup key), `notify`, liveness and class; what `on_settle` carries |
+ | `.cell()`, `.distinct()` | blanket methods | on any `Source`: materialise into a cached cell (no comparison); pass a change on only when the value differs (`T: PartialEq`) |
+-| `Map`, `Switch`, `Combine`, `Distinct` | structs | the cold pipeline nodes (A124): hold their upstream, compute when read; built by `map`/`switch`/`combine` from v0.41.0 |
++| `Map`, `Switch`, `FlattenOption`, `AndThen`, `Combine`, `Distinct` | structs | the cold pipeline nodes (A124): hold their upstream, compute when read; what `map`/`switch`/`flatten` return |
+ | `Resource<T>`, `ResourceState<T>` | struct/enum | a value that may still be loading — pending, settled, failed — and its fallbacks; std-internal until v0.41.0 |
+ | `Signal<T>` | trait | the writable half (`set`/`notify`/`set_with`); `Source` is its supertrait |
+ | `SignalCell<T>` | struct | the canonical cell — mutable value plus subscribers |
+@@ -85,26 +85,26 @@ impl SignalCell<type T> with Source<T> {
+ 	// from the trait defaults:
+ 	fun effect(self, observer: |T| void)    // fires now + on change; owner-registered
+ 	fun effect_on_change(self, observer: |T| void)  // on change only; owner-registered
+-	fun map<U>(self, transform: sync |T| U): SignalCell<U>
+ }
+ // A BLANKET over the read trait, not a member of the cell (A86): any source
+ // whose element is itself a source joins — a `map` result, a derived cell, a
+ // mirror, a plain `SignalCell`.
+ impl type S: Source<type I: Source<type U>> {
+-	fun flatten(self): SignalCell<U>            // follow the current inner signal
++	fun flatten(self): Switch<S, I, I, U>       // follow the current inner source
+ }
+ impl type S: Source<Option<type I: Source<type U>>> {
+-	fun flatten(self): SignalCell<Option<U>>    // `None` detaches; `Some` follows
++	fun flatten(self): FlattenOption<S, I, U>   // `None` detaches; `Some` follows
+ }
+ // The DYNAMIC pair (A123), written over `on_change` rather than over the join:
+ // which source to follow is decided by the value this one currently holds.
+ impl type S: Source<type T> {
+-	fun switch<U, I: Source<U>>(self, select: sync |T| I): SignalCell<U>
++	fun map<U>(self, transform: sync |T| U): Map<S, T, U>     // cold: computed when read
++	fun switch<U, I: Source<U>>(self, select: sync |T| I): Switch<S, T, I, U>
+ }
+ impl type S: Source<Option<type T>> {
+ 	fun and_then<U, I: Source<Option<U>>>(
+ 		self, select: sync |T| I
+-	): SignalCell<Option<U>>
++	): AndThen<S, T, I, U>
+ }
+ ```
+ 
+@@ -263,7 +263,6 @@ trait Source<T> {
+ 	fun effect(self, observer: |T| void)                    // default; owner-registered, eager
+ 	fun scoped_effect(self, body: (sync |T| void) context owner_scope)
+ 	fun scoped_effect_on_change(self, body: (sync |T| void) context owner_scope)
+-	fun map<U>(self, transform: sync |T| U): SignalCell<U>  // default; derived signal
+ }
+ ```
+ 
+@@ -462,10 +461,8 @@ fun main() {
+ }
+ ```
+ 
+-Until v0.41.0, `map`, `switch` and `combine` still return a `SignalCell`, so
+-`.cell()` on one of their results copies a cell that already caches. The flip
+-makes them return the cold nodes (`Map`, `Switch`, `Combine`), and `.cell()` is
+-then what you write where you want the cache — the
++`map`, `switch`, `flatten` and `and_then` return these cold nodes, and
++`.cell()` is where you want a cache — the
+ [guide](../guide/reactive.md#derived-state-map-combine-flatten) has the rule.
+ 
+ ### scoped_effect — an owner per run
+diff --git a/vilan/examples/reactive-ui/todos.vl b/vilan/examples/reactive-ui/todos.vl
+index d78a185..7d9f7b9 100644
+--- a/vilan/examples/reactive-ui/todos.vl
++++ b/vilan/examples/reactive-ui/todos.vl
+@@ -40,7 +40,7 @@ fun todos(): View {
+ 			}
+ 		}
+ 		open
+-	});
++	}).cell();
+ 
+ 	// `visible` depends on BOTH `items` and `filter`. `combine` is variadic — it
+ 	// takes a tuple of the dependencies (a `Signal` viewed as `.source()`) and
+@@ -58,7 +58,7 @@ fun todos(): View {
+ 			}
+ 		}
+ 		shown
+-	});
++	}).cell();
+ 
+ 	let add = || {
+ 		let label = draft.get(); // a one-shot SAMPLE — we want the value, not a dependency
+diff --git a/vilan/examples/router/app.vl b/vilan/examples/router/app.vl
+index d9aaf75..b142335 100644
+--- a/vilan/examples/router/app.vl
++++ b/vilan/examples/router/app.vl
+@@ -127,6 +127,6 @@ fun app(route: SignalCell<Route>): View {
+ }
+ 
+ fun main() {
+-	let route = current_path().map(parse);
++	let route = current_path().map(parse).cell();
+ 	let _root = ui::mount_root("app", || app(route));
+ }
+diff --git a/vilan/examples/todo/src/todos.vl b/vilan/examples/todo/src/todos.vl
+index ba2866c..cc0c529 100644
+--- a/vilan/examples/todo/src/todos.vl
++++ b/vilan/examples/todo/src/todos.vl
+@@ -66,7 +66,7 @@ let remove_button = const button + style::style().margin_left(style::Length::aut
+ let empty_note = const style::style().opacity(0.6);
+ 
+ fun todos(client: TodoClient<SocketTransport>): View {
+-	let items = client.todos.or([]);
++	let items = client.todos.or([]).cell();
+ 	let draft = Signal::new("");
+ 	let filter = Signal::new("all"); // "all" | "active" | "done"
+ 
+@@ -78,7 +78,7 @@ fun todos(client: TodoClient<SocketTransport>): View {
+ 			}
+ 		}
+ 		open
+-	});
++	}).cell();
+ 
+ 	let visible: SignalCell<List<Todo>> = combine((items, filter)).map(|(list, current)| {
+ 		mut shown: List<Todo> = [];
+@@ -91,7 +91,7 @@ fun todos(client: TodoClient<SocketTransport>): View {
+ 			}
+ 		}
+ 		shown
+-	});
++	}).cell();
+ 
+ 	let add = || {
+ 		let label = draft.get(); // a one-shot SAMPLE — we want the value, not a dependency
+diff --git a/vilan/examples/walkthrough/src/client.vl b/vilan/examples/walkthrough/src/client.vl
+index f9c5b22..c3f4459 100644
+--- a/vilan/examples/walkthrough/src/client.vl
++++ b/vilan/examples/walkthrough/src/client.vl
+@@ -17,7 +17,7 @@ import pkg::views::screen;
+ 
+ async fun main() {
+ 	let token = Signal::new(storage::get("notes-token"));
+-	let route = current_path().map(parse);
++	let route = current_path().map(parse).cell();
+ 
+ 	match NotesClient::connect("/", json_codec()) {
+ 		Ok(let client) => {
+diff --git a/vilan/examples/walkthrough/src/views.vl b/vilan/examples/walkthrough/src/views.vl
+index 8e649c3..b4b8d74 100644
+--- a/vilan/examples/walkthrough/src/views.vl
++++ b/vilan/examples/walkthrough/src/views.vl
+@@ -65,7 +65,7 @@ fun screen(
+ 	// and released when this view is unmounted — the channel is open while,
+ 	// and only while, the screen is showing. The empty `[]` takes its element
+ 	// type from the mirror.
+-	let notes = client.notes.or([]);
++	let notes = client.notes.or([]).cell();
+ 	view("div")
+ 		.styled(shell)
+ 		.child(connection_banner(client))
+@@ -198,7 +198,7 @@ fun note_page(
+ 			}
+ 		}
+ 		found
+-	});
++	}).cell();
+ 	let present = entry.map(|current| current is Some(let _note));
+ 
+ 	view("div")
+diff --git a/vilan/std/src/reactive.vl b/vilan/std/src/reactive.vl
+index 252ba42..cca3da8 100644
+--- a/vilan/std/src/reactive.vl
++++ b/vilan/std/src/reactive.vl
+@@ -1303,25 +1303,6 @@ export trait Source<T> {
+ 	fun scoped_effect_on_change(self, body: (sync |T| void) context owner_scope) {
+ 		self.effect_on_change(scoped_runner(body));
+ 	}
+-
+-	/// A derived signal: `transform` of this one's value, recomputed on every
+-	/// change. DETACHABLE (A28): the subscription into this signal is handed to the
+-	/// ambient owner, so a derivation made inside a boundary — a mounted view, an
+-	/// `each` row — dies when that boundary is disposed instead of notifying a dead
+-	/// derived signal for the rest of the session. Made outside every boundary
+-	/// (module level, the top of `main`) it lives as long as its source, which is
+-	/// what a module-level `current_path().map(parse)` wants.
+-	fun map<U>(self, transform: sync |T| U): SignalCell<U> {
+-		let derived = SignalCell::new(transform(self.get()));
+-		// A DERIVATION (A110 door 2): it publishes rather than acts, so it runs in
+-		// the wave's first phase and every effect downstream of it sees the settled
+-		// value.
+-		as_derivation();
+-		let _owned = register_with_owner(self.on_change(|value| {
+-			derived.set(transform(value));
+-		}));
+-		derived
+-	}
+ }
+ 
+ /// The WRITABLE half of the pair: `Source` reads, `Signal` writes. A component
+@@ -1756,29 +1737,8 @@ export impl Selector<type T: Hashable + PartialEq> {
+ // on `T`, and this needs `T` to be a source itself — so the bound-in-the-subject
+ // spelling is the honest one.
+ export impl type S: Source<type I: Source<type U>> {
+-	fun flatten(self): SignalCell<U> {
+-		let derived = SignalCell::new(self.get().get());
+-		let inner_subscription: Shared<Option<Subscription>> = Shared::new(None);
+-		// `sub` runs its observer immediately, so the first inner wires here too.
+-		// BOTH subscriptions are DERIVATIONS (A110 door 2) — the outer switches
+-		// which inner publishes, the inner publishes — and each attach spends its
+-		// own mark, the inner's inside the observer the outer's `sub` runs.
+-		as_derivation();
+-		let _outer = register_with_owner(self.sub(|inner| {
+-			inner_subscription.read()?.dispose();
+-			as_derivation();
+-			inner_subscription.write() = Some(inner.sub(|value| {
+-				derived.set(value);
+-			}));
+-		}));
+-		// The outer handle detaches this signal from the outer; whichever inner is
+-		// current at that moment needs releasing too, and it is not a handle anyone
+-		// else holds.
+-		defer_to_owner(|| {
+-			inner_subscription.read()?.dispose();
+-			inner_subscription.write() = None;
+-		});
+-		derived
++	fun flatten(self): Switch<S, I, I, U> {
++		Switch<S, I, I, U> { up = self, select = |inner| inner }
+ 	}
+ }
+ 
+@@ -1804,85 +1764,8 @@ export impl type S: Source<type I: Source<type U>> {
+ /// in one node, and is the everyday spelling; reach for this `flatten` when the
+ /// inner source is already in hand rather than selected.
+ export impl type S: Source<Option<type I: Source<type U>>> {
+-	fun flatten(self): SignalCell<Option<U>> {
+-		let derived: SignalCell<Option<U>> = SignalCell::new(match self.get() {
+-			Some(let inner) => Some(inner.get()),
+-			None => None,
+-		});
+-		let inner_subscription: Shared<Option<Subscription>> = Shared::new(None);
+-		// DERIVATIONS, both halves, exactly as in the total join above.
+-		as_derivation();
+-		let _outer = register_with_owner(self.sub(|held| {
+-			inner_subscription.read()?.dispose();
+-			match held {
+-				Some(let inner) => {
+-					as_derivation();
+-					inner_subscription.write() = Some(inner.sub(|value| {
+-						derived.set(Some(value));
+-					}));
+-				},
+-				None => {
+-					inner_subscription.write() = None;
+-					derived.set(None);
+-				},
+-			}
+-		}));
+-		defer_to_owner(|| {
+-			inner_subscription.read()?.dispose();
+-			inner_subscription.write() = None;
+-		});
+-		derived
+-	}
+-}
+-
+-/// The DYNAMIC dependency with no `Option` in it (tracker A123) — Rx's `switchMap`:
+-/// follow whichever source `select` answers for the value this one currently holds,
+-/// and re-follow when it changes.
+-///
+-/// `map` and `combine` are STATIC dependencies: what the result reads is fixed by
+-/// the expression that built it. `switch` is the dynamic half — WHICH source the
+-/// result follows is decided by the current value, which is what "the selected
+-/// channel's unread count" wants and what every hand-rolled `map(..).flatten()`
+-/// chain is spelling. It MEANS `self.map(select).flatten()` and is written directly
+-/// over `on_change` instead: ONE derived cell rather than two, and `select` is
+-/// called exactly once per value of this source — the `map` form calls it once more
+-/// at construction and orphans that node.
+-///
+-/// The rolling inner subscription is disposed on every switch, so a replaced inner
+-/// stops driving the result, and both halves are the ambient owner's exactly as
+-/// `flatten`'s are (A28): the outer registered, whichever inner is live at disposal
+-/// deferred.
+-export impl type S: Source<type T> {
+-	fun switch<U, I: Source<U>>(self, select: sync |T| I): SignalCell<U> {
+-		// The first inner is HELD rather than re-selected: `self.on_change` is the
+-		// lazy attach, so nothing calls `select` a second time for the value the
+-		// initial cell was built from.
+-		let first = select(self.get());
+-		let derived = SignalCell::new(first.get());
+-		let inner_subscription: Shared<Option<Subscription>> = Shared::new(None);
+-		// Every attach here is a DERIVATION (A110 door 2) — the result publishes
+-		// rather than acts, so an effect downstream of it sees the settled value in
+-		// one wave. The mark is consumed by the next mint, so it is left AFTER
+-		// `select` has run (a `select` body that maps mints subscribers of its
+-		// own).
+-		as_derivation();
+-		inner_subscription.write() = Some(first.on_change(|value| {
+-			derived.set(value);
+-		}));
+-		as_derivation();
+-		let _outer = register_with_owner(self.on_change(|value| {
+-			inner_subscription.read()?.dispose();
+-			let inner = select(value);
+-			as_derivation();
+-			inner_subscription.write() = Some(inner.sub(|inner_value| {
+-				derived.set(inner_value);
+-			}));
+-		}));
+-		defer_to_owner(|| {
+-			inner_subscription.read()?.dispose();
+-			inner_subscription.write() = None;
+-		});
+-		derived
++	fun flatten(self): FlattenOption<S, I, U> {
++		FlattenOption<S, I, U> { up = self }
+ 	}
+ }
+ 
+@@ -1902,35 +1785,8 @@ export impl type S: Source<type T> {
+ /// registered outer subscription, one rolling inner one deferred to the
+ /// ambient owner.
+ export impl type S: Source<Option<type T>> {
+-	fun and_then<U, I: Source<Option<U>>>(self, select: sync |T| I): SignalCell<Option<U>> {
+-		// `sub`'s immediate call wires the first inner and writes the initial
+-		// value, so `select` runs once per outer value here too — the cell is born
+-		// `None` and settled before this method returns.
+-		let derived: SignalCell<Option<U>> = SignalCell::new(None);
+-		let inner_subscription: Shared<Option<Subscription>> = Shared::new(None);
+-		// DERIVATIONS, both halves, exactly as in the two joins above.
+-		as_derivation();
+-		let _outer = register_with_owner(self.sub(|held| {
+-			inner_subscription.read()?.dispose();
+-			match held {
+-				Some(let value) => {
+-					let inner = select(value);
+-					as_derivation();
+-					inner_subscription.write() = Some(inner.sub(|inner_value| {
+-						derived.set(inner_value);
+-					}));
+-				},
+-				None => {
+-					inner_subscription.write() = None;
+-					derived.set(None);
+-				},
+-			}
+-		}));
+-		defer_to_owner(|| {
+-			inner_subscription.read()?.dispose();
+-			inner_subscription.write() = None;
+-		});
+-		derived
++	fun and_then<U, I: Source<Option<U>>>(self, select: sync |T| I): AndThen<S, T, I, U> {
++		AndThen<S, T, I, U> { up = self, select }
+ 	}
+ }
+ 
+@@ -1943,10 +1799,10 @@ export impl type S: Source<Option<type T>> {
+ // node. State lives at the two ends: the root cell, and `.cell()` where a consumer
+ // wants a cached value (a shared derivation, a hot read).
+ //
+-// THIS ORDER the nodes are built only through the `_node` spellings below,
+-// marked `[internal]`: `map`/`switch`/`combine` still return a `SignalCell`, and
+-// the flip that makes them return these nodes is A124 S2c, the breaking step of
+-// v0.41.0's train. `.cell()` and `.distinct()` are public now.
++// Since the flip (A124 S2c, v0.41.0) the combinators return these nodes: `map` a
++// `Map`, `switch` and the total `flatten` a `Switch`, the `Option` `flatten` a
++// `FlattenOption`, `and_then` an `AndThen`, and `.cell()` is where a value is
++// cached.
+ //
+ // Every node's `on_change` calls its OWN `on_settle` directly, never through a
+ // generic bound. An impl's override of a trait default is not selected through a
+@@ -1978,7 +1834,7 @@ fun pulling<T, S: Source<T>>(source: S, observer: |T| void): Subscriber {
+ /// Source<U>` — a bound naming the SAME trait the impl implements, at a different
+ /// argument — and a DEFAULT inherited through such an impl (`sub`, `effect`,
+ /// `map`) checks the bound at the implemented argument instead of its own:
+-/// `root.map_node(|n| i"{n}").effect(..)` is refused as "`SignalCell<i32>` does
++/// `root.map(|n| i"{n}").effect(..)` is refused as "`SignalCell<i32>` does
+ /// not implement `Source<str>`". A bound on another trait is not confused with
+ /// the implemented one, and a blanket gives every `Source` this one. (Filed at
+ /// A124 S2b; when the selection is fixed this collapses back to `Source`.)
+@@ -2130,6 +1986,110 @@ export impl Combine<type T> with Source<T> {
+ 	}
+ }
+ 
++/// `flatten` over `Source<Option<inner>>` as a NODE: `None` on the outer is `None`,
++/// and `Some(inner)` reads that inner, wrapped. Its attach keeps the rolling
++/// registration `Switch` keeps — on whichever inner is current, none while the
++/// outer holds `None` — as a relay of its own.
++export struct FlattenOption<S, I, U> {
++	up: S,
++}
++
++export impl FlattenOption<type S: Upstream<Option<I>>, type I: Source<U>, type U> with Source<
++	Option<U>,
++> {
++	fun get(self): Option<U> {
++		match self.up.pull_upstream() {
++			Some(let inner) => Some(inner.get()),
++			None => None,
++		}
++	}
++
++	[must_use]
++	fun on_change(self, observer: |Option<U>| void): Subscription {
++		self.on_settle(pulling(self, observer))
++	}
++
++	[must_use]
++	fun on_settle(self, subscriber: Subscriber): Subscription {
++		let inner_subscription: Shared<Option<Subscription>> = Shared::new(None);
++		let follow = || {
++			match inner_subscription.read() {
++				Some(let previous) => detach(previous),
++				None => {},
++			}
++			inner_subscription.write() = match self.up.pull_upstream() {
++				Some(let inner) => Some(inner.on_settle(subscriber_of(|| wake(subscriber), true))),
++				None => None,
++			};
++		};
++		follow();
++		let outer = self.up.settle_upstream(subscriber_of(|| {
++			follow();
++			wake(subscriber);
++		}, true));
++		retiring(subscriber, || {
++			match inner_subscription.read() {
++				Some(let previous) => detach(previous),
++				None => {},
++			}
++			inner_subscription.write() = None;
++			detach(outer);
++		})
++	}
++}
++
++/// `and_then` as a NODE (A123's Kleisli composition, cold): `None` on the outer is
++/// `None`; `Some(value)` reads the `Source<Option<U>>` that `select` answers for
++/// it. The rolling registration is `FlattenOption`'s.
++export struct AndThen<S, T, I, U> {
++	up: S,
++	select: |T| I,
++}
++
++export impl AndThen<type S: Upstream<Option<T>>, type T, type I: Source<Option<U>>, type U> with Source<
++	Option<U>,
++> {
++	fun get(self): Option<U> {
++		match self.up.pull_upstream() {
++			Some(let value) => (self.select)(value).get(),
++			None => None,
++		}
++	}
++
++	[must_use]
++	fun on_change(self, observer: |Option<U>| void): Subscription {
++		self.on_settle(pulling(self, observer))
++	}
++
++	[must_use]
++	fun on_settle(self, subscriber: Subscriber): Subscription {
++		let inner_subscription: Shared<Option<Subscription>> = Shared::new(None);
++		let follow = || {
++			match inner_subscription.read() {
++				Some(let previous) => detach(previous),
++				None => {},
++			}
++			inner_subscription.write() = match self.up.pull_upstream() {
++				Some(let value) => Some((self.select)(value).on_settle(subscriber_of(|| wake(subscriber), true))),
++				None => None,
++			};
++		};
++		follow();
++		let outer = self.up.settle_upstream(subscriber_of(|| {
++			follow();
++			wake(subscriber);
++		}, true));
++		retiring(subscriber, || {
++			match inner_subscription.read() {
++				Some(let previous) => detach(previous),
++				None => {},
++			}
++			inner_subscription.write() = None;
++			detach(outer);
++		})
++	}
++}
++
+ /// `.distinct()` as a NODE (Q3): the upstream's value, passed on to a downstream
+ /// ONLY when it differs from the last one that downstream was told of. `.cell()`
+ /// does not compare — it notifies on every settle, as every `set` does — so the
+@@ -2172,20 +2132,23 @@ export impl Distinct<type S: Upstream<T>, type T: PartialEq> with Source<T> {
+ 	}
+ }
+ 
+-/// The combinators and the two materialising ends, as blankets over the read
+-/// trait. The `_node` spellings are `[internal]` this order: S2c gives `map`,
+-/// `switch` and `combine` these nodes and retires the suffixed names.
++/// The combinators and the materialising end, as blankets over the read trait —
++/// which an object satisfies too, so each of them reaches through a `dyn Source<T>`
++/// (`proposal/reactive-pipeline.md` §3.4).
+ export impl type S: Source<type T> {
+-	[internal("A124 S2b: the cold `map`, std-internal until the flip (S2c) makes `map` return it")]
+-	fun map_node<U>(self, transform: sync |T| U): Map<S, T, U> {
++	/// A derived source: `transform` of this one's value, computed when it is READ
++	/// (A124). The result is a cold `Map` node — it stores nothing and registers
++	/// nothing until something reads or subscribes, and each reader pays one
++	/// application per change. Write `.cell()` after it where it is shared or read
++	/// hot.
++	fun map<U>(self, transform: sync |T| U): Map<S, T, U> {
+ 		Map<S, T, U> { up = self, transform }
+ 	}
+ 
+-	[internal("A124 S2b: the cold `switch`, std-internal until the flip (S2c) makes `switch` return it")]
+-	fun switch_node<U, I: Source<U>>(
+-		self,
+-		select: sync |T| I,
+-	): Switch<S, T, I, U> {
++	/// The DYNAMIC dependency (A123), cold: follow whichever source `select`
++	/// answers for this one's current value, and re-follow when it changes — Rx's
++	/// `switchMap`. The rolling registration is the node's own relay (`Switch`).
++	fun switch<U, I: Source<U>>(self, select: sync |T| I): Switch<S, T, I, U> {
+ 		Switch<S, T, I, U> { up = self, select }
+ 	}
+ 
+@@ -2298,7 +2261,7 @@ export impl Resource<type T> {
+ 	/// Total, with `default` standing in while pending or failed — and AGAIN on
+ 	/// every re-pend (Q2: it resets).
+ 	fun or(self, default: T): Map<SignalCell<ResourceState<T>>, ResourceState<T>, T> {
+-		self.state.map_node(|state| {
++		self.state.map(|state| {
+ 			match state {
+ 				ResourceState::Settled(let value) => value,
+ 				_ => default,
+@@ -2310,7 +2273,7 @@ export impl Resource<type T> {
+ 	/// `default` only before the first settle.
+ 	fun latest(self, default: T): Map<SignalCell<ResourceState<T>>, ResourceState<T>, T> {
+ 		let latest = self.latest;
+-		self.state.map_node(|state| {
++		self.state.map(|state| {
+ 			match state {
+ 				ResourceState::Settled(let value) => value,
+ 				_ => latest.read().unwrap_or(default),
+@@ -2320,7 +2283,7 @@ export impl Resource<type T> {
+ 
+ 	/// Total, with absence as a value: `None` while pending or failed.
+ 	fun optional(self): Map<SignalCell<ResourceState<T>>, ResourceState<T>, Option<T>> {
+-		self.state.map_node(|state| {
++		self.state.map(|state| {
+ 			match state {
+ 				ResourceState::Settled(let value) => Some(value),
+ 				_ => None,
+@@ -2331,7 +2294,7 @@ export impl Resource<type T> {
+ 	/// `true` exactly while pending — the spinner, which is what keeps `.latest`
+ 	/// honest about showing stale data.
+ 	fun is_pending(self): Map<SignalCell<ResourceState<T>>, ResourceState<T>, bool> {
+-		self.state.map_node(|state| {
++		self.state.map(|state| {
+ 			match state {
+ 				ResourceState::Pending => true,
+ 				_ => false,
+diff --git a/vilan/std/src/rpc.vl b/vilan/std/src/rpc.vl
+index 18354dc..b39f7b0 100644
+--- a/vilan/std/src/rpc.vl
++++ b/vilan/std/src/rpc.vl
+@@ -32,6 +32,7 @@ import pkg::reactive::{
+ 	DeltaSource,
+ 	Disposable,
+ 	FlushPolicy,
++	Map as MapNode,
+ 	SeqOp,
+ 	SignalCell,
+ 	Source,
+@@ -3586,52 +3587,17 @@ export impl RemoteSource<type T> with Source<Option<T>> {
+ 	fun effect(self, observer: |Option<T>| void) {
+ 		get_owner().take(self.lease(observer));
+ 	}
+-
+-	/// Observe the mirror through `transform`, as a plain `SignalCell<U>` — the
+-	/// one seam into the ordinary reactive world (`each`, `bind_text`,
+-	/// `{…}` embedding all take a `Signal`). COUNTED: this is a subscription —
+-	/// it opens the channel if nothing else has, and the lease is released when
+-	/// the enclosing owner is disposed, which for a view is unmount. So it
+-	/// requires an ambient owner, STATICALLY (`get_owner`, not the trait
+-	/// default's `register_with_owner`): calling it where no `owner_scope.run`
+-	/// encloses is a compile error, which makes "a network subscription must
+-	/// have an owner" a compile-time law (A25). The trait's default is
+-	/// deliberately owner-OPTIONAL, because `current_path().map(parse)` at
+-	/// module level is a documented idiom and a network subscription at module
+-	/// level is not one.
+-	///
+-	/// An OVERRIDE of the trait's `map`, which is what makes the strict law reach a
+-	/// generic `S: Source<Option<T>>` too and not merely a concrete
+-	/// `mirror.map(..)`. It was inherent until B258: overriding a default that the
+-	/// receiver's own field type inherits used to promote `status`'s own
+-	/// `self.cache.map(..)` — a call on a `SignalCell` field, which inherits the
+-	/// OWNER-OPTIONAL default — to this strict body's flavor, and
+-	/// `register_with_owner` ran with an undefined owner.
+-	///
+-	/// `transform` sees `None` until the first frame lands — the one place the
+-	/// `Option` is confronted, and where a fallback of a DIFFERENT type than `T`
+-	/// belongs (`"Loading…"` from a `RemoteSource<i32>`).
+-	fun map<U>(self, transform: sync |Option<T>| U): SignalCell<U> {
+-		let derived = SignalCell::new(transform(self.get()));
+-		// A DERIVATION (A110 door 2), exactly as `Source::map` is: `lease` bottoms
+-		// out in `cache.sub`, and `acquire` mints no subscriber on the way, so the
+-		// mark reaches that one attach. Without it the mapped cell is EFFECT-class
+-		// and a lower-id effect on the same mirror reads it stale for one wave.
+-		as_derivation();
+-		get_owner().take(self.lease(|value| {
+-			derived.set(transform(value));
+-		}));
+-		derived
+-	}
+ }
+ 
+ export impl RemoteSource<type T> {
+-	/// `map` for the same-type case: `initial` until the first frame, the
+-	/// mirrored value after. Counted and owner-released exactly like `map`,
+-	/// because it IS `map` — `client.notes.or([])` inside a view replaces the
+-	/// hand-built `SignalCell::new([])` + never-disposed `sub` pair, and the
+-	/// subscription now dies with the view instead of with the tab.
+-	fun or(self, initial: T): SignalCell<T> {
++	/// `initial` until the first frame, the mirrored value after — a cold `map`
++	/// node over the mirror (A124 S2c). It stores nothing and leases nothing: the
++	/// lease is taken by whatever SUBSCRIBES to it (`each`, a binding, an
++	/// `effect`), once per such leaf, and released with it — so inside a view it
++	/// still dies with the view. The mirror's own strict `map` (A25's "a network
++	/// subscription must have an owner", checked where `map` was called) is gone
++	/// with the flip: the owner is asked where the subscription is made.
++	fun or(self, initial: T): MapNode<RemoteSource<T>, Option<T>, T> {
+ 		self.map(|value| match value {
+ 			Some(let present) => present,
+ 			None => initial,
+@@ -4440,29 +4406,6 @@ export impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>> with S
+ 	fun effect(self, observer: |Option<List<T>>| void) {
+ 		get_owner().take(self.lease(observer));
+ 	}
+-
+-	/// Observe through `transform`, as a plain `SignalCell<U>` — the seam into the
+-	/// ordinary reactive world. Counted and owner-released exactly like
+-	/// `RemoteSource::map`, and with the same static requirement: an enclosing
+-	/// `owner_scope.run`.
+-	///
+-	/// An OVERRIDE of the trait's `map` rather than an inherent member, for B258's
+-	/// reason (`RemoteSource::map` carries it at length): an inherent override
+-	/// would promote `status`'s own `self.cache.map(…)` — a call on a `SignalCell`
+-	/// field, which inherits the owner-OPTIONAL default — to this strict body's
+-	/// flavor, and `register_with_owner` would run with an undefined owner.
+-	fun map<U>(self, transform: sync |Option<List<T>>| U): SignalCell<U> {
+-		let derived = SignalCell::new(transform(self.get()));
+-		// A DERIVATION (A110 door 2), exactly as `Source::map` is: `lease` bottoms
+-		// out in `cache.sub`, and `acquire` mints no subscriber on the way, so the
+-		// mark reaches that one attach. Without it the mapped cell is EFFECT-class
+-		// and a lower-id effect on the same mirror reads it stale for one wave.
+-		as_derivation();
+-		get_owner().take(self.lease(|value| {
+-			derived.set(transform(value));
+-		}));
+-		derived
+-	}
+ }
+ 
+ export impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>> {
+@@ -4595,8 +4538,8 @@ export impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>> {
+ 		subscription
+ 	}
+ 
+-	/// `map` for the same-type case: `initial` until the first patch.
+-	fun or(self, initial: List<T>): SignalCell<List<T>> {
++	/// `initial` until the first patch — `RemoteSource::or`'s cold node.
++	fun or(self, initial: List<T>): MapNode<KeyedSource<K, T>, Option<List<T>>, List<T>> {
+ 		self.map(|value| match value {
+ 			Some(let present) => present,
+ 			None => initial,
+diff --git a/vilan/test/dyn-objects.mjs b/vilan/test/dyn-objects.mjs
+index 5869a10..38d26be 100644
+--- a/vilan/test/dyn-objects.mjs
++++ b/vilan/test/dyn-objects.mjs
+@@ -52,18 +52,18 @@ function subscriber_of(notify, derived) {
+ 	return [ fresh_id(), notify, __shared_new(true), derived ];
+ }
+ function is_quiescent(self) {
+-	return $M(self[0].v) && $M(self[1].v);
++	return $L(self[0].v) && $L(self[1].v);
+ }
+ function enqueue(turn, subscribers) {
+ 	for (const subscriber of subscribers) {
+ 		const key = hash(subscriber[0]);
+-		let $L = null;
++		let $K = null;
+ 		if (subscriber[3]) {
+ 			if (!(turn[3].v.has(key))) {
+ 				turn[3].v.set(key, true);
+ 				turn[1].v.push(__clone(subscriber));
+ 			}
+-			$L = undefined;
++			$K = undefined;
+ 		} else if (!(turn[2].v.has(key))) {
+ 			turn[2].v.set(key, true);
+ 			let index = turn[0].v.length;
+@@ -72,7 +72,7 @@ function enqueue(turn, subscribers) {
+ 			}
+ 			__insert_at(turn[0].v, index, __clone(subscriber));
+ 		}
+-		$L;
++		$K;
+ 	}
+ 	if (turn[5].v && !(turn[6].v) && !(turn[4].v)) {
+ 		turn[6].v = true;
+@@ -90,7 +90,7 @@ function drain(turn) {
+ 		__with_finally(() => {
+ 			let budget = 100000;
+ 			while (!(is_quiescent(turn)) && budget > 0) {
+-				while (!($M(turn[1].v)) && budget > 0) {
++				while (!($L(turn[1].v)) && budget > 0) {
+ 					const derivations = turn[1].v;
+ 					turn[1].v = [  ];
+ 					turn[3].v = new Map();
+@@ -120,26 +120,26 @@ function drain(turn) {
+ 	}
+ }
+ function defer_subscriber(turn, subscriber) {
+-	const $J = turn;
+-	let $K = null;
+-	if ($J[0] === 0) {
+-		const ambient = $J[1];
+-		$K = enqueue(ambient, [ reissued(subscriber) ]);
++	const $I = turn;
++	let $J = null;
++	if ($I[0] === 0) {
++		const ambient = $I[1];
++		$J = enqueue(ambient, [ reissued(subscriber) ]);
+ 	} else {
+-		const $N = $A(draining_turns.v);
+-		let $O = null;
+-		if ($N[0] === 0) {
+-			const draining = $N[1];
+-			$O = enqueue(draining, [ reissued(subscriber) ]);
++		const $M = $z(draining_turns.v);
++		let $N = null;
++		if ($M[0] === 0) {
++			const draining = $M[1];
++			$N = enqueue(draining, [ reissued(subscriber) ]);
+ 		} else {
+ 			if (subscriber[2].v) {
+ 				subscriber[1]();
+ 			}
+-			$O = undefined;
++			$N = undefined;
+ 		}
+-		$K = $O;
++		$J = $N;
+ 	}
+-	return $K;
++	return $J;
+ }
+ function reissued(subscriber) {
+ 	return [ subscriber[0], subscriber[1], subscriber[2], subscriber[3] ];
+@@ -151,35 +151,35 @@ function also_retiring(handle, subscriber) {
+ 	const previous = handle[3].v;
+ 	handle[3].v = [ 0, () => {
+ 		subscriber[2].v = false;
+-		const $P = previous;
+-		let $Q = null;
+-		if ($P[0] === 0) {
+-			const release = $P[1];
+-			$Q = release();
++		const $O = previous;
++		let $P = null;
++		if ($O[0] === 0) {
++			const release = $O[1];
++			$P = release();
+ 		} else {
+-			$Q = undefined;
++			$P = undefined;
+ 		}
+-		return $Q;
++		return $P;
+ 	} ];
+ }
+-function dispose(self, $x) {
+-	const $y = $x;
+-	let $z = null;
+-	if ($y[0] === 0) {
+-		const established = $y[1];
+-		$z = [ 0, established ];
++function dispose(self, $w) {
++	const $x = $w;
++	let $y = null;
++	if ($x[0] === 0) {
++		const established = $x[1];
++		$y = [ 0, established ];
+ 	} else {
+-		$z = $A(draining_turns.v);
++		$y = $z(draining_turns.v);
+ 	}
+-	const ambient = $z;
++	const ambient = $y;
+ 	release_under(self, ambient);
+ }
+ function release_under(handle, ambient) {
+ 	handle[2].v = false;
+-	const $B = [ 0, handle[0] ];
+-	let $C = null;
+-	if ($B[0] === 0) {
+-		const subscribers = $B[1];
++	const $A = [ 0, handle[0] ];
++	let $B = null;
++	if ($A[0] === 0) {
++		const subscribers = $A[1];
+ 		let kept = [  ];
+ 		for (const subscriber of subscribers.v) {
+ 			if (subscriber[0] !== handle[1]) {
+@@ -187,15 +187,15 @@ function release_under(handle, ambient) {
+ 			}
+ 		}
+ 		subscribers.v = kept;
+-		$C = undefined;
++		$B = undefined;
+ 	} else {
+-		$C = undefined;
++		$B = undefined;
+ 	}
+-	$C;
+-	const $D = ambient;
+-	let $E = null;
+-	if ($D[0] === 0) {
+-		const turn = $D[1];
++	$B;
++	const $C = ambient;
++	let $D = null;
++	if ($C[0] === 0) {
++		const turn = $C[1];
+ 		let kept_pending = [  ];
+ 		for (const subscriber2 of turn[0].v) {
+ 			if (subscriber2[0] !== handle[1]) {
+@@ -212,29 +212,29 @@ function release_under(handle, ambient) {
+ 		}
+ 		turn[1].v = kept_derived;
+ 		turn[3].v.delete(hash(handle[1]));
+-		$E = undefined;
++		$D = undefined;
+ 	} else {
+-		$E = undefined;
++		$D = undefined;
+ 	}
+-	$E;
+-	const $F = handle[3].v;
+-	let $G = null;
+-	if ($F[0] === 0) {
+-		const release = $F[1];
++	$D;
++	const $E = handle[3].v;
++	let $F = null;
++	if ($E[0] === 0) {
++		const release = $E[1];
+ 		handle[3].v = [ 1 ];
+ 		releasing_turns.v.push(ambient);
+ 		__with_finally(release, () => {
+ 			__list_pop(releasing_turns.v);
+ 			return;
+ 		});
+-		$G = undefined;
++		$F = undefined;
+ 	} else {
+-		$G = undefined;
++		$F = undefined;
+ 	}
+-	return $G;
++	return $F;
+ }
+-function get_owner($u) {
+-	return $u;
++function get_owner($t) {
++	return $t;
+ }
+ function name(self) {
+ 	return "square";
+@@ -315,37 +315,32 @@ function $h(self, observer) {
+ function $m(self, subscriber) {
+ 	return $l(self, subscriber);
+ }
+-function $n(self, observer) {
+-	const subscription = $i(self, observer);
+-	observer($g(self));
+-	return subscription;
+-}
+-function $A(self) {
++function $z(self) {
+ 	return __list_get(self, self.length - 1);
+ }
+-function $v(self, item, $w) {
++function $u(self, item, $v) {
+ 	if (self[1].v) {
+-		dispose(item, $w);
++		dispose(item, $v);
+ 	} else {
+ 		self[0].v.push(() => {
+-			dispose(item, $w);
++			dispose(item, $v);
+ 			return;
+ 		});
+ 	}
+ 	return __clone(item);
+ }
+-function $r(self, observer, $s, $t) {
+-	$v(get_owner($t), $h(self, observer), $s);
++function $q(self, observer, $r, $s) {
++	$u(get_owner($s), $h(self, observer), $r);
+ }
+-function $o(self, observer, $p, $q) {
+-	$r(self, observer, $p, $q);
++function $n(self, observer, $o, $p) {
++	$q(self, observer, $o, $p);
+ 	observer($g(self));
+ }
+-const $f = Object.create({get: $g, on_change: $h, on_settle: $m, sub: $n, effect: $o});
+-function $M(self) {
++const $f = Object.create({get: $g, on_change: $h, on_settle: $m, effect: $n});
++function $L(self) {
+ 	return self.length === 0;
+ }
+-function $I(self, subscriber) {
++function $H(self, subscriber) {
+ 	as_derivation();
+ 	const relayed = on_change(self, (_value) => {
+ 		return wake(subscriber);
+@@ -353,46 +348,41 @@ function $I(self, subscriber) {
+ 	also_retiring(relayed, subscriber);
+ 	return relayed;
+ }
+-function $R(self, observer) {
+-	const subscription = on_change(self, observer);
+-	observer(get(self));
+-	return subscription;
+-}
+-function $T(self, observer, $s, $t) {
+-	$v(get_owner($t), on_change(self, observer), $s);
++function $R(self, observer, $r, $s) {
++	$u(get_owner($s), on_change(self, observer), $r);
+ }
+-function $S(self, observer, $p, $q) {
+-	$T(self, observer, $p, $q);
++function $Q(self, observer, $o, $p) {
++	$R(self, observer, $o, $p);
+ 	observer(get(self));
+ }
+-const $H = Object.create({get: get, on_change: on_change, on_settle: $I, sub: $R, effect: $S});
+-function $X(self, $Y) {
+-	const $Z = $Y;
+-	let $aa = null;
+-	if ($Z[0] === 0) {
+-		const turn = $Z[1];
+-		$aa = enqueue(turn, self[1].v);
++const $G = Object.create({get: get, on_change: on_change, on_settle: $H, effect: $Q});
++function $V(self, $W) {
++	const $X = $W;
++	let $Y = null;
++	if ($X[0] === 0) {
++		const turn = $X[1];
++		$Y = enqueue(turn, self[1].v);
+ 	} else {
+-		const $ab = $A(draining_turns.v);
+-		let $ac = null;
+-		if ($ab[0] === 0) {
+-			const draining = $ab[1];
+-			$ac = enqueue(draining, self[1].v);
++		const $Z = $z(draining_turns.v);
++		let $aa = null;
++		if ($Z[0] === 0) {
++			const draining = $Z[1];
++			$aa = enqueue(draining, self[1].v);
+ 		} else {
+ 			for (const subscriber of self[1].v) {
+ 				if (subscriber[2].v) {
+ 					subscriber[1]();
+ 				}
+ 			}
+-			$ac = undefined;
++			$aa = undefined;
+ 		}
+-		$aa = $ac;
++		$Y = $aa;
+ 	}
+-	return $aa;
++	return $Y;
+ }
+-function $V(self, value, $W) {
++function $T(self, value, $U) {
+ 	self[0].v = __clone(value);
+-	$X(self, $W);
++	$V(self, $U);
+ }
+ const minting_derivation = __shared_new(false);
+ const next_subscriber_id = __shared_new(0);
+@@ -408,13 +398,13 @@ console.log(total(shapes));
+ console.log($d(shapes));
+ console.log(__at(slots, 0));
+ const root = $e(1);
+-const sources = [ __clone([ root, $f ]), [ [ __clone([ root, $f ]), 100 ], $H ] ];
+-const watch = (($U) => {
+-	return $U[1].on_change($U[0], (n) => {
++const sources = [ __clone([ root, $f ]), [ [ __clone([ root, $f ]), 100 ], $G ] ];
++const watch = (($S) => {
++	return $S[1].on_change($S[0], (n) => {
+ 		return console.log("offset saw " + n);
+ 	});
+ })(__at(sources, 1));
+-$V(root, 5, [ 1 ]);
++$T(root, 5, [ 1 ]);
+ for (const source of sources) {
+ 	console.log(source[1].get(source[0]));
+ }
+diff --git a/vilan/test/reactive-flatten.mjs b/vilan/test/reactive-flatten.mjs
+index 2d06a2d..c3a9012 100644
+--- a/vilan/test/reactive-flatten.mjs
++++ b/vilan/test/reactive-flatten.mjs
+@@ -35,35 +35,19 @@ function __with_finally(body, after) {
+ function hash(self) {
+ 	return __hash(self);
+ }
+-function as_derivation() {
+-	minting_derivation.v = true;
+-}
+-function fresh_id() {
+-	const id = next_subscriber_id.v;
+-	next_subscriber_id.v = id + 1;
+-	return id;
+-}
+-function mint_subscriber(notify) {
+-	const derived = minting_derivation.v;
+-	minting_derivation.v = false;
+-	return subscriber_of(notify, derived);
+-}
+-function subscriber_of(notify, derived) {
+-	return [ fresh_id(), notify, __shared_new(true), derived ];
+-}
+ function is_quiescent(self) {
+-	return $C(self[0].v) && $C(self[1].v);
++	return $q(self[0].v) && $q(self[1].v);
+ }
+ function enqueue(turn, subscribers) {
+ 	for (const subscriber of subscribers) {
+ 		const key = hash(subscriber[0]);
+-		let $B = null;
++		let $p = null;
+ 		if (subscriber[3]) {
+ 			if (!(turn[3].v.has(key))) {
+ 				turn[3].v.set(key, true);
+ 				turn[1].v.push(__clone(subscriber));
+ 			}
+-			$B = undefined;
++			$p = undefined;
+ 		} else if (!(turn[2].v.has(key))) {
+ 			turn[2].v.set(key, true);
+ 			let index = turn[0].v.length;
+@@ -72,7 +56,7 @@ function enqueue(turn, subscribers) {
+ 			}
+ 			__insert_at(turn[0].v, index, __clone(subscriber));
+ 		}
+-		$B;
++		$p;
+ 	}
+ 	if (turn[5].v && !(turn[6].v) && !(turn[4].v)) {
+ 		turn[6].v = true;
+@@ -90,7 +74,7 @@ function drain(turn) {
+ 		__with_finally(() => {
+ 			let budget = 100000;
+ 			while (!(is_quiescent(turn)) && budget > 0) {
+-				while (!($C(turn[1].v)) && budget > 0) {
++				while (!($q(turn[1].v)) && budget > 0) {
+ 					const derivations = turn[1].v;
+ 					turn[1].v = [  ];
+ 					turn[3].v = new Map();
+@@ -119,109 +103,6 @@ function drain(turn) {
+ 		});
+ 	}
+ }
+-function reissued(subscriber) {
+-	return [ subscriber[0], subscriber[1], subscriber[2], subscriber[3] ];
+-}
+-function dispose(self, $l) {
+-	const $m = $l;
+-	let $n = null;
+-	if ($m[0] === 0) {
+-		const established = $m[1];
+-		$n = [ 0, established ];
+-	} else {
+-		$n = $o(draining_turns.v);
+-	}
+-	const ambient = $n;
+-	release_under(self, ambient);
+-}
+-function release_under(handle, ambient) {
+-	handle[2].v = false;
+-	const $p = [ 0, handle[0] ];
+-	let $q = null;
+-	if ($p[0] === 0) {
+-		const subscribers = $p[1];
+-		let kept = [  ];
+-		for (const subscriber of subscribers.v) {
+-			if (subscriber[0] !== handle[1]) {
+-				kept.push(__clone(subscriber));
+-			}
+-		}
+-		subscribers.v = kept;
+-		$q = undefined;
+-	} else {
+-		$q = undefined;
+-	}
+-	$q;
+-	const $r = ambient;
+-	let $s = null;
+-	if ($r[0] === 0) {
+-		const turn = $r[1];
+-		let kept_pending = [  ];
+-		for (const subscriber2 of turn[0].v) {
+-			if (subscriber2[0] !== handle[1]) {
+-				kept_pending.push(__clone(subscriber2));
+-			}
+-		}
+-		turn[0].v = kept_pending;
+-		turn[2].v.delete(hash(handle[1]));
+-		let kept_derived = [  ];
+-		for (const subscriber3 of turn[1].v) {
+-			if (subscriber3[0] !== handle[1]) {
+-				kept_derived.push(__clone(subscriber3));
+-			}
+-		}
+-		turn[1].v = kept_derived;
+-		turn[3].v.delete(hash(handle[1]));
+-		$s = undefined;
+-	} else {
+-		$s = undefined;
+-	}
+-	$s;
+-	const $t = handle[3].v;
+-	let $u = null;
+-	if ($t[0] === 0) {
+-		const release = $t[1];
+-		handle[3].v = [ 1 ];
+-		releasing_turns.v.push(ambient);
+-		__with_finally(release, () => {
+-			__list_pop(releasing_turns.v);
+-			return;
+-		});
+-		$u = undefined;
+-	} else {
+-		$u = undefined;
+-	}
+-	return $u;
+-}
+-function defer(self, cleanup) {
+-	if (self[1].v) {
+-		cleanup();
+-	} else {
+-		self[0].v.push(cleanup);
+-	}
+-}
+-function register_with_owner(subscription, $P, $Q) {
+-	const $R = $Q;
+-	let $S = null;
+-	if ($R[0] === 0) {
+-		const owner = $R[1];
+-		$S = $T(owner, subscription, $P);
+-	} else {
+-		$S = __clone(subscription);
+-	}
+-	return $S;
+-}
+-function defer_to_owner(cleanup, $X) {
+-	const $Y = $X;
+-	let $Z = null;
+-	if ($Y[0] === 0) {
+-		const owner = $Y[1];
+-		$Z = defer(owner, cleanup);
+-	} else {
+-		$Z = undefined;
+-	}
+-	return $Z;
+-}
+ function $b(value) {
+ 	let subscribers = [  ];
+ 	return [ __shared_new(value), __shared_new(subscribers) ];
+@@ -232,193 +113,107 @@ function $a(value) {
+ function $c(value) {
+ 	return $b(value);
+ }
++function $e(self) {
++	return [ __clone(self), (inner) => {
++		return __clone(inner);
++	} ];
++}
+ function $h(self) {
+ 	return __clone(self[0].v);
+ }
+-function $o(self) {
+-	return __list_get(self, self.length - 1);
++function $g(self) {
++	return $h(self);
+ }
+-function $C(self) {
++function $f(self) {
++	return $h(self[1]($g(self[0])));
++}
++function $q(self) {
+ 	return self.length === 0;
+ }
+-function $x(self, $y) {
+-	const $z = $y;
+-	let $A = null;
+-	if ($z[0] === 0) {
+-		const turn = $z[1];
+-		$A = enqueue(turn, self[1].v);
++function $r(self) {
++	return __list_get(self, self.length - 1);
++}
++function $l(self, $m) {
++	const $n = $m;
++	let $o = null;
++	if ($n[0] === 0) {
++		const turn = $n[1];
++		$o = enqueue(turn, self[1].v);
+ 	} else {
+-		const $D = $o(draining_turns.v);
+-		let $E = null;
+-		if ($D[0] === 0) {
+-			const draining = $D[1];
+-			$E = enqueue(draining, self[1].v);
++		const $s = $r(draining_turns.v);
++		let $t = null;
++		if ($s[0] === 0) {
++			const draining = $s[1];
++			$t = enqueue(draining, self[1].v);
+ 		} else {
+ 			for (const subscriber of self[1].v) {
+ 				if (subscriber[2].v) {
+ 					subscriber[1]();
+ 				}
+ 			}
+-			$E = undefined;
++			$t = undefined;
+ 		}
+-		$A = $E;
++		$o = $t;
+ 	}
+-	return $A;
++	return $o;
+ }
+-function $v(self, value, $w) {
++function $j(self, value, $k) {
+ 	self[0].v = __clone(value);
+-	$x(self, $w);
+-}
+-function $J(signal, subscriber) {
+-	signal[1].v.push(reissued(subscriber));
+-	return [ signal[1], subscriber[0], subscriber[2], __shared_new([ 1 ]) ];
+-}
+-function $G(signal, observer) {
+-	const cell = signal[0];
+-	return $J(signal, mint_subscriber(() => {
+-		const $H = [ 0, cell ];
+-		let $I = null;
+-		if ($H[0] === 0) {
+-			const live = $H[1];
+-			$I = observer(live.v);
+-		} else {
+-			$I = undefined;
+-		}
+-		return $I;
+-	}));
+-}
+-function $F(self, observer) {
+-	const subscription = $G(self, observer);
+-	observer($h(self));
+-	return subscription;
+-}
+-function $L(signal, observer) {
+-	const cell = signal[0];
+-	return $J(signal, mint_subscriber(() => {
+-		const $M = [ 0, cell ];
+-		let $N = null;
+-		if ($M[0] === 0) {
+-			const live = $M[1];
+-			$N = observer(live.v);
+-		} else {
+-			$N = undefined;
+-		}
+-		return $N;
+-	}));
+-}
+-function $K(self, observer) {
+-	const subscription = $L(self, observer);
+-	observer($h(self));
+-	return subscription;
+-}
+-function $T(self, item, $U) {
+-	if (self[1].v) {
+-		dispose(item, $U);
++	$l(self, $k);
++}
++function $v(self, $m) {
++	const $w = $m;
++	let $x = null;
++	if ($w[0] === 0) {
++		const turn = $w[1];
++		$x = enqueue(turn, self[1].v);
+ 	} else {
+-		self[0].v.push(() => {
+-			dispose(item, $U);
+-			return;
+-		});
+-	}
+-	return __clone(item);
+-}
+-function $e(self, $f, $g) {
+-	const derived = $b($h($h(self)));
+-	const inner_subscription = __shared_new([ 1 ]);
+-	as_derivation();
+-	register_with_owner($K(self, (inner) => {
+-		const $j = inner_subscription.v;
+-		let $k = null;
+-		if ($j[0] === 1) {
+-			$k = $j;
+-		} else {
+-			$k = [ 0, dispose($j[1], $f) ];
+-		}
+-		$k;
+-		as_derivation();
+-		inner_subscription.v = [ 0, $F(inner, (value) => {
+-			$v(derived, value, $f);
+-			return;
+-		}) ];
+-		return;
+-	}), $f, $g);
+-	defer_to_owner(() => {
+-		const $V = inner_subscription.v;
+-		let $W = null;
+-		if ($V[0] === 1) {
+-			$W = $V;
+-		} else {
+-			$W = [ 0, dispose($V[1], $f) ];
+-		}
+-		$W;
+-		inner_subscription.v = [ 1 ];
+-		return;
+-	}, $g);
+-	return derived;
+-}
+-function $ab(self, $y) {
+-	const $ac = $y;
+-	let $ad = null;
+-	if ($ac[0] === 0) {
+-		const turn = $ac[1];
+-		$ad = enqueue(turn, self[1].v);
+-	} else {
+-		const $ae = $o(draining_turns.v);
+-		let $af = null;
+-		if ($ae[0] === 0) {
+-			const draining = $ae[1];
+-			$af = enqueue(draining, self[1].v);
++		const $y = $r(draining_turns.v);
++		let $z = null;
++		if ($y[0] === 0) {
++			const draining = $y[1];
++			$z = enqueue(draining, self[1].v);
+ 		} else {
+ 			for (const subscriber of self[1].v) {
+ 				if (subscriber[2].v) {
+ 					subscriber[1]();
+ 				}
+ 			}
+-			$af = undefined;
++			$z = undefined;
+ 		}
+-		$ad = $af;
++		$x = $z;
+ 	}
+-	return $ad;
++	return $x;
+ }
+-function $aa(self, value, $w) {
++function $u(self, value, $k) {
+ 	self[0].v = __clone(value);
+-	$ab(self, $w);
++	$v(self, $k);
+ }
+-function $ak(self, value, $w) {
+-	self[0].v = __clone(value);
+-	$ab(self, $w);
++function $A(self, transform) {
++	return [ __clone(self), transform ];
+ }
+-function $aq(self, observer) {
+-	return $G(self, observer);
++function $C(self) {
++	return $f(self);
+ }
+-function $ag(self, transform, $ah, $ai) {
+-	const derived = $b(transform($h(self)));
+-	as_derivation();
+-	register_with_owner($aq(self, (value) => {
+-		$ak(derived, transform(value), $ah);
+-		return;
+-	}), $ah, $ai);
+-	return derived;
++function $B(self) {
++	return self[1]($C(self[0]));
+ }
+-const minting_derivation = __shared_new(false);
+-const next_subscriber_id = __shared_new(0);
+ const draining_turns = __shared_new([  ]);
+-const releasing_turns = __shared_new([  ]);
+ const first = $a(1);
+ const second = $a(10);
+ const outer = $c(first);
+-const joined = $e(outer, [ 1 ], [ 1 ]);
+-console.log($h(joined));
+-$v(first, 2, [ 1 ]);
+-console.log($h(joined));
+-$aa(outer, second, [ 1 ]);
+-console.log($h(joined));
+-$v(first, 99, [ 1 ]);
+-console.log($h(joined));
+-$v(second, 11, [ 1 ]);
+-console.log($h(joined));
+-const doubled = $ag(joined, (value) => {
++const joined = $e(outer);
++console.log($f(joined));
++$j(first, 2, [ 1 ]);
++console.log($f(joined));
++$u(outer, second, [ 1 ]);
++console.log($f(joined));
++$j(first, 99, [ 1 ]);
++console.log($f(joined));
++$j(second, 11, [ 1 ]);
++console.log($f(joined));
++const doubled = $A(joined, (value) => {
+ 	return value * 2;
+-}, [ 1 ], [ 1 ]);
+-$v(second, 21, [ 1 ]);
+-console.log($h(doubled));
++});
++$j(second, 21, [ 1 ]);
++console.log($B(doubled));
+diff --git a/vilan/test/reactive-on-change.mjs b/vilan/test/reactive-on-change.mjs
+index 8d65d23..e6ebf41 100644
+--- a/vilan/test/reactive-on-change.mjs
++++ b/vilan/test/reactive-on-change.mjs
+@@ -127,9 +127,49 @@ function drain(turn) {
+ 		});
+ 	}
+ }
++function defer_subscriber(turn, subscriber) {
++	const $af = turn;
++	let $ag = null;
++	if ($af[0] === 0) {
++		const ambient = $af[1];
++		$ag = enqueue(ambient, [ reissued(subscriber) ]);
++	} else {
++		const $ah = $r(draining_turns.v);
++		let $ai = null;
++		if ($ah[0] === 0) {
++			const draining = $ah[1];
++			$ai = enqueue(draining, [ reissued(subscriber) ]);
++		} else {
++			if (subscriber[2].v) {
++				subscriber[1]();
++			}
++			$ai = undefined;
++		}
++		$ag = $ai;
++	}
++	return $ag;
++}
+ function reissued(subscriber) {
+ 	return [ subscriber[0], subscriber[1], subscriber[2], subscriber[3] ];
+ }
++function wake(subscriber) {
++	defer_subscriber([ 1 ], subscriber);
++}
++function also_retiring(handle, subscriber) {
++	const previous = handle[3].v;
++	handle[3].v = [ 0, () => {
++		subscriber[2].v = false;
++		const $aj = previous;
++		let $ak = null;
++		if ($aj[0] === 0) {
++			const release = $aj[1];
++			$ak = release();
++		} else {
++			$ak = undefined;
++		}
++		return $ak;
++	} ];
++}
+ function dispose(self, $u) {
+ 	const $v = $u;
+ 	let $w = null;
+@@ -241,17 +281,6 @@ function dispose2(self) {
+ function get_owner($H) {
+ 	return $H;
+ }
+-function register_with_owner(subscription, $ag, $ah) {
+-	const $ai = $ah;
+-	let $aj = null;
+-	if ($ai[0] === 0) {
+-		const owner = $ai[1];
+-		$aj = $I(owner, subscription, $ag);
+-	} else {
+-		$aj = __clone(subscription);
+-	}
+-	return $aj;
+-}
+ function $b(value) {
+ 	let subscribers = [  ];
+ 	return [ __shared_new(value), __shared_new(subscribers) ];
+@@ -356,60 +385,40 @@ function $T(self, observer) {
+ 	observer($V(self));
+ 	return subscription;
+ }
+-function $ab(self, $m) {
+-	const $ac = $m;
+-	let $ad = null;
+-	if ($ac[0] === 0) {
+-		const turn = $ac[1];
+-		$ad = enqueue(turn, self[1].v);
+-	} else {
+-		const $ae = $r(draining_turns.v);
+-		let $af = null;
+-		if ($ae[0] === 0) {
+-			const draining = $ae[1];
+-			$af = enqueue(draining, self[1].v);
+-		} else {
+-			for (const subscriber of self[1].v) {
+-				if (subscriber[2].v) {
+-					subscriber[1]();
+-				}
+-			}
+-			$af = undefined;
+-		}
+-		$ad = $af;
+-	}
+-	return $ad;
++function $W(self, transform) {
++	return [ __clone(self), transform ];
+ }
+-function $aa(self, value, $k) {
+-	self[0].v = __clone(value);
+-	$ab(self, $k);
++function $Y(self) {
++	return $V(self);
++}
++function $X(self) {
++	return self[1]($Y(self[0]));
+ }
+-function $W(self, transform, $X, $Y) {
+-	const derived = $b(transform($V(self)));
++function $ab(source, observer) {
++	return mint_subscriber(() => {
++		return observer($X(source));
++	});
++}
++function $ae(self, subscriber) {
+ 	as_derivation();
+-	register_with_owner($U(self, (value) => {
+-		$aa(derived, transform(value), $X);
+-		return;
+-	}), $X, $Y);
+-	return derived;
++	const relayed = $U(self, (_value) => {
++		return wake(subscriber);
++	});
++	also_retiring(relayed, subscriber);
++	return relayed;
+ }
+-function $am(signal, observer) {
+-	const cell = signal[0];
+-	return $g(signal, mint_subscriber(() => {
+-		const $an = [ 0, cell ];
+-		let $ao = null;
+-		if ($an[0] === 0) {
+-			const live = $an[1];
+-			$ao = observer(live.v);
+-		} else {
+-			$ao = undefined;
+-		}
+-		return $ao;
+-	}));
++function $ad(self, subscriber) {
++	return $ae(self, subscriber);
+ }
+-function $al(self, observer) {
+-	const subscription = $am(self, observer);
+-	observer($h(self));
++function $ac(self, subscriber) {
++	return $ad(self[0], subscriber);
++}
++function $aa(self, observer) {
++	return $ac(self, $ab(self, observer));
++}
++function $Z(self, observer) {
++	const subscription = $aa(self, observer);
++	observer($X(self));
+ 	return subscription;
+ }
+ const minting_derivation = __shared_new(false);
+@@ -452,9 +461,9 @@ $j(stored[0], 12, [ 1 ]);
+ dispose(watched, [ 1 ]);
+ const labelled = $W(stored, (value) => {
+ 	return "n=" + value;
+-}, [ 1 ], [ 1 ]);
+-console.log($h(labelled));
+-const shown = $al(labelled, (value) => {
++});
++console.log($X(labelled));
++const shown = $Z(labelled, (value) => {
+ 	return console.log("label " + value);
+ });
+ $j(stored[0], 13, [ 1 ]);
+diff --git a/vilan/test/reactive.mjs b/vilan/test/reactive.mjs
+index a539e9d..f712fbe 100644
+--- a/vilan/test/reactive.mjs
++++ b/vilan/test/reactive.mjs
+@@ -35,9 +35,6 @@ function __with_finally(body, after) {
+ function hash(self) {
+ 	return __hash(self);
+ }
+-function as_derivation() {
+-	minting_derivation.v = true;
+-}
+ function fresh_id() {
+ 	const id = next_subscriber_id.v;
+ 	next_subscriber_id.v = id + 1;
+@@ -52,18 +49,18 @@ function subscriber_of(notify, derived) {
+ 	return [ fresh_id(), notify, __shared_new(true), derived ];
+ }
+ function is_quiescent(self) {
+-	return $o(self[0].v) && $o(self[1].v);
++	return $G(self[0].v) && $G(self[1].v);
+ }
+ function enqueue(turn, subscribers) {
+ 	for (const subscriber of subscribers) {
+ 		const key = hash(subscriber[0]);
+-		let $n = null;
++		let $F = null;
+ 		if (subscriber[3]) {
+ 			if (!(turn[3].v.has(key))) {
+ 				turn[3].v.set(key, true);
+ 				turn[1].v.push(__clone(subscriber));
+ 			}
+-			$n = undefined;
++			$F = undefined;
+ 		} else if (!(turn[2].v.has(key))) {
+ 			turn[2].v.set(key, true);
+ 			let index = turn[0].v.length;
+@@ -72,7 +69,7 @@ function enqueue(turn, subscribers) {
+ 			}
+ 			__insert_at(turn[0].v, index, __clone(subscriber));
+ 		}
+-		$n;
++		$F;
+ 	}
+ 	if (turn[5].v && !(turn[6].v) && !(turn[4].v)) {
+ 		turn[6].v = true;
+@@ -90,7 +87,7 @@ function drain(turn) {
+ 		__with_finally(() => {
+ 			let budget = 100000;
+ 			while (!(is_quiescent(turn)) && budget > 0) {
+-				while (!($o(turn[1].v)) && budget > 0) {
++				while (!($G(turn[1].v)) && budget > 0) {
+ 					const derivations = turn[1].v;
+ 					turn[1].v = [  ];
+ 					turn[3].v = new Map();
+@@ -122,24 +119,24 @@ function drain(turn) {
+ function reissued(subscriber) {
+ 	return [ subscriber[0], subscriber[1], subscriber[2], subscriber[3] ];
+ }
+-function dispose(self, $D) {
+-	const $E = $D;
+-	let $F = null;
+-	if ($E[0] === 0) {
+-		const established = $E[1];
+-		$F = [ 0, established ];
++function dispose(self, $p) {
++	const $q = $p;
++	let $r = null;
++	if ($q[0] === 0) {
++		const established = $q[1];
++		$r = [ 0, established ];
+ 	} else {
+-		$F = $p(draining_turns.v);
++		$r = $s(draining_turns.v);
+ 	}
+-	const ambient = $F;
++	const ambient = $r;
+ 	release_under(self, ambient);
+ }
+ function release_under(handle, ambient) {
+ 	handle[2].v = false;
+-	const $G = [ 0, handle[0] ];
+-	let $H = null;
+-	if ($G[0] === 0) {
+-		const subscribers = $G[1];
++	const $t = [ 0, handle[0] ];
++	let $u = null;
++	if ($t[0] === 0) {
++		const subscribers = $t[1];
+ 		let kept = [  ];
+ 		for (const subscriber of subscribers.v) {
+ 			if (subscriber[0] !== handle[1]) {
+@@ -147,15 +144,15 @@ function release_under(handle, ambient) {
+ 			}
+ 		}
+ 		subscribers.v = kept;
+-		$H = undefined;
++		$u = undefined;
+ 	} else {
+-		$H = undefined;
++		$u = undefined;
+ 	}
+-	$H;
+-	const $I = ambient;
+-	let $J = null;
+-	if ($I[0] === 0) {
+-		const turn = $I[1];
++	$u;
++	const $v = ambient;
++	let $w = null;
++	if ($v[0] === 0) {
++		const turn = $v[1];
+ 		let kept_pending = [  ];
+ 		for (const subscriber2 of turn[0].v) {
+ 			if (subscriber2[0] !== handle[1]) {
+@@ -172,41 +169,30 @@ function release_under(handle, ambient) {
+ 		}
+ 		turn[1].v = kept_derived;
+ 		turn[3].v.delete(hash(handle[1]));
+-		$J = undefined;
++		$w = undefined;
+ 	} else {
+-		$J = undefined;
++		$w = undefined;
+ 	}
+-	$J;
+-	const $K = handle[3].v;
+-	let $L = null;
+-	if ($K[0] === 0) {
+-		const release = $K[1];
++	$w;
++	const $x = handle[3].v;
++	let $y = null;
++	if ($x[0] === 0) {
++		const release = $x[1];
+ 		handle[3].v = [ 1 ];
+ 		releasing_turns.v.push(ambient);
+ 		__with_finally(release, () => {
+ 			__list_pop(releasing_turns.v);
+ 			return;
+ 		});
+-		$L = undefined;
++		$y = undefined;
+ 	} else {
+-		$L = undefined;
++		$y = undefined;
+ 	}
+-	return $L;
++	return $y;
+ }
+ function new2() {
+ 	return [ __shared_new([  ]), __shared_new(false) ];
+ }
+-function register_with_owner(subscription, $x, $y) {
+-	const $z = $y;
+-	let $A = null;
+-	if ($z[0] === 0) {
+-		const owner2 = $z[1];
+-		$A = $B(owner2, subscription, $x);
+-	} else {
+-		$A = __clone(subscription);
+-	}
+-	return $A;
+-}
+ function $b(value) {
+ 	let subscribers = [  ];
+ 	return [ __shared_new(value), __shared_new(subscribers) ];
+@@ -214,119 +200,110 @@ function $b(value) {
+ function $a(value) {
+ 	return $b(value);
+ }
+-function $f(self) {
++function $c(self, transform) {
++	return [ __clone(self), transform ];
++}
++function $i(self) {
+ 	return __clone(self[0].v);
+ }
+-function $o(self) {
+-	return self.length === 0;
++function $h(self) {
++	return $i(self);
+ }
+-function $p(self) {
+-	return __list_get(self, self.length - 1);
++function $g(self) {
++	return self[1]($h(self[0]));
+ }
+-function $j(self, $k) {
+-	const $l = $k;
+-	let $m = null;
+-	if ($l[0] === 0) {
+-		const turn = $l[1];
+-		$m = enqueue(turn, self[1].v);
+-	} else {
+-		const $q = $p(draining_turns.v);
+-		let $r = null;
+-		if ($q[0] === 0) {
+-			const draining = $q[1];
+-			$r = enqueue(draining, self[1].v);
+-		} else {
+-			for (const subscriber of self[1].v) {
+-				if (subscriber[2].v) {
+-					subscriber[1]();
+-				}
+-			}
+-			$r = undefined;
+-		}
+-		$m = $r;
+-	}
+-	return $m;
+-}
+-function $h(self, value, $i) {
+-	self[0].v = __clone(value);
+-	$j(self, $i);
++function $f(source, observer) {
++	return mint_subscriber(() => {
++		return observer($g(source));
++	});
+ }
+-function $w(signal, subscriber) {
++function $m(signal, subscriber) {
+ 	signal[1].v.push(reissued(subscriber));
+ 	return [ signal[1], subscriber[0], subscriber[2], __shared_new([ 1 ]) ];
+ }
+-function $t(signal, observer) {
+-	const cell = signal[0];
+-	return $w(signal, mint_subscriber(() => {
+-		const $u = [ 0, cell ];
+-		let $v = null;
+-		if ($u[0] === 0) {
+-			const live = $u[1];
+-			$v = observer(live.v);
+-		} else {
+-			$v = undefined;
+-		}
+-		return $v;
+-	}));
++function $l(self, subscriber) {
++	return $m(self, subscriber);
++}
++function $k(self, subscriber) {
++	return $l(self, subscriber);
++}
++function $j(self, subscriber) {
++	return $k(self[0], subscriber);
+ }
+-function $s(self, observer) {
+-	return $t(self, observer);
++function $e(self, observer) {
++	return $j(self, $f(self, observer));
++}
++function $d(self, observer) {
++	const subscription = $e(self, observer);
++	observer($g(self));
++	return subscription;
++}
++function $s(self) {
++	return __list_get(self, self.length - 1);
+ }
+-function $B(self, item, $C) {
++function $n(self, item, $o) {
+ 	if (self[1].v) {
+-		dispose(item, $C);
++		dispose(item, $o);
+ 	} else {
+ 		self[0].v.push(() => {
+-			dispose(item, $C);
++			dispose(item, $o);
+ 			return;
+ 		});
+ 	}
+ 	return __clone(item);
+ }
+-function $c(self, transform, $d, $e) {
+-	const derived = $b(transform($f(self)));
+-	as_derivation();
+-	register_with_owner($s(self, (value) => {
+-		$h(derived, transform(value), $d);
+-		return;
+-	}), $d, $e);
+-	return derived;
+-}
+-function $M(self, observer) {
+-	const subscription = $t(self, observer);
+-	observer($f(self));
+-	return subscription;
++function $G(self) {
++	return self.length === 0;
+ }
+-function $O(self, $k) {
+-	const $P = $k;
+-	let $Q = null;
+-	if ($P[0] === 0) {
+-		const turn = $P[1];
+-		$Q = enqueue(turn, self[1].v);
++function $B(self, $C) {
++	const $D = $C;
++	let $E = null;
++	if ($D[0] === 0) {
++		const turn = $D[1];
++		$E = enqueue(turn, self[1].v);
+ 	} else {
+-		const $R = $p(draining_turns.v);
+-		let $S = null;
+-		if ($R[0] === 0) {
+-			const draining = $R[1];
+-			$S = enqueue(draining, self[1].v);
++		const $H = $s(draining_turns.v);
++		let $I = null;
++		if ($H[0] === 0) {
++			const draining = $H[1];
++			$I = enqueue(draining, self[1].v);
+ 		} else {
+ 			for (const subscriber of self[1].v) {
+ 				if (subscriber[2].v) {
+ 					subscriber[1]();
+ 				}
+ 			}
+-			$S = undefined;
++			$I = undefined;
+ 		}
+-		$Q = $S;
++		$E = $I;
+ 	}
+-	return $Q;
++	return $E;
+ }
+-function $N(self, value, $i) {
++function $z(self, value, $A) {
+ 	self[0].v = __clone(value);
+-	$O(self, $i);
++	$B(self, $A);
++}
++function $J(self, transform, $K) {
++	$z(self, transform($i(self)), $K);
+ }
+-function $T(self, transform, $U) {
+-	$N(self, transform($f(self)), $U);
++function $M(signal, observer) {
++	const cell = signal[0];
++	return $m(signal, mint_subscriber(() => {
++		const $N = [ 0, cell ];
++		let $O = null;
++		if ($N[0] === 0) {
++			const live = $N[1];
++			$O = observer(live.v);
++		} else {
++			$O = undefined;
++		}
++		return $O;
++	}));
++}
++function $L(self, observer) {
++	const subscription = $M(self, observer);
++	observer($i(self));
++	return subscription;
+ }
+ const minting_derivation = __shared_new(false);
+ const next_subscriber_id = __shared_new(0);
+@@ -336,16 +313,16 @@ const owner = new2();
+ const count = $a(0);
+ const doubled = $c(count, (n) => {
+ 	return n * 2;
+-}, [ 1 ], [ 1 ]);
+-$B(owner, $M(doubled, (n) => {
++});
++$n(owner, $d(doubled, (n) => {
+ 	return console.log(n);
+ }), [ 1 ]);
+-$N(count, 1, [ 1 ]);
+-$T(count, (n) => {
++$z(count, 1, [ 1 ]);
++$J(count, (n) => {
+ 	return n + 4;
+ }, [ 1 ]);
+-console.log($f(doubled));
+-$B(owner, $M(count, (n) => {
++console.log($g(doubled));
++$n(owner, $L(count, (n) => {
+ 	return console.log(n);
+ }), [ 1 ]);
+-$N(count, 20, [ 1 ]);
++$z(count, 20, [ 1 ]);

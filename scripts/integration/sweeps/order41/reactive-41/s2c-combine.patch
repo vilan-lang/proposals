@@ -1,0 +1,146 @@
+diff --git a/crates/vilan-cli/tests/reactive_lifetimes.rs b/crates/vilan-cli/tests/reactive_lifetimes.rs
+index 69b826c..2176774 100644
+--- a/crates/vilan-cli/tests/reactive_lifetimes.rs
++++ b/crates/vilan-cli/tests/reactive_lifetimes.rs
+@@ -1103,14 +1103,14 @@ fn a110_door2_an_effect_reads_a_derivation_chains_final_value_once() {
+ /// of pushing the leaf's record: `fixpoint=5/11,5/11,`.
+ const A124_S2A_COLD_DIAMOND: &str = r#"import std::io::print;
+ import std::reactive::{
+-	FlushPolicy, Owner, Signal, SignalCell, Source, combine_node, run_with_owner, turn,
++	FlushPolicy, Owner, Signal, SignalCell, Source, combine, run_with_owner, turn,
+ };
+ 
+ fun main() {
+ 	let root: SignalCell<i32> = Signal::new(1);
+ 	let twice = root.map(|value| value * 2).map(|value| value + 1);
+ 	let arms: (dyn Source<i32>, dyn Source<i32>) = (root, twice);
+-	let pair = combine_node(arms);
++	let pair = combine(arms);
+ 	let seen: SignalCell<str> = Signal::new("");
+ 	let watcher = Owner::new();
+ 	run_with_owner(watcher, || {
+diff --git a/crates/vilan-core/tests/inference/lifetimes.rs b/crates/vilan-core/tests/inference/lifetimes.rs
+index 0ece909..9ea3c60 100644
+--- a/crates/vilan-core/tests/inference/lifetimes.rs
++++ b/crates/vilan-core/tests/inference/lifetimes.rs
+@@ -712,7 +712,7 @@ fn a124_s1_a_diamond_pulls_a_settled_pair_and_fires_twice() {
+     assert_compiles_and_runs(
+         r#"
+         import std::io::print;
+-        import std::reactive::{ Signal, SignalCell, Source, combine_node };
++        import std::reactive::{ Signal, SignalCell, Source, combine };
+         import std::shared::Shared;
+ 
+         fun main() {
+@@ -722,7 +722,7 @@ fn a124_s1_a_diamond_pulls_a_settled_pair_and_fires_twice() {
+                 source.map(|x| x * 10),
+                 source.map(|x| x + 100)
+             );
+-            let diamond = combine_node(arms);
++            let diamond = combine(arms);
+             let _leaf = diamond.on_change(|pair| {
+                 let (left, right) = pair;
+                 seen.write() = i"{seen.read()}({left},{right})";
+@@ -757,7 +757,7 @@ fn a124_s2a_a_diamond_in_a_turn_fires_once_with_the_settled_pair() {
+     assert_compiles_and_runs(
+         r#"
+         import std::io::print;
+-        import std::reactive::{ FlushPolicy, Signal, SignalCell, Source, combine_node, turn };
++        import std::reactive::{ FlushPolicy, Signal, SignalCell, Source, combine, turn };
+         import std::shared::Shared;
+ 
+         fun main() {
+@@ -767,7 +767,7 @@ fn a124_s2a_a_diamond_in_a_turn_fires_once_with_the_settled_pair() {
+                 source.map(|x| x * 10),
+                 source.map(|x| x + 100)
+             );
+-            let diamond = combine_node(arms);
++            let diamond = combine(arms);
+             let _leaf = diamond.on_change(|pair| {
+                 let (left, right) = pair;
+                 seen.write() = i"{seen.read()}({left},{right})";
+@@ -834,7 +834,7 @@ fn a124_s2a_the_default_bridge_dedups_a_diamond_over_a_root_that_only_has_on_cha
+         r#"
+         import std::io::print;
+         import std::reactive::{
+-            FlushPolicy, Signal, SignalCell, Source, Subscription, combine_node, turn,
++            FlushPolicy, Signal, SignalCell, Source, Subscription, combine, turn,
+         };
+         import std::shared::Shared;
+ 
+@@ -860,7 +860,7 @@ fn a124_s2a_the_default_bridge_dedups_a_diamond_over_a_root_that_only_has_on_cha
+                 root.map(|x| x * 10),
+                 root.map(|x| x + 100)
+             );
+-            let diamond = combine_node(arms);
++            let diamond = combine(arms);
+             let _leaf = diamond.on_change(|pair| {
+                 let (left, right) = pair;
+                 seen.write() = i"{seen.read()}({left},{right})";
+@@ -1077,7 +1077,7 @@ fn a124_s2b_combine_over_the_tuple_bound_joins_three_kinds_of_source() {
+     assert_compiles_and_runs(
+         r#"
+         import std::io::print;
+-        import std::reactive::{ FlushPolicy, Signal, SignalCell, Source, combine_node, turn };
++        import std::reactive::{ FlushPolicy, Signal, SignalCell, Source, combine, turn };
+ 
+         fun main() {
+             let count: SignalCell<i32> = Signal::new(1);
+@@ -1086,7 +1086,7 @@ fn a124_s2b_combine_over_the_tuple_bound_joins_three_kinds_of_source() {
+                 count.map(|n| i"n{n}"),
+                 count.map(|n| n > 2).cell()
+             );
+-            let all = combine_node(arms);
++            let all = combine(arms);
+             let _leaf = all.on_change(|triple| {
+                 let (n, label, big) = triple;
+                 print(i"{n} {label} {big}");
+diff --git a/vilan/std/src/reactive.vl b/vilan/std/src/reactive.vl
+index cca3da8..4be4273 100644
+--- a/vilan/std/src/reactive.vl
++++ b/vilan/std/src/reactive.vl
+@@ -1611,26 +1611,8 @@ export impl type S: Source<type T> with MaybeSignal<T> {
+ /// objects, and a `<S: Source<U>>` parameter names ONE type where the tuple needs a
+ /// different one per element. `combine` widens when the mapped-tuple grammar can
+ /// bind a bound per element, not before.
+-export fun combine<T: (2..)>(sources: (U in T: SignalCell<U>)): SignalCell<T> {
+-	let snapshot = || (source in sources => source.get());
+-	let derived = SignalCell::new(snapshot());
+-	// Subscribe each input LAZILY (A43): `derived` was just seeded with the
+-	// snapshot, so an eager `sub` would re-set it to that same value once per input
+-	// — n redundant writes, and n redundant snapshots, at construction. `on_change`
+-	// attaches without the call. The handles are the AMBIENT OWNER's from here on —
+-	// the tuple itself is what is dropped, not the subscriptions. Each is a
+-	// DERIVATION (A110 door 2), and the mark has to be left ONCE PER INPUT, because
+-	// `observe` spends one mark per subscriber and the tuple mints one subscriber
+-	// per input. So it is left in the ARGUMENT position (`as_derivation_for`),
+-	// where an argument is evaluated after the receiver and before the call: a
+-	// statement above the comprehension would mark only the first, and a BLOCK for
+-	// the element is not an option — the emitter drops a mapped-tuple element that
+-	// is a block, statements and all, with no diagnostic (found here, filed as a
+-	// miscompile).
+-	let _owned = (source in sources => register_with_owner(source.on_change(as_derivation_for(|_| {
+-		derived.set(snapshot());
+-	}))));
+-	derived
++export fun combine<T: (2..)>(sources: (U in T: dyn Source<U>)): Combine<T> {
++	Combine<T> { sources }
+ }
+ 
+ // === Per-key selection (backlog A44; Solid's `createSelector`) ===============
+@@ -2181,15 +2163,6 @@ export impl type S: Source<type T: PartialEq> {
+ 	}
+ }
+ 
+-/// The n-ary cold `combine`, over inputs already erased to `dyn Source` (see
+-/// `Combine` for why they must arrive erased). `[internal]` until the flip.
+-export [internal("A124 S2b: the cold `combine`, std-internal until the flip (S2c) makes `combine` return it")]
+-fun combine_node<T: (2..)>(
+-	sources: (U in T: dyn Source<U>),
+-): Combine<T> {
+-	Combine<T> { sources }
+-}
+-
+ // === Pending values: `Resource<T>` (A124 R5, `proposal/reactive-pipeline.md` §2.5)
+ //
+ // A value that is not there yet — a fetch in flight — is NOT a `Source`: it cannot

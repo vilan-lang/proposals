@@ -1,0 +1,25 @@
+// An impl's override of a trait DEFAULT is not selected through a generic bound
+// when the trait's argument is a TUPLE: the call lands on the trait's default.
+// Direct calls select the override. JS output: "id override / default / default /
+// id override / id override"; expected "id override" five times.
+trait Src<T> {
+	fun get(self): T;
+	fun label(self): str {
+		"default"
+	}
+}
+struct Id<T> { v: T }
+impl Id<type T> with Src<T> {
+	fun get(self): T { self.v }
+	fun label(self): str { "id override" }
+}
+fun through<T, S: Src<T>>(s: S): str { s.label() }
+fun through2<S: Src<(i32, i32)>>(s: S): str { s.label() }
+fun main() {
+	print(through(Id { v = 1 }));
+	let b = Id { v = (1, 2) };
+	print(through(b));
+	print(through2(b));
+	print(through(Id { v = [1] }));
+	print(through(Id { v = Some(1) }));
+}
