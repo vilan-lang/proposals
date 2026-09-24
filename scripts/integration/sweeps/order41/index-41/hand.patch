@@ -1,6 +1,6 @@
 diff -ru a/vilan/std/src/browser/ui.vl b/vilan/std/src/browser/ui.vl
---- a/vilan/std/src/browser/ui.vl	2026-09-24 16:55:51.984013562 -0400
-+++ b/vilan/std/src/browser/ui.vl	2026-09-24 16:55:52.062477425 -0400
+--- a/vilan/std/src/browser/ui.vl	2026-09-24 17:49:46.205817778 -0400
++++ b/vilan/std/src/browser/ui.vl	2026-09-24 17:49:46.223130437 -0400
 @@ -1325,12 +1325,18 @@
  fun settled_steps(steps: List<RowStep>): List<bool> {
  	mut forward: List<bool> = [];
@@ -67,8 +67,8 @@ diff -ru a/vilan/std/src/browser/ui.vl b/vilan/std/src/browser/ui.vl
  	references.reverse()
  }
 diff -ru a/vilan/std/src/compare.vl b/vilan/std/src/compare.vl
---- a/vilan/std/src/compare.vl	2026-09-24 16:55:51.984123024 -0400
-+++ b/vilan/std/src/compare.vl	2026-09-24 16:55:52.062702709 -0400
+--- a/vilan/std/src/compare.vl	2026-09-24 17:49:46.205957940 -0400
++++ b/vilan/std/src/compare.vl	2026-09-24 17:49:46.224949079 -0400
 @@ -110,7 +110,7 @@
  
  	/// The index of the FIRST element equal to `value` — `None` when there is none.
@@ -79,8 +79,8 @@ diff -ru a/vilan/std/src/compare.vl b/vilan/std/src/compare.vl
  			if item.eq(value) {
  				ret Some(index);
 diff -ru a/vilan/std/src/iterator.vl b/vilan/std/src/iterator.vl
---- a/vilan/std/src/iterator.vl	2026-09-24 16:55:51.984394799 -0400
-+++ b/vilan/std/src/iterator.vl	2026-09-24 16:55:52.062765740 -0400
+--- a/vilan/std/src/iterator.vl	2026-09-24 17:49:46.206273586 -0400
++++ b/vilan/std/src/iterator.vl	2026-09-24 17:49:46.224976590 -0400
 @@ -293,8 +293,8 @@
  	index: usize,
  }
@@ -93,8 +93,8 @@ diff -ru a/vilan/std/src/iterator.vl b/vilan/std/src/iterator.vl
  			let index = self.index;
  			self.index = index + 1;
 diff -ru a/vilan/std/src/json.vl b/vilan/std/src/json.vl
---- a/vilan/std/src/json.vl	2026-09-24 16:55:51.984414460 -0400
-+++ b/vilan/std/src/json.vl	2026-09-24 16:55:52.062857232 -0400
+--- a/vilan/std/src/json.vl	2026-09-24 17:49:46.206307326 -0400
++++ b/vilan/std/src/json.vl	2026-09-24 17:49:46.225004190 -0400
 @@ -663,12 +663,13 @@
  			// Where the stack stands once every element has been read: what
  			// `end_list` holds the caller to.
@@ -128,8 +128,8 @@ diff -ru a/vilan/std/src/json.vl b/vilan/std/src/json.vl
  				}
  			} else {
 diff -ru a/vilan/std/src/list.vl b/vilan/std/src/list.vl
---- a/vilan/std/src/list.vl	2026-09-24 16:55:51.984481181 -0400
-+++ b/vilan/std/src/list.vl	2026-09-24 16:55:52.062973844 -0400
+--- a/vilan/std/src/list.vl	2026-09-24 17:49:46.206432879 -0400
++++ b/vilan/std/src/list.vl	2026-09-24 17:49:46.225046091 -0400
 @@ -77,10 +77,10 @@
  	/// which is a different method and belongs to the iterator paper.)
  	fun reverse(self): List<T> {
@@ -145,8 +145,8 @@ diff -ru a/vilan/std/src/list.vl b/vilan/std/src/list.vl
  		result
  	}
 diff -ru a/vilan/std/src/markdown.vl b/vilan/std/src/markdown.vl
---- a/vilan/std/src/markdown.vl	2026-09-24 16:55:51.984514361 -0400
-+++ b/vilan/std/src/markdown.vl	2026-09-24 16:55:52.063042005 -0400
+--- a/vilan/std/src/markdown.vl	2026-09-24 17:49:46.206475849 -0400
++++ b/vilan/std/src/markdown.vl	2026-09-24 17:49:46.225068851 -0400
 @@ -293,7 +293,7 @@
  			for i + run < n && text.code_at(i + run) == 96 {
  				run += 1;
@@ -175,31 +175,34 @@ diff -ru a/vilan/std/src/markdown.vl b/vilan/std/src/markdown.vl
  				mut probe = index_of(text, "_", i + 1);
  				mut searching = true;
 diff -ru a/vilan/std/src/process/db.vl b/vilan/std/src/process/db.vl
---- a/vilan/std/src/process/db.vl	2026-09-24 16:55:51.984864772 -0400
-+++ b/vilan/std/src/process/db.vl	2026-09-24 16:55:52.063152477 -0400
-@@ -323,21 +323,24 @@
+--- a/vilan/std/src/process/db.vl	2026-09-24 17:49:46.206916877 -0400
++++ b/vilan/std/src/process/db.vl	2026-09-24 17:49:46.223871810 -0400
+@@ -323,21 +323,27 @@
  /// with history this refusal catches every misordering such a rule would, and on a
  /// fresh database any list order is self-consistent — it IS the history.
  fun refuse_inserted_migration(migrations: List<Migration>, recorded: Set<str>) {
 -	mut last_applied = -1;
 +	// I5 S2: "nothing applied" is `None`, where it was the `-1` below every index.
++	// (After S2 the `-1` COMPILES as a `usize` — the binding takes its type from
++	// `last_applied = index` and a negative literal is not refused at an unsigned
++	// type — which is why this sentinel is a hand edit and not a diagnostic.)
 +	mut last_applied: Option<usize> = None;
- 	mut index: usize = 0;
+ 	mut index = 0;
  	for index < migrations.len() {
  		if recorded.contains(migrations[index].name) {
--			last_applied = index.as_i32();
+-			last_applied = index;
 +			last_applied = Some(index);
  		}
  		index += 1;
  	}
--	mut earlier: usize = 0;
--	for earlier < last_applied.as_usize() {
+-	mut earlier = 0;
+-	for earlier < last_applied {
 -		let pending = migrations[earlier].name;
 -		if !recorded.contains(pending) {
--			let applied = migrations[last_applied.as_usize()].name;
+-			let applied = migrations[last_applied].name;
 -			panic(i"std::db migrate: migration '{pending}' is not applied, but '{applied}' after it in the list is — a migration was inserted before the applied history");
 +	if last_applied is Some(let last) {
-+		mut earlier: usize = 0;
++		mut earlier = 0;
 +		for earlier < last {
 +			let pending = migrations[earlier].name;
 +			if !recorded.contains(pending) {
@@ -211,9 +214,10 @@ diff -ru a/vilan/std/src/process/db.vl b/vilan/std/src/process/db.vl
 -		earlier += 1;
  	}
  }
+Only in b/vilan/std/src/process: db.vl.orig
 diff -ru a/vilan/std/src/process/document.vl b/vilan/std/src/process/document.vl
---- a/vilan/std/src/process/document.vl	2026-09-24 16:55:51.984892203 -0400
-+++ b/vilan/std/src/process/document.vl	2026-09-24 16:55:52.063264099 -0400
+--- a/vilan/std/src/process/document.vl	2026-09-24 17:49:46.206949588 -0400
++++ b/vilan/std/src/process/document.vl	2026-09-24 17:49:46.224183926 -0400
 @@ -475,7 +475,7 @@
  	/// with no render and no hatch markup composes to the shell's own bytes,
  	/// untouched.
@@ -231,7 +235,7 @@ diff -ru a/vilan/std/src/process/document.vl b/vilan/std/src/process/document.vl
 +	mut ordered: List<(usize, str)> = [];
  	for insertion in insertions {
  		let (at, _markup) = insertion;
- 		mut index: usize = 0;
+ 		mut index = 0;
  		for entry in ordered {
  			let (before, _before_markup) = entry;
 -			if before.as_usize() <= at {
@@ -277,9 +281,10 @@ diff -ru a/vilan/std/src/process/document.vl b/vilan/std/src/process/document.vl
  			ret Some(index);
  		}
  		index = index + 1;
+Only in b/vilan/std/src/process: document.vl.orig
 diff -ru a/vilan/std/src/reactive.vl b/vilan/std/src/reactive.vl
---- a/vilan/std/src/reactive.vl	2026-09-24 16:55:51.985319590 -0400
-+++ b/vilan/std/src/reactive.vl	2026-09-24 16:55:52.067818172 -0400
+--- a/vilan/std/src/reactive.vl	2026-09-24 17:49:46.207289434 -0400
++++ b/vilan/std/src/reactive.vl	2026-09-24 17:49:46.225105652 -0400
 @@ -1801,20 +1801,21 @@
  	// steps past them along the chain. What the bound forbids is the opposite,
  	// a `==` coarser than the hash, and that is the case the bound refuses to
@@ -349,7 +354,7 @@ diff -ru a/vilan/std/src/reactive.vl b/vilan/std/src/reactive.vl
  		mut walk = head;
 -		for walk >= 0 {
 -			if !claimed[walk] && old_keys[walk] == item_key {
--				found = walk;
+-				found = walk.as_usize();
 -				jump break;
 +		mut walking = true;
 +		for walking {
@@ -374,16 +379,16 @@ diff -ru a/vilan/std/src/reactive.vl b/vilan/std/src/reactive.vl
  		}
  		mut step = RowStep::Fresh;
 -		if found >= 0 {
--			claimed[found.as_usize()] = true;
--			step = if same(old_items[found.as_usize()], item) {
--				RowStep::Keep(found)
+-			claimed[found] = true;
+-			step = if same(old_items[found], item) {
+-				RowStep::Keep(found.as_i32())
 +		if found is Some(let at) {
 +			claimed[at] = true;
 +			// `RowStep`'s payload is S4's (born `i32`, A112's `// I5` markers).
 +			step = if same(old_items[at], item) {
 +				RowStep::Keep(at.as_i32())
  			} else {
--				RowStep::Refresh(found)
+-				RowStep::Refresh(found.as_i32())
 +				RowStep::Refresh(at.as_i32())
  			};
  		}
@@ -391,7 +396,7 @@ diff -ru a/vilan/std/src/reactive.vl b/vilan/std/src/reactive.vl
  	}
 -	mut removed: List<i32> = [];
 +	mut removed: List<usize> = [];
- 	mut index: usize = 0;
+ 	mut index = 0;
  	for index < held {
  		if !claimed[index] {
 -			removed.push(index.as_i32());
@@ -399,9 +404,86 @@ diff -ru a/vilan/std/src/reactive.vl b/vilan/std/src/reactive.vl
  		}
  		index += 1;
  	}
+diff -ru a/vilan/test/adapt.vl b/vilan/test/adapt.vl
+--- a/vilan/test/adapt.vl	2026-09-24 17:49:46.208605137 -0400
++++ b/vilan/test/adapt.vl	2026-09-24 17:49:46.225358936 -0400
+@@ -28,6 +28,6 @@
+ 	print(run(|| 1));
+ 	print(helper(urls, |url| {
+ 		sleep(1);
+-		url.len() + 10
++		url.len().as_i32() + 10
+ 	}));
+ }
+diff -ru a/vilan/test/capture-clones.vl b/vilan/test/capture-clones.vl
+--- a/vilan/test/capture-clones.vl	2026-09-24 17:49:46.209212857 -0400
++++ b/vilan/test/capture-clones.vl	2026-09-24 17:49:46.225861215 -0400
+@@ -89,7 +89,7 @@
+ 	match pair {
+ 		(let cells, let weight) if weight > 0 => {
+ 			pair.1 = 9;
+-			cells.len() + weight.as_usize()
++			cells.len().as_i32() + weight
+ 		}
+ 		_ => 0,
+ 	}
+@@ -99,7 +99,7 @@
+ 	mut cell = ([1, 2], 3);
+ 	if cell is (let cells, let weight) {
+ 		cell.1 = 9;
+-		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
+ 	}
+ 	0
+ }
+@@ -108,7 +108,7 @@
+ 	mut cell = ([1, 2], 3);
+ 	if cell is (let cells, let weight) {
+ 		cell = ([4], 5);
+-		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
+ 	}
+ 	0
+ }
+@@ -118,7 +118,7 @@
+ 	match cell {
+ 		(let cells, let weight) if weight > 0 => {
+ 			cell.1 = 9;
+-			cells.len() + weight.as_usize()
++			cells.len().as_i32() + weight
+ 		}
+ 		_ => 0,
+ 	}
+@@ -200,7 +200,7 @@
+ 	mut cell = Cell { pair = ([1, 2], 3) };
+ 	if cell.slot() is (let cells, let weight) {
+ 		cell.pair.1 = 9;
+-		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
+ 	}
+ 	0
+ }
+@@ -209,7 +209,7 @@
+ 	mut cell = Cell { pair = ([1, 2], 3) };
+ 	if cell.peek() is (let cells, let weight) {
+ 		cell.pair.1 = 9;
+-		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
+ 	}
+ 	0
+ }
+@@ -220,7 +220,7 @@
+ 
+ fun owned_call(): i32 {
+ 	if fresh_pair() is (let cells, let weight) {
+-		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
+ 	}
+ 	0
+ }
 diff -ru a/vilan/test/list-search.vl b/vilan/test/list-search.vl
---- a/vilan/test/list-search.vl	2026-09-24 16:55:52.006205532 -0400
-+++ b/vilan/test/list-search.vl	2026-09-24 16:55:52.071838405 -0400
+--- a/vilan/test/list-search.vl	2026-09-24 17:49:46.212298961 -0400
++++ b/vilan/test/list-search.vl	2026-09-24 17:49:46.232649469 -0400
 @@ -7,12 +7,12 @@
  	print(xs.find(|n| n > 90).is_none()); // true
  	print(xs.contains(20)); // true
@@ -417,3 +499,20 @@ diff -ru a/vilan/test/list-search.vl b/vilan/test/list-search.vl
  
  	mut empty: List<i32> = [];
  	print(empty.find(|n| n > 0).is_none()); // true
+diff -ru a/vilan/test/reconcile-index.vl b/vilan/test/reconcile-index.vl
+--- a/vilan/test/reconcile-index.vl	2026-09-24 17:49:46.214187119 -0400
++++ b/vilan/test/reconcile-index.vl	2026-09-24 17:49:46.230786387 -0400
+@@ -64,11 +64,11 @@
+ 		}
+ 		steps.push(step);
+ 	}
+-	mut removed: List<i32> = [];
++	mut removed: List<usize> = [];
+ 	mut index = 0;
+ 	for index < old_keys.len() {
+ 		if !claimed[index] {
+-			removed.push(index.as_i32());
++			removed.push(index);
+ 		}
+ 		index += 1;
+ 	}

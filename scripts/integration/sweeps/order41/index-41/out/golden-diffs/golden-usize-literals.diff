@@ -1,0 +1,10 @@
+42a43,45
+> function as_usize2(self) {
+> 	return self;
+> }
+110,111c113,114
+< console.log($h(__list_get(letters, as_i32(at)), "none"));
+< const length = as_usize(letters.length);
+---
+> console.log($h(__list_get(letters, as_usize(as_i32(at))), "none"));
+> const length = as_usize2(letters.length);

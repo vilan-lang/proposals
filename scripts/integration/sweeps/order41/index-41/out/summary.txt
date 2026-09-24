@@ -1,0 +1,17 @@
+base: 7c746d47
+signatures: 105 verdict rows, 105 annotations rewritten, 0 rows unmatched
+--- fix (codemod)
+std-node: fixed point: 109 E218 conversions, 24 operand conversions, 1 counters declared `usize`, 30 residue diagnostics
+std-browser: fixed point: 18 E218 conversions, 3 operand conversions, 1 counters declared `usize`, 18 residue diagnostics
+macro_std: fixed point: 6 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 4 residue diagnostics
+corpus: fixed point: 36 E218 conversions, 14 operand conversions, 2 counters declared `usize`, 67 residue diagnostics
+--- hand.patch: 13 files
+--- b389-gap-literals.patch applied (2 suffixes, the struct-field generic-call gap)
+--- fix (after-hand)
+std-node: fixed point: 0 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 0 residue diagnostics
+std-browser: fixed point: 0 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 0 residue diagnostics
+macro_std: fixed point: 0 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 0 residue diagnostics
+corpus: fixed point: 0 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 0 residue diagnostics
+--- corpus goldens: 121 byte-identical, 17 moved, 0 failed to build
+--- examples: 11 check clean, 0 refused (examples.tsv)
+ 40 files changed, 379 insertions(+), 332 deletions(-)

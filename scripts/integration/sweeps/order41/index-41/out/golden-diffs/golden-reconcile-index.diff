@@ -1,0 +1,503 @@
+30c30
+< 	let $k = null;
+---
+> 	let $i = null;
+32c32
+< 		$k = wrapped + modulus;
+---
+> 		$i = wrapped + modulus;
+34c34
+< 		$k = wrapped;
+---
+> 		$i = wrapped;
+36c36
+< 	return $k;
+---
+> 	return $i;
+40c40
+< 	let $l = null;
+---
+> 	let $j = null;
+42c42
+< 		$l = wrapped - modulus;
+---
+> 		$j = wrapped - modulus;
+44c44
+< 		$l = wrapped;
+---
+> 		$j = wrapped;
+46c46
+< 	return $l;
+---
+> 	return $j;
+55a56,59
+> function as_i322(self) {
+> 	const widened = Number(self);
+> 	return Number(fold_signed(widened, 4294967296, 2147483648));
+> }
+62,69c66,73
+< 	const $i = step;
+< 	let $j = null;
+< 	if ($i[0] === 0) {
+< 		const index = $i[1];
+< 		$j = "K" + index + " ";
+< 	} else if ($i[0] === 1) {
+< 		const index2 = $i[1];
+< 		$j = "R" + index2 + " ";
+---
+> 	const $n = step;
+> 	let $o = null;
+> 	if ($n[0] === 0) {
+> 		const index = $n[1];
+> 		$o = "K" + index + " ";
+> 	} else if ($n[0] === 1) {
+> 		const index2 = $n[1];
+> 		$o = "R" + index2 + " ";
+71c75
+< 		$j = "F ";
+---
+> 		$o = "F ";
+73c77
+< 	return $j;
+---
+> 	return $o;
+92c96
+< 	const scanned = $g(old4, old4, new_items, (item) => {
+---
+> 	const scanned = $l(old4, old4, new_items, (item) => {
+117c121
+< 	const indexed = $m(old4, old4, new_items, (item) => {
+---
+> 	const indexed = $p(old4, old4, new_items, (item) => {
+122c126
+< 	const scanned = $s(old4, old4, new_items, (item) => {
+---
+> 	const scanned = $y(old4, old4, new_items, (item) => {
+135c139
+< 	const indexed = $u(old4, old4, new_items, (item) => {
+---
+> 	const indexed = $A(old4, old4, new_items, (item) => {
+140c144
+< 	const scanned = $A(old4, old4, new_items, (item) => {
+---
+> 	const scanned = $J(old4, old4, new_items, (item) => {
+161c165
+< 		next_same.push(-(1));
+---
+> 		next_same.push([ 1 ]);
+163,164c167,169
+< 	let build = held - 1;
+< 	while (build >= 0) {
+---
+> 	let build = held;
+> 	while (build > 0) {
+> 		build = build - 1;
+166,174c171
+< 		const $b = __map_get(first, canonical);
+< 		let $c = null;
+< 		if ($b[0] === 0) {
+< 			const after = $b[1];
+< 			$c = __at_put(next_same, build, after);
+< 		} else {
+< 			$c = undefined;
+< 		}
+< 		$c;
+---
+> 		__at_put(next_same, build, __map_get(first, canonical));
+176d172
+< 		build = build - 1;
+182c178,196
+< 		const $d = __map_get(first, canonical2);
+---
+> 		let head = __map_get(first, canonical2);
+> 		let advancing = true;
+> 		while (advancing) {
+> 			const $b = head;
+> 			let $c = null;
+> 			if ($b[0] === 0) {
+> 				const at = $b[1];
+> 				if (__at(claimed, at)) {
+> 					head = __at(next_same, at);
+> 				} else {
+> 					advancing = false;
+> 				}
+> 				$c = undefined;
+> 			} else {
+> 				$c = advancing = false;
+> 			}
+> 			$c;
+> 		}
+> 		const $d = head;
+185,186c199,200
+< 			const at = $d[1];
+< 			$e = at;
+---
+> 			const at2 = $d[1];
+> 			$e = first.set(canonical2, at2);
+188,195c202
+< 			$e = -(1);
+< 		}
+< 		let head = $e;
+< 		while (head >= 0) {
+< 			if (!(__at(claimed, head))) {
+< 				break;
+< 			}
+< 			head = __at(next_same, head);
+---
+> 			$e = first.delete(canonical2);
+197,198c204,205
+< 		first.set(canonical2, head);
+< 		let found = -(1);
+---
+> 		$e;
+> 		let found = [ 1 ];
+200,203c207,221
+< 		while (walk >= 0) {
+< 			if (!(__at(claimed, walk)) && __at(old_keys, walk) === item_key) {
+< 				found = walk;
+< 				break;
+---
+> 		let walking = true;
+> 		while (walking) {
+> 			const $f = walk;
+> 			let $g = null;
+> 			if ($f[0] === 0) {
+> 				const at3 = $f[1];
+> 				if (!(__at(claimed, at3)) && __at(old_keys, at3) === item_key) {
+> 					found = [ 0, at3 ];
+> 					walking = false;
+> 				} else {
+> 					walk = __at(next_same, at3);
+> 				}
+> 				$g = undefined;
+> 			} else {
+> 				$g = walking = false;
+205c223
+< 			walk = __at(next_same, walk);
+---
+> 			$g;
+208,212c226,231
+< 		if (found >= 0) {
+< 			__at_put(claimed, found, true);
+< 			let $f = null;
+< 			if (same(__at(old_items, found), item)) {
+< 				$f = [ 0, found ];
+---
+> 		const $h = found;
+> 		if ($h[0] === 0) {
+> 			__at_put(claimed, $h[1], true);
+> 			let $k = null;
+> 			if (same(__at(old_items, $h[1]), item)) {
+> 				$k = [ 0, as_i322($h[1]) ];
+214c233
+< 				$f = [ 1, found ];
+---
+> 				$k = [ 1, as_i322($h[1]) ];
+216c235
+< 			step = $f;
+---
+> 			step = $k;
+230c249
+< function $g(old_keys, old_items, items, key_of, same) {
+---
+> function $l(old_keys, old_items, items, key_of, same) {
+243c262
+< 				let $h = null;
+---
+> 				let $m = null;
+245c264
+< 					$h = [ 0, index ];
+---
+> 					$m = [ 0, as_i322(index) ];
+247c266
+< 					$h = [ 1, index ];
+---
+> 					$m = [ 1, as_i322(index) ];
+249c268
+< 				step = $h;
+---
+> 				step = $m;
+266c285
+< function $m(old_keys, old_items, items, key_of, same) {
+---
+> function $p(old_keys, old_items, items, key_of, same) {
+275c294
+< 		next_same.push(-(1));
+---
+> 		next_same.push([ 1 ]);
+277,278c296,298
+< 	let build = held - 1;
+< 	while (build >= 0) {
+---
+> 	let build = held;
+> 	while (build > 0) {
+> 		build = build - 1;
+280,288c300
+< 		const $n = __map_get(first, canonical);
+< 		let $o = null;
+< 		if ($n[0] === 0) {
+< 			const after = $n[1];
+< 			$o = __at_put(next_same, build, after);
+< 		} else {
+< 			$o = undefined;
+< 		}
+< 		$o;
+---
+> 		__at_put(next_same, build, __map_get(first, canonical));
+290d301
+< 		build = build - 1;
+296,307c307,321
+< 		const $p = __map_get(first, canonical2);
+< 		let $q = null;
+< 		if ($p[0] === 0) {
+< 			const at = $p[1];
+< 			$q = at;
+< 		} else {
+< 			$q = -(1);
+< 		}
+< 		let head = $q;
+< 		while (head >= 0) {
+< 			if (!(__at(claimed, head))) {
+< 				break;
+---
+> 		let head = __map_get(first, canonical2);
+> 		let advancing = true;
+> 		while (advancing) {
+> 			const $q = head;
+> 			let $r = null;
+> 			if ($q[0] === 0) {
+> 				const at = $q[1];
+> 				if (__at(claimed, at)) {
+> 					head = __at(next_same, at);
+> 				} else {
+> 					advancing = false;
+> 				}
+> 				$r = undefined;
+> 			} else {
+> 				$r = advancing = false;
+309c323
+< 			head = __at(next_same, head);
+---
+> 			$r;
+311,312c325,334
+< 		first.set(canonical2, head);
+< 		let found = -(1);
+---
+> 		const $s = head;
+> 		let $t = null;
+> 		if ($s[0] === 0) {
+> 			const at2 = $s[1];
+> 			$t = first.set(canonical2, at2);
+> 		} else {
+> 			$t = first.delete(canonical2);
+> 		}
+> 		$t;
+> 		let found = [ 1 ];
+314,317c336,350
+< 		while (walk >= 0) {
+< 			if (!(__at(claimed, walk)) && eq(__at(old_keys, walk), item_key)) {
+< 				found = walk;
+< 				break;
+---
+> 		let walking = true;
+> 		while (walking) {
+> 			const $u = walk;
+> 			let $v = null;
+> 			if ($u[0] === 0) {
+> 				const at3 = $u[1];
+> 				if (!(__at(claimed, at3)) && eq(__at(old_keys, at3), item_key)) {
+> 					found = [ 0, at3 ];
+> 					walking = false;
+> 				} else {
+> 					walk = __at(next_same, at3);
+> 				}
+> 				$v = undefined;
+> 			} else {
+> 				$v = walking = false;
+319c352
+< 			walk = __at(next_same, walk);
+---
+> 			$v;
+322,326c355,360
+< 		if (found >= 0) {
+< 			__at_put(claimed, found, true);
+< 			let $r = null;
+< 			if (same(__at(old_items, found), item)) {
+< 				$r = [ 0, found ];
+---
+> 		const $w = found;
+> 		if ($w[0] === 0) {
+> 			__at_put(claimed, $w[1], true);
+> 			let $x = null;
+> 			if (same(__at(old_items, $w[1]), item)) {
+> 				$x = [ 0, as_i322($w[1]) ];
+328c362
+< 				$r = [ 1, found ];
+---
+> 				$x = [ 1, as_i322($w[1]) ];
+330c364
+< 			step = $r;
+---
+> 			step = $x;
+344c378
+< function $s(old_keys, old_items, items, key_of, same) {
+---
+> function $y(old_keys, old_items, items, key_of, same) {
+357c391
+< 				let $t = null;
+---
+> 				let $z = null;
+359c393
+< 					$t = [ 0, index ];
+---
+> 					$z = [ 0, as_i322(index) ];
+361c395
+< 					$t = [ 1, index ];
+---
+> 					$z = [ 1, as_i322(index) ];
+363c397
+< 				step = $t;
+---
+> 				step = $z;
+380c414
+< function $u(old_keys, old_items, items, key_of, same) {
+---
+> function $A(old_keys, old_items, items, key_of, same) {
+389c423
+< 		next_same.push(-(1));
+---
+> 		next_same.push([ 1 ]);
+391,392c425,427
+< 	let build = held - 1;
+< 	while (build >= 0) {
+---
+> 	let build = held;
+> 	while (build > 0) {
+> 		build = build - 1;
+394,402c429
+< 		const $v = __map_get(first, canonical);
+< 		let $w = null;
+< 		if ($v[0] === 0) {
+< 			const after = $v[1];
+< 			$w = __at_put(next_same, build, after);
+< 		} else {
+< 			$w = undefined;
+< 		}
+< 		$w;
+---
+> 		__at_put(next_same, build, __map_get(first, canonical));
+404d430
+< 		build = build - 1;
+410,421c436,450
+< 		const $x = __map_get(first, canonical2);
+< 		let $y = null;
+< 		if ($x[0] === 0) {
+< 			const at = $x[1];
+< 			$y = at;
+< 		} else {
+< 			$y = -(1);
+< 		}
+< 		let head = $y;
+< 		while (head >= 0) {
+< 			if (!(__at(claimed, head))) {
+< 				break;
+---
+> 		let head = __map_get(first, canonical2);
+> 		let advancing = true;
+> 		while (advancing) {
+> 			const $B = head;
+> 			let $C = null;
+> 			if ($B[0] === 0) {
+> 				const at = $B[1];
+> 				if (__at(claimed, at)) {
+> 					head = __at(next_same, at);
+> 				} else {
+> 					advancing = false;
+> 				}
+> 				$C = undefined;
+> 			} else {
+> 				$C = advancing = false;
+423c452
+< 			head = __at(next_same, head);
+---
+> 			$C;
+425,426c454,463
+< 		first.set(canonical2, head);
+< 		let found = -(1);
+---
+> 		const $D = head;
+> 		let $E = null;
+> 		if ($D[0] === 0) {
+> 			const at2 = $D[1];
+> 			$E = first.set(canonical2, at2);
+> 		} else {
+> 			$E = first.delete(canonical2);
+> 		}
+> 		$E;
+> 		let found = [ 1 ];
+428,431c465,479
+< 		while (walk >= 0) {
+< 			if (!(__at(claimed, walk)) && eq2(__at(old_keys, walk), item_key)) {
+< 				found = walk;
+< 				break;
+---
+> 		let walking = true;
+> 		while (walking) {
+> 			const $F = walk;
+> 			let $G = null;
+> 			if ($F[0] === 0) {
+> 				const at3 = $F[1];
+> 				if (!(__at(claimed, at3)) && eq2(__at(old_keys, at3), item_key)) {
+> 					found = [ 0, at3 ];
+> 					walking = false;
+> 				} else {
+> 					walk = __at(next_same, at3);
+> 				}
+> 				$G = undefined;
+> 			} else {
+> 				$G = walking = false;
+433c481
+< 			walk = __at(next_same, walk);
+---
+> 			$G;
+436,440c484,489
+< 		if (found >= 0) {
+< 			__at_put(claimed, found, true);
+< 			let $z = null;
+< 			if (same(__at(old_items, found), item)) {
+< 				$z = [ 0, found ];
+---
+> 		const $H = found;
+> 		if ($H[0] === 0) {
+> 			__at_put(claimed, $H[1], true);
+> 			let $I = null;
+> 			if (same(__at(old_items, $H[1]), item)) {
+> 				$I = [ 0, as_i322($H[1]) ];
+442c491
+< 				$z = [ 1, found ];
+---
+> 				$I = [ 1, as_i322($H[1]) ];
+444c493
+< 			step = $z;
+---
+> 			step = $I;
+458c507
+< function $A(old_keys, old_items, items, key_of, same) {
+---
+> function $J(old_keys, old_items, items, key_of, same) {
+471c520
+< 				let $B = null;
+---
+> 				let $K = null;
+473c522
+< 					$B = [ 0, index ];
+---
+> 					$K = [ 0, as_i322(index) ];
+475c524
+< 					$B = [ 1, index ];
+---
+> 					$K = [ 1, as_i322(index) ];
+477c526
+< 				step = $B;
+---
+> 				step = $K;

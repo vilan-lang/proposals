@@ -1,0 +1,254 @@
+14a15,43
+> function fold_unsigned(value, modulus) {
+> 	const truncated = Math.trunc(value);
+> 	const wrapped = truncated % modulus;
+> 	let $e = null;
+> 	if (wrapped < 0) {
+> 		$e = wrapped + modulus;
+> 	} else {
+> 		$e = wrapped;
+> 	}
+> 	return $e;
+> }
+> function fold_signed(value, modulus, half) {
+> 	const wrapped = fold_unsigned(value, modulus);
+> 	let $f = null;
+> 	if (wrapped >= half) {
+> 		$f = wrapped - modulus;
+> 	} else {
+> 		$f = wrapped;
+> 	}
+> 	return $f;
+> }
+> function as_usize(self) {
+> 	const widened = Number(self);
+> 	return Number(Math.trunc(widened));
+> }
+> function as_i32(self) {
+> 	const widened = Number(self);
+> 	return Number(fold_signed(widened, 4294967296, 2147483648));
+> }
+16,19c45,48
+< 	const $n = self;
+< 	const items = __clone($n[1]);
+< 	const at = $n[2];
+< 	if ($n[0] === 0) {
+---
+> 	const $p = self;
+> 	const items = __clone($p[1]);
+> 	const at = $p[2];
+> 	if ($p[0] === 0) {
+21c50
+< 		return __at(items, at);
+---
+> 		return __at(items, as_usize(at));
+26,28c55,57
+< 	const $o = self;
+< 	if ($o[0] === 0) {
+< 		return $o[1].length + $o[2];
+---
+> 	const $q = self;
+> 	if ($q[0] === 0) {
+> 		return as_i32($q[1].length + as_usize($q[2]));
+33,37c62,66
+< 	const $p = pair2;
+< 	let $q = null;
+< 	let $r = false;
+< 	const cells = __clone($p[0]);
+< 	const weight = $p[1];
+---
+> 	const $r = pair2;
+> 	let $s = null;
+> 	let $t = false;
+> 	const cells = __clone($r[0]);
+> 	const weight = $r[1];
+39c68
+< 		$r = true;
+---
+> 		$t = true;
+41c70
+< 		$q = cells.length + weight;
+---
+> 		$s = as_i32(cells.length) + weight;
+43,44c72,73
+< 	if (!($r)) {
+< 		$q = 0;
+---
+> 	if (!($t)) {
+> 		$s = 0;
+46c75
+< 	return $q;
+---
+> 	return $s;
+50,52c79,81
+< 	const $s = cell;
+< 	const cells = __clone($s[0]);
+< 	const weight = $s[1];
+---
+> 	const $u = cell;
+> 	const cells = __clone($u[0]);
+> 	const weight = $u[1];
+55c84
+< 		return cells.length + weight;
+---
+> 		return as_i32(cells.length) + weight;
+61,62c90,91
+< 	const $t = cell;
+< 	const cells = __clone($t[0]);
+---
+> 	const $v = cell;
+> 	const cells = __clone($v[0]);
+65c94
+< 		return cells.length + $t[1];
+---
+> 		return as_i32(cells.length) + $v[1];
+71,75c100,104
+< 	const $u = cell;
+< 	let $v = null;
+< 	let $w = false;
+< 	const cells = __clone($u[0]);
+< 	const weight = $u[1];
+---
+> 	const $w = cell;
+> 	let $x = null;
+> 	let $y = false;
+> 	const cells = __clone($w[0]);
+> 	const weight = $w[1];
+77c106
+< 		$w = true;
+---
+> 		$y = true;
+79c108
+< 		$v = cells.length + weight;
+---
+> 		$x = as_i32(cells.length) + weight;
+81,82c110,111
+< 	if (!($w)) {
+< 		$v = 0;
+---
+> 	if (!($y)) {
+> 		$x = 0;
+84c113
+< 	return $v;
+---
+> 	return $x;
+110c139
+< 	return total;
+---
+> 	return as_i32(total);
+115,119c144,148
+< 		const $e = row;
+< 		let $f = null;
+< 		if ($e[1] > 1) {
+< 			total = total + $e[0].length;
+< 			$f = undefined;
+---
+> 		const $g = row;
+> 		let $h = null;
+> 		if ($g[1] > 1) {
+> 			total = total + $g[0].length;
+> 			$h = undefined;
+121c150
+< 			$f = undefined;
+---
+> 			$h = undefined;
+123c152
+< 		$f;
+---
+> 		$h;
+125c154
+< 	return total;
+---
+> 	return as_i32(total);
+128,138d156
+< 	const $g = held2;
+< 	let $h = null;
+< 	if ($g[0] === 0) {
+< 		const inner2 = __clone($g[1]);
+< 		$h = inner2;
+< 	} else {
+< 		$h = __clone(fallback);
+< 	}
+< 	return $h;
+< }
+< function first_or_guarded(held2, limit, fallback) {
+141c159
+< 	if ($i[0] === 0 && limit > 0) {
+---
+> 	if ($i[0] === 0) {
+148a167,177
+> function first_or_guarded(held2, limit, fallback) {
+> 	const $k = held2;
+> 	let $l = null;
+> 	if ($k[0] === 0 && limit > 0) {
+> 		const inner2 = __clone($k[1]);
+> 		$l = inner2;
+> 	} else {
+> 		$l = __clone(fallback);
+> 	}
+> 	return $l;
+> }
+150,151c179,180
+< 	const $m = pair2;
+< 	let cells = __clone($m[0]);
+---
+> 	const $o = pair2;
+> 	let cells = __clone($o[0]);
+153,154c182,183
+< 		cells.push($m[1]);
+< 		return cells.length;
+---
+> 		cells.push($o[1]);
+> 		return as_i32(cells.length);
+166,168c195,197
+< 	const $x = slot(cell);
+< 	const cells = __clone($x[0]);
+< 	const weight = $x[1];
+---
+> 	const $z = slot(cell);
+> 	const cells = __clone($z[0]);
+> 	const weight = $z[1];
+171c200
+< 		return cells.length + weight;
+---
+> 		return as_i32(cells.length) + weight;
+177,179c206,208
+< 	const $y = peek(cell);
+< 	const cells = __clone($y[0]);
+< 	const weight = $y[1];
+---
+> 	const $A = peek(cell);
+> 	const cells = __clone($A[0]);
+> 	const weight = $A[1];
+182c211
+< 		return cells.length + weight;
+---
+> 		return as_i32(cells.length) + weight;
+190c219
+< 	const $z = fresh_pair();
+---
+> 	const $B = fresh_pair();
+192c221
+< 		return $z[0].length + $z[1];
+---
+> 		return as_i32($B[0].length) + $B[1];
+212,216c241,245
+< const $k = held;
+< let $l = null;
+< if ($k[0] === 0) {
+< 	const inner = $k[1];
+< 	$l = console.log(inner.length);
+---
+> const $m = held;
+> let $n = null;
+> if ($m[0] === 0) {
+> 	const inner = $m[1];
+> 	$n = console.log(inner.length);
+218c247
+< 	$l = console.log(0);
+---
+> 	$n = console.log(0);
+220c249
+< $l;
+---
+> $n;

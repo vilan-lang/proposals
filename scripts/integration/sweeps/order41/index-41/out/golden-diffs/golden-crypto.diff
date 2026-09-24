@@ -38,10 +38,12 @@
 < 		$e = 0;
 ---
 > 		$g = 0;
-101c101
+101,102c101,102
 < 	const tail_bytes = $e;
+< 	let out = new Uint8Array(full * 3 + tail_bytes);
 ---
 > 	const tail_bytes = $g;
+> 	let out = new Uint8Array(full * 3 + as_usize(tail_bytes));
 104c104
 < 	const $f = new4(0, full);
 ---

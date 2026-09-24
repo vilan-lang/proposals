@@ -86,7 +86,7 @@ index 508de2c..e3bd16b 100644
  	}
  
 diff --git a/base/vilan/std/src/base64.vl b/tree/vilan/std/src/base64.vl
-index d49f51c..5d487e6 100644
+index d49f51c..358a886 100644
 --- a/base/vilan/std/src/base64.vl
 +++ b/tree/vilan/std/src/base64.vl
 @@ -9,15 +9,17 @@ import pkg::range::Range;
@@ -110,21 +110,14 @@ index d49f51c..5d487e6 100644
  		out = out
  			+ char_at((chunk >> 18) & 63)
  			+ char_at((chunk >> 12) & 63)
-@@ -69,18 +71,18 @@ export fun decode_url(text: str): Option<Bytes> {
- 	}
- 	let full = length / 4;
- 	let tail_bytes = match rest {
--		2 => 1,
--		3 => 2,
--		_ => 0,
-+		2usize => 1usize,
-+		3usize => 2usize,
-+		_ => 0usize,
+@@ -73,14 +75,14 @@ export fun decode_url(text: str): Option<Bytes> {
+ 		3 => 2,
+ 		_ => 0,
  	};
- 	mut out = Bytes::alloc(full * 3 + tail_bytes);
--	mut write = 0;
+-	mut out = Bytes::alloc(full * 3 + tail_bytes);
++	mut out = Bytes::alloc(full * 3 + tail_bytes.as_usize());
+ 	mut write = 0;
 -	for group in Range::new(0, full) {
-+	mut write: usize = 0;
 +	for group in Range::new(0, full.as_i32()) {
  		let base = group * 4;
 -		let a = digit(text.code_at(base));
@@ -214,7 +207,7 @@ index ad2808f..ee5737b 100644
  
  	fun end_list(&mut self) {}
 diff --git a/base/vilan/std/src/browser/storage.vl b/tree/vilan/std/src/browser/storage.vl
-index 5d5389c..334ace2 100644
+index 5d5389c..2d83a52 100644
 --- a/base/vilan/std/src/browser/storage.vl
 +++ b/tree/vilan/std/src/browser/storage.vl
 @@ -82,7 +82,7 @@ export impl Window {
@@ -235,15 +228,6 @@ index 5d5389c..334ace2 100644
  		let key = self.raw_key_at(index);
  		if is_null(key) {
  			None
-@@ -136,7 +136,7 @@ export impl Storage {
- 	fun keys(self): List<str> {
- 		mut names: List<str> = [];
- 		let count = self.len();
--		mut index = 0;
-+		mut index: usize = 0;
- 		for index < count {
- 			match self.key_at(index) {
- 				Some(let key) => names.push(key),
 @@ -175,7 +175,7 @@ export impl Storage {
  	// has no `Option` return, and turning that null into an `Option` is the whole
  	// job of the wrappers. Call the wrappers.
@@ -254,23 +238,10 @@ index 5d5389c..334ace2 100644
  	[extern(method, "getItem")]
  	external fun raw_get(self, key: str): str;
 diff --git a/base/vilan/std/src/browser/ui.vl b/tree/vilan/std/src/browser/ui.vl
-index aecee94..0e9e20c 100644
+index aecee94..9e74c07 100644
 --- a/base/vilan/std/src/browser/ui.vl
 +++ b/tree/vilan/std/src/browser/ui.vl
-@@ -794,7 +794,11 @@ export impl Region {
- 		let rows = self.rows.read();
- 		mut at = 0;
- 		for row in rows {
--			let end = if at + 1 < rows.len() { rows[at + 1].marker } else { self.anchor };
-+			let end = if (at + 1).as_usize() < rows.len() {
-+				rows[(at + 1).as_usize()].marker
-+			} else {
-+				self.anchor
-+			};
- 			let _cut = self.cut_row(row, end);
- 			self.drop_row(row);
- 			at += 1;
-@@ -1325,12 +1329,18 @@ fun place_swap<T: PartialEq, S: Source<T>, C: Slot>(
+@@ -1325,12 +1325,18 @@ fun place_swap<T: PartialEq, S: Source<T>, C: Slot>(
  fun settled_steps(steps: List<RowStep>): List<bool> {
  	mut forward: List<bool> = [];
  	mut forward_count = 0;
@@ -292,7 +263,7 @@ index aecee94..0e9e20c 100644
  					forward_count += 1;
  					forward.push(true);
  				} else {
-@@ -1349,12 +1359,13 @@ fun settled_steps(steps: List<RowStep>): List<bool> {
+@@ -1349,12 +1355,13 @@ fun settled_steps(steps: List<RowStep>): List<bool> {
  	mut backward: List<bool> = [];
  	mut backward_count = 0;
  	mut lowest = steps.len();
@@ -310,7 +281,7 @@ index aecee94..0e9e20c 100644
  					backward_count += 1;
  					backward.push(true);
  				} else {
-@@ -1365,7 +1376,6 @@ fun settled_steps(steps: List<RowStep>): List<bool> {
+@@ -1365,7 +1372,6 @@ fun settled_steps(steps: List<RowStep>): List<bool> {
  				backward.push(false);
  			},
  		}
@@ -318,7 +289,7 @@ index aecee94..0e9e20c 100644
  	}
  	if forward_count >= backward_count {
  		forward
-@@ -1389,18 +1399,18 @@ fun row_references(
+@@ -1389,18 +1395,18 @@ fun row_references(
  ): List<Text> {
  	mut references: List<Text> = [];
  	mut reference = anchor;
@@ -341,22 +312,7 @@ index aecee94..0e9e20c 100644
  	}
  	references.reverse()
  }
-@@ -1452,12 +1462,12 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
- 		let settled = settled_steps(plan.steps);
- 		let references = row_references(plan.steps, previous_rows, settled, region.anchor);
- 		mut staying: List<bool> = [];
--		mut fill = 0;
-+		mut fill: usize = 0;
- 		for fill < previous_rows.len() {
- 			staying.push(false);
- 			fill += 1;
- 		}
--		mut settled_at = 0;
-+		mut settled_at: usize = 0;
- 		for step in plan.steps {
- 			if settled[settled_at] {
- 				match step {
-@@ -1476,7 +1486,7 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+@@ -1476,7 +1482,7 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
  		// — it keeps its marker, its nodes and its place — and a `None` in `cut` is
  		// exactly "this row did not move".
  		mut cut: List<Option<Element>> = [];
@@ -365,16 +321,7 @@ index aecee94..0e9e20c 100644
  		for row in previous_rows {
  			if staying[at] {
  				cut.push(None);
-@@ -1496,7 +1506,7 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
- 		}
- 		mut next_rows: List<Row> = [];
- 		mut next_owners: List<Owner> = [];
--		mut position = 0;
-+		mut position: usize = 0;
- 		// Then put the moved rows back in the NEW order, each before the next
- 		// settled row's marker: a kept row is its marker and its cut nodes moved as
- 		// a unit, a fresh one is placed from scratch at that same point. A settled
-@@ -1561,26 +1571,26 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+@@ -1561,26 +1567,26 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
  			// A row's extent runs from its own marker to the next boundary, and the
  			// rows after it have not moved, so the boundary is meaningful one row
  			// at a time.
@@ -411,7 +358,7 @@ index aecee94..0e9e20c 100644
  		} else {
  			region.anchor
  		};
-@@ -1588,10 +1598,10 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+@@ -1588,10 +1594,10 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
  		for item in inserted {
  			let owner = Owner::new();
  			let row = run_with_owner(owner, || region.open_row_before(render(item), reference));
@@ -426,7 +373,7 @@ index aecee94..0e9e20c 100644
  			offset += 1;
  		}
  	};
-@@ -1609,7 +1619,7 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+@@ -1609,7 +1615,7 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
  				for op in source.delta_since(cursor) {
  					match op {
  						SeqOp::Splice(let at, let removed, let inserted) => {
@@ -435,7 +382,7 @@ index aecee94..0e9e20c 100644
  						},
  						// An element changed IN PLACE. The pass's rule, one row at
  						// a time: the same key holding an equal item is a `Keep`
-@@ -1617,11 +1627,11 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+@@ -1617,11 +1623,11 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
  						SeqOp::SetAt(let at, let _was, let value) => {
  							// `.get(at)` copies the one element where binding the
  							// read would copy the run.
@@ -449,7 +396,7 @@ index aecee94..0e9e20c 100644
  								Some(let held) => value == held,
  								None => false,
  							};
-@@ -1643,12 +1653,12 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+@@ -1643,12 +1649,12 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
  							mut lifted: List<T> = [];
  							mut taken = 0; // I5
  							for taken < count {
@@ -464,48 +411,6 @@ index aecee94..0e9e20c 100644
  								offset += 1;
  							}
  							reconcile_pass(moved);
-@@ -1698,12 +1708,12 @@ fun place_each_by<T, K: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
- 		let settled = settled_steps(plan.steps);
- 		let references = row_references(plan.steps, previous_rows, settled, region.anchor);
- 		mut staying: List<bool> = [];
--		mut fill = 0;
-+		mut fill: usize = 0;
- 		for fill < previous_rows.len() {
- 			staying.push(false);
- 			fill += 1;
- 		}
--		mut settled_at = 0;
-+		mut settled_at: usize = 0;
- 		for step in plan.steps {
- 			if settled[settled_at] {
- 				match step {
-@@ -1718,7 +1728,7 @@ fun place_each_by<T, K: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
- 		// Cut what moves first, in old document order — `place_each`'s two halves,
- 		// for `place_each`'s reason (A91).
- 		mut cut: List<Option<Element>> = [];
--		mut at = 0;
-+		mut at: usize = 0;
- 		for row in previous_rows {
- 			if staying[at] {
- 				cut.push(None);
-@@ -1739,7 +1749,7 @@ fun place_each_by<T, K: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
- 		mut next_cells: List<SignalCell<T>> = [];
- 		mut next_rows: List<Row> = [];
- 		mut next_owners: List<Owner> = [];
--		mut position = 0;
-+		mut position: usize = 0;
- 		for step in plan.steps {
- 			let item = list[position];
- 			let reference = references[position];
-@@ -2270,7 +2280,7 @@ export fun focus_scope(root: Element, containment: FocusContainment): FocusScope
- 				Some(let target) => target.focus(),
- 				None => {},
- 			}
--		} else if !event.shift_key() && index == last {
-+		} else if !event.shift_key() && index.as_usize() == last {
- 			event.prevent_default();
- 			match order.get(0) {
- 				Some(let target) => target.focus(),
 diff --git a/base/vilan/std/src/bytes.vl b/tree/vilan/std/src/bytes.vl
 index c7766b5..f76bbac 100644
 --- a/base/vilan/std/src/bytes.vl
@@ -598,7 +503,7 @@ index c7766b5..f76bbac 100644
  
  // --- UTF-8 ----------------------------------------------------------------
 diff --git a/base/vilan/std/src/compare.vl b/tree/vilan/std/src/compare.vl
-index 9a7ee63..4464bac 100644
+index 9a7ee63..a58c5e0 100644
 --- a/base/vilan/std/src/compare.vl
 +++ b/tree/vilan/std/src/compare.vl
 @@ -109,8 +109,8 @@ impl List<type T: PartialEq> {
@@ -612,24 +517,6 @@ index 9a7ee63..4464bac 100644
  		for item in self {
  			if item.eq(value) {
  				ret Some(index);
-@@ -141,7 +141,7 @@ impl List<type T: PartialEq> with PartialEq {
- 		if self.len() != b.len() {
- 			ret false;
- 		}
--		mut index = 0;
-+		mut index: usize = 0;
- 		for item in self {
- 			if !(item == b[index]) {
- 				ret false;
-@@ -253,7 +253,7 @@ macro fun PartialEq(item: Item): Source {
- 				mut self_binds: List<str> = [];
- 				mut other_binds: List<str> = [];
- 				mut comparisons: List<str> = [];
--				mut index = 0;
-+				mut index: usize = 0;
- 				for index < arity {
- 					self_binds.push(i"let s{index}");
- 					other_binds.push(i"let o{index}");
 diff --git a/base/vilan/std/src/crypto.vl b/tree/vilan/std/src/crypto.vl
 index 2aec8c2..fbb6998 100644
 --- a/base/vilan/std/src/crypto.vl
@@ -654,21 +541,8 @@ index 2aec8c2..fbb6998 100644
  	}
  	acc == 0
  }
-diff --git a/base/vilan/std/src/debug.vl b/tree/vilan/std/src/debug.vl
-index 4be6dd4..dab588e 100644
---- a/base/vilan/std/src/debug.vl
-+++ b/tree/vilan/std/src/debug.vl
-@@ -79,7 +79,7 @@ macro fun Debug(item: Item): Source {
- 			} else {
- 				mut binds: List<str> = [];
- 				mut parts: List<str> = [];
--				mut index = 0;
-+				mut index: usize = 0;
- 				for index < arity {
- 					binds.push(i"let p{index}");
- 					parts.push(i"p{index}.debug()");
 diff --git a/base/vilan/std/src/delta.vl b/tree/vilan/std/src/delta.vl
-index cda3748..9918c56 100644
+index cda3748..833735a 100644
 --- a/base/vilan/std/src/delta.vl
 +++ b/tree/vilan/std/src/delta.vl
 @@ -155,7 +155,7 @@ export struct DeltaLog<O> {
@@ -735,8 +609,7 @@ index cda3748..9918c56 100644
 +		left.push(list.remove(start.as_usize()));
  		taken += 1;
  	}
--	mut offset = 0; // I5
-+	mut offset: usize = 0; // I5
+ 	mut offset = 0; // I5
  	let arriving = inserted.len(); // I5
  	for offset < arriving {
  		match inserted.get(offset) {
@@ -793,8 +666,7 @@ index cda3748..9918c56 100644
 +				lifted.push(list.remove(from.as_usize()));
  				taken += 1;
  			}
--			mut offset = 0; // I5
-+			mut offset: usize = 0; // I5
+ 			mut offset = 0; // I5
  			for offset < lifted.len() {
  				match lifted.get(offset) {
 -					Some(let value) => list.insert(to + offset, value),
@@ -811,23 +683,6 @@ index cda3748..9918c56 100644
  	}
  }
  
-@@ -839,14 +839,14 @@ export impl ListCell<type T: PartialEq> {
- 		let held = self.elements.get();
- 		let old_length = held.len(); // I5
- 		let new_length = items.len(); // I5
--		mut prefix = 0; // I5
-+		mut prefix: usize = 0; // I5
- 		for prefix < old_length && prefix < new_length {
- 			if held[prefix] != items[prefix] {
- 				jump break;
- 			}
- 			prefix += 1;
- 		}
--		mut suffix = 0; // I5
-+		mut suffix: usize = 0; // I5
- 		for prefix + suffix < old_length && prefix + suffix < new_length {
- 			if held[old_length - 1 - suffix] != items[new_length - 1 - suffix] {
- 				jump break;
 @@ -868,7 +868,7 @@ export impl ListCell<type T: PartialEq> {
  		if removed == 0 && arriving.len() == 0 {
  			ret;
@@ -856,7 +711,7 @@ index cda3748..9918c56 100644
  				SeqOp::SetAt(let at, let _was, let value) => out.set_at(at, g(value)),
  				// The honest N: the collection became something else, so the
 diff --git a/base/vilan/std/src/iterator.vl b/tree/vilan/std/src/iterator.vl
-index 447ff76..fd7b2c6 100644
+index 447ff76..73317c4 100644
 --- a/base/vilan/std/src/iterator.vl
 +++ b/tree/vilan/std/src/iterator.vl
 @@ -32,13 +32,13 @@ trait Iterator<T> {
@@ -875,17 +730,15 @@ index 447ff76..fd7b2c6 100644
  		Skipped { upstream = self, pending = count }
  	}
  
-@@ -95,8 +95,8 @@ trait Iterator<T> {
+@@ -95,7 +95,7 @@ trait Iterator<T> {
  
  	/// How many values the iterator yields. Pulls all of them, so it does not
  	/// return over an unbounded source — bound it with `take` first.
 -	fun count(mut self): i32 {
--		mut seen = 0;
 +	fun count(mut self): usize {
-+		mut seen: usize = 0;
+ 		mut seen = 0;
  		for _value in self {
  			seen = seen + 1;
- 		}
 @@ -159,7 +159,7 @@ impl Iterator<type T> {
  /// list; the eager `List` methods that only need one pass still take one.
  struct ListIterator<T> {
@@ -929,7 +782,7 @@ index 447ff76..fd7b2c6 100644
  			let index = self.index;
  			self.index = index + 1;
 diff --git a/base/vilan/std/src/json.vl b/tree/vilan/std/src/json.vl
-index ccdfcab..e03dfa0 100644
+index ccdfcab..9221ca6 100644
 --- a/base/vilan/std/src/json.vl
 +++ b/tree/vilan/std/src/json.vl
 @@ -486,7 +486,7 @@ struct JsonReader {
@@ -973,24 +826,6 @@ index ccdfcab..e03dfa0 100644
  					}
  				}
  			} else {
-@@ -1066,7 +1067,7 @@ export macro fun enum_json_impls(target: EnumItem): str {
- 		} else {
- 			mut binds: List<str> = [];
- 			mut parts: List<str> = [];
--			mut index = 0;
-+			mut index: usize = 0;
- 			for index < arity {
- 				binds.push(i"let p{index}");
- 				parts.push(i"p{index}.to_json()");
-@@ -1190,7 +1191,7 @@ export macro fun enum_wire_impls(target: EnumItem): str {
- 		mut statements: List<str> = [];
- 		statements.push(i"serializer.begin_variant({tag}, {arity});");
- 		mut binds: List<str> = [];
--		mut index = 0;
-+		mut index: usize = 0;
- 		for index < arity {
- 			binds.push(i"let p{index}");
- 			statements.push(i"p{index}.describe(serializer);");
 diff --git a/base/vilan/std/src/list.vl b/tree/vilan/std/src/list.vl
 index 4f777af..24d0d65 100644
 --- a/base/vilan/std/src/list.vl
@@ -1050,7 +885,7 @@ index 963ee19..af14bec 100644
  	}
  
 diff --git a/base/vilan/std/src/markdown.vl b/tree/vilan/std/src/markdown.vl
-index ab7a9c9..a516dbc 100644
+index ab7a9c9..9a77f46 100644
 --- a/base/vilan/std/src/markdown.vl
 +++ b/tree/vilan/std/src/markdown.vl
 @@ -92,7 +92,7 @@ use Inline::{ Code, Emph, Html, Link, Strong, Text };
@@ -1062,18 +897,15 @@ index ab7a9c9..a516dbc 100644
  	let limit = text.len() - needle.len();
  	mut index = from;
  	for index <= limit {
-@@ -106,9 +106,9 @@ fun index_of(text: str, needle: str, from: i32): Option<i32> {
+@@ -106,7 +106,7 @@ fun index_of(text: str, needle: str, from: i32): Option<i32> {
  
  /// The count of leading ASCII spaces — the fence-indent measure the docs gate uses.
  /// Tabs deliberately do not count (the book indents with spaces).
 -fun leading_spaces(line: str): i32 {
 +fun leading_spaces(line: str): usize {
  	let n = line.len();
--	mut count = 0;
-+	mut count: usize = 0;
+ 	mut count = 0;
  	for count < n && line.code_at(count) == 32 {
- 		count += 1;
- 	}
 @@ -117,7 +117,7 @@ fun leading_spaces(line: str): i32 {
  
  /// Strip up to `columns` leading spaces — CommonMark's fenced-code dedent: a line
@@ -1083,20 +915,15 @@ index ab7a9c9..a516dbc 100644
  	mut have = leading_spaces(line);
  	if have > columns {
  		have = columns;
-@@ -153,10 +153,10 @@ fun split_lines(source: str): List<str> {
+@@ -153,7 +153,7 @@ fun split_lines(source: str): List<str> {
  
  /// Whether `trimmed` is a run of the single character `code` — optionally
  /// space-separated (the thematic-break spelling) — at least `minimum` long.
 -fun same_char_line(trimmed: str, code: u32, minimum: i32, allow_spaces: bool): bool {
 +fun same_char_line(trimmed: str, code: u32, minimum: usize, allow_spaces: bool): bool {
  	let n = trimmed.len();
--	mut count = 0;
--	mut i = 0;
-+	mut count: usize = 0;
-+	mut i: usize = 0;
- 	for i < n {
- 		let c = trimmed.code_at(i);
- 		if c == code {
+ 	mut count = 0;
+ 	mut i = 0;
 @@ -185,17 +185,17 @@ fun is_rule_like(trimmed: str): bool {
  /// a tab, or the end of the line; anything else is 0 (not a heading).
  fun heading_level(trimmed: str): i32 {
@@ -1136,15 +963,6 @@ index ab7a9c9..a516dbc 100644
  	let n = trimmed.len();
  	if n >= 2 {
  		let c = trimmed.code_at(0);
-@@ -235,7 +235,7 @@ fun list_item_content_offset(trimmed: str): i32 {
- 			ret 2;
- 		}
- 	}
--	mut i = 0;
-+	mut i: usize = 0;
- 	for i < n && is_ascii_digit(trimmed.code_at(i)) {
- 		i += 1;
- 	}
 @@ -269,7 +269,7 @@ fun starts_structure(line: str): bool {
  
  /// Whether `line` closes a fence opened at `indent`: the docs gate's rule —
@@ -1154,21 +972,7 @@ index ab7a9c9..a516dbc 100644
  	leading_spaces(line) == indent && line.substring(indent, line.len()).trim() == "```"
  }
  
-@@ -282,22 +282,22 @@ fun is_fence_close(line: str, indent: i32): bool {
- fun parse_inline(text: str, line: i32): Result<List<Inline>, ParseError> {
- 	mut out: List<Inline> = [];
- 	let n = text.len();
--	mut plain_from = 0;
--	mut i = 0;
-+	mut plain_from: usize = 0;
-+	mut i: usize = 0;
- 	for i < n {
- 		let c = text.code_at(i);
- 		if c == 96 {
- 			// A backtick run opens a code span closed by a run of the SAME length
- 			// (the proven book_sync rule); an unclosed run is literal.
--			mut run = 1;
-+			mut run: usize = 1;
+@@ -293,7 +293,7 @@ fun parse_inline(text: str, line: i32): Result<List<Inline>, ParseError> {
  			for i + run < n && text.code_at(i + run) == 96 {
  				run += 1;
  			}
@@ -1177,11 +981,6 @@ index ab7a9c9..a516dbc 100644
  			mut cursor = i + run;
  			for close is None && cursor < n {
  				if text.code_at(cursor) == 96 {
--					mut closing = 1;
-+					mut closing: usize = 1;
- 					for cursor + closing < n && text.code_at(cursor + closing) == 96 {
- 						closing += 1;
- 					}
 @@ -315,13 +315,13 @@ fun parse_inline(text: str, line: i32): Result<List<Inline>, ParseError> {
  					if plain_from < i {
  						out.push(Text(text.substring(plain_from, i)));
@@ -1247,34 +1046,7 @@ index ab7a9c9..a516dbc 100644
  	let n = text.len();
  	for entity in ["&amp;", "&lt;", "&gt;", "&quot;", "&#39;"] {
  		let k = entity.len();
-@@ -656,7 +656,7 @@ export fun heading_id(content: List<Inline>): str {
- 	let text = inline_text(content).trim();
- 	let n = text.len();
- 	mut out = "";
--	mut i = 0;
-+	mut i: usize = 0;
- 	for i < n {
- 		let c = text.code_at(i);
- 		let entity = entity_length(text, i);
-@@ -760,7 +760,7 @@ fun is_delimiter_row(line: str): bool {
- 	}
- 	let n = trimmed.len();
- 	mut dashes = 0;
--	mut i = 0;
-+	mut i: usize = 0;
- 	for i < n {
- 		let c = trimmed.code_at(i);
- 		if c == 45 {
-@@ -781,7 +781,7 @@ fun parse_row(line: str, line_number: i32): Result<List<List<Inline>>, ParseErro
- 	let n = trimmed.len();
- 	mut cells: List<List<Inline>> = [];
- 	mut cell = "";
--	mut i = 0;
-+	mut i: usize = 0;
- 	if trimmed.starts_with("|") {
- 		i = 1;
- 	}
-@@ -815,10 +815,10 @@ fun parse_row(line: str, line_number: i32): Result<List<List<Inline>>, ParseErro
+@@ -815,7 +815,7 @@ fun parse_row(line: str, line_number: i32): Result<List<List<Inline>>, ParseErro
  /// `first_line`) into blocks. Heading ids are NOT assigned here — `parse` runs the
  /// document-order id walk after the tree exists, so headings nested in quotes or
  /// items dedupe exactly as a renderer meets them.
@@ -1282,11 +1054,7 @@ index ab7a9c9..a516dbc 100644
 +fun parse_blocks(lines: List<str>, first_line: usize): Result<List<Block>, ParseError> {
  	let count = lines.len();
  	mut blocks: List<Block> = [];
--	mut i = 0;
-+	mut i: usize = 0;
- 	for i < count {
- 		let line = lines[i];
- 		let trimmed = line.trim();
+ 	mut i = 0;
 @@ -828,12 +828,12 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
  			i += 1;
  		} else if indent >= 4 {
@@ -1487,30 +1255,8 @@ index 48532db..1736ab5 100644
  
  	fun first(self): Option<T> {
  		self.get(0)
-diff --git a/base/vilan/std/src/path.vl b/tree/vilan/std/src/path.vl
-index ec27e51..ae1eff0 100644
---- a/base/vilan/std/src/path.vl
-+++ b/tree/vilan/std/src/path.vl
-@@ -299,7 +299,7 @@ fun starts_with(path: str, prefix: str): bool {
- 	if head.len() > parts.len() {
- 		ret false;
- 	}
--	mut index = 0;
-+	mut index: usize = 0;
- 	for index < head.len() {
- 		if parts[index] != head[index] {
- 			ret false;
-@@ -360,7 +360,7 @@ fun relative(from: str, to: str): Option<str> {
- 	}
- 	let source = components(from);
- 	let target = components(to);
--	mut common = 0;
-+	mut common: usize = 0;
- 	for common < source.len() && common < target.len() && source[common] == target[common] {
- 		common += 1;
- 	}
 diff --git a/base/vilan/std/src/process/db.vl b/tree/vilan/std/src/process/db.vl
-index 777df89..f7d592b 100644
+index 777df89..de26670 100644
 --- a/base/vilan/std/src/process/db.vl
 +++ b/tree/vilan/std/src/process/db.vl
 @@ -206,7 +206,7 @@ export impl Database {
@@ -1522,24 +1268,17 @@ index 777df89..f7d592b 100644
  		refuse_inserted_migration(migrations, recorded);
  
  		mut applied: List<str> = [];
-@@ -283,7 +283,7 @@ export impl Database {
- /// applied" unstatable.
- fun migration_names(migrations: List<Migration>): Set<str> {
- 	mut names: Set<str> = Set::new();
--	mut index = 0;
-+	mut index: usize = 0;
- 	for index < migrations.len() {
- 		let step = migrations[index];
- 		if step.name == "" {
-@@ -323,21 +323,24 @@ fun refuse_database_ahead(names: Set<str>, recorded: Set<str>, count: i32) {
+@@ -323,21 +323,27 @@ fun refuse_database_ahead(names: Set<str>, recorded: Set<str>, count: i32) {
  /// with history this refusal catches every misordering such a rule would, and on a
  /// fresh database any list order is self-consistent — it IS the history.
  fun refuse_inserted_migration(migrations: List<Migration>, recorded: Set<str>) {
 -	mut last_applied = -1;
--	mut index = 0;
 +	// I5 S2: "nothing applied" is `None`, where it was the `-1` below every index.
++	// (After S2 the `-1` COMPILES as a `usize` — the binding takes its type from
++	// `last_applied = index` and a negative literal is not refused at an unsigned
++	// type — which is why this sentinel is a hand edit and not a diagnostic.)
 +	mut last_applied: Option<usize> = None;
-+	mut index: usize = 0;
+ 	mut index = 0;
  	for index < migrations.len() {
  		if recorded.contains(migrations[index].name) {
 -			last_applied = index;
@@ -1554,7 +1293,7 @@ index 777df89..f7d592b 100644
 -			let applied = migrations[last_applied].name;
 -			panic(i"std::db migrate: migration '{pending}' is not applied, but '{applied}' after it in the list is — a migration was inserted before the applied history");
 +	if last_applied is Some(let last) {
-+		mut earlier: usize = 0;
++		mut earlier = 0;
 +		for earlier < last {
 +			let pending = migrations[earlier].name;
 +			if !recorded.contains(pending) {
@@ -1567,7 +1306,7 @@ index 777df89..f7d592b 100644
  	}
  }
 diff --git a/base/vilan/std/src/process/document.vl b/tree/vilan/std/src/process/document.vl
-index bf92d1a..42bcf0d 100644
+index bf92d1a..6bec44d 100644
 --- a/base/vilan/std/src/process/document.vl
 +++ b/tree/vilan/std/src/process/document.vl
 @@ -224,7 +224,7 @@ export struct Document {
@@ -1606,7 +1345,7 @@ index bf92d1a..42bcf0d 100644
  	for tag in tags_of(shell) {
  		if tag.closing && tag.name == name {
  			ret Some(tag.start);
-@@ -565,13 +565,13 @@ fun joined_hatch(existing: str, markup: str): str {
+@@ -565,10 +565,10 @@ fun joined_hatch(existing: str, markup: str): str {
  /// `text` with each insertion's markup spliced in at its index. The indices are
  /// into the ORIGINAL text; insertions apply in ascending index order, and two at
  /// the same index keep their list order.
@@ -1618,17 +1357,9 @@ index bf92d1a..42bcf0d 100644
 +	mut ordered: List<(usize, str)> = [];
  	for insertion in insertions {
  		let (at, _markup) = insertion;
--		mut index = 0;
-+		mut index: usize = 0;
- 		for entry in ordered {
- 			let (before, _before_markup) = entry;
- 			if before <= at {
-@@ -581,11 +581,11 @@ export fun spliced(text: str, insertions: List<(i32, str)>): str {
- 		ordered.insert(index, insertion);
- 	}
- 	mut result = "";
--	mut cursor = 0;
-+	mut cursor: usize = 0;
+ 		mut index = 0;
+@@ -584,8 +584,8 @@ export fun spliced(text: str, insertions: List<(i32, str)>): str {
+ 	mut cursor = 0;
  	for entry in ordered {
  		let (at, markup) = entry;
 -		result = result + text.substring(cursor, at) + markup;
@@ -1651,15 +1382,6 @@ index bf92d1a..42bcf0d 100644
  	/// Whether this is a closing tag (`</head>`).
  	closing: bool,
  }
-@@ -733,7 +733,7 @@ fun is_emitted_chunk(build: LegBuild, file: str): bool {
- fun tags_of(markup: str): List<Tag> {
- 	let length = markup.len();
- 	mut tags: List<Tag> = [];
--	mut index = 0;
-+	mut index: usize = 0;
- 	for index < length {
- 		if markup.substring(index, index + 1) != "<" {
- 			index = index + 1;
 @@ -794,7 +794,7 @@ fun tags_of(markup: str): List<Tag> {
  /// A found index plus `offset`, or `fallback` when the search came up empty — the
  /// "skip past this delimiter, or give up on the rest of the document" step the
@@ -1695,18 +1417,15 @@ index bf92d1a..42bcf0d 100644
  	for index + closing_length <= length {
  		if matches_ascii_insensitive(markup, index, closing) {
  			ret index;
-@@ -884,9 +887,9 @@ fun skip_raw_text(markup: str, from: i32, name: str): i32 {
+@@ -884,7 +887,7 @@ fun skip_raw_text(markup: str, from: i32, name: str): i32 {
  ///
  /// `at + needle.len() <= markup.len()` is the caller's contract, and it is what
  /// puts every `code_at` below in range.
 -fun matches_ascii_insensitive(markup: str, at: i32, needle: str): bool {
 +fun matches_ascii_insensitive(markup: str, at: usize, needle: str): bool {
  	let needle_length = needle.len();
--	mut offset = 0;
-+	mut offset: usize = 0;
+ 	mut offset = 0;
  	for offset < needle_length {
- 		if lowered_unit(markup.code_at(at + offset)) != lowered_unit(needle.code_at(offset)) {
- 			ret false;
 @@ -907,7 +910,7 @@ fun lowered_unit(unit: u32): u32 {
  }
  
@@ -1797,7 +1516,7 @@ index ed7bae7..e12e056 100644
  		let count = self.file.read_at(buffer, self.cursor.read());
  		self.cursor.write() = self.cursor.read() + count.as_i53();
 diff --git a/base/vilan/std/src/reactive.vl b/tree/vilan/std/src/reactive.vl
-index d4964fb..9090b14 100644
+index d4964fb..aa444e2 100644
 --- a/base/vilan/std/src/reactive.vl
 +++ b/tree/vilan/std/src/reactive.vl
 @@ -1752,7 +1752,7 @@ export enum RowStep {
@@ -1841,7 +1560,7 @@ index d4964fb..9090b14 100644
  	}
  	mut steps: List<RowStep> = [];
  	for item in items {
-@@ -1824,42 +1825,57 @@ export fun reconcile<T, K: PartialEq + Hashable>(
+@@ -1824,41 +1825,56 @@ export fun reconcile<T, K: PartialEq + Hashable>(
  		// claimed are dropped from the chain for good (`first` is advanced past
  		// them), so the total cost of skipping claimed entries across a whole pass
  		// is bounded by the number of claims.
@@ -1918,25 +1637,14 @@ index d4964fb..9090b14 100644
  		steps.push(step);
  	}
 -	mut removed: List<i32> = [];
--	mut index = 0;
 +	mut removed: List<usize> = [];
-+	mut index: usize = 0;
+ 	mut index = 0;
  	for index < held {
  		if !claimed[index] {
- 			removed.push(index);
 diff --git a/base/vilan/std/src/rpc.vl b/tree/vilan/std/src/rpc.vl
-index 18354dc..10e21d9 100644
+index 18354dc..0316a2d 100644
 --- a/base/vilan/std/src/rpc.vl
 +++ b/tree/vilan/std/src/rpc.vl
-@@ -317,7 +317,7 @@ export impl SplitDuplex with DuplexTransport {
- fun drain_sse(buffer: str, dispatch: |str| void): str {
- 	let parts = buffer.split("\n\n");
- 	mut remainder = "";
--	mut index = 0;
-+	mut index: usize = 0;
- 	for part in parts {
- 		if index == parts.len() - 1 {
- 			remainder = part;
 @@ -1306,7 +1306,7 @@ export fun encode_request(codec: Codec, method: str, args: List<|Serializer| voi
  	(serializer.field)("method");
  	(serializer.str_value)(method);
@@ -1982,15 +1690,6 @@ index 18354dc..10e21d9 100644
  				None => {},
  				Some(let before) => {
  					if !before.eq(element) {
-@@ -2987,7 +2987,7 @@ fun same_sequence(before: List<Hash>, after: List<Hash>): bool {
- 	if length != after.len() {
- 		ret false;
- 	}
--	mut index = 0;
-+	mut index: usize = 0;
- 	for index < length {
- 		if !before[index].eq(after[index]) {
- 			ret false;
 @@ -3193,7 +3193,7 @@ export impl ReactiveClient {
  		RemoteSource {
  			channel = channel_cell,
@@ -2063,15 +1762,6 @@ index 18354dc..10e21d9 100644
  					key,
  					value = list[at],
  				}));
-@@ -4096,7 +4096,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
- 		// one: the index and the op's keyed elements come off the same `key()`
- 		// call.
- 		mut seeded: List<KeyedElement<K, T>> = [];
--		mut index = 0;
-+		mut index: usize = 0;
- 		let length = value.len();
- 		for index < length {
- 			let key = value[index].key();
 @@ -4110,7 +4110,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
  
  	/// The element held under `key` and where it sits, if the cell holds one — a
@@ -2090,13 +1780,7 @@ index 18354dc..10e21d9 100644
  		mut index = from;
  		let length = list.len();
  		for index < length {
-@@ -4179,12 +4179,12 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
- 							for gone in removed {
- 								ops.push(Delta::Remove(gone.key));
- 							}
--							mut offset = 0;
-+							mut offset: usize = 0;
- 							let arriving = inserted.len();
+@@ -4184,7 +4184,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
  							for offset < arriving {
  								match inserted.get(offset) {
  									Some(let element) => {
@@ -2169,15 +1853,6 @@ index 18354dc..10e21d9 100644
  							},
  						}
  					},
-@@ -5062,7 +5062,7 @@ fun reattach_mirrors(
- 					// the app restarts on its own terms.
- 					Err(let _failed) => close_for_good(socket),
- 					Ok(let channels) => {
--						mut index = 0;
-+						mut index: usize = 0;
- 						for rebind in rebinds {
- 							let channel = channels[index];
- 							rebind(channel, encode_control(codec, "Subscribe", channel));
 diff --git a/base/vilan/std/src/set.vl b/tree/vilan/std/src/set.vl
 index df7ff9b..959e0f9 100644
 --- a/base/vilan/std/src/set.vl
@@ -2192,7 +1867,7 @@ index df7ff9b..959e0f9 100644
  	}
  
 diff --git a/base/vilan/std/src/string.vl b/tree/vilan/std/src/string.vl
-index 18c5a44..9efd846 100644
+index 18c5a44..5a764de 100644
 --- a/base/vilan/std/src/string.vl
 +++ b/tree/vilan/std/src/string.vl
 @@ -5,7 +5,7 @@ export *;
@@ -2204,14 +1879,7 @@ index 18c5a44..9efd846 100644
  
  	external fun trim(self): str;
  
-@@ -43,13 +43,13 @@ impl str {
- 		let lowercase = "abcdefghijklmnopqrstuvwxyz";
- 		let length = self.len();
- 		mut out = "";
--		mut index = 0;
-+		mut index: usize = 0;
- 		for index < length {
- 			let unit = self.code_at(index);
+@@ -49,7 +49,7 @@ impl str {
  			// `A` (65) through `Z` (90) — the only units this maps.
  			if unit >= 65 && unit <= 90 {
  				let letter = (unit - 65).as_i32();
@@ -2220,14 +1888,7 @@ index 18c5a44..9efd846 100644
  			} else {
  				out = out + self.substring(index, index + 1);
  			}
-@@ -69,13 +69,13 @@ impl str {
- 		let uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
- 		let length = self.len();
- 		mut out = "";
--		mut index = 0;
-+		mut index: usize = 0;
- 		for index < length {
- 			let unit = self.code_at(index);
+@@ -75,7 +75,7 @@ impl str {
  			// `a` (97) through `z` (122) — the only units this maps.
  			if unit >= 97 && unit <= 122 {
  				let letter = (unit - 97).as_i32();
@@ -2319,7 +1980,7 @@ index bfe3338..052b3ab 100644
  			serializer.begin_struct(2);
  			serializer.field("key");
 diff --git a/base/vilan/std/src/ws.vl b/tree/vilan/std/src/ws.vl
-index 3f8004d..86db97f 100644
+index 3f8004d..7949d2d 100644
 --- a/base/vilan/std/src/ws.vl
 +++ b/tree/vilan/std/src/ws.vl
 @@ -21,20 +21,20 @@ fun encode_frame(opcode: i32, payload: Bytes): Bytes {
@@ -2350,34 +2011,43 @@ index 3f8004d..86db97f 100644
  	}
  	header.set(0, 0x80 | opcode);
  	Bytes::concat(header, payload)
-@@ -145,19 +145,19 @@ impl WsParser {
+@@ -144,15 +144,19 @@ impl WsParser {
+ 				}
  				if valid {
  					let mask_at = header;
- 					let total = if masked { header + 4 + length } else { header + length };
--					if available < total {
-+					if available < total.as_usize() {
+-					let total = if masked { header + 4 + length } else { header + length };
++					let total = if masked {
++						header + 4 + length.as_usize()
++					} else {
++						header + length.as_usize()
++					};
+ 					if available < total {
  						scanning = false;
  					} else {
  						let payload_at = if masked { mask_at + 4 } else { mask_at };
 -						let payload = buffer.slice(payload_at, payload_at + length);
-+						let payload = buffer.slice(payload_at.as_usize(), (payload_at + length).as_usize());
++						let payload = buffer.slice(payload_at, payload_at + length.as_usize());
  						if masked {
--							mut index = 0;
+ 							mut index = 0;
 -							for index < length {
--								payload.set(index, payload.get(index) ^ buffer.get(mask_at + (index & 3)));
-+							mut index: usize = 0;
 +							for index < length.as_usize() {
-+								payload.set(index, payload.get(index) ^ buffer.get((mask_at.as_usize() + (index & 3)).as_usize()));
+ 								payload.set(index, payload.get(index) ^ buffer.get(mask_at + (index & 3)));
  								index += 1;
  							}
- 						}
--						self.buffer.write() = buffer.slice(total, available);
-+						self.buffer.write() = buffer.slice(total.as_usize(), available);
- 						for event in self.dispatch(fin, opcode, payload) {
- 							events.push(event);
- 						}
+diff --git a/base/vilan/test/adapt.vl b/tree/vilan/test/adapt.vl
+index d8e40ee..90353e2 100644
+--- a/base/vilan/test/adapt.vl
++++ b/tree/vilan/test/adapt.vl
+@@ -28,6 +28,6 @@ fun main() {
+ 	print(run(|| 1));
+ 	print(helper(urls, |url| {
+ 		sleep(1);
+-		url.len() + 10
++		url.len().as_i32() + 10
+ 	}));
+ }
 diff --git a/base/vilan/test/capture-clones.vl b/tree/vilan/test/capture-clones.vl
-index 70802ad..05a3a7d 100644
+index 70802ad..d211609 100644
 --- a/base/vilan/test/capture-clones.vl
 +++ b/tree/vilan/test/capture-clones.vl
 @@ -72,14 +72,14 @@ impl Feed {
@@ -2402,7 +2072,7 @@ index 70802ad..05a3a7d 100644
  		(let cells, let weight) if weight > 0 => {
  			pair.1 = 9;
 -			cells.len() + weight
-+			cells.len() + weight.as_usize()
++			cells.len().as_i32() + weight
  		}
  		_ => 0,
  	}
@@ -2411,7 +2081,7 @@ index 70802ad..05a3a7d 100644
  	if cell is (let cells, let weight) {
  		cell.1 = 9;
 -		ret cells.len() + weight;
-+		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
  	}
  	0
  }
@@ -2420,7 +2090,7 @@ index 70802ad..05a3a7d 100644
  	if cell is (let cells, let weight) {
  		cell = ([4], 5);
 -		ret cells.len() + weight;
-+		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
  	}
  	0
  }
@@ -2429,7 +2099,7 @@ index 70802ad..05a3a7d 100644
  		(let cells, let weight) if weight > 0 => {
  			cell.1 = 9;
 -			cells.len() + weight
-+			cells.len() + weight.as_usize()
++			cells.len().as_i32() + weight
  		}
  		_ => 0,
  	}
@@ -2479,7 +2149,7 @@ index 70802ad..05a3a7d 100644
  	if cell.slot() is (let cells, let weight) {
  		cell.pair.1 = 9;
 -		ret cells.len() + weight;
-+		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
  	}
  	0
  }
@@ -2488,7 +2158,7 @@ index 70802ad..05a3a7d 100644
  	if cell.peek() is (let cells, let weight) {
  		cell.pair.1 = 9;
 -		ret cells.len() + weight;
-+		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
  	}
  	0
  }
@@ -2497,25 +2167,12 @@ index 70802ad..05a3a7d 100644
  fun owned_call(): i32 {
  	if fresh_pair() is (let cells, let weight) {
 -		ret cells.len() + weight;
-+		ret (cells.len() + weight.as_usize()).as_i32();
++		ret cells.len().as_i32() + weight;
  	}
  	0
  }
-diff --git a/base/vilan/test/compound-index.vl b/tree/vilan/test/compound-index.vl
-index 2b95666..50b4940 100644
---- a/base/vilan/test/compound-index.vl
-+++ b/tree/vilan/test/compound-index.vl
-@@ -39,7 +39,7 @@ fun main() {
- 	print(calls);
- 
- 	// A PURE subscript keeps the plain emission — no temp is minted for it.
--	let index = 1;
-+	let index: usize = 1;
- 	ys[index] += 5;
- 	print(ys[1]);
- 	print(calls);
 diff --git a/base/vilan/test/delta-law.vl b/tree/vilan/test/delta-law.vl
-index 71d460c..760881c 100644
+index 71d460c..075acb1 100644
 --- a/base/vilan/test/delta-law.vl
 +++ b/tree/vilan/test/delta-law.vl
 @@ -61,7 +61,10 @@ impl ListCell<type T> {
@@ -2558,8 +2215,7 @@ index 71d460c..760881c 100644
 +				left.push(list.remove(at.as_usize()));
  				taken += 1;
  			}
--			mut offset = 0;
-+			mut offset: usize = 0;
+ 			mut offset = 0;
  			let count = inserted.len();
  			for offset < count {
  				match inserted.get(offset) {
@@ -2577,29 +2233,15 @@ index 71d460c..760881c 100644
  				},
  				SeqOp::SetAt(let at, let _previous, let value) => {
  					incremental_calls.write() = incremental_calls.read() + 1;
-@@ -248,7 +251,7 @@ fun same(left: List<i32>, right: List<i32>): bool {
- 	if left.len() != right.len() {
- 		ret false;
- 	}
--	mut index = 0;
-+	mut index: usize = 0;
- 	mut equal = true;
- 	for index < left.len() {
- 		if left.get(index).ne(right.get(index)) {
-@@ -291,17 +294,17 @@ fun drain_mirror(
- 			},
- 			SeqOp::Splice(let at, let removed, let inserted) => {
- 				ops_to_mirror.write() = ops_to_mirror.read() + 1;
--				mut taken = 0;
-+				mut taken: usize = 0;
+@@ -294,14 +297,14 @@ fun drain_mirror(
+ 				mut taken = 0;
  				let leaving = removed.len();
  				for taken < leaving {
 -					let _dropped = mirror.remove(at);
 +					let _dropped = mirror.remove(at.as_usize());
  					taken += 1;
  				}
--				mut offset = 0;
-+				mut offset: usize = 0;
+ 				mut offset = 0;
  				let count = inserted.len();
  				for offset < count {
  					match inserted.get(offset) {
@@ -2626,10 +2268,10 @@ index 52bd63e..6fcb0d2 100644
  			None
  		}
 diff --git a/base/vilan/test/list-cell.vl b/tree/vilan/test/list-cell.vl
-index e4b30e4..611b656 100644
+index e4b30e4..78319b7 100644
 --- a/base/vilan/test/list-cell.vl
 +++ b/tree/vilan/test/list-cell.vl
-@@ -52,20 +52,20 @@ let notifications: Shared<i32> = Shared::new(0);
+@@ -52,14 +52,14 @@ let notifications: Shared<i32> = Shared::new(0);
  
  fun counted(text: str): i32 {
  	calls.write() = calls.read() + 1;
@@ -2646,22 +2288,6 @@ index e4b30e4..611b656 100644
  	}
  	let held = derived.get();
  	if held.len() != naive.len() {
- 		panic(i"{label}: derived holds {held.len()} where the rerun holds {naive.len()}");
- 	}
--	mut index = 0;
-+	mut index: usize = 0;
- 	for index < naive.len() {
- 		if held[index] != naive[index] {
- 			panic(i"{label}: element {index} is {held[index]}, not {naive[index]}");
-@@ -124,7 +124,7 @@ fun same(label: str, turn: i32, held: List<i32>, wanted: List<i32>) {
- 	if held.len() != wanted.len() {
- 		panic(i"turn {turn}: {label} holds {held.len()}, the rerun {wanted.len()}");
- 	}
--	mut index = 0;
-+	mut index: usize = 0;
- 	for index < wanted.len() {
- 		if held[index] != wanted[index] {
- 			panic(i"turn {turn}: {label}[{index}] is {held[index]}, not {wanted[index]}");
 @@ -360,7 +360,7 @@ fun main() {
  					// The compat door: the same list with one element edited
  					// and one appended — one `Splice`, not a `Reset`.
@@ -2719,16 +2345,10 @@ index 5381601..2d0c83f 100644
  			None
  		}
 diff --git a/base/vilan/test/reconcile-index.vl b/tree/vilan/test/reconcile-index.vl
-index f542cb0..5c4c10c 100644
+index f542cb0..dae76ca 100644
 --- a/base/vilan/test/reconcile-index.vl
 +++ b/tree/vilan/test/reconcile-index.vl
-@@ -49,14 +49,14 @@ fun scan_reconcile<T, K: PartialEq>(
- 	for item in items {
- 		let item_key = key_of(item);
- 		mut step = RowStep::Fresh;
--		mut index = 0;
-+		mut index: usize = 0;
- 		for index < old_keys.len() {
+@@ -54,9 +54,9 @@ fun scan_reconcile<T, K: PartialEq>(
  			if !claimed[index] && old_keys[index] == item_key {
  				claimed[index] = true;
  				step = if same(old_items[index], item) {
@@ -2740,19 +2360,15 @@ index f542cb0..5c4c10c 100644
  				};
  				jump break;
  			}
-@@ -65,10 +65,10 @@ fun scan_reconcile<T, K: PartialEq>(
+@@ -64,7 +64,7 @@ fun scan_reconcile<T, K: PartialEq>(
+ 		}
  		steps.push(step);
  	}
- 	mut removed: List<i32> = [];
--	mut index = 0;
-+	mut index: usize = 0;
+-	mut removed: List<i32> = [];
++	mut removed: List<usize> = [];
+ 	mut index = 0;
  	for index < old_keys.len() {
  		if !claimed[index] {
--			removed.push(index);
-+			removed.push(index.as_i32());
- 		}
- 		index += 1;
- 	}
 diff --git a/base/vilan/test/side-effect-let.vl b/tree/vilan/test/side-effect-let.vl
 index df59502..fdcb260 100644
 --- a/base/vilan/test/side-effect-let.vl
@@ -2766,16 +2382,16 @@ index df59502..fdcb260 100644
  }
  
  // B377 — the same rule for every OTHER initializer shape. The predicate that
-diff --git a/base/vilan/test/subscript.vl b/tree/vilan/test/subscript.vl
-index 0086aba..7cd620a 100644
---- a/base/vilan/test/subscript.vl
-+++ b/tree/vilan/test/subscript.vl
-@@ -26,7 +26,7 @@ fun main() {
- 
- 	// Index by an expression, and a scalar element view passed to a function.
- 	let i = 0;
--	bump(&mut xs[i + 0]);
-+	bump(&mut xs[(i + 0).as_usize()]);
- 	print(xs[0]); // 110
- 
- 	// Aggregate element read copies (value semantics).
+diff --git a/base/vilan/test/usize-literals.vl b/tree/vilan/test/usize-literals.vl
+index d278d18..4e26552 100644
+--- a/base/vilan/test/usize-literals.vl
++++ b/tree/vilan/test/usize-literals.vl
+@@ -76,7 +76,7 @@ fun main() {
+ 	print(letters[0]);
+ 	print(letters[at]);
+ 	// 18. `get` with a `usize` — the boundary: one conversion until S2
+-	print(letters.get(at.as_i32()).unwrap_or("none"));
++	print(letters.get(at.as_i32().as_usize()).unwrap_or("none"));
+ 	// 19. `len()` into a `usize` — the boundary: one conversion until S2
+ 	let length: usize = letters.len().as_usize();
+ 	print(i"{length}");

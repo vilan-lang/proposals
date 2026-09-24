@@ -8,8 +8,6 @@ src/lib/rotary.vl:56:30	`+` adds two values of the same type, but the operands a
 src/lib/rotary.vl:56:59	`if` arms have mismatched types: expected usize, but got i32 instead.
 src/lib/rotary.vl:57:16	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
 src/lib/search.vl:14:12	Expected SignalCell<List<(i32, str)>>, but got SignalCell<List<(usize, str)>> instead.
-src/routes.vl:28:4	literal pattern of type i32 cannot match type usize
-src/server.vl:84:24	Expected usize, but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
 src/theme.vl:129:23	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
 src/theme.vl:132:5	`if` arms have mismatched types: expected usize, but got i32 instead.
 src/theme.vl:148:10	Expected usize, but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`

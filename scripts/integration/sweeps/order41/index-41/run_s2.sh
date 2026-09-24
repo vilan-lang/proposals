@@ -104,13 +104,14 @@ fi
 if [ -s "$HERE/hand.patch" ]; then
 	( cd "$TREE" && patch -p1 --no-backup-if-mismatch < "$HERE/hand.patch" ) > "$OUT/hand.log"
 	echo "--- hand.patch: $(grep -c '^patching' "$OUT/hand.log") files" | tee -a "$OUT/summary.txt"
-	# Four literals B389's law types from context (a match pattern, a generic
-	# call's argument). On a compiler WITHOUT B389 they need their suffix to
-	# compile; with B389 this patch must not be applied — a suffix in ordinary
-	# code is a bug report against §4 (Q5).
-	if [ "${PRE_B389:-}" = 1 ]; then
-		( cd "$TREE" && patch -p1 --no-backup-if-mismatch < "$HERE/pre-b389-literals.patch" ) > /dev/null
-		echo "--- PRE_B389=1: pre-b389-literals.patch applied" | tee -a "$OUT/summary.txt"
+	# Two literals B389's law does not reach yet: a generic CONSTRUCTOR call's
+	# literal argument inside a struct literal's field (`count =
+	# Shared::new(0)` for a `Shared<usize>` field — refused as `Shared<i32>`).
+	# The suffix is a bug report against §4 (Q5), filed; with that gap closed
+	# this patch is dropped. LITERAL_GAPS=0 measures the tree without it.
+	if [ "${LITERAL_GAPS:-1}" = 1 ]; then
+		( cd "$TREE" && patch -p1 --no-backup-if-mismatch < "$HERE/b389-gap-literals.patch" ) > /dev/null
+		echo "--- b389-gap-literals.patch applied (2 suffixes, the struct-field generic-call gap)" | tee -a "$OUT/summary.txt"
 	fi
 	fix_round after-hand
 fi

@@ -1,6 +1,6 @@
 diff -ru -x examples -x target base/crates/vilan-cli/tests/diagnostics-ledger.tsv tree/crates/vilan-cli/tests/diagnostics-ledger.tsv
---- base/crates/vilan-cli/tests/diagnostics-ledger.tsv	2026-09-24 15:59:56.000000000 -0400
-+++ tree/crates/vilan-cli/tests/diagnostics-ledger.tsv	2026-09-24 16:55:59.375680102 -0400
+--- base/crates/vilan-cli/tests/diagnostics-ledger.tsv	2026-09-24 17:29:32.000000000 -0400
++++ tree/crates/vilan-cli/tests/diagnostics-ledger.tsv	2026-09-24 17:49:52.845010071 -0400
 @@ -579,7 +579,7 @@
  555	-	an `http` service cannot name `client = {handler}`: the server calls a client back over the CONNECTION that client holds open, and the connectionless POST leg holds none
  556	-	an `http` service's field `{field}` is `[expose]`d, and a mirror is attached over a CONNECTION
@@ -11,9 +11,9 @@ diff -ru -x examples -x target base/crates/vilan-cli/tests/diagnostics-ledger.ts
  560	-	`dyn` erases a TRAIT, and `{rendered}` is {sort}: there is no member surface here to dispatch through. Write `{rendered}` on its own for the type itself, or name the trait the value implements
  561	-	Expected {expected}, but got {object} instead: an object does not narrow back to the type it erased. `dyn` is where the concrete type went — the program cannot ask for it again — so a value that must stay a {expected} is held as one, or taken through a generic bound
 diff -ru -x examples -x target base/crates/vilan-core/src/analyzer.rs tree/crates/vilan-core/src/analyzer.rs
---- base/crates/vilan-core/src/analyzer.rs	2026-09-24 15:59:56.000000000 -0400
-+++ tree/crates/vilan-core/src/analyzer.rs	2026-09-24 16:55:59.391818485 -0400
-@@ -46437,24 +46437,26 @@
+--- base/crates/vilan-core/src/analyzer.rs	2026-09-24 17:29:32.000000000 -0400
++++ tree/crates/vilan-core/src/analyzer.rs	2026-09-24 17:49:52.848585084 -0400
+@@ -46893,24 +46893,26 @@
          }
      }
  
@@ -51,7 +51,7 @@ diff -ru -x examples -x target base/crates/vilan-core/src/analyzer.rs tree/crate
              return true;
          };
          let expected = Type::Struct(index_struct_id, Vec::new());
-@@ -46468,28 +46470,22 @@
+@@ -46924,28 +46926,22 @@
          if index_type == expected {
              return true;
          }
