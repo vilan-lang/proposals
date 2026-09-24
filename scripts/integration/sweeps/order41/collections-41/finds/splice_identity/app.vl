@@ -1,0 +1,32 @@
+// FIND (collections-41): the op path applies a `Splice` POSITIONALLY, so a
+// splice that removes rows and re-inserts the SAME keys rebuilds them, where the
+// keyed pass (a `Reset`, or any plain SignalCell) keeps them. `set_all` is
+// documented as "cheaper than `set`" for a consumer; under `each`/`each_by` it
+// is dearer whenever the keys overlap, and `reconcile_to`'s prefix/suffix diff
+// turns "edit one element + append" into a tail splice that rebuilds the tail.
+import std::io::print;
+import std::reactive::{ ListCell, SequenceCell, Signal, SignalCell, Source };
+import std::ui::{ View, each_by, mount_root, view };
+
+[derive(PartialEq, Hashable)]
+struct Row {
+	id: i32,
+	text: str,
+}
+
+fun main() {
+	let rows: ListCell<Row> = ListCell<Row>::of([Row { id = 1, text = "a" }, Row { id = 2, text = "b" }, Row { id = 3, text = "c" }]);
+	let _root = mount_root("app", || view("ul").child(each_by(rows, |row: Row| row.id, |cell: SignalCell<Row>| view("li").bind_text(cell.map(|row: Row| row.text)))));
+	let _mounted = cost();
+	rows.set_all([Row { id = 1, text = "A" }, Row { id = 2, text = "B" }, Row { id = 3, text = "C" }]);
+	print(i"set_all (a Splice over the same three keys): {cost()}");
+	rows.set([Row { id = 1, text = "a" }, Row { id = 2, text = "b" }, Row { id = 3, text = "c" }]);
+	print(i"set (a Reset, the keyed pass): {cost()}");
+	rows.reconcile_to([Row { id = 1, text = "a" }, Row { id = 2, text = "b2" }, Row { id = 3, text = "c" }, Row { id = 4, text = "d" }]);
+	print(i"reconcile_to (edit #2 + append): {cost()}");
+}
+
+[extern("__cost")]
+external fun cost(): str;
+
+main();

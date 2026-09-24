@@ -1,0 +1,35 @@
+// FIND (collections-41, Order 41): a closure-typed value whose parameter is
+// `&List<i32>` ACCEPTS `self.items.read()` (a value) as its argument, where a
+// `fun`'s `&` parameter refuses the same argument ("a `&` parameter takes a
+// view; pass `& <place>`"). JS then passes the slot uncopied: a write to the
+// cell inside the closure is visible through the parameter (seen=3), where
+// the rust backend passes a copy (seen=2). ListCell::peek is written this
+// way, and documents that its closure must not write the cell.
+import std::io::print;
+import std::shared::Shared;
+
+struct Holder {
+	items: Shared<List<i32>>,
+}
+
+impl Holder {
+	fun peek(self, read: sync |&List<i32>| i32): i32 {
+		read(self.items.read())
+	}
+
+	fun add(self, value: i32) {
+		self.items.write().push(value);
+	}
+}
+
+fun main() {
+	let holder = Holder { items = Shared::new([1, 2]) };
+	let seen: i32 = holder.peek(|list| {
+		holder.add(3);
+		list.len()
+	});
+	let now: i32 = holder.items.read().len();
+	print(i"seen={seen} now={now}");
+}
+
+main();

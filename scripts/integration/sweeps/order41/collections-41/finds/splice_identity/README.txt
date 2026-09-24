@@ -1,0 +1,1 @@
+Build for the browser; run under crates/vilan-cli/tests/support/dom/{stub,ui_rows}.js + ui_rows.rs A98_COST_HARNESS_TAIL. Output on 896ff39f/b979c0af: set_all cut=3 built=3; set cut=0 built=0; reconcile_to cut=2 built=3.
