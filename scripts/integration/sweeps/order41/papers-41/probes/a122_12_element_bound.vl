@@ -1,0 +1,14 @@
+// A122 probe 12 — an element bound on the pack, `T: (2..: PartialEq)`: does it
+// reach the comprehension body's per-element `U` (the bound a PartialEq-gated
+// `divorce` would need), and does it make the TUPLE `T` comparable (it does not)?
+import std::compare::PartialEq;
+import std::reactive::SignalCell;
+
+fun unchanged<T: (2..: PartialEq)>(cells: (U in T: SignalCell<U>)): (U in T: bool) {
+	(c in cells => c.get() == c.get())
+}
+
+fun main() {
+	let (x, y) = unchanged((SignalCell::new(1), SignalCell::new("a")));
+	print(i"{x} {y}");
+}

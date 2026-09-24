@@ -1,0 +1,17 @@
+// A122 probe 17 — the same layout question through SHIPPED std: `combine` over a
+// source whose value is itself a tuple. Control first: a concrete nested tuple
+// reads correctly, so the flat layout itself is sound where the arity is known.
+import std::reactive::{ SignalCell, combine };
+
+fun main() {
+	let t = ((1, 2), "c");
+	print(i"control: t.0.1={t.0.1} t.1={t.1}");
+	let point = SignalCell::new((1, 2));
+	let label = SignalCell::new("c");
+	let both = combine((point, label));
+	let ((x, y), l) = both.get();
+	print(i"combine: x={x} y={y} l={l}");
+	point.set((3, 4));
+	let ((x2, y2), l2) = both.get();
+	print(i"combine after set: x={x2} y={y2} l={l2}");
+}

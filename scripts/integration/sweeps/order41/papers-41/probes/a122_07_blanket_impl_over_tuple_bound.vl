@@ -1,0 +1,16 @@
+// A122 probe 07 — a blanket impl over a tuple-bounded generic, the shape
+// `impl type T: (2..) with Tuple` needs, called on a concrete tuple receiver.
+trait Arity {
+	fun arity(self): i32;
+}
+
+impl type T: (2..) with Arity {
+	fun arity(self): i32 {
+		-1
+	}
+}
+
+fun main() {
+	print((1, "a").arity());
+	print((1, "a", true).arity());
+}

@@ -1,0 +1,10 @@
+// A122 probe 03 — a positional read at a generic tuple position: `whole.0`
+// where `whole: T` and `T: (2..)`.
+fun first<T: (2..)>(whole: T): i32 {
+	let _x = whole.0;
+	0
+}
+
+fun main() {
+	print(first((1, "one")));
+}

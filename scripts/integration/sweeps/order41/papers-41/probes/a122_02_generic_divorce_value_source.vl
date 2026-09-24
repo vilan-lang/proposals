@@ -1,0 +1,12 @@
+// A122 probe 02 — the generic form over a VALUE of type T: the comprehension's
+// source must be a mapped tuple, and `source.get()` is a `T`.
+import std::reactive::SignalCell;
+
+fun divorce<T: (2..)>(source: SignalCell<T>): (U in T: SignalCell<U>) {
+	(x in source.get() => SignalCell::new(x))
+}
+
+fun main() {
+	let s = SignalCell::new((1, "one"));
+	let _parts = divorce(s);
+}

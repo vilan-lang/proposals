@@ -1,0 +1,23 @@
+// A122 probe 07b — the other spellings a blanket over "every tuple" could take
+// today: an impl over a bare binder with a trait bound (control, runs), then
+// on a concrete 2-tuple of binders (runs — the per-arity fallback).
+trait Arity {
+	fun arity(self): i32;
+}
+
+impl (type A, type B) with Arity {
+	fun arity(self): i32 {
+		2
+	}
+}
+
+impl (type A, type B, type C) with Arity {
+	fun arity(self): i32 {
+		3
+	}
+}
+
+fun main() {
+	print((1, "a").arity());
+	print((1, "a", true).arity());
+}

@@ -1,0 +1,8 @@
+// A122 probe 04b — B209's refusal of a `for` over a tuple VALUE (the loop the
+// owner's `for (key, value) in fresh.entries()` would be, over a concrete tuple).
+fun main() {
+	let t = (1, "two");
+	for x in t {
+		print(x);
+	}
+}

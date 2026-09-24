@@ -1,0 +1,14 @@
+// A122 probe 11 — a key type naming BOTH the family and the element, inside a
+// mapped body: `(U in T: (Key<T, U>, U))` — the type `entries()` would return.
+struct Key<T, U> {
+	at: i32,
+}
+
+fun keys<T: (2..)>(whole: (U in T: U)): (U in T: Key<T, U>) {
+	(x in whole => Key { at = 0 })
+}
+
+fun main() {
+	let ks = keys((1, "a"));
+	print(ks.0.at);
+}

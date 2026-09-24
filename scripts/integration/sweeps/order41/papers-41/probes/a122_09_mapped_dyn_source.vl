@@ -1,0 +1,14 @@
+// A122 probe 09 — `(U in T: dyn Source<U>)`: reactive.vl's comment says it is
+// refused "because vilan has no trait objects"; dyn landed in Order 40.
+import std::reactive::{ SignalCell, Source };
+
+fun reads<T: (2..)>(sources: (U in T: dyn Source<U>)): T {
+	(s in sources => s.get())
+}
+
+fun main() {
+	let a = SignalCell::new(1);
+	let b = SignalCell::new("b");
+	let (x, y) = reads((a, b));
+	print(i"{x} {y}");
+}

@@ -1,0 +1,20 @@
+// A122 probe 13 — the round trip `divorce2(combine((a, b)))` by the hand form:
+// values re-derive; a write to `a` alone fires BOTH outputs (the claim of §6).
+import std::reactive::{ SignalCell, combine };
+
+fun divorce2<A, B>(source: SignalCell<(A, B)>): (SignalCell<A>, SignalCell<B>) {
+	(source.map(|w| w.0), source.map(|w| w.1))
+}
+
+fun main() {
+	let a = SignalCell::new(1);
+	let b = SignalCell::new("b");
+	let (a2, b2) = divorce2(combine((a, b)));
+	mut fired_a = 0;
+	mut fired_b = 0;
+	let _x = a2.on_change(|_| { fired_a = fired_a + 1; });
+	let _y = b2.on_change(|_| { fired_b = fired_b + 1; });
+	a.set(2);
+	a.set(3);
+	print(i"a2={a2.get()} b2={b2.get()} fired_a={fired_a} fired_b={fired_b}");
+}
