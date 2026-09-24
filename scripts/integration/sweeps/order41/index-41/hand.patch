@@ -1,0 +1,419 @@
+diff -ru a/vilan/std/src/browser/ui.vl b/vilan/std/src/browser/ui.vl
+--- a/vilan/std/src/browser/ui.vl	2026-09-24 16:55:51.984013562 -0400
++++ b/vilan/std/src/browser/ui.vl	2026-09-24 16:55:52.062477425 -0400
+@@ -1325,12 +1325,18 @@
+ fun settled_steps(steps: List<RowStep>): List<bool> {
+ 	mut forward: List<bool> = [];
+ 	mut forward_count = 0;
+-	mut highest = -1;
++	// I5 S2: "nothing kept yet" is `None`, where it was the `-1` below every index.
++	mut highest: Option<usize> = None;
+ 	for step in steps {
+ 		match step {
+ 			RowStep::Keep(let index) => {
+-				if index > highest {
+-					highest = index;
++				let position = index.as_usize();
++				let rises = match highest {
++					Some(let top) => position > top,
++					None => true,
++				};
++				if rises {
++					highest = Some(position);
+ 					forward_count += 1;
+ 					forward.push(true);
+ 				} else {
+@@ -1349,8 +1355,9 @@
+ 	mut backward: List<bool> = [];
+ 	mut backward_count = 0;
+ 	mut lowest = steps.len();
+-	mut at = steps.len() - 1;
+-	for at >= 0 {
++	mut at = steps.len();
++	for at > 0 {
++		at -= 1;
+ 		match steps[at] {
+ 			RowStep::Keep(let index) => {
+ 				if index.as_usize() < lowest {
+@@ -1365,7 +1372,6 @@
+ 				backward.push(false);
+ 			},
+ 		}
+-		at -= 1;
+ 	}
+ 	if forward_count >= backward_count {
+ 		forward
+@@ -1389,18 +1395,18 @@
+ ): List<Text> {
+ 	mut references: List<Text> = [];
+ 	mut reference = anchor;
+-	mut at = steps.len() - 1;
+-	for at >= 0 {
++	mut at = steps.len();
++	for at > 0 {
++		at -= 1;
+ 		references.push(reference);
+ 		if settled[at] {
+ 			match steps[at] {
+ 				RowStep::Keep(let index) => {
+-					reference = rows[index].marker;
++					reference = rows[index.as_usize()].marker;
+ 				},
+ 				_ => {},
+ 			}
+ 		}
+-		at -= 1;
+ 	}
+ 	references.reverse()
+ }
+diff -ru a/vilan/std/src/compare.vl b/vilan/std/src/compare.vl
+--- a/vilan/std/src/compare.vl	2026-09-24 16:55:51.984123024 -0400
++++ b/vilan/std/src/compare.vl	2026-09-24 16:55:52.062702709 -0400
+@@ -110,7 +110,7 @@
+ 
+ 	/// The index of the FIRST element equal to `value` — `None` when there is none.
+ 	fun index_of(self, value: T): Option<usize> {
+-		mut index = 0;
++		mut index: usize = 0;
+ 		for item in self {
+ 			if item.eq(value) {
+ 				ret Some(index);
+diff -ru a/vilan/std/src/iterator.vl b/vilan/std/src/iterator.vl
+--- a/vilan/std/src/iterator.vl	2026-09-24 16:55:51.984394799 -0400
++++ b/vilan/std/src/iterator.vl	2026-09-24 16:55:52.062765740 -0400
+@@ -293,8 +293,8 @@
+ 	index: usize,
+ }
+ 
+-impl Enumerated<type I: Iterator<T>, type T> with Iterator<(i32, T)> {
+-	fun next(&mut self): Option<(i32, T)> {
++impl Enumerated<type I: Iterator<T>, type T> with Iterator<(usize, T)> {
++	fun next(&mut self): Option<(usize, T)> {
+ 		if self.upstream.next() is Some(let value) {
+ 			let index = self.index;
+ 			self.index = index + 1;
+diff -ru a/vilan/std/src/json.vl b/vilan/std/src/json.vl
+--- a/vilan/std/src/json.vl	2026-09-24 16:55:51.984414460 -0400
++++ b/vilan/std/src/json.vl	2026-09-24 16:55:52.062857232 -0400
+@@ -663,12 +663,13 @@
+ 			// Where the stack stands once every element has been read: what
+ 			// `end_list` holds the caller to.
+ 			self.list_marks.push(self.stack.len());
+-			mut index = elements.len() - 1;
+-			for index >= 0 {
+-				self.stack.push(elements[index]);
++			mut index = elements.len();
++			for index > 0 {
+ 				index -= 1;
++				self.stack.push(elements[index]);
+ 			}
+-			elements.len()
++			// WIRE: `begin_list` answers the codec's `i32` length (§2.2).
++			elements.len().as_i32()
+ 		} else {
+ 			0
+ 		}
+@@ -712,10 +713,10 @@
+ 					self.stack.push(payload);
+ 				} else {
+ 					let elements = payload.elements();
+-					mut index = elements.len() - 1;
+-					for index >= 0 {
+-						self.stack.push(elements[index]);
++					mut index = elements.len();
++					for index > 0 {
+ 						index -= 1;
++						self.stack.push(elements[index]);
+ 					}
+ 				}
+ 			} else {
+diff -ru a/vilan/std/src/list.vl b/vilan/std/src/list.vl
+--- a/vilan/std/src/list.vl	2026-09-24 16:55:51.984481181 -0400
++++ b/vilan/std/src/list.vl	2026-09-24 16:55:52.062973844 -0400
+@@ -77,10 +77,10 @@
+ 	/// which is a different method and belongs to the iterator paper.)
+ 	fun reverse(self): List<T> {
+ 		mut result = List::new();
+-		mut index = self.len() - 1;
+-		for index >= 0 {
+-			result.push(self[index]);
++		mut index = self.len();
++		for index > 0 {
+ 			index -= 1;
++			result.push(self[index]);
+ 		}
+ 		result
+ 	}
+diff -ru a/vilan/std/src/markdown.vl b/vilan/std/src/markdown.vl
+--- a/vilan/std/src/markdown.vl	2026-09-24 16:55:51.984514361 -0400
++++ b/vilan/std/src/markdown.vl	2026-09-24 16:55:52.063042005 -0400
+@@ -293,7 +293,7 @@
+ 			for i + run < n && text.code_at(i + run) == 96 {
+ 				run += 1;
+ 			}
+-			mut close: Option<i32> = None;
++			mut close: Option<usize> = None;
+ 			mut cursor = i + run;
+ 			for close is None && cursor < n {
+ 				if text.code_at(cursor) == 96 {
+@@ -346,7 +346,7 @@
+ 					}
+ 				}
+ 			} else {
+-				mut close: Option<i32> = None;
++				mut close: Option<usize> = None;
+ 				if i + 1 < n && text.code_at(i + 1) != 32 {
+ 					close = index_of(text, "*", i + 1);
+ 				}
+@@ -370,7 +370,7 @@
+ 				&& i + 1 < n
+ 				&& text.code_at(i + 1) != 32
+ 				&& text.code_at(i + 1) != 9;
+-			mut close: Option<i32> = None;
++			mut close: Option<usize> = None;
+ 			if open_ok {
+ 				mut probe = index_of(text, "_", i + 1);
+ 				mut searching = true;
+diff -ru a/vilan/std/src/process/db.vl b/vilan/std/src/process/db.vl
+--- a/vilan/std/src/process/db.vl	2026-09-24 16:55:51.984864772 -0400
++++ b/vilan/std/src/process/db.vl	2026-09-24 16:55:52.063152477 -0400
+@@ -323,21 +323,24 @@
+ /// with history this refusal catches every misordering such a rule would, and on a
+ /// fresh database any list order is self-consistent — it IS the history.
+ fun refuse_inserted_migration(migrations: List<Migration>, recorded: Set<str>) {
+-	mut last_applied = -1;
++	// I5 S2: "nothing applied" is `None`, where it was the `-1` below every index.
++	mut last_applied: Option<usize> = None;
+ 	mut index: usize = 0;
+ 	for index < migrations.len() {
+ 		if recorded.contains(migrations[index].name) {
+-			last_applied = index.as_i32();
++			last_applied = Some(index);
+ 		}
+ 		index += 1;
+ 	}
+-	mut earlier: usize = 0;
+-	for earlier < last_applied.as_usize() {
+-		let pending = migrations[earlier].name;
+-		if !recorded.contains(pending) {
+-			let applied = migrations[last_applied.as_usize()].name;
+-			panic(i"std::db migrate: migration '{pending}' is not applied, but '{applied}' after it in the list is — a migration was inserted before the applied history");
++	if last_applied is Some(let last) {
++		mut earlier: usize = 0;
++		for earlier < last {
++			let pending = migrations[earlier].name;
++			if !recorded.contains(pending) {
++				let applied = migrations[last].name;
++				panic(i"std::db migrate: migration '{pending}' is not applied, but '{applied}' after it in the list is — a migration was inserted before the applied history");
++			}
++			earlier += 1;
+ 		}
+-		earlier += 1;
+ 	}
+ }
+diff -ru a/vilan/std/src/process/document.vl b/vilan/std/src/process/document.vl
+--- a/vilan/std/src/process/document.vl	2026-09-24 16:55:51.984892203 -0400
++++ b/vilan/std/src/process/document.vl	2026-09-24 16:55:52.063264099 -0400
+@@ -475,7 +475,7 @@
+ 	/// with no render and no hatch markup composes to the shell's own bytes,
+ 	/// untouched.
+ 	fun composed(self, shell: str): str {
+-		mut insertions: List<(i32, str)> = [];
++		mut insertions: List<(usize, str)> = [];
+ 		mut missing: List<str> = [];
+ 		if self.rendered != "" {
+ 			insertions.push((self.splice, self.rendered));
+@@ -568,13 +568,13 @@
+ export fun spliced(text: str, insertions: List<(usize, str)>): str {
+ 	// A stable sort by index — at most three insertions ever arrive, so the
+ 	// quadratic count is fine and the clarity is not.
+-	mut ordered: List<(i32, str)> = [];
++	mut ordered: List<(usize, str)> = [];
+ 	for insertion in insertions {
+ 		let (at, _markup) = insertion;
+ 		mut index: usize = 0;
+ 		for entry in ordered {
+ 			let (before, _before_markup) = entry;
+-			if before.as_usize() <= at {
++			if before <= at {
+ 				index = index + 1;
+ 			}
+ 		}
+@@ -869,10 +869,13 @@
+ 	let length = markup.len();
+ 	let closing = "</" + name;
+ 	let closing_length = closing.len();
+-	mut index = if from < 0 { 0 } else { from };
+-	for (index.as_usize() + closing_length).as_usize() <= length {
+-		if matches_ascii_insensitive(markup, index.as_usize(), closing) {
+-			ret index.as_usize();
++	// I5 S2: the `from < 0` clamp is gone — an unsigned `from` cannot be
++	// negative, and a clamp that can no longer fire only hides one that arrived
++	// already wrapped (index-type.md §6).
++	mut index = from;
++	for index + closing_length <= length {
++		if matches_ascii_insensitive(markup, index, closing) {
++			ret index;
+ 		}
+ 		index = index + 1;
+ 	}
+@@ -919,10 +922,16 @@
+ /// The index of `needle` in `text` at or after `from`, or `None`. (`str` can answer
+ /// whether it `contains` something, but not where.)
+ fun index_of(text: str, needle: str, from: usize): Option<usize> {
++	// I5 S2: `text.len() - needle.len()` underflows when the needle is the longer
++	// of the two (unspecified: negative on JS, a native panic), so that case is
++	// answered first; and the `from < 0` clamp is gone with the sign.
++	if needle.len() > text.len() {
++		ret None;
++	}
+ 	let limit = text.len() - needle.len();
+-	mut index = if from < 0 { 0 } else { from };
+-	for index.as_usize() <= limit {
+-		if text.substring(index.as_usize(), (index.as_usize() + needle.len()).as_usize()) == needle {
++	mut index = from;
++	for index <= limit {
++		if text.substring(index, index + needle.len()) == needle {
+ 			ret Some(index);
+ 		}
+ 		index = index + 1;
+diff -ru a/vilan/std/src/reactive.vl b/vilan/std/src/reactive.vl
+--- a/vilan/std/src/reactive.vl	2026-09-24 16:55:51.985319590 -0400
++++ b/vilan/std/src/reactive.vl	2026-09-24 16:55:52.067818172 -0400
+@@ -1801,20 +1801,21 @@
+ 	// steps past them along the chain. What the bound forbids is the opposite,
+ 	// a `==` coarser than the hash, and that is the case the bound refuses to
+ 	// compile rather than mis-plan.
+-	mut first: NativeMap<i32> = NativeMap::new();
+-	mut next_same: List<i32> = [];
++	// I5 S2: the chain is `Option<usize>` — a position, or the end of the chain —
++	// where it was an `i32` terminated by `-1`. The walks below are the same
++	// walks; the sentinel became `None` and the build loop counts down to zero
++	// without ever reaching below it.
++	mut first: NativeMap<usize> = NativeMap::new();
++	mut next_same: List<Option<usize>> = [];
+ 	for _ in old_keys {
+-		next_same.push(-1);
++		next_same.push(None);
+ 	}
+-	mut build = held - 1;
+-	for build >= 0 {
+-		let canonical = old_keys[build].hash();
+-		match first.get(canonical) {
+-			Some(let after) => next_same[build] = after,
+-			None => {},
+-		}
+-		first.insert(canonical, build.as_i32());
++	mut build = held;
++	for build > 0 {
+ 		build -= 1;
++		let canonical = old_keys[build].hash();
++		next_same[build] = first.get(canonical);
++		first.insert(canonical, build);
+ 	}
+ 	mut steps: List<RowStep> = [];
+ 	for item in items {
+@@ -1824,45 +1825,60 @@
+ 		// claimed are dropped from the chain for good (`first` is advanced past
+ 		// them), so the total cost of skipping claimed entries across a whole pass
+ 		// is bounded by the number of claims.
+-		mut head = match first.get(canonical) {
+-			Some(let at) => at,
+-			None => -1,
+-		};
+-		for head >= 0 {
+-			if !claimed[head] {
+-				jump break;
++		mut head: Option<usize> = first.get(canonical);
++		mut advancing = true;
++		for advancing {
++			match head {
++				Some(let at) => {
++					if claimed[at] {
++						head = next_same[at];
++					} else {
++						advancing = false;
++					}
++				},
++				None => advancing = false,
+ 			}
+-			head = next_same[head];
+ 		}
+-		first.insert(canonical, head);
+-		mut found = -1;
++		match head {
++			Some(let at) => first.insert(canonical, at),
++			None => first.remove(canonical),
++		}
++		mut found: Option<usize> = None;
+ 		mut walk = head;
+-		for walk >= 0 {
+-			if !claimed[walk] && old_keys[walk] == item_key {
+-				found = walk;
+-				jump break;
++		mut walking = true;
++		for walking {
++			match walk {
++				Some(let at) => {
++					if !claimed[at] && old_keys[at] == item_key {
++						found = Some(at);
++						walking = false;
++					} else {
++						// Unclaimed, the same hash, and yet not `==`: a COLLISION.
++						// Walk on rather than advance the head, because a later item
++						// may still match here.
++						walk = next_same[at];
++					}
++				},
++				None => walking = false,
+ 			}
+-			// Unclaimed, the same hash, and yet not `==`: a COLLISION. Walk on
+-			// rather than advance the head, because a later item may still match
+-			// here.
+-			walk = next_same[walk];
+ 		}
+ 		mut step = RowStep::Fresh;
+-		if found >= 0 {
+-			claimed[found.as_usize()] = true;
+-			step = if same(old_items[found.as_usize()], item) {
+-				RowStep::Keep(found)
++		if found is Some(let at) {
++			claimed[at] = true;
++			// `RowStep`'s payload is S4's (born `i32`, A112's `// I5` markers).
++			step = if same(old_items[at], item) {
++				RowStep::Keep(at.as_i32())
+ 			} else {
+-				RowStep::Refresh(found)
++				RowStep::Refresh(at.as_i32())
+ 			};
+ 		}
+ 		steps.push(step);
+ 	}
+-	mut removed: List<i32> = [];
++	mut removed: List<usize> = [];
+ 	mut index: usize = 0;
+ 	for index < held {
+ 		if !claimed[index] {
+-			removed.push(index.as_i32());
++			removed.push(index);
+ 		}
+ 		index += 1;
+ 	}
+diff -ru a/vilan/test/list-search.vl b/vilan/test/list-search.vl
+--- a/vilan/test/list-search.vl	2026-09-24 16:55:52.006205532 -0400
++++ b/vilan/test/list-search.vl	2026-09-24 16:55:52.071838405 -0400
+@@ -7,12 +7,12 @@
+ 	print(xs.find(|n| n > 90).is_none()); // true
+ 	print(xs.contains(20)); // true
+ 	print(xs.contains(25)); // false
+-	print(xs.index_of(20).unwrap_or(-1)); // 1
++	print(xs.index_of(20).unwrap_or(usize::max_value())); // 1
+ 	print(xs.index_of(99).is_none()); // true
+ 
+ 	let words = ["alpha", "beta"];
+ 	print(words.contains("beta")); // true
+-	print(words.index_of("alpha").unwrap_or(-1)); // 0
++	print(words.index_of("alpha").unwrap_or(usize::max_value())); // 0
+ 
+ 	mut empty: List<i32> = [];
+ 	print(empty.find(|n| n > 0).is_none()); // true

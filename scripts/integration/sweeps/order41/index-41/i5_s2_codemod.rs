@@ -363,6 +363,23 @@ fn is_postfix_operand(written: &str) -> bool {
     depth == 0 && !in_string
 }
 
+/// Whether `written` is a whole expression on its own. A diagnostic's span is
+/// not always one — a closure's return-position mismatch anchors at the
+/// body's closing brace — and a conversion written after half an expression
+/// is a syntax error, not a migration.
+///
+/// A MULTI-LINE value is declined as well: `(if … { … } else { … }).as_i32()`
+/// parses, and it is the conversion a reviewer should see written by hand at
+/// the arm or the binding instead.
+fn parses_as_expression(written: &str) -> bool {
+    if written.contains('\n') || written.trim() != written || written.ends_with('.') {
+        return false;
+    }
+    let probe = format!("fun probe() {{\n\tlet value = ({written});\n}}\n");
+    let (parsed, errors) = parsing::parse(&probe);
+    parsed.is_some() && errors.is_empty()
+}
+
 fn converted(written: &str, method: &str) -> String {
     if is_postfix_operand(written) {
         format!("{written}.{method}()")
@@ -403,12 +420,97 @@ fn operand_span(source: &str, span: Span, left: bool) -> Option<Span> {
     parsed.0.iter().find_map(|item| find(item, span, left))
 }
 
+/// The declaration to respell instead of converting at a use: when the value
+/// a fix would convert to `usize` is a bare local name, and that name's
+/// binding in the same function is `let`/`mut NAME = <unsuffixed integer>;`
+/// with no annotation, the honest migration is `NAME: usize` at the binding —
+/// the counter IS an index — not a `.as_usize()` at every use. Answers the
+/// span to insert `: usize` at (the end of the name), or `None`.
+fn literal_binding_of(source: &str, use_span: Span, written: &str) -> Option<Span> {
+    let is_name = written
+        .chars()
+        .next()
+        .is_some_and(|first| first.is_ascii_lowercase() || first == '_')
+        && written.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+    if !is_name {
+        return None;
+    }
+    let (parsed, _) = parsing::parse(source);
+    let parsed = parsed?;
+    // The innermost function around the use.
+    fn enclosing<'a, 'src>(
+        node: &'a Spanned<Node<'src>>,
+        at: usize,
+        found: &mut Option<&'a Spanned<Node<'src>>>,
+    ) {
+        if node.1.start <= at && at < node.1.end {
+            if matches!(node.0, Node::Func(_) | Node::MacroFun(_)) {
+                *found = Some(node);
+            }
+            node.0.for_each_child(&mut |child| enclosing(child, at, found));
+        }
+    }
+    let mut function = None;
+    for item in &parsed.0 {
+        enclosing(item, use_span.start, &mut function);
+    }
+    let function = function?;
+    fn declaration(node: &Spanned<Node<'_>>, name: &str, before: usize, best: &mut Option<Span>) {
+        if let Node::Let(binding, None, Some(value), _, _) = &node.0
+            && binding.0 == name
+            && node.1.start < before
+            && matches!(value.0, Node::Number(_, None, None))
+        {
+            *best = Some(binding.1);
+        }
+        node.0.for_each_child(&mut |child| declaration(child, name, before, best));
+    }
+    let mut best = None;
+    declaration(function, written, use_span.start, &mut best);
+    best
+}
+
+/// Whether `span` starts and ends on token boundaries of `source` — neither end
+/// cuts an identifier in two. A re-reported macro-world span can index into
+/// GENERATED text and land mid-name in the file it is attributed to (`quo|te(`);
+/// no fix is written at such a span.
+fn on_token_boundaries(source: &str, span: Span) -> bool {
+    let bytes = source.as_bytes();
+    let word = |byte: u8| byte.is_ascii_alphanumeric() || byte == b'_';
+    let start_ok = span.start == 0
+        || !(word(bytes[span.start - 1]) && bytes.get(span.start).copied().is_some_and(word));
+    let end_ok = span.end >= bytes.len()
+        || !(word(bytes[span.end]) && span.end > 0 && word(bytes[span.end - 1]));
+    start_ok && end_ok
+}
+
+/// Whether `span` lies inside the body of a `macro fun` declared in `source`.
+fn inside_macro_body(source: &str, span: Span) -> bool {
+    let (parsed, _) = parsing::parse(source);
+    let Some(parsed) = parsed else {
+        return false;
+    };
+    fn search(node: &Spanned<Node<'_>>, span: Span) -> bool {
+        if node.1.start > span.start || span.end > node.1.end {
+            return false;
+        }
+        if matches!(node.0, Node::MacroFun(_)) {
+            return true;
+        }
+        let mut found = false;
+        node.0.for_each_child(&mut |child| found = found || search(child, span));
+        found
+    }
+    parsed.0.iter().any(|item| search(item, span))
+}
+
 #[derive(Default)]
 struct Round {
-    edits: BTreeMap<PathBuf, Vec<(Span, String)>>,
+    /// Per file: (span, replacement, kind). The same std diagnostic arrives
+    /// once per ENTRY that loads the module, so the counts below are taken
+    /// after the per-file dedup, never from the raw reports.
+    edits: BTreeMap<PathBuf, Vec<(Span, String, &'static str)>>,
     residue: BTreeSet<(String, usize, String)>,
-    steered: usize,
-    operands: usize,
     echoes: usize,
 }
 
@@ -447,28 +549,50 @@ fn analyze_entry(std_dir: &Path, platform: Platform, entry: &Path, round: &mut R
         .join()
         .expect("the analysis thread");
     for (path, span, message) in result {
-        // A macro world compiles std a second time, and re-reports std's own
-        // errors prefixed `in this macro:` at the INVOCATION. Fixing std fixes
-        // them; editing at the invocation would be editing the wrong file.
-        if message.starts_with("in this macro:") || message.contains("definition did not compile")
-        {
-            round.echoes += 1;
-            continue;
-        }
         let text = std::fs::read_to_string(&path).unwrap_or_default();
+        // A macro world compiles the `macro fun` bodies std declares (the
+        // derives), hermetically — the program world never walks them, so their
+        // errors arrive only re-reported, prefixed `in this macro:`. One whose
+        // span sits inside a `macro fun` body of the file it names is a real
+        // site in that body and is fixed like any other; the rest are echoes
+        // (a failed definition, or a span into generated code) that fixing the
+        // source they came from retires.
+        let message = match message.strip_prefix("in this macro: ") {
+            Some(inner) if inside_macro_body(&text, span) => inner.to_string(),
+            Some(_) => {
+                round.echoes += 1;
+                continue;
+            }
+            None if message.contains("definition did not compile") => {
+                round.echoes += 1;
+                continue;
+            }
+            None => message,
+        };
         let line = text[..span.start.min(text.len())].matches('\n').count() + 1;
         // E218's steer: the declared type names the conversion.
         if let Some(at) = message.find(NUMERIC_CONVERSION_STEER)
             && let Some(method) = message[at + NUMERIC_CONVERSION_STEER.len()..].strip_suffix("()`")
             && let Some(written) = text.get(span.start..span.end)
             && !written.is_empty()
+            && on_token_boundaries(&text, span)
+            && parses_as_expression(written)
         {
+            if method == "as_usize"
+                && let Some(name) = literal_binding_of(&text, span, written)
+            {
+                round.edits.entry(path.clone()).or_default().push((
+                    Span::from(name.end..name.end),
+                    ": usize".to_string(),
+                    "DECL",
+                ));
+                continue;
+            }
             round
                 .edits
                 .entry(path.clone())
                 .or_default()
-                .push((span, converted(written, method)));
-            round.steered += 1;
+                .push((span, converted(written, method), "E218"));
             continue;
         }
         // The binary-operator refusal between `usize` and another integer
@@ -483,13 +607,22 @@ fn analyze_entry(std_dir: &Path, platform: Platform, entry: &Path, round: &mut R
             if let Some(convert_left) = convert_left
                 && let Some(operand) = operand_span(&text, span, convert_left)
                 && let Some(written) = text.get(operand.start..operand.end)
+                && on_token_boundaries(&text, operand)
+                && parses_as_expression(written)
             {
+                if let Some(name) = literal_binding_of(&text, operand, written) {
+                    round.edits.entry(path.clone()).or_default().push((
+                        Span::from(name.end..name.end),
+                        ": usize".to_string(),
+                        "DECL",
+                    ));
+                    continue;
+                }
                 round
                     .edits
                     .entry(path.clone())
                     .or_default()
-                    .push((operand, converted(written, "as_usize")));
-                round.operands += 1;
+                    .push((operand, converted(written, "as_usize"), "OPERAND"));
                 continue;
             }
         }
@@ -509,35 +642,78 @@ fn fix(std_dir: &Path, platform: &str, entries: &[PathBuf]) {
     };
     let mut total_steered = 0;
     let mut total_operands = 0;
+    let mut total_declarations = 0;
     for round_number in 1.. {
+        // Entries are analyzed in parallel (each on its own large-stack
+        // thread), then their reports merged: a round's answer is the union,
+        // whatever order the analyses finished in.
+        let parallelism = std::thread::available_parallelism()
+            .map(|count| count.get().clamp(1, 6))
+            .unwrap_or(2);
+        let chunks: Vec<&[PathBuf]> = entries.chunks(entries.len().div_ceil(parallelism)).collect();
+        let partials: Vec<Round> = std::thread::scope(|scope| {
+            let handles: Vec<_> = chunks
+                .into_iter()
+                .map(|chunk| {
+                    scope.spawn(move || {
+                        let mut partial = Round::default();
+                        for entry in chunk {
+                            analyze_entry(std_dir, platform, entry, &mut partial);
+                        }
+                        partial
+                    })
+                })
+                .collect();
+            handles
+                .into_iter()
+                .map(|handle| handle.join().expect("an analysis worker"))
+                .collect()
+        });
         let mut round = Round::default();
-        for entry in entries {
-            analyze_entry(std_dir, platform, entry, &mut round);
+        for partial in partials {
+            for (path, edits) in partial.edits {
+                round.edits.entry(path).or_default().extend(edits);
+            }
+            round.residue.extend(partial.residue);
+            round.echoes += partial.echoes;
         }
         let mut applied = 0;
+        let mut steered = 0;
+        let mut operands = 0;
+        let mut declarations = 0;
         for (path, mut edits) in std::mem::take(&mut round.edits) {
-            edits.sort_by_key(|(span, _)| (span.start, span.end));
-            edits.dedup_by_key(|(span, _)| (span.start, span.end));
-            applied += edits.len();
+            // Declarations FIRST: a counter respelled `usize` retires every
+            // conversion its uses would otherwise collect, so a file with any
+            // declaration to make takes only those this round and is
+            // re-analyzed before a single `.as_*()` is written into it.
+            if edits.iter().any(|(_, _, kind)| *kind == "DECL") {
+                edits.retain(|(_, _, kind)| *kind == "DECL");
+            }
+            edits.sort_by_key(|(span, _, _)| (span.start, span.end));
+            edits.dedup_by_key(|(span, _, _)| (span.start, span.end));
             let source = std::fs::read_to_string(&path).expect("read an edited file");
-            for (span, replacement) in &edits {
+            for (span, replacement, kind) in &edits {
                 let line = source[..span.start].matches('\n').count() + 1;
                 println!(
-                    "FIX\t{}\t{line}\t{}\t{}",
+                    "FIX\t{kind}\t{}\t{line}\t{}\t{}",
                     path.display(),
                     source[span.start..span.end].replace('\n', "⏎"),
                     replacement.replace('\n', "⏎")
                 );
             }
-            std::fs::write(&path, apply(&source, edits)).expect("write an edited file");
+            applied += edits.len();
+            steered += edits.iter().filter(|(_, _, kind)| *kind == "E218").count();
+            operands += edits.iter().filter(|(_, _, kind)| *kind == "OPERAND").count();
+            declarations += edits.iter().filter(|(_, _, kind)| *kind == "DECL").count();
+            let plain: Vec<(Span, String)> =
+                edits.into_iter().map(|(span, text, _)| (span, text)).collect();
+            std::fs::write(&path, apply(&source, plain)).expect("write an edited file");
         }
-        total_steered += round.steered;
-        total_operands += round.operands;
+        total_steered += steered;
+        total_operands += operands;
+        total_declarations += declarations;
         eprintln!(
-            "round {round_number}: {} edits applied ({} conversions named by E218, {} operands), {} residue, {} macro-world echoes",
-            applied,
-            round.steered,
-            round.operands,
+            "round {round_number}: {applied} edits applied ({steered} conversions named by E218, {operands} operands, {declarations} counters declared `usize`), {} residue, {} macro-world echoes",
             round.residue.len(),
             round.echoes
         );
@@ -546,7 +722,7 @@ fn fix(std_dir: &Path, platform: &str, entries: &[PathBuf]) {
                 println!("RESIDUE\t{path}\t{line}\t{message}");
             }
             eprintln!(
-                "fixed point: {total_steered} E218 conversions, {total_operands} operand conversions, {} residue diagnostics",
+                "fixed point: {total_steered} E218 conversions, {total_operands} operand conversions, {total_declarations} counters declared `usize`, {} residue diagnostics",
                 round.residue.len()
             );
             return;
