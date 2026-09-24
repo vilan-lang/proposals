@@ -71,6 +71,13 @@ The number that decides the order of the slices is not `map_each`'s. It is `each
 > (3.77× and 3.82× per doubling). `probes/each_cost_template.vl`,
 > `probes/each_cost.out`.
 
+> **Corrected 2026-09-24 (Order 41, collections-41).** The 22,347 Ir delta-path figure came
+> from a template with NO DOM. End to end on shipped std, per push at 1,000 rows: `SignalCell` +
+> `each` (the pass) **50.7 M Ir**; `ListCell` + `each` **102.5 K** (~494×); `each_by` 73.9 M → **154.8 K**
+> (S3b); `map_each` 7.47 M → **115.7 K**; the `ListCell` write alone 6.27 M → **39.7 K** (M86 — the
+> copies were `size()`/`set_at`/`reconcile_to` reading through `SignalCell::get`, not the notify).
+> Measurement: `sweeps/order41/collections-41/` (`slope.sh`, slope from 20 to 120 pushes).
+
 That is §9, and it is a bug finding as much as a design argument: `reconcile`'s
 key-matching scan is O(N²) per change and nothing in the tracker records it.
 
@@ -579,6 +586,8 @@ Mechanics rule).
 | ratio | **16,040×** |
 | scan half, 500 rows | 95,084,350 |
 | scan half, 2,000 rows | 1,369,893,884 |
+| **as shipped (2026-09-24), `ListCell` + `each`, 1,000 rows, end to end** | **102,546** |
+| as shipped, `each_by` (S3b) / `map_each` / the write alone | 154,816 / 115,700 / 39,744 |
 
 3.77× from 500 to 1,000 and 3.82× from 1,000 to 2,000: quadratic, confirmed
 empirically as well as by reading the loop. A cross-check without the slope agrees to
