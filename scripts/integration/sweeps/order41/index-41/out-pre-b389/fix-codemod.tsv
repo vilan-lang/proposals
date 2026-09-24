@@ -1,0 +1,402 @@
+FIX	DECL	vilan/test/capture-clones.vl	140		: usize
+FIX	DECL	vilan/test/capture-clones.vl	152		: usize
+FIX	DECL	vilan/test/compound-index.vl	42		: usize
+FIX	DECL	vilan/test/delta-law.vl	161		: usize
+FIX	DECL	vilan/test/delta-law.vl	251		: usize
+FIX	DECL	vilan/test/delta-law.vl	294		: usize
+FIX	DECL	vilan/test/delta-law.vl	300		: usize
+FIX	OPERAND	vilan/test/for-mut-container.vl	15	self.pos	self.pos.as_usize()
+FIX	E218	vilan/test/for-mut-container.vl	18	index	index.as_usize()
+FIX	DECL	vilan/test/list-cell.vl	68		: usize
+FIX	DECL	vilan/test/list-cell.vl	127		: usize
+FIX	E218	vilan/test/mut-parameters.vl	14	xs.len()	xs.len().as_i32()
+FIX	OPERAND	vilan/test/option-view.vl	41	index	index.as_usize()
+FIX	E218	vilan/test/option-view.vl	42	index	index.as_usize()
+FIX	DECL	vilan/test/reconcile-index.vl	52		: usize
+FIX	DECL	vilan/test/reconcile-index.vl	68		: usize
+FIX	E218	vilan/test/side-effect-let.vl	8	xs.len()	xs.len().as_i32()
+FIX	E218	vilan/test/subscript.vl	29	i + 0	(i + 0).as_usize()
+FIX	E218	vilan/test/capture-clones.vl	75	at	at.as_usize()
+FIX	E218	vilan/test/capture-clones.vl	82	items.len() + at	(items.len() + at).as_i32()
+FIX	OPERAND	vilan/test/capture-clones.vl	82	at	at.as_usize()
+FIX	OPERAND	vilan/test/capture-clones.vl	92	weight	weight.as_usize()
+FIX	E218	vilan/test/capture-clones.vl	102	cells.len() + weight	(cells.len() + weight).as_i32()
+FIX	OPERAND	vilan/test/capture-clones.vl	102	weight	weight.as_usize()
+FIX	E218	vilan/test/capture-clones.vl	111	cells.len() + weight	(cells.len() + weight).as_i32()
+FIX	OPERAND	vilan/test/capture-clones.vl	111	weight	weight.as_usize()
+FIX	OPERAND	vilan/test/capture-clones.vl	121	weight	weight.as_usize()
+FIX	E218	vilan/test/capture-clones.vl	148	total	total.as_i32()
+FIX	E218	vilan/test/capture-clones.vl	161	total	total.as_i32()
+FIX	E218	vilan/test/capture-clones.vl	181	cells.len()	cells.len().as_i32()
+FIX	E218	vilan/test/capture-clones.vl	203	cells.len() + weight	(cells.len() + weight).as_i32()
+FIX	OPERAND	vilan/test/capture-clones.vl	203	weight	weight.as_usize()
+FIX	E218	vilan/test/capture-clones.vl	212	cells.len() + weight	(cells.len() + weight).as_i32()
+FIX	OPERAND	vilan/test/capture-clones.vl	212	weight	weight.as_usize()
+FIX	E218	vilan/test/capture-clones.vl	223	cells.len() + weight	(cells.len() + weight).as_i32()
+FIX	OPERAND	vilan/test/capture-clones.vl	223	weight	weight.as_usize()
+FIX	E218	vilan/test/delta-law.vl	64	limit	limit.as_usize()
+FIX	E218	vilan/test/delta-law.vl	80	at	at.as_usize()
+FIX	E218	vilan/test/delta-law.vl	81	at	at.as_usize()
+FIX	E218	vilan/test/delta-law.vl	148	self.elements.get().len()	self.elements.get().len().as_i32()
+FIX	E218	vilan/test/delta-law.vl	158	at	at.as_usize()
+FIX	OPERAND	vilan/test/delta-law.vl	165	at	at.as_usize()
+FIX	E218	vilan/test/delta-law.vl	165	at + offset	(at + offset).as_usize()
+FIX	E218	vilan/test/delta-law.vl	220	removed.len()	removed.len().as_i32()
+FIX	E218	vilan/test/delta-law.vl	297	at	at.as_usize()
+FIX	OPERAND	vilan/test/delta-law.vl	304	at	at.as_usize()
+FIX	E218	vilan/test/delta-law.vl	304	at + offset	(at + offset).as_usize()
+FIX	E218	vilan/test/list-cell.vl	55	text.len()	text.len().as_i32()
+FIX	E218	vilan/test/list-cell.vl	62	value.len()	value.len().as_i32()
+FIX	E218	vilan/test/list-cell.vl	363	next_random(size)	next_random(size).as_usize()
+FIX	E218	vilan/test/reconcile-index.vl	57	index	index.as_i32()
+FIX	E218	vilan/test/reconcile-index.vl	59	index	index.as_i32()
+FIX	E218	vilan/test/reconcile-index.vl	71	index	index.as_i32()
+FIX	E218	vilan/test/capture-clones.vl	82	items.len() + at.as_usize()	(items.len() + at.as_usize()).as_i32()
+FIX	E218	vilan/test/capture-clones.vl	102	cells.len() + weight.as_usize()	(cells.len() + weight.as_usize()).as_i32()
+FIX	E218	vilan/test/capture-clones.vl	111	cells.len() + weight.as_usize()	(cells.len() + weight.as_usize()).as_i32()
+FIX	E218	vilan/test/capture-clones.vl	203	cells.len() + weight.as_usize()	(cells.len() + weight.as_usize()).as_i32()
+FIX	E218	vilan/test/capture-clones.vl	212	cells.len() + weight.as_usize()	(cells.len() + weight.as_usize()).as_i32()
+FIX	E218	vilan/test/capture-clones.vl	223	cells.len() + weight.as_usize()	(cells.len() + weight.as_usize()).as_i32()
+FIX	OPERAND	vilan/test/delta-law.vl	165	at	at.as_usize()
+FIX	OPERAND	vilan/test/delta-law.vl	304	at	at.as_usize()
+RESIDUE	vilan/std/src/base64.vl	72	literal pattern of type i32 cannot match type usize
+RESIDUE	vilan/std/src/base64.vl	73	literal pattern of type i32 cannot match type usize
+RESIDUE	vilan/std/src/compare.vl	116	Expected Option<usize>, but got Option<i32> instead.
+RESIDUE	vilan/std/src/iterator.vl	301	Expected Option<(i32, T)>, but got Option<(usize, T)> instead.
+RESIDUE	vilan/std/src/json.vl	661	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+RESIDUE	vilan/std/src/json.vl	673	`if` arms have mismatched types: expected usize, but got i32 instead.
+RESIDUE	vilan/std/src/lib.vl	13	'Duration' does not implement trait 'PartialOrd': missing 'eq'; declare `fun eq(self, b: Duration): bool`
+RESIDUE	vilan/std/src/lib.vl	13	'Instant' does not implement trait 'PartialOrd': missing 'eq'; declare `fun eq(self, b: Instant): bool`
+RESIDUE	vilan/std/src/reactive.vl	1869	Expected List<usize>, but got List<i32> instead.
+RESIDUE	vilan/test/adapt.vl	32	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+RESIDUE	vilan/test/capture-clones.vl	89	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+RESIDUE	vilan/test/capture-clones.vl	94	match legs have mismatched types: expected usize, but got i32 instead.
+RESIDUE	vilan/test/capture-clones.vl	118	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+RESIDUE	vilan/test/capture-clones.vl	123	match legs have mismatched types: expected usize, but got i32 instead.
+RESIDUE	vilan/test/crypto.vl	29	'Session' does not implement trait 'Wire', required by a generic bound of this call
+RESIDUE	vilan/test/crypto.vl	30	'Session' does not implement trait 'Wire', required by a generic bound of this call
+RESIDUE	vilan/test/crypto.vl	37	'Session' does not implement trait 'Wire', required by a generic bound of this call
+RESIDUE	vilan/test/derive-debug.vl	23	Point has no method 'debug'
+RESIDUE	vilan/test/derive-debug.vl	25	Tagged has no method 'debug'
+RESIDUE	vilan/test/derive-debug.vl	26	Empty has no method 'debug'
+RESIDUE	vilan/test/derive-default.vl	13	cannot find 'default' in Config
+RESIDUE	vilan/test/derive-default.vl	18	cannot find 'default' in Config
+RESIDUE	vilan/test/derive-enum.vl	23	type 'Shape' does not implement the `PartialEq` operator; add `impl Shape with PartialEq` providing `eq`
+RESIDUE	vilan/test/derive-enum.vl	24	type 'Shape' does not implement the `PartialEq` operator; add `impl Shape with PartialEq` providing `eq`
+RESIDUE	vilan/test/derive-enum.vl	25	type 'Shape' does not implement the `PartialEq` operator; add `impl Shape with PartialEq` providing `eq`
+RESIDUE	vilan/test/derive-enum.vl	26	type 'Shape' does not implement the `PartialEq` operator; add `impl Shape with PartialEq` providing `eq`
+RESIDUE	vilan/test/derive-enum.vl	29	Shape has no method 'debug'
+RESIDUE	vilan/test/derive-enum.vl	30	Shape has no method 'debug'
+RESIDUE	vilan/test/derive-enum.vl	31	Shape has no method 'debug'
+RESIDUE	vilan/test/derive-enum.vl	34	Shape has no method 'to_json'
+RESIDUE	vilan/test/derive-enum.vl	35	Shape has no method 'to_json'
+RESIDUE	vilan/test/derive-enum.vl	36	Shape has no method 'to_json'
+RESIDUE	vilan/test/derive-enum.vl	40	Shape has no method 'to_json'
+RESIDUE	vilan/test/derive-enum.vl	40	cannot find 'from_json' in Shape
+RESIDUE	vilan/test/derive-enum.vl	41	Shape has no method 'to_json'
+RESIDUE	vilan/test/derive-enum.vl	41	cannot find 'from_json' in Shape
+RESIDUE	vilan/test/derive-enum.vl	42	Shape has no method 'to_json'
+RESIDUE	vilan/test/derive-enum.vl	42	cannot find 'from_json' in Shape
+RESIDUE	vilan/test/derive-enum.vl	48	cannot find 'from_json' in Shape
+RESIDUE	vilan/test/derive-eq.vl	19	type 'Point' does not implement the `PartialEq` operator; add `impl Point with PartialEq` providing `eq`
+RESIDUE	vilan/test/derive-eq.vl	20	type 'Point' does not implement the `PartialEq` operator; add `impl Point with PartialEq` providing `eq`
+RESIDUE	vilan/test/derive-eq.vl	21	type 'Point' does not implement the `PartialEq` operator; add `impl Point with PartialEq` providing `eq`
+RESIDUE	vilan/test/derive-eq.vl	26	type 'Unit' does not implement the `PartialEq` operator; add `impl Unit with PartialEq` providing `eq`
+RESIDUE	vilan/test/derive-json.vl	26	Point has no method 'to_json'
+RESIDUE	vilan/test/derive-json.vl	35	Person has no method 'to_json'
+RESIDUE	vilan/test/derive-json.vl	41	cannot find 'from_json' in Person
+RESIDUE	vilan/test/derive-json.vl	53	cannot find 'from_json' in Person
+RESIDUE	vilan/test/derive-json.vl	59	cannot find 'from_json' in Person
+RESIDUE	vilan/test/interpolated-multiline-string.vl	76	'Point' does not implement trait 'Display', required by a generic bound of this call
+RESIDUE	vilan/test/json-roundtrip.vl	30	cannot find 'from_json' in Team
+RESIDUE	vilan/test/json-roundtrip.vl	37	'Team' does not implement trait 'FromJson', required by a generic bound of this call
+RESIDUE	vilan/test/json-roundtrip.vl	38	'Team' does not implement trait 'Json', required by a generic bound of this call
+RESIDUE	vilan/test/macro-block.vl	26	cannot find 'constant_0' in this scope
+RESIDUE	vilan/test/macro-block.vl	26	cannot find 'constant_1' in this scope
+RESIDUE	vilan/test/macro-block.vl	26	cannot find 'constant_2' in this scope
+RESIDUE	vilan/test/macro-derive.vl	56	'Point' does not implement trait 'Display', required by a generic bound of this call
+RESIDUE	vilan/test/macro-derive.vl	57	'Size' does not implement trait 'Display', required by a generic bound of this call
+RESIDUE	vilan/test/macro-invoke.vl	60	cannot find 'two' in this scope
+RESIDUE	vilan/test/macro-invoke.vl	61	cannot find 'one' in this scope
+RESIDUE	vilan/test/numeric-types.vl	92	Packet has no method 'to_json'
+RESIDUE	vilan/test/reconcile-index.vl	75	Expected List<usize>, but got List<i32> instead.
+RESIDUE	vilan/test/ssr-render.vl	19	'Page' does not implement trait 'PartialEq', required by a generic bound of this call
+RESIDUE	vilan/test/ssr-render.vl	19	'Swap<Page, SignalCell<Page>, View>' does not implement trait 'Slot', required by a generic bound of this call
+RESIDUE	vilan/test/time.vl	28	Instant has no method 'eq'
+RESIDUE	vilan/test/time.vl	48	'Stamp' does not implement trait 'Wire', required by a generic bound of this call
+RESIDUE	vilan/test/time.vl	50	type 'Stamp' does not implement the `PartialEq` operator; add `impl Stamp with PartialEq` providing `eq`
+RESIDUE	vilan/test/time.vl	53	'Stamp' does not implement trait 'Wire', required by a generic bound of this call
+RESIDUE	vilan/test/time.vl	60	'Instant' does not implement trait 'Wire', required by a generic bound of this call
+RESIDUE	vilan/test/time.vl	62	Instant has no method 'eq'
+FIX	E218	vilan/macro_std/src/build.vl	43	tabs	tabs.as_usize()
+FIX	E218	vilan/macro_std/src/meta.vl	344	self.values.len()	self.values.len().as_i32()
+FIX	E218	vilan/macro_std/src/meta.vl	349	index	index.as_usize()
+FIX	E218	vilan/macro_std/src/meta.vl	354	index	index.as_usize()
+FIX	E218	vilan/macro_std/src/meta.vl	363	index	index.as_usize()
+FIX	E218	vilan/macro_std/src/meta.vl	379	index	index.as_usize()
+RESIDUE	vilan/std/src/compare.vl	116	Expected Option<usize>, but got Option<i32> instead.
+RESIDUE	vilan/std/src/iterator.vl	301	Expected Option<(i32, T)>, but got Option<(usize, T)> instead.
+RESIDUE	vilan/std/src/json.vl	661	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+RESIDUE	vilan/std/src/json.vl	673	`if` arms have mismatched types: expected usize, but got i32 instead.
+FIX	DECL	vilan/std/src/browser/storage.vl	139		: usize
+FIX	DECL	vilan/std/src/browser/ui.vl	1455		: usize
+FIX	DECL	vilan/std/src/browser/ui.vl	1460		: usize
+FIX	DECL	vilan/std/src/browser/ui.vl	1479		: usize
+FIX	DECL	vilan/std/src/browser/ui.vl	1499		: usize
+FIX	DECL	vilan/std/src/browser/ui.vl	1701		: usize
+FIX	DECL	vilan/std/src/browser/ui.vl	1706		: usize
+FIX	DECL	vilan/std/src/browser/ui.vl	1721		: usize
+FIX	DECL	vilan/std/src/browser/ui.vl	1742		: usize
+FIX	OPERAND	vilan/std/src/browser/ui.vl	797	at + 1	(at + 1).as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	797	at + 1	(at + 1).as_usize()
+FIX	OPERAND	vilan/std/src/browser/ui.vl	1356	index	index.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1357	index	index.as_usize()
+FIX	OPERAND	vilan/std/src/browser/ui.vl	1564	at + 1	(at + 1).as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1565	at + 1	(at + 1).as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1569	at	at.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1571	at	at.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1573	at	at.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1574	at	at.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1575	at	at.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1576	at	at.as_usize()
+FIX	OPERAND	vilan/std/src/browser/ui.vl	1582	at	at.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1583	at	at.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1591	at + offset	(at + offset).as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1592	at + offset	(at + offset).as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1593	at + offset	(at + offset).as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1594	at + offset	(at + offset).as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1612	removed.len()	removed.len().as_i32()
+FIX	E218	vilan/std/src/browser/ui.vl	1620	at	at.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1624	at	at.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1646	from	from.as_usize()
+FIX	E218	vilan/std/src/browser/ui.vl	1651	to + offset	(to + offset).as_usize()
+FIX	OPERAND	vilan/std/src/browser/ui.vl	2273	index	index.as_usize()
+RESIDUE	vilan/std/src/base64.vl	72	literal pattern of type i32 cannot match type usize
+RESIDUE	vilan/std/src/base64.vl	73	literal pattern of type i32 cannot match type usize
+RESIDUE	vilan/std/src/compare.vl	116	Expected Option<usize>, but got Option<i32> instead.
+RESIDUE	vilan/std/src/debug.vl	58	Expected usize, but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+RESIDUE	vilan/std/src/iterator.vl	301	Expected Option<(i32, T)>, but got Option<(usize, T)> instead.
+RESIDUE	vilan/std/src/json.vl	661	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+RESIDUE	vilan/std/src/json.vl	673	`if` arms have mismatched types: expected usize, but got i32 instead.
+RESIDUE	vilan/std/src/lib.vl	13	'Duration' does not implement trait 'PartialOrd': missing 'eq'; declare `fun eq(self, b: Duration): bool`
+RESIDUE	vilan/std/src/lib.vl	13	'Instant' does not implement trait 'PartialOrd': missing 'eq'; declare `fun eq(self, b: Instant): bool`
+RESIDUE	vilan/std/src/lib.vl	13	cannot find 'rebuild' in RpcError
+RESIDUE	vilan/std/src/markdown.vl	305	Expected Option<i32>, but got Option<usize> instead.
+RESIDUE	vilan/std/src/markdown.vl	351	Expected Option<i32>, but got Option<usize> instead.
+RESIDUE	vilan/std/src/markdown.vl	383	Expected Option<i32>, but got Option<usize> instead.
+RESIDUE	vilan/std/src/reactive.vl	1869	Expected List<usize>, but got List<i32> instead.
+RESIDUE	vilan/std/src/rpc.vl	619	type 'ConnectionState' does not implement the `PartialEq` operator; add `impl ConnectionState with PartialEq` providing `eq`
+RESIDUE	vilan/std/src/rpc.vl	734	type 'ConnectionState' does not implement the `PartialEq` operator; add `impl ConnectionState with PartialEq` providing `eq`
+RESIDUE	vilan/std/src/rpc.vl	1036	type 'ConnectionState' does not implement the `PartialEq` operator; add `impl ConnectionState with PartialEq` providing `eq`
+RESIDUE	vilan/std/src/rpc.vl	1344	RpcError has no method 'describe'
+RESIDUE	vilan/std/src/rpc.vl	3196	Expected Shared<usize>, but got Shared<i32> instead.
+RESIDUE	vilan/std/src/rpc.vl	3238	Expected Shared<usize>, but got Shared<i32> instead.
+FIX	DECL	vilan/std/src/base64.vl	77		: usize
+FIX	E218	vilan/std/src/binary.vl	85	encoded.len()	encoded.len().as_i32()
+FIX	OPERAND	vilan/std/src/binary.vl	248	length	length.as_usize()
+FIX	E218	vilan/std/src/binary.vl	252	length	length.as_usize()
+FIX	E218	vilan/std/src/binary.vl	285	self.read_length()	self.read_length().as_i32()
+FIX	E218	vilan/std/src/bytes.vl	34	self.len()	self.len().as_i32()
+FIX	E218	vilan/std/src/bytes.vl	35	index	index.as_usize()
+FIX	E218	vilan/std/src/bytes.vl	37	byte / 16	(byte / 16).as_usize()
+FIX	E218	vilan/std/src/bytes.vl	37	byte / 16 + 1	(byte / 16 + 1).as_usize()
+FIX	E218	vilan/std/src/bytes.vl	38	byte % 16	(byte % 16).as_usize()
+FIX	E218	vilan/std/src/bytes.vl	38	byte % 16 + 1	(byte % 16 + 1).as_usize()
+FIX	DECL	vilan/std/src/compare.vl	144		: usize
+FIX	DECL	vilan/std/src/compare.vl	256		: usize
+FIX	E218	vilan/std/src/crypto.vl	55	a.len()	a.len().as_i32()
+FIX	E218	vilan/std/src/crypto.vl	56	index	index.as_usize()
+FIX	E218	vilan/std/src/crypto.vl	56	index	index.as_usize()
+FIX	DECL	vilan/std/src/debug.vl	82		: usize
+FIX	DECL	vilan/std/src/delta.vl	660		: usize
+FIX	DECL	vilan/std/src/delta.vl	786		: usize
+FIX	DECL	vilan/std/src/delta.vl	842		: usize
+FIX	DECL	vilan/std/src/iterator.vl	99		: usize
+FIX	DECL	vilan/std/src/json.vl	1069		: usize
+FIX	DECL	vilan/std/src/json.vl	1193		: usize
+FIX	DECL	vilan/std/src/markdown.vl	111		: usize
+FIX	DECL	vilan/std/src/markdown.vl	158		: usize
+FIX	DECL	vilan/std/src/markdown.vl	159		: usize
+FIX	DECL	vilan/std/src/markdown.vl	188		: usize
+FIX	DECL	vilan/std/src/markdown.vl	238		: usize
+FIX	DECL	vilan/std/src/markdown.vl	285		: usize
+FIX	DECL	vilan/std/src/markdown.vl	286		: usize
+FIX	DECL	vilan/std/src/markdown.vl	659		: usize
+FIX	DECL	vilan/std/src/markdown.vl	763		: usize
+FIX	DECL	vilan/std/src/markdown.vl	784		: usize
+FIX	DECL	vilan/std/src/markdown.vl	821		: usize
+FIX	DECL	vilan/std/src/path.vl	302		: usize
+FIX	DECL	vilan/std/src/path.vl	363		: usize
+FIX	DECL	vilan/std/src/process/db.vl	286		: usize
+FIX	DECL	vilan/std/src/process/db.vl	327		: usize
+FIX	DECL	vilan/std/src/process/db.vl	334		: usize
+FIX	DECL	vilan/std/src/process/document.vl	574		: usize
+FIX	DECL	vilan/std/src/process/document.vl	584		: usize
+FIX	DECL	vilan/std/src/process/document.vl	736		: usize
+FIX	DECL	vilan/std/src/process/document.vl	889		: usize
+FIX	DECL	vilan/std/src/reactive.vl	1862		: usize
+FIX	DECL	vilan/std/src/rpc.vl	320		: usize
+FIX	DECL	vilan/std/src/rpc.vl	2990		: usize
+FIX	DECL	vilan/std/src/rpc.vl	4099		: usize
+FIX	DECL	vilan/std/src/rpc.vl	4182		: usize
+FIX	DECL	vilan/std/src/rpc.vl	5065		: usize
+FIX	DECL	vilan/std/src/string.vl	46		: usize
+FIX	DECL	vilan/std/src/string.vl	72		: usize
+FIX	E218	vilan/std/src/style.vl	795	text.len()	text.len().as_i32()
+FIX	E218	vilan/std/src/style.vl	798	index	index.as_usize()
+FIX	E218	vilan/std/src/style.vl	814	digit	digit.as_usize()
+FIX	E218	vilan/std/src/style.vl	814	digit + 1	(digit + 1).as_usize()
+FIX	E218	vilan/std/src/wire.vl	455	self.len()	self.len().as_i32()
+FIX	E218	vilan/std/src/wire.vl	674	entries.len()	entries.len().as_i32()
+FIX	DECL	vilan/std/src/ws.vl	154		: usize
+FIX	E218	vilan/std/src/base64.vl	12	value	value.as_usize()
+FIX	E218	vilan/std/src/base64.vl	12	value + 1	(value + 1).as_usize()
+FIX	E218	vilan/std/src/base64.vl	18	total / 3	(total / 3).as_i32()
+FIX	E218	vilan/std/src/base64.vl	20	base	base.as_usize()
+FIX	E218	vilan/std/src/base64.vl	20	base + 1	(base + 1).as_usize()
+FIX	E218	vilan/std/src/base64.vl	20	base + 2	(base + 2).as_usize()
+FIX	E218	vilan/std/src/base64.vl	78	full	full.as_i32()
+FIX	E218	vilan/std/src/base64.vl	80	base	base.as_usize()
+FIX	E218	vilan/std/src/base64.vl	81	base + 1	(base + 1).as_usize()
+FIX	E218	vilan/std/src/base64.vl	82	base + 2	(base + 2).as_usize()
+FIX	E218	vilan/std/src/base64.vl	83	base + 3	(base + 3).as_usize()
+FIX	DECL	vilan/std/src/delta.vl	849		: usize
+FIX	DECL	vilan/std/src/markdown.vl	292		: usize
+FIX	DECL	vilan/std/src/markdown.vl	300		: usize
+FIX	E218	vilan/std/src/process/db.vl	209	migrations.len()	migrations.len().as_i32()
+FIX	E218	vilan/std/src/process/db.vl	330	index	index.as_i32()
+FIX	OPERAND	vilan/std/src/process/db.vl	335	last_applied	last_applied.as_usize()
+FIX	E218	vilan/std/src/process/db.vl	338	last_applied	last_applied.as_usize()
+FIX	OPERAND	vilan/std/src/process/document.vl	577	before	before.as_usize()
+FIX	E218	vilan/std/src/process/document.vl	587	at	at.as_usize()
+FIX	E218	vilan/std/src/process/document.vl	588	at	at.as_usize()
+FIX	OPERAND	vilan/std/src/process/document.vl	873	index	index.as_usize()
+FIX	OPERAND	vilan/std/src/process/document.vl	873	index + closing_length	(index + closing_length).as_usize()
+FIX	E218	vilan/std/src/process/document.vl	874	index	index.as_usize()
+FIX	E218	vilan/std/src/process/document.vl	875	index	index.as_usize()
+FIX	OPERAND	vilan/std/src/process/document.vl	924	index	index.as_usize()
+FIX	E218	vilan/std/src/process/document.vl	925	index	index.as_usize()
+FIX	OPERAND	vilan/std/src/process/document.vl	925	index	index.as_usize()
+FIX	E218	vilan/std/src/process/document.vl	925	index + needle.len()	(index + needle.len()).as_usize()
+FIX	E218	vilan/std/src/reactive.vl	1816	build	build.as_i32()
+FIX	E218	vilan/std/src/reactive.vl	1852	found	found.as_usize()
+FIX	E218	vilan/std/src/reactive.vl	1853	found	found.as_usize()
+FIX	E218	vilan/std/src/reactive.vl	1865	index	index.as_i32()
+FIX	E218	vilan/std/src/rpc.vl	1309	args.len()	args.len().as_i32()
+FIX	E218	vilan/std/src/rpc.vl	2846	at	at.as_i32()
+FIX	E218	vilan/std/src/rpc.vl	2894	at	at.as_i32()
+FIX	E218	vilan/std/src/rpc.vl	2970	at	at.as_usize()
+FIX	E218	vilan/std/src/rpc.vl	4032	at	at.as_i32()
+FIX	E218	vilan/std/src/rpc.vl	4041	at	at.as_i32()
+FIX	E218	vilan/std/src/rpc.vl	4061	at	at.as_i32()
+FIX	E218	vilan/std/src/rpc.vl	4082	at	at.as_i32()
+FIX	OPERAND	vilan/std/src/rpc.vl	4187	at	at.as_usize()
+FIX	OPERAND	vilan/std/src/rpc.vl	4503	lease.count.read()	lease.count.read().as_usize()
+FIX	E218	vilan/std/src/rpc.vl	4505	total	total.as_i32()
+FIX	OPERAND	vilan/std/src/rpc.vl	4860	bounded	bounded.as_usize()
+FIX	E218	vilan/std/src/rpc.vl	4861	list.len()	list.len().as_i32()
+FIX	E218	vilan/std/src/rpc.vl	4863	bounded	bounded.as_usize()
+FIX	E218	vilan/std/src/rpc.vl	4864	bounded	bounded.as_usize()
+FIX	E218	vilan/std/src/string.vl	52	letter	letter.as_usize()
+FIX	E218	vilan/std/src/string.vl	52	letter + 1	(letter + 1).as_usize()
+FIX	E218	vilan/std/src/string.vl	78	letter	letter.as_usize()
+FIX	E218	vilan/std/src/string.vl	78	letter + 1	(letter + 1).as_usize()
+FIX	E218	vilan/std/src/ws.vl	24	length	length.as_i32()
+FIX	E218	vilan/std/src/ws.vl	28	length >> 8	(length >> 8).as_i32()
+FIX	E218	vilan/std/src/ws.vl	29	length	length.as_i32()
+FIX	E218	vilan/std/src/ws.vl	34	length >> 24	(length >> 24).as_i32()
+FIX	E218	vilan/std/src/ws.vl	35	length >> 16	(length >> 16).as_i32()
+FIX	E218	vilan/std/src/ws.vl	36	length >> 8	(length >> 8).as_i32()
+FIX	E218	vilan/std/src/ws.vl	37	length	length.as_i32()
+FIX	OPERAND	vilan/std/src/ws.vl	148	total	total.as_usize()
+FIX	E218	vilan/std/src/ws.vl	152	payload_at	payload_at.as_usize()
+FIX	E218	vilan/std/src/ws.vl	152	payload_at + length	(payload_at + length).as_usize()
+FIX	OPERAND	vilan/std/src/ws.vl	155	length	length.as_usize()
+FIX	OPERAND	vilan/std/src/ws.vl	156	mask_at	mask_at.as_usize()
+FIX	E218	vilan/std/src/ws.vl	156	mask_at + (index & 3)	(mask_at + (index & 3)).as_usize()
+FIX	E218	vilan/std/src/ws.vl	160	total	total.as_usize()
+FIX	E218	vilan/std/src/delta.vl	169	delta_log_limit	delta_log_limit.as_usize()
+FIX	OPERAND	vilan/std/src/delta.vl	230	index	index.as_usize()
+FIX	E218	vilan/std/src/delta.vl	231	index	index.as_usize()
+FIX	OPERAND	vilan/std/src/delta.vl	284	index	index.as_usize()
+FIX	E218	vilan/std/src/delta.vl	285	index	index.as_usize()
+FIX	E218	vilan/std/src/delta.vl	657	start	start.as_usize()
+FIX	OPERAND	vilan/std/src/delta.vl	664	start	start.as_usize()
+FIX	E218	vilan/std/src/delta.vl	664	start + offset	(start + offset).as_usize()
+FIX	E218	vilan/std/src/delta.vl	695	self.elements.len()	self.elements.len().as_i32()
+FIX	E218	vilan/std/src/delta.vl	701	held	held.as_i32()
+FIX	E218	vilan/std/src/delta.vl	702	held	held.as_i32()
+FIX	E218	vilan/std/src/delta.vl	746	limit	limit.as_usize()
+FIX	E218	vilan/std/src/delta.vl	758	at	at.as_usize()
+FIX	E218	vilan/std/src/delta.vl	761	at	at.as_usize()
+FIX	E218	vilan/std/src/delta.vl	783	from	from.as_usize()
+FIX	OPERAND	vilan/std/src/delta.vl	789	to	to.as_usize()
+FIX	E218	vilan/std/src/delta.vl	789	to + offset	(to + offset).as_usize()
+FIX	E218	vilan/std/src/delta.vl	820	self.log.held()	self.log.held().as_i32()
+FIX	E218	vilan/std/src/delta.vl	871	prefix	prefix.as_i32()
+FIX	E218	vilan/std/src/delta.vl	871	removed	removed.as_i32()
+FIX	E218	vilan/std/src/delta.vl	908	self.elements.get().len()	self.elements.get().len().as_i32()
+FIX	E218	vilan/std/src/delta.vl	991	removed.len()	removed.len().as_i32()
+FIX	E218	vilan/std/src/markdown.vl	194	level	level.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	198	level	level.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	208	level	level.as_usize()
+FIX	E218	vilan/std/src/markdown.vl	318	at	at.as_usize()
+FIX	OPERAND	vilan/std/src/markdown.vl	324	at	at.as_usize()
+FIX	E218	vilan/std/src/markdown.vl	324	at + run	(at + run).as_usize()
+FIX	E218	vilan/std/src/markdown.vl	358	at	at.as_usize()
+FIX	E218	vilan/std/src/markdown.vl	359	at + 1	(at + 1).as_usize()
+FIX	E218	vilan/std/src/markdown.vl	398	at	at.as_usize()
+FIX	E218	vilan/std/src/markdown.vl	399	at + 1	(at + 1).as_usize()
+FIX	E218	vilan/std/src/markdown.vl	831	line_number	line_number.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	836	line_number	line_number.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	854	line_number	line_number.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	864	line_number	line_number.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	868	line_number	line_number.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	872	line_number	line_number.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	889	first_line + i	(first_line + i).as_i32()
+FIX	E218	vilan/std/src/markdown.vl	897	line_number	line_number.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	923	first_line + i	(first_line + i).as_i32()
+FIX	E218	vilan/std/src/markdown.vl	957	first_line + i	(first_line + i).as_i32()
+FIX	E218	vilan/std/src/markdown.vl	976	first_line + i + 1	(first_line + i + 1).as_i32()
+FIX	E218	vilan/std/src/markdown.vl	980	line_number	line_number.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	984	first_line + i	(first_line + i).as_i32()
+FIX	E218	vilan/std/src/markdown.vl	990	line_number	line_number.as_i32()
+FIX	E218	vilan/std/src/markdown.vl	1003	first_line + i - 1	(first_line + i - 1).as_i32()
+FIX	E218	vilan/std/src/markdown.vl	1009	first_line + i - 1	(first_line + i - 1).as_i32()
+FIX	E218	vilan/std/src/markdown.vl	1017	line_number	line_number.as_i32()
+FIX	OPERAND	vilan/std/src/process/document.vl	873	index	index.as_usize()
+FIX	OPERAND	vilan/std/src/process/document.vl	925	index	index.as_usize()
+FIX	E218	vilan/std/src/rpc.vl	4187	at.as_usize() + offset	(at.as_usize() + offset).as_i32()
+FIX	OPERAND	vilan/std/src/ws.vl	156	mask_at	mask_at.as_usize()
+FIX	OPERAND	vilan/std/src/delta.vl	664	start	start.as_usize()
+FIX	OPERAND	vilan/std/src/delta.vl	789	to	to.as_usize()
+FIX	OPERAND	vilan/std/src/markdown.vl	324	at	at.as_usize()
+RESIDUE	vilan/std/src/base64.vl	72	literal pattern of type i32 cannot match type usize
+RESIDUE	vilan/std/src/base64.vl	73	literal pattern of type i32 cannot match type usize
+RESIDUE	vilan/std/src/compare.vl	116	Expected Option<usize>, but got Option<i32> instead.
+RESIDUE	vilan/std/src/debug.vl	58	Expected usize, but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+RESIDUE	vilan/std/src/debug.vl	78	Expected usize, but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+RESIDUE	vilan/std/src/iterator.vl	301	Expected Option<(i32, T)>, but got Option<(usize, T)> instead.
+RESIDUE	vilan/std/src/json.vl	661	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+RESIDUE	vilan/std/src/json.vl	673	`if` arms have mismatched types: expected usize, but got i32 instead.
+RESIDUE	vilan/std/src/lib.vl	13	'Duration' does not implement trait 'PartialOrd': missing 'eq'; declare `fun eq(self, b: Duration): bool`
+RESIDUE	vilan/std/src/lib.vl	13	'Instant' does not implement trait 'PartialOrd': missing 'eq'; declare `fun eq(self, b: Instant): bool`
+RESIDUE	vilan/std/src/lib.vl	13	cannot find 'rebuild' in RpcError
+RESIDUE	vilan/std/src/markdown.vl	305	Expected Option<i32>, but got Option<usize> instead.
+RESIDUE	vilan/std/src/markdown.vl	351	Expected Option<i32>, but got Option<usize> instead.
+RESIDUE	vilan/std/src/markdown.vl	383	Expected Option<i32>, but got Option<usize> instead.
+RESIDUE	vilan/std/src/process/document.vl	481	Expected (i32, str), but got (usize, str) instead.
+RESIDUE	vilan/std/src/process/document.vl	485	Expected (i32, str), but got (usize, str) instead.
+RESIDUE	vilan/std/src/process/document.vl	491	Expected (i32, str), but got (usize, str) instead.
+RESIDUE	vilan/std/src/process/document.vl	502	Expected List<(usize, str)>, but got List<(i32, str)> instead.
+RESIDUE	vilan/std/src/process/document.vl	581	Expected (i32, str), but got (usize, str) instead.
+RESIDUE	vilan/std/src/process/document.vl	872	`if` arms have mismatched types: expected i32, but got usize instead.
+RESIDUE	vilan/std/src/process/document.vl	923	`if` arms have mismatched types: expected i32, but got usize instead.
+RESIDUE	vilan/std/src/process/document.vl	926	Expected Option<usize>, but got Option<i32> instead.
+RESIDUE	vilan/std/src/reactive.vl	1869	Expected List<usize>, but got List<i32> instead.
+RESIDUE	vilan/std/src/rpc.vl	619	type 'ConnectionState' does not implement the `PartialEq` operator; add `impl ConnectionState with PartialEq` providing `eq`
+RESIDUE	vilan/std/src/rpc.vl	734	type 'ConnectionState' does not implement the `PartialEq` operator; add `impl ConnectionState with PartialEq` providing `eq`
+RESIDUE	vilan/std/src/rpc.vl	1036	type 'ConnectionState' does not implement the `PartialEq` operator; add `impl ConnectionState with PartialEq` providing `eq`
+RESIDUE	vilan/std/src/rpc.vl	1344	RpcError has no method 'describe'
+RESIDUE	vilan/std/src/rpc.vl	3196	Expected Shared<usize>, but got Shared<i32> instead.
+RESIDUE	vilan/std/src/rpc.vl	3238	Expected Shared<usize>, but got Shared<i32> instead.

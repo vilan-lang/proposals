@@ -1,0 +1,321 @@
+53c53
+< 	let $W = null;
+---
+> 	let $u = null;
+55c55
+< 		$W = wrapped + modulus;
+---
+> 		$u = wrapped + modulus;
+57c57
+< 		$W = wrapped;
+---
+> 		$u = wrapped;
+59c59
+< 	return $W;
+---
+> 	return $u;
+63c63
+< 	let $X = null;
+---
+> 	let $v = null;
+65c65
+< 		$X = wrapped - modulus;
+---
+> 		$v = wrapped - modulus;
+67c67
+< 		$X = wrapped;
+---
+> 		$v = wrapped;
+69c69
+< 	return $X;
+---
+> 	return $v;
+74a75,78
+> function as_usize(self) {
+> 	const widened = Number(self);
+> 	return Number(Math.trunc(widened));
+> }
+78a83,89
+> function as_i322(self) {
+> 	const widened = Number(self);
+> 	return Number(fold_signed(widened, 4294967296, 2147483648));
+> }
+> function as_usize2(self) {
+> 	return self;
+> }
+88c99
+< 	return $J(self[0].v) && $J(self[1].v);
+---
+> 	return $L(self[0].v) && $L(self[1].v);
+93c104
+< 		let $I = null;
+---
+> 		let $K = null;
+99c110
+< 			$I = undefined;
+---
+> 			$K = undefined;
+108c119
+< 		$I;
+---
+> 		$K;
+126c137
+< 				while (!($J(turn[1].v)) && budget > 0) {
+---
+> 				while (!($L(turn[1].v)) && budget > 0) {
+210c221
+< 				__remove_at(mirror, at2);
+---
+> 				__remove_at(mirror, as_usize(at2));
+220c231
+< 					$aw = __insert_at(mirror, at2 + offset, value3);
+---
+> 					$aw = __insert_at(mirror, as_usize2(as_usize(at2) + offset), value3);
+258c269
+< 	return [ $b(initial), $d(limit) ];
+---
+> 	return [ $b(initial), $d(as_usize(limit)) ];
+275c286
+< 	return [ __shared_new([  ]), __shared_new(0), __shared_new(0), __shared_new([  ]), delta_log_limit ];
+---
+> 	return [ __shared_new([  ]), __shared_new(0), __shared_new(0), __shared_new([  ]), as_usize(delta_log_limit) ];
+295,296c306,307
+< 	while (index < length) {
+< 		const $o = __list_get(held, index);
+---
+> 	while (as_usize(index) < length) {
+> 		const $o = __list_get(held, as_usize(index));
+322c333
+< function $z(self) {
+---
+> function $B(self) {
+337,342c348,353
+< 		while (index < length) {
+< 			const $A = __list_get(held, index);
+< 			let $B = null;
+< 			if ($A[0] === 0) {
+< 				const op = $A[1];
+< 				$B = kept.push(op);
+---
+> 		while (as_usize(index) < length) {
+> 			const $C = __list_get(held, as_usize(index));
+> 			let $D = null;
+> 			if ($C[0] === 0) {
+> 				const op = $C[1];
+> 				$D = kept.push(op);
+344c355
+< 				$B = undefined;
+---
+> 				$D = undefined;
+346c357
+< 			$B;
+---
+> 			$D;
+353,354c364,365
+< function $y(self, op) {
+< 	$z(self);
+---
+> function $A(self, op) {
+> 	$B(self);
+364c375
+< function $J(self) {
+---
+> function $L(self) {
+367c378
+< function $K(self) {
+---
+> function $M(self) {
+370,375c381,386
+< function $E(self, $F) {
+< 	const $G = $F;
+< 	let $H = null;
+< 	if ($G[0] === 0) {
+< 		const turn = $G[1];
+< 		$H = enqueue(turn, self[1].v);
+---
+> function $G(self, $H) {
+> 	const $I = $H;
+> 	let $J = null;
+> 	if ($I[0] === 0) {
+> 		const turn = $I[1];
+> 		$J = enqueue(turn, self[1].v);
+377,381c388,392
+< 		const $L = $K(draining_turns.v);
+< 		let $M = null;
+< 		if ($L[0] === 0) {
+< 			const draining = $L[1];
+< 			$M = enqueue(draining, self[1].v);
+---
+> 		const $N = $M(draining_turns.v);
+> 		let $O = null;
+> 		if ($N[0] === 0) {
+> 			const draining = $N[1];
+> 			$O = enqueue(draining, self[1].v);
+388c399
+< 			$M = undefined;
+---
+> 			$O = undefined;
+390c401
+< 		$H = $M;
+---
+> 		$J = $O;
+392c403
+< 	return $H;
+---
+> 	return $J;
+394c405
+< function $C(self, mutate, $D) {
+---
+> function $E(self, mutate, $F) {
+396c407
+< 	$E(self, $D);
+---
+> 	$G(self, $F);
+398,399c409,410
+< function $u(self, at, removed, inserted, $v) {
+< 	$C(self[0], (list) => {
+---
+> function $w(self, at, removed, inserted, $x) {
+> 	$E(self[0], (list) => {
+403c414
+< 			left.push(__remove_at(list, at));
+---
+> 			left.push(__remove_at(list, as_usize(at)));
+409,413c420,424
+< 			const $w = __list_get(inserted, offset);
+< 			let $x = null;
+< 			if ($w[0] === 0) {
+< 				const value2 = $w[1];
+< 				$x = __insert_at(list, at + offset, value2);
+---
+> 			const $y = __list_get(inserted, offset);
+> 			let $z = null;
+> 			if ($y[0] === 0) {
+> 				const value2 = $y[1];
+> 				$z = __insert_at(list, as_usize2(as_usize(at) + offset), value2);
+415c426
+< 				$x = undefined;
+---
+> 				$z = undefined;
+417c428
+< 			$x;
+---
+> 			$z;
+420c431
+< 		$y(self[1], [ 0, at, left, __clone(inserted) ]);
+---
+> 		$A(self[1], [ 0, at, left, __clone(inserted) ]);
+422c433
+< 	}, $v);
+---
+> 	}, $x);
+424,428c435,439
+< function $N(self, at, value2, $O) {
+< 	$C(self[0], (list) => {
+< 		const previous = __clone(__at(list, at));
+< 		__at_put(list, at, __clone(value2));
+< 		$y(self[1], [ 1, at, previous, __clone(value2) ]);
+---
+> function $P(self, at, value2, $Q) {
+> 	$E(self[0], (list) => {
+> 		const previous = __clone(__at(list, as_usize(at)));
+> 		__at_put(list, as_usize(at), __clone(value2));
+> 		$A(self[1], [ 1, at, previous, __clone(value2) ]);
+430c441
+< 	}, $O);
+---
+> 	}, $Q);
+432,433c443,444
+< function $P(self, value2, $Q) {
+< 	$C(self[0], (list) => {
+---
+> function $R(self, value2, $S) {
+> 	$E(self[0], (list) => {
+435c446
+< 		$y(self[1], [ 2, __clone(value2) ]);
+---
+> 		$A(self[1], [ 2, __clone(value2) ]);
+437c448
+< 	}, $Q);
+---
+> 	}, $S);
+439c450
+< function $T(signal, observer) {
+---
+> function $V(signal, observer) {
+446,450c457,461
+< 		const $U = [ 0, cell ];
+< 		let $V = null;
+< 		if ($U[0] === 0) {
+< 			const live2 = $U[1];
+< 			$V = observer(live2.v);
+---
+> 		const $W = [ 0, cell ];
+> 		let $X = null;
+> 		if ($W[0] === 0) {
+> 			const live2 = $W[1];
+> 			$X = observer(live2.v);
+452c463
+< 			$V = undefined;
+---
+> 			$X = undefined;
+454c465
+< 		return $V;
+---
+> 		return $X;
+458,459c469,470
+< function $S(self, observer) {
+< 	return $T(self, observer);
+---
+> function $U(self, observer) {
+> 	return $V(self, observer);
+461,462c472,473
+< function $R(self, observer) {
+< 	return $S(self[0], observer);
+---
+> function $T(self, observer) {
+> 	return $U(self[0], observer);
+471c482
+< 	$R(source2, (_list) => {
+---
+> 	$T(source2, (_list) => {
+485c496
+< 				$u(out, at, removed.length, mapped, $f);
+---
+> 				$w(out, at, as_i322(removed.length), mapped, $f);
+492c503
+< 				$N(out, at2, g(value4), $f);
+---
+> 				$P(out, at2, g(value4), $f);
+501c512
+< 				$P(out, mapped2, $f);
+---
+> 				$R(out, mapped2, $f);
+519c530
+< 	return $j(self[0]).length;
+---
+> 	return as_i322($j(self[0]).length);
+522c533
+< 	return $u(self, $Z(self), 0, [ __clone(value2) ], $ab);
+---
+> 	return $w(self, $Z(self), 0, [ __clone(value2) ], $ab);
+525c536
+< 	return $u(self, at, 0, [ __clone(value2) ], $ad);
+---
+> 	return $w(self, at, 0, [ __clone(value2) ], $ad);
+528c539
+< 	return $u(self, at, 1, [  ], $af);
+---
+> 	return $w(self, at, 1, [  ], $af);
+531c542
+< 	return $u(self, 0, $Z(self), [  ], $ah);
+---
+> 	return $w(self, 0, $Z(self), [  ], $ah);
+625c636
+< 				$N(source, next_random(size), next_random(100), [ 0, $Y ]);
+---
+> 				$P(source, next_random(size), next_random(100), [ 0, $Y ]);
+634c645
+< 				$P(source, fresh, [ 0, $Y ]);
+---
+> 				$R(source, fresh, [ 0, $Y ]);

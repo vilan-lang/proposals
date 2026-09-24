@@ -1,0 +1,105 @@
+SIG-REWRITE	FIELD	arena.vl	struct Handle		index	i32 -> usize
+SIG-REWRITE	FIELD	arena.vl	struct Arena		free	List<i32> -> List<usize>
+SIG-REWRITE	SIG	arena.vl	impl Arena<type T>	len	<ret>	i32 -> usize
+SIG-REWRITE	FIELD	binary.vl	struct BinaryWriter		used	i32 -> usize
+SIG-REWRITE	SIG	binary.vl	impl BinaryWriter	ensure	extra	i32 -> usize
+SIG-REWRITE	FIELD	binary.vl	struct BinaryReader		cursor	i32 -> usize
+SIG-REWRITE	SIG	binary.vl	impl BinaryReader	expect	count	i32 -> usize
+SIG-REWRITE	SIG	binary.vl	impl BinaryReader	read_length	<ret>	i32 -> usize
+SIG-REWRITE	SIG	storage.vl	impl Storage	len	<ret>	i32 -> usize
+SIG-REWRITE	SIG	storage.vl	impl Storage	key_at	index	i32 -> usize
+SIG-REWRITE	SIG	storage.vl	impl Storage	raw_key_at	index	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	alloc	size	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	len	<ret>	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	get	index	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	get_u32	index	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	fill	from	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	fill	to	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	copy_into	offset	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	slice	from	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	slice	to	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	set	index	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	fill_u32	from	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	fill_u32	to	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl Bytes	set_u32	index	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl DataView	read_f64	offset	i32 -> usize
+SIG-REWRITE	SIG	bytes.vl	impl DataView	write_f64	offset	i32 -> usize
+SIG-REWRITE	SIG	compare.vl	impl List<type T: PartialEq>	index_of	<ret>	Option<i32> -> Option<usize>
+SIG-REWRITE	SIG	crypto.vl		random_bytes	length	i32 -> usize
+SIG-REWRITE	FIELD	delta.vl	struct DeltaLog		limit	i32 -> usize
+SIG-REWRITE	SIG	delta.vl	impl DeltaLog<type O>	with_limit	limit	i32 -> usize
+SIG-REWRITE	SIG	delta.vl	impl DeltaLog<type O>	held	<ret>	i32 -> usize
+SIG-REWRITE	SIG	iterator.vl	trait Iterator	take	count	i32 -> usize
+SIG-REWRITE	SIG	iterator.vl	trait Iterator	skip	count	i32 -> usize
+SIG-REWRITE	SIG	iterator.vl	trait Iterator	count	<ret>	i32 -> usize
+SIG-REWRITE	FIELD	iterator.vl	struct ListIterator		index	i32 -> usize
+SIG-REWRITE	FIELD	iterator.vl	struct Taken		remaining	i32 -> usize
+SIG-REWRITE	FIELD	iterator.vl	struct Skipped		pending	i32 -> usize
+SIG-REWRITE	FIELD	iterator.vl	struct Enumerated		index	i32 -> usize
+SIG-REWRITE	FIELD	json.vl	struct JsonReader		list_marks	List<i32> -> List<usize>
+SIG-REWRITE	SIG	list.vl	impl List<type T>	len	<ret>	i32 -> usize
+SIG-REWRITE	SIG	list.vl	impl List<type T>	insert	index	i32 -> usize
+SIG-REWRITE	SIG	list.vl	impl List<type T>	remove	index	i32 -> usize
+SIG-REWRITE	SIG	map.vl	impl Map<type K: Hashable, type V>	len	<ret>	i32 -> usize
+SIG-REWRITE	SIG	markdown.vl		index_of	from	i32 -> usize
+SIG-REWRITE	SIG	markdown.vl		index_of	<ret>	Option<i32> -> Option<usize>
+SIG-REWRITE	SIG	markdown.vl		leading_spaces	<ret>	i32 -> usize
+SIG-REWRITE	SIG	markdown.vl		dedent	columns	i32 -> usize
+SIG-REWRITE	SIG	markdown.vl		same_char_line	minimum	i32 -> usize
+SIG-REWRITE	SIG	markdown.vl		list_item_content_offset	<ret>	i32 -> usize
+SIG-REWRITE	SIG	markdown.vl		is_fence_close	indent	i32 -> usize
+SIG-REWRITE	SIG	markdown.vl		entity_length	i	i32 -> usize
+SIG-REWRITE	SIG	markdown.vl		entity_length	<ret>	i32 -> usize
+SIG-REWRITE	SIG	markdown.vl		parse_blocks	first_line	i32 -> usize
+SIG-REWRITE	SIG	memo.vl	impl Memo<type K: Hashable, type V>	len	<ret>	i32 -> usize
+SIG-REWRITE	SIG	native_map.vl	impl NativeMap<type V>	len	<ret>	i32 -> usize
+SIG-REWRITE	SIG	option.vl	impl str	raw_index_of	<ret>	i32 -> usize
+SIG-REWRITE	SIG	option.vl	impl str	raw_last_index_of	<ret>	i32 -> usize
+SIG-REWRITE	SIG	option.vl	impl str	index_of	<ret>	Option<i32> -> Option<usize>
+SIG-REWRITE	SIG	option.vl	impl str	last_index_of	<ret>	Option<i32> -> Option<usize>
+SIG-REWRITE	SIG	option.vl	impl List<type T>	get	index	i32 -> usize
+SIG-REWRITE	FIELD	document.vl	struct Document		splice	i32 -> usize
+SIG-REWRITE	SIG	document.vl		splice_point	<ret>	i32 -> usize
+SIG-REWRITE	SIG	document.vl		closing_point	<ret>	Option<i32> -> Option<usize>
+SIG-REWRITE	SIG	document.vl		spliced	insertions	List<(i32, str)> -> List<(usize, str)>
+SIG-REWRITE	FIELD	document.vl	struct Tag		start	i32 -> usize
+SIG-REWRITE	FIELD	document.vl	struct Tag		end	i32 -> usize
+SIG-REWRITE	SIG	document.vl		past	found	Option<i32> -> Option<usize>
+SIG-REWRITE	SIG	document.vl		past	offset	i32 -> usize
+SIG-REWRITE	SIG	document.vl		past	fallback	i32 -> usize
+SIG-REWRITE	SIG	document.vl		past	<ret>	i32 -> usize
+SIG-REWRITE	SIG	document.vl		attributes_of	from	i32 -> usize
+SIG-REWRITE	SIG	document.vl		attributes_of	<ret>	(List<(str, str)>, i32) -> (List<(str, str)>, usize)
+SIG-REWRITE	SIG	document.vl		skip_raw_text	from	i32 -> usize
+SIG-REWRITE	SIG	document.vl		skip_raw_text	<ret>	i32 -> usize
+SIG-REWRITE	SIG	document.vl		matches_ascii_insensitive	at	i32 -> usize
+SIG-REWRITE	SIG	document.vl		skip_spaces	from	i32 -> usize
+SIG-REWRITE	SIG	document.vl		skip_spaces	<ret>	i32 -> usize
+SIG-REWRITE	SIG	document.vl		index_of	from	i32 -> usize
+SIG-REWRITE	SIG	document.vl		index_of	<ret>	Option<i32> -> Option<usize>
+SIG-REWRITE	SIG	fs.vl	impl RawReadResult	bytes_read	<ret>	i32 -> usize
+SIG-REWRITE	SIG	fs.vl	impl RawWriteResult	bytes_written	<ret>	i32 -> usize
+SIG-REWRITE	SIG	fs.vl	impl File	raw_read	offset	i32 -> usize
+SIG-REWRITE	SIG	fs.vl	impl File	raw_read	length	i32 -> usize
+SIG-REWRITE	SIG	fs.vl	impl File	raw_write	offset	i32 -> usize
+SIG-REWRITE	SIG	fs.vl	impl File	raw_write	length	i32 -> usize
+SIG-REWRITE	SIG	fs.vl	impl File	read_at	<ret>	i32 -> usize
+SIG-REWRITE	SIG	fs.vl	impl File	write_at	<ret>	i32 -> usize
+SIG-REWRITE	SIG	fs.vl	impl Reader	next	size	i32 -> usize
+SIG-REWRITE	FIELD	reactive.vl	struct ReconcilePlan		removed	List<i32> -> List<usize>
+SIG-REWRITE	SIG	rpc.vl		arg	index	i32 -> usize
+SIG-REWRITE	FIELD	rpc.vl	struct RemoteSource		count	Shared<i32> -> Shared<usize>
+SIG-REWRITE	FIELD	rpc.vl	struct KeyedCell		positions	Shared<Map<Hash, i32>> -> Shared<Map<Hash, usize>>
+SIG-REWRITE	SIG	rpc.vl	impl KeyedCell<type K: Hashable, type T: Keyed<K>>	locate	<ret>	Option<(i32, T)> -> Option<(usize, T)>
+SIG-REWRITE	SIG	rpc.vl	impl KeyedCell<type K: Hashable, type T: Keyed<K>>	reindex	from	i32 -> usize
+SIG-REWRITE	FIELD	rpc.vl	struct KeyedSource		count	Shared<i32> -> Shared<usize>
+SIG-REWRITE	FIELD	rpc.vl	struct KeyedSource		positions	Shared<Map<Hash, i32>> -> Shared<Map<Hash, usize>>
+SIG-REWRITE	SIG	rpc.vl	impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>>	index_of	<ret>	Option<i32> -> Option<usize>
+SIG-REWRITE	SIG	rpc.vl	impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>>	reindex	from	i32 -> usize
+SIG-REWRITE	SIG	set.vl	impl Set<type T: Hashable>	len	<ret>	i32 -> usize
+SIG-REWRITE	SIG	string.vl	impl str	len	<ret>	i32 -> usize
+SIG-REWRITE	SIG	string.vl	impl str	repeat	count	i32 -> usize
+SIG-REWRITE	SIG	string.vl	impl str	substring	start	i32 -> usize
+SIG-REWRITE	SIG	string.vl	impl str	substring	end	i32 -> usize
+SIG-REWRITE	SIG	string.vl	impl str	code_at	index	i32 -> usize
+SIG-REWRITE	FIELD	style.vl	struct Gradient		stop_count	i32 -> usize

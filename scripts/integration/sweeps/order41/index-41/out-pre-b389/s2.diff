@@ -1,0 +1,2781 @@
+diff --git a/base/vilan/macro_std/src/build.vl b/tree/vilan/macro_std/src/build.vl
+index c74caa0..c1943e0 100644
+--- a/base/vilan/macro_std/src/build.vl
++++ b/tree/vilan/macro_std/src/build.vl
+@@ -40,7 +40,7 @@ export fun join(parts: List<str>, separator: str): str {
+ // lines stay empty (no trailing whitespace). Containers use this to place
+ // child text at its depth.
+ export fun indent(text: str, tabs: i32): str {
+-	let prefix = "\t".repeat(tabs);
++	let prefix = "\t".repeat(tabs.as_usize());
+ 	mut indented = "";
+ 	mut first = true;
+ 	for line in text.split("\n") {
+diff --git a/base/vilan/macro_std/src/meta.vl b/tree/vilan/macro_std/src/meta.vl
+index 77cb303..09f291c 100644
+--- a/base/vilan/macro_std/src/meta.vl
++++ b/tree/vilan/macro_std/src/meta.vl
+@@ -341,17 +341,17 @@ export struct Arguments {
+ 
+ export impl Arguments {
+ 	fun len(self): i32 {
+-		self.values.len()
++		self.values.len().as_i32()
+ 	}
+ 
+ 	// The argument's raw source text.
+ 	fun get(self, index: i32): Option<str> {
+-		self.values.get(index)
++		self.values.get(index.as_usize())
+ 	}
+ 
+ 	// The argument as an integer literal.
+ 	fun as_i32(self, index: i32): Option<i32> {
+-		match self.values.get(index) {
++		match self.values.get(index.as_usize()) {
+ 			Some(let text) => text.parse_i32(),
+ 			None => None,
+ 		}
+@@ -360,7 +360,7 @@ export impl Arguments {
+ 	// The argument as a string literal's contents (the quotes stripped;
+ 	// escapes left as written).
+ 	fun as_str_literal(self, index: i32): Option<str> {
+-		match self.values.get(index) {
++		match self.values.get(index.as_usize()) {
+ 			Some(let text) => {
+ 				if text.len() >= 2 && text.starts_with("\"") && text.ends_with("\"") {
+ 					Some(text.substring(1, text.len() - 1))
+@@ -376,7 +376,7 @@ export impl Arguments {
+ 	// the common expression punctuation. (Syntactic v1 — `Expr` reflection
+ 	// replaces this.)
+ 	fun as_identifier(self, index: i32): Option<str> {
+-		match self.values.get(index) {
++		match self.values.get(index.as_usize()) {
+ 			Some(let text) => {
+ 				if text.len() == 0 {
+ 					ret None;
+diff --git a/base/vilan/std/src/arena.vl b/tree/vilan/std/src/arena.vl
+index 508de2c..e3bd16b 100644
+--- a/base/vilan/std/src/arena.vl
++++ b/tree/vilan/std/src/arena.vl
+@@ -22,7 +22,7 @@ export *;
+ /// `{ index, generation }`.
+ [derive(Wire)]
+ struct Handle<T> {
+-	index: i32,
++	index: usize,
+ 	generation: i32,
+ }
+ 
+@@ -41,7 +41,7 @@ struct Slot<T> {
+ /// arena, a random value for a `branded()` one (see `branded`).
+ struct Arena<T> {
+ 	slots: List<Slot<T>>,
+-	free: List<i32>,
++	free: List<usize>,
+ 	brand: i32,
+ }
+ 
+@@ -132,7 +132,7 @@ impl Arena<type T> {
+ 	}
+ 
+ 	/// The number of live values (occupied slots).
+-	fun len(self): i32 {
++	fun len(self): usize {
+ 		self.slots.len() - self.free.len()
+ 	}
+ 
+diff --git a/base/vilan/std/src/base64.vl b/tree/vilan/std/src/base64.vl
+index d49f51c..5d487e6 100644
+--- a/base/vilan/std/src/base64.vl
++++ b/tree/vilan/std/src/base64.vl
+@@ -9,15 +9,17 @@ import pkg::range::Range;
+ export let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+ 
+ fun char_at(value: i32): str {
+-	alphabet.substring(value, value + 1)
++	alphabet.substring(value.as_usize(), (value + 1).as_usize())
+ }
+ 
+ export fun encode_url(bytes: Bytes): str {
+ 	let total = bytes.len();
+ 	mut out = "";
+-	for group in Range::new(0, total / 3) {
++	for group in Range::new(0, (total / 3).as_i32()) {
+ 		let base = group * 3;
+-		let chunk = (bytes.get(base) << 16) | (bytes.get(base + 1) << 8) | bytes.get(base + 2);
++		let chunk = (bytes.get(base.as_usize()) << 16)
++			| (bytes.get((base + 1).as_usize()) << 8)
++			| bytes.get((base + 2).as_usize());
+ 		out = out
+ 			+ char_at((chunk >> 18) & 63)
+ 			+ char_at((chunk >> 12) & 63)
+@@ -69,18 +71,18 @@ export fun decode_url(text: str): Option<Bytes> {
+ 	}
+ 	let full = length / 4;
+ 	let tail_bytes = match rest {
+-		2 => 1,
+-		3 => 2,
+-		_ => 0,
++		2usize => 1usize,
++		3usize => 2usize,
++		_ => 0usize,
+ 	};
+ 	mut out = Bytes::alloc(full * 3 + tail_bytes);
+-	mut write = 0;
+-	for group in Range::new(0, full) {
++	mut write: usize = 0;
++	for group in Range::new(0, full.as_i32()) {
+ 		let base = group * 4;
+-		let a = digit(text.code_at(base));
+-		let b = digit(text.code_at(base + 1));
+-		let c = digit(text.code_at(base + 2));
+-		let d = digit(text.code_at(base + 3));
++		let a = digit(text.code_at(base.as_usize()));
++		let b = digit(text.code_at((base + 1).as_usize()));
++		let c = digit(text.code_at((base + 2).as_usize()));
++		let d = digit(text.code_at((base + 3).as_usize()));
+ 		if a < 0 || b < 0 || c < 0 || d < 0 {
+ 			ret None;
+ 		}
+diff --git a/base/vilan/std/src/binary.vl b/tree/vilan/std/src/binary.vl
+index ad2808f..ee5737b 100644
+--- a/base/vilan/std/src/binary.vl
++++ b/tree/vilan/std/src/binary.vl
+@@ -20,7 +20,7 @@ import pkg::wire::{ Codec, Deserialize, Deserializer, Frame, Serialize, Serializ
+ /// these two were `Shared` cells until the visitor's receivers moved.
+ export struct BinaryWriter {
+ 	buffer: Bytes,
+-	used: i32,
++	used: usize,
+ }
+ 
+ export impl BinaryWriter {
+@@ -29,7 +29,7 @@ export impl BinaryWriter {
+ 	}
+ 
+ 	/// Grow (doubling) until `extra` more bytes fit.
+-	fun ensure(&mut self, extra: i32) {
++	fun ensure(&mut self, extra: usize) {
+ 		let needed = self.used + extra;
+ 		mut capacity = self.buffer.len();
+ 		if needed > capacity {
+@@ -82,7 +82,7 @@ export impl BinaryWriter {
+ 	/// `u32` byte length + UTF-8 bytes.
+ 	fun write_str(&mut self, value: str) {
+ 		let encoded = encode_utf8(value);
+-		self.write_i32(encoded.len());
++		self.write_i32(encoded.len().as_i32());
+ 		self.ensure(encoded.len());
+ 		self.buffer.copy_into(encoded, self.used);
+ 		self.used = self.used + encoded.len();
+@@ -159,7 +159,7 @@ export impl BinaryWriter with Serialize {
+ /// headnote gives (A108).
+ struct BinaryReader {
+ 	bytes: Bytes,
+-	cursor: i32,
++	cursor: usize,
+ 	error: Option<str>,
+ }
+ 
+@@ -185,7 +185,7 @@ impl BinaryReader {
+ 	}
+ 
+ 	/// Whether `count` more bytes exist; fails sticky when they don't.
+-	fun expect(&mut self, count: i32): bool {
++	fun expect(&mut self, count: usize): bool {
+ 		if !self.ok() {
+ 			ret false;
+ 		}
+@@ -243,13 +243,13 @@ impl BinaryReader {
+ 
+ 	/// A length prefix that must fit the remaining frame (each prefixed item is at
+ 	/// least one byte, so a larger claim is hostile or truncated).
+-	fun read_length(&mut self): i32 {
++	fun read_length(&mut self): usize {
+ 		let length = self.read_i32();
+-		if length < 0 || self.cursor + length > self.bytes.len() {
++		if length < 0 || self.cursor + length.as_usize() > self.bytes.len() {
+ 			self.report("length prefix exceeds frame");
+ 			ret 0;
+ 		}
+-		length
++		length.as_usize()
+ 	}
+ 
+ 	fun read_str(&mut self): str {
+@@ -282,7 +282,7 @@ export impl BinaryReader with Deserialize {
+ 	fun end_struct(&mut self) {}
+ 
+ 	fun begin_list(&mut self): i32 {
+-		self.read_length()
++		self.read_length().as_i32()
+ 	}
+ 
+ 	fun end_list(&mut self) {}
+diff --git a/base/vilan/std/src/browser/storage.vl b/tree/vilan/std/src/browser/storage.vl
+index 5d5389c..334ace2 100644
+--- a/base/vilan/std/src/browser/storage.vl
++++ b/tree/vilan/std/src/browser/storage.vl
+@@ -82,7 +82,7 @@ export impl Window {
+ export impl Storage {
+ 	/// How many keys the store holds (`storage.length`).
+ 	[extern(get, "length")]
+-	external fun len(self): i32;
++	external fun len(self): usize;
+ 
+ 	/// The name of the key at `index` (`storage.key(index)`), or `None` when
+ 	/// `index` is out of range.
+@@ -94,7 +94,7 @@ export impl Storage {
+ 	/// The host's key ORDER is unspecified and may change between visits, so a pass
+ 	/// that both reads and removes must not assume it is stable — walk downward and
+ 	/// decide per key, or collect the names first.
+-	fun key_at(self, index: i32): Option<str> {
++	fun key_at(self, index: usize): Option<str> {
+ 		let key = self.raw_key_at(index);
+ 		if is_null(key) {
+ 			None
+@@ -136,7 +136,7 @@ export impl Storage {
+ 	fun keys(self): List<str> {
+ 		mut names: List<str> = [];
+ 		let count = self.len();
+-		mut index = 0;
++		mut index: usize = 0;
+ 		for index < count {
+ 			match self.key_at(index) {
+ 				Some(let key) => names.push(key),
+@@ -175,7 +175,7 @@ export impl Storage {
+ 	// has no `Option` return, and turning that null into an `Option` is the whole
+ 	// job of the wrappers. Call the wrappers.
+ 	[extern(method, "key")]
+-	external fun raw_key_at(self, index: i32): str;
++	external fun raw_key_at(self, index: usize): str;
+ 
+ 	[extern(method, "getItem")]
+ 	external fun raw_get(self, key: str): str;
+diff --git a/base/vilan/std/src/browser/ui.vl b/tree/vilan/std/src/browser/ui.vl
+index aecee94..0e9e20c 100644
+--- a/base/vilan/std/src/browser/ui.vl
++++ b/tree/vilan/std/src/browser/ui.vl
+@@ -794,7 +794,11 @@ export impl Region {
+ 		let rows = self.rows.read();
+ 		mut at = 0;
+ 		for row in rows {
+-			let end = if at + 1 < rows.len() { rows[at + 1].marker } else { self.anchor };
++			let end = if (at + 1).as_usize() < rows.len() {
++				rows[(at + 1).as_usize()].marker
++			} else {
++				self.anchor
++			};
+ 			let _cut = self.cut_row(row, end);
+ 			self.drop_row(row);
+ 			at += 1;
+@@ -1325,12 +1329,18 @@ fun place_swap<T: PartialEq, S: Source<T>, C: Slot>(
+ fun settled_steps(steps: List<RowStep>): List<bool> {
+ 	mut forward: List<bool> = [];
+ 	mut forward_count = 0;
+-	mut highest = -1;
++	// I5 S2: "nothing kept yet" is `None`, where it was the `-1` below every index.
++	mut highest: Option<usize> = None;
+ 	for step in steps {
+ 		match step {
+ 			RowStep::Keep(let index) => {
+-				if index > highest {
+-					highest = index;
++				let position = index.as_usize();
++				let rises = match highest {
++					Some(let top) => position > top,
++					None => true,
++				};
++				if rises {
++					highest = Some(position);
+ 					forward_count += 1;
+ 					forward.push(true);
+ 				} else {
+@@ -1349,12 +1359,13 @@ fun settled_steps(steps: List<RowStep>): List<bool> {
+ 	mut backward: List<bool> = [];
+ 	mut backward_count = 0;
+ 	mut lowest = steps.len();
+-	mut at = steps.len() - 1;
+-	for at >= 0 {
++	mut at = steps.len();
++	for at > 0 {
++		at -= 1;
+ 		match steps[at] {
+ 			RowStep::Keep(let index) => {
+-				if index < lowest {
+-					lowest = index;
++				if index.as_usize() < lowest {
++					lowest = index.as_usize();
+ 					backward_count += 1;
+ 					backward.push(true);
+ 				} else {
+@@ -1365,7 +1376,6 @@ fun settled_steps(steps: List<RowStep>): List<bool> {
+ 				backward.push(false);
+ 			},
+ 		}
+-		at -= 1;
+ 	}
+ 	if forward_count >= backward_count {
+ 		forward
+@@ -1389,18 +1399,18 @@ fun row_references(
+ ): List<Text> {
+ 	mut references: List<Text> = [];
+ 	mut reference = anchor;
+-	mut at = steps.len() - 1;
+-	for at >= 0 {
++	mut at = steps.len();
++	for at > 0 {
++		at -= 1;
+ 		references.push(reference);
+ 		if settled[at] {
+ 			match steps[at] {
+ 				RowStep::Keep(let index) => {
+-					reference = rows[index].marker;
++					reference = rows[index.as_usize()].marker;
+ 				},
+ 				_ => {},
+ 			}
+ 		}
+-		at -= 1;
+ 	}
+ 	references.reverse()
+ }
+@@ -1452,12 +1462,12 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+ 		let settled = settled_steps(plan.steps);
+ 		let references = row_references(plan.steps, previous_rows, settled, region.anchor);
+ 		mut staying: List<bool> = [];
+-		mut fill = 0;
++		mut fill: usize = 0;
+ 		for fill < previous_rows.len() {
+ 			staying.push(false);
+ 			fill += 1;
+ 		}
+-		mut settled_at = 0;
++		mut settled_at: usize = 0;
+ 		for step in plan.steps {
+ 			if settled[settled_at] {
+ 				match step {
+@@ -1476,7 +1486,7 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+ 		// — it keeps its marker, its nodes and its place — and a `None` in `cut` is
+ 		// exactly "this row did not move".
+ 		mut cut: List<Option<Element>> = [];
+-		mut at = 0;
++		mut at: usize = 0;
+ 		for row in previous_rows {
+ 			if staying[at] {
+ 				cut.push(None);
+@@ -1496,7 +1506,7 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+ 		}
+ 		mut next_rows: List<Row> = [];
+ 		mut next_owners: List<Owner> = [];
+-		mut position = 0;
++		mut position: usize = 0;
+ 		// Then put the moved rows back in the NEW order, each before the next
+ 		// settled row's marker: a kept row is its marker and its cut nodes moved as
+ 		// a unit, a fresh one is placed from scratch at that same point. A settled
+@@ -1561,26 +1571,26 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+ 			// A row's extent runs from its own marker to the next boundary, and the
+ 			// rows after it have not moved, so the boundary is meaningful one row
+ 			// at a time.
+-			let end = if at + 1 < row_rows.read().len() {
+-				row_rows.read()[at + 1].marker
++			let end = if (at + 1).as_usize() < row_rows.read().len() {
++				row_rows.read()[(at + 1).as_usize()].marker
+ 			} else {
+ 				region.anchor
+ 			};
+-			let going = row_rows.read()[at];
++			let going = row_rows.read()[at.as_usize()];
+ 			let _cut = region.cut_row(going, end);
+-			row_owners.read()[at].dispose();
++			row_owners.read()[at.as_usize()].dispose();
+ 			region.drop_row(going);
+-			let _row = row_rows.write().remove(at);
+-			let _owner = row_owners.write().remove(at);
+-			let _key = row_keys.write().remove(at);
+-			let _item = row_items.write().remove(at);
++			let _row = row_rows.write().remove(at.as_usize());
++			let _owner = row_owners.write().remove(at.as_usize());
++			let _key = row_keys.write().remove(at.as_usize());
++			let _item = row_items.write().remove(at.as_usize());
+ 			taken += 1;
+ 		}
+ 		// Everything arriving goes before the marker of the row that will follow it
+ 		// — the anchor when there is none — and each `open_row_before` lands just
+ 		// inside that boundary, so placing them in order places them in order.
+-		let reference = if at < row_rows.read().len() {
+-			row_rows.read()[at].marker
++		let reference = if at.as_usize() < row_rows.read().len() {
++			row_rows.read()[at.as_usize()].marker
+ 		} else {
+ 			region.anchor
+ 		};
+@@ -1588,10 +1598,10 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+ 		for item in inserted {
+ 			let owner = Owner::new();
+ 			let row = run_with_owner(owner, || region.open_row_before(render(item), reference));
+-			row_rows.write().insert(at + offset, row);
+-			row_owners.write().insert(at + offset, owner);
+-			row_keys.write().insert(at + offset, key(item));
+-			row_items.write().insert(at + offset, item);
++			row_rows.write().insert((at + offset).as_usize(), row);
++			row_owners.write().insert((at + offset).as_usize(), owner);
++			row_keys.write().insert((at + offset).as_usize(), key(item));
++			row_items.write().insert((at + offset).as_usize(), item);
+ 			offset += 1;
+ 		}
+ 	};
+@@ -1609,7 +1619,7 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+ 				for op in source.delta_since(cursor) {
+ 					match op {
+ 						SeqOp::Splice(let at, let removed, let inserted) => {
+-							splice_rows(at, removed.len(), inserted); // I5
++							splice_rows(at, removed.len().as_i32(), inserted); // I5
+ 						},
+ 						// An element changed IN PLACE. The pass's rule, one row at
+ 						// a time: the same key holding an equal item is a `Keep`
+@@ -1617,11 +1627,11 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+ 						SeqOp::SetAt(let at, let _was, let value) => {
+ 							// `.get(at)` copies the one element where binding the
+ 							// read would copy the run.
+-							let same_key = match row_keys.read().get(at) {
++							let same_key = match row_keys.read().get(at.as_usize()) {
+ 								Some(let held) => key(value) == held,
+ 								None => false,
+ 							};
+-							let same_item = match row_items.read().get(at) {
++							let same_item = match row_items.read().get(at.as_usize()) {
+ 								Some(let held) => value == held,
+ 								None => false,
+ 							};
+@@ -1643,12 +1653,12 @@ fun place_each<T: PartialEq, K: PartialEq + Hashable, S: Source<List<T>> + Delta
+ 							mut lifted: List<T> = [];
+ 							mut taken = 0; // I5
+ 							for taken < count {
+-								lifted.push(moved.remove(from));
++								lifted.push(moved.remove(from.as_usize()));
+ 								taken += 1;
+ 							}
+ 							mut offset = 0; // I5
+ 							for item in lifted {
+-								moved.insert(to + offset, item);
++								moved.insert((to + offset).as_usize(), item);
+ 								offset += 1;
+ 							}
+ 							reconcile_pass(moved);
+@@ -1698,12 +1708,12 @@ fun place_each_by<T, K: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
+ 		let settled = settled_steps(plan.steps);
+ 		let references = row_references(plan.steps, previous_rows, settled, region.anchor);
+ 		mut staying: List<bool> = [];
+-		mut fill = 0;
++		mut fill: usize = 0;
+ 		for fill < previous_rows.len() {
+ 			staying.push(false);
+ 			fill += 1;
+ 		}
+-		mut settled_at = 0;
++		mut settled_at: usize = 0;
+ 		for step in plan.steps {
+ 			if settled[settled_at] {
+ 				match step {
+@@ -1718,7 +1728,7 @@ fun place_each_by<T, K: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
+ 		// Cut what moves first, in old document order — `place_each`'s two halves,
+ 		// for `place_each`'s reason (A91).
+ 		mut cut: List<Option<Element>> = [];
+-		mut at = 0;
++		mut at: usize = 0;
+ 		for row in previous_rows {
+ 			if staying[at] {
+ 				cut.push(None);
+@@ -1739,7 +1749,7 @@ fun place_each_by<T, K: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
+ 		mut next_cells: List<SignalCell<T>> = [];
+ 		mut next_rows: List<Row> = [];
+ 		mut next_owners: List<Owner> = [];
+-		mut position = 0;
++		mut position: usize = 0;
+ 		for step in plan.steps {
+ 			let item = list[position];
+ 			let reference = references[position];
+@@ -2270,7 +2280,7 @@ export fun focus_scope(root: Element, containment: FocusContainment): FocusScope
+ 				Some(let target) => target.focus(),
+ 				None => {},
+ 			}
+-		} else if !event.shift_key() && index == last {
++		} else if !event.shift_key() && index.as_usize() == last {
+ 			event.prevent_default();
+ 			match order.get(0) {
+ 				Some(let target) => target.focus(),
+diff --git a/base/vilan/std/src/bytes.vl b/tree/vilan/std/src/bytes.vl
+index c7766b5..f76bbac 100644
+--- a/base/vilan/std/src/bytes.vl
++++ b/tree/vilan/std/src/bytes.vl
+@@ -12,30 +12,30 @@ export external struct Bytes;
+ export impl Bytes {
+ 	/// A zero-filled buffer of `size` bytes.
+ 	[extern(new, "Uint8Array")]
+-	external fun alloc(size: i32): Bytes;
++	external fun alloc(size: usize): Bytes;
+ 
+ 	/// The byte count.
+ 	[extern(get, "length")]
+-	external fun len(self): i32;
++	external fun len(self): usize;
+ 
+ 	/// The byte at `index` (0–255).
+ 	[extern(method, "at")]
+-	external fun get(self, index: i32): i32;
++	external fun get(self, index: usize): i32;
+ 
+ 	/// The same byte `u32`-typed — for unsigned reassembly (`b0 | b1 << 8 …`),
+ 	/// where the operand type selects the unsigned shift/wrap emission.
+ 	[extern(method, "at")]
+-	external fun get_u32(self, index: i32): u32;
++	external fun get_u32(self, index: usize): u32;
+ 
+ 	/// Lowercase hex rendering of the whole buffer.
+ 	fun to_hex(self): str {
+ 		let digits = "0123456789abcdef";
+ 		mut out = "";
+-		for index in Range::new(0, self.len()) {
+-			let byte = self.get(index);
++		for index in Range::new(0, self.len().as_i32()) {
++			let byte = self.get(index.as_usize());
+ 			out = out
+-				+ digits.substring(byte / 16, byte / 16 + 1)
+-				+ digits.substring(byte % 16, byte % 16 + 1);
++				+ digits.substring((byte / 16).as_usize(), (byte / 16 + 1).as_usize())
++				+ digits.substring((byte % 16).as_usize(), (byte % 16 + 1).as_usize());
+ 		}
+ 		out
+ 	}
+@@ -43,28 +43,28 @@ export impl Bytes {
+ 	/// Overwrite `from..to` (exclusive) with `value` — host semantics: the stored
+ 	/// byte is `value & 0xFF`.
+ 	[extern(method, "fill")]
+-	external fun fill(self, value: i32, from: i32, to: i32): Bytes;
++	external fun fill(self, value: i32, from: usize, to: usize): Bytes;
+ 
+ 	/// Copy all of `source` into this buffer starting at `offset` (the host
+ 	/// `TypedArray.set` — errors if it would overflow).
+ 	[extern(method, "set")]
+-	external fun copy_into(self, source: Bytes, offset: i32);
++	external fun copy_into(self, source: Bytes, offset: usize);
+ 
+ 	/// A copy of `from..to` (`to` exclusive).
+ 	[extern(method, "slice")]
+-	external fun slice(self, from: i32, to: i32): Bytes;
++	external fun slice(self, from: usize, to: usize): Bytes;
+ 
+ 	/// Store one byte (`value & 0xFF`) at `index`.
+-	fun set(self, index: i32, value: i32) {
++	fun set(self, index: usize, value: i32) {
+ 		let _ = self.fill(value, index, index + 1);
+ 	}
+ 
+ 	/// The same store `u32`-typed (the host coerces `& 0xFF` either way) — for byte
+ 	/// extraction done in `u32` arithmetic, mirroring `get_u32`.
+ 	[extern(method, "fill")]
+-	external fun fill_u32(self, value: u32, from: i32, to: i32): Bytes;
++	external fun fill_u32(self, value: u32, from: usize, to: usize): Bytes;
+ 
+-	fun set_u32(self, index: i32, value: u32) {
++	fun set_u32(self, index: usize, value: u32) {
+ 		let _ = self.fill_u32(value, index, index + 1);
+ 	}
+ 
+@@ -104,10 +104,10 @@ export impl DataView {
+ 	/// Read/write an IEEE-754 double at `offset`; `little_endian` selects the byte
+ 	/// order.
+ 	[extern(method, "getFloat64")]
+-	external fun read_f64(self, offset: i32, little_endian: bool): f64;
++	external fun read_f64(self, offset: usize, little_endian: bool): f64;
+ 
+ 	[extern(method, "setFloat64")]
+-	external fun write_f64(self, offset: i32, value: f64, little_endian: bool);
++	external fun write_f64(self, offset: usize, value: f64, little_endian: bool);
+ }
+ 
+ // --- UTF-8 ----------------------------------------------------------------
+diff --git a/base/vilan/std/src/compare.vl b/tree/vilan/std/src/compare.vl
+index 9a7ee63..4464bac 100644
+--- a/base/vilan/std/src/compare.vl
++++ b/tree/vilan/std/src/compare.vl
+@@ -109,8 +109,8 @@ impl List<type T: PartialEq> {
+ 	}
+ 
+ 	/// The index of the FIRST element equal to `value` — `None` when there is none.
+-	fun index_of(self, value: T): Option<i32> {
+-		mut index = 0;
++	fun index_of(self, value: T): Option<usize> {
++		mut index: usize = 0;
+ 		for item in self {
+ 			if item.eq(value) {
+ 				ret Some(index);
+@@ -141,7 +141,7 @@ impl List<type T: PartialEq> with PartialEq {
+ 		if self.len() != b.len() {
+ 			ret false;
+ 		}
+-		mut index = 0;
++		mut index: usize = 0;
+ 		for item in self {
+ 			if !(item == b[index]) {
+ 				ret false;
+@@ -253,7 +253,7 @@ macro fun PartialEq(item: Item): Source {
+ 				mut self_binds: List<str> = [];
+ 				mut other_binds: List<str> = [];
+ 				mut comparisons: List<str> = [];
+-				mut index = 0;
++				mut index: usize = 0;
+ 				for index < arity {
+ 					self_binds.push(i"let s{index}");
+ 					other_binds.push(i"let o{index}");
+diff --git a/base/vilan/std/src/crypto.vl b/tree/vilan/std/src/crypto.vl
+index 2aec8c2..fbb6998 100644
+--- a/base/vilan/std/src/crypto.vl
++++ b/tree/vilan/std/src/crypto.vl
+@@ -39,7 +39,7 @@ async external fun sha512(data: Bytes): Bytes;
+ 
+ /// `length` cryptographically random bytes.
+ [extern("__random_bytes")]
+-external fun random_bytes(length: i32): Bytes;
++external fun random_bytes(length: usize): Bytes;
+ 
+ /// A random UUID string (host `crypto.randomUUID`).
+ [extern("crypto.randomUUID")]
+@@ -52,8 +52,8 @@ fun equals_constant_time(a: Bytes, b: Bytes): bool {
+ 		ret false;
+ 	}
+ 	mut acc = 0;
+-	for index in Range::new(0, a.len()) {
+-		acc = acc | (a.get(index) ^ b.get(index));
++	for index in Range::new(0, a.len().as_i32()) {
++		acc = acc | (a.get(index.as_usize()) ^ b.get(index.as_usize()));
+ 	}
+ 	acc == 0
+ }
+diff --git a/base/vilan/std/src/debug.vl b/tree/vilan/std/src/debug.vl
+index 4be6dd4..dab588e 100644
+--- a/base/vilan/std/src/debug.vl
++++ b/tree/vilan/std/src/debug.vl
+@@ -79,7 +79,7 @@ macro fun Debug(item: Item): Source {
+ 			} else {
+ 				mut binds: List<str> = [];
+ 				mut parts: List<str> = [];
+-				mut index = 0;
++				mut index: usize = 0;
+ 				for index < arity {
+ 					binds.push(i"let p{index}");
+ 					parts.push(i"p{index}.debug()");
+diff --git a/base/vilan/std/src/delta.vl b/tree/vilan/std/src/delta.vl
+index cda3748..9918c56 100644
+--- a/base/vilan/std/src/delta.vl
++++ b/tree/vilan/std/src/delta.vl
+@@ -155,7 +155,7 @@ export struct DeltaLog<O> {
+ 	cursors: Shared<List<DeltaCursor>>,
+ 	/// This log's ceiling, `delta_log_limit` unless a cell asked for another. A
+ 	/// plain field rather than a cell: it is written once, at construction.
+-	limit: i32,
++	limit: usize,
+ }
+ 
+ export impl DeltaLog<type O> {
+@@ -166,13 +166,13 @@ export impl DeltaLog<type O> {
+ 			version = Shared::new(0),
+ 			base = Shared::new(0),
+ 			cursors = Shared::new([]),
+-			limit = delta_log_limit,
++			limit = delta_log_limit.as_usize(),
+ 		}
+ 	}
+ 
+ 	/// An empty log at a ceiling of its caller's choosing — what a test that wants
+ 	/// to reach the lag path without writing a thousand ops asks for.
+-	fun with_limit(limit: i32): DeltaLog<O> {
++	fun with_limit(limit: usize): DeltaLog<O> {
+ 		DeltaLog {
+ 			ops = Shared::new([]),
+ 			version = Shared::new(0),
+@@ -227,8 +227,8 @@ export impl DeltaLog<type O> {
+ 			mut index = dropped;
+ 			let held = self.ops.read();
+ 			let length = held.len();
+-			for index < length {
+-				match held.get(index) {
++			for index.as_usize() < length {
++				match held.get(index.as_usize()) {
+ 					Some(let op) => kept.push(op),
+ 					None => {},
+ 				}
+@@ -281,8 +281,8 @@ export impl DeltaLog<type O> {
+ 		mut index = at - base;
+ 		let held = self.ops.read();
+ 		let length = held.len();
+-		for index < length {
+-			match held.get(index) {
++		for index.as_usize() < length {
++			match held.get(index.as_usize()) {
+ 				Some(let op) => ops.push(op),
+ 				None => {},
+ 			}
+@@ -292,7 +292,7 @@ export impl DeltaLog<type O> {
+ 	}
+ 
+ 	/// How many ops the log is holding — what a pin on the trim reads.
+-	fun held(self): i32 {
++	fun held(self): usize {
+ 		self.ops.read().len()
+ 	}
+ 
+@@ -654,14 +654,14 @@ fun splice_in_place<T>(list: &mut List<T>, start: i32, taking: i32, inserted: Li
+ 	mut left: List<T> = [];
+ 	mut taken = 0; // I5
+ 	for taken < taking {
+-		left.push(list.remove(start));
++		left.push(list.remove(start.as_usize()));
+ 		taken += 1;
+ 	}
+-	mut offset = 0; // I5
++	mut offset: usize = 0; // I5
+ 	let arriving = inserted.len(); // I5
+ 	for offset < arriving {
+ 		match inserted.get(offset) {
+-			Some(let value) => list.insert(start + offset, value),
++			Some(let value) => list.insert((start.as_usize() + offset).as_usize(), value),
+ 			None => {},
+ 		}
+ 		offset += 1;
+@@ -692,14 +692,14 @@ export impl Tracked<type T> {
+ export impl Tracked<type T> with Sequence<T> {
+ 	fun size(self): i32 {
+ 		// I5
+-		self.elements.len()
++		self.elements.len().as_i32()
+ 	}
+ 
+ 	// I5: a POSITION parameter
+ 	fun splice(&mut self, at: i32, removed: i32, inserted: List<T>) {
+ 		let held = self.elements.len(); // I5
+-		let start = splice_start(held, at); // I5
+-		let taking = splice_count(held, start, removed); // I5
++		let start = splice_start(held.as_i32(), at); // I5
++		let taking = splice_count(held.as_i32(), start, removed); // I5
+ 		if taking == 0 && inserted.len() == 0 {
+ 			ret;
+ 		}
+@@ -743,7 +743,7 @@ export impl ListCell<type T> {
+ 		// I5
+ 		ListCell {
+ 			elements = SignalCell::new(elements),
+-			log = DeltaLog<SeqOp<T>>::with_limit(limit),
++			log = DeltaLog<SeqOp<T>>::with_limit(limit.as_usize()),
+ 		}
+ 	}
+ 
+@@ -755,10 +755,10 @@ export impl ListCell<type T> {
+ 	/// other bounds question in this module.
+ 	// I5: a POSITION parameter
+ 	fun set_at(self, at: i32, value: T) {
+-		match self.elements.get().get(at) {
++		match self.elements.get().get(at.as_usize()) {
+ 			Some(let previous) => {
+ 				self.elements.update(|&mut list| {
+-					list[at] = value;
++					list[at.as_usize()] = value;
+ 					self.log.record(SeqOp::SetAt(at, previous, value));
+ 				});
+ 			},
+@@ -780,13 +780,13 @@ export impl ListCell<type T> {
+ 			mut lifted: List<T> = [];
+ 			mut taken = 0; // I5
+ 			for taken < count {
+-				lifted.push(list.remove(from));
++				lifted.push(list.remove(from.as_usize()));
+ 				taken += 1;
+ 			}
+-			mut offset = 0; // I5
++			mut offset: usize = 0; // I5
+ 			for offset < lifted.len() {
+ 				match lifted.get(offset) {
+-					Some(let value) => list.insert(to + offset, value),
++					Some(let value) => list.insert((to.as_usize() + offset).as_usize(), value),
+ 					None => {},
+ 				}
+ 				offset += 1;
+@@ -817,7 +817,7 @@ export impl ListCell<type T> {
+ 	/// How many ops the log is holding — what a pin on the trim reads.
+ 	fun logged(self): i32 {
+ 		// I5
+-		self.log.held()
++		self.log.held().as_i32()
+ 	}
+ }
+ 
+@@ -839,14 +839,14 @@ export impl ListCell<type T: PartialEq> {
+ 		let held = self.elements.get();
+ 		let old_length = held.len(); // I5
+ 		let new_length = items.len(); // I5
+-		mut prefix = 0; // I5
++		mut prefix: usize = 0; // I5
+ 		for prefix < old_length && prefix < new_length {
+ 			if held[prefix] != items[prefix] {
+ 				jump break;
+ 			}
+ 			prefix += 1;
+ 		}
+-		mut suffix = 0; // I5
++		mut suffix: usize = 0; // I5
+ 		for prefix + suffix < old_length && prefix + suffix < new_length {
+ 			if held[old_length - 1 - suffix] != items[new_length - 1 - suffix] {
+ 				jump break;
+@@ -868,7 +868,7 @@ export impl ListCell<type T: PartialEq> {
+ 		if removed == 0 && arriving.len() == 0 {
+ 			ret;
+ 		}
+-		self.splice(prefix, removed, arriving);
++		self.splice(prefix.as_i32(), removed.as_i32(), arriving);
+ 	}
+ }
+ 
+@@ -905,7 +905,7 @@ export impl ListCell<type T> with Signal<List<T>> {
+ export impl ListCell<type T> with SequenceCell<T> {
+ 	fun size(self): i32 {
+ 		// I5
+-		self.elements.get().len()
++		self.elements.get().len().as_i32()
+ 	}
+ 
+ 	/// The op is recorded INSIDE `update`, before `update`'s single notify, so
+@@ -988,7 +988,7 @@ export fun map_each<T, U, S: DeltaSource<List<T>, SeqOp<T>>>(
+ 				// The derivative of `map g`: what arrived, mapped. Nothing else is
+ 				// read, and `g` runs exactly `inserted.len()` times.
+ 				SeqOp::Splice(let at, let removed, let inserted) => {
+-					out.splice(at, removed.len(), inserted.map(g)); // I5
++					out.splice(at, removed.len().as_i32(), inserted.map(g)); // I5
+ 				},
+ 				SeqOp::SetAt(let at, let _was, let value) => out.set_at(at, g(value)),
+ 				// The honest N: the collection became something else, so the
+diff --git a/base/vilan/std/src/iterator.vl b/tree/vilan/std/src/iterator.vl
+index 447ff76..fd7b2c6 100644
+--- a/base/vilan/std/src/iterator.vl
++++ b/tree/vilan/std/src/iterator.vl
+@@ -32,13 +32,13 @@ trait Iterator<T> {
+ 	/// The first `count` values, then exhausted. `take` is what makes an unbounded
+ 	/// source usable: it never pulls past its budget, so `source.take(3).to_list()`
+ 	/// terminates over an infinite `from_fn`.
+-	fun take(self, count: i32): Taken<Self, T> {
++	fun take(self, count: usize): Taken<Self, T> {
+ 		Taken { upstream = self, remaining = count }
+ 	}
+ 
+ 	/// Everything after the first `count` values. A source shorter than `count`
+ 	/// leaves an exhausted iterator, not an error.
+-	fun skip(self, count: i32): Skipped<Self, T> {
++	fun skip(self, count: usize): Skipped<Self, T> {
+ 		Skipped { upstream = self, pending = count }
+ 	}
+ 
+@@ -95,8 +95,8 @@ trait Iterator<T> {
+ 
+ 	/// How many values the iterator yields. Pulls all of them, so it does not
+ 	/// return over an unbounded source — bound it with `take` first.
+-	fun count(mut self): i32 {
+-		mut seen = 0;
++	fun count(mut self): usize {
++		mut seen: usize = 0;
+ 		for _value in self {
+ 			seen = seen + 1;
+ 		}
+@@ -159,7 +159,7 @@ impl Iterator<type T> {
+ /// list; the eager `List` methods that only need one pass still take one.
+ struct ListIterator<T> {
+ 	items: List<T>,
+-	index: i32,
++	index: usize,
+ }
+ 
+ impl ListIterator<type T> with Iterator<T> {
+@@ -255,7 +255,7 @@ impl FilterMapped<type I: Iterator<T>, type T, type U> with Iterator<U> {
+ 
+ struct Taken<I, T> {
+ 	upstream: I,
+-	remaining: i32,
++	remaining: usize,
+ }
+ 
+ impl Taken<type I: Iterator<T>, type T> with Iterator<T> {
+@@ -270,7 +270,7 @@ impl Taken<type I: Iterator<T>, type T> with Iterator<T> {
+ 
+ struct Skipped<I, T> {
+ 	upstream: I,
+-	pending: i32,
++	pending: usize,
+ }
+ 
+ impl Skipped<type I: Iterator<T>, type T> with Iterator<T> {
+@@ -290,11 +290,11 @@ impl Skipped<type I: Iterator<T>, type T> with Iterator<T> {
+ 
+ struct Enumerated<I, T> {
+ 	upstream: I,
+-	index: i32,
++	index: usize,
+ }
+ 
+-impl Enumerated<type I: Iterator<T>, type T> with Iterator<(i32, T)> {
+-	fun next(&mut self): Option<(i32, T)> {
++impl Enumerated<type I: Iterator<T>, type T> with Iterator<(usize, T)> {
++	fun next(&mut self): Option<(usize, T)> {
+ 		if self.upstream.next() is Some(let value) {
+ 			let index = self.index;
+ 			self.index = index + 1;
+diff --git a/base/vilan/std/src/json.vl b/tree/vilan/std/src/json.vl
+index ccdfcab..e03dfa0 100644
+--- a/base/vilan/std/src/json.vl
++++ b/tree/vilan/std/src/json.vl
+@@ -486,7 +486,7 @@ struct JsonReader {
+ 	/// papers-39). `begin_list` records one; `end_list` checks it, so a document
+ 	/// whose list is LONGER than what the caller read is a decode failure rather
+ 	/// than an element left lying on the stack for whatever reads next to take.
+-	list_marks: List<i32>,
++	list_marks: List<usize>,
+ }
+ 
+ impl JsonReader {
+@@ -663,12 +663,13 @@ export impl JsonReader with Deserialize {
+ 			// Where the stack stands once every element has been read: what
+ 			// `end_list` holds the caller to.
+ 			self.list_marks.push(self.stack.len());
+-			mut index = elements.len() - 1;
+-			for index >= 0 {
+-				self.stack.push(elements[index]);
++			mut index = elements.len();
++			for index > 0 {
+ 				index -= 1;
++				self.stack.push(elements[index]);
+ 			}
+-			elements.len()
++			// WIRE: `begin_list` answers the codec's `i32` length (§2.2).
++			elements.len().as_i32()
+ 		} else {
+ 			0
+ 		}
+@@ -712,10 +713,10 @@ export impl JsonReader with Deserialize {
+ 					self.stack.push(payload);
+ 				} else {
+ 					let elements = payload.elements();
+-					mut index = elements.len() - 1;
+-					for index >= 0 {
+-						self.stack.push(elements[index]);
++					mut index = elements.len();
++					for index > 0 {
+ 						index -= 1;
++						self.stack.push(elements[index]);
+ 					}
+ 				}
+ 			} else {
+@@ -1066,7 +1067,7 @@ export macro fun enum_json_impls(target: EnumItem): str {
+ 		} else {
+ 			mut binds: List<str> = [];
+ 			mut parts: List<str> = [];
+-			mut index = 0;
++			mut index: usize = 0;
+ 			for index < arity {
+ 				binds.push(i"let p{index}");
+ 				parts.push(i"p{index}.to_json()");
+@@ -1190,7 +1191,7 @@ export macro fun enum_wire_impls(target: EnumItem): str {
+ 		mut statements: List<str> = [];
+ 		statements.push(i"serializer.begin_variant({tag}, {arity});");
+ 		mut binds: List<str> = [];
+-		mut index = 0;
++		mut index: usize = 0;
+ 		for index < arity {
+ 			binds.push(i"let p{index}");
+ 			statements.push(i"p{index}.describe(serializer);");
+diff --git a/base/vilan/std/src/list.vl b/tree/vilan/std/src/list.vl
+index 4f777af..24d0d65 100644
+--- a/base/vilan/std/src/list.vl
++++ b/tree/vilan/std/src/list.vl
+@@ -22,7 +22,7 @@ impl List<type T> {
+ 	/// compiler lowers it over the native `.pop`).
+ 	external fun pop(&mut self): Option<T>;
+ 
+-	external fun len(self): i32;
++	external fun len(self): usize;
+ 
+ 	fun is_empty(self): bool {
+ 		self.len() == 0
+@@ -77,10 +77,10 @@ impl List<type T> {
+ 	/// which is a different method and belongs to the iterator paper.)
+ 	fun reverse(self): List<T> {
+ 		mut result = List::new();
+-		mut index = self.len() - 1;
+-		for index >= 0 {
+-			result.push(self[index]);
++		mut index = self.len();
++		for index > 0 {
+ 			index -= 1;
++			result.push(self[index]);
+ 		}
+ 		result
+ 	}
+@@ -96,7 +96,7 @@ impl List<type T> {
+ 	/// emitted helper keeps the panic, because `splice` CLAMPS an index past the
+ 	/// end — it would silently accept exactly the index this doc says a caller must
+ 	/// be punished for.
+-	external fun insert(&mut self, index: i32, own value: T): void;
++	external fun insert(&mut self, index: usize, own value: T): void;
+ 
+ 	/// Removes and returns the element at `index`, shifting the tail left. PANICS
+ 	/// out of bounds — see `insert`. (`pop` returns an `Option` because "the list
+@@ -106,7 +106,7 @@ impl List<type T> {
+ 	/// helper keeps the panic: `splice` reads a NEGATIVE index from the END,
+ 	/// so a bare `splice(index, 1)[0]` would answer `xs.remove(-1)` with the
+ 	/// last element instead of refusing.
+-	external fun remove(&mut self, index: i32): T;
++	external fun remove(&mut self, index: usize): T;
+ }
+ 
+ // `sum`/`product` seed with the first element and fall back to `T::default()` only
+diff --git a/base/vilan/std/src/map.vl b/tree/vilan/std/src/map.vl
+index 963ee19..af14bec 100644
+--- a/base/vilan/std/src/map.vl
++++ b/tree/vilan/std/src/map.vl
+@@ -43,7 +43,7 @@ impl Map<type K: Hashable, type V> {
+ 		self.table.remove(key.hash());
+ 	}
+ 
+-	fun len(self): i32 {
++	fun len(self): usize {
+ 		self.table.len()
+ 	}
+ 
+diff --git a/base/vilan/std/src/markdown.vl b/tree/vilan/std/src/markdown.vl
+index ab7a9c9..a516dbc 100644
+--- a/base/vilan/std/src/markdown.vl
++++ b/tree/vilan/std/src/markdown.vl
+@@ -92,7 +92,7 @@ use Inline::{ Code, Emph, Html, Link, Strong, Text };
+ // --- small helpers -----------------------------------------------------------
+ 
+ /// The index of `needle` in `text` at or after `from`, or `None`.
+-fun index_of(text: str, needle: str, from: i32): Option<i32> {
++fun index_of(text: str, needle: str, from: usize): Option<usize> {
+ 	let limit = text.len() - needle.len();
+ 	mut index = from;
+ 	for index <= limit {
+@@ -106,9 +106,9 @@ fun index_of(text: str, needle: str, from: i32): Option<i32> {
+ 
+ /// The count of leading ASCII spaces — the fence-indent measure the docs gate uses.
+ /// Tabs deliberately do not count (the book indents with spaces).
+-fun leading_spaces(line: str): i32 {
++fun leading_spaces(line: str): usize {
+ 	let n = line.len();
+-	mut count = 0;
++	mut count: usize = 0;
+ 	for count < n && line.code_at(count) == 32 {
+ 		count += 1;
+ 	}
+@@ -117,7 +117,7 @@ fun leading_spaces(line: str): i32 {
+ 
+ /// Strip up to `columns` leading spaces — CommonMark's fenced-code dedent: a line
+ /// indented less loses only what it has.
+-fun dedent(line: str, columns: i32): str {
++fun dedent(line: str, columns: usize): str {
+ 	mut have = leading_spaces(line);
+ 	if have > columns {
+ 		have = columns;
+@@ -153,10 +153,10 @@ fun split_lines(source: str): List<str> {
+ 
+ /// Whether `trimmed` is a run of the single character `code` — optionally
+ /// space-separated (the thematic-break spelling) — at least `minimum` long.
+-fun same_char_line(trimmed: str, code: u32, minimum: i32, allow_spaces: bool): bool {
++fun same_char_line(trimmed: str, code: u32, minimum: usize, allow_spaces: bool): bool {
+ 	let n = trimmed.len();
+-	mut count = 0;
+-	mut i = 0;
++	mut count: usize = 0;
++	mut i: usize = 0;
+ 	for i < n {
+ 		let c = trimmed.code_at(i);
+ 		if c == code {
+@@ -185,17 +185,17 @@ fun is_rule_like(trimmed: str): bool {
+ /// a tab, or the end of the line; anything else is 0 (not a heading).
+ fun heading_level(trimmed: str): i32 {
+ 	let n = trimmed.len();
+-	mut level = 0;
++	mut level: usize = 0;
+ 	for level < n && level < 7 && trimmed.code_at(level) == 35 {
+ 		level += 1;
+ 	}
+ 	if level >= 1 && level <= 6 {
+ 		if level == n {
+-			ret level;
++			ret level.as_i32();
+ 		}
+ 		let next = trimmed.code_at(level);
+ 		if next == 32 || next == 9 {
+-			ret level;
++			ret level.as_i32();
+ 		}
+ 	}
+ 	0
+@@ -205,7 +205,7 @@ fun heading_level(trimmed: str): i32 {
+ /// run (preceded by a space/tab, or alone) dropped — mdBook's (CommonMark's) rule,
+ /// so `## Title ##` slugs as `Title`.
+ fun heading_content(trimmed: str, level: i32): str {
+-	let text = trimmed.substring(level, trimmed.len()).trim();
++	let text = trimmed.substring(level.as_usize(), trimmed.len()).trim();
+ 	mut end = text.len();
+ 	for end > 0 && text.code_at(end - 1) == 35 {
+ 		end -= 1;
+@@ -227,7 +227,7 @@ fun heading_content(trimmed: str, level: i32): str {
+ /// The content offset of a list-item marker in a (left-trimmed) line: `- ` / `* ` /
+ /// `+ ` or `1. ` / `1) `. 0 means "not an item" (item content never starts at
+ /// offset 0).
+-fun list_item_content_offset(trimmed: str): i32 {
++fun list_item_content_offset(trimmed: str): usize {
+ 	let n = trimmed.len();
+ 	if n >= 2 {
+ 		let c = trimmed.code_at(0);
+@@ -235,7 +235,7 @@ fun list_item_content_offset(trimmed: str): i32 {
+ 			ret 2;
+ 		}
+ 	}
+-	mut i = 0;
++	mut i: usize = 0;
+ 	for i < n && is_ascii_digit(trimmed.code_at(i)) {
+ 		i += 1;
+ 	}
+@@ -269,7 +269,7 @@ fun starts_structure(line: str): bool {
+ 
+ /// Whether `line` closes a fence opened at `indent`: the docs gate's rule —
+ /// the same indentation, and nothing but ``` (trailing spaces allowed).
+-fun is_fence_close(line: str, indent: i32): bool {
++fun is_fence_close(line: str, indent: usize): bool {
+ 	leading_spaces(line) == indent && line.substring(indent, line.len()).trim() == "```"
+ }
+ 
+@@ -282,22 +282,22 @@ fun is_fence_close(line: str, indent: i32): bool {
+ fun parse_inline(text: str, line: i32): Result<List<Inline>, ParseError> {
+ 	mut out: List<Inline> = [];
+ 	let n = text.len();
+-	mut plain_from = 0;
+-	mut i = 0;
++	mut plain_from: usize = 0;
++	mut i: usize = 0;
+ 	for i < n {
+ 		let c = text.code_at(i);
+ 		if c == 96 {
+ 			// A backtick run opens a code span closed by a run of the SAME length
+ 			// (the proven book_sync rule); an unclosed run is literal.
+-			mut run = 1;
++			mut run: usize = 1;
+ 			for i + run < n && text.code_at(i + run) == 96 {
+ 				run += 1;
+ 			}
+-			mut close: Option<i32> = None;
++			mut close: Option<usize> = None;
+ 			mut cursor = i + run;
+ 			for close is None && cursor < n {
+ 				if text.code_at(cursor) == 96 {
+-					mut closing = 1;
++					mut closing: usize = 1;
+ 					for cursor + closing < n && text.code_at(cursor + closing) == 96 {
+ 						closing += 1;
+ 					}
+@@ -315,13 +315,13 @@ fun parse_inline(text: str, line: i32): Result<List<Inline>, ParseError> {
+ 					if plain_from < i {
+ 						out.push(Text(text.substring(plain_from, i)));
+ 					}
+-					mut content = text.substring(i + run, at);
++					mut content = text.substring(i + run, at.as_usize());
+ 					// CommonMark strips one space when both ends carry one.
+ 					if content.len() >= 2 && content.starts_with(" ") && content.ends_with(" ") {
+ 						content = content.substring(1, content.len() - 1);
+ 					}
+ 					out.push(Code(content));
+-					i = at + run;
++					i = (at.as_usize() + run).as_usize();
+ 					plain_from = i;
+ 				}
+ 				None => {
+@@ -346,7 +346,7 @@ fun parse_inline(text: str, line: i32): Result<List<Inline>, ParseError> {
+ 					}
+ 				}
+ 			} else {
+-				mut close: Option<i32> = None;
++				mut close: Option<usize> = None;
+ 				if i + 1 < n && text.code_at(i + 1) != 32 {
+ 					close = index_of(text, "*", i + 1);
+ 				}
+@@ -355,8 +355,8 @@ fun parse_inline(text: str, line: i32): Result<List<Inline>, ParseError> {
+ 						if plain_from < i {
+ 							out.push(Text(text.substring(plain_from, i)));
+ 						}
+-						out.push(Emph(parse_inline(text.substring(i + 1, at), line)!));
+-						i = at + 1;
++						out.push(Emph(parse_inline(text.substring(i + 1, at.as_usize()), line)!));
++						i = (at + 1).as_usize();
+ 						plain_from = i;
+ 					}
+ 					None => {
+@@ -370,7 +370,7 @@ fun parse_inline(text: str, line: i32): Result<List<Inline>, ParseError> {
+ 				&& i + 1 < n
+ 				&& text.code_at(i + 1) != 32
+ 				&& text.code_at(i + 1) != 9;
+-			mut close: Option<i32> = None;
++			mut close: Option<usize> = None;
+ 			if open_ok {
+ 				mut probe = index_of(text, "_", i + 1);
+ 				mut searching = true;
+@@ -395,8 +395,8 @@ fun parse_inline(text: str, line: i32): Result<List<Inline>, ParseError> {
+ 					if plain_from < i {
+ 						out.push(Text(text.substring(plain_from, i)));
+ 					}
+-					out.push(Emph(parse_inline(text.substring(i + 1, at), line)!));
+-					i = at + 1;
++					out.push(Emph(parse_inline(text.substring(i + 1, at.as_usize()), line)!));
++					i = (at + 1).as_usize();
+ 					plain_from = i;
+ 				}
+ 				None => {
+@@ -570,7 +570,7 @@ fun inline_text(content: List<Inline>): str {
+ /// The length of the HTML entity at `i` (`&amp;` `&lt;` `&gt;` `&quot;`
+ /// `&#39;`), or 0. mdBook slugs the HTML-escaped text, dropping the decoded
+ /// character — so the whole entity contributes nothing to an id.
+-fun entity_length(text: str, i: i32): i32 {
++fun entity_length(text: str, i: usize): usize {
+ 	let n = text.len();
+ 	for entity in ["&amp;", "&lt;", "&gt;", "&quot;", "&#39;"] {
+ 		let k = entity.len();
+@@ -656,7 +656,7 @@ export fun heading_id(content: List<Inline>): str {
+ 	let text = inline_text(content).trim();
+ 	let n = text.len();
+ 	mut out = "";
+-	mut i = 0;
++	mut i: usize = 0;
+ 	for i < n {
+ 		let c = text.code_at(i);
+ 		let entity = entity_length(text, i);
+@@ -760,7 +760,7 @@ fun is_delimiter_row(line: str): bool {
+ 	}
+ 	let n = trimmed.len();
+ 	mut dashes = 0;
+-	mut i = 0;
++	mut i: usize = 0;
+ 	for i < n {
+ 		let c = trimmed.code_at(i);
+ 		if c == 45 {
+@@ -781,7 +781,7 @@ fun parse_row(line: str, line_number: i32): Result<List<List<Inline>>, ParseErro
+ 	let n = trimmed.len();
+ 	mut cells: List<List<Inline>> = [];
+ 	mut cell = "";
+-	mut i = 0;
++	mut i: usize = 0;
+ 	if trimmed.starts_with("|") {
+ 		i = 1;
+ 	}
+@@ -815,10 +815,10 @@ fun parse_row(line: str, line_number: i32): Result<List<List<Inline>>, ParseErro
+ /// `first_line`) into blocks. Heading ids are NOT assigned here — `parse` runs the
+ /// document-order id walk after the tree exists, so headings nested in quotes or
+ /// items dedupe exactly as a renderer meets them.
+-fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseError> {
++fun parse_blocks(lines: List<str>, first_line: usize): Result<List<Block>, ParseError> {
+ 	let count = lines.len();
+ 	mut blocks: List<Block> = [];
+-	mut i = 0;
++	mut i: usize = 0;
+ 	for i < count {
+ 		let line = lines[i];
+ 		let trimmed = line.trim();
+@@ -828,12 +828,12 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 			i += 1;
+ 		} else if indent >= 4 {
+ 			ret Err(ParseError {
+-				line = line_number,
++				line = line_number.as_i32(),
+ 				message = "an indented code block (four or more leading spaces) — the census grammar's only code blocks are backtick fences",
+ 			});
+ 		} else if trimmed.starts_with("~~~") {
+ 			ret Err(ParseError {
+-				line = line_number,
++				line = line_number.as_i32(),
+ 				message = "a tilde fence (~~~) — the census grammar's fences use backticks",
+ 			});
+ 		} else if trimmed.starts_with("```") {
+@@ -851,7 +851,7 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 			}
+ 			if !closed {
+ 				ret Err(ParseError {
+-					line = line_number,
++					line = line_number.as_i32(),
+ 					message = "an unclosed code fence — no closing ``` at the opening fence's indent",
+ 				});
+ 			}
+@@ -861,15 +861,15 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 			let content = heading_content(trimmed, level);
+ 			if content.ends_with("}") && content.contains("{#") {
+ 				ret Err(ParseError {
+-					line = line_number,
++					line = line_number.as_i32(),
+ 					message = "a custom heading id ({#…}) — census-grammar heading ids are computed, mdBook's algorithm",
+ 				});
+ 			}
+-			blocks.push(Block::Heading(level, parse_inline(content, line_number)!, ""));
++			blocks.push(Block::Heading(level, parse_inline(content, line_number.as_i32())!, ""));
+ 			i += 1;
+ 		} else if is_rule_like(trimmed) {
+ 			ret Err(ParseError {
+-				line = line_number,
++				line = line_number.as_i32(),
+ 				message = "a setext heading underline or thematic break (---, ===, ***) — both outside the census grammar; headings are ATX (# Title)",
+ 			});
+ 		} else if trimmed.starts_with(">") {
+@@ -886,7 +886,7 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 			}
+ 			if i < count && !is_blank(lines[i]) && !starts_structure(lines[i]) {
+ 				ret Err(ParseError {
+-					line = first_line + i,
++					line = (first_line + i).as_i32(),
+ 					message = "a lazy blockquote continuation — prefix the line with > or separate it from the quote with a blank line",
+ 				});
+ 			}
+@@ -894,7 +894,7 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 		} else if list_item_content_offset(trimmed) > 0 {
+ 			if indent >= 2 {
+ 				ret Err(ParseError {
+-					line = line_number,
++					line = line_number.as_i32(),
+ 					message = "an indented list item — the census grammar's lists are flat, at the left margin",
+ 				});
+ 			}
+@@ -920,7 +920,7 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 						if list_item_content_offset(next.trim()) > 0 {
+ 							if next_indent >= 2 {
+ 								ret Err(ParseError {
+-									line = first_line + i,
++									line = (first_line + i).as_i32(),
+ 									message = "a nested list item — the census grammar's lists are flat",
+ 								});
+ 							}
+@@ -954,7 +954,7 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 							}
+ 						} else if pending_blanks == 0 && !starts_structure(next) {
+ 							ret Err(ParseError {
+-								line = first_line + i,
++								line = (first_line + i).as_i32(),
+ 								message = "a lazy list continuation — indent the line under its item (two spaces) or separate it from the list with a blank line",
+ 							});
+ 						} else {
+@@ -973,21 +973,21 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 		} else if trimmed.starts_with("|") && i + 1 < count && is_delimiter_row(lines[i + 1]) {
+ 			if lines[i + 1].contains(":") {
+ 				ret Err(ParseError {
+-					line = first_line + i + 1,
++					line = (first_line + i + 1).as_i32(),
+ 					message = "a table alignment colon (:---) — the census grammar's tables carry no alignment",
+ 				});
+ 			}
+-			let header = parse_row(lines[i], line_number)!;
++			let header = parse_row(lines[i], line_number.as_i32())!;
+ 			i += 2;
+ 			mut rows: List<List<List<Inline>>> = [];
+ 			for i < count && lines[i].trim().starts_with("|") {
+-				rows.push(parse_row(lines[i], first_line + i)!);
++				rows.push(parse_row(lines[i], (first_line + i).as_i32())!);
+ 				i += 1;
+ 			}
+ 			blocks.push(Block::Table(header, rows));
+ 		} else if is_reference_definition(trimmed) {
+ 			ret Err(ParseError {
+-				line = line_number,
++				line = line_number.as_i32(),
+ 				message = "a reference link definition ([label]: destination) — only inline [text](destination) links are in the census grammar",
+ 			});
+ 		} else {
+@@ -1000,13 +1000,13 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 			for i < count && !starts_structure(lines[i]) {
+ 				if previous.ends_with("  ") {
+ 					ret Err(ParseError {
+-						line = first_line + i - 1,
++						line = (first_line + i - 1).as_i32(),
+ 						message = "a hard line break (two trailing spaces) — outside the census grammar",
+ 					});
+ 				}
+ 				if previous.ends_with("\\") {
+ 					ret Err(ParseError {
+-						line = first_line + i - 1,
++						line = (first_line + i - 1).as_i32(),
+ 						message = "a backslash line break — outside the census grammar",
+ 					});
+ 				}
+@@ -1014,7 +1014,7 @@ fun parse_blocks(lines: List<str>, first_line: i32): Result<List<Block>, ParseEr
+ 				previous = lines[i];
+ 				i += 1;
+ 			}
+-			blocks.push(Block::Paragraph(parse_inline(text, line_number)!));
++			blocks.push(Block::Paragraph(parse_inline(text, line_number.as_i32())!));
+ 		}
+ 	}
+ 	Ok(blocks)
+diff --git a/base/vilan/std/src/memo.vl b/tree/vilan/std/src/memo.vl
+index 8c46c09..7fc90f0 100644
+--- a/base/vilan/std/src/memo.vl
++++ b/tree/vilan/std/src/memo.vl
+@@ -87,7 +87,7 @@ impl Memo<type K: Hashable, type V> {
+ 	}
+ 
+ 	/// How many keys this memo holds.
+-	fun len(self): i32 {
++	fun len(self): usize {
+ 		self.entries.read().len()
+ 	}
+ }
+diff --git a/base/vilan/std/src/native_map.vl b/tree/vilan/std/src/native_map.vl
+index 6360383..d2c6977 100644
+--- a/base/vilan/std/src/native_map.vl
++++ b/tree/vilan/std/src/native_map.vl
+@@ -30,7 +30,7 @@ impl NativeMap<type V> {
+ 
+ 	external fun remove(&mut self, key: Hash): void;
+ 
+-	external fun len(self): i32;
++	external fun len(self): usize;
+ 
+ 	external fun keys(self): List<Hash>;
+ 
+diff --git a/base/vilan/std/src/option.vl b/tree/vilan/std/src/option.vl
+index 48532db..1736ab5 100644
+--- a/base/vilan/std/src/option.vl
++++ b/tree/vilan/std/src/option.vl
+@@ -378,10 +378,10 @@ impl str {
+ 	/// arithmetic on it is silently wrong, and `substring` would refuse it one call
+ 	/// later — so nothing outside this module sees the raw form.
+ 	[extern(method, "indexOf")]
+-	external fun raw_index_of(self, needle: str): i32;
++	external fun raw_index_of(self, needle: str): usize;
+ 
+ 	[extern(method, "lastIndexOf")]
+-	external fun raw_last_index_of(self, needle: str): i32;
++	external fun raw_last_index_of(self, needle: str): usize;
+ 
+ 	/// The index of the FIRST occurrence of `needle`, or `None` when the text does
+ 	/// not contain it — `contains` tests, this one locates. It is the missing half
+@@ -395,7 +395,7 @@ impl str {
+ 	/// An empty needle is at `0`, as everywhere else. The index is zero-based and
+ 	/// counts UTF-16 code units — `substring`'s own unit, so the bound feeds it
+ 	/// directly.
+-	fun index_of(self, needle: str): Option<i32> {
++	fun index_of(self, needle: str): Option<usize> {
+ 		let at = self.raw_index_of(needle);
+ 		if at < 0 {
+ 			None
+@@ -408,7 +408,7 @@ impl str {
+ 	/// not contain it — `index_of` read from the other end, for cutting at the
+ 	/// final separator (a file extension, the last path segment). An empty needle
+ 	/// is at `len()`, which is where the host puts it.
+-	fun last_index_of(self, needle: str): Option<i32> {
++	fun last_index_of(self, needle: str): Option<usize> {
+ 		let at = self.raw_last_index_of(needle);
+ 		if at < 0 {
+ 			None
+@@ -422,7 +422,7 @@ impl str {
+ // always-loaded core stays off the `option`/`result` chain — same reason as
+ // `then_some`/`parse_i32` above. `get` returns a copy of the element.
+ impl List<type T> {
+-	external fun get(self, index: i32): Option<T>;
++	external fun get(self, index: usize): Option<T>;
+ 
+ 	fun first(self): Option<T> {
+ 		self.get(0)
+diff --git a/base/vilan/std/src/path.vl b/tree/vilan/std/src/path.vl
+index ec27e51..ae1eff0 100644
+--- a/base/vilan/std/src/path.vl
++++ b/tree/vilan/std/src/path.vl
+@@ -299,7 +299,7 @@ fun starts_with(path: str, prefix: str): bool {
+ 	if head.len() > parts.len() {
+ 		ret false;
+ 	}
+-	mut index = 0;
++	mut index: usize = 0;
+ 	for index < head.len() {
+ 		if parts[index] != head[index] {
+ 			ret false;
+@@ -360,7 +360,7 @@ fun relative(from: str, to: str): Option<str> {
+ 	}
+ 	let source = components(from);
+ 	let target = components(to);
+-	mut common = 0;
++	mut common: usize = 0;
+ 	for common < source.len() && common < target.len() && source[common] == target[common] {
+ 		common += 1;
+ 	}
+diff --git a/base/vilan/std/src/process/db.vl b/tree/vilan/std/src/process/db.vl
+index 777df89..f7d592b 100644
+--- a/base/vilan/std/src/process/db.vl
++++ b/tree/vilan/std/src/process/db.vl
+@@ -206,7 +206,7 @@ export impl Database {
+ 		let names = migration_names(migrations);
+ 		self.exec("CREATE TABLE IF NOT EXISTS vilan_migrations (name TEXT PRIMARY KEY NOT NULL, applied_at_ms INTEGER NOT NULL)");
+ 		let recorded = self.recorded_migrations();
+-		refuse_database_ahead(names, recorded, migrations.len());
++		refuse_database_ahead(names, recorded, migrations.len().as_i32());
+ 		refuse_inserted_migration(migrations, recorded);
+ 
+ 		mut applied: List<str> = [];
+@@ -283,7 +283,7 @@ export impl Database {
+ /// applied" unstatable.
+ fun migration_names(migrations: List<Migration>): Set<str> {
+ 	mut names: Set<str> = Set::new();
+-	mut index = 0;
++	mut index: usize = 0;
+ 	for index < migrations.len() {
+ 		let step = migrations[index];
+ 		if step.name == "" {
+@@ -323,21 +323,24 @@ fun refuse_database_ahead(names: Set<str>, recorded: Set<str>, count: i32) {
+ /// with history this refusal catches every misordering such a rule would, and on a
+ /// fresh database any list order is self-consistent — it IS the history.
+ fun refuse_inserted_migration(migrations: List<Migration>, recorded: Set<str>) {
+-	mut last_applied = -1;
+-	mut index = 0;
++	// I5 S2: "nothing applied" is `None`, where it was the `-1` below every index.
++	mut last_applied: Option<usize> = None;
++	mut index: usize = 0;
+ 	for index < migrations.len() {
+ 		if recorded.contains(migrations[index].name) {
+-			last_applied = index;
++			last_applied = Some(index);
+ 		}
+ 		index += 1;
+ 	}
+-	mut earlier = 0;
+-	for earlier < last_applied {
+-		let pending = migrations[earlier].name;
+-		if !recorded.contains(pending) {
+-			let applied = migrations[last_applied].name;
+-			panic(i"std::db migrate: migration '{pending}' is not applied, but '{applied}' after it in the list is — a migration was inserted before the applied history");
++	if last_applied is Some(let last) {
++		mut earlier: usize = 0;
++		for earlier < last {
++			let pending = migrations[earlier].name;
++			if !recorded.contains(pending) {
++				let applied = migrations[last].name;
++				panic(i"std::db migrate: migration '{pending}' is not applied, but '{applied}' after it in the list is — a migration was inserted before the applied history");
++			}
++			earlier += 1;
+ 		}
+-		earlier += 1;
+ 	}
+ }
+diff --git a/base/vilan/std/src/process/document.vl b/tree/vilan/std/src/process/document.vl
+index bf92d1a..42bcf0d 100644
+--- a/base/vilan/std/src/process/document.vl
++++ b/tree/vilan/std/src/process/document.vl
+@@ -224,7 +224,7 @@ export struct Document {
+ 	/// For a SUPPLIED shell, where that markup goes: the index just past the mount
+ 	/// element's start tag, located by the check itself (§5.8) — so nothing later
+ 	/// can move the splice somewhere the check never looked.
+-	splice: i32,
++	splice: usize,
+ }
+ 
+ export impl Document {
+@@ -475,7 +475,7 @@ export impl Document {
+ 	/// with no render and no hatch markup composes to the shell's own bytes,
+ 	/// untouched.
+ 	fun composed(self, shell: str): str {
+-		mut insertions: List<(i32, str)> = [];
++		mut insertions: List<(usize, str)> = [];
+ 		mut missing: List<str> = [];
+ 		if self.rendered != "" {
+ 			insertions.push((self.splice, self.rendered));
+@@ -518,7 +518,7 @@ fun script_tag(build: LegBuild): str {
+ /// element's start tag, i.e. its first child position. `0` when the shell has no
+ /// such element — unreachable through `from_shell`, whose check refuses a shell
+ /// that does not carry the mount id.
+-fun splice_point(shell: str, mount: str): i32 {
++fun splice_point(shell: str, mount: str): usize {
+ 	for tag in tags_of(shell) {
+ 		if attribute(tag, "id") == mount {
+ 			ret tag.end;
+@@ -530,7 +530,7 @@ fun splice_point(shell: str, mount: str): i32 {
+ /// Where hatch markup destined for inside an element goes in a supplied
+ /// shell: the index of the shell's first `</name>` — insertion happens BEFORE
+ /// the closing tag — or `None` when the shell carries no such tag (E77).
+-fun closing_point(shell: str, name: str): Option<i32> {
++fun closing_point(shell: str, name: str): Option<usize> {
+ 	for tag in tags_of(shell) {
+ 		if tag.closing && tag.name == name {
+ 			ret Some(tag.start);
+@@ -565,13 +565,13 @@ fun joined_hatch(existing: str, markup: str): str {
+ /// `text` with each insertion's markup spliced in at its index. The indices are
+ /// into the ORIGINAL text; insertions apply in ascending index order, and two at
+ /// the same index keep their list order.
+-export fun spliced(text: str, insertions: List<(i32, str)>): str {
++export fun spliced(text: str, insertions: List<(usize, str)>): str {
+ 	// A stable sort by index — at most three insertions ever arrive, so the
+ 	// quadratic count is fine and the clarity is not.
+-	mut ordered: List<(i32, str)> = [];
++	mut ordered: List<(usize, str)> = [];
+ 	for insertion in insertions {
+ 		let (at, _markup) = insertion;
+-		mut index = 0;
++		mut index: usize = 0;
+ 		for entry in ordered {
+ 			let (before, _before_markup) = entry;
+ 			if before <= at {
+@@ -581,11 +581,11 @@ export fun spliced(text: str, insertions: List<(i32, str)>): str {
+ 		ordered.insert(index, insertion);
+ 	}
+ 	mut result = "";
+-	mut cursor = 0;
++	mut cursor: usize = 0;
+ 	for entry in ordered {
+ 		let (at, markup) = entry;
+-		result = result + text.substring(cursor, at) + markup;
+-		cursor = at;
++		result = result + text.substring(cursor, at.as_usize()) + markup;
++		cursor = at.as_usize();
+ 	}
+ 	result + text.substring(cursor, text.len())
+ }
+@@ -639,10 +639,10 @@ export struct Tag {
+ 	attributes: List<(str, str)>,
+ 	/// The index of its `<`. For a closing tag, the last position still inside the
+ 	/// element — the splice point hatch markup wants (E77).
+-	start: i32,
++	start: usize,
+ 	/// One past its `>`, i.e. where its content begins — the splice point a
+ 	/// server-rendered document needs (§5.8).
+-	end: i32,
++	end: usize,
+ 	/// Whether this is a closing tag (`</head>`).
+ 	closing: bool,
+ }
+@@ -733,7 +733,7 @@ fun is_emitted_chunk(build: LegBuild, file: str): bool {
+ fun tags_of(markup: str): List<Tag> {
+ 	let length = markup.len();
+ 	mut tags: List<Tag> = [];
+-	mut index = 0;
++	mut index: usize = 0;
+ 	for index < length {
+ 		if markup.substring(index, index + 1) != "<" {
+ 			index = index + 1;
+@@ -794,7 +794,7 @@ fun tags_of(markup: str): List<Tag> {
+ /// A found index plus `offset`, or `fallback` when the search came up empty — the
+ /// "skip past this delimiter, or give up on the rest of the document" step the
+ /// scanner takes four times.
+-export fun past(found: Option<i32>, offset: i32, fallback: i32): i32 {
++export fun past(found: Option<usize>, offset: usize, fallback: usize): usize {
+ 	match found {
+ 		Some(let at) => at + offset,
+ 		None => fallback,
+@@ -803,7 +803,7 @@ export fun past(found: Option<i32>, offset: i32, fallback: i32): i32 {
+ 
+ /// The attributes of the tag whose name ends at `from`, and the index one past its
+ /// `>`.
+-fun attributes_of(markup: str, from: i32): (List<(str, str)>, i32) {
++fun attributes_of(markup: str, from: usize): (List<(str, str)>, usize) {
+ 	let length = markup.len();
+ 	mut attributes: List<(str, str)> = [];
+ 	mut index = from;
+@@ -865,11 +865,14 @@ fun attributes_of(markup: str, from: i32): (List<(str, str)>, i32) {
+ /// one: `name` is already ASCII-folded by its caller, and folding `A`..`Z` in
+ /// place preserves both length and index, so a case-insensitive compare
+ /// against the unfolded markup finds exactly the position the folded copy did.
+-fun skip_raw_text(markup: str, from: i32, name: str): i32 {
++fun skip_raw_text(markup: str, from: usize, name: str): usize {
+ 	let length = markup.len();
+ 	let closing = "</" + name;
+ 	let closing_length = closing.len();
+-	mut index = if from < 0 { 0 } else { from };
++	// I5 S2: the `from < 0` clamp is gone — an unsigned `from` cannot be negative,
++	// and a clamp that can no longer fire only hides one that arrived already
++	// wrapped (index-type.md §6).
++	mut index = from;
+ 	for index + closing_length <= length {
+ 		if matches_ascii_insensitive(markup, index, closing) {
+ 			ret index;
+@@ -884,9 +887,9 @@ fun skip_raw_text(markup: str, from: i32, name: str): i32 {
+ ///
+ /// `at + needle.len() <= markup.len()` is the caller's contract, and it is what
+ /// puts every `code_at` below in range.
+-fun matches_ascii_insensitive(markup: str, at: i32, needle: str): bool {
++fun matches_ascii_insensitive(markup: str, at: usize, needle: str): bool {
+ 	let needle_length = needle.len();
+-	mut offset = 0;
++	mut offset: usize = 0;
+ 	for offset < needle_length {
+ 		if lowered_unit(markup.code_at(at + offset)) != lowered_unit(needle.code_at(offset)) {
+ 			ret false;
+@@ -907,7 +910,7 @@ fun lowered_unit(unit: u32): u32 {
+ }
+ 
+ /// The first index at or after `from` that is not whitespace.
+-fun skip_spaces(markup: str, from: i32): i32 {
++fun skip_spaces(markup: str, from: usize): usize {
+ 	let length = markup.len();
+ 	mut index = from;
+ 	for index < length && is_space(markup.substring(index, index + 1)) {
+@@ -918,9 +921,15 @@ fun skip_spaces(markup: str, from: i32): i32 {
+ 
+ /// The index of `needle` in `text` at or after `from`, or `None`. (`str` can answer
+ /// whether it `contains` something, but not where.)
+-fun index_of(text: str, needle: str, from: i32): Option<i32> {
++fun index_of(text: str, needle: str, from: usize): Option<usize> {
++	// I5 S2: `text.len() - needle.len()` underflows when the needle is the longer
++	// of the two (unspecified: negative on JS, a native panic), so that case is
++	// answered first; and the `from < 0` clamp is gone with the sign.
++	if needle.len() > text.len() {
++		ret None;
++	}
+ 	let limit = text.len() - needle.len();
+-	mut index = if from < 0 { 0 } else { from };
++	mut index = from;
+ 	for index <= limit {
+ 		if text.substring(index, index + needle.len()) == needle {
+ 			ret Some(index);
+diff --git a/base/vilan/std/src/process/fs.vl b/tree/vilan/std/src/process/fs.vl
+index ed7bae7..e12e056 100644
+--- a/base/vilan/std/src/process/fs.vl
++++ b/tree/vilan/std/src/process/fs.vl
+@@ -476,7 +476,7 @@ external struct RawReadResult;
+ 
+ impl RawReadResult {
+ 	[extern(get, "bytesRead")]
+-	external fun bytes_read(self): i32;
++	external fun bytes_read(self): usize;
+ }
+ 
+ /// One `FileHandle.write()` result (`{ bytesWritten, buffer }`).
+@@ -484,7 +484,7 @@ external struct RawWriteResult;
+ 
+ impl RawWriteResult {
+ 	[extern(get, "bytesWritten")]
+-	external fun bytes_written(self): i32;
++	external fun bytes_written(self): usize;
+ }
+ 
+ export impl File {
+@@ -525,10 +525,10 @@ export impl File {
+ 	}
+ 
+ 	[extern(method, "read")]
+-	async external fun raw_read(self, buffer: Bytes, offset: i32, length: i32, position: i53): RawReadResult;
++	async external fun raw_read(self, buffer: Bytes, offset: usize, length: usize, position: i53): RawReadResult;
+ 
+ 	[extern(method, "write")]
+-	async external fun raw_write(self, buffer: Bytes, offset: i32, length: i32, position: i53): RawWriteResult;
++	async external fun raw_write(self, buffer: Bytes, offset: usize, length: usize, position: i53): RawWriteResult;
+ 
+ 	/// Reads into `buffer` from byte `position` of the file; returns the number of
+ 	/// bytes actually read — `buffer.len()` at most, fewer near the end of the
+@@ -538,7 +538,7 @@ export impl File {
+ 	/// one handle cannot silently interleave through hidden host-side position
+ 	/// state — which is why the host's implicit-position read mode is deliberately
+ 	/// not bound (proposal/filesystem.md §3.4).
+-	fun read_at(self, buffer: Bytes, position: i53): i32 {
++	fun read_at(self, buffer: Bytes, position: i53): usize {
+ 		self.raw_read(buffer, 0, buffer.len(), position).bytes_read()
+ 	}
+ 
+@@ -546,7 +546,7 @@ export impl File {
+ 	/// write reaches past the end); returns the number of bytes written. Positional
+ 	/// and stateless, like `read_at` — and on an `append_to` handle the position is
+ 	/// ignored (see there).
+-	fun write_at(self, buffer: Bytes, position: i53): i32 {
++	fun write_at(self, buffer: Bytes, position: i53): usize {
+ 		self.raw_write(buffer, 0, buffer.len(), position).bytes_written()
+ 	}
+ 
+@@ -768,7 +768,7 @@ export impl Reader {
+ 	/// Each call allocates a fresh buffer and hands back a slice of exactly what
+ 	/// was read, so a chunk is never a window on a buffer the next call overwrites.
+ 	/// A caller reusing one buffer across reads wants `read_at` directly.
+-	fun next(self, size: i32): Bytes {
++	fun next(self, size: usize): Bytes {
+ 		let buffer = Bytes::alloc(size);
+ 		let count = self.file.read_at(buffer, self.cursor.read());
+ 		self.cursor.write() = self.cursor.read() + count.as_i53();
+diff --git a/base/vilan/std/src/reactive.vl b/tree/vilan/std/src/reactive.vl
+index d4964fb..9090b14 100644
+--- a/base/vilan/std/src/reactive.vl
++++ b/tree/vilan/std/src/reactive.vl
+@@ -1752,7 +1752,7 @@ export enum RowStep {
+ /// then the old indices whose rows are gone entirely.
+ export struct ReconcilePlan {
+ 	steps: List<RowStep>,
+-	removed: List<i32>,
++	removed: List<usize>,
+ }
+ 
+ export fun reconcile<T, K: PartialEq + Hashable>(
+@@ -1801,20 +1801,21 @@ export fun reconcile<T, K: PartialEq + Hashable>(
+ 	// steps past them along the chain. What the bound forbids is the opposite,
+ 	// a `==` coarser than the hash, and that is the case the bound refuses to
+ 	// compile rather than mis-plan.
+-	mut first: NativeMap<i32> = NativeMap::new();
+-	mut next_same: List<i32> = [];
++	// I5 S2: the chain is `Option<usize>` — a position, or the end of the chain —
++	// where it was an `i32` terminated by `-1`. The walks below are the same
++	// walks; the sentinel became `None` and the build loop counts down to zero
++	// without ever reaching below it.
++	mut first: NativeMap<usize> = NativeMap::new();
++	mut next_same: List<Option<usize>> = [];
+ 	for _ in old_keys {
+-		next_same.push(-1);
++		next_same.push(None);
+ 	}
+-	mut build = held - 1;
+-	for build >= 0 {
++	mut build = held;
++	for build > 0 {
++		build -= 1;
+ 		let canonical = old_keys[build].hash();
+-		match first.get(canonical) {
+-			Some(let after) => next_same[build] = after,
+-			None => {},
+-		}
++		next_same[build] = first.get(canonical);
+ 		first.insert(canonical, build);
+-		build -= 1;
+ 	}
+ 	mut steps: List<RowStep> = [];
+ 	for item in items {
+@@ -1824,42 +1825,57 @@ export fun reconcile<T, K: PartialEq + Hashable>(
+ 		// claimed are dropped from the chain for good (`first` is advanced past
+ 		// them), so the total cost of skipping claimed entries across a whole pass
+ 		// is bounded by the number of claims.
+-		mut head = match first.get(canonical) {
+-			Some(let at) => at,
+-			None => -1,
+-		};
+-		for head >= 0 {
+-			if !claimed[head] {
+-				jump break;
++		mut head: Option<usize> = first.get(canonical);
++		mut advancing = true;
++		for advancing {
++			match head {
++				Some(let at) => {
++					if claimed[at] {
++						head = next_same[at];
++					} else {
++						advancing = false;
++					}
++				},
++				None => advancing = false,
+ 			}
+-			head = next_same[head];
+ 		}
+-		first.insert(canonical, head);
+-		mut found = -1;
++		match head {
++			Some(let at) => first.insert(canonical, at),
++			None => first.remove(canonical),
++		}
++		mut found: Option<usize> = None;
+ 		mut walk = head;
+-		for walk >= 0 {
+-			if !claimed[walk] && old_keys[walk] == item_key {
+-				found = walk;
+-				jump break;
++		mut walking = true;
++		for walking {
++			match walk {
++				Some(let at) => {
++					if !claimed[at] && old_keys[at] == item_key {
++						found = Some(at);
++						walking = false;
++					} else {
++						// Unclaimed, the same hash, and yet not `==`: a COLLISION.
++						// Walk on rather than advance the head, because a later
++						// item may still match here.
++						walk = next_same[at];
++					}
++				},
++				None => walking = false,
+ 			}
+-			// Unclaimed, the same hash, and yet not `==`: a COLLISION. Walk on
+-			// rather than advance the head, because a later item may still match
+-			// here.
+-			walk = next_same[walk];
+ 		}
+ 		mut step = RowStep::Fresh;
+-		if found >= 0 {
+-			claimed[found] = true;
+-			step = if same(old_items[found], item) {
+-				RowStep::Keep(found)
++		if found is Some(let at) {
++			claimed[at] = true;
++			// `RowStep`'s payload is S4's (born `i32`, A112's `// I5` markers).
++			step = if same(old_items[at], item) {
++				RowStep::Keep(at.as_i32())
+ 			} else {
+-				RowStep::Refresh(found)
++				RowStep::Refresh(at.as_i32())
+ 			};
+ 		}
+ 		steps.push(step);
+ 	}
+-	mut removed: List<i32> = [];
+-	mut index = 0;
++	mut removed: List<usize> = [];
++	mut index: usize = 0;
+ 	for index < held {
+ 		if !claimed[index] {
+ 			removed.push(index);
+diff --git a/base/vilan/std/src/rpc.vl b/tree/vilan/std/src/rpc.vl
+index 18354dc..10e21d9 100644
+--- a/base/vilan/std/src/rpc.vl
++++ b/tree/vilan/std/src/rpc.vl
+@@ -317,7 +317,7 @@ export impl SplitDuplex with DuplexTransport {
+ fun drain_sse(buffer: str, dispatch: |str| void): str {
+ 	let parts = buffer.split("\n\n");
+ 	mut remainder = "";
+-	mut index = 0;
++	mut index: usize = 0;
+ 	for part in parts {
+ 		if index == parts.len() - 1 {
+ 			remainder = part;
+@@ -1306,7 +1306,7 @@ export fun encode_request(codec: Codec, method: str, args: List<|Serializer| voi
+ 	(serializer.field)("method");
+ 	(serializer.str_value)(method);
+ 	(serializer.field)("args");
+-	(serializer.begin_list)(args.len());
++	(serializer.begin_list)(args.len().as_i32());
+ 	for describe in args {
+ 		describe(serializer);
+ 	}
+@@ -1571,7 +1571,7 @@ export fun call<T: Wire, Tx: Transport>(
+ /// at the call site — reads are positional and once-each; see `RpcRequest`). A
+ /// missing/garbled argument poisons the request's deserializer; check
+ /// `decode_failed` before running the impl.
+-export fun arg<T: Wire>(request: RpcRequest, index: i32): T {
++export fun arg<T: Wire>(request: RpcRequest, index: usize): T {
+ 	// The record is a bag of closures over the request's own reader, so the `mut`
+ 	// copy that `rebuild`'s `&mut D` asks for costs a copy of the bag and pulls
+ 	// from the same cursor — successive `arg` calls stay positional and once-each
+@@ -2843,7 +2843,7 @@ fun keyed_cell_key_forward<K: Wire + Hashable, T: Wire + Keyed<K>>(
+ 							ops.push(Delta::Update(key, element));
+ 						} else {
+ 							held.write() = true;
+-							ops.push(Delta::Insert(key, element, at));
++							ops.push(Delta::Insert(key, element, at.as_i32()));
+ 						}
+ 					},
+ 					None => {
+@@ -2891,7 +2891,7 @@ fun keyed_cell_key_forward<K: Wire + Hashable, T: Wire + Keyed<K>>(
+ 		Some(let found) => {
+ 			let (at, element) = found;
+ 			held.write() = true;
+-			seed.push(Delta::Insert(key, element, at));
++			seed.push(Delta::Insert(key, element, at.as_i32()));
+ 		},
+ 		None => {},
+ 	}
+@@ -2967,7 +2967,7 @@ fun keyed_diff<K: Wire + Hashable, T: Wire + PartialEq>(
+ 	for element in current {
+ 		match previous_at.get(key_of(element).hash()) {
+ 			None => {},
+-			Some(let at) => match previous.get(at) {
++			Some(let at) => match previous.get(at.as_usize()) {
+ 				None => {},
+ 				Some(let before) => {
+ 					if !before.eq(element) {
+@@ -2987,7 +2987,7 @@ fun same_sequence(before: List<Hash>, after: List<Hash>): bool {
+ 	if length != after.len() {
+ 		ret false;
+ 	}
+-	mut index = 0;
++	mut index: usize = 0;
+ 	for index < length {
+ 		if !before[index].eq(after[index]) {
+ 			ret false;
+@@ -3193,7 +3193,7 @@ export impl ReactiveClient {
+ 		RemoteSource {
+ 			channel = channel_cell,
+ 			subscribe = Shared::new(encode_control(self.codec, "Subscribe", channel)),
+-			count = Shared::new(0),
++			count = Shared::new(0usize),
+ 			closing = Shared::new(false),
+ 			settle_id = fresh_id(),
+ 			codec = self.codec,
+@@ -3235,7 +3235,7 @@ export impl ReactiveClient {
+ 			transport = self.transport,
+ 			cache,
+ 			fault,
+-			count = Shared::new(0),
++			count = Shared::new(0usize),
+ 			closing = Shared::new(false),
+ 			settle_id = fresh_id(),
+ 			leases = Shared::new([]),
+@@ -3482,7 +3482,7 @@ export struct RemoteSource<T> {
+ 	// Live demand: how many leases are outstanding. A cell, so every copy of the
+ 	// handle counts into the same total; a rebind re-subscribes only a mirror that
+ 	// is actually watched (`count > 0`).
+-	count: Shared<i32>,
++	count: Shared<usize>,
+ 	// A 1→0 that has not yet been flushed as an `Unsubscribe`. Cancelled by a 0→1
+ 	// in the same turn: the channel never actually closed.
+ 	closing: Shared<bool>,
+@@ -3992,7 +3992,7 @@ export struct KeyedCell<K, T> {
+ 	elements: SignalCell<List<T>>,
+ 	/// Where each held key sits in `elements`, by hash. What makes `update(key, …)`
+ 	/// and `remove(key)` a lookup instead of a scan.
+-	positions: Shared<Map<Hash, i32>>,
++	positions: Shared<Map<Hash, usize>>,
+ 	/// The positional op log — `DeltaLog`'s cursors, trim and lag fallback (A112
+ 	/// S1), at `delta_log_limit`. `since` translates what it holds into the
+ 	/// `Delta<K, T>` a forward sends; the `DeltaSource` impl strips the keys back
+@@ -4029,7 +4029,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
+ 				// delete.
+ 				let previous = list[at];
+ 				list[at] = value;
+-				self.log.record(SeqOp::SetAt(at, KeyedElement { key, value = previous }, KeyedElement {
++				self.log.record(SeqOp::SetAt(at.as_i32(), KeyedElement { key, value = previous }, KeyedElement {
+ 					key,
+ 					value,
+ 				}));
+@@ -4038,7 +4038,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
+ 				let at = list.len();
+ 				list.push(value);
+ 				self.positions.write().insert(wanted, at);
+-				self.log.record(SeqOp::Splice(at, [], [KeyedElement { key, value }]));
++				self.log.record(SeqOp::Splice(at.as_i32(), [], [KeyedElement { key, value }]));
+ 			}),
+ 		}
+ 	}
+@@ -4058,7 +4058,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
+ 				self.positions.write().remove(wanted);
+ 				// Everything after the hole moved one place left.
+ 				self.reindex(list, at);
+-				self.log.record(SeqOp::Splice(at, [KeyedElement { key, value = dropped }], []));
++				self.log.record(SeqOp::Splice(at.as_i32(), [KeyedElement { key, value = dropped }], []));
+ 			}),
+ 		}
+ 	}
+@@ -4079,7 +4079,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
+ 				// so `previous` is the element as it was.
+ 				let previous = list[at];
+ 				mutate(list[at]);
+-				self.log.record(SeqOp::SetAt(at, KeyedElement { key, value = previous }, KeyedElement {
++				self.log.record(SeqOp::SetAt(at.as_i32(), KeyedElement { key, value = previous }, KeyedElement {
+ 					key,
+ 					value = list[at],
+ 				}));
+@@ -4096,7 +4096,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
+ 		// one: the index and the op's keyed elements come off the same `key()`
+ 		// call.
+ 		mut seeded: List<KeyedElement<K, T>> = [];
+-		mut index = 0;
++		mut index: usize = 0;
+ 		let length = value.len();
+ 		for index < length {
+ 			let key = value[index].key();
+@@ -4110,7 +4110,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
+ 
+ 	/// The element held under `key` and where it sits, if the cell holds one — a
+ 	/// lookup, not a scan. What a per-key forward seeds from.
+-	fun locate(self, key: K): Option<(i32, T)> {
++	fun locate(self, key: K): Option<(usize, T)> {
+ 		match self.positions.read().get(key.hash()) {
+ 			None => None,
+ 			Some(let at) => match self.elements.get().get(at) {
+@@ -4121,7 +4121,7 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
+ 	}
+ 
+ 	/// Re-record the position of every element from `from` onward.
+-	fun reindex(self, list: List<T>, from: i32) {
++	fun reindex(self, list: List<T>, from: usize) {
+ 		mut index = from;
+ 		let length = list.len();
+ 		for index < length {
+@@ -4179,12 +4179,12 @@ export impl KeyedCell<type K: Hashable, type T: Keyed<K>> {
+ 							for gone in removed {
+ 								ops.push(Delta::Remove(gone.key));
+ 							}
+-							mut offset = 0;
++							mut offset: usize = 0;
+ 							let arriving = inserted.len();
+ 							for offset < arriving {
+ 								match inserted.get(offset) {
+ 									Some(let element) => {
+-										ops.push(Delta::Insert(element.key, element.value, at + offset));
++										ops.push(Delta::Insert(element.key, element.value, (at.as_usize() + offset).as_i32()));
+ 									},
+ 									None => {},
+ 								}
+@@ -4345,7 +4345,7 @@ export struct KeyedSource<K, T> {
+ 	/// consequence rather than a second fact.
+ 	fault: SignalCell<Option<str>>,
+ 	/// Whole-collection demand.
+-	count: Shared<i32>,
++	count: Shared<usize>,
+ 	closing: Shared<bool>,
+ 	settle_id: i32,
+ 	/// Per-key demand — one entry per key ever leased on this mirror.
+@@ -4357,7 +4357,7 @@ export struct KeyedSource<K, T> {
+ 	/// whose whole point is that a change is O(change). The index is maintained by
+ 	/// `apply` alone (nothing else writes the cache's contents) and cleared
+ 	/// wherever the cache is.
+-	positions: Shared<Map<Hash, i32>>,
++	positions: Shared<Map<Hash, usize>>,
+ 	/// The call that minted this mirror (A79), or `None` for the `[expose]`d field
+ 	/// twin — `RemoteSource.origin`'s field, at the keyed type, meaning exactly
+ 	/// what it means there: a mirror that can ask for a fresh channel whenever one
+@@ -4500,9 +4500,9 @@ export impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>> {
+ 	fun demand(self): i32 {
+ 		mut total = self.count.read();
+ 		for lease in self.leases.read() {
+-			total = total + lease.count.read();
++			total = total + lease.count.read().as_usize();
+ 		}
+-		total
++		total.as_i32()
+ 	}
+ 
+ 	/// Whether this mirror is pointed at a real channel (`RemoteSource::minted`).
+@@ -4794,7 +4794,7 @@ export impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>> {
+ 	}
+ 
+ 	/// Where `key` sits in the mirror's list, if at all — the index, in O(1).
+-	fun index_of(self, list: List<T>, key: K): Option<i32> {
++	fun index_of(self, list: List<T>, key: K): Option<usize> {
+ 		match self.positions.read().get(key.hash()) {
+ 			None => None,
+ 			Some(let at) => match list.get(at) {
+@@ -4807,7 +4807,7 @@ export impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>> {
+ 	/// Re-record the position of every element from `from` onward — what an
+ 	/// insertion or a removal owes the index, and nothing more: an op at the END of
+ 	/// the collection (the append a message platform does) costs one entry, not N.
+-	fun reindex(self, list: List<T>, from: i32) {
++	fun reindex(self, list: List<T>, from: usize) {
+ 		mut index = from;
+ 		let length = list.len();
+ 		for index < length {
+@@ -4857,11 +4857,11 @@ export impl KeyedSource<type K: Wire + Hashable, type T: Wire + Keyed<K>> {
+ 								if bounded < 0 {
+ 									bounded = 0;
+ 								}
+-								if bounded > list.len() {
+-									bounded = list.len();
++								if bounded.as_usize() > list.len() {
++									bounded = list.len().as_i32();
+ 								}
+-								list.insert(bounded, value);
+-								self.reindex(list, bounded);
++								list.insert(bounded.as_usize(), value);
++								self.reindex(list, bounded.as_usize());
+ 							},
+ 						}
+ 					},
+@@ -5062,7 +5062,7 @@ fun reattach_mirrors(
+ 					// the app restarts on its own terms.
+ 					Err(let _failed) => close_for_good(socket),
+ 					Ok(let channels) => {
+-						mut index = 0;
++						mut index: usize = 0;
+ 						for rebind in rebinds {
+ 							let channel = channels[index];
+ 							rebind(channel, encode_control(codec, "Subscribe", channel));
+diff --git a/base/vilan/std/src/set.vl b/tree/vilan/std/src/set.vl
+index df7ff9b..959e0f9 100644
+--- a/base/vilan/std/src/set.vl
++++ b/tree/vilan/std/src/set.vl
+@@ -34,7 +34,7 @@ impl Set<type T: Hashable> {
+ 		self.table.remove(value.hash());
+ 	}
+ 
+-	fun len(self): i32 {
++	fun len(self): usize {
+ 		self.table.len()
+ 	}
+ 
+diff --git a/base/vilan/std/src/string.vl b/tree/vilan/std/src/string.vl
+index 18c5a44..9efd846 100644
+--- a/base/vilan/std/src/string.vl
++++ b/tree/vilan/std/src/string.vl
+@@ -5,7 +5,7 @@ export *;
+ external struct str;
+ 
+ impl str {
+-	external fun len(self): i32;
++	external fun len(self): usize;
+ 
+ 	external fun trim(self): str;
+ 
+@@ -43,13 +43,13 @@ impl str {
+ 		let lowercase = "abcdefghijklmnopqrstuvwxyz";
+ 		let length = self.len();
+ 		mut out = "";
+-		mut index = 0;
++		mut index: usize = 0;
+ 		for index < length {
+ 			let unit = self.code_at(index);
+ 			// `A` (65) through `Z` (90) — the only units this maps.
+ 			if unit >= 65 && unit <= 90 {
+ 				let letter = (unit - 65).as_i32();
+-				out = out + lowercase.substring(letter, letter + 1);
++				out = out + lowercase.substring(letter.as_usize(), (letter + 1).as_usize());
+ 			} else {
+ 				out = out + self.substring(index, index + 1);
+ 			}
+@@ -69,13 +69,13 @@ impl str {
+ 		let uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+ 		let length = self.len();
+ 		mut out = "";
+-		mut index = 0;
++		mut index: usize = 0;
+ 		for index < length {
+ 			let unit = self.code_at(index);
+ 			// `a` (97) through `z` (122) — the only units this maps.
+ 			if unit >= 97 && unit <= 122 {
+ 				let letter = (unit - 97).as_i32();
+-				out = out + uppercase.substring(letter, letter + 1);
++				out = out + uppercase.substring(letter.as_usize(), (letter + 1).as_usize());
+ 			} else {
+ 				out = out + self.substring(index, index + 1);
+ 			}
+@@ -93,7 +93,7 @@ impl str {
+ 	/// Replaces every occurrence of `from` with `to`.
+ 	external fun replace(self, from: str, to: str): str;
+ 
+-	external fun repeat(self, count: i32): str;
++	external fun repeat(self, count: usize): str;
+ 
+ 	/// Splits on each occurrence of `separator`, returning the pieces.
+ 	external fun split(self, separator: str): List<str>;
+@@ -106,13 +106,13 @@ impl str {
+ 	/// quietly return `s[0..k]` — the complement of the request.) A caller who
+ 	/// means "to the end" writes `s.len()`; to drop a known affix, reach for
+ 	/// `strip_prefix`/`strip_suffix`, which return `Option<str>`.
+-	external fun substring(self, start: i32, end: i32): str;
++	external fun substring(self, start: usize, end: usize): str;
+ 
+ 	/// The UTF-16 code unit at `index` (0..len), as its integer value — the
+ 	/// primitive under checksums and parsers. Out of range is NaN-shaped in the
+ 	/// host; index within `len()` is the caller's contract.
+ 	[extern(method, "charCodeAt")]
+-	external fun code_at(self, index: i32): u32;
++	external fun code_at(self, index: usize): u32;
+ 
+ 	fun is_empty(self): bool {
+ 		self.len() == 0
+diff --git a/base/vilan/std/src/style.vl b/tree/vilan/std/src/style.vl
+index 48d712d..14ba03c 100644
+--- a/base/vilan/std/src/style.vl
++++ b/tree/vilan/std/src/style.vl
+@@ -451,7 +451,7 @@ export struct Gradient {
+ 	// Stops as rendered CSS, comma-joined, plus the count the two-stop minimum is
+ 	// checked against.
+ 	stops: str,
+-	stop_count: i32,
++	stop_count: usize,
+ 	// The `:root` lines the stops' colors carry, emitted when the gradient reaches
+ 	// a `Style` — so a gradient of ramp tokens themes like everything else.
+ 	roots: List<str>,
+@@ -792,10 +792,10 @@ export enum UserSelect {
+ /// agree on names (the determinism the asset channel's dedup relies on).
+ fun class_hash(text: str): str {
+ 	mut hash = 5381u32;
+-	for index in Range::new(0, text.len()) {
++	for index in Range::new(0, text.len().as_i32()) {
+ 		// hash * 33 + code, wrapped to 32 bits: the shift and mask are u32-wrapped;
+ 		// the additions stay exact in between.
+-		hash = ((hash << 5u32) + hash + text.code_at(index)) & 0xFFFFFFFFu32;
++		hash = ((hash << 5u32) + hash + text.code_at(index.as_usize())) & 0xFFFFFFFFu32;
+ 	}
+ 	"s" + encode36(hash)
+ }
+@@ -811,7 +811,7 @@ fun encode36(value: u32): str {
+ 	for _step in Range::new(0, 7) {
+ 		if rest > 0u32 {
+ 			let digit = (rest % 36u32).as_i32();
+-			out = digits.substring(digit, digit + 1) + out;
++			out = digits.substring(digit.as_usize(), (digit + 1).as_usize()) + out;
+ 			rest = rest / 36u32;
+ 		}
+ 	}
+diff --git a/base/vilan/std/src/wire.vl b/tree/vilan/std/src/wire.vl
+index bfe3338..052b3ab 100644
+--- a/base/vilan/std/src/wire.vl
++++ b/tree/vilan/std/src/wire.vl
+@@ -452,7 +452,7 @@ impl f32 with Wire {
+ // A list narrates element by element; rebuild trusts `begin_list`'s count.
+ impl List<type T: Wire> with Wire {
+ 	fun describe<S: Serialize>(self, serializer: &mut S) {
+-		serializer.begin_list(self.len());
++		serializer.begin_list(self.len().as_i32());
+ 		for element in self {
+ 			element.describe(serializer);
+ 		}
+@@ -671,7 +671,7 @@ impl Delta<type K: Wire, type T: Wire> with Wire {
+ impl Map<type K: Hashable + Wire, type V: Wire> with Wire {
+ 	fun describe<S: Serialize>(self, serializer: &mut S) {
+ 		let entries = self.entries();
+-		serializer.begin_list(entries.len());
++		serializer.begin_list(entries.len().as_i32());
+ 		for entry in entries {
+ 			serializer.begin_struct(2);
+ 			serializer.field("key");
+diff --git a/base/vilan/std/src/ws.vl b/tree/vilan/std/src/ws.vl
+index 3f8004d..86db97f 100644
+--- a/base/vilan/std/src/ws.vl
++++ b/tree/vilan/std/src/ws.vl
+@@ -21,20 +21,20 @@ fun encode_frame(opcode: i32, payload: Bytes): Bytes {
+ 	let length = payload.len();
+ 	mut header = Bytes::alloc(2);
+ 	if length < 126 {
+-		header.set(1, length);
++		header.set(1, length.as_i32());
+ 	} else if length < 65536 {
+ 		header = Bytes::alloc(4);
+ 		header.set(1, 126);
+-		header.set(2, length >> 8);
+-		header.set(3, length);
++		header.set(2, (length >> 8).as_i32());
++		header.set(3, length.as_i32());
+ 	} else {
+ 		header = Bytes::alloc(10);
+ 		header.set(1, 127);
+ 		// Bytes 2–5 stay zero (payloads are capped well under 2^32).
+-		header.set(6, length >> 24);
+-		header.set(7, length >> 16);
+-		header.set(8, length >> 8);
+-		header.set(9, length);
++		header.set(6, (length >> 24).as_i32());
++		header.set(7, (length >> 16).as_i32());
++		header.set(8, (length >> 8).as_i32());
++		header.set(9, length.as_i32());
+ 	}
+ 	header.set(0, 0x80 | opcode);
+ 	Bytes::concat(header, payload)
+@@ -145,19 +145,19 @@ impl WsParser {
+ 				if valid {
+ 					let mask_at = header;
+ 					let total = if masked { header + 4 + length } else { header + length };
+-					if available < total {
++					if available < total.as_usize() {
+ 						scanning = false;
+ 					} else {
+ 						let payload_at = if masked { mask_at + 4 } else { mask_at };
+-						let payload = buffer.slice(payload_at, payload_at + length);
++						let payload = buffer.slice(payload_at.as_usize(), (payload_at + length).as_usize());
+ 						if masked {
+-							mut index = 0;
+-							for index < length {
+-								payload.set(index, payload.get(index) ^ buffer.get(mask_at + (index & 3)));
++							mut index: usize = 0;
++							for index < length.as_usize() {
++								payload.set(index, payload.get(index) ^ buffer.get((mask_at.as_usize() + (index & 3)).as_usize()));
+ 								index += 1;
+ 							}
+ 						}
+-						self.buffer.write() = buffer.slice(total, available);
++						self.buffer.write() = buffer.slice(total.as_usize(), available);
+ 						for event in self.dispatch(fin, opcode, payload) {
+ 							events.push(event);
+ 						}
+diff --git a/base/vilan/test/capture-clones.vl b/tree/vilan/test/capture-clones.vl
+index 70802ad..05a3a7d 100644
+--- a/base/vilan/test/capture-clones.vl
++++ b/tree/vilan/test/capture-clones.vl
+@@ -72,14 +72,14 @@ impl Feed {
+ 	fun step(&mut self): str {
+ 		if self is Feed::Ready(let items, let at) {
+ 			self = Feed::Ready(items, at + 1);
+-			ret items[at];
++			ret items[at.as_usize()];
+ 		}
+ 		"-"
+ 	}
+ 
+ 	fun width(&self): i32 {
+ 		if self is Feed::Ready(let items, let at) {
+-			ret items.len() + at;
++			ret (items.len() + at.as_usize()).as_i32();
+ 		}
+ 		0
+ 	}
+@@ -89,7 +89,7 @@ fun viewed_guarded(pair: &mut (List<i32>, i32)): i32 {
+ 	match pair {
+ 		(let cells, let weight) if weight > 0 => {
+ 			pair.1 = 9;
+-			cells.len() + weight
++			cells.len() + weight.as_usize()
+ 		}
+ 		_ => 0,
+ 	}
+@@ -99,7 +99,7 @@ fun place_component(): i32 {
+ 	mut cell = ([1, 2], 3);
+ 	if cell is (let cells, let weight) {
+ 		cell.1 = 9;
+-		ret cells.len() + weight;
++		ret (cells.len() + weight.as_usize()).as_i32();
+ 	}
+ 	0
+ }
+@@ -108,7 +108,7 @@ fun place_rebound(): i32 {
+ 	mut cell = ([1, 2], 3);
+ 	if cell is (let cells, let weight) {
+ 		cell = ([4], 5);
+-		ret cells.len() + weight;
++		ret (cells.len() + weight.as_usize()).as_i32();
+ 	}
+ 	0
+ }
+@@ -118,7 +118,7 @@ fun place_guarded(): i32 {
+ 	match cell {
+ 		(let cells, let weight) if weight > 0 => {
+ 			cell.1 = 9;
+-			cells.len() + weight
++			cells.len() + weight.as_usize()
+ 		}
+ 		_ => 0,
+ 	}
+@@ -137,7 +137,7 @@ fun sum_over(entries: List<(i32, i32)>): i32 {
+ }
+ 
+ fun total_width(rows: List<(List<i32>, i32)>): i32 {
+-	mut total = 0;
++	mut total: usize = 0;
+ 	for row in rows {
+ 		match row {
+ 			(let cells, let weight) => {
+@@ -145,11 +145,11 @@ fun total_width(rows: List<(List<i32>, i32)>): i32 {
+ 			}
+ 		}
+ 	}
+-	total
++	total.as_i32()
+ }
+ 
+ fun guarded_width(rows: List<(List<i32>, i32)>): i32 {
+-	mut total = 0;
++	mut total: usize = 0;
+ 	for row in rows {
+ 		match row {
+ 			(let cells, let weight) if weight > 1 => {
+@@ -158,7 +158,7 @@ fun guarded_width(rows: List<(List<i32>, i32)>): i32 {
+ 			_ => {}
+ 		}
+ 	}
+-	total
++	total.as_i32()
+ }
+ 
+ fun first_or(held: Option<List<i32>>, fallback: List<i32>): List<i32> {
+@@ -178,7 +178,7 @@ fun first_or_guarded(held: Option<List<i32>>, limit: i32, fallback: List<i32>):
+ fun grow_first(pair: (List<i32>, i32)): i32 {
+ 	if pair is (mut cells, let weight) {
+ 		cells.push(weight);
+-		ret cells.len();
++		ret cells.len().as_i32();
+ 	}
+ 	0
+ }
+@@ -200,7 +200,7 @@ fun called_component(): i32 {
+ 	mut cell = Cell { pair = ([1, 2], 3) };
+ 	if cell.slot() is (let cells, let weight) {
+ 		cell.pair.1 = 9;
+-		ret cells.len() + weight;
++		ret (cells.len() + weight.as_usize()).as_i32();
+ 	}
+ 	0
+ }
+@@ -209,7 +209,7 @@ fun called_readonly(): i32 {
+ 	mut cell = Cell { pair = ([1, 2], 3) };
+ 	if cell.peek() is (let cells, let weight) {
+ 		cell.pair.1 = 9;
+-		ret cells.len() + weight;
++		ret (cells.len() + weight.as_usize()).as_i32();
+ 	}
+ 	0
+ }
+@@ -220,7 +220,7 @@ fun fresh_pair(): (List<i32>, i32) {
+ 
+ fun owned_call(): i32 {
+ 	if fresh_pair() is (let cells, let weight) {
+-		ret cells.len() + weight;
++		ret (cells.len() + weight.as_usize()).as_i32();
+ 	}
+ 	0
+ }
+diff --git a/base/vilan/test/compound-index.vl b/tree/vilan/test/compound-index.vl
+index 2b95666..50b4940 100644
+--- a/base/vilan/test/compound-index.vl
++++ b/tree/vilan/test/compound-index.vl
+@@ -39,7 +39,7 @@ fun main() {
+ 	print(calls);
+ 
+ 	// A PURE subscript keeps the plain emission — no temp is minted for it.
+-	let index = 1;
++	let index: usize = 1;
+ 	ys[index] += 5;
+ 	print(ys[1]);
+ 	print(calls);
+diff --git a/base/vilan/test/delta-law.vl b/tree/vilan/test/delta-law.vl
+index 71d460c..760881c 100644
+--- a/base/vilan/test/delta-law.vl
++++ b/tree/vilan/test/delta-law.vl
+@@ -61,7 +61,10 @@ impl ListCell<type T> {
+ 	}
+ 
+ 	fun bounded(initial: List<T>, limit: i32): ListCell<T> {
+-		ListCell { elements = Signal::new(initial), log = DeltaLog<SeqOp<T>>::with_limit(limit) }
++		ListCell {
++			elements = Signal::new(initial),
++			log = DeltaLog<SeqOp<T>>::with_limit(limit.as_usize()),
++		}
+ 	}
+ 
+ 	/// The wholesale write: `Reset`, N derivations, and the honest answer to
+@@ -77,8 +80,8 @@ impl ListCell<type T> {
+ 	fun set_at(self, at: i32, value: T) {
+ 		self.elements.update(|&mut list| {
+ 			// Bound before the store: `SetAt` carries BOTH values.
+-			let previous = list[at];
+-			list[at] = value;
++			let previous = list[at.as_usize()];
++			list[at.as_usize()] = value;
+ 			self.log.record(SeqOp::SetAt(at, previous, value));
+ 		});
+ 	}
+@@ -145,7 +148,7 @@ trait SequenceCell<T> {
+ 
+ impl ListCell<type T> with SequenceCell<T> {
+ 	fun size(self): i32 {
+-		self.elements.get().len()
++		self.elements.get().len().as_i32()
+ 	}
+ 
+ 	fun splice(self, at: i32, removed: i32, inserted: List<T>) {
+@@ -155,14 +158,14 @@ impl ListCell<type T> with SequenceCell<T> {
+ 			mut left: List<T> = [];
+ 			mut taken = 0;
+ 			for taken < removed {
+-				left.push(list.remove(at));
++				left.push(list.remove(at.as_usize()));
+ 				taken += 1;
+ 			}
+-			mut offset = 0;
++			mut offset: usize = 0;
+ 			let count = inserted.len();
+ 			for offset < count {
+ 				match inserted.get(offset) {
+-					Some(let value) => list.insert(at + offset, value),
++					Some(let value) => list.insert((at.as_usize() + offset).as_usize(), value),
+ 					None => {},
+ 				}
+ 				offset += 1;
+@@ -217,7 +220,7 @@ fun map_each<S: DeltaSource<List<i32>, SeqOp<i32>>>(source: S): ListCell<i32> {
+ 						incremental_calls.write() = incremental_calls.read() + 1;
+ 						mapped.push(g(value));
+ 					}
+-					out.splice(at, removed.len(), mapped);
++					out.splice(at, removed.len().as_i32(), mapped);
+ 				},
+ 				SeqOp::SetAt(let at, let _previous, let value) => {
+ 					incremental_calls.write() = incremental_calls.read() + 1;
+@@ -248,7 +251,7 @@ fun same(left: List<i32>, right: List<i32>): bool {
+ 	if left.len() != right.len() {
+ 		ret false;
+ 	}
+-	mut index = 0;
++	mut index: usize = 0;
+ 	mut equal = true;
+ 	for index < left.len() {
+ 		if left.get(index).ne(right.get(index)) {
+@@ -291,17 +294,17 @@ fun drain_mirror(
+ 			},
+ 			SeqOp::Splice(let at, let removed, let inserted) => {
+ 				ops_to_mirror.write() = ops_to_mirror.read() + 1;
+-				mut taken = 0;
++				mut taken: usize = 0;
+ 				let leaving = removed.len();
+ 				for taken < leaving {
+-					let _dropped = mirror.remove(at);
++					let _dropped = mirror.remove(at.as_usize());
+ 					taken += 1;
+ 				}
+-				mut offset = 0;
++				mut offset: usize = 0;
+ 				let count = inserted.len();
+ 				for offset < count {
+ 					match inserted.get(offset) {
+-						Some(let value) => mirror.insert(at + offset, value),
++						Some(let value) => mirror.insert((at.as_usize() + offset).as_usize(), value),
+ 						None => {},
+ 					}
+ 					offset += 1;
+diff --git a/base/vilan/test/for-mut-container.vl b/tree/vilan/test/for-mut-container.vl
+index 52bd63e..6fcb0d2 100644
+--- a/base/vilan/test/for-mut-container.vl
++++ b/tree/vilan/test/for-mut-container.vl
+@@ -12,10 +12,10 @@ struct Counter {
+ 
+ impl Counter {
+ 	fun next_mut(&mut self): Option<&mut i32> {
+-		if self.pos < self.items.len() {
++		if self.pos.as_usize() < self.items.len() {
+ 			let index = self.pos;
+ 			self.pos = self.pos + 1;
+-			Some(&mut self.items[index])
++			Some(&mut self.items[index.as_usize()])
+ 		} else {
+ 			None
+ 		}
+diff --git a/base/vilan/test/list-cell.vl b/tree/vilan/test/list-cell.vl
+index e4b30e4..611b656 100644
+--- a/base/vilan/test/list-cell.vl
++++ b/tree/vilan/test/list-cell.vl
+@@ -52,20 +52,20 @@ let notifications: Shared<i32> = Shared::new(0);
+ 
+ fun counted(text: str): i32 {
+ 	calls.write() = calls.read() + 1;
+-	text.len()
++	text.len().as_i32()
+ }
+ 
+ /// THE LAW, checked against the naive rerun.
+ fun law(label: str, source: ListCell<str>, derived: ListCell<i32>) {
+ 	mut naive: List<i32> = [];
+ 	for value in source.get() {
+-		naive.push(value.len());
++		naive.push(value.len().as_i32());
+ 	}
+ 	let held = derived.get();
+ 	if held.len() != naive.len() {
+ 		panic(i"{label}: derived holds {held.len()} where the rerun holds {naive.len()}");
+ 	}
+-	mut index = 0;
++	mut index: usize = 0;
+ 	for index < naive.len() {
+ 		if held[index] != naive[index] {
+ 			panic(i"{label}: element {index} is {held[index]}, not {naive[index]}");
+@@ -124,7 +124,7 @@ fun same(label: str, turn: i32, held: List<i32>, wanted: List<i32>) {
+ 	if held.len() != wanted.len() {
+ 		panic(i"turn {turn}: {label} holds {held.len()}, the rerun {wanted.len()}");
+ 	}
+-	mut index = 0;
++	mut index: usize = 0;
+ 	for index < wanted.len() {
+ 		if held[index] != wanted[index] {
+ 			panic(i"turn {turn}: {label}[{index}] is {held[index]}, not {wanted[index]}");
+@@ -360,7 +360,7 @@ fun main() {
+ 					// The compat door: the same list with one element edited
+ 					// and one appended — one `Splice`, not a `Reset`.
+ 					mut edited = walk.get();
+-					edited[next_random(size)] = next_random(100);
++					edited[next_random(size).as_usize()] = next_random(100);
+ 					edited.push(next_random(100));
+ 					walk.reconcile_to(edited);
+ 				} else {
+diff --git a/base/vilan/test/list-search.vl b/tree/vilan/test/list-search.vl
+index 2c5fc46..ea0c32c 100644
+--- a/base/vilan/test/list-search.vl
++++ b/tree/vilan/test/list-search.vl
+@@ -7,12 +7,12 @@ fun main() {
+ 	print(xs.find(|n| n > 90).is_none()); // true
+ 	print(xs.contains(20)); // true
+ 	print(xs.contains(25)); // false
+-	print(xs.index_of(20).unwrap_or(-1)); // 1
++	print(xs.index_of(20).unwrap_or(usize::max_value())); // 1
+ 	print(xs.index_of(99).is_none()); // true
+ 
+ 	let words = ["alpha", "beta"];
+ 	print(words.contains("beta")); // true
+-	print(words.index_of("alpha").unwrap_or(-1)); // 0
++	print(words.index_of("alpha").unwrap_or(usize::max_value())); // 0
+ 
+ 	mut empty: List<i32> = [];
+ 	print(empty.find(|n| n > 0).is_none()); // true
+diff --git a/base/vilan/test/mut-parameters.vl b/tree/vilan/test/mut-parameters.vl
+index 7fdc199..3d5b5a8 100644
+--- a/base/vilan/test/mut-parameters.vl
++++ b/tree/vilan/test/mut-parameters.vl
+@@ -11,7 +11,7 @@ fun bump(mut x: i32): i32 {
+ 
+ fun grow(mut xs: List<i32>): i32 {
+ 	xs.push(9);
+-	xs.len()
++	xs.len().as_i32()
+ }
+ 
+ fun poke(mut x: i32): i32 {
+diff --git a/base/vilan/test/option-view.vl b/tree/vilan/test/option-view.vl
+index 5381601..2d0c83f 100644
+--- a/base/vilan/test/option-view.vl
++++ b/tree/vilan/test/option-view.vl
+@@ -38,8 +38,8 @@ impl Outer {
+ 	// A conditional element view — the `Arena::get` shape: `Some(..)` in one
+ 	// branch, `None` in the other.
+ 	fun item_mut(&mut self, index: i32): Option<&mut i32> {
+-		if index < self.items.len() {
+-			Some(&mut self.items[index])
++		if index.as_usize() < self.items.len() {
++			Some(&mut self.items[index.as_usize()])
+ 		} else {
+ 			None
+ 		}
+diff --git a/base/vilan/test/reconcile-index.vl b/tree/vilan/test/reconcile-index.vl
+index f542cb0..5c4c10c 100644
+--- a/base/vilan/test/reconcile-index.vl
++++ b/tree/vilan/test/reconcile-index.vl
+@@ -49,14 +49,14 @@ fun scan_reconcile<T, K: PartialEq>(
+ 	for item in items {
+ 		let item_key = key_of(item);
+ 		mut step = RowStep::Fresh;
+-		mut index = 0;
++		mut index: usize = 0;
+ 		for index < old_keys.len() {
+ 			if !claimed[index] && old_keys[index] == item_key {
+ 				claimed[index] = true;
+ 				step = if same(old_items[index], item) {
+-					RowStep::Keep(index)
++					RowStep::Keep(index.as_i32())
+ 				} else {
+-					RowStep::Refresh(index)
++					RowStep::Refresh(index.as_i32())
+ 				};
+ 				jump break;
+ 			}
+@@ -65,10 +65,10 @@ fun scan_reconcile<T, K: PartialEq>(
+ 		steps.push(step);
+ 	}
+ 	mut removed: List<i32> = [];
+-	mut index = 0;
++	mut index: usize = 0;
+ 	for index < old_keys.len() {
+ 		if !claimed[index] {
+-			removed.push(index);
++			removed.push(index.as_i32());
+ 		}
+ 		index += 1;
+ 	}
+diff --git a/base/vilan/test/side-effect-let.vl b/tree/vilan/test/side-effect-let.vl
+index df59502..fdcb260 100644
+--- a/base/vilan/test/side-effect-let.vl
++++ b/tree/vilan/test/side-effect-let.vl
+@@ -5,7 +5,7 @@ import std::shared::Shared;
+ // initializer (here a call that mutates through `&mut`) must still run.
+ fun bump(xs: &mut List<i32>): i32 {
+ 	xs.push(1);
+-	xs.len()
++	xs.len().as_i32()
+ }
+ 
+ // B377 — the same rule for every OTHER initializer shape. The predicate that
+diff --git a/base/vilan/test/subscript.vl b/tree/vilan/test/subscript.vl
+index 0086aba..7cd620a 100644
+--- a/base/vilan/test/subscript.vl
++++ b/tree/vilan/test/subscript.vl
+@@ -26,7 +26,7 @@ fun main() {
+ 
+ 	// Index by an expression, and a scalar element view passed to a function.
+ 	let i = 0;
+-	bump(&mut xs[i + 0]);
++	bump(&mut xs[(i + 0).as_usize()]);
+ 	print(xs[0]); // 110
+ 
+ 	// Aggregate element read copies (value semantics).

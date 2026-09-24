@@ -1,0 +1,9 @@
+18a19,22
+> function as_usize(self) {
+> 	const widened = Number(self);
+> 	return Number(Math.trunc(widened));
+> }
+29c33
+< bump(__at_view(xs, i + 0));
+---
+> bump(__at_view(xs, as_usize(i + 0)));

@@ -1,0 +1,133 @@
+39c39
+< 	return __substring(alphabet, value2, value2 + 1);
+---
+> 	return __substring(alphabet, as_usize(value2), as_usize(value2 + 1));
+44c44
+< 	const $b = new4(0, Math.trunc(total / 3));
+---
+> 	const $d = new4(0, as_i322(Math.trunc(total / 3)));
+46,47c46,47
+< 		const $c = next($b);
+< 		if ($c[0] !== 0) {
+---
+> 		const $e = next($d);
+> 		if ($e[0] !== 0) {
+50c50
+< 		const group = $c[1];
+---
+> 		const group = $e[1];
+52c52
+< 		const chunk = bytes.at(base) << 16 | bytes.at(base + 1) << 8 | bytes.at(base + 2);
+---
+> 		const chunk = bytes.at(as_usize(base)) << 16 | bytes.at(as_usize(base + 1)) << 8 | bytes.at(as_usize(base + 2));
+92,97c92,97
+< 	const $d = rest;
+< 	let $e = null;
+< 	if ($d === 2) {
+< 		$e = 1;
+< 	} else if ($d === 3) {
+< 		$e = 2;
+---
+> 	const $f = rest;
+> 	let $g = null;
+> 	if ($f === 2) {
+> 		$g = 1;
+> 	} else if ($f === 3) {
+> 		$g = 2;
+99c99
+< 		$e = 0;
+---
+> 		$g = 0;
+101c101
+< 	const tail_bytes = $e;
+---
+> 	const tail_bytes = $g;
+104c104
+< 	const $f = new4(0, full);
+---
+> 	const $h = new4(0, as_i322(full));
+106,107c106,107
+< 		const $g = next($f);
+< 		if ($g[0] !== 0) {
+---
+> 		const $i = next($h);
+> 		if ($i[0] !== 0) {
+110c110
+< 		const group = $g[1];
+---
+> 		const group = $i[1];
+112,115c112,115
+< 		const a = digit(text.charCodeAt(base));
+< 		const b = digit(text.charCodeAt(base + 1));
+< 		const c = digit(text.charCodeAt(base + 2));
+< 		const d = digit(text.charCodeAt(base + 3));
+---
+> 		const a = digit(text.charCodeAt(as_usize(base)));
+> 		const b = digit(text.charCodeAt(as_usize(base + 1)));
+> 		const c = digit(text.charCodeAt(as_usize(base + 2)));
+> 		const d = digit(text.charCodeAt(as_usize(base + 3)));
+160c160
+< 	const $w = new4(0, a.length);
+---
+> 	const $w = new4(0, as_i322(a.length));
+167c167
+< 		acc = acc | a.at(index) ^ b.at(index);
+---
+> 		acc = acc | a.at(as_usize(index)) ^ b.at(as_usize(index));
+355c355
+< 	let $h = null;
+---
+> 	let $a = null;
+357c357
+< 		$h = wrapped + modulus;
+---
+> 		$a = wrapped + modulus;
+359c359
+< 		$h = wrapped;
+---
+> 		$a = wrapped;
+361c361
+< 	return $h;
+---
+> 	return $a;
+365c365
+< 	let $i = null;
+---
+> 	let $b = null;
+367c367
+< 		$i = wrapped - modulus;
+---
+> 		$b = wrapped - modulus;
+369c369
+< 		$i = wrapped;
+---
+> 		$b = wrapped;
+371c371,375
+< 	return $i;
+---
+> 	return $b;
+> }
+> function as_usize(self) {
+> 	const widened = Number(self);
+> 	return Number(Math.trunc(widened));
+376a381,384
+> function as_i322(self) {
+> 	const widened = Number(self);
+> 	return Number(fold_signed(widened, 4294967296, 2147483648));
+> }
+381c389
+< 	let $a = null;
+---
+> 	let $c = null;
+385c393
+< 		$a = [ 0, value2 ];
+---
+> 		$c = [ 0, value2 ];
+387c395
+< 		$a = [ 1 ];
+---
+> 		$c = [ 1 ];
+389c397
+< 	return $a;
+---
+> 	return $c;

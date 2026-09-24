@@ -1,0 +1,30 @@
+6a7,31
+> function fold_unsigned(value, modulus) {
+> 	const truncated = Math.trunc(value);
+> 	const wrapped = truncated % modulus;
+> 	let $a = null;
+> 	if (wrapped < 0) {
+> 		$a = wrapped + modulus;
+> 	} else {
+> 		$a = wrapped;
+> 	}
+> 	return $a;
+> }
+> function fold_signed(value, modulus, half) {
+> 	const wrapped = fold_unsigned(value, modulus);
+> 	let $b = null;
+> 	if (wrapped >= half) {
+> 		$b = wrapped - modulus;
+> 	} else {
+> 		$b = wrapped;
+> 	}
+> 	return $b;
+> }
+> function as_i32(self) {
+> 	const widened = Number(self);
+> 	return Number(fold_signed(widened, 4294967296, 2147483648));
+> }
+14c39
+< 	return xs.length;
+---
+> 	return as_i32(xs.length);

@@ -1,0 +1,168 @@
+23a24,48
+> function fold_unsigned(value, modulus) {
+> 	const truncated = Math.trunc(value);
+> 	const wrapped = truncated % modulus;
+> 	let $i = null;
+> 	if (wrapped < 0) {
+> 		$i = wrapped + modulus;
+> 	} else {
+> 		$i = wrapped;
+> 	}
+> 	return $i;
+> }
+> function fold_signed(value, modulus, half) {
+> 	const wrapped = fold_unsigned(value, modulus);
+> 	let $j = null;
+> 	if (wrapped >= half) {
+> 		$j = wrapped - modulus;
+> 	} else {
+> 		$j = wrapped;
+> 	}
+> 	return $j;
+> }
+> function as_i32(self) {
+> 	const widened = Number(self);
+> 	return Number(fold_signed(widened, 4294967296, 2147483648));
+> }
+27,34c52,59
+< 		const $g = step;
+< 		let $h = null;
+< 		if ($g[0] === 0) {
+< 			const index = $g[1];
+< 			$h = "K" + index + " ";
+< 		} else if ($g[0] === 1) {
+< 			const index2 = $g[1];
+< 			$h = "R" + index2 + " ";
+---
+> 		const $l = step;
+> 		let $m = null;
+> 		if ($l[0] === 0) {
+> 			const index = $l[1];
+> 			$m = "K" + index + " ";
+> 		} else if ($l[0] === 1) {
+> 			const index2 = $l[1];
+> 			$m = "R" + index2 + " ";
+36c61
+< 			$h = "F ";
+---
+> 			$m = "F ";
+38c63
+< 		const rendered = $h;
+---
+> 		const rendered = $m;
+56c81
+< 		next_same.push(-(1));
+---
+> 		next_same.push([ 1 ]);
+58,59c83,85
+< 	let build = held - 1;
+< 	while (build >= 0) {
+---
+> 	let build = held;
+> 	while (build > 0) {
+> 		build = build - 1;
+61,69c87
+< 		const $b = __map_get(first, canonical);
+< 		let $c = null;
+< 		if ($b[0] === 0) {
+< 			const after = $b[1];
+< 			$c = __at_put(next_same, build, after);
+< 		} else {
+< 			$c = undefined;
+< 		}
+< 		$c;
+---
+> 		__at_put(next_same, build, __map_get(first, canonical));
+71d88
+< 		build = build - 1;
+77c94,112
+< 		const $d = __map_get(first, canonical2);
+---
+> 		let head = __map_get(first, canonical2);
+> 		let advancing = true;
+> 		while (advancing) {
+> 			const $b = head;
+> 			let $c = null;
+> 			if ($b[0] === 0) {
+> 				const at = $b[1];
+> 				if (__at(claimed, at)) {
+> 					head = __at(next_same, at);
+> 				} else {
+> 					advancing = false;
+> 				}
+> 				$c = undefined;
+> 			} else {
+> 				$c = advancing = false;
+> 			}
+> 			$c;
+> 		}
+> 		const $d = head;
+80,81c115,116
+< 			const at = $d[1];
+< 			$e = at;
+---
+> 			const at2 = $d[1];
+> 			$e = first.set(canonical2, at2);
+83c118
+< 			$e = -(1);
+---
+> 			$e = first.delete(canonical2);
+85,93c120,121
+< 		let head = $e;
+< 		while (head >= 0) {
+< 			if (!(__at(claimed, head))) {
+< 				break;
+< 			}
+< 			head = __at(next_same, head);
+< 		}
+< 		first.set(canonical2, head);
+< 		let found = -(1);
+---
+> 		$e;
+> 		let found = [ 1 ];
+95,98c123,137
+< 		while (walk >= 0) {
+< 			if (!(__at(claimed, walk)) && __at(old_keys, walk) === item_key) {
+< 				found = walk;
+< 				break;
+---
+> 		let walking = true;
+> 		while (walking) {
+> 			const $f = walk;
+> 			let $g = null;
+> 			if ($f[0] === 0) {
+> 				const at3 = $f[1];
+> 				if (!(__at(claimed, at3)) && __at(old_keys, at3) === item_key) {
+> 					found = [ 0, at3 ];
+> 					walking = false;
+> 				} else {
+> 					walk = __at(next_same, at3);
+> 				}
+> 				$g = undefined;
+> 			} else {
+> 				$g = walking = false;
+100c139
+< 			walk = __at(next_same, walk);
+---
+> 			$g;
+103,107c142,147
+< 		if (found >= 0) {
+< 			__at_put(claimed, found, true);
+< 			let $f = null;
+< 			if (same(__at(old_items, found), item)) {
+< 				$f = [ 0, found ];
+---
+> 		const $h = found;
+> 		if ($h[0] === 0) {
+> 			__at_put(claimed, $h[1], true);
+> 			let $k = null;
+> 			if (same(__at(old_items, $h[1]), item)) {
+> 				$k = [ 0, as_i32($h[1]) ];
+109c149
+< 				$f = [ 1, found ];
+---
+> 				$k = [ 1, as_i32($h[1]) ];
+111c151
+< 			step = $f;
+---
+> 			step = $k;

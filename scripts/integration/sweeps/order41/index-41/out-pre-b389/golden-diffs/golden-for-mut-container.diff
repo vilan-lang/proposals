@@ -1,0 +1,13 @@
+8a9,12
+> function as_usize(self) {
+> 	const widened = Number(self);
+> 	return Number(Math.trunc(widened));
+> }
+11c15
+< 	if (self[1] < self[0].length) {
+---
+> 	if (as_usize(self[1]) < self[0].length) {
+14c18
+< 		$a = [ 0, __at_view(self[0], index) ];
+---
+> 		$a = [ 0, __at_view(self[0], as_usize(index)) ];

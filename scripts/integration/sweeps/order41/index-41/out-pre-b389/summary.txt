@@ -1,0 +1,17 @@
+base: 12750bb0
+signatures: 105 verdict rows, 105 annotations rewritten, 0 rows unmatched
+--- fix (codemod)
+std-node: fixed point: 114 E218 conversions, 24 operand conversions, 42 counters declared `usize`, 29 residue diagnostics
+std-browser: fixed point: 19 E218 conversions, 5 operand conversions, 9 counters declared `usize`, 20 residue diagnostics
+macro_std: fixed point: 6 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 4 residue diagnostics
+corpus: fixed point: 36 E218 conversions, 14 operand conversions, 11 counters declared `usize`, 69 residue diagnostics
+--- hand.patch: 10 files
+--- PRE_B389=1: pre-b389-literals.patch applied
+--- fix (after-hand)
+std-node: fixed point: 0 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 0 residue diagnostics
+std-browser: fixed point: 0 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 0 residue diagnostics
+macro_std: fixed point: 0 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 0 residue diagnostics
+corpus: fixed point: 0 E218 conversions, 0 operand conversions, 0 counters declared `usize`, 6 residue diagnostics
+--- corpus goldens: 120 byte-identical, 14 moved, 3 failed to build
+--- examples: 7 check clean, 4 refused (examples.tsv)
+ 42 files changed, 438 insertions(+), 394 deletions(-)

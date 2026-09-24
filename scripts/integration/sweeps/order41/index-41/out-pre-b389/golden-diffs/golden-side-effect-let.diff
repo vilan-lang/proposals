@@ -1,0 +1,130 @@
+3a4,28
+> function fold_unsigned(value, modulus) {
+> 	const truncated = Math.trunc(value);
+> 	const wrapped = truncated % modulus;
+> 	let $a = null;
+> 	if (wrapped < 0) {
+> 		$a = wrapped + modulus;
+> 	} else {
+> 		$a = wrapped;
+> 	}
+> 	return $a;
+> }
+> function fold_signed(value, modulus, half) {
+> 	const wrapped = fold_unsigned(value, modulus);
+> 	let $b = null;
+> 	if (wrapped >= half) {
+> 		$b = wrapped - modulus;
+> 	} else {
+> 		$b = wrapped;
+> 	}
+> 	return $b;
+> }
+> function as_i32(self) {
+> 	const widened = Number(self);
+> 	return Number(fold_signed(widened, 4294967296, 2147483648));
+> }
+6c31
+< 	return xs2.length;
+---
+> 	return as_i32(xs2.length);
+12c37
+< function $d(values) {
+---
+> function $f(values) {
+18c43
+< function $e(values) {
+---
+> function $g(values) {
+25c50
+< function $f(values) {
+---
+> function $h(values) {
+27c52
+< 		let $g = null;
+---
+> 		let $i = null;
+29c54
+< 			$g = note(100);
+---
+> 			$i = note(100);
+31c56
+< 			$g = 0;
+---
+> 			$i = 0;
+33c58
+< 		return $g;
+---
+> 		return $i;
+37c62
+< function $h(values) {
+---
+> function $j(values) {
+39,42c64,67
+< 		const $i = tally.v < 100000;
+< 		let $j = null;
+< 		if ($i === true) {
+< 			$j = note(1000);
+---
+> 		const $k = tally.v < 100000;
+> 		let $l = null;
+> 		if ($k === true) {
+> 			$l = note(1000);
+44c69
+< 			$j = 0;
+---
+> 			$l = 0;
+46c71
+< 		return $j;
+---
+> 		return $l;
+50c75
+< function $k(values) {
+---
+> function $m(values) {
+53c78
+< function $l(values) {
+---
+> function $n(values) {
+71,78d95
+< let $a = null;
+< if (tally.v < 100000) {
+< 	$a = note(10);
+< } else {
+< 	$a = 0;
+< }
+< $a;
+< const $b = tally.v < 100000;
+80,81c97,98
+< if ($b === true) {
+< 	$c = note(100);
+---
+> if (tally.v < 100000) {
+> 	$c = note(10);
+85a103,110
+> const $d = tally.v < 100000;
+> let $e = null;
+> if ($d === true) {
+> 	$e = note(100);
+> } else {
+> 	$e = 0;
+> }
+> $e;
+88,91d112
+< console.log($d([ 1, 2, 3 ]));
+< tally.v = 0;
+< console.log($e([ 1, 2, 3 ]));
+< tally.v = 0;
+93a115,116
+> console.log($g([ 1, 2, 3 ]));
+> tally.v = 0;
+96c119,121
+< console.log($k([ 1, 2, 3 ]));
+---
+> console.log($j([ 1, 2, 3 ]));
+> tally.v = 0;
+> console.log($m([ 1, 2, 3 ]));
+98c123
+< console.log($l([ 4, 5, 6 ]));
+---
+> console.log($n([ 4, 5, 6 ]));

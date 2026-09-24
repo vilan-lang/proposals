@@ -1,0 +1,565 @@
+91c91
+< 	write_i32(self, encoded.length);
+---
+> 	write_i32(self, as_i322(encoded.length));
+142c142
+< 	let $ai = null;
+---
+> 	let $ak = null;
+144c144
+< 		$ai = 1;
+---
+> 		$ak = 1;
+146c146
+< 		$ai = 0;
+---
+> 		$ak = 0;
+148c148
+< 	write_byte(self, $ai);
+---
+> 	write_byte(self, $ak);
+154,158c154,158
+< 	const $an = self[2];
+< 	let $ao = null;
+< 	if ($an[0] === 0) {
+< 		const _reason = $an[1];
+< 		$ao = false;
+---
+> 	const $ap = self[2];
+> 	let $aq = null;
+> 	if ($ap[0] === 0) {
+> 		const _reason = $ap[1];
+> 		$aq = false;
+160c160
+< 		$ao = true;
+---
+> 		$aq = true;
+162c162
+< 	return $ao;
+---
+> 	return $aq;
+165,169c165,169
+< 	const $al = self[2];
+< 	let $am = null;
+< 	if ($al[0] === 0) {
+< 		const _first = $al[1];
+< 		$am = undefined;
+---
+> 	const $an = self[2];
+> 	let $ao = null;
+> 	if ($an[0] === 0) {
+> 		const _first = $an[1];
+> 		$ao = undefined;
+172c172
+< 		$am = undefined;
+---
+> 		$ao = undefined;
+174c174
+< 	return $am;
+---
+> 	return $ao;
+223c223
+< 	if (length < 0 || self[1] + length > self[0].length) {
+---
+> 	if (length < 0 || self[1] + as_usize(length) > self[0].length) {
+227c227
+< 	return length;
+---
+> 	return as_usize(length);
+249c249
+< 	return read_length(self);
+---
+> 	return as_i322(read_length(self));
+348,352c348,352
+< 		const $aj = frame;
+< 		let $ak = null;
+< 		if ($aj[0] === 1) {
+< 			const bytes = $aj[1];
+< 			$ak = new3(bytes);
+---
+> 		const $al = frame;
+> 		let $am = null;
+> 		if ($al[0] === 1) {
+> 			const bytes = $al[1];
+> 			$am = new3(bytes);
+354c354
+< 			const text = $aj[1];
+---
+> 			const text = $al[1];
+357c357
+< 			$ak = poisoned;
+---
+> 			$am = poisoned;
+359c359
+< 		let reader = $ak;
+---
+> 		let reader = $am;
+583,586c583,586
+< 	const $O = integer_lane_failure(value2, signed);
+< 	let $P = null;
+< 	if ($O[0] === 0) {
+< 		const reason = $O[1];
+---
+> 	const $Q = integer_lane_failure(value2, signed);
+> 	let $R = null;
+> 	if ($Q[0] === 0) {
+> 		const reason = $Q[1];
+588c588
+< 		$P = false;
+---
+> 		$R = false;
+590c590
+< 		$P = true;
+---
+> 		$R = true;
+592c592
+< 	return $P;
+---
+> 	return $R;
+643c643
+< 	let $G = null;
+---
+> 	let $I = null;
+647,649c647,648
+< 		let index = elements.length - 1;
+< 		while (index >= 0) {
+< 			self[0].push(__clone(__at(elements, index)));
+---
+> 		let index = elements.length;
+> 		while (index > 0) {
+650a650
+> 			self[0].push(__clone(__at(elements, index)));
+652c652
+< 		$G = elements.length;
+---
+> 		$I = as_i322(elements.length);
+654c654
+< 		$G = 0;
+---
+> 		$I = 0;
+656c656
+< 	return $G;
+---
+> 	return $I;
+659,662c659,662
+< 	const $H = __list_pop(self[2]);
+< 	let $I = null;
+< 	if ($H[0] === 0) {
+< 		const mark = $H[1];
+---
+> 	const $J = __list_pop(self[2]);
+> 	let $K = null;
+> 	if ($J[0] === 0) {
+> 		const mark = $J[1];
+667c667
+< 		$I = undefined;
+---
+> 		$K = undefined;
+669c669
+< 		$I = undefined;
+---
+> 		$K = undefined;
+671c671
+< 	return $I;
+---
+> 	return $K;
+674c674
+< 	let $J = null;
+---
+> 	let $L = null;
+676c676
+< 		$J = __json_tag(top(self));
+---
+> 		$L = __json_tag(top(self));
+678c678
+< 		$J = "";
+---
+> 		$L = "";
+680c680
+< 	return $J;
+---
+> 	return $L;
+684c684
+< 	let $M = null;
+---
+> 	let $O = null;
+686c686
+< 		let $L = null;
+---
+> 		let $N = null;
+689c689
+< 			let $K = null;
+---
+> 			let $M = null;
+694,696c694,695
+< 				let index = elements.length - 1;
+< 				while (index >= 0) {
+< 					self[0].push(__clone(__at(elements, index)));
+---
+> 				let index = elements.length;
+> 				while (index > 0) {
+697a697
+> 					self[0].push(__clone(__at(elements, index)));
+699c699
+< 				$K = undefined;
+---
+> 				$M = undefined;
+701c701
+< 			$L = $K;
+---
+> 			$N = $M;
+705c705
+< 		$M = $L;
+---
+> 		$O = $N;
+707c707
+< 	return $M;
+---
+> 	return $O;
+720c720
+< 	let $N = null;
+---
+> 	let $P = null;
+722c722
+< 		$N = String(value2);
+---
+> 		$P = String(value2);
+724c724
+< 		$N = "";
+---
+> 		$P = "";
+726c726
+< 	return $N;
+---
+> 	return $P;
+730c730
+< 	let $Q = null;
+---
+> 	let $S = null;
+732c732
+< 		$Q = Number(value2);
+---
+> 		$S = Number(value2);
+734c734
+< 		$Q = 0;
+---
+> 		$S = 0;
+736c736
+< 	return $Q;
+---
+> 	return $S;
+740c740
+< 	let $R = null;
+---
+> 	let $T = null;
+742c742
+< 		$R = Number(value2);
+---
+> 		$T = Number(value2);
+744c744
+< 		$R = 0;
+---
+> 		$T = 0;
+746c746
+< 	return $R;
+---
+> 	return $T;
+750c750
+< 	let $S = null;
+---
+> 	let $U = null;
+752c752
+< 		$S = Number(value2);
+---
+> 		$U = Number(value2);
+754c754
+< 		$S = 0;
+---
+> 		$U = 0;
+756c756
+< 	return $S;
+---
+> 	return $U;
+760c760
+< 	let $T = null;
+---
+> 	let $V = null;
+762c762
+< 		$T = Number(value2);
+---
+> 		$V = Number(value2);
+764c764
+< 		$T = 0.0;
+---
+> 		$V = 0.0;
+766c766
+< 	return $T;
+---
+> 	return $V;
+770c770
+< 	let $U = null;
+---
+> 	let $W = null;
+772c772
+< 		$U = Boolean(value2);
+---
+> 		$W = Boolean(value2);
+774c774
+< 		$U = false;
+---
+> 		$W = false;
+776c776
+< 	return $U;
+---
+> 	return $W;
+902c902
+< 	let $aB = null;
+---
+> 	let $G = null;
+904c904
+< 		$aB = wrapped + modulus;
+---
+> 		$G = wrapped + modulus;
+906c906
+< 		$aB = wrapped;
+---
+> 		$G = wrapped;
+908c908
+< 	return $aB;
+---
+> 	return $G;
+912c912
+< 	let $aC = null;
+---
+> 	let $H = null;
+914c914
+< 		$aC = wrapped - modulus;
+---
+> 		$H = wrapped - modulus;
+916c916
+< 		$aC = wrapped;
+---
+> 		$H = wrapped;
+918c918,922
+< 	return $aC;
+---
+> 	return $H;
+> }
+> function as_usize(self) {
+> 	const widened = Number(self);
+> 	return Number(Math.trunc(widened));
+923a928,931
+> function as_i322(self) {
+> 	const widened = Number(self);
+> 	return Number(fold_signed(widened, 4294967296, 2147483648));
+> }
+1028,1029c1036,1037
+< async function sleep_for(duration, $aA) {
+< 	await (sleep(as_i32(duration[0]), $aA));
+---
+> async function sleep_for(duration, $aC) {
+> 	await (sleep(as_i32(duration[0]), $aC));
+1093c1101
+< function $Y(self, serializer) {
+---
+> function $aa(self, serializer) {
+1096c1104
+< function $Z(self, serializer) {
+---
+> function $ab(self, serializer) {
+1099c1107
+< function $X(self, serializer) {
+---
+> function $Z(self, serializer) {
+1102c1110
+< 	$Y(self[0], serializer);
+---
+> 	$aa(self[0], serializer);
+1104c1112
+< 	$Z(self[1], serializer);
+---
+> 	$ab(self[1], serializer);
+1107,1110c1115,1118
+< function $V(codec, value2) {
+< 	const $W = codec[0]();
+< 	const serializer = $W[0];
+< 	const finish2 = $W[1];
+---
+> function $X(codec, value2) {
+> 	const $Y = codec[0]();
+> 	const serializer = $Y[0];
+> 	const finish2 = $Y[1];
+1112c1120
+< 	$X(value2, sink);
+---
+> 	$Z(value2, sink);
+1115c1123
+< function $ac(deserializer) {
+---
+> function $ae(deserializer) {
+1118c1126
+< function $ad(deserializer) {
+---
+> function $af(deserializer) {
+1121c1129
+< function $ab(deserializer) {
+---
+> function $ad(deserializer) {
+1124c1132
+< 	const at = $ac(deserializer);
+---
+> 	const at = $ae(deserializer);
+1126c1134
+< 	const label = $ad(deserializer);
+---
+> 	const label = $af(deserializer);
+1130c1138
+< function $aa(codec, frame) {
+---
+> function $ac(codec, frame) {
+1132,1136c1140,1144
+< 	const value2 = $ab(deserializer);
+< 	const $ae = deserializer[17]();
+< 	let $af = null;
+< 	if ($ae[0] === 1) {
+< 		$af = [ 0, value2 ];
+---
+> 	const value2 = $ad(deserializer);
+> 	const $ag = deserializer[17]();
+> 	let $ah = null;
+> 	if ($ag[0] === 1) {
+> 		$ah = [ 0, value2 ];
+1138,1139c1146,1147
+< 		const reason = $ae[1];
+< 		$af = [ 1, reason ];
+---
+> 		const reason = $ag[1];
+> 		$ah = [ 1, reason ];
+1141c1149
+< 	return $af;
+---
+> 	return $ah;
+1143c1151
+< function $at(self, serializer) {
+---
+> function $av(self, serializer) {
+1146c1154
+< 	$Y(self[0], serializer);
+---
+> 	$aa(self[0], serializer);
+1149,1152c1157,1160
+< function $ar(codec, value2) {
+< 	const $as = codec[0]();
+< 	const serializer = $as[0];
+< 	const finish2 = $as[1];
+---
+> function $at(codec, value2) {
+> 	const $au = codec[0]();
+> 	const serializer = $au[0];
+> 	const finish2 = $au[1];
+1154c1162
+< 	$at(value2, sink);
+---
+> 	$av(value2, sink);
+1157c1165
+< function $av(deserializer) {
+---
+> function $ax(deserializer) {
+1160c1168
+< 	const millis2 = $ac(deserializer);
+---
+> 	const millis2 = $ae(deserializer);
+1164c1172
+< function $au(codec, frame) {
+---
+> function $aw(codec, frame) {
+1166,1170c1174,1178
+< 	const value2 = $av(deserializer);
+< 	const $aw = deserializer[17]();
+< 	let $ax = null;
+< 	if ($aw[0] === 1) {
+< 		$ax = [ 0, value2 ];
+---
+> 	const value2 = $ax(deserializer);
+> 	const $ay = deserializer[17]();
+> 	let $az = null;
+> 	if ($ay[0] === 1) {
+> 		$az = [ 0, value2 ];
+1172,1173c1180,1181
+< 		const reason = $aw[1];
+< 		$ax = [ 1, reason ];
+---
+> 		const reason = $ay[1];
+> 		$az = [ 1, reason ];
+1175c1183
+< 	return $ax;
+---
+> 	return $az;
+1198,1225c1206,1233
+< 	const json_back = $aa(json_codec(), $V(json_codec(), stamp));
+< 	const $ag = json_back;
+< 	let $ah = null;
+< 	if ($ag[0] === 0) {
+< 		const value2 = $ag[1];
+< 		$ah = console.log(eq2(value2, stamp));
+< 	} else {
+< 		const reason = $ag[1];
+< 		$ah = console.log(reason);
+< 	}
+< 	$ah;
+< 	const binary_back = $aa(binary_codec(), $V(binary_codec(), stamp));
+< 	const $ap = binary_back;
+< 	let $aq = null;
+< 	if ($ap[0] === 0) {
+< 		const value3 = $ap[1];
+< 		$aq = console.log("" + (value3[0] === stamp[0]) + " " + value3[1]);
+< 	} else {
+< 		const reason2 = $ap[1];
+< 		$aq = console.log(reason2);
+< 	}
+< 	$aq;
+< 	const sent = $au(json_codec(), $ar(json_codec(), later));
+< 	const $ay = sent;
+< 	let $az = null;
+< 	if ($ay[0] === 0) {
+< 		const value4 = $ay[1];
+< 		$az = console.log(eq(value4, later));
+---
+> 	const json_back = $ac(json_codec(), $X(json_codec(), stamp));
+> 	const $ai = json_back;
+> 	let $aj = null;
+> 	if ($ai[0] === 0) {
+> 		const value2 = $ai[1];
+> 		$aj = console.log(eq2(value2, stamp));
+> 	} else {
+> 		const reason = $ai[1];
+> 		$aj = console.log(reason);
+> 	}
+> 	$aj;
+> 	const binary_back = $ac(binary_codec(), $X(binary_codec(), stamp));
+> 	const $ar = binary_back;
+> 	let $as = null;
+> 	if ($ar[0] === 0) {
+> 		const value3 = $ar[1];
+> 		$as = console.log("" + (value3[0] === stamp[0]) + " " + value3[1]);
+> 	} else {
+> 		const reason2 = $ar[1];
+> 		$as = console.log(reason2);
+> 	}
+> 	$as;
+> 	const sent = $aw(json_codec(), $at(json_codec(), later));
+> 	const $aA = sent;
+> 	let $aB = null;
+> 	if ($aA[0] === 0) {
+> 		const value4 = $aA[1];
+> 		$aB = console.log(eq(value4, later));
+1227,1228c1235,1236
+< 		const reason3 = $ay[1];
+< 		$az = console.log(reason3);
+---
+> 		const reason3 = $aA[1];
+> 		$aB = console.log(reason3);
+1230c1238
+< 	$az;
+---
+> 	$aB;

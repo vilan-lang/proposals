@@ -1,0 +1,19 @@
+src/command_palette.vl:184:69	Expected usize, but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+src/command_palette.vl:217:12	`>=` compares two values of the same type, but the operands are `i32` and `usize`: there are no implicit conversions; suffix the literal or convert with `as_*`
+src/command_palette.vl:230:10	`if` arms have mismatched types: expected usize, but got i32 instead.
+src/command_palette.vl:232:8	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+src/command_palette.vl:240:4	'EachValues<Command, SignalCell<List<Command>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+src/command_palette.vl:248:12	'Command' does not implement trait 'Hashable', required by a generic bound of this call
+src/lib/rotary.vl:56:30	`+` adds two values of the same type, but the operands are `usize` and `i32`: there are no implicit conversions; suffix the literal or convert with `as_*`
+src/lib/rotary.vl:56:59	`if` arms have mismatched types: expected usize, but got i32 instead.
+src/lib/rotary.vl:57:16	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+src/lib/search.vl:14:12	Expected SignalCell<List<(i32, str)>>, but got SignalCell<List<(usize, str)>> instead.
+src/routes.vl:28:4	literal pattern of type i32 cannot match type usize
+src/theme.vl:129:23	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+src/theme.vl:132:5	`if` arms have mismatched types: expected usize, but got i32 instead.
+src/theme.vl:148:10	Expected usize, but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+src/theme.vl:185:12	`>=` compares two values of the same type, but the operands are `i32` and `usize`: there are no implicit conversions; suffix the literal or convert with `as_*`
+src/theme.vl:198:10	`if` arms have mismatched types: expected usize, but got i32 instead.
+src/theme.vl:200:8	Expected i32, but got usize instead. There are no implicit numeric conversions; convert with `.as_i32()`
+src/theme.vl:208:4	'EachValues<Theme, SignalCell<List<Theme>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+src/theme.vl:216:12	'Theme' does not implement trait 'Hashable', required by a generic bound of this call

@@ -1,0 +1,56 @@
+6a7,25
+> function __force(cell) {
+> 	if (cell.state === 2) return cell.value;
+> 	if (cell.state === 1) throw "lazy initialization cycle: `" + cell.name + "`";
+> 	if (cell.state === 3) throw "lazy `" + cell.name + "` is poisoned: its initializer panicked: " + cell.value;
+> 	cell.state = 1;
+> 	try {
+> 		cell.value = cell.thunk();
+> 	} catch (failure) {
+> 		cell.state = 3;
+> 		cell.value = failure;
+> 		throw failure;
+> 	}
+> 	cell.state = 2;
+> 	cell.thunk = null;
+> 	return cell.value;
+> }
+> function __lazy(name, thunk) {
+> 	return { name: name, state: 0, value: undefined, thunk: thunk };
+> }
+12a32,34
+> function max_value() {
+> 	return 9007199254740992;
+> }
+28c50
+< 		$d = __clone(fallback);
+---
+> 		$d = __clone(__force(fallback));
+54c76
+< function $i(self, value) {
+---
+> function $n(self, value) {
+62c84
+< function $j(self, value) {
+---
+> function $o(self, value) {
+75c97,99
+< }), 0));
+---
+> }), __lazy("fallback", () => {
+> 	return 0;
+> })));
+81c105,107
+< console.log($b($h(xs, 20), -(1)));
+---
+> console.log($b($h(xs, 20), __lazy("fallback", () => {
+> 	return max_value();
+> })));
+84,85c110,113
+< console.log($i(words, "beta"));
+< console.log($b($j(words, "alpha"), -(1)));
+---
+> console.log($n(words, "beta"));
+> console.log($b($o(words, "alpha"), __lazy("fallback", () => {
+> 	return max_value();
+> })));
