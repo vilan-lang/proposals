@@ -1,0 +1,18 @@
+// A122 probe 08 — inside a blanket impl over `T: (2..)`, `self` is a `T`, not a
+// mapped tuple: can it be a comprehension source?
+import std::reactive::SignalCell;
+
+trait Cells {
+	fun cells(self): i32;
+}
+
+impl type T: (2..) with Cells {
+	fun cells(self): i32 {
+		let _c = (x in self => SignalCell::new(x));
+		0
+	}
+}
+
+fun main() {
+	print((1, "a").cells());
+}

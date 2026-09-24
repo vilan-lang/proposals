@@ -1,0 +1,11 @@
+// A122 probe 12b — the element bound does not make the pack itself `PartialEq`;
+// note the refusal calls `T` "unbounded" although it carries a tuple bound.
+import std::compare::PartialEq;
+
+fun same<T: (2..: PartialEq)>(a: T, b: T): bool {
+	a == b
+}
+
+fun main() {
+	print(same((1, "a"), (1, "a")));
+}

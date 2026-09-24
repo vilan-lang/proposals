@@ -1,6 +1,7 @@
 # Platform coloring — function-granular platform checking
 
-**Status: proposed.** The successor granularity to `platform-model.md`: that
+**Status: proposed.** (§8 — F27 R3, platform-fenced twin items — added
+2026-09-24.) The successor granularity to `platform-model.md`: that
 document made *modules and layers* the unit of platform truth; this one makes
 **functions** the unit for application code, with layers remaining the
 declaration mechanism at library boundaries. Motivated concretely by the
@@ -350,3 +351,265 @@ the http mount; chain-rendering `assert_fails_spanning` pins; a
 4. **`vilan check` on multi-entry packages**: checks all entries, always —
    the contract-check spirit. `--platform` narrows a `build`, not a
    `check`.
+
+## 8. Platform-fenced twin items (F27 R3)
+
+> **Added 2026-09-24** (work order 41, lane papers-41; tracker [[F27]] R3).
+> The owner RULED R3 on 2026-09-21 — "platform-fenced twin items in one file
+> for userland twins (disjoint platform sets = coherent; each analyzed only
+> under a platform it admits; the editor checks once per declared platform),
+> NOT app-level layers (R4 stays the documented fallback, unbuilt)". This
+> section is the design that ruling asked for, and the build is NOT this
+> order's: **R1 — `[platform(..)]` at module level, on `impl` blocks and on
+> nominals, as the platform an item is ANALYZED under — is being built this
+> order by lane editor-41**, and R3 is written as the step after it. Where R3
+> leans on R1's exact shape, §8.8 says so, and the integrator reconciles the
+> two after editor-41 reports.
+>
+> Every "today" below was probed on `vilan 0.40.0 (1265ea5d3)` over scratch
+> copies; the programs are `scripts/integration/sweeps/order41/papers-41/probes/f27_*.vl`,
+> re-run by `run_probes.sh` in the same directory.
+
+### 8.1 The ask
+
+kolt's `conditional_value.vl` (gone from kolt since; its shape reproduced in
+F27's record) is a user `Slot` impl over the BROWSER twin's `Region`, and
+"technically a server-side implementation should exist too". std answers that
+shape with layers — `std/src/browser/ui.vl` and `std/src/process/ui.vl` both
+write `impl View with Slot` — and an application has no layers. R3 lets it
+write the two in one file:
+
+```vilan
+import std::ui::{ Region, Slot, View };
+
+struct ConditionalValue<T> { … }
+
+[platform("browser")]
+impl ConditionalValue<type T> with Slot {
+	fun place(self, parent: View) { … region.anchor … }   // the browser twin's Region
+}
+
+[platform("@process")]
+impl ConditionalValue<type T> with Slot {
+	fun place(self, parent: View) { … }                    // renders once, server side
+}
+```
+
+### 8.2 What happens today
+
+| # | Program | `--platform node` | `--platform browser` |
+|---|---|---|---|
+| f27_01 | the two fenced impls above, over a local trait | `'Show' is already implemented for 'Thing'` (B98) **and** `cannot find 'platform' in this scope` — the attribute is not admitted on an `impl` | the same two |
+| f27_02 | two fenced FUNCTIONS of one name | `'where_am_i' is already declared in this module` (B57) | the same |
+| f27_03 | a `[platform("browser")]` function reading `region.anchor` | `struct 'Region' has no field 'anchor'` — the fence has no resolution meaning (F27's measurement, re-run); R6's note names the browser twin | no errors |
+| f27_04 | a `[platform("browser")]` function no entry reaches, with a type error in its body | `Expected i32, but got str` | the same — §2's "unreachable code is still type-checked", as shipped |
+
+So three things stand in the way, and R1 removes the first two for a SINGLE
+fenced item: the attribute on an `impl` (f27_01's second error), and the
+fence's resolution meaning (f27_03). The third — two items of one identity
+coexisting — is R3's own.
+
+### 8.3 The rule
+
+**R3.1 — Coherent iff DISJOINT.** Two items of one identity — two impls of one
+`(trait, trait arguments, subject)` (B98's pair key), or two module-level
+declarations of one name (B57's) — are admitted exactly when both carry a
+fence and the fences' HOST sets are disjoint. The sets are computed over the
+host vocabulary the fence checker already enumerates (`platform_color.rs`,
+`known_hosts()`: node, deno, bun, browser); `@process` is {node, deno, bun}.
+`browser` beside `@process` is disjoint; `@process` beside `node` is not, and
+the refusal names the host both admit ("both impls admit `node`: a build for
+`node` would have two"). An unfenced item beside a fenced one overlaps
+everywhere and is refused the same way — there is no "default plus a
+platform override"; the default is spelled as the complement fence (§8.7 Q4).
+
+**R3.2 — Each is analyzed only under a platform it admits.** An analysis runs
+under one platform (a LEG). In a leg, an item whose fence excludes that leg's
+platform is not collected at all: no entity, no impl registration, no emission.
+This is exactly how std's twins already avoid B98 — "exactly one file named
+`ui` loads per build and the two impls never land in `self.implementations`
+together" (`analyzer.rs`, the platform-twins carve-out of
+`check_duplicate_trait_impls`) — moved from file granularity to item
+granularity. Inside the admitted twin, R1's resolution meaning holds: the one
+`import std::ui::Region` at the top of the file means the browser twin's
+`Region` in the browser leg and the process twin's in the process leg, because
+each twin's body is only ever analyzed in a leg that resolves `std::ui` to its
+own layer.
+
+A leg keeps a small FENCED-OUT table (name or impl key → its fence), so a
+reach to a twin the leg excludes, with no twin of its own, reports R1's
+colouring chain ("`window_controls` requires `browser`; reached from `server`
+through …") rather than `cannot find 'window_controls'`.
+
+**R3.3 — A build selects by its entry.** A build's leg is its entry's platform
+(`[package] target` or `[entry.<name>] target`, §4.2), so the build compiles
+the twin its entry admits and never sees the other. Reachability, admission and
+emission are unchanged: they run in the leg, over what the leg collected.
+
+**R3.4 — Twins agree on their signatures.** Two trait impls agree by
+construction (the trait fixes every member's signature). Two free functions of
+one name must have the same written signature — parameters, return type,
+generics, bounds — or shared code would type-check in one leg and not the other
+with no single place to say why. Checked at the pair, leg-independently, over
+the parsed signatures ("the `browser` and `@process` twins of `where_am_i` must
+agree: this one returns `str`, that one `i32`"). This is the userland form of
+std's twin-parity gate (`std_twin_parity.rs`) — for one pair, at compile time.
+
+**R3.5 — A missing twin is an ordinary miss.** The fences need not cover every
+host. A `deno` build of a file with only `browser` and `node` twins finds none,
+and the reach reports exactly what R3.2's table says.
+
+### 8.4 The editor and `vilan check` — once per declared platform, diagnostics unioned
+
+This machinery EXISTS, for a different reason. A module shared between the legs
+of a multi-entry package (E113) is already analyzed by the editor once per
+further leg — `ProjectContext::shared_platforms`, each leg's program analyzed
+by `Document::diagnostics_under` and dropped, its diagnostics merged into the
+primary's with a same-place-and-words dedup (`vilan-lsp/src/document.rs`, the
+`shared_diagnostics` merge) — and `vilan check` checks such a file under every
+color the build compiles it under (`check_once`, `vilan-cli/src/main.rs:673`).
+R3's editor half is therefore:
+
+1. **A file's fence platforms join its legs.** Every platform set a twin in the
+   file declares, not covered by a leg the file already has, adds one leg — in
+   the editor's `shared_platforms` and in `vilan check`'s platform list alike.
+   A file with no fenced twins pays nothing.
+2. **Requests inside a fenced-out twin route to the leg that admits it.** Today
+   "hover/goto/completion stay the primary leg's", and the further leg's
+   program is dropped; under R3 the cursor inside the `@process` twin of a file
+   whose primary leg is browser would get no hover at all. The further leg's
+   program is KEPT for files carrying twins, and requests whose position falls
+   inside a fenced item are answered by the leg that admits it. That is the
+   one real editor cost: memory and one extra analysis per keystroke, for those
+   files only. Measured on this tree, a file importing `std::ui` checks in
+   0.23 s of CPU under either platform (child-process CPU, load average 12), so
+   the second leg is one more of those — the `lsp-legs` phase line (E106)
+   already counts it.
+3. **Dead-code paint and "unloaded" gray** do not paint a twin grey because the
+   primary leg did not collect it; a fenced-out twin is live in its own leg.
+4. **Go-to-definition on a call to a twin** answers both locations (LSP
+   `Location[]`), the admitting leg's first.
+
+### 8.5 The invariant, stated honestly
+
+§2 says "Unreachable code is still parsed, analyzed, and type-checked — it just
+isn't platform-admitted", and §3.3 that "type errors in unreached server code
+still fail a client build". **R3 bends both, deliberately.** A browser build
+never collects the `@process` twin, so a type error in it does not fail the
+browser build (f27_04 would pass a browser build if its function were a twin
+fenced to `@process`). The replacement:
+
+> **Every item is type-checked under at least one platform it admits, and
+> `vilan check` and the editor check every item under every platform its fence
+> and the file's legs name.** A single-leg `vilan build --platform browser`
+> checks the browser leg's items and no others.
+
+What still holds unchanged: an UNFENCED item is checked in every leg, reached or
+not, exactly as §2 says; only a fenced item's body is leg-scoped, and only
+because its sibling exists. A CI that runs only a browser build of a package
+with process twins no longer type-checks them — `vilan check` does, and the
+guide should say so where it introduces twins.
+
+### 8.6 R4 — app-level layers, the documented fallback (unbuilt)
+
+The alternative F27 recorded: an application declares layers the way std and a
+`[library]` do (`[package.layer.browser]` → `src/browser/x.vl` and
+`src/process/x.vl`), and the twins are two FILES. All of its machinery exists —
+the layered search roots (`PackageSpec::search_roots`), `check_library_contract`,
+the twin-parity idea — so it is the cheapest to build and needs no new
+coherence rule. It is also what the owner called clunky: one shared type with
+two `Slot` impls becomes three files and a manifest section, and the shared
+file's imports resolve differently from the twins'. **Ruled the fallback, not
+the design; not built.** It stays the answer if R3's editor cost (§8.4 item 2)
+proves unaffordable, which is the one place R3 could fail on measurement.
+
+### 8.7 Open questions, with a recommendation each
+
+**Q1 — which items may be twinned in the first build?** *Rec: trait impls and
+free functions only.* Trait impls carry their parity for free (R3.4); functions
+need one signature comparison. Twin NOMINALS (a struct with different fields per
+platform, as std's `Region` is) and twin inherent impls are HELD: their
+parity is F27 R5's open question for std itself (the twin-parity gate is
+field-blind), and a userland struct whose fields differ by platform raises
+layout and `Wire` questions no customer has asked.
+
+**Q2 — must the fences cover every host?** *Rec: no* (R3.5): a missing twin is
+an ordinary miss with the colouring chain.
+
+**Q3 — the single-leg build checks one leg.** *Rec: accept it*, as §8.5 states;
+`vilan check` is the all-legs answer, and the guide says so.
+
+**Q4 — a default plus a platform override?** An unfenced impl beside a
+`[platform("browser")]` one would be "specialization by platform". *Rec:
+refuse* (R3.1) — the default is the complement fence, written out; it keeps
+coherence a set question with no ranking.
+
+**Q5 — do twin functions have to agree?** *Rec: yes, exactly* (R3.4).
+
+**Q6 — keep the further leg's program in the editor?** *Rec: yes, for files
+carrying twins only* (§8.4 item 2) — the alternative is no hover or completion
+inside half of the file.
+
+### 8.8 Where R3 depends on R1 as built
+
+- R1 admits `[platform(..)]` on `impl` blocks and nominals (f27_01's
+  `cannot find 'platform'` goes away) and gives the fence a RESOLUTION meaning
+  (f27_03 passes under the fence). R3 assumes both.
+- R1 decides what a file with a single item-level fence is analyzed under. R3
+  assumes the file keeps its ambient platform for unfenced items and a fenced
+  item is analyzed in the leg its fence names — i.e. R1's "analyzed under" for an
+  ITEM already implies a second leg when the item's fence differs from the
+  file's. If editor-41 instead makes a lone item-level fence colour the whole
+  file, §8.4 item 1 is where R3 generalises it (one leg per declared set), and
+  nothing else here moves.
+- R1's quick fix inserts the module-level attribute; R3 adds none — twins are
+  written on purpose.
+
+### 8.9 Size, and the second customer
+
+| Piece | Where | Size |
+|---|---|---|
+| R3.2 leg filtering at collection + the fenced-out table | the analyzer's collection pass | S–M |
+| R3.1 the disjointness carve-out in B98's and B57's checks | `check_duplicate_trait_impls`, `report_duplicate_declarations` | S |
+| R3.4 the signature agreement check for twin functions | a pair check over parsed signatures | S |
+| §8.4 1 — fence platforms join the legs (editor + `vilan check`) | `vilan-lsp` project context, `check_once` | S |
+| §8.4 2–4 — routing requests to the admitting leg, paint, goto | `vilan-lsp` | M |
+| R3.2's chain message for a fenced-out reach | `platform_color.rs` | S |
+| the spec (§2's invariant restated), the guide's platform page | docs | S |
+
+**M–L**, as F27's build order sized it, after R1.
+
+**The second customer is F17's native window chrome.** F17 asks how UI code is
+written once for native and web "with named exceptions (native window chrome:
+close/minimize/maximize buttons …)". Under R3 an exception is a twin:
+
+```vilan
+[platform("native")]
+fun window_controls(parent: View) { … place the platform's buttons … }
+
+[platform("browser")]
+fun window_controls(parent: View) {}      // the browser draws its own chrome
+```
+
+— one call site in shared UI code, one leg each. It needs the `native` host in
+the vocabulary (native-apps.md §5's slice list: `[library.layer.native] platform
+= ["native"]`, and §9 Q2's "does `native` join `@process`?"), which is F1's
+work, not R3's; R3's disjointness is over the host vocabulary, so a new host is
+one more row in `known_hosts()`.
+
+### 8.10 The recommendations, collected
+
+1. **Build R3 after R1**: fenced twins coherent iff their host sets are disjoint
+   (R3.1), each collected only in a leg it admits (R3.2), the build's entry
+   selecting the leg (R3.3), twin functions agreeing on their signatures
+   (R3.4).
+2. **Reuse E113's legs**: a file's fence platforms join the legs the editor and
+   `vilan check` already run and union; keep the further leg's program for
+   files with twins, so requests inside a twin are answered by its own leg
+   (§8.4).
+3. **State the new invariant in the spec** where §2's sentence stands (§8.5).
+4. **First build: trait impls and free functions**; twin nominals and inherent
+   impls held behind F27 R5 (§8.7 Q1).
+5. **R4 stays the documented, unbuilt fallback** (§8.6).
+6. **F17's window chrome is the second customer**, arriving with F1's `native`
+   host (§8.9).

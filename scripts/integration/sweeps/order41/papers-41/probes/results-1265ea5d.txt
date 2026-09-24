@@ -1,0 +1,204 @@
+vilan 0.40.0 (1265ea5d3)
+=== vilan run a122_01_hand_divorce2.vl
+left -> 2
+right -> one
+left -> 2
+right -> two
+left -> 2
+right -> two
+left fired 3, right fired 3
+left=2 right=two
+=== vilan run a122_02_generic_divorce_value_source.vl
+Error: a tuple comprehension's source must be a mapped tuple, got T
+   ╭─[ a122_02_generic_divorce_value_source.vl:6:2 ]
+ 6 │     (x in source.get() => SignalCell::new(x))
+   │     ────────────────────┬────────────────────  
+   │                         ╰────────────────────── a tuple comprehension's source must be a mapped tuple, got T
+───╯
+=== vilan run a122_03_generic_positional_read.vl
+Error: cannot access field '0' on type T
+   ╭─[ a122_03_generic_positional_read.vl:4:11 ]
+ 4 │     let _x = whole.0;
+   │              ───┬───  
+   │                 ╰───── cannot access field '0' on type T
+───╯
+=== vilan run a122_04_for_over_tuple.vl
+0:a
+1:b
+2:c
+1x
+2y
+=== vilan run a122_04b_for_over_tuple_value.vl
+Error: cannot iterate `(i32, str)`: a tuple is a fixed sequence of independently typed elements, not a container of one element type, so a `for` binder has no single type to take and one body cannot be checked for every element. Read the elements positionally (`t.0`, `t.1`), or destructure the tuple into its elements; `(x in t => e)`, the value-level mapping form, is not yet available over a concrete tuple
+   ╭─[ a122_04b_for_over_tuple_value.vl:5:11 ]
+ 5 │     for x in t {
+   │              ┬  
+   │              ╰── cannot iterate `(i32, str)`: a tuple is a fixed sequence of independently typed elements, not a container of one element type, so a `for` binder has no single type to take and one body cannot be checked for every element. Read the elements positionally (`t.0`, `t.1`), or destructure the tuple into its elements; `(x in t => e)`, the value-level mapping form, is not yet available over a concrete tuple
+───╯
+=== vilan run a122_05_for_over_mapped.vl
+Error: cannot iterate `(U in T: SignalCell<U>)`: a tuple is a fixed sequence of independently typed elements, not a container of one element type, so a `for` binder has no single type to take and one body cannot be checked for every element. A mapped tuple's elements have no positions to read yet, so the element-wise form here is the comprehension `(x in t => e)` — the value-level mapping form, whose body IS checked once per element
+   ╭─[ a122_05_for_over_mapped.vl:6:11 ]
+ 6 │     for c in cells {
+   │              ──┬──  
+   │                ╰──── cannot iterate `(U in T: SignalCell<U>)`: a tuple is a fixed sequence of independently typed elements, not a container of one element type, so a `for` binder has no single type to take and one body cannot be checked for every element. A mapped tuple's elements have no positions to read yet, so the element-wise form here is the comprehension `(x in t => e)` — the value-level mapping form, whose body IS checked once per element
+───╯
+=== vilan run a122_06_comprehension_mapped_to_mapped.vl
+1 b
+1 b (copies do not follow)
+=== vilan run a122_07_blanket_impl_over_tuple_bound.vl
+Error: found '2' expected a type
+   ╭─[ a122_07_blanket_impl_over_tuple_bound.vl:7:15 ]
+ 7 │ impl type T: (2..) with Arity {
+   │               ┬  
+   │               ╰── found '2' expected a type
+───╯
+=== vilan run a122_07b_blanket_spellings.vl
+2
+3
+=== vilan run a122_08_self_as_comprehension_source.vl
+Error: found '2' expected a type
+   ╭─[ a122_08_self_as_comprehension_source.vl:9:15 ]
+ 9 │ impl type T: (2..) with Cells {
+   │               ┬  
+   │               ╰── found '2' expected a type
+───╯
+=== vilan run a122_09_mapped_dyn_source.vl
+file:///tmp/vilan-run-141519.mjs:10
+		return s[1].get(s[0]);
+		            ^
+
+TypeError: s[1].get is not a function
+    at file:///tmp/vilan-run-141519.mjs:10:15
+    at Array.map (<anonymous>)
+    at $c (file:///tmp/vilan-run-141519.mjs:9:17)
+    at file:///tmp/vilan-run-141519.mjs:15:12
+    at ModuleJob.run (node:internal/modules/esm/module_job:358:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:99:5)
+=== vilan run a122_09b_dyn_controls.vl
+1
+1 b
+=== vilan run a122_10_concrete_comprehension.vl
+Error: a tuple comprehension's source must be a mapped tuple, got (i32, i32)
+   ╭─[ a122_10_concrete_comprehension.vl:4:10 ]
+ 4 │     let u = (x in t => x + 1);
+   │             ────────┬────────  
+   │                     ╰────────── a tuple comprehension's source must be a mapped tuple, got (i32, i32)
+───╯
+=== vilan run a122_11_key_in_mapped_body.vl
+0
+=== vilan run a122_12_element_bound.vl
+Error: `==` on `U` needs `U: PartialEq` — a parameter promises only what its bounds promise, and `U` is unbounded, so there is no `eq` to dispatch to. `==` dispatches through its LEFT operand, which is exactly where a bound decides the implementation: add it where `U` is declared, or write a concrete type here
+   ╭─[ a122_12_element_bound.vl:8:17 ]
+ 8 │     (c in cells => c.get() == c.get())
+   │                    ─────────┬────────  
+   │                             ╰────────── `==` on `U` needs `U: PartialEq` — a parameter promises only what its bounds promise, and `U` is unbounded, so there is no `eq` to dispatch to. `==` dispatches through its LEFT operand, which is exactly where a bound decides the implementation: add it where `U` is declared, or write a concrete type here
+───╯
+=== vilan run a122_12b_pack_not_comparable.vl
+Error: `==` on `T` needs `T: PartialEq` — a parameter promises only what its bounds promise, and `T` is unbounded, so there is no `eq` to dispatch to. `==` dispatches through its LEFT operand, which is exactly where a bound decides the implementation: add it where `T` is declared, or write a concrete type here
+   ╭─[ a122_12b_pack_not_comparable.vl:6:2 ]
+ 6 │     a == b
+   │     ───┬──  
+   │        ╰──── `==` on `T` needs `T: PartialEq` — a parameter promises only what its bounds promise, and `T` is unbounded, so there is no `eq` to dispatch to. `==` dispatches through its LEFT operand, which is exactly where a bound decides the implementation: add it where `T` is declared, or write a concrete type here
+───╯
+=== vilan run a122_13_round_trip.vl
+a2=3 b2=b fired_a=2 fired_b=2
+=== vilan run a122_14_owner_selector_spelling.vl
+Error: found '2' expected a type
+   ╭─[ a122_14_owner_selector_spelling.vl:4:31 ]
+ 4 │ import std::list::{ (impl _: (2..))::{ len } };
+   │                               ┬  
+   │                               ╰── found '2' expected a type
+───╯
+=== vilan run a122_16_flat_layout_vs_runtime_map.vl
+reads: a=1,2 b=c c=undefined
+reads: whole.1=undefined
+pairs: p.0.1=7,x p.1.0=undefined p.1.1=undefined
+=== vilan run a122_17_combine_tuple_element.vl
+control: t.0.1=2 t.1=c
+combine: x=1,2 y=c l=undefined
+combine after set: x=3,4 y=c l=undefined
+=== vilan run a122_18_self_as_mapped_source.vl
+1
+=== vilan run --backend rust a122_01_hand_divorce2.vl
+Error: the `rust` backend does not emit a value of an unbound generic type parameter (parameter 1 of `divorce2`) yet — this is F1's slice S1b, whose scope is structs, enums, generics, `Option`/`Result`, `str`, `List`, `Map`/`Set`, closures, `impl`s, traits, operators, `?`, `print`, `panic` and the reactive cell. Build this program with `--backend js`.
+=== vilan run --backend rust a122_06_comprehension_mapped_to_mapped.vl
+Error: the `rust` backend does not emit a value of type `a mapped tuple` yet — this is F1's slice S1b, whose scope is structs, enums, generics, `Option`/`Result`, `str`, `List`, `Map`/`Set`, closures, `impl`s, traits, operators, `?`, `print`, `panic` and the reactive cell. Build this program with `--backend js`.
+   ╭─[ a122_06_comprehension_mapped_to_mapped.vl:5:5 ]
+ 5 │ fun reads<T: (2..)>(cells: (U in T: SignalCell<U>)): T {
+   │     ──┬──  
+=== vilan check --platform node f27_01_fenced_twin_impls.vl
+Error: 'Show' is already implemented for 'Thing'; remove or merge this impl
+    ╭─[ f27_01_fenced_twin_impls.vl:20:17 ]
+ 13 │ impl Thing with Show {
+    │                 ──┬─  
+    │                   ╰─── 'Show' is already implemented here
+ 20 │ impl Thing with Show {
+    │                 ──┬─  
+    │                   ╰─── 'Show' is already implemented for 'Thing'; remove or merge this impl
+────╯
+Error: cannot find 'platform' in this scope
+    ╭─[ f27_01_fenced_twin_impls.vl:12:2 ]
+ 12 │ [platform("browser")]
+=== vilan check --platform browser f27_01_fenced_twin_impls.vl
+Error: 'Show' is already implemented for 'Thing'; remove or merge this impl
+    ╭─[ f27_01_fenced_twin_impls.vl:20:17 ]
+ 13 │ impl Thing with Show {
+    │                 ──┬─  
+    │                   ╰─── 'Show' is already implemented here
+ 20 │ impl Thing with Show {
+    │                 ──┬─  
+    │                   ╰─── 'Show' is already implemented for 'Thing'; remove or merge this impl
+────╯
+Error: cannot find 'platform' in this scope
+    ╭─[ f27_01_fenced_twin_impls.vl:12:2 ]
+ 12 │ [platform("browser")]
+=== vilan check --platform node f27_02_fenced_twin_functions.vl
+Error: 'where_am_i' is already declared in this module; remove or rename this one
+   ╭─[ f27_02_fenced_twin_functions.vl:9:5 ]
+ 4 │ fun where_am_i(): str {
+   │     ─────┬────  
+   │          ╰────── 'where_am_i' is already declared here, as a function
+ 9 │ fun where_am_i(): str {
+   │     ─────┬────  
+   │          ╰────── 'where_am_i' is already declared in this module; remove or rename this one
+───╯
+=== vilan check --platform browser f27_02_fenced_twin_functions.vl
+Error: 'where_am_i' is already declared in this module; remove or rename this one
+   ╭─[ f27_02_fenced_twin_functions.vl:9:5 ]
+ 4 │ fun where_am_i(): str {
+   │     ─────┬────  
+   │          ╰────── 'where_am_i' is already declared here, as a function
+ 9 │ fun where_am_i(): str {
+   │     ─────┬────  
+   │          ╰────── 'where_am_i' is already declared in this module; remove or rename this one
+───╯
+=== vilan check --platform node f27_03_fence_does_not_resolve.vl
+Error: struct 'Region' has no field 'anchor'
+     ╭─[ f27_03_fence_does_not_resolve.vl:8:11 ]
+   8 │     let _a = region.anchor;
+     │              ──────┬──────  
+     │                    ╰──────── struct 'Region' has no field 'anchor'
+     ├─[ /home/reed/.vilan/std-cache/fdea9e289383c97c/std/src/process/ui.vl:325:8 ]
+ 325 │ ╭─▶ export struct Region {
+     ┆ ┆   
+ 327 │ ├─▶ }
+     │ │       
+     │ ╰─────── `Region` here is std's process twin — this file is analyzed under node: `--platform` was passed. The `browser` twin of `std::ui` declares `anchor` — an entry of that platform (or `--platform`) is what puts this file under it
+─────╯
+=== vilan check --platform browser f27_03_fence_does_not_resolve.vl
+f27_03_fence_does_not_resolve.vl: no errors
+=== vilan check --platform node f27_04_unreached_still_checked.vl
+Error: Expected i32, but got str instead.
+   ╭─[ f27_04_unreached_still_checked.vl:5:15 ]
+ 5 │     let x: i32 = "not a number";
+   │                  ───────┬──────  
+   │                         ╰──────── Expected i32, but got str instead.
+───╯
+=== vilan check --platform browser f27_04_unreached_still_checked.vl
+Error: Expected i32, but got str instead.
+   ╭─[ f27_04_unreached_still_checked.vl:5:15 ]
+ 5 │     let x: i32 = "not a number";
+   │                  ───────┬──────  
+   │                         ╰──────── Expected i32, but got str instead.
+───╯

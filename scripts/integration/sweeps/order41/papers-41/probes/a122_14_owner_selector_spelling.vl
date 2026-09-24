@@ -1,0 +1,8 @@
+// A122 probe 14 — the owner's pseudo-syntax selector `(impl _: (2..))::{ .. }`,
+// tried against a real std module: the selector's subject is `type`, whose
+// binder takes a bound-list, not a tuple bound.
+import std::list::{ (impl _: (2..))::{ len } };
+
+fun main() {
+	print(1);
+}

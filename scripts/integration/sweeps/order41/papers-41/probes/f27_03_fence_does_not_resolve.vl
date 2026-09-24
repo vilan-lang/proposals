@@ -1,0 +1,14 @@
+// F27 R3 probe 03 — the function fence has no RESOLUTION meaning on 1265ea5d:
+// a browser-fenced function reading the browser twin's `Region.anchor`, checked
+// under the default (process) platform, still errors in the wrong twin.
+import std::ui::Region;
+
+[platform("browser")]
+fun anchor_of(region: Region): i32 {
+	let _a = region.anchor;
+	0
+}
+
+fun main() {
+	print(1);
+}

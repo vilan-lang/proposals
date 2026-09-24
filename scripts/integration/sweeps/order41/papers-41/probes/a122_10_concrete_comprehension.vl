@@ -1,0 +1,6 @@
+// A122 probe 10 — the comprehension over a CONCRETE tuple (B183's concrete arm).
+fun main() {
+	let t = (1, 2);
+	let u = (x in t => x + 1);
+	print(u.0);
+}

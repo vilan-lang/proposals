@@ -1,0 +1,11 @@
+// F27 R3 probe 04 — platform-coloring §2's invariant as shipped: a fenced
+// function NO entry reaches is still type-checked in every leg.
+[platform("browser")]
+fun never_called(): i32 {
+	let x: i32 = "not a number";
+	x
+}
+
+fun main() {
+	print(1);
+}

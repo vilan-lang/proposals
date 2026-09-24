@@ -1,0 +1,21 @@
+// A122 probe 01 — the 2-arity hand form of `divorce`, and the per-position
+// firing count: does output cell 0 fire when only position 1 of the source moved?
+import std::reactive::SignalCell;
+
+fun divorce2<A, B>(source: SignalCell<(A, B)>): (SignalCell<A>, SignalCell<B>) {
+	(source.map(|w| w.0), source.map(|w| w.1))
+}
+
+fun main() {
+	let source = SignalCell::new((1, "one"));
+	let (left, right) = divorce2(source);
+	mut left_fires = 0;
+	mut right_fires = 0;
+	let _l = left.on_change(|v| { left_fires = left_fires + 1; print(i"left -> {v}"); });
+	let _r = right.on_change(|v| { right_fires = right_fires + 1; print(i"right -> {v}"); });
+	source.set((2, "one"));      // only position 0 moved
+	source.set((2, "two"));      // only position 1 moved
+	source.set((2, "two"));      // nothing moved
+	print(i"left fired {left_fires}, right fired {right_fires}");
+	print(i"left={left.get()} right={right.get()}");
+}

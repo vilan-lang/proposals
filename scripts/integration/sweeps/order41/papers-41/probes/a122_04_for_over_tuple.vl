@@ -1,0 +1,12 @@
+// A122 probe 04 — B368's tuple pattern in a `for` header (over a list of pairs
+// and an enumerate): both run on 1265ea5d.
+fun main() {
+	let words = ["a", "b", "c"];
+	for (i, w) in words.iter().enumerate() {
+		print(i"{i}:{w}");
+	}
+	let pairs = [(1, "x"), (2, "y")];
+	for (n, s) in pairs {
+		print(i"{n}{s}");
+	}
+}

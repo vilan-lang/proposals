@@ -1,0 +1,21 @@
+// A122 probe 16 — tuples store FLAT (types.md §5.9) and the comprehension lowers
+// to a runtime `.map` over the JS array. What happens when an ELEMENT is itself
+// a tuple (a source element, or a template `(Key, U)` as `entries()` would give)?
+import std::reactive::SignalCell;
+
+fun reads<T: (2..)>(cells: (U in T: SignalCell<U>)): T {
+	(c in cells => c.get())
+}
+
+fun pairs<T: (2..)>(cells: (U in T: SignalCell<U>)): (U in T: (i32, U)) {
+	(c in cells => (7, c.get()))
+}
+
+fun main() {
+	let ((a, b), c) = reads((SignalCell::new((1, 2)), SignalCell::new("c")));
+	print(i"reads: a={a} b={b} c={c}");
+	let whole = reads((SignalCell::new((1, 2)), SignalCell::new("c")));
+	print(i"reads: whole.1={whole.1}");
+	let p = pairs((SignalCell::new(1), SignalCell::new("x")));
+	print(i"pairs: p.0.1={p.0.1} p.1.0={p.1.0} p.1.1={p.1.1}");
+}
