@@ -1,0 +1,28 @@
+// F27 R3 probe 01 — two platform-fenced impls of ONE trait for ONE type in one
+// file, the shape R3 proposes. On 1265ea5d: is `[platform(..)]` admitted on an
+// `impl` at all, and if so does B98's coherence rule refuse the pair?
+trait Show {
+	fun show(self): str;
+}
+
+struct Thing {
+	n: i32,
+}
+
+[platform("browser")]
+impl Thing with Show {
+	fun show(self): str {
+		"browser"
+	}
+}
+
+[platform("@process")]
+impl Thing with Show {
+	fun show(self): str {
+		"process"
+	}
+}
+
+fun main() {
+	print(Thing { n = 1 }.show());
+}

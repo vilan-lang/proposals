@@ -1,0 +1,15 @@
+// F27 R3 probe 02 — two platform-fenced FUNCTIONS of one name in one file (the
+// free-function twin): is the name refused as declared twice?
+[platform("browser")]
+fun where_am_i(): str {
+	"browser"
+}
+
+[platform("@process")]
+fun where_am_i(): str {
+	"process"
+}
+
+fun main() {
+	print(where_am_i());
+}
