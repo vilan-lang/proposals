@@ -1,0 +1,13 @@
+# VILAN_NATIVE_HOST_CENSUS=1 vilan build --backend rust --stdout src/server.vl
+# program: kolt @ 9a057c6 + the owner's uncommitted edits, measured on a SCRATCH COPY (kolt untouched)
+# BEFORE — compiler: origin/next d65d4e75 (native-42 base). native-41 counted 4 (its 'generic map' gap is GONE on this base: premise corrected).
+vilan-native: 3 host gaps
+  the host binding `pbkdf2_sync` (`pbkdf2Sync`)
+  the host binding `random_bytes` (`__random_bytes`)
+  the host binding `to_string_encoded`
+
+# AFTER — compiler: native-42 working tree (vilan-rt-crypto, F40)
+vilan-native: 0 host gaps
+
+# Past the census, rustc refused 5 emitted errors (one class): std::reactive::cell_identity returns i32 and vilan-rt's Shared::identity answered i64 — fixed by stamping a JS-shaped i32 counter on the cell (see the F40 commit).
+# After that: vilan build --backend rust src/server.vl exits 0; the generated manifest names vilan-rt, vilan-rt-sqlite and vilan-rt-crypto.

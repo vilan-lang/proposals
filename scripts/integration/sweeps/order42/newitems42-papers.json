@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "F41",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-25 (Order 42, papers-42's probe)",
+   "title": "native — a FIELD named `self` or `super` is emitted as `r#self`/`r#super`, which rustc REFUSES (raw identifiers cannot spell those two) — live today; the emitter must mangle instead of raw-quoting",
+   "discussion": "papers-42's find 2 (2026-09-25); contextual-keywords.md §12",
+   "body": "Pin: a struct with a `self` field builds and runs natively byte-identical with JS; the mangling rule written where the emitter names fields. Sizing S; native lane."
+  },
+  {
+   "id": "B416",
+   "section": "B",
+   "kind": "bug (macro)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, papers-42's probe)",
+   "title": "`[derive(Wire)]` binds a LOCAL per field, so a field named `deserializer` (or any name the expansion itself uses) fails with 5 errors (`json.vl:995`, `rpc.vl:5692`) — the derive's hygiene: its own locals must not collide with field names",
+   "discussion": "papers-42's find 3 (2026-09-25)",
+   "body": "Fix: the expansion's locals take a spelling no user identifier can (a reserved prefix), or the derive reads fields through positional accessors. Pin: a `deserializer` field round-trips. Sizing S."
+  },
+  {
+   "id": "B417",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, papers-42's probe)",
+   "title": "a METHOD named `Self` is accepted at its declaration but cannot be called (`x.Self()` parses `Self` as the type); refuse the name at the declaration with a steer",
+   "discussion": "papers-42's find 4 (2026-09-25); B414 Q2",
+   "body": "One parser rule + ledger row. Sizing XS."
+  },
+  {
+   "id": "D14",
+   "section": "D",
+   "kind": "docs",
+   "area": "Documentation",
+   "status": "OPEN — filed 2026-09-25 (Order 42, papers-42's probe)",
+   "title": "the lexical spec §2.2's contextual-keyword list OMITS `as` and `only`, which the compiler already treats as contextual (accepted as names at every position probed); `layer` is listed nowhere and is not a word the compiler knows",
+   "discussion": "papers-42's find 5 (2026-09-25); contextual-keywords.md §1",
+   "body": "Add `as`/`only` to §2.2's list; drop `layer` from any list that names it. Gates grammar_ebnf/grammar_sync if the EBNF carries the list. Sizing XS; may ride syntax-42's EBNF pass."
+  },
+  {
+   "id": "E225",
+   "section": "E",
+   "kind": "bug (bindgen)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-25 (Order 42, papers-42's probe)",
+   "title": "bindgen's `RESERVED` list has DRIFTED from the lexer: it lacks `css`, `dyn` and `lazy`, so a TypeScript member named one of those produces bindings that do not parse — the list should be derived from the lexer's `KEYWORDS` (one source), and after B413 it must not name `resource`",
+   "discussion": "papers-42's find 6 (2026-09-25)",
+   "body": "Fix: `RESERVED` = the lexer's table (a shared constant or a pin that they agree); a pin per drifted word. Sizing S."
+  }
+ ]
+}

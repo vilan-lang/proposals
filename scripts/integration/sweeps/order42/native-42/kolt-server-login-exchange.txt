@@ -1,0 +1,47 @@
+# kolt's REAL src/server.vl (scratch copy of kolt @ 9a057c6 + owner's uncommitted edits), both legs built by the native-42 compiler.
+# node leg: vilan build src/server.vl -> node src/server.mjs. native leg: vilan build --backend rust src/server.vl (debug; vilan-rt-crypto at opt-level 3).
+# The client leg does not build on this compiler (A125, the owner's; kolt RED as recorded), so dist/ carries a STUB client manifest; the login exchange never reads it.
+# Driver: exchange.py (http.client, Connection: close). Compared per exchange: status line, Content-Type, Cache-Control, Content-Length, body.
+# MASKED: the 64-hex session tokens (random_bytes(32).to_hex(), fresh per call on both legs by design) — asserted 64 lowercase hex and pairwise distinct.
+# NOT compared: Date, header order (Order 39's reasons).
+
+## 1. The same nine exchanges, each leg over a FRESH kolt.db
+node	POST /api/register	HTTP/1.1 200 OK	application/json	no-cache	83	{"Ok":{"token":"<token:64hex>"}}
+node	POST /api/register	HTTP/1.1 200 OK	application/json	no-cache	24	{"Err":"username taken"}
+node	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	83	{"Ok":{"token":"<token:64hex>"}}
+node	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	24	{"Err":"wrong password"}
+node	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	25	{"Err":"no such account"}
+node	POST /api/login	HTTP/1.1 400 Bad Request	text/plain	no-cache	14	malformed call
+node	POST /api/register	HTTP/1.1 200 OK	application/json	no-cache	40	{"Err":"username or password too short"}
+node	GET /w/1	HTTP/1.1 200 OK	text/html	no-cache	2496	<the Document shell, 2496 bytes — identical>
+node	GET /api/nothing	HTTP/1.1 400 Bad Request	text/plain	no-cache	14	malformed call
+node	tokens	2	distinct=2	29fe6a4053145f7088da3810439a86556b7678c969313373f5c7ece9efd7e239,7d8791d03c95d252dd63d38579d60d706b3ca44a21f3caa9fcdebc63198f0a2e
+
+native	POST /api/register	HTTP/1.1 200 OK	application/json	no-cache	83	{"Ok":{"token":"<token:64hex>"}}
+native	POST /api/register	HTTP/1.1 200 OK	application/json	no-cache	24	{"Err":"username taken"}
+native	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	83	{"Ok":{"token":"<token:64hex>"}}
+native	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	24	{"Err":"wrong password"}
+native	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	25	{"Err":"no such account"}
+native	POST /api/login	HTTP/1.1 400 Bad Request	text/plain	no-cache	14	malformed call
+native	POST /api/register	HTTP/1.1 200 OK	application/json	no-cache	40	{"Err":"username or password too short"}
+native	GET /w/1	HTTP/1.1 200 OK	text/html	no-cache	2496	<the Document shell, 2496 bytes — identical>
+native	GET /api/nothing	HTTP/1.1 400 Bad Request	text/plain	no-cache	14	malformed call
+native	tokens	2	distinct=2	6f19eacfd63bd4188a73a5eecb207fc4c9ad6da6b32693de9fad171757f11ad2,4ebbb07f183d49016c76467c989250c854c945d6da83d9bcaeaad71f9ba7a805
+
+diff of the two legs (label column stripped, token line excluded): EMPTY — IDENTICAL
+
+## 2. CROSS-BACKEND over ONE kolt.db (the non-vacuous half: a password hashed by one backend verified by the other)
+node	POST /api/register	HTTP/1.1 200 OK	application/json	no-cache	83	{"Ok":{"token":"<token:64hex>"}}
+node	tokens	1	distinct=1	9af42489b853092e21b51a69b5650f37862e0bbfed8482f1431ad89d103b1a51
+native	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	83	{"Ok":{"token":"<token:64hex>"}}
+native	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	24	{"Err":"wrong password"}
+native	POST /api/register	HTTP/1.1 200 OK	application/json	no-cache	83	{"Ok":{"token":"<token:64hex>"}}
+native	tokens	2	distinct=2	04e81a5106e3e06f125c8f0839f6e3d2bbbe0eef98ee3e117be6b8f5a14724fc,8268d150d70991ed957391454a26ca3b1785d083b5d18f16dbf3603c5add4f1d
+node	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	83	{"Ok":{"token":"<token:64hex>"}}
+node	POST /api/login	HTTP/1.1 200 OK	application/json	no-cache	24	{"Err":"wrong password"}
+node	tokens	1	distinct=1	915045614fdadee24f0be8879b72880a5b246191bf21ab7bf802cc1260171395
+
+## 3. PLANT: vilan-rt-crypto's PBKDF2 block counter started at 2 (mac.rs), native leg rebuilt
+native	POST /api/login (ada, registered by node)	{"Err":"wrong password"}   <- RED
+node	POST /api/login (bob, registered natively)	{"Err":"wrong password"}   <- RED
+restored -> section 2's answers again.

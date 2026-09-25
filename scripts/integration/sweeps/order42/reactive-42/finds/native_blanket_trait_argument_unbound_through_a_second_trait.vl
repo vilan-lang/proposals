@@ -1,0 +1,57 @@
+// reactive-42 find N1 (2026-09-25, on d65d4e75): the `rust` backend refuses a blanket
+// impl method whose trait argument is bound from the impl subject (`impl type S: Src<type T> with Up<T>`)
+// when it is reached from another impl's body through a bound on that second trait.
+// `vilan run` prints 40; `vilan build --backend rust` refuses at `pull`:
+// "does not emit a value of an unbound generic type parameter (`T` of trait `Src`)".
+// Without the `Up` indirection (`impl Mapped<type S: Src<type T>, ..>` calling `self.up.get()`)
+// it builds natively. This is the shape of reactive.vl's private `Upstream` blanket (the B409
+// workaround); under the flip every `s.map(f).get()` in user code reaches it.
+import std::io::print;
+
+trait Src<T> {
+	fun get(self): T;
+}
+
+trait Up<T> {
+	fun pull(self): T;
+}
+
+impl type S: Src<type T> with Up<T> {
+	fun pull(self): T {
+		self.get()
+	}
+}
+
+struct Root {
+	value: i32,
+}
+
+impl Root with Src<i32> {
+	fun get(self): i32 {
+		self.value
+	}
+}
+
+struct Mapped<S, T, U> {
+	up: S,
+	transform: |T| U,
+}
+
+impl Mapped<type S: Up<type T>, T, type U> with Src<U> {
+	fun get(self): U {
+		(self.transform)(self.up.pull())
+	}
+}
+
+impl type S: Src<type T> {
+	fun mapped<U>(self, transform: |T| U): Mapped<S, T, U> {
+		Mapped<S, T, U> { up = self, transform }
+	}
+}
+
+fun main() {
+	let root = Root { value = 4 };
+	let scaled = root.mapped(|n| n * 10);
+	let now: i32 = scaled.get();
+	print(now);
+}
