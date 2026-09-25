@@ -421,6 +421,27 @@ So the corpus goldens are a genuine measure of the migration's quality: a golden
 that moves means a conversion was introduced that should not have been, or a
 `Math.trunc`/`>>>` verdict changed. Claim (v) of the item holds.
 
+> **Corrected (Order 41, lane index-41, 2026-09-24): the goldens DO move under S2 —
+> 17 of 138.** The emission claim above holds (no index emits differently, and the
+> subscript's text is unchanged), but a golden records more than the index: it
+> records std's BODIES and the program's CONVERSIONS, and S2 changes both. Over the
+> prepared S2 (`sweeps/order41/index-41/run_s2.sh`, NOTES.md): 121 byte-identical,
+> **17 moved**, 0 fail to build — and every move is one of four kinds:
+>
+> | kind | goldens |
+> | --- | --- |
+> | a hand-rewritten std LOOP the program reaches (`List::reverse`'s `for index > 0 { index -= 1; … }`; `reconcile`'s `Option<usize>` chain; `json`'s two list loops) | element-clones, iterator-adapters, list-sort, reconcile-index, reactive-keyed, time |
+> | the corpus's own `-1` sentinels, by hand | list-search |
+> | `.as_usize()` where the program's `i32` meets a `usize` | crypto, delta-law, list-cell, option-view, for-mut-container |
+> | `.as_i32()` where a `usize` length meets the program's `i32` | adapt, capture-clones, mut-parameters, side-effect-let |
+> | S1's two boundary conversions flipping direction, by design | usize-literals |
+>
+> So the goldens are still the measure of the migration's quality, but the measure
+> is **every move classified as a conversion or a hand-rewritten std loop**, not
+> "none move" — the prediction of none was wrong, and so is the cut plan's §3.1
+> sentence that "S2 must move no JS golden", which read it from here. index-42
+> re-classifies the 17 on its rebased base; any OTHER movement stops the lane.
+
 `checked_sub`/`saturating_sub` are still worth having (ruling 2 says so), and
 they are ordinary std functions on the family — no compiler support, no emission
 change. Recommend `usize::checked_sub(self, other): Option<usize>` and
@@ -665,6 +686,53 @@ copy-elision census, before and after.
 (collections-40's own note); `Splice(at, ..)` is ruled to be born `usize` and
 is not built yet; `std::ui`'s row positions; `KeyedCell.positions`. If A112 S2
 lands before S2 of this item, S4 is where its markers are cleared.
+
+**As built — S1 (Order 41, lane index-41, 2026-09-24; 12750bb0 + 7c746d47, with
+B389's literal law 94a648d1 beneath).** `usize` is in `type_.rs`'s three tables,
+the numeric rows of the analyzer, the transformer and bindgen, and the native
+scalar map (Rust `usize`; `vilan-rt` needed nothing); `grammar_sync` and the book
+theme follow. `number.vl` carries §2.3's family, including `as_usize` on the eleven
+other numeric types, `checked_sub`/`saturating_sub`, `Hashable`, `Json`/`FromJson`,
+`Debug` and `Display`; `Wire` rides `i32`'s lane (§6; its pin reds on the `i53`
+lane). `usize::max_value()` answers 2⁵³ on every backend (§11 Q3). The `42usize`
+suffix needed no lexer change. **The subscript admits BOTH types**: `list[i]`
+takes a `usize` beside an `i32` while its EXPECTATION stays `i32`, so emitted
+subscripts are unchanged — a two-type admission S2 deletes. `len()` still answers
+`i32` until S2 (re-probed on d65d4e759: `xs[i]` with `i: usize` and `xs[j]` with
+`j: i32` both print; `let n: usize = xs.len();` is refused with the `.as_usize()`
+steer). **`isize` is not built** — the tables would accept it, but it is not free
+(its own wire-width and range rulings) and nothing in the estate asks; R-b RULED
+2026-09-25 that it stays unbuilt, and a signed offset stays `i53` (`let k: isize`
+is "cannot find type 'isize'"). Pins: 20 in `inference/index_type` (19 red
+before), and **three corpus programs** — `usize.vl` (in the native default
+suite), `usize-underflow.vl` (named OUT of the native differential, §5.2: JS
+prints -1, a native debug build panics), `usize-literals.vl` (the 21 positions of
+§4, identical on both backends; at `usize` 19 follow the law and `get`/`len` are
+S2's boundary). Whole native set 123: 85 identical / 38 refused / 0 differing.
+
+**S2 PREPARED, not landed** (`sweeps/order41/index-41/`: `run_s2.sh`,
+`i5_s2_codemod.rs`, `hand.patch`, `compiler.patch`, NOTES.md). 105 signatures by
+parse, none unmatched; 214 codemod edits (169 E218 conversions — 60 `.as_i32()` at
+WIRE positions, none `.as_i53()`; 41 operand conversions; 4 counters); the seven
+sentinels and eight loops by hand plus the census's misses (`Enumerated`'s trait
+argument, annotated locals, dead `from < 0` clamps, an `index_of` underflow in
+`document.vl`); residue zero in std on both platforms, macro_std and 141 corpus
+programs; goldens per §5.4's correction; examples 11 clean; 40 files, +379 −332.
+**kolt reaches FIVE files, not the three §3.2 counted** — `rotary.vl` first,
+`command_palette.vl` and `theme.vl` (each a `len() - 1` that underflows on an
+empty list), `search.vl`, `server.vl`. Not in the 105, and left to S4:
+macro_std's `Arguments::len`/`get`, the enum payloads `RowStep`/`Delta`. Finds:
+B406, B407 (a negative literal accepted at an unsigned type — must land before
+S2, or every `-1` sentinel compiles silently), I6 (RULED: `as_usize()` of a
+negative saturates to 0 on every backend), F36.
+
+**As built — S2 (Order 42, lane index-42).** ⟦INTEGRATOR: index-42 had not
+reported when papers-42 closed. Fill from its report: the one breaking commit's
+sha (S2 + I6 + S3 + S4, or which of them separately); the 17 goldens
+re-classified on the rebased base (any other movement is a stop); the naming
+diagnostic's ledger row and the quick fix; S3's `main.rs` before/after; S4's
+markers census reading zero; the wire frame byte-compare; kolt's five files'
+exact edits for the owner.⟧
 
 ---
 
