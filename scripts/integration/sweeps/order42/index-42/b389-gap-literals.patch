@@ -1,0 +1,21 @@
+diff -ru a/vilan/std/src/rpc.vl b/vilan/std/src/rpc.vl
+--- a/vilan/std/src/rpc.vl	2026-09-24 17:36:52.010372211 -0400
++++ b/vilan/std/src/rpc.vl	2026-09-24 17:36:52.104530008 -0400
+@@ -3193,7 +3193,7 @@
+ 		RemoteSource {
+ 			channel = channel_cell,
+ 			subscribe = Shared::new(encode_control(self.codec, "Subscribe", channel)),
+-			count = Shared::new(0),
++			count = Shared::new(0usize),
+ 			closing = Shared::new(false),
+ 			settle_id = fresh_id(),
+ 			codec = self.codec,
+@@ -3235,7 +3235,7 @@
+ 			transport = self.transport,
+ 			cache,
+ 			fault,
+-			count = Shared::new(0),
++			count = Shared::new(0usize),
+ 			closing = Shared::new(false),
+ 			settle_id = fresh_id(),
+ 			leases = Shared::new([]),
