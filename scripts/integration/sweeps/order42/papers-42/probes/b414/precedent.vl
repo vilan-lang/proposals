@@ -1,0 +1,14 @@
+import std::io::print as as;
+struct Only {
+	sync: i32,
+}
+fun apply(sync: (sync |i32| i32), only: i32): i32 {
+	sync(only)
+}
+fun main() {
+	let only = 0;
+	let context = only;
+	let o = Only { sync = 20 };
+	let sync = |as: i32| as + 1;
+	as(i"{apply(sync, o.sync) + 21 + context}");
+}

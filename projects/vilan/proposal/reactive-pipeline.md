@@ -332,6 +332,18 @@ flow. It is where a shared derivation, a `get()` in a hot loop, a
 `dyn`-typed field wanting a concrete type, or a heterogeneous collection
 materialises.
 
+> **RULED 2026-09-25 (the owner, after Order 41's seal; A124 Q-no-cycle, A130).**
+> A `.cell()` at MODULE level is a leak by design unless released: while anything
+> is subscribed to it, its root keeps a strong loop — root list → subscriber
+> record → node → root — that no owner will ever cut (reactive-41's no-cycle gate
+> found exactly this shape under the flip, §11). So the gate's exemplar builds its
+> `.cell()` under an owner; `.cell_global()` is the spelling that says a
+> program-lifetime cell is meant (the gate excludes it by name); and `.cell()`
+> written directly in a module binding's initializer is REFUSED with a steer to
+> either. The refusal is static only (R-e): a cell built at module init through a
+> call is the documented remainder. Order 42 (reactive-42) builds it inside the
+> flip's commit.
+
 ### 2.5 Pending values are outside the trait — `Resource<T>`
 
 > **R5, RULED 2026-09-22.** The pending family is `Pending<T>` or `Resource<T>`
@@ -808,3 +820,84 @@ combinator" is not the reading taken from §4's numbers.
    could not demonstrate and the one the diamond's count depends on (§2.3).
 6. **Correct the record on kolt's numbers** (§4.4) and on the bare-trait fields
    (§3.5) before either is used to size a migration.
+
+## 11. As built (Order 41, lane reactive-41, 2026-09-24)
+
+S2a and S2b landed on `next` (bb798cbc, 29c0f2bb; the guide's "Where a derivation
+lives", b3fa0a47); S2c was PREPARED as a saved patch and is Order 42's, the
+train's last car. Where the build differs from §2 and §5, the build is right and
+this section says so.
+
+**S2a — the protocol (bb798cbc).** §2.3's `on_settle(self, observer: || void)`
+could not carry one id per leaf chain: a bare closure has no id to thread. It
+takes the leaf's `Subscriber` RECORD instead (id, class, liveness), and it is a
+DEFAULTED member of `Source`, not a requirement — a requirement would have broken
+every implementation. So §2.3's separate `Cold<T>` trait and S1's probe of it are
+retired. `observe` is now mint + attach: `mint_subscriber` is the one place the
+door-2 derivation mark is spent. The default bridges over `on_change` and wakes
+through the DRAINING turn only; reading the ambient turn would give the member a
+hidden context parameter, which a native `dyn` slot refuses. **The diamond fires
+ONCE in a turn** (the pin reds with a fresh id per registration) — **and still
+TWICE inline**, with no turn open, which §2.3 did not say: the dedup is the
+turn's, so outside one each arm's registration notifies the leaf. Re-run for
+this section (`sweeps/order42/papers-42/probes/asbuilt/diamond_inline.vl`):
+`in a turn: (30,103)`, `inline: (40,104)(40,104)`.
+
+**S2b — the nodes (29c0f2bb).** `Map<S, T, U>`, `Switch<S, T, I, U>`,
+`Combine<T>` over `(U in T: dyn Source<U>)`, `Distinct<S, T>`; `.cell()`,
+`.distinct()`; and `Resource<T>` / `ResourceState<T>` with `.or` (resets, Q2 as
+recommended), `.latest`, `.optional`, `.is_pending`. §2.1's `Map<S, U>` and
+`Switch<S, I>` do not compile as written: a field's type must name every type it
+mentions, and the transform is a field, so the upstream's `T` is a struct
+parameter. The transform is held plain (`|T| U`) because `sync` is accepted on a
+parameter and not on a field; it is checked where the node is built. Four
+compiler defects shaped the rest, each named at its site in `reactive.vl`:
+
+- **B409** (a default inherited through an impl whose bound names the SAME trait
+  checks that bound at the implemented argument) → the upstream bound is a
+  private `Upstream<T>` blanket under a second name;
+- **B410** (an override of a trait default is not selected through a bound when
+  the trait's argument is a tuple) → every node's `on_change` calls its OWN
+  `on_settle` on `self`, never through the bound;
+- **B411** (a default's closure parameter is typed with the unsubstituted binder
+  through a nested `type I: Source<type U>`) → `Switch` binds `U` directly, as a
+  fourth, phantom parameter;
+- **B398** (a mapped-tuple position over `dyn` does not coerce its elements) →
+  `Combine`'s inputs arrive already erased, and its constructor cannot erase them.
+
+(A124's 2026-09-24 stamp attaches B411 to the arity; reading `reactive.vl`, the
+`T` parameter is the field rule above and B411 is `Switch`'s fourth parameter.)
+The combinators still returned `SignalCell`; the node constructors were exported
+`[internal]` (`map_node`, `switch_node`, `combine_node`, `resource_node`,
+`Resource::pending`). `.cell()` does not compare (Q3 as recommended), is
+owner-tied and a derivation, and **adds no `Shared` site** — it builds on
+`SignalCell::new`, so the census moved 140 → 143 by `Switch`, `Distinct` and
+`Resource`'s two cells less the S1 probe's, NOT by the `.cell()` count. `dispose`
+became `release_under` (the release body given its turn) and the nodes `detach`
+context-free; eight goldens moved, runtime-identical. The S1 probe module was
+deleted and its four pins re-pointed at the real nodes.
+
+**S2c — PREPARED, not landed** (`sweeps/order41/reactive-41/`: `s2c-flip.patch`
+builds on b3fa0a47; `s2c-combine.patch` builds and throws until B398). Nineteen
+tests red under it: five on B408 (a blanket method unreachable through an
+abstract bound — every generic `s.map(..)` once `map` is a blanket), eight A25
+pins, four behaviour pins to re-derive, one diagnostic, and the no-cycle gate
+(§2.4's ruling note). The estate census under the flip: std ui/router 0, rpc 4
+(the mirrors' own `map`), corpus 4 goldens, examples 9, split 1, Rust-test `.vl`
+consts 30 (11 fixed by `.cell()` in the patch), website 0, playground 1
+(`client.vl:22`), kolt 17 sites + 6 cascades. Seven defects filed: B408–B412,
+B398 confirmed, F37.
+
+**Ruled after the seal (2026-09-25), for Order 42:** B408 first in the solver
+lane, B398 for `combine`; A25's owner-strict law moves from the mirrors' `map` to
+the SUBSCRIBING LEAF; the no-cycle ruling and A130 (§2.4); `Resource<T>` keeps
+its TYPE name and only its constructor respells (`resource` is a keyword — B413
+dissolves it, and `contextual-keywords.md` §4.6 says what frees the word).
+
+**Order 42 (reactive-42) — the flip.** ⟦INTEGRATOR: reactive-42 had not reported
+when papers-42 closed. Fill from its report: the S2c commit sha; which of B409 /
+B410 / B411 retired their workaround (the `Upstream` blanket, the per-node
+`on_settle` calls, the phantom `U`) and which remain; the `Resource` constructor's
+spelling; `.cell_global()` and the module-level refusal's ledger row; the
+`shared_census` number; goldens moved; the A25 pins' re-derivation; kolt's 17 + 6
+written out for the owner.⟧

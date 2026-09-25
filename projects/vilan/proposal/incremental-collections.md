@@ -797,6 +797,36 @@ disagrees: `Splice` carries the removed values (§3.1 — measured, and the keye
 translation is unwritable without it), and `set(whole_list)` records `Reset` with the
 diff door at its own name `reconcile_to` (§11.1).
 
+**Q5 (added after the fact — A129, RULED 2026-09-25) — does a `Splice`'s span get a
+keyed match?** §13 did not price it, and Order 41 found the cost. On the delta path a
+`Splice` is applied BY POSITION, so row identity is lost across it: a splice that
+removes rows and re-inserts the SAME keys rebuilds them where the keyed pass keeps
+them. Measured by collections-41 (`sweeps/order41/collections-41/finds/splice_identity/`,
+on 896ff39f/b979c0af, under the DOM stub and `ui_rows.rs`'s cost harness): `set_all`
+over the same three keys `cut=3 built=3`, against `set`'s `cut=0 built=0`;
+`reconcile_to` with one edit and an append `cut=2 built=3` — the tail rebuilt; and in
+the 300-turn walk `each_by` builds **1,078** rows on the op path against **557** on the
+pass. So `set_all`'s doc claim — cheaper than `set` — was FALSE for a keyed consumer.
+
+> **RULED (the owner, 2026-09-25) — as recommended.** A `Splice`'s span gets a KEYED
+> match, bounded to the span: inside it the pass's identity rule applies, so a
+> re-inserted key keeps its row and **the op path never builds more than the pass**;
+> outside it nothing is re-matched, so the op's cost stays proportional to its span.
+> `set_all`'s doc is corrected with it. Order 42, lane collections-42, in
+> `place_each`/`place_each_by`.
+>
+> ⟦INTEGRATOR: collections-42 had not reported when papers-42 closed. Fill from its
+> report: the commit sha; `set_all` over three same keys (expected `cut=0 built=0`);
+> `reconcile_to` with one edit + an append (the tail kept); the 300-turn walk's
+> `each_by` row count on the op path (≤ 557; the new number); `set_all`'s corrected
+> doc sentence.⟧
+
+The M86 numbers this section's rulings led to are in §9's table ("as shipped
+(2026-09-24)" rows) and §1's correction note: a `ListCell` write alone 6.27 M →
+39.7 K Ir, `ListCell` + `each` end to end 102.5 K against the pass's 50.7 M, and
+`peek` as the borrowing read (M86; RULED 2026-09-25, `peek` keeps its name —
+`contextual-keywords.md` §7).
+
 ## 14. What this does not do
 
 - **Joins and `flat_map`** — differential dataflow territory, out of scope, and the

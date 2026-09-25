@@ -1,0 +1,16 @@
+import std::io::print;
+import std::shared::{ Shared, Weak };
+
+fun orphan(): Weak<i32> {
+	let cell = Shared::new(7);
+	cell.downgrade()
+}
+
+fun main() {
+	let kept = Shared::new(1);
+	let held = kept.downgrade();
+	let gone = orphan();
+	let a = match held.upgrade() { Some(let c) => i"{c.read()}", None => "None" };
+	let b = match gone.upgrade() { Some(let c) => i"{c.read()}", None => "None" };
+	print(i"held={a} orphan={b} kept={kept.read()}");
+}

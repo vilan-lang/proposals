@@ -1,0 +1,6 @@
+import std::io::print;
+fun main() {
+	let context = 41;
+	let f = |x: i32|: i32 context + x;
+	print(i"{f(1)}");
+}

@@ -843,3 +843,86 @@ inline notify's snapshot or from a wave the drain already took out. Deferrals sh
 `always_live`. reactive.vl 26 → 29; **the merged tree's census reads 121** (128 − 10 + 3). Cost
 +9.1 % Ir per 12-notification wave (≈1,162 Ir per notification — the order of S3's +590 for its weak
 upgrade). S4 (the counted lowering on the Rust backend) is unblocked by F1 S1b; S5 rides with it.
+
+## 15. Re-scoped (Order 42, 2026-09-25) — the representation half is closed, S4 becomes the native leak gate, S5 recommended dropped
+
+Written by lane papers-42 against vilan `next` @d65d4e75, from native-41's
+report (C14's 2026-09-24 stamp) and the Order 42 brief; the re-scope itself is
+native-42's to stamp at the sweep.
+
+**The representation half is CLOSED — built by F1 S1a, by construction.**
+§9's recommendation (a) asked for `Shared<T>` to be the counted resource
+destruction.md §10 specifies: retain on clone, release at last use, `Weak` at
+the back edges. On the native backend that is what `Shared` already IS.
+`vilan-rt::Shared<T>` wraps an `Rc<RefCell<T>>` (`crates/vilan-rt/src/lib.rs:406`):
+`Clone` is `Rc::clone` (a retain), dropping the last handle is `Rc`'s drop (the
+release), `downgrade` is `Rc::downgrade`, and `Weak::upgrade` answers `None`
+once the last strong handle is gone — so C1's "deterministic `None`", which §10
+S2 said "waits for counting", holds natively today. Probe
+(`sweeps/order42/papers-42/probes/c14/weak_release.vl`): a cell made and
+downgraded inside a function, upgraded after it returns — JS `orphan=7` (no count,
+`upgrade` is always `Some`, as §10 S2 documents), native `orphan=None`. Nothing
+about this needed S4: the native lowering never had a no-op count to replace.
+Stale sentence to correct with the stamp: `Shared`'s own doc in `vilan-rt` still
+says "with C14 S4's real counting a later slice".
+
+**What §10 S4 named, item by item:**
+
+| §10 S4 said | now |
+|---|---|
+| `Shared`'s intrinsics gain a counted lowering, native only | DONE by F1 S1a (above) |
+| the JS lowering stays byte-identical | holds — nothing on JS moved |
+| `Owner`'s two cells become one body | NOT done (`reactive.vl:943`, `cleanups` + `disposed`); an allocation saving, not a correctness property — **dropped from C14**; file it only if a native profile asks |
+| exit test: a native leg of the reactive suite | the native differential runs reactive programs, but nothing ASSERTS release — the gap the leak gate fills |
+
+**S4 is REPLACED by the native leak gate** (native-42, this order). What it has
+to be to count as the exit this paper never had: a census of live counted cells
+over the exit program at process end, asserting every owner-scoped cell was
+released. Three things decide whether it is a gate or a number:
+
+1. **The instrument** is in `vilan-rt`: a live-cell counter raised at
+   `Shared::new` and lowered when the last strong handle drops (a `Drop` on the
+   allocation, not on the handle); `strong_count` is already there "for the
+   measurement C14 S4 will want".
+2. **What "released" means at process end.** Root-scoped cells (§2's 5.8 %: module
+   bindings, and from this order `.cell_global()`, A130) are alive by design at
+   exit. The gate asserts the OWNER-scoped class — cells minted under an owner that
+   has been disposed — and REPORTS the root-scoped count, which is §2.4's
+   finding stated as a number, not a failure.
+3. **It must be shown red.** Plant §10 S3's strong back edge (the `observe`
+   capture made strong again): under `Rc` a strong cycle is exactly what never
+   releases, so the counter stays above zero where JS's SCC gate can only see the
+   cycle in a heap snapshot. That is the property §13 found S3's exit test could
+   not show on JS "by construction".
+
+⟦INTEGRATOR: native-42 had not reported when papers-42 closed. Fill from its
+report: the commit; the counter's mechanism; the exit program it runs over; the
+owner-scoped live count at exit (expected 0) and the root-scoped count reported;
+the planted-red run.⟧
+
+**S5 — the JS counted mode as an instrument: recommended DROPPED (Q below).** It was
+queued as the one tool that could turn the SCC gate's narrow claim into "every
+cell is released" (§10, §13). Two things changed. The platform-free reactive
+core — `reactive.vl`, `rpc.vl`, `delta.vl`, `process/ui.vl`, `rpc_server.vl`,
+`ws.vl`, `time.vl`, `memo.vl`, `fs.vl`: **117 of std's 143** `Shared::new(`
+sites (the `shared_census` literal) — builds natively and falls under the
+native gate, where the count is real rather than simulated. And the remaining
+**26** (`browser/ui.vl` 25, `browser/router.vl` 1) run ONLY on JS, under a
+garbage collector, where an unreleased-but-unreachable cell is simply
+collected: the only leak that matters there is a REACHABLE one, and the two
+instruments that see reachable leaks already exist — the SCC gate
+(`a_disposed_exemplar_holds_no_reactive_cycle`, cycles among what the test
+keeps rooted) and the subscriber-list pins
+(`derivations_detach_from_their_source_with_their_boundary`, 25 → 0). A counted
+mode would measure, on JS, a property JS never relies on. **Re-file condition:**
+a browser leak reported that neither gate sees. A native UI twin (F1's GPU apps)
+would be under the native gate by construction and needs no S5.
+
+**Q — confirm S5 dropped?** *Rec: yes*, with the browser twin's 26 sites
+recorded as the native gate's documented blind spot and the re-file condition
+above. If the owner keeps it, it is optional and M, and it belongs after the
+native gate, whose output tells it what to look for.
+
+**C14 at the sweep:** the representation half closes as built by F1 S1a; the
+item stays open on the native leak gate alone until native-42's gate lands, and
+closes with it.

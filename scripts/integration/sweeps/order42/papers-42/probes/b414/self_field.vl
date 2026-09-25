@@ -1,0 +1,6 @@
+import std::io::print;
+struct S { self: i32, super: i32 }
+fun main() {
+	let s = S { self = 1, super = 2 };
+	print(i"{s.self + s.super}");
+}
