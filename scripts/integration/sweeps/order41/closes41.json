@@ -1,0 +1,156 @@
+{
+ "date": "2026-09-24",
+ "order": "Order 41",
+ "closes": [
+  {
+   "id": "N123",
+   "lane": "hygiene-41",
+   "commit": "0fe4e487",
+   "text": "AGENTS.md's lane section carries the four traps Order 40's lanes met (the `\\`-continuation join, `semantic_tokens`' byte spans, grammar.md's two gates, `shared_census` in every std gate list)"
+  },
+  {
+   "id": "N121",
+   "lane": "hygiene-41",
+   "commit": "79edbcdd",
+   "text": "a NEW `vilan-core/src/stack_guard.rs`: a thread declares its stack and `ensure_sufficient_stack` at four sites (three analyzer walks + `util::RecursionGuard::enter`, the funnel B385/B387 went through) refuses a runaway recursion short of the end with the fence's diagnostic, failing closed; the LSP's 128 MiB analysis thread declares; +0.26 % Ir; a SECOND bug fixed on the way — `analyze_source`'s inner fence swallowed a caught panic with no diagnostic. Remainder → N128"
+  },
+  {
+   "id": "N124",
+   "lane": "hygiene-41",
+   "commit": "d704e290",
+   "text": "the shared inherited-default lookup's impl-admission parameter is pinned over a multi-file package (`mono::resolve_inherited_default` called directly, both orientations; red with `None` planted); premise partly wrong — the two-trait scenario is refused as ambiguous regardless, which is B401"
+  },
+  {
+   "id": "N126",
+   "lane": "hygiene-41",
+   "commit": "e940427b",
+   "text": "option (a): the descriptor pin re-reads `/proc/self/fd` every 10 ms for ≤ 50 ms only while above baseline; the leak plant still reads 1, 2, 7; the finalizer window measured (GC-driven, 154–216 ms); CI's flake reproduced on demand by a 20 ms delayed-close preload"
+  },
+  {
+   "id": "N120",
+   "lane": "hygiene-41",
+   "commit": "0703fd83",
+   "text": "the CLI reads rustc's `arithmetic_overflow` and names the PROGRAM's overflow and the emitted expression, saying the JS backend would have run on; any other rustc error keeps the backend-defect sentence; no source map back to vilan"
+  },
+  {
+   "id": "N122",
+   "lane": "hygiene-41",
+   "commit": "18a025d2",
+   "text": "B271's private `focus()` override retired onto the shared DOM stub (a real inline `visibility: hidden`); one pin that the stub refuses a `focus()` the platform would"
+  },
+  {
+   "id": "A127",
+   "lane": "hygiene-41",
+   "commit": "a049edd6",
+   "text": "`over_http_with(mount, codec, headers)` over a NEW `std::rpc::HeaderedHttpTransport` (no field defaults; a field on `HttpTransport` ruled out), generated exactly when `over_http` is; both transports share `post_frame`; `std::fetch::post_bytes_with_headers`; the 401 → 200 pin with `Bearer good`"
+  },
+  {
+   "id": "B395",
+   "lane": "solver-41",
+   "commit": "d476202a",
+   "text": "the cause was NOT `subject_applies`: the analyzer's `inherited_default_candidates` kept the FIRST registered provider of a default (the blanket) — an impl whose bounds do not hold at their arguments no longer carries it; a second defect fixed with it (`impl_bounds_hold` substituted no other binder); 6 pins; B394's and B387's stay green; spec §5.5 one clause; A112's ruled spelling switched in collections-41"
+  },
+  {
+   "id": "B389",
+   "lane": "solver-41",
+   "commit": "94a648d1",
+   "text": "the five literal positions (left operand; annotated-list elements; a literal match pattern; a generic call's return; a bare `let n = 0` — a stall step that waits for a typed use, then an operator/assignment peer, then the default; BigInt excluded); the native backend reads each literal's settled width from `expr_type_ids`; 15 + 2 pins; 13 controls; the census's other three failures are I5 S1's index/`len` boundary. Remainder → B406 (a literal to a generic ctor in a struct-literal field)"
+  },
+  {
+   "id": "B396",
+   "lane": "solver-41",
+   "commit": "89e1faa7",
+   "text": "a blanket that does not apply no longer hands back a still-abstract argument as evidence for `T`; 3 pins (2 red before)"
+  },
+  {
+   "id": "B390",
+   "lane": "solver-41",
+   "commit": "0a05aa58",
+   "text": "WORSE than filed — a refused impl subject made every type satisfy its trait; an unresolved impl subject is skipped in three places; 2 pins"
+  },
+  {
+   "id": "B391",
+   "lane": "solver-41",
+   "commit": "940bf43a",
+   "text": "the call-site export gate asked `source_of` (the generated-code sentinel) instead of the generating module (B354's rule); refusals about generated code anchor at the attribute; not in `[service]`"
+  },
+  {
+   "id": "B392",
+   "lane": "solver-41",
+   "commit": "3a41b038",
+   "text": "at a stalled fixpoint a let-bound closure's unfilled parameters take their first call site's argument types before B372's door; 4 pins; two shipped pins that asserted the deadlock now assert the fix (efed0385)"
+  },
+  {
+   "id": "E220",
+   "lane": "solver-41",
+   "commit": "ce280830",
+   "text": "the missing-member steer renders a supertrait member at the supertrait's reached arguments (`List<i32>`)"
+  },
+  {
+   "id": "B397",
+   "lane": "solver-41",
+   "commit": "48333165",
+   "text": "where some element is itself a tuple the comprehension is emitted UNROLLED per element with correct flat offsets (papers-41's probes 16/17); everywhere else byte-identical; the analyzer records each comprehension's type after the fixpoint; native holds 'refused or identical, never different'"
+  },
+  {
+   "id": "B402",
+   "lane": "solver-41",
+   "commit": "e0dd9c51",
+   "text": "filed for the record — a literal-only expression with a fractional literal now defaults to `f64` as a whole (`1 / 4.0` is 0.25); found and fixed in the same lane"
+  },
+  {
+   "id": "B393",
+   "lane": "solver-41",
+   "commit": "48333165",
+   "text": "PROBED, not an emitter fix: JS and native agree everywhere except a bare `Holder::tag()` whose bounded impl generic nothing binds — native silently wrong, JS loud; the analyzer's cannot-infer check owns it → B403; N125's four functions stay per-emitter"
+  },
+  {
+   "id": "M86",
+   "lane": "collections-41",
+   "commit": "b979c0af",
+   "text": "premise corrected — the copies were `size()`/`set_at`/`reconcile_to` reading through `SignalCell::get`, not the notify; `ListCell` holds its list in its own `Shared` beside the log and a notification cell; `peek` is the borrowing read (`with` is a keyword — the name is the owner's); a 1,000-row push 6.27 M → 39.7 K Ir; end to end with `each` 50.7 M (the pass) → 102.5 K. Follow-ons: B400 (peek's closure spelling rides a checker gap), M87 (`KeyedCell::locate`)"
+  },
+  {
+   "id": "A112",
+   "lane": "collections-41",
+   "commit": "8994d395",
+   "text": "the arc COMPLETE through S3b: S1 the lift (Order 39), S2 `ListCell` + `map_each` (Order 40), S3 delta-driven `each` (Order 40) + S3b `each_by` on the op path (896ff39f), the ruled `DeltaFeed<T> with Source<List<T>>` spelling switched in after B395 (this commit; `each()` itself carries no bound until B396's shape is wanted); S4 (`filter_each`/group folds) unqueued until an exhibit asks. Open follow-ons: A129 (a Splice loses row identity — ruling), F35 (not native), M86's B400/M87"
+  },
+  {
+   "id": "E222",
+   "lane": "editor-41",
+   "commit": "cbc31fe4",
+   "text": "`vilan.autoClosing.generics` + the VS Code `type` override: `vilan/opensAGenericList` asked after `<`, `>` inserted in the same undo step and typed over; queued ≤ 150 ms; declared in `initializationOptions`, `onTypeFormatting` stands down for `<` while set; off (and said so) when another extension owns `type`"
+  },
+  {
+   "id": "E221",
+   "lane": "editor-41",
+   "commit": "ae541ba1",
+   "text": "E213 S2: `[internal(\"reason\")]` on structs, enums, variants, traits, module bindings; one reader `labels::internal_of` for completion hiding, dimming, hover; path-reached enum variants painted at the leaf; the NEW `[lints] internal_use = \"allow\" | \"warn\"` section. No docs generator exists — the 'Internal' heading not built"
+  },
+  {
+   "id": "B382",
+   "lane": "editor-41",
+   "commit": "b79db3bc",
+   "text": "R-c: `[deprecated(\"…\")]` on structs, enums, traits, module bindings and on a re-export (`export [deprecated(\"…\")] import … as …;` — the steer on the Export node); a type warns at each use in another module; the editor's `deprecated` modifier + hover lead; NO type alias (`export import … as` already served A112's case)"
+  },
+  {
+   "id": "E219",
+   "lane": "editor-41",
+   "commit": "125b8210",
+   "text": "a declaration is measured from its own line after any attribute lines; a second bug — a short `[extern]` line hid over-budget signatures — reformatted four estate spots"
+  },
+  {
+   "id": "A126",
+   "lane": "index-41",
+   "commit": "6f534edf",
+   "text": "`Display` for `i8`, `u8`, `i16`, `u16`, `i53`, `u53`, `f32` (premise: `i64`/`u64` do not exist; `f32` was the miss) + `usize` in I5 S1; seven pins through a `T: Display` bound"
+  },
+  {
+   "id": "E218",
+   "lane": "index-41",
+   "commit": "2366b1f8",
+   "text": "every declared-type numeric mismatch appends 'There are no implicit numeric conversions; convert with `.as_X()`' (`BigInt` excluded as a target) through one helper; the LSP quick fix 'Convert with `.as_u53()`'; ledger row 569"
+  }
+ ]
+}
