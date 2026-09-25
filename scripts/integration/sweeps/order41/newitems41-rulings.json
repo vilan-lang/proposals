@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "A130",
+   "section": "A",
+   "kind": "design",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-25 (the owner's question at the Order 41 rulings)",
+   "title": "a MODULE-LEVEL `.cell()` leaks by design (it is owner-tied and a module has no owner to release it — the strong root → record → node → root loop lives for the program), and the mistake is easy to make: should a separate `.cell_global()` carry that intention explicitly, with `.cell()` REFUSED in a module binding's initializer and steered ('build it under an owner, or say `.cell_global()`')?",
+   "discussion": "the owner (2026-09-25) on A124's no-cycle question; the no-cycle gate's exemplar",
+   "body": "Rec YES: the refusal is static and cheap (the analyzer knows a module binding's initializer from a function body; a `.cell()` reached from module init through a call is not caught, and need not be — the direct spelling is the common mistake); `.cell_global()` documents the lifetime in the name, the no-cycle gate excludes it by name, and reactive-pipeline.md §2.4 gets the sentence. Ships with A124 S2c in Order 42's reactive lane (the flip is where `.cell()` becomes common); ledger row for the refusal."
+  },
+  {
+   "id": "B413",
+   "section": "B",
+   "kind": "design (breaking)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (the owner's question at the Order 41 rulings)",
+   "title": "DISSOLVE the `resource` KEYWORD into a struct attribute (`[resource] struct Handle { … }`), and settle the word: 'resource' vs 'droppable' vs 'temp' — the keyword bit A124's `Resource<T>` (the pending family's obvious public name), and a kind that changes destruction rules already has precedent as an attribute (`[platform(..)]` changes analysis)",
+   "discussion": "the owner (2026-09-25); destruction.md §10; trait-objects.md Q5 ('may an object hold a resource'); A124 Q-name",
+   "body": "Rec: dissolve the keyword into `[resource]` on the struct and KEEP the word 'resource' — it names the meaning (a thing the environment lent you, which must go back) where 'droppable' names Rust's mechanism and 'temp' names a lifetime; the attribute frees the identifier for `Resource<T>` and shrinks the grammar. Cost: every `resource struct` in std and the estate respells (mechanical, a codemod); the formatter, EBNF (`grammar_ebnf` + `grammar_sync`), the LSP's painting and completion tables, and destruction.md follow. BREAKING — rides the v0.41.0 train if the codemod is ready, else v0.42.0."
+  },
+  {
+   "id": "B414",
+   "section": "B",
+   "kind": "design",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (the owner's note at the Order 41 rulings)",
+   "title": "CONTEXTUAL keywords: not every keyword needs banning as an IDENTIFIER — `with` (bit M86's borrowing read, now `peek`), `as` (only in imports), `in`, `layer`, `sync`?… should be usable as names where the grammar cannot confuse them; DECLARATION keywords (`let`, `mut`, `fun`, `struct`, `enum`, `trait`, `impl`, `import`, `export`, `type`…) stay reserved",
+   "discussion": "the owner (2026-09-25); the reserved-word list in the lexer; B382/E221 (labels), F27 R1 (`[platform]`)",
+   "body": "Rec: a short probe-paper classifies the reserved list into hard (declaration/structural) and contextual (admitted as identifiers at binding, field, parameter and method-name positions where no production starts with them), with the parser lookahead each contextual word needs and the editor's painting rule (a contextual keyword used as a name paints as a name). Not in the train; Order 42 papers or later."
+  },
+  {
+   "id": "B415",
+   "section": "B",
+   "kind": "design",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (the owner's counter-proposal at the Order 41 rulings)",
+   "title": "a HOST for file-level attributes: `[platform(\"browser\")] mod self;` instead of the bare `[platform(\"browser\")];` statement F27 R1 shipped — `self` a reserved module name; and possibly `export *;` → `export self::*`",
+   "discussion": "the owner (2026-09-25) on F27 R1's spelling; editor-41's `;` choice ('an attribute with nothing under it', chosen for lack of a host); E181/B318 (`export *;`)",
+   "body": "Rec: ADOPT `mod self;` as the host, now — the bare attribute-statement is a grammar oddity, and a declaration gives every future file-level attribute a home (`[internal]`/`[deprecated]` on a module, `[lints]`, `[doc]`); R1 just landed and nothing uses `[platform(..)];` yet, so the respelling costs one order and nothing later. DEFER `export self::*`: `export *;` is fine as is, and `self::` as a path prefix (paths relative to the current module) is a feature of its own — if it is wanted, `export self::*` follows from it and `export *;` can stay as sugar. Order 42, editor lane (with the `mod self;` row in the EBNF, formatter, LSP)."
+  }
+ ]
+}
