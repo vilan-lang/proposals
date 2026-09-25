@@ -151,6 +151,30 @@
    "lane": "index-41",
    "commit": "2366b1f8",
    "text": "every declared-type numeric mismatch appends 'There are no implicit numeric conversions; convert with `.as_X()`' (`BigInt` excluded as a target) through one helper; the LSP quick fix 'Convert with `.as_u53()`'; ledger row 569"
+  },
+  {
+   "id": "F33",
+   "lane": "native-41",
+   "commit": "282bf630",
+   "text": "RULED (a) and built: `vilan_rt::bytes::Bytes` is `Rc<RefCell<Vec<u8>>>` — a copy is an alias as a `Uint8Array` is; `alloc`/`fill`/`copy_into` mutate in place (`fill` stores the low 8 bits with `slice`'s range rules; `copy_into` reads its source first, past the end aborts with the host's `RangeError`); corpus `bytes-aliasing.vl` in the native default suite"
+  },
+  {
+   "id": "N125",
+   "lane": "native-41",
+   "commit": "2ba05dfc",
+   "text": "`vilan-embedded-std` → `vilan-embedded` (27 files, Cargo.lock, the notices' coverage line); `cut-release.sh`'s `RELEASE_FILES` is a `release_files()` derived from `crates/*/Cargo.toml` with a pin against the workspace members (the cut plan's F1); the four per-emitter resolution functions STAY per-emitter (B393's verdict → B403)"
+  },
+  {
+   "id": "F18",
+   "lane": "native-41",
+   "commit": "21f74650",
+   "text": "SLICE 3 reached the EXIT: `kolt_shape_server.vl` (kolt's server-leg shape — builder chain, `parse_path`/`ApiRoute`, `Service::factory().authorize(..)`, fingerprint-aware `cache_build`, the `Document` shell, SQLite auth) built natively serves a login AND a keyed subscription byte-for-byte with node, contract hash `43077e29` unmoved, host census 0; behind it `Server::builder()` (392346a8: 14 rustc refusals in five classes fixed in general) and `std::rpc_server` (f295734f); kolt's own `server.vl` is 4 host gaps from native (PBKDF2, `random_bytes`, one `map`) — F40 (OS randomness, a ruling) carries that last wall; whole set 122 → 124 / 91 identical / 33 refused / 0 on the rebased tree"
+  },
+  {
+   "id": "F34",
+   "lane": "native-41",
+   "commit": "fbfb56df",
+   "text": "`map` binds its own generic on the receiver-type dispatch path and a default instance is keyed on more than its receiver; `flatten`'s `?` lifts lower to a `match`; `reactive.vl`, `reactive-on-change.vl`, `reactive-flatten.vl`, `iterator-adapters.vl` flip to identical; re-run on A124 S2b's nodes: a `.cell()` chain and a `.distinct()` build the same on both backends (pinned)"
   }
  ]
 }
