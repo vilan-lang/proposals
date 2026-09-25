@@ -1,0 +1,24 @@
+import std::io::print;
+import std::reactive::{ FlushPolicy, Signal, SignalCell, Source, combine_node, turn };
+import std::shared::Shared;
+
+fun main() {
+	let source: SignalCell<i32> = Signal::new(1);
+	let seen: Shared<str> = Shared::new("");
+	let arms: (dyn Source<i32>, dyn Source<i32>) = (
+		source.map_node(|x| x * 10),
+		source.map_node(|x| x + 100)
+	);
+	let diamond = combine_node(arms);
+	let _leaf = diamond.on_change(|pair| {
+		let (left, right) = pair;
+		seen.write() = i"{seen.read()}({left},{right})";
+	});
+	turn(FlushPolicy::AtEnd, || {
+		source.set(3);
+	});
+	print(i"in a turn: {seen.read()}");
+	seen.write() = "";
+	source.set(4);
+	print(i"inline:    {seen.read()}");
+}
