@@ -1,0 +1,10 @@
+import std::io::print;
+[derive(Json)]
+struct Event { type_: str, id: i32 }
+fun main() {
+	print(Event { type_ = "click", id = 1 }.to_json());
+	match Event::from_json("{\"type\":\"click\",\"id\":1}") {
+		Ok(let e) => print(e.type_),
+		Err(let why) => print(i"refused: {why}"),
+	}
+}
