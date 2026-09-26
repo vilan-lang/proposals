@@ -1,0 +1,211 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index f907cae4..dcea9e92 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -25,6 +25,9 @@ written down.
+ 
+ ## Unreleased
+ 
++<!-- family: miscompile -->
++**A closure's `&` parameter takes a view, as a `fun`'s does: `read(self.items.read())` for `read: |&List<T>| U` is refused "a `&` parameter takes a view; pass `& <place>`", where it passed the cell's live list and a write to the cell inside the closure showed through the parameter (JS `seen=3`, native `seen=2`).** The closure type records its parameters' conventions and the view-argument check now reads them — for a closure held in a parameter, a local or a field, `&` and `&mut` alike. `std::delta`'s `ListCell::peek` was written in the refused spelling and now lends the cell's list through `Weak::get`. (B400)
++
+ <!-- family: miscompile -->
+ **An unsuffixed literal its context types `BigInt` is emitted as a BigInt: `tb(3)` for `fun tb(v: BigInt): BigInt { v + 1n }` prints `4n`, where it threw "Cannot mix BigInt and other types" at run time.** The literal law typed the `3` as `BigInt` from the parameter (and from an annotated `let`, or the other operand of a binary), and the emitter still wrote the JS number `3`. It now writes `3n` wherever the literal's settled type is `BigInt`. (B404)
+ 
+diff --git a/crates/vilan-core/src/analyzer.rs b/crates/vilan-core/src/analyzer.rs
+index af649657..a20c3a9e 100644
+--- a/crates/vilan-core/src/analyzer.rs
++++ b/crates/vilan-core/src/analyzer.rs
+@@ -26693,6 +26693,30 @@ impl<'src> Analyzer<'src> {
+                 continue;
+             };
+             let argument_ids = function_call.argument_ids.clone();
++            // B400: a CLOSURE-typed callee holds its parameters' conventions in
++            // its type (`read: |&List<T>| U`), and a `&` there is the same
++            // promise a `fun`'s `&` parameter makes — a view, never a value.
++            // Unchecked, `read(self.items.read())` handed the closure the
++            // cell's live list where a `fun`'s `&` parameter refused the same
++            // argument, and a write to the cell inside showed through it (JS
++            // `seen=3`, native `seen=2`).
++            if let Some(views) = self.closure_callee_views(function_call.subject_id) {
++                for (view, argument_id) in views.iter().zip(argument_ids.iter()) {
++                    let Some(mutable) = view else {
++                        continue;
++                    };
++                    let kind = if *mutable { "&mut" } else { "&" };
++                    if !self.assignment_target_is_view(*argument_id) {
++                        self.push_anchored(Error { trace: Vec::new(), note: None,
++                            span: **self.span_map.get(argument_id).unwrap_or(&&EMPTY_SPAN),
++                            msg: format!(
++                                "a `{kind}` parameter takes a view; pass `{kind} <place>` (there is no implicit borrow)."
++                            ),
++                        }, *argument_id);
++                    }
++                }
++                continue;
++            }
+             let callee_id = match self.expr_id_to_expr_map.get(&function_call.subject_id) {
+                 Some(Expr::Local(callee_id)) => *callee_id,
+                 _ => continue,
+@@ -26734,6 +26758,28 @@ impl<'src> Analyzer<'src> {
+         }
+     }
+ 
++    /// B400: the per-parameter view conventions of a call whose callee is a
++    /// CLOSURE-typed value — a parameter, a local, or a field holding one —
++    /// read off the closure type as written (`|&List<T>| U`). `None` for a
++    /// named function (its parameters carry their conventions) and for a
++    /// closure type with no view parameter.
++    fn closure_callee_views(&self, subject_id: Id) -> Option<Vec<Option<bool>>> {
++        let type_id = match self.expr_id_to_expr_map.get(&subject_id)? {
++            Expr::Local(binding_id) | Expr::Parameter(binding_id) => self
++                .parameters
++                .get(binding_id)
++                .map(|parameter| parameter.type_id)
++                .or_else(|| {
++                    self.variables
++                        .get(binding_id)
++                        .map(|variable| variable.type_id)
++                })?,
++            Expr::Field(..) => self.expr_id_to_type_id_map.get(&subject_id).copied()?,
++            _ => return None,
++        };
++        self.closure_type_parameter_views.get(&type_id).cloned()
++    }
++
+     /// The text of the file `source` points at, when this analysis registered
+     /// it (element-syntax S4). First match wins — the entry registers first.
+     fn source_text(&self, source: SourceId) -> Option<&'src str> {
+diff --git a/crates/vilan-core/tests/inference/borrows.rs b/crates/vilan-core/tests/inference/borrows.rs
+index d3f2ec0c..56fa0f6b 100644
+--- a/crates/vilan-core/tests/inference/borrows.rs
++++ b/crates/vilan-core/tests/inference/borrows.rs
+@@ -10101,3 +10101,98 @@ fn a_view_inside_a_nested_call_subject_is_a_closure_capture() {
+         "a closure cannot capture the view 'seen'",
+     );
+ }
++
++// ---------------------------------------------------------------------------
++// B400 — a CLOSURE's `&` parameter takes a view, as a `fun`'s does
++// ---------------------------------------------------------------------------
++//
++// A closure-typed value whose parameter is `&List<T>` accepted
++// `self.items.read()` — a VALUE — where a `fun`'s `&` parameter refuses the
++// same argument ("a `&` parameter takes a view; pass `& <place>`"). JS then
++// passed the cell's live list uncopied, so a write to the cell inside the
++// closure showed through the parameter (`seen=3`; natively `seen=2`). The
++// closure type carries its parameters' conventions, and the view-argument
++// check now reads them. `std::delta`'s `ListCell::peek` was written this way
++// and re-spells through `Weak::get` (collections-42's patch, in this change).
++
++const B400_HOLDER: &str = concat!(
++    "import std::io::print;\n",
++    "import std::shared::Shared;\n",
++    "struct Holder { items: Shared<List<i32>> }\n",
++);
++
++/// collections-41's repro: a closure PARAMETER.
++#[test]
++fn b400_a_closure_parameters_view_refuses_a_shared_read() {
++    assert_fails_with(
++        &format!(
++            "{B400_HOLDER}{}",
++            concat!(
++                "impl Holder {\n",
++                "\tfun peek(self, read: sync |&List<i32>| i32): i32 { read(self.items.read()) }\n",
++                "}\n",
++                "fun main() {\n",
++                "\tlet holder = Holder { items = Shared::new([1, 2]) };\n",
++                "\tprint(holder.peek(|list| list.len()));\n",
++                "}\n",
++            )
++        ),
++        "a `&` parameter takes a view; pass `& <place>` (there is no implicit borrow).",
++    );
++}
++
++/// A closure held in a LOCAL, and one held in a struct FIELD, refuse alike; a
++/// `&mut` one names its own spelling.
++#[test]
++fn b400_a_local_and_a_field_closure_refuse_a_value_at_a_view_parameter() {
++    assert_fails_with(
++        &format!(
++            "{B400_HOLDER}{}",
++            concat!(
++                "fun main() {\n",
++                "\tlet holder = Holder { items = Shared::new([1, 2]) };\n",
++                "\tlet count: |&List<i32>| i32 = |list| list.len();\n",
++                "\tprint(count(holder.items.read()));\n",
++                "}\n",
++            )
++        ),
++        "a `&` parameter takes a view",
++    );
++    assert_fails_with(
++        concat!(
++            "import std::io::print;\n",
++            "struct Reader { read: |&mut List<i32>| i32 }\n",
++            "fun main() {\n",
++            "\tlet reader = Reader { read = |list| list.len() };\n",
++            "\tlet items = [1, 2];\n",
++            "\tprint((reader.read)(items));\n",
++            "}\n",
++        ),
++        "a `&mut` parameter takes a view; pass `&mut <place>`",
++    );
++}
++
++/// The spellings that ARE views still pass: `&place`, and a view binding
++/// forwarded (the `Weak::get` lend `peek` re-spells through).
++#[test]
++fn b400_a_view_argument_to_a_closure_view_parameter_still_runs() {
++    assert_compiles_and_runs(
++        concat!(
++            "import std::io::print;\n",
++            "import std::shared::Shared;\n",
++            "fun lend(cell: Shared<List<i32>>, read: sync |&List<i32>| i32): i32 {\n",
++            "\tlet weak = cell.downgrade();\n",
++            "\tmatch weak.get() {\n",
++            "\t\tSome(let list) => read(list),\n",
++            "\t\tNone => 0,\n",
++            "\t}\n",
++            "}\n",
++            "fun apply(items: List<i32>, read: sync |&List<i32>| i32): i32 { read(&items) }\n",
++            "fun main() {\n",
++            "\tprint(apply([1, 2, 3], |list| list.len()));\n",
++            "\tprint(lend(Shared::new([4, 5]), |list| list.len()));\n",
++            "}\n",
++        ),
++        "3\n2\n",
++    );
++}
+diff --git a/vilan/std/src/delta.vl b/vilan/std/src/delta.vl
+index fd739f7d..020d49b0 100644
+--- a/vilan/std/src/delta.vl
++++ b/vilan/std/src/delta.vl
+@@ -32,6 +32,7 @@
+ // the log is as long as one turn's writes.
+ import pkg::compare::PartialEq;
+ import pkg::hash::Hashable;
++import pkg::io::panic;
+ import pkg::map::Map;
+ import pkg::option::Option::{ self, None, Some };
+ import pkg::reactive::{
+@@ -782,7 +783,16 @@ export impl ListCell<type T> {
+ 	/// the list the cell holds, so a write made through the cell inside it is not a
+ 	/// write to a copy.
+ 	fun peek<U>(self, read: sync |&List<T>| U): U {
+-		read(self.items.read())
++		// The cell's own list, lent as a second-class VIEW (`Weak::get`): a borrow,
++		// where `self.items.read()` handed to a `&` parameter is a temporary read
++		// the checker refuses (B400). The weak handle is taken from the handle
++		// `self` holds, so the cell is alive for the whole call and the `None` arm
++		// is unreachable.
++		let weak = self.items.downgrade();
++		match weak.get() {
++			Some(let list) => read(list),
++			None => panic("ListCell::peek: the cell's own list is gone while the cell holds it"),
++		}
+ 	}
+ 
+ 	/// The element at `at` becomes `value` — an element changed IN PLACE.

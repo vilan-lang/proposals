@@ -1,0 +1,9 @@
+import std::reactive::{ Signal, SignalCell, Source };
+fun main() {
+	let count = SignalCell::new(1);
+	let parity = count.distinct();
+	mut changes = 0;
+	let _w = parity.sub(|v| { changes += 1; });
+	count.set(3);
+	print(changes);
+}

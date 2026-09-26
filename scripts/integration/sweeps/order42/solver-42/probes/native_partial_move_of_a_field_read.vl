@@ -1,0 +1,24 @@
+// Native: a field read (`record.live`) is emitted as a MOVE out of a binding whose
+// whole value is used afterwards, and rustc refuses the partial move. JS runs.
+import std::shared::Shared;
+
+struct Rec {
+	live: Shared<bool>,
+	n: i32,
+}
+
+fun copy_of(record: Rec): Rec {
+	Rec { live = record.live, n = record.n }
+}
+
+fun keep(record: Rec, into: Shared<List<Rec>>): Shared<bool> {
+	let handle = record.live;
+	into.write().push(copy_of(record));
+	handle
+}
+
+fun main() {
+	let into: Shared<List<Rec>> = Shared::new([]);
+	let flag = keep(Rec { live = Shared::new(true), n = 1 }, into);
+	print(i"{flag.read()} {into.read().len()}");
+}

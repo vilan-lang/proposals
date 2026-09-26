@@ -1,0 +1,40 @@
+import std::io::print;
+
+import std::reactive::{ Signal, SignalCell, Source };
+
+
+
+fun main() {
+
+	let count = SignalCell::new(1);
+
+	let scaled = count.map(|n| n * 10).cell();
+
+	let labelled = scaled.map(|n| i"#{n}").cell();
+
+	let parity = count.map(|n| n % 2).distinct();
+
+	mut changes = 0;
+
+	let _watch = parity.sub(|value| {
+
+		changes += 1;
+
+	});
+
+	count.set(3);
+
+	count.set(4);
+
+	count.set(6);
+
+	let now: i32 = scaled.get();
+
+	let label: str = labelled.get();
+
+	let odd: i32 = parity.get();
+
+	print(i"{now} {label} {odd} {changes}");
+
+}
+

@@ -1,0 +1,18 @@
+// A122 probe 09b — controls for probe 09: the same coercion to `dyn Source<U>`
+// at a plain parameter and at a CONCRETE tuple parameter.
+import std::reactive::{ SignalCell, Source };
+
+fun one(s: dyn Source<i32>): i32 {
+	s.get()
+}
+
+fun pair(p: (dyn Source<i32>, dyn Source<str>)): str {
+	i"{p.0.get()} {p.1.get()}"
+}
+
+fun main() {
+	let a = SignalCell::new(1);
+	let b = SignalCell::new("b");
+	print(one(a));
+	print(pair((a, b)));
+}

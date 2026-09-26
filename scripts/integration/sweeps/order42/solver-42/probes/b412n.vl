@@ -1,0 +1,14 @@
+trait Src<T> { fun get(self): T; }
+struct Root { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+struct Twice { v: i32 }
+impl Twice with Src<i32> { fun get(self): i32 { self.v * 2 } }
+fun show(source: dyn Src<i32>): i32 { source.get() }
+fun erase<S: Src<i32>>(s: S): dyn Src<i32> { s }
+fun shown<S: Src<i32>>(s: S): i32 { show(s) }
+fun main() {
+	print(erase(Root { v = 1 }).get());
+	print(shown(Twice { v = 2 }));
+	let object: dyn Src<i32> = Twice { v = 5 };
+	print(erase(object).get());
+}

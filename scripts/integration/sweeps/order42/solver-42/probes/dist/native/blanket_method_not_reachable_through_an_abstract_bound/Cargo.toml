@@ -1,0 +1,16 @@
+[package]
+name = "blanket_method_not_reachable_through_an_abstract_bound"
+version = "0.0.0"
+edition = "2024"
+
+[[bin]]
+name = "blanket_method_not_reachable_through_an_abstract_bound"
+path = "src/main.rs"
+
+[dependencies]
+vilan-rt = { path = "/home/reed/.vilan/rt-cache/8fc09df2d679cc8b/vilan-rt" }
+
+[profile.release]
+panic = "unwind"
+
+[workspace]

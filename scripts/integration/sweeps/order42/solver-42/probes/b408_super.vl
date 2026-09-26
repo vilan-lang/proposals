@@ -1,0 +1,18 @@
+trait Src<T> { fun get(self): T; }
+trait Sig<T> with Src<T> { fun name(self): str; }
+struct Root { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+impl Root with Sig<i32> { fun name(self): str { "root" } }
+struct Word { w: str }
+impl Word with Src<str> { fun get(self): str { self.w } }
+impl Word with Sig<str> { fun name(self): str { "word" } }
+impl type S: Src<type T> { fun twice(self): (T, T) { (self.get(), self.get()) } fun pair_with<U>(self, u: U): (T, U) { (self.get(), u) } }
+fun through<S: Sig<i32>>(s: S): i32 { let (a, b) = s.twice(); a + b }
+fun generic_t<T, S: Src<T>>(s: S): T { let (a, _) = s.twice(); a }
+fun with_own<S: Src<i32>>(s: S): str { let (n, w) = s.pair_with("x"); i"{n}{w}" }
+fun main() {
+	print(through(Root { v = 2 }));
+	print(generic_t(Root { v = 3 }));
+	print(generic_t(Word { w = "hi" }));
+	print(with_own(Root { v = 4 }));
+}

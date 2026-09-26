@@ -1,0 +1,10 @@
+trait Src<T> { fun get(self): T; }
+trait Doubler { fun doubled(self): i32; }
+struct Root { v: i32 }
+struct Leaf { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+impl Leaf with Src<i32> { fun get(self): i32 { self.v } }
+impl type S: Src<i32> with Doubler { fun doubled(self): i32 { self.get() * 2 } }
+impl Root with Doubler { fun doubled(self): i32 { 1000 } }
+fun through<S: Src<i32>>(s: S): i32 { s.doubled() }
+fun main() { print(Root { v = 21 }.doubled()); print(through(Root { v = 21 })); print(through(Leaf { v = 4 })); }

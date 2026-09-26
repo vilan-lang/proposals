@@ -1,0 +1,13 @@
+// A122 probe 05 — a `for` over a MAPPED tuple parameter (abstract elements):
+// the owner's loop `for (key, value) in fresh.entries()` needs this shape.
+import std::reactive::SignalCell;
+
+fun touch<T: (2..)>(cells: (U in T: SignalCell<U>)) {
+	for c in cells {
+		c.notify();
+	}
+}
+
+fun main() {
+	touch((SignalCell::new(1), SignalCell::new("a")));
+}

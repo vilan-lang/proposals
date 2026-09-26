@@ -1,0 +1,7 @@
+trait Src<T> { fun get(self): T; }
+struct Root { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+impl Root { fun label(self): str { "inherent" } }
+impl type S: Src<type T> { fun label(self): str { "blanket" } }
+fun through<S: Src<i32>>(s: S): str { s.label() }
+fun main() { print(Root { v = 1 }.label()); print(through(Root { v = 1 })); }

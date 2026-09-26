@@ -1,0 +1,16 @@
+[package]
+name = "b408_bare"
+version = "0.0.0"
+edition = "2024"
+
+[[bin]]
+name = "b408_bare"
+path = "src/main.rs"
+
+[dependencies]
+vilan-rt = { path = "/home/reed/.vilan/rt-cache/8fc09df2d679cc8b/vilan-rt" }
+
+[profile.release]
+panic = "unwind"
+
+[workspace]

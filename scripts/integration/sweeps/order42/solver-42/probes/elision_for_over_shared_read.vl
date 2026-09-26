@@ -1,0 +1,22 @@
+// FIND (collections-41, Order 41): JS copy elision treats a `Shared::read()`
+// temporary iterated by `for` as a fresh value, but it is the SLOT: a body
+// that writes the cell grows the array being iterated. Value semantics (and
+// the rust backend) iterate a snapshot: b=3 len=4. JS prints b=4 len=4.
+// shared.vl's headnote claims `for x in cell.read()` "copies nothing" -- true
+// only while nothing writes the cell during the loop.
+import std::io::print;
+import std::shared::Shared;
+
+fun main() {
+	let cell: Shared<List<i32>> = Shared::new([1, 2, 3]);
+	mut seen = 0;
+	for x in cell.read() {
+		if seen < 1 {
+			cell.write().push(x);
+		}
+		seen += 1;
+	}
+	print(i"b={seen} len={cell.read().len()}");
+}
+
+main();

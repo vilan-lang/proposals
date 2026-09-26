@@ -1,0 +1,14 @@
+// A122 probe 18 — a trait requirement naming `Self` as a mapped-tuple source
+// (the shape `fun keys(self): (U in Self: TupleKey<Self, U>)` needs), and the
+// control: a mapped type over a generic with NO tuple bound.
+trait Walk {
+	fun cells(self): (U in Self: Option<U>);
+}
+
+fun loose<T>(x: (U in T: Option<U>)): i32 {
+	0
+}
+
+fun main() {
+	print(1);
+}

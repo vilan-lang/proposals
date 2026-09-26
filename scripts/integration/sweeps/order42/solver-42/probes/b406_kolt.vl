@@ -1,0 +1,6 @@
+import std::reactive::{ Signal, SignalCell };
+fun main() {
+	let selected_index: SignalCell<usize> = Signal::new(0);
+	let a: SignalCell<u53> = SignalCell::new(3);
+	print(i"{selected_index.get()} {a.get()}");
+}

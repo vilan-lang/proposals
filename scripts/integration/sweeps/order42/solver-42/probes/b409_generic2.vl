@@ -1,0 +1,14 @@
+import std::io::print;
+trait Src<T> {
+	fun get(self): T;
+}
+struct Root { value: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.value } }
+struct Mapped<S, T, U> { up: S, transform: |T| U }
+impl Mapped<type S: Src<type T>, T, type U> with Src<U> {
+	fun get(self): U { (self.transform)(self.up.get()) }
+}
+fun read<U, R: Src<U>>(source: R): U { source.get() }
+fun main() {
+	print(read(Mapped<Root, i32, str> { up = Root { value = 4 }, transform = |n| i"<{n * 2}>" }));
+}

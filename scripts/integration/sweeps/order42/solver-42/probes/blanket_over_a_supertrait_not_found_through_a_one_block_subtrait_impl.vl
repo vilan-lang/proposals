@@ -1,0 +1,42 @@
+// reactive-42 find S1 (2026-09-25; reproduces on d65d4e75 AND with solver-42's B408 ca0dd51f applied):
+// a BLANKET over a SUPERTRAIT (`impl type S: Src<type T> { fun pair .. }`) is not found on a type
+// that implements the supertrait only through a ONE-BLOCK sub-trait impl (B243's form,
+// `impl Cell<type T> with Sig<T> { fun get .. }`): "Cell<i32> has no method 'pair'". A trait DEFAULT
+// is reached (B243); a blanket is not. Under A124 S2c `map` is a blanket, so
+// `traits::b243_a_one_block_signal_impl_reaches_source_map_and_effect_on_change` reds with
+// "Cell<i32> has no method 'map'" and kolt's `StorageSignalCell` (one-block `with Signal<T>`)
+// would lose `.map`/`.cell()`/`.switch` if it did not carry an inherent `map`.
+import std::io::print;
+
+trait Src<T> {
+	fun get(self): T;
+}
+
+trait Sig<T> with Src<T> {
+	fun label(self): str;
+}
+
+struct Cell<T> {
+	v: T,
+}
+
+impl Cell<type T> with Sig<T> {
+	fun get(self): T {
+		self.v
+	}
+	fun label(self): str {
+		"cell"
+	}
+}
+
+impl type S: Src<type T> {
+	fun pair(self): (T, T) {
+		(self.get(), self.get())
+	}
+}
+
+fun main() {
+	let c = Cell { v = 3 };
+	let (a, b) = c.pair();
+	print(a + b);
+}

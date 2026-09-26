@@ -1,0 +1,22 @@
+// An impl reading its value type out of a nested binder (`impl Sw<type I: Src<type U>>
+// with Src<U>`): a default it inherits types a closure parameter with the
+// unsubstituted `U`, and `s.show(|v| i"{v + 1}")` is refused. Binding `U` as a
+// direct (phantom) parameter of the subject avoids it.
+trait Src<T> {
+	fun get(self): T;
+	fun show(self, f: |T| str): str { f(self.get()) }
+}
+struct Root { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+struct Sw<I> { inner: I }
+impl Sw<type I: Src<type U>> with Src<U> {
+	fun get(self): U { self.inner.get() }
+}
+struct Sw2<I, U> { inner: I, read: |I| U }
+impl Sw2<type I, type U> with Src<U> {
+	fun get(self): U { (self.read)(self.inner) }
+}
+fun main() {
+	let s = Sw { inner = Root { v = 1 } };
+	print(s.show(|v| i"{v + 1}"));
+}

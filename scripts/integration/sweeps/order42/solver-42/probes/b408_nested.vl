@@ -1,0 +1,7 @@
+import std::compare::PartialEq;
+trait Src<T> { fun get(self): T; }
+struct Root { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+impl type S: Src<type T: PartialEq> { fun steady(self): bool { self.get() == self.get() } }
+fun ok<T: PartialEq, S: Src<T>>(s: S): bool { s.steady() }
+fun main() { print(ok(Root { v = 1 })); }

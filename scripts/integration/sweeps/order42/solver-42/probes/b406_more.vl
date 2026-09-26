@@ -1,0 +1,8 @@
+import std::shared::Shared;
+struct Counter { count: Shared<u53> }
+fun main() {
+	let o: Option<Shared<u53>> = Some(Shared::new(3));
+	mut c = Counter { count = Shared::new(1) };
+	c.count = Shared::new(9);
+	print(c.count.read());
+}

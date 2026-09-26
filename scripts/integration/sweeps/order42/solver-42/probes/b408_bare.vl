@@ -1,0 +1,9 @@
+trait Src<T> { fun get(self): T; }
+struct Root { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+impl Src<type T> { fun twice(self): (T, T) { (self.get(), self.get()) } }
+fun through<S: Src<i32>>(s: S): i32 {
+	let (a, b) = s.twice();
+	a + b
+}
+fun main() { print(through(Root { v = 2 })); }

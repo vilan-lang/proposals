@@ -1,0 +1,16 @@
+[package]
+name = "tuple_trait_argument_override_not_selected_through_a_bound"
+version = "0.0.0"
+edition = "2024"
+
+[[bin]]
+name = "tuple_trait_argument_override_not_selected_through_a_bound"
+path = "src/main.rs"
+
+[dependencies]
+vilan-rt = { path = "/home/reed/code/vilan-lang/vilan/.claude/worktrees/solver-42/crates/vilan-rt" }
+
+[profile.release]
+panic = "unwind"
+
+[workspace]

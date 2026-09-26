@@ -1,0 +1,9 @@
+import std::io::print;
+trait Named { fun name(self): str; }
+trait Holds<T: Named> { fun held(self): T; }
+struct Dog {}
+impl Dog with Named { fun name(self): str { "dog" } }
+struct Kennel { dog: Dog }
+impl Kennel with Holds<Dog> { fun held(self): Dog { self.dog } }
+impl type S: Holds<type X> { fun held_name(self): str { self.held().name() } }
+fun main() { print(Kennel { dog = Dog {} }.held_name()); }

@@ -1,0 +1,6 @@
+import std::reactive::{ Signal, SignalCell, Source };
+fun main() {
+	let count = SignalCell::new(1);
+	let s = count.map(|n| n * 10).cell();
+	print(s.get());
+}

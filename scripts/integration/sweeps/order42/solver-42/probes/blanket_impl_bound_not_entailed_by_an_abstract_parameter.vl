@@ -1,0 +1,57 @@
+// reactive-42 find S2 (2026-09-25; reproduces on d65d4e75 AND with B408 ca0dd51f applied): an
+// abstract `S: Src<i32>` does not satisfy `Up<i32>` when `Up` is implemented by a BLANKET IMPL
+// over `Src` (`impl type S: Src<type T> with Up<T>`) — the trait-satisfaction twin of B408 (which
+// made blanket METHODS reachable). `Mapped<S, i32, i32>: Src<i32>` needs `S: Up<i32>` and is
+// refused. Without the `Up` indirection (n6: the impl bound written `type S: Src<type T>`) it runs
+// (16). This is reactive.vl's private `Upstream` blanket (the B409 workaround): it keeps the four
+// b371 pins red after B408 (`'Map<S, T, I>' does not implement trait 'Source<I>'`) until either
+// B409 lets `Upstream` retire or this is fixed.
+import std::io::print;
+
+trait Src<T> {
+	fun get(self): T;
+}
+
+trait Up<T> {
+	fun pull(self): T;
+}
+
+impl type S: Src<type T> with Up<T> {
+	fun pull(self): T {
+		self.get()
+	}
+}
+
+struct Root {
+	value: i32,
+}
+
+impl Root with Src<i32> {
+	fun get(self): i32 {
+		self.value
+	}
+}
+
+struct Mapped<S, T, U> {
+	up: S,
+	transform: |T| U,
+}
+
+impl Mapped<type S: Up<type T>, T, type U> with Src<U> {
+	fun get(self): U {
+		(self.transform)(self.up.pull())
+	}
+}
+
+fun read_twice<U, R: Src<U>>(source: R): (U, U) {
+	(source.get(), source.get())
+}
+
+fun doubled<S: Src<i32>>(source: S): (i32, i32) {
+	read_twice(Mapped<S, i32, i32> { up = source, transform = |n| n * 2 })
+}
+
+fun main() {
+	let (a, b) = doubled(Root { value = 4 });
+	print(a + b);
+}

@@ -1,0 +1,105 @@
+vilan-macro-expansions 1
+toolchain 0.40.0
+macro_std d1fba762150c532c
+17da9e2049b63fb3 517
+import std::wire::{ Wire, Serialize, Deserialize, Serializer, Deserializer };
+impl Instant with Wire {
+	fun describe<S: Serialize>(self, serializer: &mut S) {
+		serializer.begin_struct(1);
+		serializer.field("millis");
+		self.millis.describe(serializer);
+		serializer.end_struct();
+	}
+	fun rebuild<D: Deserialize>(deserializer: &mut D): Instant {
+		deserializer.begin_struct();
+		deserializer.field("millis");
+		let millis = i53::rebuild(deserializer);
+		deserializer.end_struct();
+		Instant { millis = millis }
+	}
+}
+
+37a8b3686947fef0 331
+import std::compare::PartialEq;
+impl DraftState with PartialEq {
+	fun eq(self, other: DraftState): bool {
+		match (self, other) {
+			(DraftState::Synced, DraftState::Synced) => true,
+			(DraftState::Dirty, DraftState::Dirty) => true,
+			(DraftState::Failed(let s0), DraftState::Failed(let o0)) => s0 == o0,
+			_ => false,
+		}
+	}
+}
+
+38a913a8b192292f 137
+import std::compare::PartialEq;
+impl Duration with PartialEq {
+	fun eq(self, other: Duration): bool {
+		self.millis == other.millis
+	}
+}
+
+848f2a0568ec2289 135
+import std::compare::PartialEq;
+impl Instant with PartialEq {
+	fun eq(self, other: Instant): bool {
+		self.millis == other.millis
+	}
+}
+
+85b87244a8d9040b 248
+import std::debug::Debug;
+impl WriteState with Debug {
+	fun debug(self): str {
+		match self {
+			WriteState::Confirmed => "Confirmed",
+			WriteState::Pending => "Pending",
+			WriteState::Rejected(let p0) => "Rejected(" + p0.debug() + ")",
+		}
+	}
+}
+
+e13c0f541a535725 234
+import std::debug::Debug;
+impl DraftState with Debug {
+	fun debug(self): str {
+		match self {
+			DraftState::Synced => "Synced",
+			DraftState::Dirty => "Dirty",
+			DraftState::Failed(let p0) => "Failed(" + p0.debug() + ")",
+		}
+	}
+}
+
+f19a704b7cc29d3e 345
+import std::compare::PartialEq;
+impl WriteState with PartialEq {
+	fun eq(self, other: WriteState): bool {
+		match (self, other) {
+			(WriteState::Confirmed, WriteState::Confirmed) => true,
+			(WriteState::Pending, WriteState::Pending) => true,
+			(WriteState::Rejected(let s0), WriteState::Rejected(let o0)) => s0 == o0,
+			_ => false,
+		}
+	}
+}
+
+f70b42425871f1b5 520
+import std::wire::{ Wire, Serialize, Deserialize, Serializer, Deserializer };
+impl Duration with Wire {
+	fun describe<S: Serialize>(self, serializer: &mut S) {
+		serializer.begin_struct(1);
+		serializer.field("millis");
+		self.millis.describe(serializer);
+		serializer.end_struct();
+	}
+	fun rebuild<D: Deserialize>(deserializer: &mut D): Duration {
+		deserializer.begin_struct();
+		deserializer.field("millis");
+		let millis = i53::rebuild(deserializer);
+		deserializer.end_struct();
+		Duration { millis = millis }
+	}
+}
+

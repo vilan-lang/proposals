@@ -1,0 +1,11 @@
+trait Label { fun label(): str; }
+struct A {}
+impl A with Label { fun label(): str { "A" } }
+struct Holder<T> { v: T }
+impl Holder<type T: Label> {
+	fun tag(): str { T::label() }
+}
+fun main() {
+	print(Holder<A>::tag());
+	print(Holder::tag());
+}

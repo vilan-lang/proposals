@@ -1,0 +1,20 @@
+// A DEFAULT inherited through an impl whose subject bound names the SAME trait at
+// other arguments (`impl M<type S: Src<type X>, X, type U> with Src<U>`) checks
+// that bound at the implemented arguments: "Root does not implement Src<str>".
+// B395 class; still red on next@9ffa397e (after solver-41). Overriding the default
+// in the impl, or bounding S on a different trait, avoids it.
+trait Src<T> {
+	fun get(self): T;
+	fun twice(self): (T, T) { (self.get(), self.get()) }
+}
+struct Root { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+struct M<S, X, U> { up: S, f: |X| U }
+impl M<type S: Src<type X>, X, type U> with Src<U> {
+	fun get(self): U { (self.f)(self.up.get()) }
+}
+fun main() {
+	let m = M<Root, i32, str> { up = Root { v = 2 }, f = |n| i"<{n}>" };
+	let (a, b) = m.twice();
+	print(a + b);
+}

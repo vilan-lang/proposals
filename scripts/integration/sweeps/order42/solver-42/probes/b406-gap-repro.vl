@@ -1,0 +1,9 @@
+import std::shared::Shared;
+struct Rs { channel: Shared<i32>, count: Shared<usize> }
+fun make(channel: i32): Rs {
+	let channel_cell = Shared::new(channel);
+	Rs { channel = Shared::new(5), count = Shared::new(0) }
+}
+fun main() {
+	print(i"{make(3).count.read()}");
+}

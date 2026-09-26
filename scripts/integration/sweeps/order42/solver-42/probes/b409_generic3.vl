@@ -1,0 +1,19 @@
+import std::io::print;
+trait Src<T> {
+	fun get(self): T;
+	fun twice(self): (T, T) { (self.get(), self.get()) }
+}
+struct Root { value: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.value } }
+struct Mapped<S, T, U> { up: S, transform: |T| U }
+impl Mapped<type S: Src<type T>, T, type U> with Src<U> {
+	fun get(self): U { (self.transform)(self.up.get()) }
+}
+fun read_twice<U, R: Src<U>>(source: R): (U, U) { (source.get(), source.get()) }
+fun doubled<S: Src<i32>>(source: S): (str, str) {
+	read_twice(Mapped<S, i32, str> { up = source, transform = |n| i"<{n * 2}>" })
+}
+fun main() {
+	let (a, b) = doubled(Root { value = 4 });
+	print(a + b);
+}

@@ -1,0 +1,15 @@
+import std::reactive::{ SignalCell, Source };
+fun pair(p: (dyn Source<i32>, dyn Source<str>)): str {
+	i"{p.0.get()} {p.1.get()}"
+}
+fun reads<T: (2..)>(sources: (U in T: dyn Source<U>)): T {
+	(s in sources => s.get())
+}
+fun main() {
+	let a = SignalCell::new(1);
+	let b = SignalCell::new("b");
+	let t = (a, b);
+	print(pair(t));
+	let (x, y) = reads(t);
+	print(i"{x} {y}");
+}

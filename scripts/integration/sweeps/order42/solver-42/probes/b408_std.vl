@@ -1,0 +1,12 @@
+import std::reactive::{ Distinct, Signal, SignalCell, Source };
+fun cached<S: Source<i32>>(s: S): SignalCell<i32> { s.cell() }
+fun deduped<S: Source<i32>>(s: S): Distinct<S, i32> { s.distinct() }
+fun doubled<S: Source<i32>>(s: S): SignalCell<i32> { s.map(|n| n * 2) }
+fun main() {
+	let a = Signal::new(3);
+	let c = cached(a);
+	let d = deduped(a);
+	let m = doubled(a);
+	a.set(5);
+	print(i"{c.get()} {d.get()} {m.get()}");
+}

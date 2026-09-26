@@ -1,0 +1,21 @@
+// A122 probe 06 — the abstract arm today: a comprehension over a mapped-tuple
+// PARAMETER whose result is annotated as another mapped tuple over the same T.
+import std::reactive::SignalCell;
+
+fun reads<T: (2..)>(cells: (U in T: SignalCell<U>)): T {
+	(c in cells => c.get())
+}
+
+fun copies<T: (2..)>(cells: (U in T: SignalCell<U>)): (U in T: SignalCell<U>) {
+	(c in cells => SignalCell::new(c.get()))
+}
+
+fun main() {
+	let a = SignalCell::new(1);
+	let b = SignalCell::new("b");
+	let (x, y) = reads((a, b));
+	print(i"{x} {y}");
+	let (c, d) = copies((a, b));
+	a.set(5);
+	print(i"{c.get()} {d.get()} (copies do not follow)");
+}

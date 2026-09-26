@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B428",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, solver-42's find)",
+   "title": "`let x: i8 = 128` is ACCEPTED: the positive signed bound admits 2^(n-1) (off by one — `i8` tops at 127); the same check B407 extended for unsigned types reads the signed maximum wrong",
+   "discussion": "solver-42 (2026-09-25); B407's range check",
+   "body": "Fix: the signed maximum is 2^(n-1) − 1; pins per width incl. `i8 = 127` accepted and `i8 = 128` refused. Sizing XS; solver."
+  },
+  {
+   "id": "B429",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, solver-42's find)",
+   "title": "unary `-x` on an UNSIGNED VALUE is accepted (`let u: usize = 3; let n = -u;`) — B407 refuses a negative literal at an unsigned type but not negation of an unsigned value, which on JS goes negative (unspecified under I5 ruling 2) and natively refuses to build",
+   "discussion": "solver-42 (2026-09-25); B407; B426 (a constant `0 - 1`)",
+   "body": "Rec: refuse `-` on an unsigned operand with a steer to `as_i53()`/`checked_sub` (the native backend refuses it anyway, so this only aligns the JS answer). Sizing XS; solver."
+  },
+  {
+   "id": "B430",
+   "section": "B",
+   "kind": "bug (miscompile)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, solver-42's find)",
+   "title": "MISCOMPILE — a tuple VARIABLE passed whole into a `(dyn A, dyn B)` position is not erased element-wise: `p[0][1].get is not a function` at run time — B398 erases the elements of a tuple LITERAL at a mapped-tuple position; a tuple-typed binding at the same position escapes the erasure",
+   "discussion": "solver-42 (2026-09-25); repro `scratchpad/solver-42/p/`b398_local.vl; B398/B412",
+   "body": "Fix: the element-wise `dyn` coercion applies to any expression of tuple type at a mapped-`dyn` position, not only a literal (re-wrap by projection). Pin red-first; native holds 'refused or identical'. Sizing S; solver."
+  },
+  {
+   "id": "B431",
+   "section": "B",
+   "kind": "bug (soundness)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, solver-42's find)",
+   "title": "a B412 erasure of a generic parameter that is INSTANTIATED at a resource is not refused — trait-objects Q5 ('a `dyn` may hold no resource') is checked at the coercion of a concrete type and cannot see through a generic `S` erased to `dyn` when `S` is later bound to a resource",
+   "discussion": "solver-42 (2026-09-25); B412; trait-objects.md Q5",
+   "body": "Fix: the Q5 check runs at monomorphisation as well (or the erasure of a rigid parameter requires a `S: !Resource`-shaped negative bound the language lacks — so the mono check). Pin: a generic erasing to `dyn` instantiated at a `[resource]` type is refused by name. Sizing S–M; solver."
+  }
+ ]
+}

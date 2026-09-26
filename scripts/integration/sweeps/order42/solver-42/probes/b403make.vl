@@ -1,0 +1,17 @@
+trait Label { fun label(): str; }
+struct A {}
+impl A with Label { fun label(): str { "A" } }
+struct B {}
+impl B with Label { fun label(): str { "B" } }
+struct Holder<T> { v: T }
+impl Holder<type T: Label> {
+	fun make(v: T): Holder<T> { Holder { v } }
+	fun name(self): str { T::label() }
+	fun parse(text: str): Option<Holder<T>> { None }
+}
+fun main() {
+	print(Holder::make(A {}).name());
+	print(Holder::make(B {}).name());
+	let p: Option<Holder<B>> = Holder::parse("x");
+	print(p.is_none());
+}

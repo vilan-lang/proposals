@@ -1,0 +1,12 @@
+import std::reactive::{ Signal, SignalCell, Source };
+fun doubled<S: Source<i32>>(s: S): i32 { s.map_node(|n| n * 2).get() }
+fun deduped<S: Source<i32>>(s: S): i32 { s.distinct().get() }
+fun main() {
+	let a = Signal::new(3);
+	let root = SignalCell::new(1);
+	let shown = root.map_node(|n| i"{n}");
+	let e = shown.sub(|v| print(i"sub {v}"));
+	print(doubled(a));
+	print(deduped(a));
+	root.set(2);
+}

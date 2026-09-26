@@ -1,0 +1,18 @@
+trait Src<T> {
+	fun get(self): T;
+	fun show(self, f: |T| str): str { f(self.get()) }
+}
+struct Root { v: i32 }
+impl Root with Src<i32> { fun get(self): i32 { self.v } }
+struct Word { w: str }
+impl Word with Src<str> { fun get(self): str { self.w } }
+struct Sw<S, T, I> { up: S, select: |T| I }
+impl Sw<type S: Src<type T>, T, type I: Src<type U>> with Src<U> {
+	fun get(self): U { (self.select)(self.up.get()).get() }
+}
+fun shown<U, R: Src<U>>(r: R, f: |U| str): str { r.show(f) }
+fun main() {
+	let s = Sw<Root, i32, Word> { up = Root { v = 2 }, select = |n| Word { w = i"w{n}" } };
+	print(s.show(|text| text + "!"));
+	print(shown(s, |text| text + "?"));
+}

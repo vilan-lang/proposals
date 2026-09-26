@@ -1,0 +1,9 @@
+fun main() {
+	mut a = [1, 2];
+	let flag = a.len() == 2;
+	mut b = if flag { a } else { [] };
+	b.push(3);
+	mut c = a;
+	c.push(4);
+	print(i"a={a.len()} b={b.len()} c={c.len()}");
+}

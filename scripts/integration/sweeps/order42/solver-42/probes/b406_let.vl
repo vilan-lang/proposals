@@ -1,0 +1,10 @@
+import std::shared::Shared;
+struct Counter { count: Shared<u53> }
+fun make(): Shared<u53> { Shared::new(4) }
+fun main() {
+	let x: Shared<u53> = Shared::new(3);
+	print(x.read());
+	print(make().read());
+	let c = Counter { count = Shared::new(3) };
+	print(c.count.read());
+}
