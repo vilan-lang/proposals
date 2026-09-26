@@ -1,0 +1,52 @@
+// reactive-42 find M1 (2026-09-25, on 4db5b03d + the flip; the shape exists on d65d4e75 too — nothing
+// here is std): MISCOMPILE — a closure whose body ends in `;` (so its value is `void`) is
+// accepted where the expected type is `|i32| i32` when that expectation reaches the generic
+// call only through a `dyn` coercion at a parameter. `vilan check` says "no errors", and
+// `vilan run` prints `NaN` (`undefined + 1`). The same body with the node annotated
+// (`let m: Mapped<Root, i32, i32> = root.mapped(..)`) is refused with the `;` steer, and
+// through a bare-trait parameter (`Src<i32>`) it is refused as "does not implement
+// Src<i32>". With std: `fun show(source: dyn Source<i32>)`, `show(count.map(|n| { n * 2; }))`
+// prints `undefined`.
+import std::io::print;
+
+trait Src<T> {
+	fun get(self): T;
+}
+
+struct Root {
+	value: i32,
+}
+
+impl Root with Src<i32> {
+	fun get(self): i32 {
+		self.value
+	}
+}
+
+struct Mapped<S, T, U> {
+	up: S,
+	transform: |T| U,
+}
+
+impl Mapped<type S: Src<type T>, T, type U> with Src<U> {
+	fun get(self): U {
+		(self.transform)(self.up.get())
+	}
+}
+
+impl type S: Src<type T> {
+	fun mapped<U>(self, transform: |T| U): Mapped<S, T, U> {
+		Mapped<S, T, U> { up = self, transform }
+	}
+}
+
+fun show(source: dyn Src<i32>) {
+	print(source.get() + 1);
+}
+
+fun main() {
+	let root = Root { value = 4 };
+	show(root.mapped(|n| {
+		n * 2;
+	}));
+}

@@ -1,0 +1,60 @@
+Error: 'EachValues<Theme, SignalCell<List<Theme>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+     ╭─[ ./src/theme.vl:214:4 ]
+     │
+ 214 │ ╭─▶          <div
+     ┆ ┆   
+ 239 │ ├─▶           }))
+     │ │                   
+     │ ╰─────────────────── 'EachValues<Theme, SignalCell<List<Theme>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+     │
+     ├─[ /home/reed/code/vilan-lang/vilan/.claude/worktrees/index-42/vilan/std/src/browser/ui.vl:212:12 ]
+     │
+ 212 │     fun child<C: Slot>(self, content: C): View {
+     │               ┬  
+     │               ╰── the bound is declared here
+─────╯
+Error: 'Theme' does not implement trait 'Hashable', required by a generic bound of this call
+      ╭─[ ./src/theme.vl:222:12 ]
+      │
+  222 │ ╭─▶           .child(each_values(filtered_themes, |theme| {
+      ┆ ┆   
+  239 │ ├─▶           }))
+      │ │                   
+      │ ╰─────────────────── 'Theme' does not implement trait 'Hashable', required by a generic bound of this call
+      │
+      ├─[ /home/reed/code/vilan-lang/vilan/.claude/worktrees/index-42/vilan/std/src/browser/ui.vl:1154:24 ]
+      │
+ 1154 │ export fun each_values<T: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
+      │                        ┬  
+      │                        ╰── the bound is declared here
+──────╯
+Error: 'EachValues<Command, SignalCell<List<Command>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+     ╭─[ ./src/command_palette.vl:245:4 ]
+     │
+ 245 │ ╭─▶          <div
+     ┆ ┆   
+ 272 │ ├─▶           }))
+     │ │                   
+     │ ╰─────────────────── 'EachValues<Command, SignalCell<List<Command>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+     │
+     ├─[ /home/reed/code/vilan-lang/vilan/.claude/worktrees/index-42/vilan/std/src/browser/ui.vl:212:12 ]
+     │
+ 212 │     fun child<C: Slot>(self, content: C): View {
+     │               ┬  
+     │               ╰── the bound is declared here
+─────╯
+Error: 'Command' does not implement trait 'Hashable', required by a generic bound of this call
+      ╭─[ ./src/command_palette.vl:253:12 ]
+      │
+  253 │ ╭─▶           .child(each_values(filtered_commands, |command| {
+      ┆ ┆   
+  272 │ ├─▶           }))
+      │ │                   
+      │ ╰─────────────────── 'Command' does not implement trait 'Hashable', required by a generic bound of this call
+      │
+      ├─[ /home/reed/code/vilan-lang/vilan/.claude/worktrees/index-42/vilan/std/src/browser/ui.vl:1154:24 ]
+      │
+ 1154 │ export fun each_values<T: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
+      │                        ┬  
+      │                        ╰── the bound is declared here
+──────╯

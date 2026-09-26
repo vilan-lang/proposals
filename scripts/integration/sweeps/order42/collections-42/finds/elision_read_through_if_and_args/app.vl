@@ -1,0 +1,32 @@
+import std::io::print;
+import std::shared::Shared;
+
+fun by_fun(list: List<i32>, s: Shared<List<i32>>): i32 {
+	s.write().push(9);
+	list.len()
+}
+
+fun main() {
+	let s: Shared<List<i32>> = Shared::new([1, 2, 3]);
+	let flag = s.read().len() == 3;
+	let a = s.read();
+	let b = if flag {
+		s.read()
+	} else {
+		[]
+	};
+	let c = match flag {
+		true => s.read(),
+		false => [],
+	};
+	s.write().push(4);
+	print(i"let={a.len()} if={b.len()} match={c.len()}");
+	let by_closure = |list: List<i32>| {
+		s.write().push(5);
+		list.len()
+	};
+	print(i"closure-arg={by_closure(s.read())} (held {s.read().len()})");
+	print(i"fun-arg={by_fun(s.read(), s)} (held {s.read().len()})");
+}
+
+main();

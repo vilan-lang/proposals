@@ -1,0 +1,28 @@
+import std::io::print;
+import std::rpc::KeyedCell;
+import std::wire::Keyed;
+
+struct Row {
+	id: i32,
+	text: str,
+}
+
+impl Row with Keyed<i32> {
+	fun key(self): i32 {
+		self.id
+	}
+}
+
+fun main() {
+	let cell: KeyedCell<i32, Row> = KeyedCell<i32, Row>::new([Row { id = 1, text = "a" }, Row { id = 2, text = "b" }]);
+	cell.remove(1);
+	match cell.locate(2) {
+		Some(let hit) => {
+			let (at, row) = hit;
+			print(i"at={at} text={row.text}");
+		},
+		None => print("none"),
+	}
+}
+
+main();

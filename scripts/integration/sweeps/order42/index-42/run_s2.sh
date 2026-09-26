@@ -54,6 +54,27 @@ CODEMOD="$TARGET/debug/examples/i5_s2_codemod"
 # 2. the signatures
 "$CODEMOD" signatures "$VERDICTS" "$TREE/vilan/std/src" > "$OUT/signatures.tsv" 2> "$OUT/signatures.err"
 cat "$OUT/signatures.err" | tee -a "$OUT/summary.txt"
+# What the signatures pass alone wrote — the tree `pre.patch` is made against.
+if [ "${STOP_AFTER:-}" = signatures ]; then
+	rm -rf "$SCRATCH/signatures" && mkdir -p "$SCRATCH/signatures" && cp -r "$TREE/vilan" "$SCRATCH/signatures/"
+	echo "--- stopped after the signatures (STOP_AFTER=signatures); snapshot in $SCRATCH/signatures" | tee -a "$OUT/summary.txt"
+	exit 0
+fi
+
+# 2b. pre.patch (index-42, Order 42): the respellings a TYPE decides, made by
+#     hand BEFORE the fix loop so the loop writes the conversions their new
+#     boundaries need rather than conversions a later hand edit would take back
+#     out. S4 — the positions not born `usize`: A112's `// I5` markers in
+#     delta.vl and std::ui, `SeqOp`'s payloads, `RowStep`, `Delta::Insert`,
+#     macro_std's `Arguments` and `indent` — and the census's misses:
+#     `Enumerated`'s trait argument, annotated locals (compare.vl's counter,
+#     markdown.vl's three `close`, document.vl's two insertion lists), and the
+#     one place a delta SEQUENCE number becomes a POSITION (DeltaLog's
+#     `trim`/`since`), converted once at that boundary.
+if [ -s "$HERE/pre.patch" ]; then
+	( cd "$TREE" && patch -p1 --no-backup-if-mismatch < "$HERE/pre.patch" ) > "$OUT/s4.log"
+	echo "--- pre.patch: $(grep -c '^patching' "$OUT/s4.log") files" | tee -a "$OUT/summary.txt"
+fi
 
 # 3. the fixed-point loop. Entries: every std module on each platform (so no
 #    std body is left unanalyzed), and every corpus program.
@@ -116,51 +137,10 @@ if [ -s "$HERE/hand.patch" ]; then
 	fix_round after-hand
 fi
 
-# 5. measure
-for formatted in vilan/std vilan/test; do
-	VILAN_STD="$TREE/vilan/std" "$VILAN" fmt "$TREE/$formatted" > "$OUT/fmt.log" 2>&1 \
-		|| { echo "--- fmt declined in $formatted:"; grep declined "$OUT/fmt.log"; } | tee -a "$OUT/summary.txt"
-done
-moved=0
-unchanged=0
-failed=0
-: > "$OUT/goldens.tsv"
-GOLDENS="$SCRATCH/goldens"
-rm -rf "$GOLDENS" && mkdir -p "$GOLDENS"
-cp -r "$TREE/vilan/test/." "$GOLDENS/"
-for source in "$GOLDENS"/*.vl; do
-	name="$(basename "$source" .vl)"
-	[ -f "$BASE/vilan/test/$name.mjs" ] || continue
-	if VILAN_STD="$TREE/vilan/std" "$VILAN" build "$source" > /dev/null 2> "$GOLDENS/$name.err"; then
-		if cmp -s "$GOLDENS/$name.mjs" "$BASE/vilan/test/$name.mjs"; then
-			unchanged=$((unchanged + 1))
-		else
-			moved=$((moved + 1))
-			printf 'MOVED\t%s\n' "$name" >> "$OUT/goldens.tsv"
-			diff "$BASE/vilan/test/$name.mjs" "$GOLDENS/$name.mjs" > "$OUT/golden-$name.diff" || true
-		fi
-	else
-		failed=$((failed + 1))
-		printf 'FAILED\t%s\t%s\n' "$name" "$(grep -m1 '^Error' "$GOLDENS/$name.err" | cut -c1-160)" >> "$OUT/goldens.tsv"
-	fi
-done
-echo "--- corpus goldens: $unchanged byte-identical, $moved moved, $failed failed to build" | tee -a "$OUT/summary.txt"
-examples_ok=0
-examples_failed=0
-: > "$OUT/examples.tsv"
-for example in "$TREE"/vilan/examples/*/; do
-	name="$(basename "$example")"
-	if ( cd "$example" && VILAN_STD="$TREE/vilan/std" "$VILAN" check > "$OUT/example-$name.log" 2>&1 ); then
-		examples_ok=$((examples_ok + 1))
-	else
-		examples_failed=$((examples_failed + 1))
-		printf 'FAILED\t%s\t%s\n' "$name" "$(grep -c '^Error' "$OUT/example-$name.log")" >> "$OUT/examples.tsv"
-	fi
-done
-echo "--- examples: $examples_ok check clean, $examples_failed refused (examples.tsv)" | tee -a "$OUT/summary.txt"
-
-# 6. the diff, sources only
-( cd "$SCRATCH" && git diff --no-index --stat=200 base/vilan tree/vilan > "$OUT/s2.stat" || true )
-( cd "$SCRATCH" && git diff --no-index base/vilan tree/vilan > "$OUT/s2.diff" || true )
-( cd "$SCRATCH" && diff -ru -x examples -x target base/crates tree/crates > "$OUT/s2-compiler.diff" || true )
-tail -1 "$OUT/s2.stat" | tee -a "$OUT/summary.txt"
+# 5–6. measure — the corpus goldens in parallel, the examples, the diff
+#      (measure_s2.sh; a loaded box timed the serial loop out).
+if [ "${STOP_AFTER:-}" = fix ]; then
+	echo "--- stopped after the fix rounds (STOP_AFTER=fix); measure with measure_s2.sh" | tee -a "$OUT/summary.txt"
+	exit 0
+fi
+bash "$HERE/measure_s2.sh" "$WORKTREE" "$SCRATCH"

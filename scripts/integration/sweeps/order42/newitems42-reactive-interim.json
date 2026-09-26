@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B419",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, reactive-42's interim find S1)",
+   "title": "a BLANKET over a supertrait is not found on a type that implements the supertrait only through a ONE-BLOCK subtrait impl (`impl Cell with Sig<T>` — B243's form): under the flip `map` is a blanket over `Src`, and `traits::b243_a_one_block_signal_impl_reaches_source_map_and_effect_on_change` stays red ('Cell<i32> has no method map') even with B408 applied — pre-existing on d65d4e75",
+   "discussion": "reactive-42 (2026-09-25); repro `sweeps/order42/reactive-42/finds/`blanket_over_a_supertrait_not_found_through_a_one_block_subtrait_impl.vl; B243; on the flip's path",
+   "body": "Fix: blanket-method lookup walks the supertraits an impl block provides through its subtrait (the one-block form registers `Src` as provided — B243's rule — but the blanket candidate set does not consult it). Pin: the b243 pin under the flip. Sizing S–M; solver-42's tail — if unlanded by reactive-42's merge, that pin is re-derived to the defaults and the blanket case waits for Order 43."
+  },
+  {
+   "id": "B420",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, reactive-42's interim find S2)",
+   "title": "an abstract `S: Src<i32>` does not SATISFY a bound `Up<i32>` when `Up` is provided by a blanket IMPL over `Src` — the trait-satisfaction twin of B408 (B408 fixed method LOOKUP through the bound; satisfaction of a blanket-provided trait at an abstract parameter still fails): keeps the four b371 pins red after B408 (\"'Map<S, T, I>' does not implement trait 'Source<I>'\")",
+   "discussion": "reactive-42 (2026-09-25); repro `sweeps/order42/reactive-42/finds/`blanket_impl_bound_not_entailed_by_an_abstract_parameter.vl; cured for std by B409 (retiring reactive.vl's `Upstream` blanket), so B409 is on the flip's critical path — solver-42 told",
+   "body": "Fix: `satisfies_trait_bound` at an abstract parameter consults blanket impls whose bound the parameter's own bounds entail (the same entailment B408 added to lookup), with B394's in-progress guard. Pins: the repro; the b371 four under the flip. Sizing S–M; solver."
+  },
+  {
+   "id": "B421",
+   "section": "B",
+   "kind": "bug (miscompile)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, reactive-42's interim find M1)",
+   "title": "MISCOMPILE — the `dyn` coercion accepts a VOID closure body as its value: `show(root.mapped(\\|n\\| { n * 2; }))` with a `dyn Src<i32>` parameter checks clean and prints `NaN` (the block's trailing `;` makes it void; the coercion at the `dyn` position does not check the closure's result type against `U`) — on d65d4e75",
+   "discussion": "reactive-42 (2026-09-25); repro `sweeps/order42/reactive-42/finds/`dyn_coercion_accepts_a_void_closure_body_as_its_value.vl; dyn-40's explicit coercion",
+   "body": "Fix: the coercion typechecks the node's `U` against the closure's body type (a void body is a mismatch with the usual steer). Pin red-first. Sizing S; solver."
+  },
+  {
+   "id": "F43",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-25 (Order 42, reactive-42's interim find N1)",
+   "title": "native — a blanket's trait ARGUMENT is unbound through a SECOND trait (reactive.vl's private `Upstream` shape): the rust backend refuses it, so under the flip three native_differential pins go red (the map/flatten probe, the native copy census, the default suite's `reactive-on-change.vl`/`reactive-flatten.vl`) — cured for std when B409 lets `Upstream` retire; the emitter gap itself stays",
+   "discussion": "reactive-42 (2026-09-25); repro `sweeps/order42/reactive-42/finds/`native_blanket_trait_argument_unbound_through_a_second_trait.vl; with B409/B420",
+   "body": "Re-probe after B409 + the `Upstream` retirement; if the repro still refuses, it is native-42's (the emitter's blanket-argument binding through a second trait). Sizing S to probe."
+  }
+ ]
+}

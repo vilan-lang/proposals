@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B418",
+   "section": "B",
+   "kind": "bug (miscompile)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, collections-42's find)",
+   "title": "MISCOMPILE — copy elision on JS is wrong when a `read()` reaches a binding through a BRANCH or an ARGUMENT (B400's sibling): `let b = if flag { s.read() } else { [] }` and its `match` twin alias the LIVE list, so a later `s.write().push` shows through `b` (JS 4, native 3); a `.read()` passed BY VALUE to a `fun` or a closure that writes the cell sees the write (JS 6/5, native 5/4). It bit collections-42's first A129 draft silently (the `if` form dropped M86's copy pin from 11 to 6); std was re-spelled to not depend on it",
+   "discussion": "collections-42's find 1 (2026-09-25); repros in `sweeps/order42/collections-42/`finds/elision_read_through_if_and_args/; solver-42 told — fix with B400 if it is the same rule",
+   "body": "Fix: a consumed read reaching a binding through a branch arm or an argument position is copied like the direct case (B267's walk covers the arms and the call arguments); differential pins on both shapes. Sizing S–M; solver."
+  },
+  {
+   "id": "F42",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-25 (Order 42, collections-42's find)",
+   "title": "native — `KeyedCell` does not build natively at all, before or after M87: 'unbound generic type parameter (parameter 2 of struct `Map`)' at `positions = Shared::new(Map::new())` — probably B406's struct-literal-field shape (a generic constructor inside a field not typed from the field); the keyed rpc pins cannot run natively until it does",
+   "discussion": "collections-42's find 2 (2026-09-25); repro `sweeps/order42/collections-42/`m87-native.vl; with B406 (solver-42) and F35",
+   "body": "Re-probe after B406 lands; if it still fails it is the native emitter's own binding of a struct-literal field's generic. Sizing S to probe."
+  },
+  {
+   "id": "A131",
+   "section": "A",
+   "kind": "design",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-25 (Order 42, collections-42's find)",
+   "title": "the delta-driven `each` builds rows that are CUT in the SAME DRAIN: `insert_at(0)` then `remove_at(0)` in one `edit`, or a push then a `pop`, builds a row the settled list never shows — A129's keyed span match brought the 300-turn walk's `each_by` from 1,078 rows to 575 against the pass's 557, and the remaining 18 (one per such turn) are exactly this class; only a DEFERRED build (row construction at the end of the drain, over the ops' net effect) recovers them — a real redesign of the op path, not a patch",
+   "discussion": "collections-42's find 3 (2026-09-25); the per-turn diagnostic at `sweeps/order42/collections-42/`a129/walk-diagnostic.vl; incremental-collections.md §13",
+   "body": "Rec: not queued until an exhibit shows a transient row being expensive (a row's build cost × the frequency of build-and-cut in one drain); the number to watch is the walk's 575 vs 557. If wanted: the op path folds a drain's ops into a net splice set before building (Splice ∘ Splice composition — the law pin already covers the algebra)."
+  }
+ ]
+}

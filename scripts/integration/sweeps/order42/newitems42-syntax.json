@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "K24",
+   "section": "K",
+   "kind": "hygiene (site)",
+   "area": "Web presence (site, playground, docs delivery)",
+   "status": "OPEN — filed 2026-09-25 (Order 42, syntax-42's find)",
+   "title": "the website's playground editor carries its OWN keyword list (`vilan-website/playground/editor-src/editor.mjs:35`, mirrored in the built `src/playground/editor.js`): it still names `resource` (dissolved into `[resource]` by B413) and lacks `css`, `dyn` and `lazy` — the same drift as bindgen's `RESERVED` (E225); the list should be generated from the lexer's table (one source), or at least re-synced at every keyword change",
+   "discussion": "syntax-42 (2026-09-25); E225; the website is the owner's (read-only to lanes)",
+   "body": "Fix: a generated `keywords.json` the site's build reads, emitted by the compiler (`vilan --print-keywords` or a test that writes it), or a pin in the website's check that diffs its list against the compiler's. Sizing S; the owner's tree."
+  }
+ ]
+}

@@ -24,9 +24,27 @@ import sys
 
 PATTERN = re.compile(r"(?<![\w\[])resource(\s+)(external\s+struct|struct|enum)\b")
 
+# What may stand before a DECLARATION's `resource` on its line: nothing but
+# indentation, or a token that ends where a declaration may begin — `export`,
+# an attribute's `]`, a string's opening `"` / an escaped `\n` (the `.vl`
+# programs Rust tests carry), a backtick (a quoted declaration), `{`, `(`, `;`.
+# Anything else is PROSE ("the resource enum `Handle`", a diagnostic's text),
+# which names the KIND and keeps its word.
+DECLARATION_PREFIX = re.compile(r'(^[ \t]*|(export|\]|"|\\n|`|\{|\(|;)[ \t]*)$')
+
 
 def rewrite(text):
-    return PATTERN.subn(lambda m: "[resource]" + m.group(1) + m.group(2), text)
+    count = 0
+
+    def replace(match):
+        nonlocal count
+        line_start = text.rfind("\n", 0, match.start()) + 1
+        if not DECLARATION_PREFIX.search(text[line_start:match.start()]):
+            return match.group(0)
+        count += 1
+        return "[resource]" + match.group(1) + match.group(2)
+
+    return PATTERN.sub(replace, text), count
 
 
 def rewrite_markdown(text):

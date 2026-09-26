@@ -1,0 +1,73 @@
+--- a/projects/vilan/proposal/destruction.md	2026-09-01 20:30:54.142137039 -0400
++++ b/projects/vilan/proposal/destruction.md	2026-09-25 17:49:35.568895289 -0400
+@@ -64,12 +64,15 @@
+ 
+ ## 3. Classification — what is a resource
+ 
+-- **`resource` is a declaration modifier** (position like `external`):
++- **`[resource]` is a declaration attribute** on a `struct` or an `enum` (it leads
++  `external`). *(Respelled 2026-09-25 — B413, Order 42: the `resource` KEYWORD this section
++  first specified dissolved into the attribute; the word is an ordinary name everywhere
++  else, and `resource struct` is refused with a steer to `[resource] struct`.)*
+ 
+   ```vilan
+-  resource external struct Database;
++  [resource] external struct Database;
+ 
+-  resource struct Session {
++  [resource] struct Session {
+       db: Database,
+       tasks: OwnedNursery,
+   }
+@@ -79,7 +82,7 @@
+   resource field, payload, or element type *is* a resource — recursively, the `Wire`/`Hashable`
+   all-fields machinery with the polarity flipped (any resource member marks the whole).
+   `Session` above needs no modifier; writing it is legal and checked (declaring
+-  `resource` on a type is always allowed — intent: "will gain teardown / must not be
++  `[resource]` on a type is always allowed — intent: "will gain teardown / must not be
+   copied" — but omitting it never hides resource-ness).
+   *(Verified 2026-08-10 — B113, the containment-verify lane. No change: the rule
+   holds as written.)* B109's arc observed a plain struct with a resource field
+@@ -116,7 +119,7 @@
+ - **The modifier is required at leaves**: an `external struct` is opaque, so host-object
+   resources (`Database`) must say so themselves.
+ - **`Drop` may be implemented only for resource types** — an impl on a data type errors,
+-  steering to add `resource` (destruction without move discipline is exactly the
++  steering to add `[resource]` (destruction without move discipline is exactly the
+   double-close bug).
+ - **Per-instantiation for generics**: `Option<Database>` is a resource *instantiation*;
+   `Option<i32>` stays data. Resource-ness of a generic type is decided at each
+@@ -443,19 +446,19 @@
+ - **Contexts:** `Context<R>` is rejected by R10 (context values thread as data). This is
+   why `Nursery` — the ambient *handle* — stays data, and ownership lives in a wrapper
+   (§9).
+-- **Macros/worlds:** `resource` is a parse-level modifier; worlds and expansion are
++- **Macros/worlds:** `[resource]` is a parse-level attribute; worlds and expansion are
+   indifferent.
+ 
+ ## 9. Std in v1 — two drivers, and what deliberately does not change
+ 
+-- **`Database`** becomes `resource external struct` with `impl Database with Drop`
++- **`Database`** becomes `[resource] external struct` with `impl Database with Drop`
+   (closing the underlying `node:sqlite` handle). No public `close()` — `drop(db)` is the
+   early form. The kolt/server idiom (module-level, process-lifetime) is untouched by
+   design (§5).
+ - **`OwnedNursery`** (name open, (e) in §14) — *the* resource-owner story:
+ 
+   ```vilan
+-  resource struct OwnedNursery {
++  [resource] struct OwnedNursery {
+       nursery: Nursery,
+   }
+ 
+@@ -583,7 +586,9 @@
+ > rename window closes when S4 ships it. Items kept below for the record.
+ 
+ - **(a) Spelling**: `resource` as a prefix modifier (`resource struct`, `resource external
+-  struct`) — or another word (`owned`?). Recommendation: `resource`.
++  struct`) — or another word (`owned`?). Recommendation: `resource`. *(Re-ruled
++  2026-09-25 — B413: the word stays, the keyword dissolves into the attribute
++  `[resource]`.)*
+ - **(b) Naming**: trait `Drop { fun drop(&mut self) }` + std `drop<T>(own value)`.
+   Recommendation: as written (short, unambiguous, precedented; `Disposable` stays for the
+   data-world protocol).

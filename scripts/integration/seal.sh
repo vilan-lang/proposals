@@ -14,7 +14,7 @@ cargo test -q --doc --workspace > "$S/doctest-$tip.log" 2>&1; d=$?; echo "doc-te
 # whole set was red at the base for a whole order and no seal looked). ~1 min.
 VILAN_NATIVE_DIFFERENTIAL=1 cargo nextest run -p vilan-cli --test native_differential > "$S/native-$tip.log" 2>&1; n=$?; echo "native whole-set exit=$n"
 cargo clippy --workspace --all-targets -- -D warnings > "$S/clippy-$tip.log" 2>&1; c=$?; echo "clippy exit=$c"
-cargo check --target x86_64-pc-windows-msvc -p vilan-cli -p vilan-core -p vilan-lsp --tests > "$S/win-$tip.log" 2>&1; w=$?; echo "windows exit=$w"
+cargo clippy --target x86_64-pc-windows-msvc --workspace --exclude vilan-rt-sqlite --all-targets -- -D warnings > "$S/win-$tip.log" 2>&1; w=$?; echo "windows exit=$w"
 cargo audit --deny unsound > "$S/audit-$tip.log" 2>&1; a=$?; echo "audit exit=$a"
 cargo fmt --all --check > "$S/fmt-$tip.log" 2>&1; f=$?; echo "fmt exit=$f"
 python3 - "$W/CHANGELOG.md" <<'PY'

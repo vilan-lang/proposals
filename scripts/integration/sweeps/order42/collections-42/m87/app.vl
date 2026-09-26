@@ -1,0 +1,49 @@
+// M87 probe (collections-42): `KeyedCell::locate` on a 1,000-key cell, called
+// M87_CALLS times. Variant 0 locates; variant 1 is the control (the cell built,
+// nothing located). Per-call Ir is the slope between two call counts.
+import std::io::print;
+import std::rpc::KeyedCell;
+import std::wire::Keyed;
+
+struct Row {
+	id: i32,
+	text: str,
+}
+
+impl Row with Keyed<i32> {
+	fun key(self): i32 {
+		self.id
+	}
+}
+
+fun main() {
+	let variant = param("variant");
+	let calls = param("calls");
+	mut many: List<Row> = [];
+	mut index = 0;
+	for index < 1000 {
+		many.push(Row { id = index, text = "r" });
+		index += 1;
+	}
+	let cell: KeyedCell<i32, Row> = KeyedCell<i32, Row>::new(many);
+	mut found = 0;
+	mut call = 0;
+	for call < calls {
+		if variant == 0 {
+			match cell.locate((call * 7) % 1000) {
+				Some(let hit) => {
+					let (at, _element) = hit;
+					found += at;
+				},
+				None => {},
+			}
+		}
+		call += 1;
+	}
+	print(i"variant={variant} calls={calls} found={found}");
+}
+
+[extern("__param")]
+external fun param(name: str): i32;
+
+main();

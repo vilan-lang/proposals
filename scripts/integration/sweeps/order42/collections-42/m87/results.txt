@@ -1,0 +1,13 @@
+M87 (collections-42). `KeyedCell::locate` into a 1,000-key cell, callgrind Ir under `node --jitless`,
+slope between 20 and 220 calls (slope.sh <variant> 20 220). variant 0 locates, variant 1 is the control.
+Build: VILAN_STD=<worktree>/vilan/std <worktree>/target/debug/vilan build .   (node target; harness.mjs)
+
+before (d65d4e75 / c64bf317's rpc.vl):
+variant=0 low=20 Ir=222644176 high=220 Ir=798974117 slope=2881649 loadavg=48.44 50.95 45.24
+variant=1 low=20 Ir=159837678 high=220 Ir=159850253 slope=62 loadavg=47.05 50.44 45.22
+after (M87: `self.elements.value.read().get(at)`):
+variant=0 low=20 Ir=160411935 high=220 Ir=164789854 slope=21889 loadavg=45.17 48.10 44.95
+variant=1 low=20 Ir=159760802 high=220 Ir=159769028 slope=41 loadavg=44.82 47.78 44.93
+
+Native: `KeyedCell` does not build on the rust backend at all, before or after ("does not emit a
+value of an unbound generic type parameter (parameter 2 of struct `Map`) yet") — ../m87-native.vl.

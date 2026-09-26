@@ -1,0 +1,28 @@
+--- vilan/std/src/delta.vl	2026-09-25 17:36:57.620702610 -0400
++++ vilan/std/src/delta.vl	2026-09-25 18:26:06.908962711 -0400
+@@ -32,6 +32,7 @@
+ // the log is as long as one turn's writes.
+ import pkg::compare::PartialEq;
+ import pkg::hash::Hashable;
++import pkg::io::panic;
+ import pkg::map::Map;
+ import pkg::option::Option::{ self, None, Some };
+ import pkg::reactive::{
+@@ -786,7 +787,16 @@
+ 	/// the list the cell holds, so a write made through the cell inside it is not a
+ 	/// write to a copy.
+ 	fun peek<U>(self, read: sync |&List<T>| U): U {
+-		read(self.items.read())
++		// The cell's own list, lent as a second-class VIEW (`Weak::get`): a
++		// borrow, where `self.items.read()` handed to a `&` parameter is a
++		// temporary read the checker refuses (B400). The weak handle is taken from
++		// the handle `self` holds, so the cell is alive for the whole call and the
++		// `None` arm is unreachable.
++		let weak = self.items.downgrade();
++		match weak.get() {
++			Some(let list) => read(list),
++			None => panic("ListCell::peek: the cell's own list is gone while the cell holds it"),
++		}
+ 	}
+ 
+ 	/// The element at `at` becomes `value` — an element changed IN PLACE.

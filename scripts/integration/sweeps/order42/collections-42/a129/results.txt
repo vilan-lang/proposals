@@ -1,0 +1,14 @@
+A129 (collections-42 @c64bf317). Harness: crates/vilan-cli/tests/support/dom/{stub,ui_rows}.js + a
+cost tail (ui_rows.rs A98_COST_HARNESS_TAIL / A112_S3_WALK_HARNESS_TAIL); counts are rows built.
+
+splice_identity.vl (collections-41's find), each_by:
+  before (d65d4e75): set_all cut=3 built=3; set cut=0 built=0; reconcile_to cut=2 built=3
+  after:             set_all cut=0 built=0; set cut=0 built=0; reconcile_to cut=0 built=1
+
+300-turn walk (walk-with-pass-control.vl = ui_rows' A112_S3_WALK + each/each_by over walk.map(|l| l)):
+  before:                     renders=3306 by=1078   pass(each)=653 pass_by=557
+  span match only:            renders=2091 by=584
+  span match + Reset drains:  renders=2061 by=575    (shipped)
+walk-diagnostic.vl prints every turn where each_by's op path built more than the pass, with that
+turn's ops: 18 turns, +1 each, all rows built AND cut inside one drain (insert_at(0)+remove_at(0) in
+one edit; push+pop; reconcile_to's append then a removal) — the pass reads only the settled list.

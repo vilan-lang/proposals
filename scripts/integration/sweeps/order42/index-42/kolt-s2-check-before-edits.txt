@@ -1,0 +1,169 @@
+Error: 'EachValues<Theme, SignalCell<List<Theme>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+     ╭─[ ./src/theme.vl:208:4 ]
+     │
+ 208 │ ╭─▶          <div
+     ┆ ┆   
+ 233 │ ├─▶           }))
+     │ │                   
+     │ ╰─────────────────── 'EachValues<Theme, SignalCell<List<Theme>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+     │
+     ├─[ /home/reed/code/vilan-lang/vilan/.claude/worktrees/index-42/vilan/std/src/browser/ui.vl:212:12 ]
+     │
+ 212 │     fun child<C: Slot>(self, content: C): View {
+     │               ┬  
+     │               ╰── the bound is declared here
+─────╯
+Error: 'Theme' does not implement trait 'Hashable', required by a generic bound of this call
+      ╭─[ ./src/theme.vl:216:12 ]
+      │
+  216 │ ╭─▶           .child(each_values(filtered_themes, |theme| {
+      ┆ ┆   
+  233 │ ├─▶           }))
+      │ │                   
+      │ ╰─────────────────── 'Theme' does not implement trait 'Hashable', required by a generic bound of this call
+      │
+      ├─[ /home/reed/code/vilan-lang/vilan/.claude/worktrees/index-42/vilan/std/src/browser/ui.vl:1154:24 ]
+      │
+ 1154 │ export fun each_values<T: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
+      │                        ┬  
+      │                        ╰── the bound is declared here
+──────╯
+Error: 'EachValues<Command, SignalCell<List<Command>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+     ╭─[ ./src/command_palette.vl:240:4 ]
+     │
+ 240 │ ╭─▶          <div
+     ┆ ┆   
+ 267 │ ├─▶           }))
+     │ │                   
+     │ ╰─────────────────── 'EachValues<Command, SignalCell<List<Command>>, View>' does not implement trait 'Slot', required by a generic bound of this call
+     │
+     ├─[ /home/reed/code/vilan-lang/vilan/.claude/worktrees/index-42/vilan/std/src/browser/ui.vl:212:12 ]
+     │
+ 212 │     fun child<C: Slot>(self, content: C): View {
+     │               ┬  
+     │               ╰── the bound is declared here
+─────╯
+Error: 'Command' does not implement trait 'Hashable', required by a generic bound of this call
+      ╭─[ ./src/command_palette.vl:248:12 ]
+      │
+  248 │ ╭─▶           .child(each_values(filtered_commands, |command| {
+      ┆ ┆   
+  267 │ ├─▶           }))
+      │ │                   
+      │ ╰─────────────────── 'Command' does not implement trait 'Hashable', required by a generic bound of this call
+      │
+      ├─[ /home/reed/code/vilan-lang/vilan/.claude/worktrees/index-42/vilan/std/src/browser/ui.vl:1154:24 ]
+      │
+ 1154 │ export fun each_values<T: PartialEq + Hashable, S: Source<List<T>>, C: Slot>(
+      │                        ┬  
+      │                        ╰── the bound is declared here
+──────╯
+Error: `+` adds two values of the same type, but the operands are `usize` and `i32`: there are no implicit conversions; suffix the literal or convert with `as_*`
+    ╭─[ ./src/lib/rotary.vl:56:30 ]
+    │
+ 56 │        let index = if index < 0 { nodes.len() + index } else { index };
+    │                                   ─────────┬─────────  
+    │                                            ╰─────────── `+` adds two values of the same type, but the operands are `usize` and `i32`: there are no implicit conversions; suffix the literal or convert with `as_*`
+────╯
+Error: `if` arms have mismatched types: expected usize, but got i32 instead.
+    ╭─[ ./src/lib/rotary.vl:56:59 ]
+    │
+ 56 │        let index = if index < 0 { nodes.len() + index } else { index };
+    │                                                                ──┬──  
+    │                                                                  ╰──── `if` arms have mismatched types: expected usize, but got i32 instead.
+────╯
+Error: Expected i32, but got usize (an index: a position, a length or a count) instead. There are no implicit numeric conversions; convert with `.as_i32()`
+    ╭─[ ./src/lib/rotary.vl:57:16 ]
+    │
+ 57 │        if nodes.get(index) is Some(let element) {
+    │                     ──┬──  
+    │                       ╰──── Expected i32, but got usize (an index: a position, a length or a count) instead. There are no implicit numeric conversions; convert with `.as_i32()`
+────╯
+Error: Expected i32, but got usize (an index: a position, a length or a count) instead. There are no implicit numeric conversions; convert with `.as_i32()`
+     ╭─[ ./src/theme.vl:129:23 ]
+     │
+ 129 │ ╭─▶          selected_index.set(if x.len() == themes.len() {
+     ┆ ┆   
+ 133 │ ├─▶          });
+     │ │                  
+     │ ╰────────────────── Expected i32, but got usize (an index: a position, a length or a count) instead. There are no implicit numeric conversions; convert with `.as_i32()`
+─────╯
+Error: `if` arms have mismatched types: expected usize, but got i32 instead.
+     ╭─[ ./src/theme.vl:132:5 ]
+     │
+ 132 │           0
+     │           ┬  
+     │           ╰── `if` arms have mismatched types: expected usize, but got i32 instead.
+─────╯
+Error: Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+     ╭─[ ./src/theme.vl:148:10 ]
+     │
+ 148 │           .get(selected_index.clamp(0, filtered_themes.get().len() - 1))
+     │                ────────────────────────────┬───────────────────────────  
+     │                                            ╰───────────────────────────── Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+─────╯
+Error: `>=` compares two values of the same type, but the operands are `i32` and `usize`: there are no implicit conversions; suffix the literal or convert with `as_*`
+     ╭─[ ./src/theme.vl:185:12 ]
+     │
+ 185 │                     if x >= filtered_themes.get().len() - 1 {
+     │                        ──────────────────┬─────────────────  
+     │                                          ╰─────────────────── `>=` compares two values of the same type, but the operands are `i32` and `usize`: there are no implicit conversions; suffix the literal or convert with `as_*`
+─────╯
+Error: `if` arms have mismatched types: expected usize, but got i32 instead.
+     ╭─[ ./src/theme.vl:198:10 ]
+     │
+ 198 │                         x - 1
+     │                         ──┬──  
+     │                           ╰──── `if` arms have mismatched types: expected usize, but got i32 instead.
+─────╯
+Error: Expected i32, but got usize (an index: a position, a length or a count) instead. There are no implicit numeric conversions; convert with `.as_i32()`
+     ╭─[ ./src/theme.vl:200:8 ]
+     │
+ 200 │                    });
+     │                    ┬  
+     │                    ╰── Expected i32, but got usize (an index: a position, a length or a count) instead. There are no implicit numeric conversions; convert with `.as_i32()`
+─────╯
+Error: Expected SignalCell<List<(i32, str)>>, but got SignalCell<List<(usize, str)>> instead.
+    ╭─[ ./src/lib/search.vl:14:12 ]
+    │
+ 14 │ ╭─▶          table = list.map(|list| list
+    ┆ ┆   
+ 18 │ ├─▶           .to_list()),
+    │ │                            
+    │ ╰──────────────────────────── Expected SignalCell<List<(i32, str)>>, but got SignalCell<List<(usize, str)>> instead.
+────╯
+Error: Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+     ╭─[ ./src/command_palette.vl:184:69 ]
+     │
+ 184 │          .map(|(filtered_commands, selected_index)| filtered_commands.get(selected_index));
+     │                                                                           ───────┬──────  
+     │                                                                                  ╰──────── Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+─────╯
+Error: `>=` compares two values of the same type, but the operands are `i32` and `usize`: there are no implicit conversions; suffix the literal or convert with `as_*`
+     ╭─[ ./src/command_palette.vl:217:12 ]
+     │
+ 217 │                     if x >= filtered_commands.get().len() - 1 {
+     │                        ───────────────────┬──────────────────  
+     │                                           ╰──────────────────── `>=` compares two values of the same type, but the operands are `i32` and `usize`: there are no implicit conversions; suffix the literal or convert with `as_*`
+─────╯
+Error: `if` arms have mismatched types: expected usize, but got i32 instead.
+     ╭─[ ./src/command_palette.vl:230:10 ]
+     │
+ 230 │                         x - 1
+     │                         ──┬──  
+     │                           ╰──── `if` arms have mismatched types: expected usize, but got i32 instead.
+─────╯
+Error: Expected i32, but got usize (an index: a position, a length or a count) instead. There are no implicit numeric conversions; convert with `.as_i32()`
+     ╭─[ ./src/command_palette.vl:232:8 ]
+     │
+ 232 │                    });
+     │                    ┬  
+     │                    ╰── Expected i32, but got usize (an index: a position, a length or a count) instead. There are no implicit numeric conversions; convert with `.as_i32()`
+─────╯
+Error: Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+    ╭─[ ./src/server.vl:84:24 ]
+    │
+ 84 │        let c = hash.code_at(i);
+    │                             ┬  
+    │                             ╰── Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+────╯

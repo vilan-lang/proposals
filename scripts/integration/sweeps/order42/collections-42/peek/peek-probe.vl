@@ -1,0 +1,13 @@
+import std::io::print;
+import std::reactive::{ ListCell, SequenceCell };
+
+fun main() {
+	let rows: ListCell<str> = ListCell<str>::of(["a", "b", "c"]);
+	let length = rows.peek(|list| list.len());
+	let second = rows.peek(|list| list.get(1));
+	print(i"{length} {second.unwrap_or("none")}");
+	rows.push("d");
+	print(rows.peek(|list| list.len()));
+}
+
+main();
