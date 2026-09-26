@@ -1,0 +1,222 @@
+{
+ "date": "2026-09-26",
+ "order": "Order 42",
+ "closes": [
+  {
+   "id": "A128",
+   "lane": "std-42",
+   "commit": "7420825e",
+   "text": "`FocusScope::on_leave(self, handler: |Element| void)` from a capture-phase `focusout` when `relatedTarget` is outside the scope and every scope above it and the element losing focus was inside; a null target is silent; the process twin accepts and drops; the DOM stub dispatches `focusout` and models `blur()`; one ordered transcript pin, three mutations red. Two choices flagged for the owner (the losing-element test; the unit return)"
+  },
+  {
+   "id": "N130",
+   "lane": "std-42",
+   "commit": "0cd28e75",
+   "text": "the unused `Instant` moved under its cfg; the Windows cross-check is `cargo clippy --target x86_64-pc-windows-msvc --workspace --exclude vilan-rt-sqlite --all-targets -- -D warnings` in ci-local and seal.sh (the old `cargo check` leg denied no warnings and was red on every Linux box for the sqlite crate's C build)"
+  },
+  {
+   "id": "N129",
+   "lane": "std-42",
+   "commit": "73224200",
+   "text": "`native_differential` stages per test (`native-differential-src-<pid>-<counter>`), so plain `cargo test` reads 46/46 where it read 38/46 red; CLAUDE.md's equivalence sentence names its condition"
+  },
+  {
+   "id": "N131",
+   "lane": "std-42",
+   "commit": "d2e499c1",
+   "text": "INVESTIGATED: the cache pins read other tests' worlds (`BASE_CACHE_LOCK` covers ~33 of ~850), and the five `references::` M19 panics are a real KEY COLLISION — two byte-identical std roots under one `BaseCacheKey` — filed as the product bug B422; CLAUDE.md names vilan-lsp as not cargo-test-equivalent"
+  },
+  {
+   "id": "N128",
+   "lane": "std-42",
+   "commit": "8dc1a941",
+   "text": "`for_each_child` is the fifth stack-probe funnel (a 2 MiB syntactic pin SIGABRTed before it); the CLI's three compiler threads and the wasm entry DECLARE their stacks (`spawn_compiler_thread`; `WASM_STACK_SIZE` 16 MiB, ci-local's leftover 64 MiB fixed); the stale 11.3 KiB figure corrected to ~47,400 B/level debug, ~2,120 B release"
+  },
+  {
+   "id": "N132",
+   "lane": "std-42",
+   "commit": "37cba598",
+   "text": "option (b) — the honest replay pin: `analyzer::served_from_base_cache()` (a thread-local) lets both legs require every pair that HIT to have reused plus a ≥ 90 % floor; the budget lift removed; load-bearing under a 5 MiB and a 3 MiB budget and with replay off"
+  },
+  {
+   "id": "N127",
+   "lane": "std-42",
+   "commit": "—",
+   "text": "the estate check script `scripts/integration/estate_check_playground.sh` (a `vilan check` per playground package and loose file); its first run found `db.vl` and `fib.vl` importing the removed `std::print` — fixed by the integrator; wired into the sweep"
+  },
+  {
+   "id": "A129",
+   "lane": "collections-42",
+   "commit": "c64bf317",
+   "text": "RULED and built: the whole-list pass is `reconcile_span` over the whole run; a Splice that removes and inserts runs the SPAN pass bounded by the first row after it; a drain rule drops ops before the last `Reset`; `set_all` over the same keys `cut=0 built=0`, `reconcile_to` keeps the tail; the walk's `each_by` 1,078 → 575 rows against the pass's 557 (the 18 left are build-and-cut-in-one-drain → A131); `set_all`'s doc corrected"
+  },
+  {
+   "id": "M87",
+   "lane": "collections-42",
+   "commit": "01eb9b00",
+   "text": "`KeyedCell::locate` reads one element through `self.elements.value.read()` — 2,881,649 → 21,889 Ir per locate into 1,000 keys; the keyed rpc pins and the wire unchanged"
+  },
+  {
+   "id": "F40",
+   "lane": "native-42",
+   "commit": "28bf86d2",
+   "text": "RULED (a) and built: `crates/vilan-rt-crypto` (getrandom; SHA-384/512, HMAC-SHA-512, PBKDF2 hand-written and pinned to FIPS 180-4, RFC 4231 and node's own output; node:crypto's `pbkdf2Sync` + its `NodeBuffer`), linked only when reached; THE EXIT: kolt's REAL `server.vl` builds natively with 0 host gaps and its login is byte-identical with node, cross-backend over one database file; vilan-rt's `Shared::identity` became an i32 counter (std declares i32); the crate at opt-level 3 in dev"
+  },
+  {
+   "id": "F35",
+   "lane": "native-42",
+   "commit": "c562e514",
+   "text": "`ListCell` and `map_each` build natively (three lowering fixes: a named function as a value; a `&mut` argument whose place a later argument reads evaluates first; a `&mut` over a loaned binding reborrows) and a MISCOMPILE fixed on the way — subscripts are hoisted so `list[next()] = next()*10` pairs its draws in source order"
+  },
+  {
+   "id": "F36",
+   "lane": "native-42",
+   "commit": "cb4a0c32",
+   "text": "(a) `i\"{source.get()}\"` is judged at the type the call binds (`reactive-selector.vl` identical; `blanket-impl.vl` then hit the context pass → B425); (b) the `encode_json` half did not reproduce across 11 shapes — pinned as a guard"
+  },
+  {
+   "id": "F37",
+   "lane": "native-42",
+   "commit": "6626e54c",
+   "text": "precision in the last-use pass: a field read judged by its PATH, the pass forking at if/else and guard-less match — the copy census fell across the board (dyn-objects 9/21 → 3/27, list-cell 74/136 → 64/146); reactive-41's attach-order workaround builds and matches node"
+  },
+  {
+   "id": "F38",
+   "lane": "native-42",
+   "commit": "61d94fd9",
+   "text": "the emitter binds a call's own unbound generics from its ARGUMENTS (the closure's parameters and body tail, a variant-constructor tail, an arithmetic operand's left side, a concatenation); `result-combinators.vl` stops at `or_else<F>` → B424 (a ruling)"
+  },
+  {
+   "id": "F39",
+   "lane": "native-42",
+   "commit": "fb6c0ac9",
+   "text": "DECIDED: the compile-time check follows aliases (a `let` whose initializer is a place is followed back), refusing `let t2 = todos; todos.update(|..| t2.get())` and chains by name; an alias through parameters stops at run time with vilan-rt's `REENTRANT_READ` and exit 1 (safe Rust has no second view while `update` holds the only `&mut`)"
+  },
+  {
+   "id": "C14",
+   "lane": "native-42",
+   "commit": "e633b9a2",
+   "text": "RE-SCOPED and done: the representation half is closed as built by F1 S1a (natively `Shared`/`Weak` are a real `Rc`/`Weak` count); S4 replaced by the NATIVE LEAK GATE — vilan-rt counts every cell minted and released, `VILAN_NATIVE_LEAK_CENSUS=1` reads the census after `main`'s thread exits, `native-leak-census.tsv` pins the default suite (first catch: `map_each` → A132); a server cannot be censused until F45; S5 dropped per papers-42's recommendation (the owner to confirm)"
+  },
+  {
+   "id": "B415",
+   "lane": "syntax-42",
+   "commit": "0128a8e8",
+   "text": "`[platform(\"…\")] mod self;` as the file's first statement is the host for file-level attributes (the platform analyzed under and required); the bare `[platform(..)];` form removed (nothing used it); `self` a reserved module name (`MODULE_SELF_IS_RESERVED`); the EBNF, formatter, LSP painting + a head-only completion, the quick fix, the book; `export self::*` deferred (R-d)"
+  },
+  {
+   "id": "B413",
+   "lane": "syntax-42",
+   "commit": "95ff783b",
+   "text": "the `resource` keyword DISSOLVED into `[resource]` on a struct or an enum (the word stays): `resource` out of `KEYWORDS`, `Token::Resource` gone, the old spelling refused with a steer (one ledger row), the attribute refused elsewhere; formatter, EBNF `resource-attr`, both highlighting grammars, hover via a new `ATTRIBUTE_DOCS` table, spec §2.2/§A.2/the tour; the codemod moved 405 sites (std 5, corpus 8, docs 16, Rust `.vl` consts 376), no golden moved; RODE THE v0.41.0 TRAIN (R-c's condition met)"
+  },
+  {
+   "id": "A130",
+   "lane": "reactive-42",
+   "commit": "8ff8dd55",
+   "text": "`.cell_global()` is the program-lifetime spelling and `.cell()` in a module binding's initializer is REFUSED with a steer (`init_order::check_module_level_cells`, static-only as ruled; one ledger row; 12 pins); the no-cycle gate names `.cell_global()`'s loop as designed"
+  },
+  {
+   "id": "I5",
+   "lane": "index-42",
+   "commit": "98039c83",
+   "text": "COMPLETE — S1 (Order 41) + S2/S3/S4 in ONE breaking commit: every std index is `usize` (105 signatures by parse; 136 E218 + 25 operand + 4 counter conversions; 7 + 1 sentinels and 8 loops by hand; dead clamps; `len() - n` guards), the naming diagnostic + two quick fixes + `vilan check --fix` (36db895a), I6, S3's `Emitter::intrinsic` casts gone (35 → 0), S4's markers cleared and `SeqOp`/`RowStep`/`Delta::Insert`/`KeyedCell.positions`/macro_std born `usize` with the wire byte-identical (hash be3fd1fe); 32 goldens moved, every one runtime-identical; the estate: kolt five files (`kolt-i5.patch`, the owner's), website/playground 0. `isize` unbuilt (R-b). Remainders: B426 (a constant `0 - 1`), the two rpc.vl `0usize` suffixes (B406's follow-up landed after — drop in Order 43)"
+  },
+  {
+   "id": "I6",
+   "lane": "index-42",
+   "commit": "c7129152",
+   "text": "`as_u53()`/`as_usize()`/… of a negative saturates to 0 on every backend (`saturate_unsigned` at 14 sites; NaN → 0 as native); pins per width; corpus `unsigned-saturate.vl` in the native default suite"
+  },
+  {
+   "id": "A124",
+   "lane": "reactive-42",
+   "commit": "490f0fb1",
+   "text": "COMPLETE through S2c — the arc: the paper (Order 40), S2a + S2b (Order 41), S2c in ONE breaking commit: `map`/`switch`/both `flatten`s/`and_then`/`combine` return cold NODES (`map` a blanket reaching `dyn` and abstract bounds — B408; `combine` over `(U in T: dyn Source<U>)` — B398); `Upstream` retired on B409, the per-node `on_settle` on B410; A25 at the subscribing leaf as ruled; `Resource<T>` public with `source.load(fetch)`; the 19 reds re-derived; shared census 143 → 141; 12 corpus goldens runtime-identical; the guide's derivations rewritten. S3 (kolt: 14 edits in `kolt-edits.md`) is the owner's. Remainders: the phantom parameters (B411 landed after — Order 43), B419's b243 case parked under #[ignore], A133 (the in-process seed), E226"
+  },
+  {
+   "id": "F43",
+   "lane": "reactive-42",
+   "commit": "490f0fb1",
+   "text": "closed by the `Upstream` retirement (B409): the repro builds natively and the three native pins are green"
+  },
+  {
+   "id": "B408",
+   "lane": "solver-42",
+   "commit": "ca0dd51f",
+   "text": "method lookup on a bounded parameter falls back to blanket impls whose bounds are ENTAILED by the parameter's declared bounds (arguments, supertraits, nested binders); an inherent blanket member wires statically, a trait member re-dispatches at monomorphisation; 11 pins; types.md"
+  },
+  {
+   "id": "B398",
+   "lane": "solver-42",
+   "commit": "9da0a677",
+   "text": "a tuple literal at a mapped-tuple position takes its element constraints from the mapped type and each element is erased at its own `dyn` position; 3 pins (a tuple VARIABLE at the position escapes → B430)"
+  },
+  {
+   "id": "B406",
+   "lane": "solver-42",
+   "commit": "54acf502",
+   "text": "the literal rule bound only the function's own generics — impl generics (`Shared::new`'s `T`) now bind from the expectation at a struct-literal field, an annotated let and a declared return, every field seeded before any is checked (the order-dependent residual gone); a B225 regression caught and fixed"
+  },
+  {
+   "id": "B407",
+   "lane": "solver-42",
+   "commit": "d4cb70a1",
+   "text": "a negative literal at an unsigned type is refused naming the range (reading B389's recorded literal types); 12 pins incl. the seven §3.4 sentinels; one ledger row. Remainders: B426 (a constant `0 - 1`), B428, B429"
+  },
+  {
+   "id": "B409",
+   "lane": "solver-42",
+   "commit": "49b1c930",
+   "text": "a `type X` in a trait's HEAD was registered as the trait's own parameter id (so `with Src<U>` rebound it) — the head passes on its parameter's bound, not its identity; two more fixed with it (a trait default's JS instance dropped the enclosing bindings; a blanket provider's bound binders left ungrounded); native's `dispatch_to_member` binds subject and bounds at one place"
+  },
+  {
+   "id": "B405",
+   "lane": "solver-42",
+   "commit": "1e911fba",
+   "text": "RULED and built, narrowed: a fractional literal to the RIGHT of an integer operand is refused with an `as_f64()` steer (on the left it already makes the expression f64 — the deferred mixing family); one ledger row; lexical.md"
+  },
+  {
+   "id": "B410",
+   "lane": "solver-42",
+   "commit": "3332632f",
+   "text": "`impl_select::instantiation_agrees` compared tuple and array arguments by type id — element-wise now, both backends; the nodes' per-node `on_settle` retired on it"
+  },
+  {
+   "id": "B411",
+   "lane": "solver-42",
+   "commit": "43b6d46e",
+   "text": "inherited-default bindings ground a nested binder's bound binders (`mono::trait_parameter_substitution` likewise); the node arities can shed their phantoms where a node reads its value type from the source it selects (Order 43, reactive's call)"
+  },
+  {
+   "id": "B412",
+   "lane": "solver-42",
+   "commit": "3abc8f4f",
+   "text": "a rigid parameter whose bounds provide a trait erases to `dyn` in reconcile and compare, binding a mapped template's open arguments from the bound; the emitters pass an object through unwrapped. Remainder: B431 (Q5 through a generic)"
+  },
+  {
+   "id": "B404",
+   "lane": "solver-42",
+   "commit": "bdcbde61",
+   "text": "a literal whose settled type is BigInt emits `3n`"
+  },
+  {
+   "id": "E223",
+   "lane": "solver-42",
+   "commit": "e9f2512f",
+   "text": "the mapped-tuple refusal names the `(2..)` bound (ledger row 80 kept)"
+  },
+  {
+   "id": "B421",
+   "lane": "solver-42",
+   "commit": "76d3affe",
+   "text": "dyn erasure checks the object's trait ARGUMENTS as well as the trait — the `NaN` program (a void closure body as a value) is refused"
+  },
+  {
+   "id": "B420",
+   "lane": "solver-42",
+   "commit": "—",
+   "text": "RULED by-design (2026-09-26): B173 stays the law — a blanket-provided trait is never entailed from an abstract parameter; moot for std since `Upstream` retired; the std-free repro kept as a pin of the refusal"
+  }
+ ]
+}
