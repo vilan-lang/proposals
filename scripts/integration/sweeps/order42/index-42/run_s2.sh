@@ -38,9 +38,9 @@ OUT="$SCRATCH/out"
 
 rm -rf "$TREE" "$BASE" "$OUT"
 mkdir -p "$TREE" "$BASE" "$OUT"
-git -C "$WORKTREE" archive HEAD | tar -x -C "$TREE"
-git -C "$WORKTREE" archive HEAD | tar -x -C "$BASE"
-echo "base: $(git -C "$WORKTREE" rev-parse --short HEAD)" | tee "$OUT/summary.txt"
+git -C "$WORKTREE" archive "${S2_REV:-HEAD}" | tar -x -C "$TREE"
+git -C "$WORKTREE" archive "${S2_REV:-HEAD}" | tar -x -C "$BASE"
+echo "base: $(git -C "$WORKTREE" rev-parse --short "${S2_REV:-HEAD}")" | tee "$OUT/summary.txt"
 
 # 1. the compiler half
 ( cd "$TREE" && patch -p1 --no-backup-if-mismatch < "$HERE/compiler.patch" )
@@ -121,7 +121,11 @@ if [ "${STOP_AFTER:-}" = codemod ]; then
 	exit 0
 fi
 
-# 4. by hand
+# 4. by hand — against the codemod's output FORMATTED (index-42: hand.patch is
+#    a diff from `vilan fmt`'s reprint, so the loop's layout is not in it).
+for formatted in vilan/std vilan/macro_std vilan/test; do
+	VILAN_STD="$TREE/vilan/std" "$VILAN" fmt "$TREE/$formatted" > /dev/null 2>&1 || true
+done
 if [ -s "$HERE/hand.patch" ]; then
 	( cd "$TREE" && patch -p1 --no-backup-if-mismatch < "$HERE/hand.patch" ) > "$OUT/hand.log"
 	echo "--- hand.patch: $(grep -c '^patching' "$OUT/hand.log") files" | tee -a "$OUT/summary.txt"

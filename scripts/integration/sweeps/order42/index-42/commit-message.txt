@@ -1,0 +1,66 @@
+I5 S2 (+ S3, S4): std's every length, count and position is a `usize`, and `xs[i]` takes one — the index train's one breaking commit
+
+The estate move of `proposal/index-type.md` §9, run by
+`sweeps/order42/index-42/run_s2.sh` on eafd61ef: the 105 census positions
+respelled by parse (none unmatched), `pre.patch` (S4 + the respellings a
+type decides), the fixed-point loop over the compiler's own diagnostics
+(136 E218 conversions, 25 operand conversions, 4 counters declared
+`usize` — the same counts as on d65d4e75), then `hand.patch`. Residue zero
+in std (node and browser), macro_std and all 140 corpus programs.
+
+By hand, each named:
+- sentinels (`-1` → `Option<usize>` or a real fallback): reconcile's chain
+  ×3 (`first`/`next_same`, the head walk, `found`); std::ui
+  `settled_steps`'s `highest`; std::db `refuse_inserted_migration`'s
+  `last_applied`; list-search.vl ×2 — and two the census could not see:
+  std::ui's focus wrap (`mut index = 0 - 1`) and A129's `live_ops`
+  (`mut last = -1`, written after the census)
+- the eight `for x >= 0 { …; x -= 1 }` loops → count down from the length:
+  std::ui `settled_steps`, `row_references`; json `begin_list`,
+  `begin_variant`; `List::reverse`; reconcile's build, head and chain walks
+- dead clamps an unsigned position cannot trip: document.vl
+  `skip_raw_text`/`index_of` (`from < 0`), delta.vl `splice_start`
+  (`at < 0`), `splice_count` (`removed < 0`)
+- `len() - n` underflow on an empty input: `List::last`, document.vl and
+  markdown.vl `index_of`
+- census misses: `Enumerated`'s trait argument `(usize, T)`; annotated
+  locals (compare.vl's counter, markdown.vl's three `close`, document.vl's
+  two insertion lists); DeltaLog's `trim`/`since`, where a sequence number
+  becomes a position, converted once
+- corpus: list-cell.vl's `insert_at(-3)` → `0`; bytes-aliasing.vl's
+  `get(-1)` → `get(len - 1)`; iterator-adapters.vl and lift-chain.vl's
+  `unwrap_or(-1)` fallbacks → `0`; `pick(usize)` draws in delta-law.vl and
+  list-cell.vl
+
+S4: A112's `// I5` markers (delta.vl, std::ui — the census reads zero) and
+A129's new span helpers (`held_span`, `reconcile_span`) respelled `usize`;
+`SeqOp`'s payloads, `RowStep`, `Delta::Insert`, `KeyedCell.positions`,
+macro_std's `Arguments::len`/`get` and `indent`. `Delta::Insert`'s index
+rides the wire at `i32`'s width: order40's `i5_wire_patch.vl` frame is
+byte-identical (binary 104, text 96) and the contract hash stays
+`be3fd1fe`.
+
+S3: `Emitter::intrinsic` (vilan-rust) emits `.len()` bare and passes
+positions uncast; vilan-rt's list/str/Bytes helpers take and answer
+`usize` (`len() as i32` over the native census programs: 35 → 0).
+`Emitter::statement` renders under no expectation (a loop inside an `if`
+arm emitted `while (i > (0i32))`), pinned.
+
+Kept: index-41's two `Shared::new(0usize)` in rpc.vl — B406 does not reach
+a struct-literal field after an earlier field holding the same generic
+constructor at another width (repro in sweeps/order42/index-42).
+
+Goldens (ACCEPTED at Order 42; every one prints what it printed, node,
+before against after): 30 corpus + the split fixture.
+- conversion the migration wrote: adapt, bytes-aliasing, capture-clones,
+  crypto, delta-law, for-mut-container, list-cell, mut-parameters,
+  option-view, side-effect-let, time, usize-literals
+- hand-rewritten std loop: element-clones, iterator-adapters, list-cell,
+  list-sort, reactive-keyed, reconcile-index, time
+- sentinel fallback: list-search, iterator-adapters, lift-chain
+- `List::last`'s empty-list guard: blanket-impl, delta-law, dyn-objects,
+  list-cell, list-get-pop, reactive, reactive-flatten, reactive-on-change,
+  reactive-owner, reactive-selector, reactive-turns, signal-update,
+  spread-parameters
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>

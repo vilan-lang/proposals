@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B426",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, index-42's find on next @eafd61ef)",
+   "title": "B407 does NOT catch a CONSTANT `0 - 1` at an unsigned type: `let end: usize = 0 - 1;` compiles and prints -1 on JS — B407 refuses a negative LITERAL, not a literal-only expression that folds negative; the sentinel census (index-type.md §3.4) missed this spelling too (ui.vl's focus wrap was one). Fold literal-only arithmetic at an unsigned position and refuse the negative result with B407's message",
+   "discussion": "index-42 (2026-09-25); B407; the two markdown pins now pin ruling 2's bounds-check refusal instead",
+   "body": "Pin: `let end: usize = 0 - 1;` refused; `let z: usize = 0; z - 1` stays unspecified-but-bounds-checked (ruling 2). Sizing S; solver."
+  }
+ ]
+}

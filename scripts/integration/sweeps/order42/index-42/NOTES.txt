@@ -67,3 +67,20 @@ pass today only because a `usize` goes negative on JS. Re-derive both on the
 rebased base: probe whether B407 refuses the COMPUTED `0 - 1` at `usize`; if it
 does, pin that refusal; if it does not, pin the bounded behaviour and report
 the gap in B407's pin set (and the sentinel census, which also missed `0 - 1`).
+
+REBASED RUN (2026-09-25, on eafd61ef = solver-42 + native-42 + collections-42 +
+std-42): `S2_REV=<the commit under the move> run_s2.sh` reproduces the committed
+std/macro_std/test sources byte for byte (after `vilan fmt`). pre.patch and
+hand.patch were regenerated for that base (collections-42's A129 code added
+`held_span`/`reconcile_span` positions — respelled — and `live_ops`'s `-1`,
+refused by B407 — a ninth sentinel). Fix-loop counts unchanged: 136 E218, 25
+operand, 4 counters. With LITERAL_GAPS=0 the residue is exactly rpc.vl:3244 and
+:3286 (B406's order gap, b406-gap-repro.vl), so b389-gap-literals.patch STAYS.
+B407 on the estate: the two markdown `0 - 1` pins re-derived as ruling 2's
+bounds claim over a spelled-out underflow (B407 does not refuse a constant
+`0 - 1` at `usize`: `let end: usize = 0 - 1;` compiles and prints -1 — a gap in
+B407's pin set, reported); six more `-1` fallbacks at `usize` (inference pins,
+three docs fences) rewritten; `List::remove(-1)` and `take(-4)` now pin B407's
+refusal. Goldens against eafd61ef: 32 moved = the 30 classified above +
+`usize.mjs` (I6's helper) + the new `unsigned-saturate.mjs`; all runtime-
+identical.
