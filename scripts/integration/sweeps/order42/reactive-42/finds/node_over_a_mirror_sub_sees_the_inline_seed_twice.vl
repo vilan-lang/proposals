@@ -1,0 +1,44 @@
+// reactive-42 find R1 (std behaviour under the flip, not a compiler defect): over an IN-PROCESS
+// transport (duplex_pair, LocalTransport) a mirror's seeding `Update` lands INSIDE the attach, so the
+// `Source` default `sub`/`effect` on a NODE over a mirror (`remote.or(0).sub(..)`) calls its observer
+// TWICE with the seed: once as the change from `None` the attach delivered, once as the immediate
+// call. The mirror overrides `sub`/`effect` for exactly this reason; a node inherits the defaults.
+// Pre-flip `remote.or(0)` was a cell seeded inside `or`, so the leaf saw it once. Over a real
+// socket the seed arrives later, asynchronously, and the leaf sees `0` then `7` — correct. The
+// cost is one duplicate initial call (a repaint, a no-op reconcile) on synchronous transports.
+// Fix candidates: `sub` = attach; call only if the attach delivered nothing (a wrapper per
+// subscription — what A49 declined), or the mirror defers the seed past the attach. Output:
+//   up {"Subscribe":[0,null]} / down {"Update":[0,7]} / sees 7 / sees 7 / down {"Update":[0,8]} / sees 8 / ...
+import std::json::json_codec;
+import std::io::print;
+import std::reactive::{ Signal, SignalCell, Source };
+import std::rpc::{ ReactiveClient, ReactiveServer, RemoteSource, duplex_pair };
+import std::wire::Frame;
+
+fun text_of(frame: Frame): str {
+	match frame {
+		Frame::Text(let text) => text,
+		Frame::Binary(let _bytes) => "<binary>",
+	}
+}
+
+fun main() {
+	let (client_end, spy_client) = duplex_pair();
+	let (spy_server, server_end) = duplex_pair();
+	spy_client.on_frame(|frame| {
+		print(i"up   {text_of(frame)}");
+		spy_server.send(frame);
+	});
+	spy_server.on_frame(|frame| {
+		print(i"down {text_of(frame)}");
+		spy_client.send(frame);
+	});
+	let counter: SignalCell<i32> = Signal::new(7);
+	let channel = ReactiveServer::new(server_end, json_codec()).expose(counter);
+	let remote: RemoteSource<i32> = ReactiveClient::new(client_end, json_codec()).source(channel);
+	let watching = remote.or(0).sub(|n| print(i"sees {n}"));
+	counter.set(8);
+	watching.dispose();
+	counter.set(9);
+	print(i"after: {remote.or(0).get()}");
+}

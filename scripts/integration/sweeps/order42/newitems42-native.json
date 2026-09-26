@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "A132",
+   "section": "A",
+   "kind": "bug (leak)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-25 (Order 42, native-42's leak gate's first finding)",
+   "title": "`std::delta`'s `map_each` LEAKS through a reference cycle: its `source.on_change(\\|_\\| … source.since(cursor) …)` handler captures the SOURCE it subscribes to, so the subscription holds the source and the source holds the subscription — the native leak census (C14's gate) reads 14 cells live at exit in `delta-law` and 92 in `list-cell`; on JS the same cycle is garbage-collected only once nothing else reaches it",
+   "discussion": "native-42 (2026-09-25); `native-leak-census.tsv` under `sweeps/order42/native-42/`; C14 §15; collections' file",
+   "body": "Fix: the handler captures a `Weak` of the source (C1's `downgrade()`), upgrading per notification — the pattern `observe` already uses for its captured cell; the census rows return to 0 live; a JS heap pin if the cycle gate can see it. Sizing S; collections lane (Order 43, or collections-42's follow-up if it is still open)."
+  },
+  {
+   "id": "B424",
+   "section": "B",
+   "kind": "ruling (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, native-42's find)",
+   "title": "RULING — an UNCONSTRAINED generic at a call: `err.or_else(\\|e\\| Ok(7))` leaves `or_else<F>`'s `F` with nothing to bind it (the closure only ever builds `Ok`), the analyzer records `any`, JS runs, and the native backend must pick a Rust type — it refuses by name today (`result-combinators.vl` stops there). Rule: (a) the analyzer refuses an unbound generic at the call with a steer to a turbofish/annotation (both backends agree; breaks JS programs that ran); (b) default `F` to the `Err` side's declared type when the closure never produces one (a defaulting rule); (c) native keeps refusing by name",
+   "discussion": "native-42 (2026-09-25); F38's remainder; B403's family (a generic nothing binds)",
+   "body": "Rec (b) for `Result`'s combinators specifically (the error type of a closure that only builds `Ok` is the input's error type — a one-line defaulting rule in the analyzer), and (a) as the general law elsewhere. Solver, Order 43."
+  },
+  {
+   "id": "B425",
+   "section": "B",
+   "kind": "bug (context pass)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, native-42's find)",
+   "title": "the CONTEXT PASS under-threads an argument: `blanket-impl.vl`'s `badge(\"static\")` passes FEWER context arguments than its callee declares (rustc E0061 natively — 'broken' — now refused by name by native-42); the analyzer's context-threading plan (B146's class) misses a call through a blanket",
+   "discussion": "native-42 (2026-09-25); F36 (a) got the program past the interpolation only to hit this",
+   "body": "Fix in the analyzer's context plan, not the emitter; pin: `blanket-impl.vl` flips to identical. Sizing S–M; solver, Order 43."
+  },
+  {
+   "id": "F44",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-25 (Order 42, native-42's find)",
+   "title": "native — a CLOSURE pushed into the list it READS is refused by rustc as a RECURSIVE type: `let cell: Shared<List<\\|\\| i32>> = Shared::new([]); let same = cell; cell.write().push(\\|\\| same.read().len());` (the closure's type contains the list that contains the closure); the emitter needs a boxed closure type at that position",
+   "discussion": "native-42 (2026-09-25)",
+   "body": "Fix: closure-typed list elements lower to `Rc<dyn Fn…>` (a boxed dyn) when the closure captures the container; pin red-first; refused by name meanwhile. Sizing S–M."
+  },
+  {
+   "id": "F45",
+   "section": "F",
+   "kind": "feature (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-25 (Order 42, native-42's find)",
+   "title": "the native HTTP server has NO GRACEFUL STOP: `vilan_rt::http` runs until a signal, so a server program never reaches process end and the leak census (C14's gate) cannot cover kolt's server exit program; wanted: `Server::stop()` (or a signal handler that drains and returns from `main`) so the census reads a server's cells at exit",
+   "discussion": "native-42 (2026-09-25); C14 §15 'not covered'; A96's HMR socket teardown is the JS twin",
+   "body": "Sizing S–M; native lane, Order 43; then the exit program joins the leak table."
+  }
+ ]
+}

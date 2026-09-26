@@ -1,0 +1,14 @@
+# VILAN_NATIVE_DIFFERENTIAL=1 cargo test -p vilan-cli --test native_differential every_platform_free_program_is_identical_or_named
+# (native-42 worktree; enumerated / identical / refused by name / broken)
+base d65d4e75 + F40 (no corpus program reaches std::crypto): 124 / 91 / 33 / 0
+after F35 (list-cell.vl flips):                               124 / 92 / 32 / 0
+after F36 (reactive-selector.vl flips; blanket-impl refused
+           at a NEW named wall instead of rustc E0061):         124 / 93 / 31 / 0
+after F38, F37, F39, C14:                                     124 / 93 / 31 / 0
+differing stdout 0, rustc-refused 0 throughout.
+Async set: 7 / 4 / 3 / 0.
+
+Programs whose wall MOVED (still refused, new reason):
+  blanket-impl.vl      interpolation -> "a call to `badge` that threads fewer context arguments than its instance declares" (context pass, analyzer)
+  resource_take.vl     interpolation -> the `resource` type (later slice)
+  result-combinators   and_then's U -> or_else's F, which nothing constrains (a ruling: which native type for an `any`-recorded parameter)

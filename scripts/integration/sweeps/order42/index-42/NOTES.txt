@@ -1,0 +1,61 @@
+I5 S2 (+ S3, S4) as run by lane index-42, Order 42. Index-41's prepared S2
+(../../order41/index-41/) re-run and extended; every file here is an input to
+or an output of that run.
+
+run_s2.sh <vilan worktree> <scratch>
+  index-41's pipeline with index-42's changes: the build target lives under the
+  worktree's own target/s2 (never /tmp); STOP_AFTER=signatures|codemod|fix;
+  step 2b applies pre.patch BEFORE the fix loop; step 5-6 is measure_s2.sh.
+pre.patch          S4 (A112's positions born `i32`: delta.vl's `// I5` markers,
+                   SeqOp, RowStep, Delta::Insert, std::ui's splice_rows,
+                   macro_std's Arguments/indent) + the census's misses that a
+                   TYPE decides (Enumerated's trait argument, annotated locals,
+                   DeltaLog's sequence->position boundary), respelled before
+                   the fix loop so the loop writes only the conversions their
+                   new boundaries need.
+hand.patch         regenerated against this run's codemod output: sentinels,
+                   loops, dead clamps, len()-underflow guards, corpus programs.
+compiler.patch     index-41's, unchanged (subscript -> usize, admission gone,
+                   ledger 558 re-keyed); the codemod example needed three
+                   node-shape updates (i5_s2_codemod.rs).
+b389-gap-literals.patch  index-41's two `0usize` suffixes (B406's gap);
+                   reversed once B406 is beneath the lane.
+measure_s2.sh      goldens rebuilt in parallel, every MOVED golden run under
+                   node base vs migrated (stdout compared), examples checked.
+s3_casts.sh / s3-casts.tsv   the native census programs' emitted main.rs,
+                   base toolchain vs migrated: `len() as i32` 35 -> 0.
+wire-frame-*.txt   order40's i5_wire_patch.vl under the base and the migrated
+                   std (the migrated copy fixed by `vilan check --fix`):
+                   byte-identical.
+kolt-i5.patch      the owner's five files (read-only; applied only to a scratch
+                   copy): kolt-s2-check-before-edits.txt -> -after-edits.txt
+                   (back to A125's four pre-existing errors).
+
+GOLDENS (ruled ACCEPTED 2026-09-25 by the coordinator; every one runtime-
+identical under node, regen_goldens.sh). 30 corpus goldens + the split
+fixture (4 artifacts, `$`-temporary renames only). One program can sit in two
+rows.
+  conversion the codemod wrote (std's or the program's own `.as_usize()` /
+  `.as_i32()`):  adapt, bytes-aliasing, capture-clones, crypto, delta-law,
+                 for-mut-container, list-cell, mut-parameters, option-view,
+                 side-effect-let, time, usize-literals
+  hand-rewritten std loop (`List::reverse`, json's begin_list/begin_variant,
+  reconcile's chain): element-clones, iterator-adapters, list-cell, list-sort,
+                 reactive-keyed, reconcile-index, time
+  sentinel (a `-1`, however spelled, as a fallback at a `usize`):
+                 list-search, iterator-adapters, lift-chain
+  `List::last`'s empty-list guard reaching the reactive runtime (ELEVEN, not
+  seven as first counted): blanket-impl, delta-law, dyn-objects, list-cell,
+                 list-get-pop, reactive, reactive-flatten, reactive-on-change,
+                 reactive-owner, reactive-selector, reactive-turns,
+                 signal-update, spread-parameters
+  (lift-chain moved after the measured run: its `unwrap_or(0 - 1)` became
+  `unwrap_or(0)`, the whole-set native differential's refusal of `-(1usize)`.)
+
+reactive.vl hunks (index-only; reactive-42 flips the same file after):
+  1. `enum RowStep { Keep(usize), Refresh(usize), Fresh }` (S4, pre.patch)
+  2. `ReconcilePlan.removed: List<usize>` (census signature)
+  3. `reconcile`: the `-1`-terminated chain -> `Option<usize>` (`first`,
+     `next_same`, the build loop counting down from `held`), the head walk,
+     the collision walk and `found` as `Option<usize>`, `removed` built as
+     `List<usize>` (hand.patch; sentinels S1-S3, loops L6-L8)
