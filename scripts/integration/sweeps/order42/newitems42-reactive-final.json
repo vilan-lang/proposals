@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "F46",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-25 (Order 42, reactive-42's find N2)",
+   "title": "native — `source.attach(watching(source))`: the RECEIVER is borrowed while the ARGUMENT moves it (rustc E0505); reactive-42 wrote the node subscription as two statements to dodge it; the emitter should evaluate such an argument first (native-42's rule for a `&mut` argument whose place a later argument reads, applied to a by-value argument that moves the receiver's place)",
+   "discussion": "reactive-42 (2026-09-25); repro in `sweeps/order42/reactive-42/finds/`; native lane",
+   "body": "Pin: the one-statement form builds and matches node. Sizing S."
+  },
+  {
+   "id": "B427",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-25 (Order 42, reactive-42's find S3)",
+   "title": "`combine((a, b)).map(\\|pair\\| { let (x, y) = pair; x + y })` leaves `map`'s `U` OPEN: a destructuring `let` inside the closure does not carry the tuple's element types into the body's tail; annotating `pair` fixes it — under the flip `map` is a blanket, so this is the everyday spelling",
+   "discussion": "reactive-42 (2026-09-25); repro in `sweeps/order42/reactive-42/finds/`; B392's family (a closure typed from its body)",
+   "body": "Fix: a destructuring `let` of a closure parameter binds the pattern's names from the parameter's inferred tuple type before the tail is typed. Pin red-first. Sizing S; solver."
+  },
+  {
+   "id": "A133",
+   "section": "A",
+   "kind": "design",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-25 (Order 42, reactive-42's find R1)",
+   "title": "over an IN-PROCESS transport, `sub`/`effect` on a node over a MIRROR sees the inline SEED twice (over a socket it is correct): the mirror's seed arrives inline under the subscribing turn and the node's pull re-reads it — a std design question (the in-process transport's inline delivery vs the push-pull protocol's one-notify-per-settle)",
+   "discussion": "reactive-42 (2026-09-25); repro `sweeps/order42/reactive-42/finds/`node_over_a_mirror_sub_sees_the_inline_seed_twice.vl; remote-sources.md §2b; reactive-turns.md §7",
+   "body": "Options: (a) the in-process transport delivers the seed through the draining turn like a socket does (one code path — rec); (b) the node dedups a notify whose value equals its last pull (costs `PartialEq`); (c) document it. Rec (a). Sizing S–M; std/reactive, Order 43."
+  },
+  {
+   "id": "E226",
+   "section": "E",
+   "kind": "diagnostics",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-25 (Order 42, reactive-42's find)",
+   "title": "the regime-3 `;` steer (a missing return value) is not reached through `.map(..).cell()`: the expectation stops at the receiver, so a `;`-ended closure body inside `map` followed by `.cell()` gets the plain mismatch instead of the steer; B421 (the `dyn` coercion accepting a void body — a MISCOMPILE) is the same blind spot at a coercion",
+   "discussion": "reactive-42 (2026-09-25); B421; the regime-3 pin re-anchored on a `Map<SignalCell<i32>, i32, i32>` annotation meanwhile",
+   "body": "Fix: the expected-type walk carries the steer through a method chain whose receiver is a closure-taking call. Sizing S."
+  }
+ ]
+}

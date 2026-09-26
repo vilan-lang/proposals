@@ -1,0 +1,41 @@
+// reactive-42 find N2 (2026-09-25, next @0ed1864e): the rust backend emits a call whose RECEIVER is
+// a by-value generic parameter and whose ARGUMENT moves that same parameter —
+// `source.attach(watching(source))` — as a borrow of `source` beside a move of it, and rustc
+// refuses it: "error[E0505]: cannot move out of `source_N` because it is borrowed". `vilan run`
+// prints 4. In std this was `subscribe_pulling`'s `source.on_settle(pulling(source, observer))`
+// (worked around with two statements, which costs one native copy in reactive-on-change).
+import std::io::print;
+
+trait Src<T> {
+	fun get(self): T;
+	fun attach(self, observer: || void): i32;
+}
+
+struct Root {
+	value: i32,
+	name: str,
+}
+
+impl Root with Src<i32> {
+	fun get(self): i32 {
+		self.value
+	}
+	fun attach(self, observer: || void): i32 {
+		observer();
+		self.value
+	}
+}
+
+fun watching<T, S: Src<T>>(source: S): || void {
+	|| {
+		let _seen = source.get();
+	}
+}
+
+fun subscribe<T, S: Src<T>>(source: S): i32 {
+	source.attach(watching(source))
+}
+
+fun main() {
+	print(subscribe(Root { value = 4, name = "r" }));
+}

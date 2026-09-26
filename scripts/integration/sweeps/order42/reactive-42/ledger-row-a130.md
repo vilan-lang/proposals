@@ -1,0 +1,8 @@
+# A130's diagnostics-ledger row (the prose half; the index half is `NEW` in crates/vilan-cli/tests/diagnostics-ledger.tsv)
+
+- key: `.cell()` in the initializer of the module binding `{name}` ties the cell to an owner, and a module binding has none: its subscription would stay on the upstream for the life of the program. Build it under the owner that reads it (inside the view, or an `owner_scope.run`), or write `.cell_global()`, which says that lifetime
+- flagship: `-`. The message settles what to do: it names both doors.
+- site: `crates/vilan-core/src/init_order.rs`, `check_module_level_cells` (post-analysis, called from `post_analysis_passes`, so both pipelines run it). It reads each module binding's own `initializer_calls_of` off the installed call graph and refuses a `CallTarget::Function` to std::reactive's `cell`, which it finds by name AND by its declaring file being std's `reactive.vl`. It anchors at the member name (`member_name_spans`), falling back to the call's span. A `lazy` binding is skipped, because it is already refused for reading a context.
+- verdict: QUALIFIES. The anchor is A1 (the `.cell` name, not the initializer), and there is one diagnostic per binding.
+- pins: `inference/lifetimes.rs` `a130_*` (12). There are refusal pins through the direct spelling, a `dyn` receiver, a struct-literal field, an argument and a value `if`, a one-per-binding count, and no-refusal pins for a created closure, a call from module init, a function body, a user's own `cell` method, `.cell_global()` at module level, and `.cell_global()` ignoring an ambient owner.
+- ruling: A130 static-only (R-e, Order 42 GO).

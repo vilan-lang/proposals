@@ -1,3 +1,6 @@
+// UPDATE (same day, next @0ed1864e): this repro builds natively and prints 40 now. The solver's
+// B408/B409 closed it, and the flip retired `Upstream` anyway. F43 can close: the three native
+// pins it reddened are green under the flip.
 // reactive-42 find N1 (2026-09-25, on d65d4e75): the `rust` backend refuses a blanket
 // impl method whose trait argument is bound from the impl subject (`impl type S: Src<type T> with Up<T>`)
 // when it is reached from another impl's body through a bound on that second trait.

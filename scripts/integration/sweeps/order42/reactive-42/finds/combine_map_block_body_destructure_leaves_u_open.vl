@@ -1,0 +1,19 @@
+// reactive-42 find S3 (2026-09-25, next @0ed1864e + the flip): a `map` closure over `combine((a, b))`
+// whose BLOCK body destructures its parameter (`let (x, y) = pair;`) leaves the result type
+// undetermined: "the type of 'sum' is never fully determined: `Map<Combine<(i32, i32)>, (i32, i32), U>`".
+// The same body over a `SignalCell<(i32, i32)>` infers; `|(x, y)| x + y` and `|pair| pair.0 + pair.1`
+// over the `combine` infer; annotating `|pair: (i32, i32)|` fixes it. An inference-ordering gap
+// (the parameter types after the body is walked), not a flip regression in kind: pre-flip
+// `combine` answered a `SignalCell` and the closure met a concrete type. Not std-free yet.
+import std::io::print;
+import std::reactive::{ Signal, SignalCell, Source, combine };
+
+fun main() {
+	let a: SignalCell<i32> = Signal::new(1);
+	let b: SignalCell<i32> = Signal::new(2);
+	let sum = combine((a, b)).map(|pair| {
+		let (x, y) = pair;
+		x + y
+	});
+	print(sum.get());
+}

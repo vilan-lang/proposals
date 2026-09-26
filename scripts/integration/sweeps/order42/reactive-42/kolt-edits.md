@@ -39,6 +39,13 @@ together with their cascades they need NOTHING now. `combine` takes
 `kolt_edits.py <copy-of-kolt>` applies exactly these 14 edits, one exact-match replacement
 each, and refuses any edit that does not match exactly once.
 
+Final check on next @0ed1864e plus the flip, with index-42's `sweeps/order42/index-42/kolt-i5.patch`
+(I5 S2) applied first and these 14 edits second. The only errors left are the 4 A125 ones
+(theme.vl:214/222, command_palette.vl:245/253 after I5's line shifts). The two edit sets touch
+no common line, so the order does not matter: `kolt_edits.py` matches exactly either way.
+Without I5's patch, kolt on the train's compiler shows the 14 flip errors, 15 I5 errors
+(index-42's) and the 4 A125 errors.
+
 `src/lib/reactive2.vl` is the owner's sketch. It does not compile and was not touched.
 `StorageSignalCell` implements `Signal<T>` in one block. Because of that, a blanket
 (`.cell()`, `.switch`, `.distinct()`) is not found on it (B419). Its inherent `map` hides this

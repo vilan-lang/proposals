@@ -1,3 +1,5 @@
+// UPDATE (next @0ed1864e): std no longer has the shape. `Upstream` retired on B409 and the four
+// b371 pins are green. The std-free repro below is B420 and still reproduces as written.
 // reactive-42 find S2 (2026-09-25; reproduces on d65d4e75 AND with B408 ca0dd51f applied): an
 // abstract `S: Src<i32>` does not satisfy `Up<i32>` when `Up` is implemented by a BLANKET IMPL
 // over `Src` (`impl type S: Src<type T> with Up<T>`) — the trait-satisfaction twin of B408 (which
