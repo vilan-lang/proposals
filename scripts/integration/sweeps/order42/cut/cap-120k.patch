@@ -1,0 +1,13 @@
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index ef6824b1..b2cd9ff1 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -464,7 +464,7 @@ jobs:
+           import sys
+           version = sys.argv[1]
+           text = open("notes.md").read()
+-          CAP = 110_000
++          CAP = 120_000
+           if len(text) > CAP:
+               entries = text.split("\n<!-- family:")
+               kept, size = [entries[0]], len(entries[0])
