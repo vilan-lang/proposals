@@ -59,3 +59,11 @@ reactive.vl hunks (index-only; reactive-42 flips the same file after):
      `next_same`, the build loop counting down from `held`), the head walk,
      the collision walk and `found` as `Option<usize>`, `removed` built as
      `List<usize>` (hand.patch; sentinels S1-S3, loops L6-L8)
+
+AFTER THE REBASE (coordinator, 2026-09-25): `inference::markdown`'s
+`substring_with_a_computed_negative_end_panics` AND its sibling
+`substring_with_a_computed_negative_start_panics` (`let start = 0 - 1;`) both
+pass today only because a `usize` goes negative on JS. Re-derive both on the
+rebased base: probe whether B407 refuses the COMPUTED `0 - 1` at `usize`; if it
+does, pin that refusal; if it does not, pin the bounded behaviour and report
+the gap in B407's pin set (and the sentinel census, which also missed `0 - 1`).
