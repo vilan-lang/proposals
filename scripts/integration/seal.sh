@@ -17,6 +17,9 @@ cargo clippy --workspace --all-targets -- -D warnings > "$S/clippy-$tip.log" 2>&
 cargo clippy --target x86_64-pc-windows-msvc --workspace --exclude vilan-rt-sqlite --all-targets -- -D warnings > "$S/win-$tip.log" 2>&1; w=$?; echo "windows exit=$w"
 cargo audit --deny unsound > "$S/audit-$tip.log" 2>&1; a=$?; echo "audit exit=$a"
 cargo fmt --all --check > "$S/fmt-$tip.log" 2>&1; f=$?; echo "fmt exit=$f"
+# The tree's VILAN sources (CI's `vilan-fmt` job): Orders 41 and 42 both went red on CI here after a green seal —
+# a formatter rule landed in the same order as std edits formatted under the old rule.
+scripts/ci-local.sh vilan-fmt > "$S/vilan-fmt-$tip.log" 2>&1; vf=$?; echo "vilan-fmt exit=$vf"
 python3 - "$W/CHANGELOG.md" <<'PY'
 import sys
 ls = open(sys.argv[1]).read().split("\n")
@@ -24,4 +27,4 @@ s = next(i for i, l in enumerate(ls) if l.startswith("## Unreleased"))
 e = next((i for i in range(s + 1, len(ls)) if ls[i].startswith("## ")), len(ls))
 print("changelog parity", sum(l.startswith("<!-- family:") for l in ls[s:e]), "/", sum(l.startswith("**") for l in ls[s:e]))
 PY
-echo "verdict: union=$u doctests=$d native=$n clippy=$c windows=$w audit=$a fmt=$f"
+echo "verdict: union=$u doctests=$d native=$n clippy=$c windows=$w audit=$a fmt=$f vilan-fmt=$vf"
