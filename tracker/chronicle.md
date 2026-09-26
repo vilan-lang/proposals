@@ -2721,3 +2721,5 @@ Sealed on a tip three small commits past the merges: the seal itself was green o
 ## v0.41.0 — CUT 2026-09-26 @5965de38 (the release commit and tag; release run 36259569551)
 
 The first release since v0.40.0 (2026-09-01): ten orders, 724 changelog entries, 39 of them breaking, all traced to their commits by the cut's sweep. The release body carries the breaking digest papers-42 wrote (under the raised 120,000-character cap) and the whole breaking family; the rest sits behind the CHANGELOG link. The rehearsal on the sealed commit was green end to end before the tag. Two cut attempts: the first refused on a stale local branch ref from Order 41's bisect lane (a lesson for the reap), the second cut clean. The toolchain is rebuilt from the tag into both locations.
+
+**v0.41.0 PUBLISHED 2026-09-26** — release run 36259569551 green end to end; the five publishes (GitHub, brew, npm, the VS Code marketplace, Open VSX) all succeeded; the GitHub release carries ten assets and the breaking digest at its head.
