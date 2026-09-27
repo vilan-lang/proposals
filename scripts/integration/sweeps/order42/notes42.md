@@ -52,3 +52,8 @@
 ## v0.41.0 CUT 2026-09-26 @5965de38 — `cut-release.sh --commit 0.41.0` against 6ac84f41 (CI green; the rehearsal 36253593237 green end to end); the digest (release-notes-final.md) + the regenerated notices amended into the release commit (verified: the digest between the head and the first family marker at line 87; notices Covers 0.41.0; Unreleased empty); release pins 27/27; tag v0.41.0 = 5965de38; next + the tag pushed; release run 36259569551 in progress (watched). Toolchain rebuilding from the tag for both locations.
 - Toolchain `vilan 0.41.0 (5965de388)` installed in both locations from the tag; the playground's three exhibits green on it.
 - RELEASE RUN 36259569551 GREEN end to end: gates, fmt, clippy, audit, wasm, vsix, the five platform builds, and ALL FIVE publishes (GitHub, brew, npm, the marketplace, Open VSX); the GitHub release v0.41.0 is published with 10 assets. ORDER 42 + THE CUT: DONE. Order 43 drafts at the owner's word from the leftovers named in the chronicle's SEALED entry.
+
+
+## v0.41.1 (2026-09-27)
+
+The v0.41.0 fold found the playground wasm broken (B432); v0.41.1 cut from `release/0.41`, published, site deployed, folded — see the chronicle entry and `go-items42.json` `patch_v0_41_1`. Order 43 drafts at the owner's word; its queue gains nothing from this (B432/N134/N135 closed).

@@ -104,5 +104,30 @@
   "dry_runs": "ba1dffb4: CI-pending the only red; 6ac84f41 first attempt: refused on the bisect branch's stale local ref (50d38921 vs the cherry-pick d65d4e75) — the branch deleted, no tree change; second attempt: cut",
   "cap": "120,000 (the owner, 2026-09-26; release.yml 6ac84f41)",
   "breaking_entries": 39
+ },
+ "patch_v0_41_1": {
+  "why": "B432 — the v0.41.0 playground wasm trapped on every compile (M44 Instant::now on wasm32); found by the website deploy smoke on a scratch copy while preparing the fold",
+  "fix": "next 47b0b6aa (B432) + 48ce5efb (N134 wasm smoke) + 40ea7ab4 (commit markers) + 60c2c6e5 (N135 ci.yml release/**); release/0.41 = c14f4ac5 83b7ae19 0cc8a25c 793a91f6 a0bc86d5 (release: v0.41.1)",
+  "tag": "v0.41.1 = a0bc86d5",
+  "release_run": "36353347340 GREEN 17/17 (wasm job runs the smoke); 10 assets; five publishes",
+  "website": "87f9eba export *; + 4a7873c each_by/stub; deploy 36357878092 green; manifest v0.41.1",
+  "fold": "release/0.41 → next 0ae631a5 (--no-ff, PR #10 merged); v0.41.1 → main 1a33340f; main → next 762c6aa5; fold-release.sh: docs.yml + deploy.yml green, manifest v0.41.1, toolchain vilan 0.41.1 (1a33340f2) both locations",
+  "closed": [
+   "B432",
+   "N134",
+   "N135"
+  ],
+  "filed": [
+   "E227",
+   "M88",
+   "N135"
+  ],
+  "open": 117,
+  "lessons": [
+   "a patch branch needs ci.yml on push — a PR conflicts by construction",
+   "cherry-picked entries need commit: markers on BOTH sides",
+   "the release pipeline must RUN the wasm it ships",
+   "fold-release.sh needs a CLEAN main checkout at origin/main (the local main was two behind; the push was refused once)"
+  ]
  }
 }
