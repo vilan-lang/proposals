@@ -528,6 +528,22 @@ what the train exists to avoid. Ratified 2026-08-07
    `v0.MINOR.PATCH` **on that branch**, and push the tag. `release.yml`
    triggers on `v*` regardless of branch, so the pipeline needs no change
    at all — steps 5 through 10 of §7.2 run exactly as they do for a train.
+
+   Two things v0.41.1's cut (2026-09-27) learned, both now built:
+   - **Push the branch before cutting, and cut against a pushed head.**
+     `cut-release.sh` refuses a tag CI has not verified (L17), and
+     `ci.yml` runs on `release/**` pushes for exactly this (N135). A pull
+     request from the branch is *not* a substitute: the release commit
+     retitles `## Unreleased` and bumps every manifest, which conflicts
+     with `next` by construction, and a conflicting pull request gets no
+     run. The release commit itself is pushed, verified, and only then
+     tagged — the same discipline as a train.
+   - **The cherry-picked entries carry `<!-- commit: <sha> -->` markers.**
+     The sweep derives an entry's commit as the *oldest* commit that
+     introduced its head, which on the patch branch is the `next`-side
+     original — not an ancestor of the tag. The marker names the
+     cherry-pick; `next` must carry the same markers (cherry-pick that
+     commit too), or the branch conflicts with `next` there as well.
 4. **Merge `release/0.MINOR` back into `next` with `--no-ff`** — never
    rebase it — so the fix and its changelog entry cannot be lost at the
    next train. Where `next` already carries the fix, the merge is trivial
