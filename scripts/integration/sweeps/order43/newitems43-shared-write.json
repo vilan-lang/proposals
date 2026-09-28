@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "B433",
+   "section": "B",
+   "kind": "bug (UNSOUND — a miscompile: the checker accepts, the emitter stores a bare value in an `Option` slot)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (the owner's report from kolt model.vl: `Shared<Option<PlainValue>>.write() = plain_value` type-checks; reproduced and minimized by the integrator on 1a33340f)",
+   "title": "ASSIGNMENT THROUGH A `&mut T` PLACE does not check the value against `T`: `let cell: Shared<Option<i32>> = Shared::new(None); cell.write() = 5;` passes `vilan check` (0 diagnostics) and emits `cell.v = 5` — a bare `i32` in an `Option<i32>` slot, which every later read misreads (`is_some()` false, `match` takes `None`); the same with a struct into `Shared<Option<Plain>>`. The PLAIN places are refused correctly (`let x: Option<i32> = 7` and `mut x: Option<i32> = None; x = 5` both say `Expected Option<i32>, but got i32`), so the gap is the assignment whose target is a call returning `&mut T` (`Shared::write(self): &mut T borrows self`). Kolt's own `channel_globals.write() = channels` (a `SignalCell` into `Shared<Option<SignalCell<..>>>`) compiled and silently never cached — the cache read `None` on every call",
+   "discussion": "kolt 2026-09-28; probe `sweeps/order43/probes/shared-write/` (three writes, the two bare ones read back `None`; the `Some(6)` control reads back `Some`); `Shared::write`'s doc (`a.write() = x` rebinds the slot) is the shape every app writes; B353 (the reconcile that used to accept a mismatch at `set`) is the same family at a method argument",
+   "body": "Where to look: the assignment rule for a target expression that is a CALL (or any non-path place) typed `&mut T` — the value should be checked against `T` exactly as a `mut` local's is; today it appears to be checked against nothing, or against `&mut T` with a lenient yes. Pin red-first: `i32` into `Option<i32>`, a struct into `Option<struct>`, and `List<i32>` into `Option<List<i32>>` (the kolt shape), each expecting `Expected Option<..>, but got ..`; plus a green pin for `write() = Some(..)` and `write() += 1` (`u53` counters — kolt store.vl:172). Then grep std/examples/kolt for `write() =` with an `Option`-typed cell to find any site that has been storing a bare value. Sizing S; solver, Order 43, FIRST in the lane (a miscompile)."
+  },
+  {
+   "id": "E228",
+   "section": "E",
+   "kind": "bug (editor) — unreproduced by the integrator, the owner's report",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-28 (the owner's report from kolt model.vl: completion at `Shared.read().|` offers nothing)",
+   "title": "COMPLETION after `cell.read().` on a `Shared<T>` offers NOTHING (`channel_list_handle.read().\\|`, a module-level `let cell: Shared<Option<..>>`): the receiver is a CALL to an external generic method (`external fun read(self): T` on `Shared<T>`) whose result type is the substituted `T` — suspects, in order: member completion on a call-expression receiver, `T` left unsubstituted for an `external` method's return, or the module-level binding's type not reaching the completion snapshot while the line is unfinished (`keystroke.rs`'s one-keystroke-ago path)",
+   "discussion": "kolt 2026-09-28; the harness at `crates/vilan-lsp/src/main.rs` (`completion_answers_the_analyzed_snapshot_while_typing`) and `keystroke.rs` (`completion_offers_a_declaration_typed_one_keystroke_ago`); B433 is the sibling find from the same line",
+   "body": "Pin first, three cases in the lsp harness over `let cell: Shared<Option<i32>> = Shared::new(None);`: `cell.read().|` must offer `is_some`/`map`/`unwrap_or`; `cell.write().|` (a `&mut Option<i32>` receiver); and a control `let x: Option<i32> = None; x.|`. Whichever fails names the suspect. Also try the receiver typed through a `let` first (`let v = cell.read(); v.|`) — if that one works, it is the call-expression receiver. Sizing S to pin, S–M to fix; editor lane, Order 43."
+  }
+ ]
+}

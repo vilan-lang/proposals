@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "A136",
+   "section": "A",
+   "kind": "bug (std design trap) + docs",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-28 (the owner's report: after A134's fix, messages in a channel left and returned to stop mirroring; diagnosed by the integrator on 1a33340f)",
+   "title": "a `Memo` maker that builds an owner-tied derivation (`memo.get_or(id, \\|\\| ….cell())` — kolt model.vl's four handle tables) ties the memoized value to the FIRST CALLER's owner: the memo is program-lifetime and evicts nothing (by design), the `.cell()` dies with the channel page that first asked, and every later `get_or` hands out the DEAD cell — stale on return, never updating again. memo.vl's own doc presents the owner as something the call site's scope 'covers', which is exactly the trap: the maker's CONTEXT reads must be the caller's, its LIFETIME must be the memo's",
+   "discussion": "kolt 2026-09-28; repro `sweeps/order43/probes/kolt-mirrors/` (F = the memo'd `.cell()`: visit 2 reads the visit-1 value forever; G = `.cell_global()` in the maker, the lease at the call site: visit 2 reads 3, 4); A130 (`.cell_global()` is the spelling); A28 (owner-tied derivations); A134 (the same sites)",
+   "body": "Kolt's fix (applied 2026-09-28, checks/builds/fmt clean): the memo holds `get_client().map(|c| c.map(|c| c.get_messages(id))).cell_global()` — a program-lifetime cell of the UNLEASED mirror, the memo's own lifetime — and the lease is the caller's: `.and_then(|mirror| mirror).map(..).cell()` at the call site under the view's owner, released with the view, re-taken (re-minting) on the next visit. Demand still decides the channel's life, as the idiom promised.\n\nThe owner's question, answered here for the record: the maker MUST run at the call site (`get_client()` is a context read only the caller's scope covers), and there is no way to run it 'under no owner' from inside a scope — a module-level never-disposed owner would be the same thing spelled long. `.cell_global()` is std's name for it.\n\nDoors: (a) DOCUMENT at memo.vl's head and at `Memo::get_or`: 'what the maker builds outlives the caller — a derivation in a maker is `.cell_global()`; a lease never goes in a maker'; rewrite the 'covered by the scope it was called from' sentence, which today reads as a feature. (b) a CHECK: a `.cell()` (or `effect`, or any owner-taking call) syntactically inside a `get_or` maker closure gets a warning with the `.cell_global()` steer — static, cheap; the memo type is std's so the analyzer can know the seam. (c) `Memo::get_or` runs the maker under `owner_scope.run(<the memo's own never-disposed owner>, ..)` — impossible as a wrapper by the context model's own rule (a closure captures its context at creation; memo.vl says so of the owner). Rec: (a) + (b). Sizing S; std/memo + a check, Order 43."
+  },
+  {
+   "id": "A137",
+   "section": "A",
+   "kind": "bug? (observed in-process; mechanism NOT isolated)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-28 (the integrator's find while probing A136; in-process only, unverified over a socket — A133's caveat applies)",
+   "title": "TWO client mirrors of ONE server cell (two stub calls answering the same `SignalCell` — A92's `expose_dynamic` dedups them onto one channel) misbehave in-process: leased in sequence, the SECOND mirror sees no seed and — depending on the run — no later update while the first is leased (the memo probe: the second-leased handle read its initial value through two adds), and in the plain two-`sub` probe both mirrors saw the first add and NEITHER saw the second. `ReactiveClient::receive` delivers a channel's `Update` to EVERY route with that id, so first-match routing is not it; suspects are the second `Subscribe` on a held channel (`LiveForward.holds`, no re-seed) and the inline in-process delivery order (A133)",
+   "discussion": "kolt 2026-09-28; repro `sweeps/order43/probes/kolt-mirrors/` sections F/G (swap the two `effect` lines: whichever leases first is the one that updates) and H (two plain `sub`s; also shows the observer of `RemoteSource<List<str>>::sub` typing as `List<str>` rather than `Option<List<str>>` — an inference oddity to look at alongside, B-family); A92; A97 (hold counting); A133 (the in-process seed)",
+   "body": "Not reachable from kolt today (one memo per id → one mirror per server cell per client), which is why it is filed as an observation and not queued ahead of A134/A135. To settle: (1) run section H over a socket (`vilan/examples/todo`'s harness or the reactive_channels pins); (2) trace the server's handling of a second `Subscribe` on a channel a `LiveForward` already serves — whether it re-seeds, whether `holds` and the forward agree; (3) if the socket run is clean, fold into A133. Sizing S to settle; std/rpc."
+  }
+ ]
+}

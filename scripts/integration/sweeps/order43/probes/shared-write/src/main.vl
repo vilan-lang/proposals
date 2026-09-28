@@ -1,0 +1,18 @@
+import std::shared::Shared;
+
+struct Plain {
+	n: i32,
+}
+
+fun main() {
+	let cell: Shared<Option<i32>> = Shared::new(None);
+	cell.write() = 5;
+	print(i"write() = 5 into Shared<Option<i32>>: is_some {cell.read().is_some()}");
+	cell.write() = Some(6);
+	print(i"write() = Some(6): is_some {cell.read().is_some()}");
+
+	let rec: Shared<Option<Plain>> = Shared::new(None);
+	rec.write() = Plain { n = 1 };
+	print(i"write() = Plain into Shared<Option<Plain>>: is_some {rec.read().is_some()}");
+
+}

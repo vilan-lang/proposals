@@ -1,0 +1,198 @@
+// Repro of kolt's "channels stopped mirroring" after the v0.41 combinator flip.
+import std::json::json_codec;
+import std::map::Map;
+import std::memo::Memo;
+import std::reactive::{ Owner, Signal, SignalCell, Source, owner_scope };
+import std::rpc::{
+	LocalTransport,
+	ReactiveClient,
+	ReactiveServer,
+	RemoteSource,
+	RpcError,
+	duplex_pair,
+	local_rpc,
+	register_session,
+	session_of,
+};
+import std::shared::Shared;
+
+[service(Client)]
+struct Store {
+	channels: SignalCell<Map<u53, str>>,
+	next_id: Shared<u53>,
+	messages: Shared<Map<u53, SignalCell<List<str>>>>,
+}
+
+impl Store {
+	[rpc]
+	fun create_channel(self, name: str): u53 {
+		let id = self.next_id.read();
+		self.next_id.write() += 1;
+		self.channels.update(|&mut channels| {
+			channels.insert(id, name);
+		});
+		let fresh: SignalCell<List<str>> = Signal::new([]);
+		self.messages.write().insert(id, fresh);
+		id
+	}
+
+	[rpc]
+	fun add_message(self, id: u53, text: str): bool {
+		match self.messages.read().get(id) {
+			Some(let list) => {
+				list.update(|&mut items| {
+					items.push(text);
+				});
+				true
+			},
+			None => false,
+		}
+	}
+
+	// kolt store.vl:262
+	[rpc]
+	fun get_messages(self, id: u53): Option<SignalCell<List<str>>> {
+		self.messages.read().get(id)
+	}
+
+	// kolt store.vl:203 — the Option-valued handle behind `.or(None)`
+	[rpc]
+	fun get_channel(self, id: u53): SignalCell<Option<str>> {
+		self.channels.map(|x| x.get(id)).cell()
+	}
+
+	// kolt store.vl:210 — the `Option<SignalCell<T>>` reply form
+	[rpc]
+	fun get_channel_name(self, id: u53): Option<SignalCell<str>> {
+		self.channels.get().get(id).map(|name| Signal::new(name))
+	}
+
+	// kolt store.vl:195 after the migration
+	[rpc]
+	fun get_channels(self): SignalCell<List<u53>> {
+		print("server: get_channels called");
+		self.channels.map(|x| x.keys()).cell()
+	}
+}
+
+// kolt model.vl:97 — the memo holds an owner-tied `.cell()` made under the FIRST caller's owner
+let handles_f: Memo<u53, SignalCell<Option<List<str>>>> = Memo::new();
+
+fun messages_f(client_cell: SignalCell<Option<Client<LocalTransport>>>, id: u53): SignalCell<List<str>> {
+	handles_f
+		.get_or(id, || client_cell
+			.map(|client| client.map(|client| client.get_messages(id)))
+			.cell()
+			.and_then(|mirror| mirror)
+			.cell())
+		.map(|x| x.unwrap_or_default())
+		.cell()
+}
+
+// the fix — the memo holds a program-lifetime cell of the (unleased) mirror; the lease is the caller's
+let handles_g: Memo<u53, SignalCell<Option<RemoteSource<List<str>>>>> = Memo::new();
+
+fun messages_g(client_cell: SignalCell<Option<Client<LocalTransport>>>, id: u53): SignalCell<List<str>> {
+	handles_g
+		.get_or(id, || client_cell
+			.map(|client| client.map(|client| client.get_messages(id)))
+			.cell_global())
+		.and_then(|mirror| mirror)
+		.map(|x| x.unwrap_or_default())
+		.cell()
+}
+
+fun count_of(x: List<str>): usize {
+	x.len()
+}
+
+fun main() {
+	let store = Store { channels = Signal::new(Map::new()), next_id = Shared::new(0u53), messages = Shared::new(Map::new()) };
+	let (client_end, server_end) = duplex_pair();
+	let connection = 0;
+	register_session(connection, server_end, json_codec());
+	let _server = match session_of(connection) {
+		Some(let found) => found,
+		None => ReactiveServer::new(server_end, json_codec()),
+	};
+	let rpc_transport = local_rpc(store
+		.dispatcher()
+		.into_protocol(json_codec())
+		.for_connection(connection));
+	let reactive = ReactiveClient::new(client_end, json_codec());
+	let client = Client { transport = rpc_transport, codec = json_codec(), reactive };
+
+	// kolt model.vl:29 — the client behind a SignalCell<Option<..>>
+	let client_cell: SignalCell<Option<Client<LocalTransport>>> = Signal::new(Some(client));
+
+	print("--- A: kolt's migrated shape (model.vl:112) ---");
+	let a: SignalCell<List<u53>> = client_cell
+		.and_then(|c| c.get_channels())
+		.map(|x| x.unwrap_or_default())
+		.cell();
+	let _a = a.sub(|x| print(i"A sees {x.len()}"));
+
+	print("--- B: the stub called ONCE, its mirror reused ---");
+	let mirror: RemoteSource<List<u53>> = client.get_channels();
+	let b: SignalCell<List<u53>> = mirror.or([]).cell();
+	let _b = b.sub(|x| print(i"B sees {x.len()}"));
+
+	print("--- C: the mirror cached once per client in a .cell() ---");
+	let c: SignalCell<List<u53>> = client_cell
+		.map(|client| client.map(|client| client.get_channels()))
+		.cell()
+		.and_then(|mirror| mirror)
+		.map(|x| x.unwrap_or_default())
+		.cell();
+	let _c = c.sub(|x| print(i"C sees {x.len()}"));
+
+	print("--- D/E: the two other stub forms, fixed shape ---");
+	let d: SignalCell<Option<str>> = client_cell
+		.map(|client| client.map(|client| client.get_channel(0u53)))
+		.cell()
+		.and_then(|mirror| mirror.or(None))
+		.cell();
+	let _d = d.sub(|x| print(i"D sees {x.unwrap_or("-")}"));
+
+	print("--- create two channels ---");
+	print(i"create -> {client.create_channel("general").unwrap_or(999u53)}");
+	// E leases after channel 0 exists: the `Option<SignalCell<T>>` reply form
+	// resolves once per lease, so an absent row stays Absent until re-leased.
+	let e: SignalCell<str> = client_cell
+		.map(|client| client.map(|client| client.get_channel_name(0u53)))
+		.cell()
+		.and_then(|mirror| mirror)
+		.map(|x| x.unwrap_or_default())
+		.cell();
+	let _e = e.sub(|x| print(i"E sees {x}"));
+	print(i"create -> {client.create_channel("random").unwrap_or(999u53)}");
+	print(i"A get() = {a.get().len()}   B get() = {b.get().len()}   C get() = {c.get().len()}");
+
+	print("--- F/G: visit channel 0, leave (dispose the page owner), return ---");
+	print(i"add -> {client.add_message(0u53, "a").unwrap_or(false)}");
+	let visit1 = Owner::new();
+	owner_scope.run(visit1, || {
+		messages_g(client_cell, 0u53).effect(|x| print(i"G visit 1 sees {x.len()}"));
+		messages_f(client_cell, 0u53).effect(|x| print(i"F visit 1 sees {x.len()}"));
+	});
+	print(i"add -> {client.add_message(0u53, "b").unwrap_or(false)}");
+	print("(leave)");
+	visit1.dispose();
+	let visit2 = Owner::new();
+	owner_scope.run(visit2, || {
+		messages_f(client_cell, 0u53).effect(|x| print(i"F visit 2 sees {x.len()}"));
+		messages_g(client_cell, 0u53).effect(|x| print(i"G visit 2 sees {x.len()}"));
+	});
+	print(i"add -> {client.add_message(0u53, "c").unwrap_or(false)}");
+	print(i"add -> {client.add_message(0u53, "d").unwrap_or(false)}");
+	visit2.dispose();
+
+	print("--- H: two mirrors of ONE deduped server cell, leased in sequence ---");
+	let m1: RemoteSource<List<str>> = client.get_messages(1u53);
+	let m2: RemoteSource<List<str>> = client.get_messages(1u53);
+	let _s1 = m1.sub(|x| print(i"H m1 sees {count_of(x)}"));
+	let _s2 = m2.sub(|x| print(i"H m2 sees {count_of(x)}"));
+	print(i"add -> {client.add_message(1u53, "x").unwrap_or(false)}");
+	print(i"add -> {client.add_message(1u53, "y").unwrap_or(false)}");
+	print(i"H m1 channel = {m1.channel.read()}  m2 channel = {m2.channel.read()}");
+}
