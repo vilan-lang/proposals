@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "F51",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-28 (Order 43, native-43's find)",
+   "title": "native — a captured value RETURNED from a closure is MOVED out of an `Fn` closure (rustc E0507): a closure body's tail and a `match` leg are not treated as consuming positions, so the value is moved where it should be copied; blocks `KeyedSource::or` natively (`reactive_channels`' KEYED_MIRROR_IS_A_SOURCE)",
+   "discussion": "native-43 (2026-09-28); repro in its report (`\\|\\| initial` and `\\|value\\| match value { Some(let p) => p, None => initial }` — JS prints 6 then 2, native fails E0507 twice); F46 (the last-use pass is the seam)",
+   "body": "Fix in the last-use pass / the emitter: a closure's tail (and each match leg in tail position) is a consuming position of a CAPTURED value only if the closure is `FnOnce`; for `Fn` it copies. Pin the repro as a native differential case. Sizing S; native, Order 44."
+  },
+  {
+   "id": "B439",
+   "section": "B",
+   "kind": "bug (analyzer; false refusal)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, native-43's find)",
+   "title": "a FALSE 'a view cannot escape its scope': `mut edits: List<\\|&mut List<i32>\\| void> = []; edits.push(\\|&mut list\\| list.push(7));` is refused on both backends although the closure captures NOTHING — the `&mut` is its PARAMETER, which is the form the message itself recommends",
+   "discussion": "native-43 (2026-09-28, met while building F44); B364 (the closure-record-over-`&mut self` refusal is the same check reading a parameter as a capture)",
+   "body": "The escape check must distinguish a `&mut` parameter of the closure from a `&mut` capture. Pin red-first on both backends. Sizing S; solver, Order 44."
+  }
+ ]
+}
