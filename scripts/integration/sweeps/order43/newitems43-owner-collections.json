@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "I7",
+   "section": "I",
+   "kind": "design (naming; S)",
+   "area": "Collections",
+   "status": "OPEN — filed 2026-09-28 (the owner's item, at Order 43's GO)",
+   "title": "NEW — consider renaming `Memo::get_or` to `Memo::get_or_insert`: the method MAKES and KEEPS on a miss (memo.vl: 'made by `make` on the first ask, kept and answered on every later one'), and `get_or` reads as `Option::unwrap_or`'s family — a fallback that stores nothing. `get_or_insert` says the write out loud (Rust's `Option::get_or_insert_with`, `HashMap::entry(..).or_insert_with`), and it is the name I8 gives the same operation on `Shared<Option<T>>` and `Map<K, V>`, so the three read as one idiom",
+   "discussion": "the owner (2026-09-28); memo.vl; I8 (the same verb on the two other holders); A136 (memo.vl's doc is rewritten in reactive-43 — the rename can ride that commit with a `[deprecated]` alias)",
+   "body": "Rec: yes — `get_or_insert(key, make)`; `get_or` kept one release as a `[deprecated]` alias with the steer (E224's rule for functions); kolt's five memo sites and std's own callers move. Sizing S; reactive-43 if it lands with A136's doc, else Order 44."
+  },
+  {
+   "id": "I8",
+   "section": "I",
+   "kind": "feature (S)",
+   "area": "Collections",
+   "status": "OPEN — filed 2026-09-28 (the owner's item, at Order 43's GO)",
+   "title": "NEW — `get_or_insert` for `Shared<Option<T>>` and for the hash maps: `cell.get_or_insert(\\|\\| make())` answers the held `T` or makes, stores and answers it (kolt model.vl's `channel_list_handle` writes this by hand today as a `match` over `read()` with a `write() = Some(made)` arm); `map.get_or_insert(key, \\|\\| make())` is the entry idiom (`Memo::get_or` IS this over a `Shared<Map<K, V>>`, so `Memo` becomes a thin name over it)",
+   "discussion": "the owner (2026-09-28); I7 (the shared name); B433 (the hand-written arm is exactly the shape that stored a bare value unchecked — a method removes the hazard at the site); memo.vl's `get_or` body",
+   "body": "Shape: `impl Shared<Option<T>> { fun get_or_insert(self, make: || T): T }` and `impl Map<K: Hashable, V> { fun get_or_insert(&mut self, key: K, make: || V): V }` (and `Set::insert`'s boolean is already the set's form); `Memo::get_or_insert` delegates. The maker runs at the call site as memo.vl says (context coverage). Pins: a miss makes once, a hit makes nothing, the value read back is the one stored. Sizing S; Order 44 (collections) — or reactive-43 alongside I7 if it stays S."
+  },
+  {
+   "id": "I9",
+   "section": "I",
+   "kind": "design (naming; BREAKING — a rename across std)",
+   "area": "Collections",
+   "status": "OPEN — filed 2026-09-28 (the owner's item, at Order 43's GO); PREFERRED by the owner",
+   "title": "NEW — consider renaming `Map` and `Set` to `HashMap` and `HashSet` (the owner prefers the rename): the names say the contract (`Hashable` keys, no order), leave room for I10's ordered forms, and end a real collision — `std::reactive::Map<S, T, U>` (the cold `map` node since A124 S2c, reactive.vl:1830) and `std::map::Map<K, V>` share one bare name, so a file that imports both must alias one, and every hover/diagnostic that prints `Map<..>` makes the reader count type arguments to know which",
+   "discussion": "the owner (2026-09-28); reactive.vl:1830; map.vl, set.vl, native_map.vl (`NativeMap` already carries a qualifier); I10; the prelude (neither is in `std::prelude`/`std::web` today — verify); the v0.42.0 cut (a breaking rename rides a cut with a deprecation release before it)",
+   "body": "Rec: yes — `std::hash_map::HashMap` / `std::hash_set::HashSet` (module per type, std's rule), the old names kept one release as `[deprecated]` type aliases in their old modules, a codemod for the estate (std, examples, kolt, the website, the playground), the reactive node keeps `Map` (it is the verb's node and is never imported by name). Ride the v0.42.0 cut's train with the deprecation announced in v0.41.x's notes. Sizing M (the rename is mechanical; the estate sweep and the docs are the cost). Order 44's train."
+  },
+  {
+   "id": "I10",
+   "section": "I",
+   "kind": "design (S–M)",
+   "area": "Collections",
+   "status": "OPEN — filed 2026-09-28 (the owner's item, at Order 43's GO)",
+   "title": "NEW — consider whether the hash maps and sets should accept an INJECTED ORDERING STRATEGY (to order items within the collection arbitrarily): today iteration order is whatever the backend's structure gives — JS `Map`/`Set` iterate in INSERTION order, a native `HashMap` in none — which is a parity hazard the differential should pin before any strategy is added; the ask is a per-collection order (insertion, sorted by key with a comparator, or a caller-supplied rank) chosen at construction rather than by sorting on every read",
+   "discussion": "the owner (2026-09-28); I9 (the names leave room: `HashMap` unordered, an `OrderedMap`/`SortedMap` beside it — or one type with a strategy parameter); native_map.vl; the native differential (iteration-order pins); kolt's sidebar and palette (sorted views over a map are what the app wants)",
+   "body": "Doors: (a) one type, a strategy parameter with a default — `HashMap<K, V, O = Insertion>` where `O: Ordering<K, V>` supplies `place(key, value) → rank` and the collection keeps a rank index beside the hash index (every insert pays the index; reads are ordered for free); (b) separate types — `HashMap` (unordered, but insertion order PINNED on both backends via an index map natively, so programs port), `BTreeMap`/`SortedMap<K: Ord>` (ordered by key), and an `OrderedMap` with a comparator; (c) no strategy in the collection — `entries().sorted_by(..)` views, cached with `.cell()` where hot. Rec: FIRST pin insertion order as the contract of the hash types on both backends (the native side moves to an insertion-ordered map — a differential fix, S); THEN (a) as the paper, since a strategy at construction is what the owner asked for and (b) multiplies types; (c) is what exists and stays the answer for one-off sorts. Sizing S (the pin) + M (the paper + build); Order 44."
+  },
+  {
+   "id": "A138",
+   "section": "A",
+   "kind": "design (M)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-28 (the owner's item, at Order 43's GO)",
+   "title": "NEW — consider REACTIVE hash maps and sets for parity with `ListCell`: `MapCell<K, V>` / `SetCell<T>` whose writes are the deltas (`insert`, `remove`, `update`, `clear` recorded as ops with per-consumer cursors, A112's `DeltaLog`), so an `each_by` over a map's entries and a keyed `Patch` over the wire are op-driven rather than snapshot-diffed — and a question of what already exists: `KeyedCell<K, T>` (rpc.vl, A54) is a keyed collection cell whose writes ARE deltas and which is a `Source<List<T>>` — is it the reactive map with a list face, and does a set add anything beyond `MapCell<T, void>`?",
+   "discussion": "the owner (2026-09-28); A112 (incremental collections: `ListCell`, `DeltaLog`, `each_by`); `KeyedCell` (rpc.vl); I9/I10 (the names and the order a reactive map iterates in — a strategy parameter would carry over); kolt's `GlobalStore.channels: SignalCell<Map<u53, ChannelRecord>>` (a snapshot cell diffed by hand today — the customer)",
+   "body": "Rec: a short paper first — (1) census `KeyedCell` against the ask (what a map face adds: `get(key)`, `entries()`, a `Source<Map<K, V>>` value view; what it lacks: a set); (2) if `KeyedCell` is the map, rename/alias it into the family and add `SetCell<T>` as `KeyedCell<T, T>` with `insert` returning bool; (3) the wire half (`Patch` frames) already exists for the keyed form. Order 44 after I9's names."
+  }
+ ]
+}

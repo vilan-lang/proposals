@@ -1,8 +1,8 @@
 {
- "drafted": "2026-09-28 off vilan next @762c6aa5 (the v0.41.1 fold; CI 36358009990 green; origin/main 1a33340f); AWAITING GO",
+ "drafted": "2026-09-28 off vilan next @762c6aa5 (the v0.41.1 fold; CI 36358009990 green; origin/main 1a33340f); GO 2026-09-28",
  "cycle": 61,
  "ledger_next_id": 576,
- "tracker_open": 124,
+ "tracker_open": 129,
  "shared_census": 141,
  "unreleased_breaking_entries": 0,
  "asked_at_go": {
@@ -20,7 +20,7 @@
   "hygiene-43": "N133 N106 L22 L18 M84 M12 (droppable, FIRST)",
   "solver-43": "B433 FIRST (UNSOUND; sha to LANE-STATUS.md), B400 (saved patch) B418 B403 B401 B419 B423 B426 B427 B428 B429 B430 B431 B425 B424 (R-h) B416 B417 B385 (verify) E226; index-42's 0usize suffixes drop",
   "tuples-43": "A122 (RULED) B183 B399 — rebases onto solver-43's merge",
-  "reactive-43": "A134 (R-c) A135 A136 A137 (over a socket) A133 A132; memo.vl + remote-sources.md rules",
+  "reactive-43": "A134 (R-c) A135 A136 A137 (over a socket) A133 A132; memo.vl + remote-sources.md rules; I7 (+ I8's Shared<Option<T>> half if S) in the memo.vl commit",
   "native-43": "F41 F42 F44 F46 F45 (R-i); copy census; leak census after A132",
   "editor-43": "E229 FIRST (delivery) E214 (verify) E228 E225+K24 (one keyword table) B422 E224; E182 E199 as time allows",
   "syntax-43": "B414 (R-e) F27 R3 D14; keyword table exported for editor-43",
@@ -51,5 +51,16 @@
   "M60",
   "A111/A87 if a caller appears",
   "v0.42.0 at a breaking need (delete release/0.41 then)"
+ ],
+ "go": "2026-09-28 — the owner: 'Adjust or go with all recs except for R-i which should require annotation unless `_` explicitly marks the parameter as completely unused' — read as R-h (B424): refuse with a steer EXCEPT a `_` closure parameter never needs an annotation; (b)'s defaulting for Result's combinators stands; R-i (F45) builds as recommended",
+ "rulings_built": {
+  "R-h/B424": "refuse an unbound generic at a call with a steer to annotate the RETURN's generic (turbofish/let); a closure parameter spelled `_` carries no obligation; Result's combinators default F to the input's error type (door b)"
+ },
+ "filed_at_go": [
+  "I7",
+  "I8",
+  "I9",
+  "I10",
+  "A138"
  ]
 }

@@ -1,4 +1,6 @@
-# Order 43 — AFTER THE TRAIN: kolt's mirror finds (A134–A137), the unsound `&mut`-place assignment (B433), the solver's leftovers, the extension the editor never received (E222 shipped, E229), A122's build and the contextual keywords (drafted 2026-09-28, off vilan next @762c6aa5; AWAITING GO)
+# Order 43 — AFTER THE TRAIN: kolt's mirror finds (A134–A137), the unsound `&mut`-place assignment (B433), the solver's leftovers, the extension the editor never received (E222 shipped, E229), A122's build and the contextual keywords (drafted 2026-09-28, off vilan next @762c6aa5; GO 2026-09-28)
+
+**GO 2026-09-28.** The owner: "Adjust or go with all recs except for R-i which should require annotation unless `_` explicitly marks the parameter as completely unused" — the annotation question is R-h (B424; R-i is F45's stop handle, taken as recommended: build), so R-h is RULED as the owner wrote it: an unbound generic at a call is REFUSED with a steer to annotate, EXCEPT that a closure parameter spelled `_` (explicitly, completely unused) never requires an annotation — "Why would a developer have to annotate an unused parameter?" (the owner). Read for solver-43: door (a) is the general law; the `_` parameter carries no obligation, so `err.or_else(|_| Ok(7))` must NOT be refused for the parameter's sake — what `F` becomes there is door (b)'s defaulting rule for `Result`'s combinators (rec, stands), and where no defaulting rule applies the steer names the RETURN's generic (a turbofish or a `let` annotation), never the `_`. R-a–R-g stand as recommended; R-i builds. Five owner's items filed at GO (I7, I8, I9, I10, A138 — collections naming, `get_or_insert`, `HashMap`/`HashSet`, ordering strategies, reactive maps/sets): Order 44's, except that reactive-43 takes I7 (+ I8's `Shared<Option<T>>` half if it stays S) in the commit that rewrites memo.vl's doc.
 
 **Base.** Order 42 sealed at 6ac84f41 on 2026-09-26 and v0.41.0 was cut at that seal; v0.41.1 (B432: the
 playground wasm's `Instant::now` abort; N134, N135) was cut from `release/0.41` on 2026-09-27 and FOLDED:
@@ -161,9 +163,11 @@ sha goes stale), PLUS this week's lessons as RULES:
    `reactive_channels` harness); if clean, fold into A133 with the note; if not, the mechanism named
    and fixed. 5. **A133** — door (a): the in-process transport delivers the seed through the draining
    turn like a socket. 6. **A132** — `map_each`'s reference cycle (the handler captures the source it
-   subscribes to) — a weak edge or a cursor the source owns; the native leak census re-run. Sizing M.
+   subscribes to) — a weak edge or a cursor the source owns; the native leak census re-run. 7. **I7**
+   (+ **I8**'s `Shared<Option<T>>::get_or_insert` if S) — `Memo::get_or` → `get_or_insert` with a
+   `[deprecated]` alias, in the memo.vl commit; kolt's five sites are the owner's. Sizing M.
    Owns rpc.vl, rpc_server.vl (this order only — A135), reactive.vl's `subscribe_pulling`/`AndThen`
-   docs, memo.vl, remote-sources.md, the guide's mirror pages.
+   docs, memo.vl, shared.vl (I8's one method), remote-sources.md, the guide's mirror pages.
 
 ## Lane native-43 — F41, F42, F44, F46, F45 (R-i), the copy census
 1. **F41** — a field named `self`/`super` is MANGLED (`self_`, with the read-back in the emitter), not
