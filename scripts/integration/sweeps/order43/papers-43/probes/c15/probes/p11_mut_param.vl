@@ -1,0 +1,12 @@
+import std::io::print;
+
+fun bump(mut n: i32): i32 {
+	let inc = || { n = n + 1; };
+	inc();
+	inc();
+	n
+}
+
+fun main() {
+	print(bump(0));
+}

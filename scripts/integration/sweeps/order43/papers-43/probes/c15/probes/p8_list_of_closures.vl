@@ -1,0 +1,8 @@
+import std::io::print;
+
+fun main() {
+	mut hs: List<|| i32> = [];
+	hs.push(|| hs.len().as_i32());
+	hs.push(|| 7);
+	print(hs.len());
+}

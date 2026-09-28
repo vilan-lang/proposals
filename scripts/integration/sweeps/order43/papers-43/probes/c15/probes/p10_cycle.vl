@@ -1,0 +1,12 @@
+import std::io::print;
+
+struct Holder {
+	n: i32,
+	run: || i32,
+}
+
+fun main() {
+	mut holder = Holder { n = 1, run = || 0 };
+	holder = Holder { n = 2, run = || holder.n };
+	print((holder.run)());
+}

@@ -1,0 +1,13 @@
+import std::io::print;
+
+struct Holder {
+	run: || i32,
+}
+
+fun main() {
+	mut count = 0;
+	mut holder = Holder { run = || 0 };
+	holder = Holder { run = || { count = count + 1; holder.run = || 5; count } };
+	print((holder.run)());
+	print((holder.run)());
+}

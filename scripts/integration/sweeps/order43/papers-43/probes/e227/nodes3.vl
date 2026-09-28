@@ -1,0 +1,10 @@
+import std::reactive::{ SignalCell, Source };
+import std::option::Option::{ self, Some, None };
+
+fun main() {
+	let maybe = SignalCell::new(Some(3));
+	let t = maybe.and_then(|v| SignalCell::new(Some(v + 1)));
+	let u: i32 = t;
+	let f = maybe.map(|o| match o { Some(let v) => Some(SignalCell::new(v)), None => None }).flatten();
+	let g: i32 = f;
+}

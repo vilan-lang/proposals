@@ -1,0 +1,23 @@
+vilan 0.41.1 (1a33340f2)
+== tilde.vl
+Error: found '~' expected a token
+== tilde2.vl
+Error: found '~' expected a token
+== nodes.vl
+Error: Expected i32, but got Map<Combine<(List<str>, usize)>, (List<str>, usize), Option<str>> instead.
+Error: Expected i32, but got Taken<Filtered<Mapped<ListIterator<i32>, i32, i32>, i32>, i32> instead.
+Error: Expected i32, but got (Map<Combine<(List<str>, usize)>, (List<str>, usize), Option<str>>, i32) instead.
+Error: Expected i32, but got Map<Distinct<SignalCell<usize>, usize>, usize, usize> instead.
+== nodes2.vl
+Error: Expected i32, but got Switch<SignalCell<bool>, bool, SignalCell<i32>, i32> instead.
+Error: Expected i32, but got AndThen<SignalCell<Option<i32>>, i32, SignalCell<Option>, U> instead.
+Error: Expected i32, but got SignalCell<bool> instead.
+Error: Expected i32, but got Skipped<Enumerated<Zipped<ListIterator<i32>, ListIterator<i32>, i32, i32>, (i32, i32)>, (usize, (i32, i32))> instead.
+Error: Expected i32, but got Chained<FilterMapped<ListIterator<i32>, i32, i32>, ListIterator<i32>, i32> instead.
+== nodes3.vl
+Error: the type of 't' is never fully determined: `AndThen<SignalCell<Option<i32>>, i32, SignalCell<Option>, U>` keeps its callee's type parameters, so uses of it cannot be checked; annotate the binding (e.g. `: Map<str, i32>`)
+Error: Expected i32, but got AndThen<SignalCell<Option<i32>>, i32, SignalCell<Option>, U> instead.
+Error: Expected i32, but got FlattenOption<Map<SignalCell<Option<i32>>, Option<i32>, Option<SignalCell<i32>>>, SignalCell<i32>, i32> instead.
+== nodes5.vl
+Error: the type of 'w' is never fully determined: `AndThen<SignalCell<Option<i32>>, i32, SignalCell<Option>, U>` keeps its callee's type parameters, so uses of it cannot be checked; annotate the binding (e.g. `: Map<str, i32>`)
+Error: the type of 'y' is never fully determined: `AndThen<SignalCell<Option<i32>>, i32, SignalCell<Option>, U>` keeps its callee's type parameters, so uses of it cannot be checked; annotate the binding (e.g. `: Map<str, i32>`)

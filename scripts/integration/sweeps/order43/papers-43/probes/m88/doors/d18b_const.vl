@@ -1,0 +1,16 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+const let C: dyn Src = Root { n = 3 };
+fun main() {
+	print(C.get());
+	print(C);
+}

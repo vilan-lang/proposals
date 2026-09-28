@@ -1,0 +1,20 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+struct Bag {
+	items: List<dyn Src>,
+}
+fun main() {
+	mut b = Bag { items = [] };
+	let r = Root { n = 5 };
+	b.items.push(r);
+	print(b.items[0].get());
+}

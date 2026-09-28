@@ -1,0 +1,11 @@
+import std::io::print;
+
+fun main() {
+	mut f: || i32 = || 0;
+	mut depth = 0;
+	f = || {
+		depth = depth + 1;
+		if depth < 3 { f() } else { depth }
+	};
+	print(f());
+}

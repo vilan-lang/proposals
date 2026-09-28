@@ -1,0 +1,27 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+struct Leaf {}
+impl Leaf with Src {
+	fun get(self): i32 {
+		9
+	}
+}
+fun pick(c: bool): dyn Src {
+	if c { Root { n = 1 } } else { Leaf {} }
+}
+fun main() {
+	let x: dyn Src = match true {
+		true => Root { n = 2 },
+		false => Leaf {},
+	};
+	print(x.get() + pick(true).get() + pick(false).get());
+}

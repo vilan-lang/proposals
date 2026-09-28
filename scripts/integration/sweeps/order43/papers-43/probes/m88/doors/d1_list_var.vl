@@ -1,0 +1,22 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+fun total(xs: List<dyn Src>): i32 {
+	mut s = 0;
+	for x in xs {
+		s = s + x.get();
+	}
+	s
+}
+fun main() {
+	let roots: List<Root> = [Root { n = 1 }, Root { n = 2 }];
+	print(total(roots));
+}

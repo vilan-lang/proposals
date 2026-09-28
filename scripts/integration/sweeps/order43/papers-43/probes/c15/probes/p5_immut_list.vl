@@ -1,0 +1,8 @@
+import std::io::print;
+
+fun main() {
+	let xs: List<i32> = [1, 2, 3];
+	let f = || xs.len();
+	print(f());
+	print(xs.len());
+}

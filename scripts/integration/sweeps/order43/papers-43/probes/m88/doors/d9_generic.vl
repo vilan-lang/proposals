@@ -1,0 +1,24 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+struct Leaf {}
+impl Leaf with Src {
+	fun get(self): i32 {
+		9
+	}
+}
+fun erase<S: Src>(s: S): dyn Src {
+	s
+}
+fun main() {
+	print(erase(Root { n = 1 }).get());
+	print(erase(Leaf {}).get());
+}

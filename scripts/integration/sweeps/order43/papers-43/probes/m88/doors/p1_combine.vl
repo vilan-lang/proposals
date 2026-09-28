@@ -1,0 +1,11 @@
+import std::reactive::{ SignalCell, Source, combine };
+
+fun main() {
+	let a = SignalCell::new(1);
+	let b = SignalCell::new("x");
+	let c = SignalCell::new(true);
+	let ab = combine((a, b));
+	let bc = combine((b, c));
+	print(ab.get());
+	print(bc.get());
+}

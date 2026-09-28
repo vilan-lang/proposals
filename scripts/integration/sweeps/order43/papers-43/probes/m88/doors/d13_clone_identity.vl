@@ -1,0 +1,23 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+impl Root {
+	fun bump(mut self) {
+		self.n = self.n + 1;
+	}
+}
+fun main() {
+	let a: dyn Src = Root { n = 5 };
+	let b = a;
+	print(a.get());
+	print(b.get());
+	print(a);
+}

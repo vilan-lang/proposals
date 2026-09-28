@@ -1,0 +1,17 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+lazy let L: dyn Src = Root { n = 6 };
+let G: List<dyn Src> = [Root { n = 7 }];
+fun main() {
+	print(L.get());
+	print(G[0].get());
+}

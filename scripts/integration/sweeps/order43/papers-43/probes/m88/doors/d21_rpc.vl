@@ -1,0 +1,25 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+[service(Client)]
+struct Store {
+	n: i32,
+}
+impl Store {
+	[rpc]
+	fun one(self): dyn Src {
+		Root { n = self.n }
+	}
+}
+fun main() {
+	let s = Store { n = 3 };
+	print(s.one().get());
+}

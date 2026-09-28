@@ -1,0 +1,11 @@
+import std::reactive::{ SignalCell, Source, combine };
+
+fun main() {
+	let names = SignalCell::new(["a", "b"]);
+	let index = SignalCell::new(0usize);
+	let selected = combine((names, index)).map(|(list, at)| list.get(at));
+	let shown: i32 = selected;
+	let evens: i32 = [1, 2, 3, 4].iter().map(|x| x * 2).filter(|x| x > 2).take(1);
+	let pair: i32 = (selected, 3);
+	let distinct: i32 = index.distinct().map(|i| i + 1);
+}

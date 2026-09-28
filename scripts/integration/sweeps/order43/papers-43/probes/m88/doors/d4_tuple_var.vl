@@ -1,0 +1,18 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+fun pair(p: (dyn Src, dyn Src)): i32 {
+	p.0.get() + p.1.get()
+}
+fun main() {
+	let t = (Root { n = 1 }, Root { n = 2 });
+	print(pair(t));
+}

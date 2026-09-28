@@ -1,0 +1,22 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+import std::debug::Debug;
+[derive(Debug)]
+struct Holder {
+	s: dyn Src,
+}
+fun main() {
+	let h = Holder { s = Root { n = 5 } };
+	print(h.debug());
+	let c = h;
+	print(c.s.get());
+}

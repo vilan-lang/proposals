@@ -1,0 +1,18 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+fun roots(): List<Root> {
+	[Root { n = 1 }]
+}
+fun main() {
+	let xs: List<dyn Src> = roots();
+	print(xs[0].get());
+}

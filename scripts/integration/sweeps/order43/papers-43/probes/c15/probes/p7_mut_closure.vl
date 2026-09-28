@@ -1,0 +1,8 @@
+import std::io::print;
+
+fun main() {
+	mut g: || i32 = || 1;
+	let h = || g();
+	g = || 2;
+	print(h());
+}

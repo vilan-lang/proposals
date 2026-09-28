@@ -1,0 +1,14 @@
+import std::reactive::{ SignalCell, Source, combine };
+import std::option::Option::{ self, Some, None };
+
+fun main() {
+	let flag = SignalCell::new(true);
+	let a = SignalCell::new(1);
+	let b = SignalCell::new(2);
+	let maybe = SignalCell::new(Some(3));
+	let s: i32 = flag.switch(|on| if on { a } else { b });
+	let t: i32 = maybe.and_then(|v| SignalCell::new(Some(v + 1)));
+	let c: i32 = flag.map(|on| on).cell();
+	let z: i32 = [1, 2].iter().zip([3, 4].iter()).enumerate().skip(1);
+	let fm: i32 = [1, 2].iter().filter_map(|x| Some(x)).chain([5].iter());
+}

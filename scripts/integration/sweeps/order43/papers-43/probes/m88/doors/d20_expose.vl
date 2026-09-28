@@ -1,0 +1,15 @@
+import std::reactive::{ Signal, SignalCell };
+[service(Client)]
+struct Store {
+	[expose] count: dyn Signal<i32>,
+}
+impl Store {
+	[rpc]
+	fun ping(self): i32 {
+		self.count.get()
+	}
+}
+fun main() {
+	let s = Store { count = SignalCell::new(3) };
+	print(s.ping());
+}

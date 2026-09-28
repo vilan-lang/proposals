@@ -1,0 +1,11 @@
+import std::io::print;
+
+fun late(mut n: i32): i32 {
+	let show = || n;
+	n = 5;
+	show()
+}
+
+fun main() {
+	print(late(0));
+}
