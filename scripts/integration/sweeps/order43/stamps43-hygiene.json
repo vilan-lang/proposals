@@ -1,0 +1,11 @@
+{
+ "prefix": "- 2026-09-28 (Order 43, hygiene-43 reported): ",
+ "stamps": {
+  "N133": "LANDED on hygiene-43 @3e2c750f — a `StagedDir` Drop guard removes the per-test staging dir at test end; `vilan fmt`'s (and the watcher's) walk skips any directory carrying a `CACHEDIR.TAG` (name-independent — the test's shared CARGO_TARGET_DIR is not literally `target`); 0 stale dirs after every run since. Closes at the merge.",
+  "N106": "LANDED on hygiene-43 @0816332e — `f64-print-boundary.vl` and `non-bmp-string-length.vl` in DEFAULT_SUITE, identical on both backends (the item's 'BMP only' premise for `str_len` was FALSE — verified; the stale doc comment corrected). A real divergence found and pinned outside the differential by name: `print(0.0 * -1.0)` is `-0` on JS vs `0` natively → N136. Closes at the merge.",
+  "L22": "LANDED on hygiene-43 @1946f746 — `publish-brew`'s tap-token mint moved off `app-id` (create-github-app-token v2.2.2) to `client-id` at v3.2.0 (sha live via `gh api`); `release_gate.rs` gains the lint the item asked for (fails if a future bump repins v3+ without `client-id:`; non-vacuous). OWNER-OWED before the next tag: add the repo secret `TAP_APP_CLIENT_ID`. Closes at the merge.",
+  "M84": "LANDED on hygiene-43 @4e6ebfe0 — the nine integer types' host `Math.min`/`Math.max` externs moved from an inherent impl into `impl T with Ord`, so R1's default body reaches them: `clamp` compiles to `Math.max(Math.min(x, hi), lo)`, zero `compare` calls (was two); output byte-identical; two corpus goldens regenerated. Closes at the merge.",
+  "L18": "STALE — hygiene-43 found `vilan-lang.github.io` main already at fe81d5c pinning `docs.yml`'s actions by sha with dependabot added. Close at the sweep.",
+  "M12": "STALE — hygiene-43 found the lsp leak soak already panics when it measures zero corpora, with two passing pins (`a_soak_that_measured_no_corpus_refuses_and_names_its_variables`, `the_soak_body_refuses_when_every_corpus_is_absent`). Close at the sweep."
+ }
+}
