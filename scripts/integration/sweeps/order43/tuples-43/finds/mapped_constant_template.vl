@@ -1,0 +1,10 @@
+import std::reactive::SignalCell;
+
+fun first_label<T: (2..)>(labels: (U in T: str), cells: (U in T: SignalCell<U>)): i32 {
+	0
+}
+
+fun main() {
+	let cells = (SignalCell::new((1, 2)), SignalCell::new("b"));
+	print(first_label(("first", "second"), cells));
+}

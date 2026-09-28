@@ -1,0 +1,9 @@
+import std::option::{ Option, Some, None };
+
+fun count<T: (2..)>(items: (U in T: Option<U>)): i32 {
+	0
+}
+
+fun main() {
+	print(count((Some(1), None, Some("two"))));
+}
