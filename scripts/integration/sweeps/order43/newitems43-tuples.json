@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B440",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, tuples-43's find; repro in the lane's scratchpad `tuples-43/finds/`, copied to `sweeps/order43/probes/tuples-43/` at the sweep)",
+   "title": "a MAPPED parameter with a CONSTANT template — `(U in T: str)` — rejects its matching concrete argument when `T` is bound by ANOTHER parameter (already on 0.41.1; repro `mapped_constant_template.vl`)",
+   "discussion": "tuples-43 (2026-09-28); A122's mapped-tuple machinery (the template substitution it fixed for `dyn` arguments and abstract templates is the neighbour)",
+   "body": "Pin red-first. Sizing S; solver, Order 44."
+  },
+  {
+   "id": "B441",
+   "section": "B",
+   "kind": "bug (soundness — a silent mis-read)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, tuples-43's find; repro in the lane's scratchpad `tuples-43/finds/`, copied to `sweeps/order43/probes/tuples-43/` at the sweep)",
+   "title": "`let (a, b, c, d, e, f) = ((1, 2), (3, 4), (5, 6));` COMPILES and reads the FLATTENED slots instead of refusing the arity mismatch (a 6-pattern over a 3-tuple of pairs) — already on 0.41.1; repro `flat_destructure_arity.vl`",
+   "discussion": "tuples-43 (2026-09-28); B427 (destructuring `let` typing) is the neighbour",
+   "body": "Refuse with `expected a 3-tuple pattern, got 6` (the pattern's arity against the value's); pin red-first on both backends. Sizing S; solver, Order 44 — HIGH for a silent mis-read."
+  },
+  {
+   "id": "B442",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, tuples-43's find; repro in the lane's scratchpad `tuples-43/finds/`, copied to `sweeps/order43/probes/tuples-43/` at the sweep)",
+   "title": "a bare `None` in a MAPPED-TUPLE argument is not inferred — it stays `Option<unknown>` where the mapped element type names `Option<X>` (already on 0.41.1; repro `mapped_none_argument.vl`)",
+   "discussion": "tuples-43 (2026-09-28); B406's family (a literal inside a generic constructor not typed from its position)",
+   "body": "The mapped element's expectation reaches the argument as a field's does (B406's rule at the mapped position). Pin red-first. Sizing S; solver, Order 44."
+  },
+  {
+   "id": "B443",
+   "section": "B",
+   "kind": "design (trait coverage; S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, tuples-43's find; repro in the lane's scratchpad `tuples-43/finds/`, copied to `sweeps/order43/probes/tuples-43/` at the sweep)",
+   "title": "a TUPLE is not `PartialEq` (nor `Hashable`), so a pack bounded `(2..: PartialEq)` cannot hold a PAIR — `((1, 2), (3, 4))` is refused at the bound while its elements would each satisfy it",
+   "discussion": "tuples-43 (2026-09-28); B399 (the element bound reaching `U`); A122; I9/I10 (a `HashMap` keyed by a tuple wants `Hashable` for tuples too)",
+   "body": "Rec: blanket impls for tuples of `PartialEq`/`Hashable`/`Display`-family elements, arity-generic through the mapped-tuple machinery A122 built (`(U in T: PartialEq)` → `T: PartialEq`), one pin per trait. Sizing S–M; solver/std, Order 44."
+  }
+ ]
+}
