@@ -1,0 +1,19 @@
+import std::io::print;
+trait Src<T> { fun get(self): T; }
+trait Sig<T> with Src<T> { fun label(self): str; }
+struct Cell<T> { v: T }
+impl Cell<type T> with Sig<T> {
+	fun get(self): T { self.v }
+	fun label(self): str { "cell" }
+}
+impl Cell<type T> {
+	fun pair(self): str { "inherent" }
+}
+impl type S: Src<type T> {
+	fun pair(self): (T, T) { (self.get(), self.get()) }
+}
+fun main() {
+	let c = Cell { v = 3 };
+	let p: str = c.pair();
+	print(p);
+}

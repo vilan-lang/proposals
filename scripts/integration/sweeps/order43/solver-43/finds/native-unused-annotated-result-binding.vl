@@ -1,0 +1,6 @@
+import std::io::print;
+fun main() {
+	let ok: Result<i32, str> = Ok(10);
+	let err: Result<i32, str> = Err("boom");
+	print(err.unwrap_or(1));
+}

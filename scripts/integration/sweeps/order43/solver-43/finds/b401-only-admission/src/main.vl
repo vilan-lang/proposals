@@ -1,0 +1,8 @@
+import pkg::b::Box;
+import pkg::p1 only;
+
+
+fun main() {
+	let box = Box { n = 1 };
+	print(box.describe());
+}

@@ -1,0 +1,16 @@
+import std::io::print;
+
+fun say(label: str, value: i32): i32 {
+	print(label);
+	value
+}
+
+fun add(a: i32, b: i32): i32 {
+	a + b
+}
+
+fun main() {
+	print(add(say("a", 1), { print("b-block"); say("b", 2) }));
+	let list = [say("x", 1), { print("y-block"); say("y", 2) }];
+	print(list.len());
+}

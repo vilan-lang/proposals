@@ -1,0 +1,16 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+fun main() {
+	let rs: List<Root> = [Root { n = 1 }, Root { n = 2 }];
+	let objects = rs.map<dyn Src>(|element| element);
+	print(objects[0].get());
+}

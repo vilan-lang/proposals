@@ -1,0 +1,1 @@
+(saved by the integrator from the lane's hand-back message, 2026-09-28; the lane could not write files — the full text is in the session transcript and summarised in notes43.md §solver-43; finds under solver-43/finds/)

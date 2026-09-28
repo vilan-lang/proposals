@@ -1,0 +1,16 @@
+import std::io::print;
+
+struct Pair {
+	a: i32,
+	b: i32,
+}
+
+fun say(label: str, value: i32): i32 {
+	print(label);
+	value
+}
+
+fun main() {
+	let p = Pair { a = say("a", 1), b = { print("b-block"); say("b", 2) } };
+	print(p.a + p.b);
+}

@@ -1,0 +1,84 @@
+{
+ "items": [
+  {
+   "id": "B452",
+   "section": "B",
+   "kind": "bug (MISCOMPILE — JS evaluation order)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, solver-43's find; repro under `sweeps/order43/solver-43/finds/`); HIGH",
+   "title": "MISCOMPILE (JS) — a BLOCK EXPRESSION used as an argument, a list element or a struct-literal field is evaluated BEFORE its earlier siblings: `Pair { a = say(\"a\"), b = { print(\"b-block\"); say(\"b\") } }` prints `b-block a b` on JS where native prints `a b-block b`; the same for calls and lists — the block is hoisted out of the expression ahead of the siblings it follows",
+   "discussion": "solver-43 (2026-09-28); repros `block-in-literal-hoisted-out-of-order.vl`, `block-in-call-args.vl`; the JS emitter's block-expression lowering (a hoisted IIFE or a pre-statement)",
+   "body": "The hoisted block must take its siblings with it (hoist the earlier arguments into temporaries first) or lower in place as an IIFE. Pin in the native differential (both backends must agree on the order). Sizing S–M; JS emitter, Order 44 FIRST (a silent order divergence)."
+  },
+  {
+   "id": "B453",
+   "section": "B",
+   "kind": "bug (MISCOMPILE — JS)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, solver-43's find; repro under `sweeps/order43/solver-43/finds/`)",
+   "title": "MISCOMPILE (JS) — a `&mut` VIEW of a TUPLE POSITION (`let v = &mut pair.1; v = 3`) throws a TypeError at run time: the view's write path does not know a tuple slot as a place",
+   "discussion": "solver-43 (2026-09-28); repro `tuple-position-mut-view.vl`; B433's place rule (tuple positions are now checked; the emitter's write-through is the missing half)",
+   "body": "The view over a tuple position writes through the slot index as a subscript view does; pin on both backends. Sizing S; JS emitter, Order 44."
+  },
+  {
+   "id": "B454",
+   "section": "B",
+   "kind": "bug (inference — native wall)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, solver-43's find; repro under `sweeps/order43/solver-43/finds/`)",
+   "title": "in `ok.and(Ok(5))` the ARGUMENT constructor's own error parameter stays OPEN — the new wall of `result-combinators.vl` after B424 (refused by name natively; JS runs it with `any`)",
+   "discussion": "solver-43 (2026-09-28); B424 (door (b)'s defaulting rule covers the receiver-typed generic; an argument constructor's second parameter is the next case)",
+   "body": "Extend the defaulting: an `Ok(..)` argument at a `Result<U, F>` position takes `F` from the receiver when nothing else names it. Pin: `result-combinators.vl` identical on both backends. Sizing S; solver, Order 44."
+  },
+  {
+   "id": "B455",
+   "section": "B",
+   "kind": "bug (admission — B318)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, solver-43's find; repro under `sweeps/order43/solver-43/finds/`)",
+   "title": "a SELECTOR cannot admit an impl block that has NO declarations (all defaults) — and the refusal has an empty slot: \"declares : the selector admits nothing\"; this is why B401's post-build patch was rejected (its steer 'name the block in a selector' cannot be followed for such a block)",
+   "discussion": "solver-43 (2026-09-28); repro dir `selector-cannot-admit-default-only-impl/`; B318 S4–S6 (selectors); B401 (stopped on it)",
+   "body": "A default-only impl is admissible by its trait name (the block IS the impl of that trait for that type); the message names what the block provides. Pins for both. Sizing S; solver, Order 44 with B401."
+  },
+  {
+   "id": "B456",
+   "section": "B",
+   "kind": "bug (soundness of the collision rule — order-dependent)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, solver-43's find; repro under `sweeps/order43/solver-43/finds/`); HIGH (bit kolt)",
+   "title": "the same-name CONCRETE/BLANKET COLLISION (A86, B318) is reported only when the BLANKET is declared FIRST: with the concrete method first the program compiles and the call silently takes whichever block REGISTERED first — across modules that is registration order, which is what turned kolt red after B419 (`StorageSignalCell::map` vs std's blanket `map`)",
+   "discussion": "solver-43 (2026-09-28); repro `concrete-inherent-before-blanket-not-refused.vl`; A86 (the collision rule and its pinned control test); B419",
+   "body": "Rec: refuse in BOTH orders (the rule is about the pair, not the sequence); pin both orders and the cross-module case. Sizing S; solver, Order 44 FIRST."
+  },
+  {
+   "id": "F53",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-28 (Order 43, solver-43's find; repro under `sweeps/order43/solver-43/finds/`)",
+   "title": "native — a CLOSURE BODY erased to `dyn` is not wrapped: `roots.map(\\|r\\| r)` into a `List<dyn Src>` (the very steer B435 gives) fails rustc E0308 natively",
+   "discussion": "solver-43 (2026-09-28); repro `native-closure-tail-dyn-erasure.vl`; B435 (JS erases it; native must wrap the tail)",
+   "body": "The emitter wraps a closure tail at a `dyn` expectation as it wraps a plain value. Native differential pin. Sizing S; native, Order 44."
+  },
+  {
+   "id": "F54",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-28 (Order 43, solver-43's find; repro under `sweeps/order43/solver-43/finds/`)",
+   "title": "native — a value `if`'s CONDITION literal takes the ARMS' literal type: `n > 2i32` where `n: u53` (the arms are `i32`) fails rustc E0308",
+   "discussion": "solver-43 (2026-09-28); repro `native-value-if-condition-literal-takes-arm-type.vl`; B423 (sibling-arm literal typing — the condition is not a sibling)",
+   "body": "The condition's literal takes its comparand's type, never the arms'. Native differential pin. Sizing S; solver/native, Order 44."
+  },
+  {
+   "id": "F55",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-28 (Order 43, solver-43's find; repro under `sweeps/order43/solver-43/finds/`)",
+   "title": "native — an UNUSED annotated `Result` binding LOSES its annotation at emission (rustc E0282: type annotations needed)",
+   "discussion": "solver-43 (2026-09-28); repro `native-unused-annotated-result-binding.vl`",
+   "body": "Emit the annotation for an unused binding as for a used one (or drop the binding entirely). Sizing S; native, Order 44."
+  }
+ ]
+}

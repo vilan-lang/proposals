@@ -1,0 +1,6 @@
+fun main() {
+	mut pair: (i32, i32) = (0, 1);
+	let view = &mut pair.1;
+	view = 3;
+	print(i"{pair.1}");
+}

@@ -1,0 +1,75 @@
+--- /home/reed/code/kolt/src/command_palette.vl	2026-09-28 14:50:45.657878655 -0400
++++ src/command_palette.vl	2026-09-28 16:30:11.329541580 -0400
+@@ -54,7 +54,7 @@
+ 				"UI: Disable full text selection"
+ 			} else {
+ 				"UI: Enable full text selection"
+-			}),
++			}).cell(),
+ 			meta = [
+ 				"UI: Toggle full text selection",
+ 				"UI: Enable full text selection",
+@@ -70,7 +70,7 @@
+ 				"UI: Disable native context menu"
+ 			} else {
+ 				"UI: Enable native context menu"
+-			}),
++			}).cell(),
+ 			meta = [
+ 				"UI: Enable native context menu",
+ 				"UI: Disable native context menu",
+@@ -102,7 +102,7 @@
+ 				"UI: Show sidebar"
+ 			} else {
+ 				"UI: Hide sidebar"
+-			}),
++			}).cell(),
+ 			meta = [
+ 				"UI: Toggle sidebar",
+ 				"UI: Show sidebar",
+@@ -120,7 +120,7 @@
+ 				"User: Show sidebar drag-to-resize handle"
+ 			} else {
+ 				"User: Hide sidebar drag-to-resize handle"
+-			}),
++			}).cell(),
+ 			meta = [
+ 				"User: Toggle sidebar drag-to-resize handle",
+ 				"User: Show sidebar drag-to-resize handle",
+@@ -189,17 +189,15 @@
+ 		let items = Channel::get_channels()
+ 			.map(|x| sorted_commands
+ 				.iter()
+-				// .chain(x
+-				// 	.iter()
+-				// 	.enumerate()
+-				// 	.map(|(i, command_id)| {
+-				// 		Channel::find(command_id).map(|x| x.map(|channel| Command {
+-				// 			id = sorted_commands.len() + i,
+-				// 			name = channel.name(),
+-				// 			meta = [channel.name().get()],
+-				// 			activate = || {},
+-				// 		}))
+-				// 	}))
++				.chain(x
++					.iter()
++					.enumerate()
++					.map(|(i, y)| Command {
++						id = sorted_commands.len() + i,
++						name = Signal::new(y.to_string()),
++						meta = [y.to_string()],
++						activate = || {},
++					}))
+ 				.to_list())
+ 			.cell();
+ 		let commands_searchable: Searchable<Command> = Searchable::many(items, |x| x.meta);
+--- /home/reed/code/kolt/src/lib/storage.vl	2026-09-26 21:06:30.187422550 -0400
++++ src/lib/storage.vl	2026-09-28 16:29:50.792179745 -0400
+@@ -116,7 +116,4 @@
+ 		self.signal.set((self.read)());
+ 	}
+ 
+-	fun map<U>(self, transform: sync |T| U): SignalCell<U> {
+-		self.signal.map(transform).cell()
+-	}
+ }
