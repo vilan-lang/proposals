@@ -1,0 +1,12 @@
+import std::io::print;
+
+fun main() {
+	mut xs: List<i32> = [];
+	let add = |x: i32| { xs.push(x); };
+	add(1);
+	add(2);
+	let snapshot = xs;
+	add(3);
+	print(snapshot.len());
+	print(xs.len());
+}

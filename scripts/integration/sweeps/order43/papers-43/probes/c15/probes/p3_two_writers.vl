@@ -1,0 +1,11 @@
+import std::io::print;
+
+fun main() {
+	mut count = 0;
+	let inc = || { count = count + 1; };
+	let dec = || { count = count - 1; };
+	inc();
+	inc();
+	dec();
+	print(count);
+}
