@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "A139",
+   "section": "A",
+   "kind": "bug (rpc)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-28 (Order 43, reactive-43's find)",
+   "title": "a PER-KEY lease joining a sibling's PER-KEY forward still gets NO seed — A137's fix (`seed_from_sibling`) covers whole-collection joins only; a second keyed mirror's `sub_key` on a key its sibling already forwards stays empty until the next change",
+   "discussion": "reactive-43 (2026-09-28); A137 (fixed for the whole-collection join, plain and keyed); A97 (hold counting)",
+   "body": "Extend the sibling seed to the per-key path; pin in-process and over a socket. Sizing S; std/rpc, Order 44."
+  },
+  {
+   "id": "A140",
+   "section": "A",
+   "kind": "bug (leak)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-28 (Order 43, reactive-43's find)",
+   "title": "`ReactiveClient`'s `routes` and `replays` GROW with every mint and are never pruned: a released mirror's route stays in the list (matched by an id that is `-1` again) and its replay closure stays registered — a long session's scroll of handles keeps every one's route and replay for the connection's life",
+   "discussion": "reactive-43 (2026-09-28, seen while building A134's table release); rpc.vl `mirror_of` (`routes.push`), `watch_minted` (`replays.push`); A134's `MirrorTable` release hook is the seam",
+   "body": "Prune on the mirror's retire hook (the same event A134's table uses): remove the route by its channel cell identity and the replay by the mirror. Pin: N mints then N releases leave 0 routes and 0 replays. Sizing S; std/rpc, Order 44."
+  },
+  {
+   "id": "A141",
+   "section": "A",
+   "kind": "bug (regression hazard from A135 — documented, not yet ruled)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-09-28 (Order 43, reactive-43's find)",
+   "title": "a `Service::new` handler that CACHES a `.cell()` on a SHARED store now LOSES it when the FIRST connection closes: A135 door (b) runs every generated route under the CONNECTION's owner (disposed by `drop_session`), so a derivation a handler minted for the shared store dies with whichever connection minted it while the store keeps handing it out — the memo/cache shape of A136 at the server, one owner level up",
+   "discussion": "reactive-43 (2026-09-28); A135 (b) (the owner in dispatch); A136 (the same trap in a client memo); A135 (c)'s warning covers a `.cell()` in the handler's TAIL, not one stored into a shared table",
+   "body": "Doors: (a) the rule — a derivation cached on a shared store is `.cell_global()` (the memo rule, A136's) and the A135 (c) warning extends to a `.cell()` stored through `Memo::get_or_insert`/`Shared::write` in a handler; (b) a `Service::new` (one instance for all connections) runs its handlers under the SERVICE's owner, `Service::factory` (one per connection) under the connection's — the owner follows the instance's lifetime; rec (b) + the warning of (a). Kolt's `get_user` (`users: Memo<..>` on the shared `GlobalStore`, store.vl:160) is exactly this shape — the owner should re-check it after the merge. Sizing S; std/rpc, Order 44 FIRST in the lane (a behaviour change A135 introduced)."
+  },
+  {
+   "id": "B446",
+   "section": "B",
+   "kind": "parser (diagnostics)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, reactive-43's find)",
+   "title": "a PARAMETER named `own` is reported as \"found '>'\" at the PREVIOUS parameter's `>` — after B414 `own` is contextual (`eat_binder_prefix` reads it as the keyword when a binder follows), and a bare `own` parameter following a generic-typed one mis-parses with the error pointed at the wrong token",
+   "discussion": "reactive-43 (2026-09-28, met while pinning I8); syntax-43's B414 (`own` contextual — `eat_binder_prefix`)",
+   "body": "Pin `fun f(xs: List<i32>, own: i32)` parses; the steer names `own` if it must stay refused there. Sizing S; parser (syntax), Order 44."
+  }
+ ]
+}
