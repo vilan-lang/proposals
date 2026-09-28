@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "F52",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-28 (Order 43, syntax-43's find; already on 0.41.1)",
+   "title": "native — a `lazy let` MODULE binding passed as the argument of a `lazy` PARAMETER is never emitted, so rustc fails with `cannot find value config_N`",
+   "discussion": "syntax-43 (2026-09-28, met while pinning B414's `lazy`); A100/A103 (`lazy` params + module bindings)",
+   "body": "Pin as a native differential case; the emitter's lazy-binding reachability misses the argument position. Sizing S; native, Order 44."
+  },
+  {
+   "id": "B444",
+   "section": "B",
+   "kind": "bug (miscompile — silent wrong output on JS)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, syntax-43's find; already on 0.41.1)",
+   "title": "`i\"{first(&xs)}\"` where `first` returns a `&i32` VIEW (`borrows xs`) prints `7,8,0` — the view's internal representation — instead of `7`: interpolation of a `&T` view value stringifies the view, not the element it reads",
+   "discussion": "syntax-43 (2026-09-28, met while pinning `borrows`); the view representation (a (target, index, ..) triple on JS); B400/B418's family (views at value positions)",
+   "body": "A `&T` at a value position (interpolation, `print`, `to_string`) reads through the view; pin on both backends. Sizing S; solver/JS emitter, Order 44 — a silent wrong output."
+  },
+  {
+   "id": "E233",
+   "section": "E",
+   "kind": "formatter",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-28 (Order 43, syntax-43's find; already on 0.41.1)",
+   "title": "`vilan fmt` does not reorder a `borrows`/`context` clause pair to the canonical order when the return type is `&T` — the reprint keeps the written order, so two spellings of one signature survive formatting",
+   "discussion": "syntax-43 (2026-09-28); E215 (the formatter's canonical forms)",
+   "body": "One rule for the clause order regardless of the return type; a formatter pin. Sizing S; Order 44."
+  },
+  {
+   "id": "B445",
+   "section": "B",
+   "kind": "parser (diagnostics)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, syntax-43's find; already on 0.41.1)",
+   "title": "`[platform(\"browser\")]` written BEFORE `export impl` fails to parse with NO steer; the working spelling is `export [platform(..)] impl` — the parser should accept the attribute in either position, or refuse with the steer",
+   "discussion": "syntax-43 (2026-09-28, met while building F27 R3); B415 (`[platform(..)] mod self;`)",
+   "body": "Rec: accept both orders (an attribute before `export` is the more common expectation) and canonicalise in the formatter; a ledger row for the steer if one order stays refused. Sizing S; parser, Order 44."
+  }
+ ]
+}
