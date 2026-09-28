@@ -1,0 +1,104 @@
+{
+ "items": [
+  {
+   "id": "B434",
+   "section": "B",
+   "kind": "bug (inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "`maybe.and_then(\\|v\\| SignalCell::new(Some(v)))` leaves `and_then`'s `U` UNBOUND — 'never fully determined: `AndThen<SignalCell<Option<i32>>, i32, SignalCell<Option>, U>`' — while the same call with a literal `Some(1)` or a pre-typed cell resolves: the closure parameter's type does not reach a generic CONSTRUCTOR in the closure's tail",
+   "discussion": "papers-43 (E227's side find); repro `sweeps/order43/papers-43/probes/e227/nodes5.vl`; B427's family (a closure typed from its body)",
+   "body": "Pin red-first; the fix is where B427's is (the closure parameter's inferred type flows into the tail's constructor arguments). Sizing S; solver, Order 44 (or solver-43 if it has room)."
+  },
+  {
+   "id": "B435",
+   "section": "B",
+   "kind": "bug (UNSOUND on JS — a runtime crash the checker admits; native refuses at rustc)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "NESTED `dyn` coercions — a `List<Root>` variable or call result passed as `List<dyn Src>`, an `Option<Root>`, a user generic struct, a closure variable, a `push`, an index assignment — TYPE-CHECK and then crash on JS (`x[1].get is not a function`); native refuses the same programs at rustc (E0308). `note_dyn_coercion` records only a TOP-LEVEL `Dyn`; B430 covers the tuple case alone — this is the family",
+   "discussion": "papers-43 (M88's P1); repros `sweeps/order43/papers-43/probes/m88/doors/{d1,d1b,d2,d3,d12,d24,d25,d26}`; B430 (the tuple case — note this family on it); trait-objects Q5",
+   "body": "Rec: REFUSE a nested coercion with a steer to the element-wise form that already works (`.map(|r| r)`), and erase element-wise for tuples as B430 says. Pins: each of the eight shapes red-first on both backends. Sizing S–M; solver, HIGH (a checker-admitted crash), Order 44 first — or solver-43 after B433 if it has room."
+  },
+  {
+   "id": "B436",
+   "section": "B",
+   "kind": "bug",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "`print` of a `dyn` value prints the erased PAIR — `[ [ 5 ], {} ]` — on JS, and native copies that on purpose (`vilan-rt/src/lib.rs:777-781`); the value is what the reader wants",
+   "discussion": "papers-43 (M88's P2); the dyn family (B430, B431, B435)",
+   "body": "Print the value through the object's own `to_string`/debug path; the pair is an implementation detail. Pin on both backends. Sizing S; Order 44."
+  },
+  {
+   "id": "B437",
+   "section": "B",
+   "kind": "bug (JS emitter)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "the JS `type_key` has NO `Dyn` arm — a `dyn` at a keyed position falls through to whatever the default arm answers",
+   "discussion": "papers-43 (M88's P3); transformer.rs `type_key`; the dyn family",
+   "body": "Add the arm (the erased pair's key is the trait application); a pin that two `dyn Trait<A>` positions share a key and `dyn Trait<A>` vs `dyn Trait<B>` do not. Sizing S; Order 44."
+  },
+  {
+   "id": "G25",
+   "section": "G",
+   "kind": "bug (macro + const)",
+   "area": "Macros & const",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "`[derive(Json)]` on a struct with a `dyn` FIELD makes the macro emit INVALID vilan (its expansion cannot spell the field's type), and `const let C: dyn Src = ..` fails const-eval with '`$a` is not defined'",
+   "discussion": "papers-43 (M88's d17/d18 probes under `sweeps/order43/papers-43/probes/m88/doors/`)",
+   "body": "Two pins: the derive refuses a `dyn` field with a message (or spells it), and const-eval either supports the coercion or refuses `dyn` at a const with a message. Sizing S; Order 44."
+  },
+  {
+   "id": "F47",
+   "section": "F",
+   "kind": "bug (UNSOUND — a silent native miscompile)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "native — a captured `mut` PARAMETER is never BOXED: `fun late(mut n: i32): i32 { let show = \\|\\| n; n = 5; show() }` prints `5` on JS and `0` natively — `compute_boxed_bindings` looks only at `program.variables` (`vilan-rust/src/lib.rs:641-650`), so a parameter written after a closure captured it is copied, not shared",
+   "discussion": "papers-43 (C15's D1; re-run by the lane); repro under `sweeps/order43/papers-43/probes/c15/`; the closure-captures paper (`proposal/closure-captures-on-native.md`)",
+   "body": "Fix: parameters join the boxed-binding analysis (S). Pin: the program above in the native differential. HIGH — a silent divergence between backends; native-43 if it has room, else Order 44 first."
+  },
+  {
+   "id": "F48",
+   "section": "F",
+   "kind": "bug (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "native — a REASSIGNED closure-typed `mut` binding, and a `List<\\|\\| i32>` holding two closures, are refused by rustc (E0308: each closure is its own type) — the emitter must box the closure type at these positions",
+   "discussion": "papers-43 (C15's D2); repro under `sweeps/order43/papers-43/probes/c15/`; F44's sibling (a closure pushed into the list it reads)",
+   "body": "Box (`Rc<dyn Fn>`) at a closure-typed binding that is reassigned or at a list element type; pins for both shapes. Sizing S; native, Order 44 (with F44)."
+  },
+  {
+   "id": "F49",
+   "section": "F",
+   "kind": "perf (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "native — a `&self` METHOD CALL on a BOXED binding DEEP-COPIES the whole value first: the JSON codec's writer (`json.vl:850-851`, a captured binding by design) is cloned, buffer included, on EVERY encoded frame",
+   "discussion": "papers-43 (C15's D3); the closure-captures paper §on boxing cost; the copy census cannot see capture clones (F50)",
+   "body": "Borrow the boxed value for a `&self` receiver instead of cloning it out of the cell; a differential pin that the frame count of clones drops (via F50's census column). Sizing S; native, Order 44."
+  },
+  {
+   "id": "F50",
+   "section": "F",
+   "kind": "hygiene (native census)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "native — two census gaps from the closure-captures paper: (1) a captured binding can form an `Rc` CYCLE natively that JS's GC collects (probe p10: `live=1` at exit) — add it as a pinned leak-census row and note the limit in the spec; (2) the copy census cannot see CAPTURE clones at all (kolt's native server: 277 capture clones over 114 closures) — add a `capture_copies` column",
+   "discussion": "papers-43 (C15); `sweeps/order43/papers-43/probes/c15/p10`; native-leak-census.tsv, native-copy-census.tsv; the perf item for immutable-aggregate capture clones is filed once the column exists (C15 Q3)",
+   "body": "Sizing S; native, Order 44 — the column first, since the perf item waits on it."
+  },
+  {
+   "id": "M89",
+   "section": "M",
+   "kind": "perf (hygiene; S)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-09-28 (Order 43, papers-43's find; the integrator files at the report)",
+   "title": "DEDUPE vtables by SLOT SET at emit: two `dyn` tables with the same slot set are one object — kolt's client would carry 7 tables instead of 9 (M88's door (c)); the paper parks M88 itself (every std `dyn` dispatch goes through `Combine`'s shared comprehension body, so collapsing a single-implementor pair changes nothing at the site)",
+   "discussion": "papers-43 (`proposal/devirtualize-single-impl-dyn.md` §(c)); M88 (PARKED)",
+   "body": "A map from slot-set to table in the JS emitter; a pin on the count over kolt's client (scratch copy). Sizing S; Order 44 hygiene."
+  }
+ ]
+}
