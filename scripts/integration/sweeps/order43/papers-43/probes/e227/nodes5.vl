@@ -1,0 +1,16 @@
+import std::reactive::{ SignalCell, Source };
+import std::option::Option::{ self, Some, None };
+import std::io::print;
+
+fun main() {
+	let maybe = SignalCell::new(Some(3));
+	let w = maybe.and_then(|v| {
+		let c = SignalCell::new(Some(v + 1));
+		c
+	});
+	print(w.get());
+	let x = maybe.and_then(|v| SignalCell::new(Some(1)));
+	print(x.get());
+	let y = maybe.and_then(|v| SignalCell::new(Some(v)));
+	print(y.get());
+}
