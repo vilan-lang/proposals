@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "E229",
+   "section": "E",
+   "kind": "process (tooling delivery)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-28 at Order 43's draft (the owner asked for 'the angle bracket fix or a setting to toggle it off' — both shipped in Order 41 as E222 and never reached the owner's editor)",
+   "title": "the VS Code extension is not DELIVERED with the toolchain: the release ships `vilan-vscode.vsix` (a v0.41.1 asset) but `install.sh`/`install.ps1` never install it and it is not on the marketplace, so the owner's vscode-server runs 0.40.0 — no `vilan.autoClosing.generics`, no E222 `type` override, E214's doubled `>` live in the editor a full order after its fix landed (cbc31fe4). Nothing notices the gap: the extension never compares its version with the server's, and the toolchain refresh that keeps `vilan` at the sealed tip in both locations leaves the extension where it was",
+   "discussion": "the integrator, 2026-09-28: `~/.vscode-server/extensions/vilan-lang.vilan-0.40.0` (settings: server.path, stdPath, inlayHints, semanticTokens, completion.functionCall, organizeImports — no autoClosing) vs `editors/vscode/package.json` 0.41.1 with `vilan.autoClosing.generics`; `gh release view v0.41.1` lists the vsix; the downloaded install.sh has no `vsix`/`code --install` line; E222 (closed), E214 (open on the owner's confirmation)",
+   "body": "Doors: (a) `install.sh`/`install.ps1` install the vsix when `code` is on PATH (`code --install-extension vilan-vscode.vsix --force`), behind an opt-out env/flag, and say so in the summary line; (b) the extension asks the server its version at start (`vilan-lsp --version`, or the initialize result's `serverInfo.version`) and shows one notification when the two differ, with the install command; (c) the marketplace publish (`vsce publish` from release.yml under the vilan-lang publisher — needs a PAT, an L-item's shape); (d) the seal's toolchain refresh installs the vsix into the local vscode-server as it installs `vilan` into both locations (`scripts/` — the integrator's own gap, cheapest). Rec: (d) now (the integrator, at the sweep), (a) + (b) in editor-43, (c) as a follow-up L-item once (a) is in. The owner's immediate fix is one line from the vilan checkout: `code --install-extension vilan/editors/vscode/vilan-0.41.1.vsix --force` then reload. Sizing S; editor lane, Order 43."
+  }
+ ]
+}

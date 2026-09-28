@@ -1,0 +1,55 @@
+{
+ "drafted": "2026-09-28 off vilan next @762c6aa5 (the v0.41.1 fold; CI 36358009990 green; origin/main 1a33340f); AWAITING GO",
+ "cycle": 61,
+ "ledger_next_id": 576,
+ "tracker_open": 124,
+ "shared_census": 141,
+ "unreleased_breaking_entries": 0,
+ "asked_at_go": {
+  "R-a": "angle brackets: the fix + the switch exist (E222, Order 41: vilan.autoClosing.generics); the owner installs the 0.41.1 vsix now (`code --install-extension vilan/editors/vscode/vilan-0.41.1.vsix --force`); E229 makes delivery automatic (installer + version-mismatch notice + the seal refresh); E214 closes on the owner's confirmation — rec yes",
+  "R-b": "B433: refuse (the plain place's rule) + the sweep — rec refuse",
+  "R-c": "A134 (a)+(c) client dedup per origin + docs; A135 (b)+(c); A136 (a)+(b); A137 settled over a socket first — rec all",
+  "R-d": "A122 builds now (Q1–Q7 ruled 2026-09-25) — rec yes",
+  "R-e": "B414 builds per the paper; self:: / export self::* stay deferred — rec yes / deferred",
+  "R-f": "E227 paper first; build in Order 44 if the marker is ruled — rec paper",
+  "R-g": "no cut this order (Unreleased empty; nothing breaking) — rec hold",
+  "R-h": "B424 ruling: refuse with an annotate steer — rec refuse",
+  "R-i": "F45 graceful stop: build (S) or park — rec build"
+ },
+ "lanes": {
+  "hygiene-43": "N133 N106 L22 L18 M84 M12 (droppable, FIRST)",
+  "solver-43": "B433 FIRST (UNSOUND; sha to LANE-STATUS.md), B400 (saved patch) B418 B403 B401 B419 B423 B426 B427 B428 B429 B430 B431 B425 B424 (R-h) B416 B417 B385 (verify) E226; index-42's 0usize suffixes drop",
+  "tuples-43": "A122 (RULED) B183 B399 — rebases onto solver-43's merge",
+  "reactive-43": "A134 (R-c) A135 A136 A137 (over a socket) A133 A132; memo.vl + remote-sources.md rules",
+  "native-43": "F41 F42 F44 F46 F45 (R-i); copy census; leak census after A132",
+  "editor-43": "E229 FIRST (delivery) E214 (verify) E228 E225+K24 (one keyword table) B422 E224; E182 E199 as time allows",
+  "syntax-43": "B414 (R-e) F27 R3 D14; keyword table exported for editor-43",
+  "papers-43": "E227 (paper) M88 C15 A131 — proposals only"
+ },
+ "merge_order": [
+  "hygiene-43",
+  "solver-43",
+  "tuples-43",
+  "reactive-43",
+  "native-43",
+  "editor-43",
+  "syntax-43"
+ ],
+ "after_the_seal": "NO cut (R-g); toolchain both locations from the sealed tip + the vsix into the local vscode-server (E229 door d)",
+ "kolt_owed_at_word": [
+  "commit 2026-09-28's model.vl (A134's seven sites; A136's memos on .cell_global(); get_channels on the demand shape) — in the tree, uncommitted; browser UNVERIFIED",
+  "A120's §9.7.10 rewrite + A127's header token",
+  "the connection-v3 worktree's two dyn Signal fields",
+  "A122's divorce at channel.vl:19 once tuples-43 lands",
+  "optional after A134 (a): the hand Memo tables reduce to bare stub calls"
+ ],
+ "order44_queue": [
+  "E227's build if the marker is ruled",
+  "self:: paths if re-ruled",
+  "F27 R3 remainder",
+  "E229 door (c) marketplace publish as an L-item",
+  "M60",
+  "A111/A87 if a caller appears",
+  "v0.42.0 at a breaking need (delete release/0.41 then)"
+ ]
+}
