@@ -1,0 +1,21 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+import std::map::Map;
+fun main() {
+	let a: dyn Src = Root { n = 5 };
+	let xs: List<dyn Src> = [a, Root { n = 6 }];
+	print(xs);
+	print(i"{xs.len()}");
+	mut m: Map<i32, dyn Src> = Map::new();
+	m.insert(1, a);
+	print(m);
+}

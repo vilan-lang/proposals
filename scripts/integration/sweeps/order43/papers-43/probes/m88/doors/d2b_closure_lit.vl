@@ -1,0 +1,17 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+fun run(f: || dyn Src): i32 {
+	f().get()
+}
+fun main() {
+	print(run(|| Root { n = 8 }));
+}

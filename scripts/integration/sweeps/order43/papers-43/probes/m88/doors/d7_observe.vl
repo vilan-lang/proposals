@@ -1,0 +1,23 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+struct Holder {
+	s: dyn Src,
+}
+fun main() {
+	let a: dyn Src = Root { n = 5 };
+	let b: dyn Src = Root { n = 5 };
+	print(a);
+	print(Holder { s = a });
+	let h1 = Holder { s = a };
+	let h2 = Holder { s = b };
+	print(h1 == h2);
+}

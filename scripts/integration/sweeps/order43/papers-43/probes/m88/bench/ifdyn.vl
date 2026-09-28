@@ -1,0 +1,21 @@
+import std::io::print;
+
+trait Show {
+	fun show(self): str;
+}
+struct A { n: i32 }
+struct B { s: str }
+impl A with Show { fun show(self): str { "A" } }
+impl B with Show { fun show(self): str { "B" } }
+
+fun pick(flag: bool): dyn Show {
+	if flag { A { n = 1 } } else { A { n = 2 } }
+}
+
+fun main() {
+	let x: dyn Show = if true { A { n = 1 } } else { A { n = 2 } };
+	print(x.show());
+	print(pick(false).show());
+	let items: List<dyn Show> = [A { n = 3 }, A { n = 4 }];
+	for item in items { print(item.show()); }
+}

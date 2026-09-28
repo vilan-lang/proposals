@@ -1,0 +1,22 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+fun read(o: Option<dyn Src>): i32 {
+	match o {
+		Some(let s) => s.get(),
+		None => 0,
+	}
+}
+fun main() {
+	let o: Option<Root> = Some(Root { n = 3 });
+	print(read(o));
+	print(read(Some(Root { n = 4 })));
+}

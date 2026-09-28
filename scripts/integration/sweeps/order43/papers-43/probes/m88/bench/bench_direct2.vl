@@ -1,0 +1,27 @@
+import std::io::print;
+
+trait Step {
+	fun step(self, x: i32): i32;
+}
+struct Add { k: i32 }
+impl Add with Step { fun step(self, x: i32): i32 { (x + self.k) % 1000003 } }
+
+struct Holder { s: Add }
+
+fun main() {
+	mut held: List<Holder> = [];
+	mut i = 0;
+	for i < 2000000 {
+		held.push(Holder { s = Add { k = i % 7 } });
+		i += 1;
+	}
+	mut total = 0;
+	mut round = 0;
+	for round < 10 {
+		for h in held {
+			total = h.s.step(total);
+		}
+		round += 1;
+	}
+	print(total);
+}

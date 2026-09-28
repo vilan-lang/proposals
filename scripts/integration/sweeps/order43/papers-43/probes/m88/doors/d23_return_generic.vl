@@ -1,0 +1,23 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+fun id<T>(x: T): T {
+	x
+}
+fun main() {
+	let r = Root { n = 3 };
+	let s: dyn Src = id(r);
+	print(s.get());
+	let xs: List<dyn Src> = [];
+	mut ys = xs;
+	ys.push(Root { n = 4 });
+	print(ys[0].get());
+}

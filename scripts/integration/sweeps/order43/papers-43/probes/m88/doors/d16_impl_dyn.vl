@@ -1,0 +1,28 @@
+import std::compare::PartialEq;
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+impl dyn Src {
+	fun twice(self): i32 {
+		self.get() * 2
+	}
+}
+impl dyn Src with PartialEq {
+	fun eq(self, other: dyn Src): bool {
+		self.get() == other.get()
+	}
+}
+fun main() {
+	let a: dyn Src = Root { n = 5 };
+	let b: dyn Src = Root { n = 5 };
+	print(a.twice());
+	print(a == b);
+}

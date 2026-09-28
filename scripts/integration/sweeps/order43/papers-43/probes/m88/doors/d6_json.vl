@@ -1,0 +1,21 @@
+trait Src {
+	fun get(self): i32;
+}
+struct Root {
+	n: i32,
+}
+impl Root with Src {
+	fun get(self): i32 {
+		self.n
+	}
+}
+import std::wire::Wire;
+import std::json::{ encode_json, decode_json };
+[derive(Wire)]
+struct Holder {
+	s: dyn Src,
+}
+fun main() {
+	let h = Holder { s = Root { n = 5 } };
+	print(encode_json(h));
+}
