@@ -79,6 +79,8 @@
 | [B444](items/B444.md) | `i"{first(&xs)}"` where `first` returns a `&i32` VIEW (`borrows xs`) prints `7,8,0` — the view's internal representation — instead of `7`: interpolation of a `&T` view value stringifies the view, not the element it reads | bug (miscompile — silent wrong output on JS) | syntax-43 (2026-09-28, met while pinning `borrows`); the view representation (a (target, index, ..) triple on JS); B400/B418's family (views at value positions) |
 | [B445](items/B445.md) | `[platform("browser")]` written BEFORE `export impl` fails to parse with NO steer; the working spelling is `export [platform(..)] impl` — the parser should accept the attribute in either position, or refuse with the steer | parser (diagnostics) | syntax-43 (2026-09-28, met while building F27 R3); B415 (`[platform(..)] mod self;`) |
 | [B446](items/B446.md) | a PARAMETER named `own` is reported as "found '>'" at the PREVIOUS parameter's `>` — after B414 `own` is contextual (`eat_binder_prefix` reads it as the keyword when a binder follows), and a bare `own` parameter following a generic-typed one mis-parses with the error pointed at the wrong token | parser (diagnostics) | reactive-43 (2026-09-28, met while pinning I8); syntax-43's B414 (`own` contextual — `eat_binder_prefix`) |
+| [B447](items/B447.md) | integer literals inside TUPLES inside a LIST literal are not typed from the expected element type: `total([(0, 3), (7, 11)])` against `total(ranges: List<(usize, usize)>)` → 'Expected List<(usize, usize)>, but got List<(i32, i32)>'; the annotated binding `let one: (usize, usize) = (0, 3);` types fine, so the expected type stops at the list literal's element position | bug (inference) | kolt search (2026-09-28); B406/B442/B423's family |
+
 ## C. Memory model
 
 | ID | Title | Kind | Discussion |
@@ -144,6 +146,7 @@
 | [G9](items/G9.md) | NEW — a workspace member's own `[build] run` never runs, and nothing says so | design | |
 | [G12](items/G12.md) | NEW — `read_dir_all` fuel charged on the result, not the walk | design | audit 4; the basis is the question |
 | [G25](items/G25.md) | `[derive(Json)]` on a struct with a `dyn` FIELD makes the macro emit INVALID vilan (its expansion cannot spell the field's type), and `const let C: dyn Src = ..` fails const-eval with '`$a` is not defined' | bug (macro + const) | papers-43 (M88's d17/d18 probes under `sweeps/order43/papers-43/probes/m88/doors/`) |
+| [G26](items/G26.md) | the CONST interpreter has no `indexOf`/`lastIndexOf`: `str::index_of` / `last_index_of` (option.vl, over `raw_index_of`/`raw_last_index_of`) fail in any `const` evaluation with 'the string method `indexOf` is not available at expansion time' — the natural way to search a file `asset::read` returned; `includes`/`split`/`substring` are there, so the workaround is `split` on the needle | bug (const) | kolt search (2026-09-28); `str` extern census vs the interpreter's method table |
 
 ## I. Collections
 
@@ -207,6 +210,8 @@
 | [M84](items/M84.md) | NEW — `Ord::clamp` over an integer costs two `compare` calls since B359 (R1: a default body reaches the TRAIT's `min`/`max`, not the inherent `Math.min`/`Math.max` externs) — semantics identical, JS larger, every integer type | performance | solver-38's OPEN Q1; rec leave it |
 | [M88](items/M88.md) | NEW — DEVIRTUALIZE `dyn Trait` when the program coerces exactly ONE concrete type into it: the `(value, vtable)` pair collapses to the bare value and every dispatch through it becomes the direct (monomorphized) call, so a `dyn Trait` FIELD costs nothing until a second implementor actually reaches it — a build-time optimization only; the analyzer, the LSP and the types are untouched | perf (design; build-time optimization) | the owner (2026-09-27): 'encourages developers to use `dyn Trait` for field types without worrying about cost … if only one variant then it auto-tightens to the variant, otherwise it keeps the dyn runtime coloring … can stay a build-time optimization and therefore doesn't need to be checked by the LSP'; the flip (A124) put `dyn Source<T>` at fields, so the question is now priced on every app |
 | [M89](items/M89.md) | DEDUPE vtables by SLOT SET at emit: two `dyn` tables with the same slot set are one object — kolt's client would carry 7 tables instead of 9 (M88's door (c)); the paper parks M88 itself (every std `dyn` dispatch goes through `Combine`'s shared comprehension body, so collapsing a single-implementor pair changes nothing at the site) | perf (hygiene; S) | papers-43 (`proposal/devirtualize-single-impl-dyn.md` §(c)); M88 (PARKED) |
+| [M90](items/M90.md) | a read-only `let` of a struct FIELD deep-copies it on JS: `let layout = config.layout; layout.table[at]` emits `const layout = __clone(config2[0])` although neither the binding nor `config` is written in scope — in kolt's search matcher that one line cloned a 16K-entry cost table per alignment and turned 0.55 s of queries into minutes; the same shape copies a whole element for `let x = found[a]` inside a `sort_by` comparator | performance | kolt search (2026-09-28); M60, F49, the copy-elision census |
+
 ## N. Hygiene & rot — NEW SECTION
 
 | ID | Title | Kind | Discussion |
