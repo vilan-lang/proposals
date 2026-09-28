@@ -528,6 +528,19 @@ over `Source`, `RemoteSource` can conform *then*, as `Source<Option<T>>`,
 without invalidating anything here. Conforming now would be paying for a
 seam that does not exist yet.
 
+### 2j. A stub inside a cold select — as built in Order 43 (A134, A136, A137)
+
+**A stub inside a cold select is idempotent (A134).** A generated handle stub dedups
+its mirrors per ORIGIN — the method and its described arguments, per client — so a
+second call answers the same mirror, one call and one `Subscribe`, until the mirror's
+last lease closes. A cold node (`and_then`, `switch`) runs its select on every pull;
+before A134 a stub there minted a fresh mirror per pull and `.cell()` read a mirror
+nothing leased. **A `.cell()` inside a maker, a memo, a module-level cache or any
+structure that outlives the caller is `.cell_global()` or a bug** (A136): what the
+maker builds outlives the caller; a lease belongs at the call site. A mirror whose
+`Subscribe` joins a forward a sibling already holds is seeded from the sibling on the
+client (A137). (reactive-43's paragraph, placed by the integrator 2026-09-28.)
+
 ## 3. Wire and server consequences
 
 `Unsubscribe` frames start flowing for the first time, which means
