@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "E230",
+   "section": "E",
+   "kind": "feature (tooling delivery; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-28 (Order 43, editor-43's find)",
+   "title": "`vilan upgrade` does not install or update the VS Code extension: the installers now do (E229), the extension IS on the Marketplace and Open VSX (release run 36353347340 published 0.41.1), but the in-place upgrade path leaves a vsix-pinned install where it was — the owner sat on 0.40.0 for a full order because a vsix install is `pinned: true` and never auto-updates",
+   "discussion": "editor-43 (2026-09-28); E229 (its premise correction: door (c) was already done — the marketplace publish exists); the OWNER Q on E229: install by gallery id (`code --install-extension vilan-lang.vilan@<v>`, auto-updating) instead of the pinned vsix",
+   "body": "Rec: `vilan upgrade` runs the same extension step the installers do, and both prefer the GALLERY id when the CLI can reach it (auto-updates thereafter), falling back to the checked vsix offline. Sizing S; editor, Order 44."
+  },
+  {
+   "id": "E231",
+   "section": "E",
+   "kind": "hygiene (version check; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-09-28 (Order 43, editor-43's find)",
+   "title": "a DEV build between releases reports the LAST RELEASE's version (`vilan-lsp --version` / `serverInfo.version` = the crate version), so E229's server-vs-extension check cannot see drift within one version — a sealed-tip server and a stale extension of the same crate version compare equal",
+   "discussion": "editor-43 (2026-09-28); E229 (b); build.rs's embedded sha (`vilan --version` prints `0.41.1 (1a33340f2)`)",
+   "body": "Rec: the server reports `version (sha)` as `vilan --version` does, and the extension compares the sha when both sides carry one (the vsix embeds the sha at `install-dev.sh` packaging). Sizing S; editor, Order 44."
+  },
+  {
+   "id": "B438",
+   "section": "B",
+   "kind": "diagnostics",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-09-28 (Order 43, editor-43's find)",
+   "title": "`swap(flag, \\|on: str\\| 42)` reports the real error AND a spurious second one — \"cannot infer 'C' for this call\" — where the first (the closure parameter's annotation disagrees with `flag`'s element type) already explains why `C` is open; E189's rule (suppress dependent diagnostics along an unresolved path) does not reach this shape",
+   "discussion": "editor-43 (2026-09-28, met while pinning E228); E189 (the cascade rule)",
+   "body": "Pin red-first: one diagnostic. Sizing S; solver/diagnostics, Order 44."
+  }
+ ]
+}
