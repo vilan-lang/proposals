@@ -1,0 +1,74 @@
+{
+  "drafted": "2026-09-29 off vilan next @07e8db37 (the Order 43 seal; CI 36501668642 green; origin/main 1a33340f); proposals @714a652 (A142 RATIFIED R1–R37); GO 2026-09-29",
+  "cycle": 62,
+  "ledger_next_id": 591,
+  "tracker_open": 134,
+  "shared_census": 146,
+  "unreleased_breaking_entries": 0,
+  "unreleased_entries": 44,
+  "design": "proposal/reactive-layers.md (A142) — every lane reads it first; Appendix A is the 0.41.1 prototype",
+  "asked_at_go": {
+    "R-a": "B460 (reopens B253): door (a) OPAQUE return for free functions + inherent methods, steer to dyn when branches disagree; trait-method returns later, paper first — the pipe model's `impl Iterator` — rec (a), built in solver-44 after B463",
+    "R-b": "the v0.42.0 cut at the seal (A142 S1 + I9 are breaking; 44 non-breaking entries also ride; release/0.41 deleted at the cut) — rec cut",
+    "R-c": "I9 rides the train: std::hash_map::HashMap / std::hash_set::HashSet, old names [deprecated] one release, the estate codemod + a kolt patch; A142 R1 renames the reactive node (Derive), ending the collision from both sides; I8's maps half rides with it — rec yes",
+    "R-d": "E227 builds per inlay-hint-abbreviation.md's recs (marker ~T; nested yes; per-instantiation admission; vilan.inlayHints.abbreviate on; hover both); pipe nodes [hint(Pipe<T>)], sealed faces + RemoteSource [hint(Source<T>)] — rec yes",
+    "R-e": "B457 door (a): copy when the call can reach an in-place write of that cell (a write summary per callee) — rec (a)",
+    "R-f": "A141 door (b) (Service::new routes under the service's owner, factory under the connection's) + door (a)'s warning for a derivation stored through get_or_insert/Shared::write in a handler — rec (b) + warning",
+    "R-g": "A133 door (c): document the in-process seed as inline, close (door (a) broke 15 reactive_channels pins and the documented contract) — rec (c)",
+    "R-h": "B401: the admission restructure (admission before the fixpoint; filter inherited-default and declared candidates) — rec go",
+    "R-i": "B428: withdraw the documented 128i8 looseness (fix written; two looseness pins flip; numeric-types.md §3 + std/numbers.md change) — rec withdraw",
+    "R-j": "E224 door (b): one rule for types and functions, 'an import line alone does not warn; the USE warns'; deprecation.md line 87 corrected — rec (b)",
+    "R-k": "B414 S4: a keyword member after `.` stays on the dot's own line — rec yes, syntax-44",
+    "R-l": "kolt: reactive-44 and collections-44 deliver patch files over a scratch copy at kolt's tip + the owed Order 43 patches; lanes never write kolt; the owner applies at their word — rec yes",
+    "R-m": "scope: the chronicle's non-reactive openers ride in the lanes that own their files (B452 + B456 solver FIRST; E230/E231/E232 editor; E233 syntax; F53 native; F27's editor routing) — rec yes; M60, A87/A111, A131, A138/I10's builds carry to Order 45"
+  },
+  "lanes": {
+    "solver-44": "B463 FIRST (the train's floor; sha to LANE-STATUS.md), B452 + B456 FIRST beside it, B458 B461 B462 B434 B460 (R-a) B457 (R-e) B401 (R-h) B428 (R-i); the `.get()`-on-a-pipe steer (A142 §3.3)",
+    "native-44": "F56 FIRST (step 0's find: emit Drop-less [resource] types natively), F53; native parity for the pipe nodes; copy + leak censuses after reactive-44's merge",
+    "reactive-44": "A142 S1 (Flow/Pipe split, [resource] nodes, derive/Derive, switch_some, then_some, flatten, distinct_by, Source::constant, .memo/.cell/_global/.sample, consumers on Flow, std::ui bindings take Flow, examples + guide + website snippets) + S2 (lazy per-run owners on every stage, effect/scoped_effect merged, tasks owned by their run); kolt-reactive-44.patch (R-l) — BREAKING; starts at GO, F56 cherry-picked for native gates; own self everywhere until B463",
+    "transient-44": "A141 FIRST (R-f) A139 A140 A133 (R-g); then A142 S3 REBASED onto reactive-44 (TransientState, TransientSource, TaskSource, .transient() latest-wins with R36's error rule, RemoteSource implements it)",
+    "collections-44": "I9 (R-c, BREAKING; codemod over reactive-44's merged tree) + I8's maps half; then A142 S4 (CollPipe, IntoFlow, flow-following filter/filter_map/any/all/count/flatten, map starts a returned pipe (R35), per-element owners, slot ids, Fenwick) + S5 (.coll_by, .coll); kolt-collections-44.patch — REBASED onto reactive-44",
+    "tracking-44": "A142 S6 (tracking context, Source::track via strict get, scopes in every pipe body + the free derive, callbacks under tracking.clear) — REBASED onto reactive-44; B458 cherry-picked for gates until solver-44 merges",
+    "syntax-44": "B459 (then/else + the guard; R15's binding rule in analyzer rows after solver-44) B414 S4 (R-k STRICT: no whitespace between `.` and a member name; census first) E233",
+    "editor-44": "E227 (R-d) with the pipe hints, E232 E230 E231 E224 (R-j), F27's editor routing — LAST to merge",
+    "papers-44": "A142 S7 (the Store paper) + A138 with I10 folded in — proposals only"
+  },
+  "merge_order": [
+    "solver-44",
+    "native-44",
+    "reactive-44",
+    "transient-44",
+    "collections-44",
+    "tracking-44",
+    "syntax-44",
+    "editor-44"
+  ],
+  "after_the_seal": "the v0.42.0 cut (R-b) per releases.md; release/0.41 deleted at the cut; toolchain both locations from the tag + the vsix; the playground wasm smoke (N134); the website migrated to the pipe spellings",
+  "kolt_owed_at_word": [
+    "Order 43's owed patches first: sweeps/order43/solver-43/finds/kolt-b419.patch and A122's divorce edit (channel.vl:26) — kolt is RED until then",
+    "kolt-reactive-44.patch (the pipe split)",
+    "kolt-collections-44.patch (I9)",
+    "store.vl:160's get_user per A141",
+    "the I7 sites and A135's three warnings (from Order 43)",
+    "A120's §9.7.10 rewrite + A127's header token (still owed)",
+    "lib/reactive2.vl retires to a note once the paper is built"
+  ],
+  "order45_queue": [
+    "A142 S7's Store build if the paper is ruled",
+    "A138 / I10's build",
+    "M60",
+    "A87/A111 if a caller appears",
+    "A131 if an exhibit appears",
+    "B460's trait-method returns (paper first)",
+    "B183's concrete arm",
+    "self:: paths if re-ruled"
+  ],
+  "go": "2026-09-29 — the owner: 'Regarding R-k, I'd be fine constraining it even further by making .{WHITESPACE}{NAME} illegal (only .{NAME} is legal). Or, at the very least, no new line characters between the . and {NAME}. Go with all recs.' — R-k RULED STRICTER (no whitespace between `.` and any member name; census first, the no-newline minimum as the fallback); everything else as recommended",
+  "rulings_at_go": {
+    "R-k": "a member name follows `.` with NO whitespace (every member); census first; fallback: no newline between `.` and the name"
+  },
+  "step0": "run by the integrator at GO on --backend rust over Appendix A (0.41.1): the rust backend refuses every [resource] type -> F56 (filed at GO), native-44 item 0 FIRST; reactive-44 cherry-picks it for native gates and starts at GO; `dyn Up<T>` cannot be sealed (R34 as ruled — noted, not filed)",
+  "filed_at_go": [
+    "F56"
+  ]
+}

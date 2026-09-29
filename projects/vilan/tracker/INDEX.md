@@ -117,6 +117,7 @@
 | [F53](items/F53.md) | native — a CLOSURE BODY erased to `dyn` is not wrapped: `roots.map(\|r\| r)` into a `List<dyn Src>` (the very steer B435 gives) fails rustc E0308 natively | bug (native) | solver-43 (2026-09-28); repro `native-closure-tail-dyn-erasure.vl`; B435 (JS erases it; native must wrap the tail) |
 | [F54](items/F54.md) | native — a value `if`'s CONDITION literal takes the ARMS' literal type: `n > 2i32` where `n: u53` (the arms are `i32`) fails rustc E0308 | bug (native) | solver-43 (2026-09-28); repro `native-value-if-condition-literal-takes-arm-type.vl`; B423 (sibling-arm literal typing — the condition is not a sibling) |
 | [F55](items/F55.md) | native — an UNUSED annotated `Result` binding LOSES its annotation at emission (rustc E0282: type annotations needed) | bug (native) | solver-43 (2026-09-28); repro `native-unused-annotated-result-binding.vl` |
+| [F56](items/F56.md) | the `rust` backend REFUSES every `[resource]` type — a Drop-less resource needs no teardown (move-only is the analyzer's) and can emit as an ordinary type; A142's pipe nodes are Drop-less resources, so without it every derived signal fails natively | feature (native; S–M) | Order 44's GO step 0 (2026-09-29); BLOCKS A142 S1's native gates; F1, spec §6.8 |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
