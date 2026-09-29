@@ -1,0 +1,13 @@
+// Can a store diff a map- or set-valued leaf wholesale? `Map`/`Set` equality on 0.41.1.
+import std::map::Map;
+
+[derive(PartialEq)]
+struct Holder {
+	scores: Map<str, i32>,
+}
+
+fun main() {
+	let a: Map<str, i32> = Map::new();
+	let b: Map<str, i32> = Map::new();
+	print(a == b);
+}

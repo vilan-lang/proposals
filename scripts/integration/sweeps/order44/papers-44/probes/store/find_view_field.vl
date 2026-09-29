@@ -1,0 +1,27 @@
+// FIND (minor, for the integrator): a closure TYPE whose parameter is `&mut T` is
+// refused as a struct field ("a view cannot escape its scope"), yet the same
+// closure nested one level down (a field of type `|(|&mut T| void)| void`, as
+// compose_modify.vl's `Lens::modify`) is accepted, as is a `|&mut T| void`
+// captured by a closure that is stored. A function that TAKES a view is not itself
+// a view; either the refusal is too strict or the nested acceptance is a hole.
+struct Holder {
+	f: |&mut str| void,
+}
+
+struct Nested {
+	g: |(|&mut str| void)| void,
+}
+
+fun main() {
+	let n = Nested { g = |f| {
+		mut s = "old";
+		f(&mut s);
+		print(s);
+	} };
+	(n.g)(|&mut p| {
+		p = "nested ok";
+	});
+	let h = Holder { f = |&mut p| {
+		p = "new";
+	} };
+}

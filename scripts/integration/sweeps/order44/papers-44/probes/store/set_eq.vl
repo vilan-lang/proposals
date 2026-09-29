@@ -1,0 +1,8 @@
+// `Set` equality on 0.41.1 (map_eq.vl's sibling).
+import std::set::Set;
+
+fun main() {
+	let a: Set<i32> = Set::new();
+	let b: Set<i32> = Set::new();
+	print(a == b);
+}

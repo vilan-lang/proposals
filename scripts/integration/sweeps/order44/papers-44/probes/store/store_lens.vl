@@ -1,0 +1,1318 @@
+// A142 S7, the `Store` paper's prototype (`proposal/store.md`, Appendix A).
+//
+// Written against 0.41.1 in reactive-layers.md Appendix A's style: its own toy
+// root, no std reactive types, so it isolates the lens and diff mechanics from the
+// turn machinery. Everything below the "generated" markers is what `Store::new`
+// would have the compiler write for `User`; it is written by hand here.
+//
+// Two slot layouts, one wake contract ("a write wakes exactly the live slots whose
+// value changed"), checked against each other scenario by scenario:
+//   I  inline  - one node per struct/enum level, an `Option` per field, allocated
+//                on the first subscription below it;
+//   T  table   - one side table per root, keyed by the static path, each entry a
+//                slot plus the path's generated comparator.
+// And the coarse model the store replaces:
+//   C  coarse  - one cell holding the whole `User`, one projection per leaf.
+import std::compare::PartialEq;
+import std::map::Map;
+import std::shared::Shared;
+import std::time;
+
+// === Counters ================================================================
+
+struct Stats {
+	wakes: i32,      // subscriber calls
+	compares: i32,   // leaf or comparator evaluations a diff made
+	slots: i32,      // slots allocated
+	nodes: i32,      // inline nodes allocated
+	runs: i32,       // coarse projection runs
+	built: i32,      // variant-gate bodies built
+}
+
+let stats = Shared::new(Stats { wakes = 0, compares = 0, slots = 0, nodes = 0, runs = 0, built = 0 });
+let log = Shared::new([""]);
+
+fun reset() {
+	stats.write() = Stats { wakes = 0, compares = 0, slots = 0, nodes = 0, runs = 0, built = 0 };
+	log.write() = [];
+}
+
+fun counted(): str {
+	let s = stats.read();
+	i"wakes={s.wakes} compares={s.compares} slots={s.slots} nodes={s.nodes}"
+}
+
+fun woke(): str {
+	mut out = "";
+	for name in log.read() {
+		if out != "" {
+			out = out + " ";
+		}
+		out = out + name;
+	}
+	if out == "" { "-" } else { out }
+}
+
+// === The toy base: a slot is one path's subscriber list =====================
+
+struct Slot {
+	name: str,
+	subs: Shared<List<|| void>>,
+}
+
+impl Slot {
+	fun new(name: str): Slot {
+		stats.write().slots += 1;
+		Slot { name, subs = Shared::new([]) }
+	}
+
+	fun watch(self, wake: || void) {
+		self.subs.write().push(wake);
+	}
+
+	fun wake(self) {
+		if self.subs.read().len() > 0 {
+			log.write().push(self.name);
+		}
+		for f in self.subs.read() {
+			stats.write().wakes += 1;
+			f();
+		}
+	}
+}
+
+/// A LENS: a copyable handle, a root plus a static path. The compiled form is the
+/// root and a path the compiler knows; three closures over the root stand in.
+struct Lens<T> {
+	read: || T,
+	put: |T| void,
+	slot: || Slot,
+}
+
+impl Lens<type T> {
+	fun get(self): T {
+		(self.read)()
+	}
+
+	/// Write back through the root: the root's value is written in place at the
+	/// path, then the store's one rule runs (wake the live slots whose value changed).
+	fun set(self, value: T) {
+		(self.put)(value);
+	}
+
+	/// Subscribe; the slot is allocated here, on first use, and not before.
+	fun on(self, wake: || void) {
+		(self.slot)().watch(wake);
+	}
+}
+
+// === The user's types ========================================================
+
+[derive(PartialEq)]
+struct Device {
+	name: str,
+	since: i32,
+}
+
+[derive(PartialEq)]
+enum Presence {
+	Offline,
+	Online(Device),
+}
+
+[derive(PartialEq)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+// No derive: `Map` has no `PartialEq` on 0.41.1, so a struct holding one cannot
+// derive it (probe `map_eq.vl`). The comparison is written by key.
+struct User {
+	name: str,
+	age: i32,
+	address: Address,
+	presence: Presence,
+	scores: Map<str, i32>,
+}
+
+fun scores_eq(a: Map<str, i32>, b: Map<str, i32>): bool {
+	if a.len() != b.len() {
+		ret false;
+	}
+	for key in a.keys() {
+		if a.get(key) != b.get(key) {
+			ret false;
+		}
+	}
+	true
+}
+
+impl User with PartialEq {
+	fun eq(self, b: User): bool {
+		self.name == b.name && self.age == b.age && self.address == b.address && self.presence == b.presence
+			&& scores_eq(self.scores, b.scores)
+	}
+}
+
+fun online_of(p: Presence): Option<Device> {
+	match p {
+		Presence::Online(let d) => Some(d),
+		Presence::Offline => None,
+	}
+}
+
+fun is_online(p: Presence): bool {
+	match p {
+		Presence::Online(let _d) => true,
+		Presence::Offline => false,
+	}
+}
+
+// === Layout I: inline nodes (generated) ======================================
+
+struct DeviceNode {
+	me: Option<Slot>,
+	name: Option<Slot>,
+	since: Option<Slot>,
+}
+
+struct PresenceNode {
+	me: Option<Slot>,
+	tag: Option<Slot>,
+	online: Option<Shared<DeviceNode>>,
+}
+
+struct AddressNode {
+	me: Option<Slot>,
+	city: Option<Slot>,
+	zip: Option<Slot>,
+}
+
+struct ScoresNode {
+	me: Option<Slot>,
+	keys: Map<str, Slot>,
+}
+
+struct UserNode {
+	me: Option<Slot>,
+	name: Option<Slot>,
+	age: Option<Slot>,
+	address: Option<Shared<AddressNode>>,
+	presence: Option<Shared<PresenceNode>>,
+	scores: Option<Shared<ScoresNode>>,
+}
+
+/// A leaf: compare only when someone below or above needs the answer.
+fun leaf<T: PartialEq>(slot: Option<Slot>, a: T, b: T, need: bool): bool {
+	match slot {
+		Some(let s) => {
+			stats.write().compares += 1;
+			let changed = a != b;
+			if changed {
+				s.wake();
+			}
+			changed
+		},
+		None => {
+			if need {
+				stats.write().compares += 1;
+				a != b
+			} else {
+				false
+			}
+		},
+	}
+}
+
+fun wake_me(slot: Option<Slot>, changed: bool) {
+	if changed {
+		match slot {
+			Some(let s) => s.wake(),
+			None => {},
+		}
+	}
+}
+
+fun diff_device(node: DeviceNode, a: Device, b: Device, need: bool): bool {
+	let here = need || node.me.is_some();
+	mut changed = leaf(node.name, a.name, b.name, here);
+	changed = leaf(node.since, a.since, b.since, here && !changed) || changed;
+	wake_me(node.me, changed);
+	changed
+}
+
+/// A payload under a variant: the leaves read `Option`s. Both absent: nothing to
+/// compare. One absent: every live slot below changed (Some <-> None). Both
+/// present: the payload diffs field by field, so a same-variant write PATCHES.
+fun diff_online(node: DeviceNode, a: Option<Device>, b: Option<Device>, need: bool): bool {
+	match a {
+		None => match b {
+			None => false,
+			Some(let _y) => {
+				wake_all_device(node);
+				true
+			},
+		},
+		Some(let x) => match b {
+			None => {
+				wake_all_device(node);
+				true
+			},
+			Some(let y) => diff_device(node, x, y, need),
+		},
+	}
+}
+
+fun wake_all_device(node: DeviceNode) {
+	wake_me(node.name, true);
+	wake_me(node.since, true);
+	wake_me(node.me, true);
+}
+
+fun diff_presence(node: PresenceNode, a: Presence, b: Presence, need: bool): bool {
+	let here = need || node.me.is_some();
+	mut changed = leaf(node.tag, is_online(a), is_online(b), here || node.online.is_some());
+	match node.online {
+		Some(let child) => {
+			changed = diff_online(child.read(), online_of(a), online_of(b), here && !changed) || changed;
+		},
+		None => {
+			if here && !changed {
+				stats.write().compares += 1;
+				changed = a != b;
+			}
+		},
+	}
+	wake_me(node.me, changed);
+	changed
+}
+
+fun diff_address(node: AddressNode, a: Address, b: Address, need: bool): bool {
+	let here = need || node.me.is_some();
+	mut changed = leaf(node.city, a.city, b.city, here);
+	changed = leaf(node.zip, a.zip, b.zip, here && !changed) || changed;
+	wake_me(node.me, changed);
+	changed
+}
+
+/// A map field: one slot per ASKED key (Selector's shape), compared by lookup.
+fun diff_scores(node: ScoresNode, a: Map<str, i32>, b: Map<str, i32>, need: bool): bool {
+	let here = need || node.me.is_some();
+	mut changed = false;
+	for key in node.keys.keys() {
+		changed = leaf(node.keys.get(key), a.get(key), b.get(key), false) || changed;
+	}
+	if here && !changed {
+		stats.write().compares += 1;
+		changed = !scores_eq(a, b);
+	}
+	wake_me(node.me, changed);
+	changed
+}
+
+fun diff_user(node: UserNode, a: User, b: User, need: bool): bool {
+	let here = need || node.me.is_some();
+	mut changed = leaf(node.name, a.name, b.name, here);
+	changed = leaf(node.age, a.age, b.age, here && !changed) || changed;
+	match node.address {
+		Some(let child) => {
+			changed = diff_address(child.read(), a.address, b.address, here && !changed) || changed;
+		},
+		None => {
+			if here && !changed {
+				stats.write().compares += 1;
+				changed = a.address != b.address;
+			}
+		},
+	}
+	match node.presence {
+		Some(let child) => {
+			changed = diff_presence(child.read(), a.presence, b.presence, here && !changed) || changed;
+		},
+		None => {
+			if here && !changed {
+				stats.write().compares += 1;
+				changed = a.presence != b.presence;
+			}
+		},
+	}
+	match node.scores {
+		Some(let child) => {
+			changed = diff_scores(child.read(), a.scores, b.scores, here && !changed) || changed;
+		},
+		None => {
+			if here && !changed {
+				stats.write().compares += 1;
+				changed = !scores_eq(a.scores, b.scores);
+			}
+		},
+	}
+	wake_me(node.me, changed);
+	changed
+}
+
+struct Store {
+	value: Shared<User>,
+	node: Shared<UserNode>,
+}
+
+fun empty_user_node(): UserNode {
+	UserNode { me = None, name = None, age = None, address = None, presence = None, scores = None }
+}
+
+impl Store {
+	fun new(value: User): Store {
+		Store { value = Shared::new(value), node = Shared::new(empty_user_node()) }
+	}
+
+	fun get(self): User {
+		self.value.read()
+	}
+
+	/// The whole-value write: diff, and wake only what changed.
+	fun set(self, value: User) {
+		let old = self.value.read();
+		self.value.write() = value;
+		diff_user(self.node.read(), old, value, false);
+	}
+
+	/// The one write path every lens shares: mutate at the path, then diff.
+	fun commit(self, old: User) {
+		diff_user(self.node.read(), old, self.value.read(), false);
+	}
+
+	// ---- slot allocation, one helper per path (generated) ----
+
+	fun me_slot(self): Slot {
+		match self.node.read().me {
+			Some(let s) => s,
+			None => {
+				let s = Slot::new("user");
+				self.node.write().me = Some(s);
+				s
+			},
+		}
+	}
+
+	fun name_slot(self): Slot {
+		match self.node.read().name {
+			Some(let s) => s,
+			None => {
+				let s = Slot::new("name");
+				self.node.write().name = Some(s);
+				s
+			},
+		}
+	}
+
+	fun age_slot(self): Slot {
+		match self.node.read().age {
+			Some(let s) => s,
+			None => {
+				let s = Slot::new("age");
+				self.node.write().age = Some(s);
+				s
+			},
+		}
+	}
+
+	fun address_node(self): Shared<AddressNode> {
+		match self.node.read().address {
+			Some(let n) => n,
+			None => {
+				stats.write().nodes += 1;
+				let n = Shared::new(AddressNode { me = None, city = None, zip = None });
+				self.node.write().address = Some(n);
+				n
+			},
+		}
+	}
+
+	fun presence_node(self): Shared<PresenceNode> {
+		match self.node.read().presence {
+			Some(let n) => n,
+			None => {
+				stats.write().nodes += 1;
+				let n = Shared::new(PresenceNode { me = None, tag = None, online = None });
+				self.node.write().presence = Some(n);
+				n
+			},
+		}
+	}
+
+	fun online_node(self): Shared<DeviceNode> {
+		let p = self.presence_node();
+		match p.read().online {
+			Some(let n) => n,
+			None => {
+				stats.write().nodes += 1;
+				let n = Shared::new(DeviceNode { me = None, name = None, since = None });
+				p.write().online = Some(n);
+				n
+			},
+		}
+	}
+
+	fun scores_node(self): Shared<ScoresNode> {
+		match self.node.read().scores {
+			Some(let n) => n,
+			None => {
+				stats.write().nodes += 1;
+				let n = Shared::new(ScoresNode { me = None, keys = Map::new() });
+				self.node.write().scores = Some(n);
+				n
+			},
+		}
+	}
+
+	// ---- the projections (generated): `store.name`, `store.address.city`, ... ----
+
+	fun me(self): Lens<User> {
+		Lens { read = || self.value.read(), put = |v| self.set(v), slot = || self.me_slot() }
+	}
+
+	fun name(self): Lens<str> {
+		Lens {
+			read = || self.value.read().name,
+			put = |v| {
+				let old = self.value.read();
+				self.value.write().name = v;
+				self.commit(old);
+			},
+			slot = || self.name_slot(),
+		}
+	}
+
+	fun age(self): Lens<i32> {
+		Lens {
+			read = || self.value.read().age,
+			put = |v| {
+				let old = self.value.read();
+				self.value.write().age = v;
+				self.commit(old);
+			},
+			slot = || self.age_slot(),
+		}
+	}
+
+	fun address(self): Lens<Address> {
+		Lens {
+			read = || self.value.read().address,
+			put = |v| {
+				let old = self.value.read();
+				self.value.write().address = v;
+				self.commit(old);
+			},
+			slot = || {
+				let n = self.address_node();
+				match n.read().me {
+					Some(let s) => s,
+					None => {
+						let s = Slot::new("address");
+						n.write().me = Some(s);
+						s
+					},
+				}
+			},
+		}
+	}
+
+	fun city(self): Lens<str> {
+		Lens {
+			read = || self.value.read().address.city,
+			put = |v| {
+				let old = self.value.read();
+				self.value.write().address.city = v;
+				self.commit(old);
+			},
+			slot = || {
+				let n = self.address_node();
+				match n.read().city {
+					Some(let s) => s,
+					None => {
+						let s = Slot::new("address.city");
+						n.write().city = Some(s);
+						s
+					},
+				}
+			},
+		}
+	}
+
+	fun zip(self): Lens<str> {
+		Lens {
+			read = || self.value.read().address.zip,
+			put = |v| {
+				let old = self.value.read();
+				self.value.write().address.zip = v;
+				self.commit(old);
+			},
+			slot = || {
+				let n = self.address_node();
+				match n.read().zip {
+					Some(let s) => s,
+					None => {
+						let s = Slot::new("address.zip");
+						n.write().zip = Some(s);
+						s
+					},
+				}
+			},
+		}
+	}
+
+	/// The discriminant, read-only: a variant gate subscribes here and nowhere else.
+	fun online_tag(self): Lens<bool> {
+		Lens {
+			read = || is_online(self.value.read().presence),
+			put = |_v| {},
+			slot = || {
+				let n = self.presence_node();
+				match n.read().tag {
+					Some(let s) => s,
+					None => {
+						let s = Slot::new("presence.tag");
+						n.write().tag = Some(s);
+						s
+					},
+				}
+			},
+		}
+	}
+
+	/// Through a variant: reads `Option`. `set` PATCHES only while the variant is
+	/// live (a no-op otherwise); switching the variant is a write to `presence`.
+	fun online_name(self): Lens<Option<str>> {
+		Lens {
+			read = || match online_of(self.value.read().presence) {
+				Some(let d) => Some(d.name),
+				None => None,
+			},
+			put = |v| {
+				let old = self.value.read();
+				match v {
+					Some(let name) => match online_of(old.presence) {
+						Some(let d) => {
+							self.value.write().presence = Presence::Online(Device { name, since = d.since });
+							self.commit(old);
+						},
+						None => {},
+					},
+					None => {},
+				}
+			},
+			slot = || {
+				let n = self.online_node();
+				match n.read().name {
+					Some(let s) => s,
+					None => {
+						let s = Slot::new("online.name");
+						n.write().name = Some(s);
+						s
+					},
+				}
+			},
+		}
+	}
+
+	fun online_since(self): Lens<Option<i32>> {
+		Lens {
+			read = || match online_of(self.value.read().presence) {
+				Some(let d) => Some(d.since),
+				None => None,
+			},
+			put = |_v| {},
+			slot = || {
+				let n = self.online_node();
+				match n.read().since {
+					Some(let s) => s,
+					None => {
+						let s = Slot::new("online.since");
+						n.write().since = Some(s);
+						s
+					},
+				}
+			},
+		}
+	}
+
+	fun presence(self): Lens<Presence> {
+		Lens {
+			read = || self.value.read().presence,
+			put = |v| {
+				let old = self.value.read();
+				self.value.write().presence = v;
+				self.commit(old);
+			},
+			slot = || {
+				let n = self.presence_node();
+				match n.read().me {
+					Some(let s) => s,
+					None => {
+						let s = Slot::new("presence");
+						n.write().me = Some(s);
+						s
+					},
+				}
+			},
+		}
+	}
+
+	/// A keyed collection field: `store.scores.at(key)` depends on that key only.
+	fun score_at(self, key: str): Lens<Option<i32>> {
+		Lens {
+			read = || self.value.read().scores.get(key),
+			put = |v| {
+				let old = self.value.read();
+				match v {
+					Some(let x) => self.value.write().scores.insert(key, x),
+					None => self.value.write().scores.remove(key),
+				}
+				self.commit(old);
+			},
+			slot = || {
+				let n = self.scores_node();
+				match n.read().keys.get(key) {
+					Some(let s) => s,
+					None => {
+						let s = Slot::new(i"scores[{key}]");
+						n.write().keys.insert(key, s);
+						s
+					},
+				}
+			},
+		}
+	}
+
+	/// The same lens with the SPINE commit the compiler can generate because the
+	/// path is static: a write at `scores[key]` cannot change a sibling, so only
+	/// that key's slot and its ancestors' whole-value slots are looked at.
+	fun score_at_spine(self, key: str): Lens<Option<i32>> {
+		let full = self.score_at(key);
+		Lens {
+			read = full.read,
+			put = |v| {
+				let before = self.value.read().scores.get(key);
+				match v {
+					Some(let x) => self.value.write().scores.insert(key, x),
+					None => self.value.write().scores.remove(key),
+				}
+				let n = self.scores_node().read();
+				let changed = leaf(n.keys.get(key), before, v, n.me.is_some() || self.node.read().me.is_some());
+				wake_me(n.me, changed);
+				wake_me(self.node.read().me, changed);
+			},
+			slot = full.slot,
+		}
+	}
+}
+
+// === Layout T: a side table keyed by static path (generated) =================
+
+struct Entry {
+	slot: Slot,
+	changed: |User, User| bool,
+}
+
+struct TableStore {
+	value: Shared<User>,
+	table: Shared<Map<str, Entry>>,
+}
+
+impl TableStore {
+	fun new(value: User): TableStore {
+		TableStore { value = Shared::new(value), table = Shared::new(Map::new()) }
+	}
+
+	/// Every live entry runs its comparator from the root; an ancestor's compares
+	/// the whole sub-value, so it repeats its descendants' work.
+	fun set(self, value: User) {
+		let old = self.value.read();
+		self.value.write() = value;
+		self.diff(old, value);
+	}
+
+	fun diff(self, old: User, new: User) {
+		for entry in self.table.read().values() {
+			stats.write().compares += 1;
+			if (entry.changed)(old, new) {
+				entry.slot.wake();
+			}
+		}
+	}
+
+	fun entry(self, path: str, changed: |User, User| bool): Slot {
+		match self.table.read().get(path) {
+			Some(let e) => e.slot,
+			None => {
+				let s = Slot::new(path);
+				self.table.write().insert(path, Entry { slot = s, changed });
+				s
+			},
+		}
+	}
+
+	fun lens<T>(self, path: str, read: |User| T, write: |&mut User, T| void, changed: |User, User| bool): Lens<T> {
+		Lens {
+			read = || read(self.value.read()),
+			put = |v| {
+				let old = self.value.read();
+				write(&mut self.value.write(), v);
+				self.diff(old, self.value.read());
+			},
+			slot = || self.entry(path, changed),
+		}
+	}
+
+	fun me(self): Lens<User> {
+		self.lens("user", |u| u, |&mut u, v| {
+			u = v;
+		}, |a, b| a != b)
+	}
+
+	fun name(self): Lens<str> {
+		self.lens("name", |u| u.name, |&mut u, v| {
+			u.name = v;
+		}, |a, b| a.name != b.name)
+	}
+
+	fun age(self): Lens<i32> {
+		self.lens("age", |u| u.age, |&mut u, v| {
+			u.age = v;
+		}, |a, b| a.age != b.age)
+	}
+
+	fun address(self): Lens<Address> {
+		self.lens("address", |u| u.address, |&mut u, v| {
+			u.address = v;
+		}, |a, b| a.address != b.address)
+	}
+
+	fun city(self): Lens<str> {
+		self.lens("address.city", |u| u.address.city, |&mut u, v| {
+			u.address.city = v;
+		}, |a, b| a.address.city != b.address.city)
+	}
+
+	fun zip(self): Lens<str> {
+		self.lens("address.zip", |u| u.address.zip, |&mut u, v| {
+			u.address.zip = v;
+		}, |a, b| a.address.zip != b.address.zip)
+	}
+
+	fun online_tag(self): Lens<bool> {
+		self.lens("presence.tag", |u| is_online(u.presence), |&mut _u, _v| {}, |a, b| {
+			is_online(a.presence) != is_online(b.presence)
+		})
+	}
+
+	fun online_name(self): Lens<Option<str>> {
+		self.lens("online.name", |u| match online_of(u.presence) {
+			Some(let d) => Some(d.name),
+			None => None,
+		}, |&mut _u, _v| {}, |a, b| {
+			let x: Option<str> = match online_of(a.presence) {
+				Some(let d) => Some(d.name),
+				None => None,
+			};
+			let y: Option<str> = match online_of(b.presence) {
+				Some(let d) => Some(d.name),
+				None => None,
+			};
+			x != y
+		})
+	}
+
+	fun online_since(self): Lens<Option<i32>> {
+		self.lens("online.since", |u| match online_of(u.presence) {
+			Some(let d) => Some(d.since),
+			None => None,
+		}, |&mut _u, _v| {}, |a, b| {
+			let x: Option<i32> = match online_of(a.presence) {
+				Some(let d) => Some(d.since),
+				None => None,
+			};
+			let y: Option<i32> = match online_of(b.presence) {
+				Some(let d) => Some(d.since),
+				None => None,
+			};
+			x != y
+		})
+	}
+
+	fun presence(self): Lens<Presence> {
+		self.lens("presence", |u| u.presence, |&mut u, v| {
+			u.presence = v;
+		}, |a, b| a.presence != b.presence)
+	}
+
+	fun score_at(self, key: str): Lens<Option<i32>> {
+		self.lens(i"scores[{key}]", |u| u.scores.get(key), |&mut u, v| {
+			match v {
+				Some(let x) => u.scores.insert(key, x),
+				None => u.scores.remove(key),
+			}
+		}, |a, b| a.scores.get(key) != b.scores.get(key))
+	}
+}
+
+// === Layout C: the coarse model (one cell, a projection per leaf) ============
+
+struct Coarse {
+	value: Shared<User>,
+	subs: Shared<List<|| void>>,
+}
+
+impl Coarse {
+	fun new(value: User): Coarse {
+		Coarse { value = Shared::new(value), subs = Shared::new([]) }
+	}
+
+	fun set(self, value: User) {
+		self.value.write() = value;
+		for f in self.subs.read() {
+			f();
+		}
+	}
+
+	/// `cell.derive(project).distinct()` feeding one observer, by hand.
+	fun project<T: PartialEq>(self, project: |User| T, distinct: bool, observer: || void) {
+		let last = Shared::new(project(self.value.read()));
+		let value = self.value;
+		self.subs.write().push(|| {
+			stats.write().runs += 1;
+			let now = project(value.read());
+			if distinct {
+				stats.write().compares += 1;
+				if now == last.read() {
+					ret;
+				}
+				last.write() = now;
+			}
+			stats.write().wakes += 1;
+			observer();
+		});
+	}
+}
+
+// === Scenarios ===============================================================
+
+fun alice(): User {
+	mut scores: Map<str, i32> = Map::new();
+	scores.insert("a", 1);
+	scores.insert("b", 2);
+	User {
+		name = "Alice",
+		age = 30,
+		address = Address { city = "Oslo", zip = "0150" },
+		presence = Presence::Online(Device { name = "laptop", since = 100 }),
+		scores,
+	}
+}
+
+fun with_age(u: User, age: i32): User {
+	mut v = u;
+	v.age = age;
+	v
+}
+
+fun with_zip(u: User, zip: str): User {
+	mut v = u;
+	v.address.zip = zip;
+	v
+}
+
+fun with_since(u: User, since: i32): User {
+	mut v = u;
+	v.presence = Presence::Online(Device { name = "laptop", since });
+	v
+}
+
+fun with_presence(u: User, p: Presence): User {
+	mut v = u;
+	v.presence = p;
+	v
+}
+
+fun with_score(u: User, key: str, x: i32): User {
+	mut v = u;
+	v.scores.insert(key, x);
+	v
+}
+
+fun nothing() {}
+
+/// A variant gate, by hand: subscribe to the discriminant ONLY; build the body
+/// when the variant becomes live. The body binds the payload's leaves by lens.
+fun gate(tag: Lens<bool>, build: || void) {
+	let live = Shared::new(false);
+	let check = || {
+		let now = tag.get();
+		if now && !live.read() {
+			stats.write().built += 1;
+			build();
+		}
+		live.write() = now;
+	};
+	tag.on(check);
+	check();
+}
+
+fun scenarios_inline() {
+	print("--- layout I (inline)");
+	reset();
+	let s = Store::new(alice());
+	let _read = s.city().get();
+	print(i"new + one read: {counted()}");
+
+	// Subscribe: 8 leaves and 3 wholes, plus a variant gate over presence.
+	s.name().on(nothing);
+	s.age().on(nothing);
+	s.city().on(nothing);
+	s.zip().on(nothing);
+	s.address().on(nothing);
+	s.me().on(nothing);
+	s.presence().on(nothing);
+	s.score_at("a").on(nothing);
+	gate(s.online_tag(), || {
+		s.online_name().on(nothing);
+		s.online_since().on(nothing);
+	});
+	print(i"subscribed: {counted()} built={stats.read().built}");
+
+	reset();
+	s.set(with_zip(s.get(), "0151"));
+	print(i"whole write, zip changed: woke [{woke()}] {counted()}");
+	reset();
+	s.set(with_since(s.get(), 101));
+	print(i"same-variant write, since changed: woke [{woke()}] {counted()} built+={stats.read().built}");
+	reset();
+	s.set(with_presence(s.get(), Presence::Offline));
+	print(i"variant switch to Offline: woke [{woke()}] {counted()}");
+	reset();
+	s.set(with_presence(s.get(), Presence::Online(Device { name = "phone", since = 5 })));
+	print(i"variant switch back Online: woke [{woke()}] {counted()} built+={stats.read().built}");
+	reset();
+	s.set(with_score(s.get(), "b", 20));
+	print(i"whole write, scores[b] changed: woke [{woke()}] {counted()}");
+	reset();
+	s.set(s.get());
+	print(i"whole write, nothing changed: woke [{woke()}] {counted()}");
+
+	// Lens writes back through the root.
+	reset();
+	s.city().set("Bergen");
+	print(i"lens set address.city: woke [{woke()}] {counted()} root.city={s.get().address.city}");
+	reset();
+	s.city().set("Bergen");
+	print(i"lens set, same value: woke [{woke()}] {counted()}");
+	reset();
+	s.online_name().set(Some("tablet"));
+	print(i"lens set through variant: woke [{woke()}] {counted()} built+={stats.read().built}");
+	reset();
+	s.set(with_presence(s.get(), Presence::Offline));
+	reset();
+	s.online_name().set(Some("ghost"));
+	print(i"lens set through a dead variant: woke [{woke()}] presence={is_online(s.get().presence)}");
+	reset();
+	s.score_at("a").set(None);
+	print(i"lens set scores[a] = None: woke [{woke()}] {counted()}");
+}
+
+fun scenarios_table() {
+	print("--- layout T (side table)");
+	reset();
+	let s = TableStore::new(alice());
+	let _read = s.city().get();
+	print(i"new + one read: {counted()}");
+	s.name().on(nothing);
+	s.age().on(nothing);
+	s.city().on(nothing);
+	s.zip().on(nothing);
+	s.address().on(nothing);
+	s.me().on(nothing);
+	s.presence().on(nothing);
+	s.score_at("a").on(nothing);
+	gate(s.online_tag(), || {
+		s.online_name().on(nothing);
+		s.online_since().on(nothing);
+	});
+	print(i"subscribed: {counted()} built={stats.read().built}");
+
+	reset();
+	s.set(with_zip(s.value.read(), "0151"));
+	print(i"whole write, zip changed: woke [{woke()}] {counted()}");
+	reset();
+	s.set(with_since(s.value.read(), 101));
+	print(i"same-variant write, since changed: woke [{woke()}] {counted()} built+={stats.read().built}");
+	reset();
+	s.set(with_presence(s.value.read(), Presence::Offline));
+	print(i"variant switch to Offline: woke [{woke()}] {counted()}");
+	reset();
+	s.set(with_presence(s.value.read(), Presence::Online(Device { name = "phone", since = 5 })));
+	print(i"variant switch back Online: woke [{woke()}] {counted()} built+={stats.read().built}");
+	reset();
+	s.set(with_score(s.value.read(), "b", 20));
+	print(i"whole write, scores[b] changed: woke [{woke()}] {counted()}");
+	reset();
+	s.set(s.value.read());
+	print(i"whole write, nothing changed: woke [{woke()}] {counted()}");
+	reset();
+	s.city().set("Bergen");
+	print(i"lens set address.city: woke [{woke()}] {counted()} root.city={s.value.read().address.city}");
+}
+
+fun scenarios_coarse() {
+	print("--- layout C (coarse cell, a projection per leaf)");
+	reset();
+	let c = Coarse::new(alice());
+	c.project(|u| u.name, false, nothing);
+	c.project(|u| u.age, false, nothing);
+	c.project(|u| u.address.city, false, nothing);
+	c.project(|u| u.address.zip, false, nothing);
+	c.project(|u| u.address, false, nothing);
+	c.project(|u| u, false, nothing);
+	c.project(|u| u.presence, false, nothing);
+	c.project(|u| u.scores.get("a"), false, nothing);
+	c.set(with_zip(c.value.read(), "0151"));
+	print(i"no distinct, zip changed: runs={stats.read().runs} wakes={stats.read().wakes}");
+	reset();
+	let d = Coarse::new(alice());
+	d.project(|u| u.name, true, nothing);
+	d.project(|u| u.age, true, nothing);
+	d.project(|u| u.address.city, true, nothing);
+	d.project(|u| u.address.zip, true, nothing);
+	d.project(|u| u.address, true, nothing);
+	d.project(|u| u, true, nothing);
+	d.project(|u| u.presence, true, nothing);
+	d.project(|u| u.scores.get("a"), true, nothing);
+	d.set(with_zip(d.value.read(), "0151"));
+	print(i"distinct, zip changed: runs={stats.read().runs} wakes={stats.read().wakes} compares={stats.read().compares}");
+}
+
+/// The same-variant patch against today's `when_some`, which keeps its row on
+/// Some -> Some and hands the body a coarse cell of the payload (browser/ui.vl
+/// `place_when_some`): each payload binding is a projection of that cell.
+fun scenario_payload() {
+	print("--- same-variant writes: 100 writes, each changing `since` only");
+	reset();
+	let s = Store::new(alice());
+	let name_wakes = Shared::new(0);
+	gate(s.online_tag(), || {
+		s.online_name().on(|| {
+			name_wakes.write() += 1;
+		});
+		s.online_since().on(nothing);
+	});
+	mut i = 0;
+	for i < 100 {
+		s.set(with_since(s.get(), 200 + i));
+		i += 1;
+	}
+	print(i"store:  built={stats.read().built} name_wakes={name_wakes.read()} wakes={stats.read().wakes}");
+	reset();
+	let c = Coarse::new(alice());
+	let cname = Shared::new(0);
+	c.project(|u| online_of(u.presence), false, nothing);    // the when_some cell
+	c.project(|u| match online_of(u.presence) {
+		Some(let d) => d.name,
+		None => "",
+	}, false, || {
+		cname.write() += 1;
+	});
+	c.project(|u| match online_of(u.presence) {
+		Some(let d) => d.since,
+		None => 0,
+	}, false, nothing);
+	i = 0;
+	for i < 100 {
+		c.set(with_since(c.value.read(), 200 + i));
+		i += 1;
+	}
+	print(i"coarse: runs={stats.read().runs} name_wakes={cname.read()}");
+}
+
+fun timing(writes: i32) {
+	print(i"--- timing: {writes} whole writes, each changing `age`");
+	// 0 live slots: the floor is the write and nothing else.
+	reset();
+	let bare = Store::new(alice());
+	mut t = time::now();
+	mut i = 0;
+	for i < writes {
+		bare.set(with_age(bare.get(), i));
+		i += 1;
+	}
+	print(i"I, 0 slots:  ms={time::now().millis - t.millis} compares={stats.read().compares}");
+
+	reset();
+	let s = Store::new(alice());
+	s.name().on(nothing);
+	s.age().on(nothing);
+	s.city().on(nothing);
+	s.zip().on(nothing);
+	s.address().on(nothing);
+	s.me().on(nothing);
+	s.presence().on(nothing);
+	s.score_at("a").on(nothing);
+	s.online_name().on(nothing);
+	s.online_since().on(nothing);
+	s.online_tag().on(nothing);
+	reset();
+	t = time::now();
+	i = 0;
+	for i < writes {
+		s.set(with_age(s.get(), i));
+		i += 1;
+	}
+	print(i"I, 11 slots: ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+
+	reset();
+	let ts = TableStore::new(alice());
+	ts.name().on(nothing);
+	ts.age().on(nothing);
+	ts.city().on(nothing);
+	ts.zip().on(nothing);
+	ts.address().on(nothing);
+	ts.me().on(nothing);
+	ts.presence().on(nothing);
+	ts.score_at("a").on(nothing);
+	ts.online_name().on(nothing);
+	ts.online_since().on(nothing);
+	ts.online_tag().on(nothing);
+	reset();
+	t = time::now();
+	i = 0;
+	for i < writes {
+		ts.set(with_age(ts.value.read(), i));
+		i += 1;
+	}
+	print(i"T, 11 slots: ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+
+	reset();
+	let c = Coarse::new(alice());
+	c.project(|u| u.name, true, nothing);
+	c.project(|u| u.age, true, nothing);
+	c.project(|u| u.address.city, true, nothing);
+	c.project(|u| u.address.zip, true, nothing);
+	c.project(|u| u.address, true, nothing);
+	c.project(|u| u, true, nothing);
+	c.project(|u| u.presence, true, nothing);
+	c.project(|u| u.scores.get("a"), true, nothing);
+	c.project(|u| match online_of(u.presence) {
+		Some(let d) => Some(d.name),
+		None => None,
+	}, true, nothing);
+	c.project(|u| match online_of(u.presence) {
+		Some(let d) => Some(d.since),
+		None => None,
+	}, true, nothing);
+	c.project(|u| is_online(u.presence), true, nothing);
+	reset();
+	t = time::now();
+	i = 0;
+	for i < writes {
+		c.set(with_age(c.value.read(), i));
+		i += 1;
+	}
+	print(i"C, 11 distinct projections: ms={time::now().millis - t.millis} runs={stats.read().runs} wakes={stats.read().wakes} compares={stats.read().compares}");
+
+	// A lens write versus a whole write: the lens path runs the same diff.
+	reset();
+	t = time::now();
+	i = 0;
+	let age = s.age();
+	for i < writes {
+		age.set(i + 1);
+		i += 1;
+	}
+	print(i"I, lens set age x{writes}: ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+}
+
+fun with_keys(n: i32): User {
+	mut u = alice();
+	mut i = 0;
+	for i < n {
+		u.scores.insert(i"k{i}", i);
+		i += 1;
+	}
+	u
+}
+
+/// A store holding a keyed collection: every key observed, then writes to ONE key.
+fun scale(n: i32, writes: i32) {
+	print(i"--- scale: {n} keys, each observed; {writes} writes to one key");
+	reset();
+	let s = Store::new(with_keys(n));
+	mut k = 0;
+	for k < n {
+		s.score_at(i"k{k}").on(nothing);
+		k += 1;
+	}
+	reset();
+	mut t = time::now();
+	mut i = 0;
+	for i < writes {
+		s.set(with_score(s.get(), "k5", i));
+		i += 1;
+	}
+	print(i"I, whole write:        ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+	reset();
+	let full = s.score_at("k5");
+	t = time::now();
+	i = 0;
+	for i < writes {
+		full.set(Some(i + 1));
+		i += 1;
+	}
+	print(i"I, lens set, full diff: ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+	reset();
+	let spine = s.score_at_spine("k5");
+	t = time::now();
+	i = 0;
+	for i < writes {
+		spine.set(Some(i + 2));
+		i += 1;
+	}
+	print(i"I, lens set, spine:     ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+	reset();
+	let c = Coarse::new(with_keys(n));
+	k = 0;
+	for k < n {
+		let key = i"k{k}";
+		c.project(|u| u.scores.get(key), true, nothing);
+		k += 1;
+	}
+	reset();
+	t = time::now();
+	i = 0;
+	for i < writes {
+		c.set(with_score(c.value.read(), "k5", i));
+		i += 1;
+	}
+	print(i"C, distinct per key:   ms={time::now().millis - t.millis} runs={stats.read().runs} wakes={stats.read().wakes} compares={stats.read().compares}");
+}
+
+/// A leaf read through a handle, on a root holding a 1000-entry map.
+fun reads(n: i32) {
+	let s = Store::new(with_keys(1000));
+	let t = time::now();
+	mut i = 0;
+	mut total = 0;
+	for i < n {
+		total += s.city().get().len();
+		i += 1;
+	}
+	print(i"leaf reads x{n} on a 1000-key root: ms={time::now().millis - t.millis} (chars={total})");
+}
+
+fun main() {
+	scenarios_inline();
+	scenarios_table();
+	scenarios_coarse();
+	scenario_payload();
+	timing(20000);
+	scale(1000, 200);
+	reads(2000);
+}

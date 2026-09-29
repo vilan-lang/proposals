@@ -1,0 +1,41 @@
+// FIND (for the integrator): a closure-typed parameter whose parameter is `&mut T`,
+// called with a BARE place (`f(a.s)`), is accepted - a `fun` with a `&mut` parameter
+// refuses the same call ("pass `&mut <place>`"). The JS emit then passes the VALUE
+// while the closure body assigns through a place pair, and node throws
+// `TypeError: Cannot create property .. on string`. `--backend rust` prints
+// `sync local list`. Spelled `f(&mut a.s)` it works on both.
+
+struct A {
+	x: i32,
+	s: str,
+}
+
+fun apply_sync(f: sync |&mut str| void) {
+	mut a = A { x = 1, s = "old" };
+	f(a.s);
+	print(a.s);
+}
+
+fun apply_local(f: |&mut str| void) {
+	mut s = "old";
+	f(s);
+	print(s);
+}
+
+fun apply_list(f: |&mut str| void) {
+	mut xs = ["old"];
+	f(xs[0]);
+	print(xs[0]);
+}
+
+fun main() {
+	apply_sync(|&mut p| {
+		p = "sync";
+	});
+	apply_local(|&mut p| {
+		p = "local";
+	});
+	apply_list(|&mut p| {
+		p = "list";
+	});
+}

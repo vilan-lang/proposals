@@ -1,0 +1,29 @@
+import std::map::Map;
+import std::set::Set;
+
+// I10's premise: does iteration order agree across the two backends?
+// Insert, overwrite, remove and re-insert, then print keys/values/entries.
+fun main() {
+	mut m: Map<str, i32> = Map::new();
+	m.insert("a", 1);
+	m.insert("b", 2);
+	m.insert("c", 3);
+	m.insert("a", 10);       // overwrite: does `a` keep its place?
+	m.remove("b");
+	m.insert("b", 20);       // re-insert after remove: first or last?
+	m.insert("d", 4);
+	print(m.keys());
+	print(m.values());
+	mut s: Set<i32> = Set::new();
+	s.insert(3);
+	s.insert(1);
+	s.insert(2);
+	s.insert(3);             // duplicate: keeps its place
+	s.remove(1);
+	s.insert(1);
+	print(s.values());
+	// keys of a struct type (Hashable via derive) order the same way
+	let pairs: List<(i32, str)> = [(5, "five"), (1, "one"), (3, "three")];
+	let from_list = pairs.to_map();
+	print(from_list.keys());
+}

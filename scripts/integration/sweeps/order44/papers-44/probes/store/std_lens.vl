@@ -1,0 +1,74 @@
+// reactive-layers.md section 8: "`Signal` must allow a LENS implementation, where
+// `set` on a projection writes back through the root." Checked against std's own
+// traits on 0.41.1: a lens is a root `Shared<T>` plus a static path (closures stand
+// in), plus a notification-only `SignalCell<i32>` per path - `ListCell`'s
+// discipline (delta.vl `ListCell`: the items in a `Shared`, the notification in a
+// `SignalCell`). Then std's combinators, effects and batching run over it unchanged.
+import std::reactive::{ Signal, SignalCell, Source, Subscriber, Subscription, batch, comp };
+import std::shared::Shared;
+
+struct Address {
+	city: str,
+	zip: str,
+}
+
+struct Lens<T> {
+	read: || T,
+	write: |T| void,
+	published: SignalCell<i32>,
+}
+
+impl Lens<type T> with Source<T> {
+	fun get(self): T {
+		(self.read)()
+	}
+
+	[must_use]
+	fun on_change(self, observer: |T| void): Subscription {
+		let read = self.read;
+		self.published.on_change(|_seq| observer(read()))
+	}
+
+	[must_use]
+	fun on_settle(self, subscriber: Subscriber): Subscription {
+		self.published.on_settle(subscriber)
+	}
+}
+
+impl Lens<type T> with Signal<T> {
+	fun set(self, value: T) {
+		(self.write)(value);
+		self.published.set(self.published.get() + 1);
+	}
+
+	fun notify(self) {
+		self.published.notify();
+	}
+}
+
+fun main() {
+	let _run = comp(|| {
+		let root = Shared::new(Address { city = "Oslo", zip = "0150" });
+		let city: Lens<str> = Lens {
+			read = || root.read().city,
+			write = |v| {
+				root.write().city = v;
+			},
+			published = SignalCell::new(0),
+		};
+		let copy = city;                                        // a copyable handle
+		let shout = city.map(|c| c + "!").cell();              // std's combinator over a lens
+		let seen = Shared::new(0);
+		city.effect(|c| {
+			seen.write() += 1;
+			print(i"effect sees {c}");
+		});
+		copy.set("Bergen");                                    // writes back through the root
+		print(i"root.city={root.read().city} shout={shout.get()}");
+		batch(|| {
+			city.set("Trondheim");
+			city.set_with(|c| c + " S");                        // the trait default, over the lens
+		});
+		print(i"after batch: root.city={root.read().city} shout={shout.get()} effect runs={seen.read()}");
+	});
+}

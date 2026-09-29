@@ -1,0 +1,35 @@
+// A generic leaf decides "compare or always wake" by the specificity tiers
+// (B158, spec 5.4): a comparable leaf compares, anything else reports changed.
+import std::compare::PartialEq;
+
+trait Leaf {
+	fun differs(self, b: Self): bool;
+}
+
+impl type T with Leaf {
+	fun differs(self, b: T): bool {
+		true
+	}
+}
+
+impl type T: PartialEq with Leaf {
+	fun differs(self, b: T): bool {
+		self != b
+	}
+}
+
+struct Opaque {
+	f: || void,
+}
+
+fun changed<T: Leaf>(a: T, b: T): bool {
+	a.differs(b)
+}
+
+fun main() {
+	print(changed(1, 1));
+	print(changed(1, 2));
+	print(changed("x", "x"));
+	let o = Opaque { f = || {} };
+	print(changed(o, o));
+}

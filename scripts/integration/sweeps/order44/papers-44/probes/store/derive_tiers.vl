@@ -1,0 +1,49 @@
+// The macro door's dispatch: `[derive(Storable)]` on a type emits a CONCRETE impl;
+// every other type falls to a blanket leaf impl - comparing when it has
+// `PartialEq`, "always changed" when it has not. A derive sees one item at a
+// time, so a derived `User` reaches its `Address` field only through the bound.
+// Does the concrete impl win over the `PartialEq` blanket for a derived type that
+// ALSO derives `PartialEq`, when reached from generic code?
+import std::compare::PartialEq;
+
+trait Storable {
+	fun kind(self): str;
+}
+
+impl type T with Storable {
+	fun kind(self): str {
+		"leaf, always changed"
+	}
+}
+
+impl type T: PartialEq with Storable {
+	fun kind(self): str {
+		"leaf, compared"
+	}
+}
+
+[derive(PartialEq)]
+struct Address {
+	city: str,
+}
+
+impl Address with Storable {
+	fun kind(self): str {
+		"derived: per field"
+	}
+}
+
+struct Opaque {
+	f: || void,
+}
+
+fun reach<F: Storable>(field: F): str {
+	field.kind()
+}
+
+fun main() {
+	print(reach(Address { city = "Oslo" }));
+	print(reach("a str"));
+	print(reach(Opaque { f = || {} }));
+	print(reach(Some(3)));
+}

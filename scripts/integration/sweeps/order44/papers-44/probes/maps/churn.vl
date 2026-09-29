@@ -1,0 +1,27 @@
+// The native `Map` keeps a tombstone per removed key (vilan-rt `Map.entries` is
+// never compacted). Churn N distinct keys through a map that never holds more
+// than one, then time walking it. Argument: N.
+import std::map::Map;
+import std::process;
+import std::time;
+
+fun main() {
+	let n = process::args().get(0).unwrap_or("0").parse_i32().unwrap_or(0);
+	mut m: Map<i32, i32> = Map::new();
+	mut i = 0;
+	for i < n {
+		m.insert(i, i);
+		m.remove(i);
+		i += 1;
+	}
+	m.insert(-1, -1);
+	let start = time::now();
+	mut walks = 0;
+	mut seen = 0;
+	for walks < 2000 {
+		seen += m.keys().len();
+		walks += 1;
+	}
+	let ms = time::now().millis - start.millis;
+	print(i"n={n} len={m.len()} seen={seen} ms={ms}");
+}
