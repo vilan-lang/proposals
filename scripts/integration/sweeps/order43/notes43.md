@@ -53,3 +53,5 @@ LANDED 18 + B435 + the B435 family fix: B433 (UNSOUND, wider than filed — ever
 - SEAL (2) on 07e8db37 GREEN (seal-43b.log): union 8884/8884; doc-tests, native whole-set, clippy, windows, audit, fmt, vilan-fmt all 0; parity 44/44. CI 36501668642 running. Toolchain refresh + the vsix via scripts/install-dev.sh (E229 door d) at the write.
 
 - SWEEP 2026-09-28: 55 filed this order (E229, E230, E231, B438, N136, A136, A137, A134, A135, N135, F51, B439, I7, I8, I9, I10, A138, E227, E232, M88, B434, B435, B436, B437, G25, F47, F48, F49, F50, M89, A139, A140, A141, B446, B433, E228, B452, B453, B454, B455, B456, F53, F54, F55, B457, F52, B444, E233, B445, B440, B441, B442, B443, B432, N134); 44 closed (closes43.json); stamps per lane; 126 open. Chronicle GO/MERGED/SEALED written. Toolchain 07e8db37 both locations + the vsix into vscode-server.
+
+- CI 36501668642 GREEN 11/11 on 07e8db37 (ci-43.log). Eight worktrees reaped. ORDER 43 CLOSED.
