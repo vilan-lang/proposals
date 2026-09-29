@@ -1,0 +1,270 @@
+{
+ "date": "2026-09-28",
+ "order": "Order 43",
+ "closes": [
+  {
+   "id": "N133",
+   "lane": "hygiene-43",
+   "commit": "3e2c750f",
+   "text": "a `StagedDir` Drop guard removes native_differential's per-test staging dir; the fmt/watch walk skips CACHEDIR.TAG directories; 0 stale dirs since"
+  },
+  {
+   "id": "N106",
+   "lane": "hygiene-43",
+   "commit": "0816332e",
+   "text": "f64-print-boundary and non-bmp-string-length pinned in the differential (the 'BMP only' premise was false); the `-0` divergence pinned outside by name → N136"
+  },
+  {
+   "id": "L22",
+   "lane": "hygiene-43",
+   "commit": "1946f746",
+   "text": "publish-brew's tap-token mint on `client-id` at create-github-app-token v3.2.0 + a release_gate lint; the owner adds the `TAP_APP_CLIENT_ID` secret before the next tag"
+  },
+  {
+   "id": "M84",
+   "lane": "hygiene-43",
+   "commit": "4e6ebfe0",
+   "text": "the nine integer types' Math.min/max externs under `impl T with Ord`: clamp compiles to two Math calls, zero compares; output byte-identical"
+  },
+  {
+   "id": "L18",
+   "lane": "hygiene-43",
+   "commit": "none — stale",
+   "text": "the pages repo's main already pins docs.yml's actions by sha (fe81d5c) with dependabot"
+  },
+  {
+   "id": "M12",
+   "lane": "hygiene-43",
+   "commit": "none — stale",
+   "text": "the lsp leak soak already refuses a zero-corpus measurement, with two passing pins"
+  },
+  {
+   "id": "E229",
+   "lane": "editor-43",
+   "commit": "57296047",
+   "text": "install.sh/ps1 install the checked vsix (opt-out), vilan-lsp reports its version, the extension warns once on a mismatch, install-dev.sh installs what it packages; premise corrected — the extension IS on the Marketplace, the owner's 0.40.0 was a pinned vsix install (E230 for `vilan upgrade` + the gallery preference)"
+  },
+  {
+   "id": "E228",
+   "lane": "editor-43",
+   "commit": "164f2733",
+   "text": "completion after `cell.read().`/`write().` on a Shared<T>: an external method's bare `T` is substituted, and the just-typed walk binds `T` from the receiver"
+  },
+  {
+   "id": "E225",
+   "lane": "editor-43",
+   "commit": "502e12fe",
+   "text": "one keyword table (`vilan_core::keyword_table`, `vilan --print-keywords`) feeds bindgen's reserved words; bindgen also escapes top-level `declare function` names now; K24's compiler half"
+  },
+  {
+   "id": "B422",
+   "lane": "editor-43",
+   "commit": "f25fce11",
+   "text": "the base-cache key carries the canonical std roots; the `references::` panics under plain cargo test are gone"
+  },
+  {
+   "id": "E199",
+   "lane": "editor-43",
+   "commit": "none — no repro",
+   "text": "the type its message names no longer exists; eight probe shapes name the correct T"
+  },
+  {
+   "id": "F41",
+   "lane": "native-43",
+   "commit": "8be0eac5",
+   "text": "self/Self/super/crate as field names mangled with a trailing `_` (injective), never raw-quoted"
+  },
+  {
+   "id": "F42",
+   "lane": "native-43",
+   "commit": "ed91b4d5",
+   "text": "KeyedCell builds natively: an intrinsic's argument takes its own expected type (premise corrected: not B406)"
+  },
+  {
+   "id": "F44",
+   "lane": "native-43",
+   "commit": "7674feff",
+   "text": "every closure literal is built as the counted `dyn Fn` its type renders as"
+  },
+  {
+   "id": "F46",
+   "lane": "native-43",
+   "commit": "3b8e4aab + 2c34918c (reactive-43's std fold)",
+   "text": "a loaned bare-place argument is walked last by the native liveness pass, so a by-value argument handing the borrowed receiver on copies; subscribe_pulling back to one statement"
+  },
+  {
+   "id": "F45",
+   "lane": "native-43",
+   "commit": "e9a394db",
+   "text": "`vilan_rt::http::request_termination()` + the optional `vilan-rt-signal` crate (ctrlc) — a native server stops on SIGTERM/SIGINT/SIGHUP and reaches process end; listen's ready callback deferred as node's; kolt's server exits 0 on SIGTERM"
+  },
+  {
+   "id": "F47",
+   "lane": "native-43",
+   "commit": "76a873c8",
+   "text": "UNSOUND fixed: a captured `mut` parameter is boxed and shared with its closure natively (printed 0 where node prints 5)"
+  },
+  {
+   "id": "A134",
+   "lane": "reactive-43",
+   "commit": "7c76e11f",
+   "text": "the generated client dedups mirrors per origin (a module-level MirrorTable per handle method; released with the last lease, the owner, or the client); pinned in-process and over a WebSocket; and_then's select documented pure"
+  },
+  {
+   "id": "A137",
+   "lane": "reactive-43",
+   "commit": "61c9de90",
+   "text": "a real socket bug: a joining Subscribe got no seed (plain: empty until the next change; keyed: permanently desynced) — `seed_from_sibling` on the client; the per-key join → A139"
+  },
+  {
+   "id": "A135",
+   "lane": "reactive-43",
+   "commit": "394f6be7",
+   "text": "every generated route runs under the connection's owner (disposed by drop_session); a handle method whose tail is `.cell()` warns (ledger 576); consequence → A141"
+  },
+  {
+   "id": "A136",
+   "lane": "reactive-43",
+   "commit": "61ba6460",
+   "text": "memo.vl's rule rewritten (what the maker builds outlives the caller); a `.cell()`/effect inside a maker warns (ledger 577); the probe's F/G pinned"
+  },
+  {
+   "id": "I7",
+   "lane": "reactive-43",
+   "commit": "61ba6460",
+   "text": "`Memo::get_or_insert`; `get_or` one release as a deprecated alias; kolt's six sites the owner's"
+  },
+  {
+   "id": "A132",
+   "lane": "reactive-43",
+   "commit": "5979f0eb",
+   "text": "DeltaSource gains `reader()`; map_each drains through it and ListCell::on_change no longer captures its own handle — leak census delta-law 14→0, list-cell 92→0"
+  },
+  {
+   "id": "B399",
+   "lane": "tuples-43",
+   "commit": "1d6ebbf3",
+   "text": "the element bound in `T: (2..: PartialEq)` reaches every mapped U; a bounded comprehension is unrolled per element (the shared body gave wrong answers)"
+  },
+  {
+   "id": "A122",
+   "lane": "tuples-43",
+   "commit": "e52e3cd7",
+   "text": "std::tuple (TupleKey, the Tuple trait), a family as a comprehension/for source, keys across mapped tuples, `t.map`, `divorce` generic over the source; an unsound shared-element-type hole closed; Q1–Q7 as ruled; kolt's channel.vl:26 edit the owner's"
+  },
+  {
+   "id": "D14",
+   "lane": "syntax-43",
+   "commit": "bdae67e2",
+   "text": "the spec's contextual-keyword fences held to the lexer's table in both directions; `client_service` added to the attribute list"
+  },
+  {
+   "id": "B433",
+   "lane": "solver-43",
+   "commit": "2690efc3",
+   "text": "UNSOUND fixed, wider than filed: every assignment target other than a plain mut local or a struct field now takes the plain place's rule (subscripts, tuple positions, &mut/own parameters, views, calls answering &mut T); 222 std/examples + 12 kolt `write() =` sites swept clean"
+  },
+  {
+   "id": "B435",
+   "lane": "solver-43",
+   "commit": "975f36c6 + 5cf19e2d",
+   "text": "nested dyn coercions refused with the `.map(|e| e)` steer; push onto a List<dyn> and a generic struct literal under an object annotation erase; type arguments on a method call fix its generics before the closure is typed"
+  },
+  {
+   "id": "B400",
+   "lane": "solver-43",
+   "commit": "5de5e0f4",
+   "text": "solver-42's patch applied, scoped as ruled (a call's result at a closure's &/&mut parameter; a for over cell.read() writing the cell iterates a copy); the across-a-call remainder → B457"
+  },
+  {
+   "id": "B418",
+   "lane": "solver-43",
+   "commit": "4433c20b",
+   "text": "a branch-chosen place or read copies where it lands (split app.js: one __clone over a Text host handle); the argument half → B457"
+  },
+  {
+   "id": "B403",
+   "lane": "solver-43",
+   "commit": "24e4015b",
+   "text": "inside the impl a bare `Type::f()` is `Self::f()`; outside, an unbound bounded impl parameter is refused"
+  },
+  {
+   "id": "B419",
+   "lane": "solver-43",
+   "commit": "781c5ad7",
+   "text": "each impl block's provided set is its `with` clause closed over the supertrait chain (blankets excluded); b419's #[ignore] off; KOLT RED until the owner applies kolt-b419.patch (drop StorageSignalCell's inherent map; .cell() at four palette lines); the order-dependent collision → B456"
+  },
+  {
+   "id": "B423",
+   "lane": "solver-43",
+   "commit": "428dec05",
+   "text": "a literal arm takes the first typed sibling's numeric type and its range, either order, match legs too"
+  },
+  {
+   "id": "B429",
+   "lane": "solver-43",
+   "commit": "3d655211",
+   "text": "unary `-` on an unsigned value refused with a convert-first steer (ledger 579)"
+  },
+  {
+   "id": "B426",
+   "lane": "solver-43",
+   "commit": "47de304c + e60b61bc",
+   "text": "literal-only + - * trees folded exactly with a depth cap; a negative constant at an unsigned type refused (ledger 580); four estate sites respelled"
+  },
+  {
+   "id": "B427",
+   "lane": "solver-43",
+   "commit": "158d55c8",
+   "text": "destructuring an unfilled closure parameter waits for the call to fill it"
+  },
+  {
+   "id": "B430",
+   "lane": "solver-43",
+   "commit": "202514f5",
+   "text": "a built tuple at (dyn A, dyn B) or a mapped dyn position is rebuilt by projection on JS; native refuses by name"
+  },
+  {
+   "id": "B431",
+   "lane": "solver-43",
+   "commit": "eb9254d1",
+   "text": "UNSOUND fixed: the no-resource-inside-a-dyn check runs at every instantiation, following forwarding callers (32 hops)"
+  },
+  {
+   "id": "B424",
+   "lane": "solver-43",
+   "commit": "be432b5f",
+   "text": "R-h as ruled: an unbound generic the result is typed by and no parameter mentions is refused with a steer to the return's generic (ledger 581); a `_` parameter carries no obligation (pinned); Result's combinators default F from the receiver; the family written `fix` — the owner may reclassify"
+  },
+  {
+   "id": "B416",
+   "lane": "solver-43",
+   "commit": "94abd619",
+   "text": "the Wire derive's locals use the reserved `__` prefix; a field named like an expansion binding round-trips"
+  },
+  {
+   "id": "B417",
+   "lane": "solver-43",
+   "commit": "3c29bc58",
+   "text": "a method named `Self` is refused at its declaration (ledger 582)"
+  },
+  {
+   "id": "B385",
+   "lane": "solver-43",
+   "commit": "a82d63b1 (no repro)",
+   "text": "does not reproduce on 762c6aa5 — Order 40's guard and its four pins hold; the struct/Option pin added"
+  },
+  {
+   "id": "E226",
+   "lane": "solver-43",
+   "commit": "f60df0cd",
+   "text": "a binding's mismatch finds the `;`-ended closure down the call chain and gives the regime-3 steer at its brace"
+  },
+  {
+   "id": "B425",
+   "lane": "solver-43",
+   "commit": "95e077db",
+   "text": "root cause: the context pass treated every method named `bind` as reachable through a bounded generic; now only the bound's traits' members; blanket-impl.vl identical on both backends"
+  }
+ ]
+}
