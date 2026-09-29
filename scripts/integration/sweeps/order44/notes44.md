@@ -1,0 +1,4 @@
+# Order 44 — running record (the integrator)
+
+- GO 2026-09-29 (briefs44.md; proposals main 8cdbe4c). R-k RULED STRICTER (no whitespace between `.` and a member name; census first). Step 0 run by the integrator at GO on `--backend rust` over A142 Appendix A (0.41.1): the rust backend refuses every `[resource]` type → F56 filed at GO, native-44 item 0. Recorded, not filed: `dyn Up<T>` cannot be sealed (R34 as ruled).
+- Eight lanes launched off vilan next @07e8db37 (worktrees `vilan/.claude/worktrees/<lane>-44`; papers-44 in `proposals/.claude/worktrees/papers-44` off 8cdbe4c); model Opus for every lane: solver-44, native-44, reactive-44, transient-44 (phase 1: A141 A139 A140 A133), collections-44 (phase 1: I9 + I8 maps), syntax-44 (phase 1: all but R15's analyzer rows), editor-44 (phase 1: all but the pipe hints), papers-44. tracking-44 launches after reactive-44 merges.
