@@ -525,7 +525,7 @@ to cross the wire (`Delta<T, T>`) and waits for a customer.
 - **Q7. The ordering strategy (I10).** **Rec: §6.3's decision.** Insertion order
   is the contract; `SortedMap`/`SortedSet` with a comparator value when asked;
   any other order is door (c). Door (a) is declined.
-- **Q8. `PartialEq` on `HashMap`/`HashSet`.** They have none today
+- **Q8 (RULED 2026-09-29 as recommended; built with I9 in Order 44's collections-44). `PartialEq` on `HashMap`/`HashSet`.** They have none today
   (`store/map_eq.vl`, `store/set_eq.vl`), so `reconcile_to` on a map of maps
   cannot compare, and a struct holding a map cannot derive `PartialEq`. The
   native runtime already carries an order-*sensitive* equality that nothing can
