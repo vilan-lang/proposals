@@ -1,0 +1,71 @@
+// The macro door's write-back: a derive sees one type at a time, so a child lens
+// is built from its PARENT lens at run time. Can the write still land IN PLACE at
+// the root (no copy of the parent value per level)? A lens carries `modify`,
+// which applies a `&mut` mutation at its path; the child's `modify` is the
+// parent's with one more field step.
+//
+// The bare spelling `f(u.address)` compiles and crashes on the JS backend
+// (find_bare_place_call.vl); `f(&mut u.address)` is the working one.
+import std::shared::Shared;
+
+struct Address {
+	city: str,
+	zip: str,
+}
+
+struct User {
+	name: str,
+	address: Address,
+}
+
+struct Lens<T> {
+	read: || T,
+	modify: |(|&mut T| void)| void,
+}
+
+impl Lens<type T> {
+	fun get(self): T {
+		(self.read)()
+	}
+
+	fun set(self, value: T) {
+		(self.modify)(|&mut place| {
+			place = value;
+		});
+	}
+}
+
+// What `[derive(..)]` on User would emit: projections on the lens of a User.
+impl Lens<User> {
+	fun address(self): Lens<Address> {
+		let parent = self;
+		Lens {
+			read = || (parent.read)().address,
+			modify = |f| (parent.modify)(|&mut u| f(&mut u.address)),
+		}
+	}
+}
+
+// ... and on Address, knowing nothing about User.
+impl Lens<Address> {
+	fun city(self): Lens<str> {
+		let parent = self;
+		Lens {
+			read = || (parent.read)().city,
+			modify = |f| (parent.modify)(|&mut a| f(&mut a.city)),
+		}
+	}
+}
+
+fun main() {
+	let root = Shared::new(User { name = "Alice", address = Address { city = "Oslo", zip = "0150" } });
+	let whole: Lens<User> = Lens {
+		read = || root.read(),
+		modify = |f| f(&mut root.write()),
+	};
+	let city = whole.address().city();
+	print(city.get());
+	city.set("Bergen");
+	print(root.read().address.city);
+	print(root.read().address.zip);
+}

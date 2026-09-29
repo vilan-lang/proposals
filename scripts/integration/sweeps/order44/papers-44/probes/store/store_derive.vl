@@ -1,0 +1,849 @@
+// A142 S7, the `Store` paper's second prototype (`proposal/store.md` §3, §5):
+// the MACRO DOOR, written by hand as `[derive(Storable)]` would emit it.
+//
+// A derive sees one item at a time (spec/macros.md §10.2), so:
+//  - the slot tree is ONE uniform node type (children by field index, keyed
+//    children by key hash), not a node type per user type;
+//  - a derived type reaches its fields' types only through the `Storable` bound,
+//    whose blanket tiers make every non-derived type a leaf (derive_tiers.vl);
+//  - a projection is built from its PARENT handle at run time: `modify` composes
+//    one field step per level and still writes in place at the root
+//    (compose_modify.vl).
+//
+// The handle is `Store<T>`: the root and every projection alike. Same scenarios
+// and the same wake contract as store_lens.vl's layout I, whose woken lists this
+// must reproduce.
+import std::compare::PartialEq;
+import std::hash::Hash;
+import std::hash::Hashable;
+import std::map::Map;
+import std::shared::Shared;
+import std::time;
+
+// === Counters (store_lens.vl's) ==============================================
+
+struct Stats {
+	wakes: i32,
+	compares: i32,
+	slots: i32,
+	nodes: i32,
+	built: i32,
+}
+
+let stats = Shared::new(Stats { wakes = 0, compares = 0, slots = 0, nodes = 0, built = 0 });
+let log = Shared::new([""]);
+
+fun reset() {
+	stats.write() = Stats { wakes = 0, compares = 0, slots = 0, nodes = 0, built = 0 };
+	log.write() = [];
+}
+
+fun counted(): str {
+	let s = stats.read();
+	i"wakes={s.wakes} compares={s.compares} slots={s.slots} nodes={s.nodes}"
+}
+
+fun woke(): str {
+	mut out = "";
+	for name in log.read() {
+		if out != "" {
+			out = out + " ";
+		}
+		out = out + name;
+	}
+	if out == "" { "-" } else { out }
+}
+
+struct Slot {
+	name: str,
+	subs: Shared<List<|| void>>,
+}
+
+impl Slot {
+	fun new(name: str): Slot {
+		stats.write().slots += 1;
+		Slot { name, subs = Shared::new([]) }
+	}
+
+	fun watch(self, wake: || void) {
+		self.subs.write().push(wake);
+	}
+
+	fun wake(self) {
+		if self.subs.read().len() > 0 {
+			log.write().push(self.name);
+		}
+		for f in self.subs.read() {
+			stats.write().wakes += 1;
+			f();
+		}
+	}
+}
+
+fun wake_me(slot: Option<Slot>, changed: bool) {
+	if changed {
+		match slot {
+			Some(let s) => s.wake(),
+			None => {},
+		}
+	}
+}
+
+// === The uniform node (std, written once) ====================================
+
+struct Node {
+	name: str,
+	me: Option<Slot>,
+	kids: List<Option<Shared<Node>>>,
+	keyed: Map<Hash, Shared<Node>>,
+}
+
+fun node_named(name: str, width: usize): Shared<Node> {
+	stats.write().nodes += 1;
+	mut kids: List<Option<Shared<Node>>> = [];
+	mut i = 0;
+	for i < width {
+		kids.push(None);
+		i += 1;
+	}
+	Shared::new(Node { name, me = None, kids, keyed = Map::new() })
+}
+
+/// The child at `index`, if anyone ever subscribed below it.
+fun kid_if(node: Option<Shared<Node>>, index: usize): Option<Shared<Node>> {
+	match node {
+		None => None,
+		Some(let n) => match n.read().kids.get(index) {
+			Some(let k) => k,
+			None => None,
+		},
+	}
+}
+
+/// The child at `index`, allocated on first use (a subscription).
+fun kid(node: Shared<Node>, index: usize, name: str, width: usize): Shared<Node> {
+	match kid_if(Some(node), index) {
+		Some(let k) => k,
+		None => {
+			let k = node_named(name, width);
+			// The parent's width is the derive's to know and the root's is not,
+			// so the child list grows to the index on first use.
+			for node.read().kids.len() <= index {
+				node.write().kids.push(None);
+			}
+			node.write().kids[index] = Some(k);
+			k
+		},
+	}
+}
+
+fun keyed_if(node: Option<Shared<Node>>, key: Hash): Option<Shared<Node>> {
+	match node {
+		None => None,
+		Some(let n) => n.read().keyed.get(key),
+	}
+}
+
+fun keyed(node: Shared<Node>, key: Hash, name: str): Shared<Node> {
+	match keyed_if(Some(node), key) {
+		Some(let k) => k,
+		None => {
+			let k = node_named(name, 0);
+			node.write().keyed.insert(key, k);
+			k
+		},
+	}
+}
+
+fun me_of(node: Option<Shared<Node>>): Option<Slot> {
+	match node {
+		None => None,
+		Some(let n) => n.read().me,
+	}
+}
+
+fun has_me(node: Option<Shared<Node>>): bool {
+	me_of(node).is_some()
+}
+
+/// Every live slot in a subtree changed (an `Option` went Some <-> None above it).
+fun wake_all(node: Option<Shared<Node>>) {
+	match node {
+		None => {},
+		Some(let n) => {
+			for k in n.read().kids {
+				wake_all(k);
+			}
+			for k in n.read().keyed.values() {
+				wake_all(Some(k));
+			}
+			wake_me(n.read().me, true);
+		},
+	}
+}
+
+// === `Storable`: the derive's trait, with the two blanket leaf tiers =========
+
+trait Storable {
+	/// Diff `self` (old) against `b` (new) under `node`; wake what changed below
+	/// and at `node`; report whether the value changed (exact when `need`).
+	/// Not `diff`: an INHERENT method wins over a trait's (names.md 4.6), and
+	/// `i32` has an inherent `diff` (number.vl), so a leaf would never reach this.
+	fun store_diff(self, b: Self, node: Option<Shared<Node>>, need: bool): bool;
+}
+
+/// A leaf with no equality: every covering write is a change.
+impl type T with Storable {
+	fun store_diff(self, b: T, node: Option<Shared<Node>>, need: bool): bool {
+		wake_me(me_of(node), true);
+		true
+	}
+}
+
+/// A comparable leaf: compare only when someone below or above needs the answer.
+impl type T: PartialEq with Storable {
+	fun store_diff(self, b: T, node: Option<Shared<Node>>, need: bool): bool {
+		if need || has_me(node) {
+			stats.write().compares += 1;
+			let changed = self != b;
+			wake_me(me_of(node), changed);
+			changed
+		} else {
+			false
+		}
+	}
+}
+
+/// Through an `Option` (an enum payload, a map entry): both absent, nothing; one
+/// absent, the whole live subtree changed; both present, the payload diffs.
+fun diff_option<F: Storable>(a: Option<F>, b: Option<F>, node: Option<Shared<Node>>, need: bool): bool {
+	match a {
+		None => match b {
+			None => false,
+			Some(let _y) => {
+				wake_all(node);
+				true
+			},
+		},
+		Some(let x) => match b {
+			None => {
+				wake_all(node);
+				true
+			},
+			Some(let y) => x.store_diff(y, node, need),
+		},
+	}
+}
+
+/// `*v` on an aggregate does not copy on 0.41.1's JS emit
+/// (find_deref_copy_aliases.vl): the "snapshot" aliases the storage and follows
+/// the next in-place write. A list's `get` does clone, so the toy routes through
+/// one. A fixed emit makes this the identity.
+fun forced_copy<T>(x: T): T {
+	let held: List<T> = [x];
+	match held.get(0) {
+		Some(let y) => y,
+		None => x,
+	}
+}
+
+// === The handle (std, written once) ==========================================
+
+/// A copyable handle: the root, or a projection of it. Closures stand in for "a
+/// root plus a static path"; every one of them is composed once, at projection.
+struct Store<T> {
+	read: || T,
+	modify: |(|&mut T| void)| void,
+	/// The node at this path, allocated along the path (subscriptions only).
+	node: || Shared<Node>,
+	/// The node at this path if one exists (writes never allocate).
+	node_if: || Option<Shared<Node>>,
+	/// After a write here changed the value: wake each ancestor's whole-value slot.
+	bubble: || void,
+	/// Whether an ancestor has a whole-value subscriber (the subtree diff must
+	/// then report "changed" exactly).
+	need: || bool,
+	name: str,
+}
+
+impl Store<type T: Storable> {
+	fun new(value: T): Store<T> {
+		let root = Shared::new(value);
+		let top = node_named("", 0);
+		Store {
+			read = || root.read(),
+			modify = |f| f(&mut root.write()),
+			node = || top,
+			node_if = || Some(top),
+			bubble = || {},
+			need = || false,
+			name = "",
+		}
+	}
+
+	fun get(self): T {
+		(self.read)()
+	}
+
+	/// The same read through the composed IN-PLACE lend: only the leaf is copied,
+	/// where `read` (a value handed up through every level) copies the root. The
+	/// honest spelling is a shared view (`|(|&T| void)| void`), which miscompiles
+	/// on 0.41.1 (find_view_closure_read.vl); `modify`'s `&mut` lend stands in.
+	fun peek(self): Option<T> {
+		mut out: Option<T> = None;
+		(self.modify)(|&mut v| {
+			out = Some(forced_copy(*v));
+		});
+		out
+	}
+
+	/// Write back through the root, in place; then the SPINE commit: the subtree
+	/// under this path diffs, and ancestors' whole-value slots wake if it changed.
+	/// Siblings are never looked at: the path is static.
+	///
+	/// Both reads go through the in-place lend (`peek`), so only this path's value
+	/// is copied, and the diff runs against what the path holds AFTER the write:
+	/// a write through a variant that is not live never lands, `peek` answers
+	/// `None` for a dead path, and nothing wakes.
+	fun set(self, value: T) {
+		match self.peek() {
+			None => {},
+			Some(let old) => {
+				(self.modify)(|&mut place| {
+					place = value;
+				});
+				match self.peek() {
+					None => {},
+					Some(let now) => {
+						if old.store_diff(now, (self.node_if)(), (self.need)()) {
+							(self.bubble)();
+						}
+					},
+				}
+			},
+		}
+	}
+
+	fun on(self, wake: || void) {
+		let n = (self.node)();
+		match n.read().me {
+			Some(let s) => s.watch(wake),
+			None => {
+				let s = Slot::new(if self.name == "" { "user" } else { self.name });
+				s.watch(wake);
+				n.write().me = Some(s);
+			},
+		}
+	}
+}
+
+/// One field step (std, written once): what every generated projection calls.
+fun project<P, F>(
+	parent: Store<P>,
+	index: usize,
+	width: usize,
+	name: str,
+	read: |P| F,
+	step: |(|(|&mut P| void)| void), (|&mut F| void)| void,
+): Store<F> {
+	let full = if parent.name == "" { name } else { parent.name + "." + name };
+	Store {
+		read = || read((parent.read)()),
+		modify = |f| step(parent.modify, f),
+		node = || kid((parent.node)(), index, full, width),
+		node_if = || kid_if((parent.node_if)(), index),
+		bubble = || {
+			wake_me(me_of((parent.node_if)()), true);
+			(parent.bubble)();
+		},
+		need = || (parent.need)() || has_me((parent.node_if)()),
+		name = full,
+	}
+}
+
+// === The user's types, and what `[derive(Storable)]` emits for each ==========
+
+[derive(PartialEq)]
+struct Device {
+	name: str,
+	since: i32,
+}
+
+[derive(PartialEq)]
+enum Presence {
+	Offline,
+	Online(Device),
+}
+
+[derive(PartialEq)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+struct User {
+	name: str,
+	age: i32,
+	address: Address,
+	presence: Presence,
+	scores: Map<str, i32>,
+}
+
+fun online_of(p: Presence): Option<Device> {
+	match p {
+		Presence::Online(let d) => Some(d),
+		Presence::Offline => None,
+	}
+}
+
+fun is_online(p: Presence): bool {
+	match p {
+		Presence::Online(let _d) => true,
+		Presence::Offline => false,
+	}
+}
+
+// --- emitted for Device ---
+impl Device with Storable {
+	fun store_diff(self, b: Device, node: Option<Shared<Node>>, need: bool): bool {
+		let here = need || has_me(node);
+		mut changed = self.name.store_diff(b.name, kid_if(node, 0), here);
+		changed = self.since.store_diff(b.since, kid_if(node, 1), here && !changed) || changed;
+		wake_me(me_of(node), changed);
+		changed
+	}
+}
+
+impl Store<Device> {
+	fun name(self): Store<str> {
+		project(self, 0, 0, "name", |d| d.name, |up, f| up(|&mut d| f(&mut d.name)))
+	}
+
+	fun since(self): Store<i32> {
+		project(self, 1, 0, "since", |d| d.since, |up, f| up(|&mut d| f(&mut d.since)))
+	}
+}
+
+// --- emitted for Address ---
+impl Address with Storable {
+	fun store_diff(self, b: Address, node: Option<Shared<Node>>, need: bool): bool {
+		let here = need || has_me(node);
+		mut changed = self.city.store_diff(b.city, kid_if(node, 0), here);
+		changed = self.zip.store_diff(b.zip, kid_if(node, 1), here && !changed) || changed;
+		wake_me(me_of(node), changed);
+		changed
+	}
+}
+
+impl Store<Address> {
+	fun city(self): Store<str> {
+		project(self, 0, 0, "city", |a| a.city, |up, f| up(|&mut a| f(&mut a.city)))
+	}
+
+	fun zip(self): Store<str> {
+		project(self, 1, 0, "zip", |a| a.zip, |up, f| up(|&mut a| f(&mut a.zip)))
+	}
+}
+
+// --- emitted for Presence: kid 0 is the discriminant, kid 1 Online's payload ---
+impl Presence with Storable {
+	fun store_diff(self, b: Presence, node: Option<Shared<Node>>, need: bool): bool {
+		let here = need || has_me(node);
+		let payload = kid_if(node, 1);
+		mut changed = is_online(self).store_diff(is_online(b), kid_if(node, 0), here || payload.is_some());
+		changed = diff_option(online_of(self), online_of(b), payload, here && !changed) || changed;
+		wake_me(me_of(node), changed);
+		changed
+	}
+}
+
+impl Store<Presence> {
+	/// The discriminant: read-only; a variant gate subscribes here and nowhere else.
+	fun is_online(self): Store<bool> {
+		project(self, 0, 0, "tag", |p| is_online(p), |_up, _f| {})
+	}
+
+	/// Through the variant: reads `Option`; a write PATCHES while the variant is
+	/// live and is a no-op otherwise (the step only reaches a live payload).
+	fun online(self): Store<Option<Device>> {
+		project(self, 1, 2, "online", |p| online_of(p), |up, f| up(|&mut p| {
+			match p {
+				Presence::Online(let d) => {
+					mut held: Option<Device> = Some(d);
+					f(&mut held);
+					match held {
+						Some(let e) => {
+							p = Presence::Online(e);
+						},
+						None => {},
+					}
+				},
+				Presence::Offline => {},
+			}
+		}))
+	}
+}
+
+impl Store<Option<Device>> {
+	fun name(self): Store<Option<str>> {
+		project(self, 0, 0, "name", |o| match o {
+			Some(let d) => Some(d.name),
+			None => None,
+		}, |up, f| up(|&mut o| {
+			match o {
+				Some(let d) => {
+					mut held: Option<str> = Some(d.name);
+					f(&mut held);
+					match held {
+						Some(let n) => {
+							o = Some(Device { name = n, since = d.since });
+						},
+						None => {},
+					}
+				},
+				None => {},
+			}
+		}))
+	}
+
+	fun since(self): Store<Option<i32>> {
+		project(self, 1, 0, "since", |o| match o {
+			Some(let d) => Some(d.since),
+			None => None,
+		}, |_up, _f| {})
+	}
+}
+
+// --- a declared shape: a map field is a keyed node (std, written once per shape) ---
+impl Map<type K: Hashable, type V: PartialEq + Storable> with Storable {
+	fun store_diff(self, b: Map<K, V>, node: Option<Shared<Node>>, need: bool): bool {
+		let here = need || has_me(node);
+		mut changed = false;
+		match node {
+			None => {},
+			Some(let n) => {
+				for key in self.keys() {
+					match n.read().keyed.get(key.hash()) {
+						Some(let k) => {
+							changed = diff_option(self.get(key), b.get(key), Some(k), true) || changed;
+						},
+						None => {},
+					}
+				}
+				for key in b.keys() {
+					if !self.contains_key(key) {
+						match n.read().keyed.get(key.hash()) {
+							Some(let k) => {
+								changed = diff_option(self.get(key), b.get(key), Some(k), true) || changed;
+							},
+							None => {},
+						}
+					}
+				}
+			},
+		}
+		if here && !changed {
+			stats.write().compares += 1;
+			changed = !map_eq(self, b);
+		}
+		wake_me(me_of(node), changed);
+		changed
+	}
+}
+
+fun map_eq<K: Hashable, V: PartialEq>(a: Map<K, V>, b: Map<K, V>): bool {
+	if a.len() != b.len() {
+		ret false;
+	}
+	for key in a.keys() {
+		if a.get(key) != b.get(key) {
+			ret false;
+		}
+	}
+	true
+}
+
+/// `store.scores.at(key)`: a keyed child, depends on that key only.
+fun at<K: Hashable, V: PartialEq + Storable>(parent: Store<Map<K, V>>, key: K, label: str): Store<Option<V>> {
+	let full = parent.name + "[" + label + "]";
+	Store {
+		read = || (parent.read)().get(key),
+		modify = |f| (parent.modify)(|&mut m| {
+			mut held = m.get(key);
+			f(&mut held);
+			match held {
+				Some(let v) => m.insert(key, v),
+				None => m.remove(key),
+			}
+		}),
+		node = || keyed((parent.node)(), key.hash(), full),
+		node_if = || keyed_if((parent.node_if)(), key.hash()),
+		bubble = || {
+			wake_me(me_of((parent.node_if)()), true);
+			(parent.bubble)();
+		},
+		need = || (parent.need)() || has_me((parent.node_if)()),
+		name = full,
+	}
+}
+
+// --- emitted for User ---
+impl User with Storable {
+	fun store_diff(self, b: User, node: Option<Shared<Node>>, need: bool): bool {
+		let here = need || has_me(node);
+		mut changed = self.name.store_diff(b.name, kid_if(node, 0), here);
+		changed = self.age.store_diff(b.age, kid_if(node, 1), here && !changed) || changed;
+		changed = self.address.store_diff(b.address, kid_if(node, 2), here && !changed) || changed;
+		changed = self.presence.store_diff(b.presence, kid_if(node, 3), here && !changed) || changed;
+		changed = self.scores.store_diff(b.scores, kid_if(node, 4), here && !changed) || changed;
+		wake_me(me_of(node), changed);
+		changed
+	}
+}
+
+impl Store<User> {
+	fun name(self): Store<str> {
+		project(self, 0, 0, "name", |u| u.name, |up, f| up(|&mut u| f(&mut u.name)))
+	}
+
+	fun age(self): Store<i32> {
+		project(self, 1, 0, "age", |u| u.age, |up, f| up(|&mut u| f(&mut u.age)))
+	}
+
+	fun address(self): Store<Address> {
+		project(self, 2, 2, "address", |u| u.address, |up, f| up(|&mut u| f(&mut u.address)))
+	}
+
+	fun presence(self): Store<Presence> {
+		project(self, 3, 2, "presence", |u| u.presence, |up, f| up(|&mut u| f(&mut u.presence)))
+	}
+
+	fun scores(self): Store<Map<str, i32>> {
+		project(self, 4, 0, "scores", |u| u.scores, |up, f| up(|&mut u| f(&mut u.scores)))
+	}
+}
+
+// === Scenarios: store_lens.vl's, through the derived surface =================
+
+fun alice(): User {
+	mut scores: Map<str, i32> = Map::new();
+	scores.insert("a", 1);
+	scores.insert("b", 2);
+	User {
+		name = "Alice",
+		age = 30,
+		address = Address { city = "Oslo", zip = "0150" },
+		presence = Presence::Online(Device { name = "laptop", since = 100 }),
+		scores,
+	}
+}
+
+fun with_age(u: User, age: i32): User {
+	mut v = u;
+	v.age = age;
+	v
+}
+
+fun with_zip(u: User, zip: str): User {
+	mut v = u;
+	v.address.zip = zip;
+	v
+}
+
+fun with_since(u: User, since: i32): User {
+	mut v = u;
+	v.presence = Presence::Online(Device { name = "laptop", since });
+	v
+}
+
+fun with_presence(u: User, p: Presence): User {
+	mut v = u;
+	v.presence = p;
+	v
+}
+
+fun with_score(u: User, key: str, x: i32): User {
+	mut v = u;
+	v.scores.insert(key, x);
+	v
+}
+
+fun with_keys(n: i32): User {
+	mut u = alice();
+	mut i = 0;
+	for i < n {
+		u.scores.insert(i"k{i}", i);
+		i += 1;
+	}
+	u
+}
+
+fun nothing() {}
+
+fun gate(tag: Store<bool>, build: || void) {
+	let live = Shared::new(false);
+	let check = || {
+		let now = tag.get();
+		if now && !live.read() {
+			stats.write().built += 1;
+			build();
+		}
+		live.write() = now;
+	};
+	tag.on(check);
+	check();
+}
+
+fun subscribe_all(s: Store<User>) {
+	s.name().on(nothing);
+	s.age().on(nothing);
+	s.address().city().on(nothing);
+	s.address().zip().on(nothing);
+	s.address().on(nothing);
+	s.on(nothing);
+	s.presence().on(nothing);
+	at(s.scores(), "a", "a").on(nothing);
+}
+
+fun scenarios() {
+	print("--- layout D (derive: uniform nodes, composed handles)");
+	reset();
+	let s = Store::new(alice());
+	let _read = s.address().city().get();
+	print(i"new + one read: {counted()}");
+	subscribe_all(s);
+	gate(s.presence().is_online(), || {
+		s.presence().online().name().on(nothing);
+		s.presence().online().since().on(nothing);
+	});
+	print(i"subscribed: {counted()} built={stats.read().built}");
+	reset();
+	s.set(with_zip(s.get(), "0151"));
+	print(i"whole write, zip changed: woke [{woke()}] {counted()}");
+	reset();
+	s.set(with_since(s.get(), 101));
+	print(i"same-variant write, since changed: woke [{woke()}] {counted()} built+={stats.read().built}");
+	reset();
+	s.set(with_presence(s.get(), Presence::Offline));
+	print(i"variant switch to Offline: woke [{woke()}] {counted()}");
+	reset();
+	s.set(with_presence(s.get(), Presence::Online(Device { name = "phone", since = 5 })));
+	print(i"variant switch back Online: woke [{woke()}] {counted()} built+={stats.read().built}");
+	reset();
+	s.set(with_score(s.get(), "b", 20));
+	print(i"whole write, scores[b] changed: woke [{woke()}] {counted()}");
+	reset();
+	s.set(s.get());
+	print(i"whole write, nothing changed: woke [{woke()}] {counted()}");
+	reset();
+	s.address().city().set("Bergen");
+	print(i"handle set address.city: woke [{woke()}] {counted()} root.city={s.get().address.city}");
+	reset();
+	s.address().city().set("Bergen");
+	print(i"handle set, same value: woke [{woke()}] {counted()}");
+	reset();
+	s.presence().online().name().set(Some("tablet"));
+	print(i"handle set through variant: woke [{woke()}] {counted()} root.device={s.presence().online().name().get().unwrap_or("-")}");
+	reset();
+	s.set(with_presence(s.get(), Presence::Offline));
+	reset();
+	s.presence().online().name().set(Some("ghost"));
+	print(i"handle set through a dead variant: woke [{woke()}] online={is_online(s.get().presence)}");
+	reset();
+	at(s.scores(), "a", "a").set(None);
+	print(i"handle set scores[a] = None: woke [{woke()}] {counted()}");
+}
+
+fun timing(writes: i32) {
+	print(i"--- timing: {writes} whole writes, each changing `age`");
+	reset();
+	let bare = Store::new(alice());
+	mut t = time::now();
+	mut i = 0;
+	for i < writes {
+		bare.set(with_age(bare.get(), i));
+		i += 1;
+	}
+	print(i"D, 0 slots:  ms={time::now().millis - t.millis} compares={stats.read().compares}");
+	let s = Store::new(alice());
+	subscribe_all(s);
+	s.presence().is_online().on(nothing);
+	s.presence().online().name().on(nothing);
+	s.presence().online().since().on(nothing);
+	reset();
+	t = time::now();
+	i = 0;
+	for i < writes {
+		s.set(with_age(s.get(), i));
+		i += 1;
+	}
+	print(i"D, 11 slots: ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+	reset();
+	let age = s.age();
+	t = time::now();
+	i = 0;
+	for i < writes {
+		age.set(i + 1);
+		i += 1;
+	}
+	print(i"D, handle set age x{writes} (spine): ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+}
+
+fun scale(n: i32, writes: i32) {
+	print(i"--- scale: {n} keys, each observed; {writes} writes to one key");
+	reset();
+	let s = Store::new(with_keys(n));
+	let scores = s.scores();
+	mut k = 0;
+	for k < n {
+		let key = i"k{k}";
+		at(scores, key, key).on(nothing);
+		k += 1;
+	}
+	reset();
+	mut t = time::now();
+	mut i = 0;
+	for i < writes {
+		s.set(with_score(s.get(), "k5", i));
+		i += 1;
+	}
+	print(i"D, whole write:      ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+	reset();
+	let one = at(scores, "k5", "k5");
+	t = time::now();
+	i = 0;
+	for i < writes {
+		one.set(Some(i + 1));
+		i += 1;
+	}
+	print(i"D, handle set (spine): ms={time::now().millis - t.millis} wakes={stats.read().wakes} compares={stats.read().compares}");
+}
+
+/// A leaf read through a handle, on a root holding a 1000-entry map.
+fun reads(n: i32) {
+	let s = Store::new(with_keys(1000));
+	let city = s.address().city();
+	let t = time::now();
+	mut i = 0;
+	mut total = 0;
+	for i < n {
+		total += city.get().len();
+		i += 1;
+	}
+	print(i"leaf reads x{n} on a 1000-key root: ms={time::now().millis - t.millis} (chars={total})");
+	let t2 = time::now();
+	i = 0;
+	total = 0;
+	for i < n {
+		total += city.peek().unwrap_or("").len();
+		i += 1;
+	}
+	print(i"leaf reads x{n} through the in-place lend: ms={time::now().millis - t2.millis} (chars={total})");
+}
+
+fun main() {
+	scenarios();
+	timing(20000);
+	scale(1000, 200);
+	reads(2000);
+}

@@ -1,0 +1,36 @@
+// FIND (for the integrator): a SHARED view (`&place`) handed to a closure whose
+// parameter is `&T` arrives in the closure's body as the emitter's place PAIR,
+// not as the value: `out = *c` stores `[ [ 'Oslo', '1' ], 0 ]`, and `print` shows
+// it (expected `Oslo`, then `true`). Without the `*` (`out = c`) it is accepted
+// too - where the `&mut` twin refuses and asks for `*` - and prints the same.
+// Annotating the parameter (`|c: &str|`) changes nothing. `--backend rust`
+// refuses the emitted Rust (`expected Rc<dyn Fn(&Rc<str>)>, found
+// Rc<dyn Fn(Rc<str>) -> _>`). The `&mut` spelling of the same chain works
+// (compose_modify.vl, store_derive.vl `peek`).
+struct Address {
+	city: str,
+	zip: str,
+}
+
+fun with_city(a: Address, f: |&str| void) {
+	f(&a.city);
+}
+
+fun with_flag(f: |&bool| void) {
+	let flag = true;
+	f(&flag);
+}
+
+fun main() {
+	let home = Address { city = "Oslo", zip = "1" };
+	mut out = "";
+	with_city(home, |c| {
+		out = *c;
+	});
+	print(out);
+	mut seen = false;
+	with_flag(|b| {
+		seen = *b;
+	});
+	print(seen);
+}

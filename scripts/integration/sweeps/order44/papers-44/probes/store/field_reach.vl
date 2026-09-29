@@ -1,0 +1,9 @@
+// What does "a private field" mean on 0.41.1? Reach into std `Map`'s one field
+// from user code: visibility is per item, and never blocks access (names.md 4.8).
+import std::map::Map;
+
+fun main() {
+	mut m: Map<str, i32> = Map::new();
+	m.insert("a", 1);
+	print(m.table.len());
+}

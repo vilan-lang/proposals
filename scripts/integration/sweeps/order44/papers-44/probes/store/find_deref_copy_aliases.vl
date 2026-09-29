@@ -1,0 +1,41 @@
+// FIND (for the integrator; value semantics): `*view` on an AGGREGATE does not
+// copy on the JS backend. `mut c: P = *v; c.x = 99;` writes 99 into the CALLER's
+// `p` (expected: `p.x` stays 1). The same hole makes a snapshot taken through a
+// `&mut` lend (`out = Some(*v)`) follow a later in-place write of the storage
+// (store_derive.vl met it: a whole write diffed its "old" copy against itself and
+// woke nothing). The emit is `let c = v;` where `__clone(v)` is owed.
+// `--backend rust` refuses the emitted Rust for both functions.
+import std::shared::Shared;
+
+struct P {
+	x: i32,
+	tag: str,
+}
+
+fun touch(v: &mut P) {
+	mut c: P = *v;
+	c.x = 99;
+}
+
+fun lend(cell: Shared<P>, f: |&mut P| void) {
+	f(&mut cell.write());
+}
+
+fun main() {
+	mut p = P { x = 1, tag = "a" };
+	touch(&mut p);
+	print(i"after mutating a copy inside a fun: x={p.x}  (expected 1)");
+
+	let cell = Shared::new(P { x = 1, tag = "a" });
+	mut out: Option<P> = None;
+	lend(cell, |&mut v| {
+		out = Some(*v);
+	});
+	lend(cell, |&mut v| {
+		v = P { x = 2, tag = "b" };
+	});
+	match out {
+		Some(let q) => print(i"snapshot taken before the write: x={q.x} tag={q.tag}  (expected 1 a)"),
+		None => print("none"),
+	}
+}
