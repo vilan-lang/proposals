@@ -541,6 +541,10 @@ maker builds outlives the caller; a lease belongs at the call site. A mirror who
 `Subscribe` joins a forward a sibling already holds is seeded from the sibling on the
 client (A137). (reactive-43's paragraph, placed by the integrator 2026-09-28.)
 
+### 2k. The in-process seed is inline, by contract (A133, ruled door (c), Order 44)
+
+A `duplex_pair` answers a mirror's `Subscribe` with its seeding `Update` inside the send, under the subscribing turn; a socket answers on a later task. So a mirror read right after its first lease holds the value in process and `None` over a socket, and a node over a mirror that pulls as it subscribes is told the seed twice in process (the pull, then the seed's notification) and once over a socket — the same value, one more notification. The in-process pair is the test and wiring transport, not the wire: a pin that counts notifications runs over a socket. Deferring in-process delivery (door (a)) was prototyped in Order 43 and rejected: it rewrote the synchronous-seed contract and ~20 pins. (transient-44 documented the same contract at `duplex_pair`'s doc and in the services guide, pinned by `a133_an_in_process_seed_is_inline_and_a_node_over_the_mirror_sees_it_twice`.)
+
 ## 3. Wire and server consequences
 
 `Unsubscribe` frames start flowing for the first time, which means

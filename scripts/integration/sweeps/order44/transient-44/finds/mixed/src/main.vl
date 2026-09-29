@@ -1,0 +1,86 @@
+import std::io::print;
+import std::json::json_codec;
+import std::reactive::{ Signal, SignalCell };
+import std::result::Result::{ self, Ok, Err };
+import std::rpc::{ KeyedCell, KeyedSource, ReactiveClient, duplex_pair, local_rpc, register_session };
+import std::shared::Shared;
+import std::time::{ Duration, sleep_for };
+import std::wire::{ Keyed, Wire };
+
+[derive(Wire, PartialEq)]
+struct Row {
+	id: str,
+	text: str,
+}
+
+impl Row with Keyed<str> {
+	fun key(self): str {
+		self.id
+	}
+}
+
+[service(BoardClient)]
+struct Board {
+	rows: KeyedCell<str, Row>,
+}
+
+impl Board {
+	[rpc]
+	fun edit(self, id: str, text: str): i32 {
+		self.rows.update(id, |&mut row| {
+			row.text = text;
+		});
+		0
+	}
+
+	[rpc]
+	fun drop(self, id: str): i32 {
+		self.rows.remove(id);
+		0
+	}
+
+	[rpc]
+	fun rows(self): KeyedCell<str, Row> {
+		self.rows
+	}
+
+	[rpc]
+	fun rows_again(self): KeyedCell<str, Row> {
+		self.rows
+	}
+}
+
+fun text_of(row: Option<Row>): str {
+	match row {
+		Some(let held) => held.text,
+		None => "-",
+	}
+}
+
+fun fault_of(fault: Option<str>): str {
+	match fault {
+		Some(let reason) => reason,
+		None => "none",
+	}
+}
+
+fun main() {
+	let board = Board { rows = KeyedCell::new([Row { id = "a", text = "one" }, Row { id = "b", text = "two" }]) };
+	let (client_end, server_end) = duplex_pair();
+	register_session(3, server_end, json_codec());
+	let transport = local_rpc(board.dispatcher().into_protocol(json_codec()).for_connection(3));
+	let client = BoardClient { transport, codec = json_codec(), reactive = ReactiveClient::new(client_end, json_codec()) };
+	let first: KeyedSource<str, Row> = client.rows();
+	let second: KeyedSource<str, Row> = client.rows_again();
+	let _whole = first.sub(|list| {});
+	sleep_for(Duration::millis(0));
+	let seen_second: Shared<str> = Shared::new("?");
+	let _second = second.sub_key("a", |row| seen_second.write() = text_of(row));
+	sleep_for(Duration::millis(0));
+	print(i"mixed: first={first.get().unwrap_or([]).len()} second={seen_second.read()}");
+	print(i"edit:{client.edit("a", "uno").unwrap_or(0 - 1)}");
+	sleep_for(Duration::millis(0));
+	print(i"drop:{client.drop("a").unwrap_or(0 - 1)}");
+	sleep_for(Duration::millis(0));
+	print(i"after: first={first.get().unwrap_or([]).len()} second={seen_second.read()} first-fault={fault_of(first.fault())} second-fault={fault_of(second.fault())}");
+}

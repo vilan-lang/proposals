@@ -1,0 +1,10 @@
+{"items": [{
+ "id": "A143",
+ "section": "A",
+ "kind": "bug (rpc) — design question",
+ "area": "Reactive core & UI",
+ "status": "OPEN — filed 2026-09-29 (Order 44, transient-44's phase-1 find; socket-verified)",
+ "title": "two SIBLING mirrors of one keyed channel with DIFFERENT demands — one holds the whole collection, the other a per-key lease on a key it contains — each receive the OTHER's forward frames: the client routes patches by CHANNEL alone, so every key op arrives twice, the second `Remove` faults on both ('a Remove named a key the mirror does not hold'), and the per-key seed `Insert` reaches the whole-collection mirror too",
+ "discussion": "transient-44 (Order 44 phase 1, found building A139); repros `sweeps/order44/transient-44/finds/mixeds` (socket) and `mixed` (in process); A137/A139 (sibling seeding), A134 (per-origin dedup), remote-sources.md §2j",
+ "body": "Output: `after: first=1 second=- first-fault=a Remove named … second-fault=a Remove named …`. A frame names a channel, not a forward, so the client cannot tell which demand a patch answers. Doors: (a) a forward id on the wire (a frame names its forward; breaking at the protocol); (b) the client keeps ONE forward per channel at the union of its mirrors' demands and fans ops out by demand (a whole-collection demand subsumes the per-key one; no wire change); (c) refuse mixed demands on one channel from one client (the second mirror mints its own channel). Rec (b) — the client already owns the dedup table (A134's `MirrorTable`) and the sibling seed (A137/A139); no wire change. Sizing M; std/rpc, Order 45 (or transient-44's phase 2 if the owner rules it now)."
+}]}

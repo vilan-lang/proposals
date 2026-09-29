@@ -1,0 +1,109 @@
+import std::io::print;
+import std::json::json_codec;
+import std::http::{ Response, Server };
+import std::process::exit;
+import std::result::Result::{ self, Ok, Err };
+import std::rpc::{ KeyedCell, KeyedSource };
+import std::rpc_server::Service;
+import std::shared::Shared;
+import std::time::sleep;
+import std::wire::{ Keyed, Wire };
+
+[derive(Wire, PartialEq)]
+struct Row {
+	id: str,
+	text: str,
+}
+
+impl Row with Keyed<str> {
+	fun key(self): str {
+		self.id
+	}
+}
+
+[service(BoardClient)]
+struct Board {
+	rows: KeyedCell<str, Row>,
+}
+
+impl Board {
+	[rpc]
+	fun edit(self, id: str, text: str): i32 {
+		self.rows.update(id, |&mut row| {
+			row.text = text;
+		});
+		0
+	}
+
+	[rpc]
+	fun drop(self, id: str): i32 {
+		self.rows.remove(id);
+		0
+	}
+
+	[rpc]
+	fun rows(self): KeyedCell<str, Row> {
+		self.rows
+	}
+
+	[rpc]
+	fun rows_again(self): KeyedCell<str, Row> {
+		self.rows
+	}
+}
+
+let board: Board = Board { rows = KeyedCell::new([Row { id = "a", text = "one" }, Row { id = "b", text = "two" }]) };
+
+fun main() {
+	Server::builder()
+		.port(0)
+		.with_service(Service::new(board.dispatcher().into_protocol(json_codec())))
+		.on_request(|request| Response::builder().code(404).body("nope").build())
+		.on_start(|server| run(server.port()))
+		.build()
+		.start();
+}
+
+async fun until(ready: || bool) {
+	mut tries = 0;
+	for !ready() && tries < 100 {
+		sleep(10);
+		tries += 1;
+	}
+}
+
+fun text_of(row: Option<Row>): str {
+	match row {
+		Some(let held) => held.text,
+		None => "-",
+	}
+}
+
+fun fault_of(fault: Option<str>): str {
+	match fault {
+		Some(let reason) => reason,
+		None => "none",
+	}
+}
+
+async fun run(port: i32) {
+	match BoardClient::connect(i"ws://localhost:{port}/", json_codec()) {
+		Ok(let client) => {
+			let first: KeyedSource<str, Row> = client.rows();
+			let second: KeyedSource<str, Row> = client.rows_again();
+			let _whole = first.sub(|list| {});
+			until(|| first.get().is_some());
+			let seen_second: Shared<str> = Shared::new("?");
+			let _second = second.sub_key("a", |row| seen_second.write() = text_of(row));
+			until(|| seen_second.read() == "one");
+			print(i"mixed: first={first.get().unwrap_or([]).len()} second={seen_second.read()}");
+			print(i"edit:{client.edit("a", "uno").unwrap_or(0 - 1)}");
+			until(|| seen_second.read() == "uno");
+			print(i"drop:{client.drop("a").unwrap_or(0 - 1)}");
+			until(|| first.fault().is_some() || second.fault().is_some());
+			print(i"after: first={first.get().unwrap_or([]).len()} second={seen_second.read()} first-fault={fault_of(first.fault())} second-fault={fault_of(second.fault())}");
+		},
+		Err(let error) => print(i"err:{error.debug()}"),
+	}
+	exit(0);
+}
