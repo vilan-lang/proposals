@@ -1,0 +1,22 @@
+// FIND (for the integrator): a STRUCT accepts a defaulted type parameter at its
+// declaration, but the default is never applied: `Ordered<str, i32>` in a
+// signature is a different type from the literal's `Ordered<str, i32, Insertion>`
+// ("Expected Ordered<str, i32>, but got Ordered<str, i32, Insertion>"). Traits
+// honour theirs (`PartialEq<B = Self>`). I10 door (a) is spelled with one.
+
+struct Insertion {}
+
+struct Ordered<K, V, O = Insertion> {
+	keys: List<K>,
+	values: List<V>,
+	order: O,
+}
+
+fun size(m: Ordered<str, i32>): usize {
+	m.keys.len()
+}
+
+fun main() {
+	let m = Ordered { keys = ["a"], values = [1], order = Insertion {} };
+	print(size(m));
+}

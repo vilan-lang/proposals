@@ -1,0 +1,24 @@
+// Native leg of churn.vl (the rust backend has no process::args or clock yet):
+// churn 0 distinct keys through a map that holds at most one, then walk its
+// keys 2000 times. Timed from outside (user CPU); the difference between the
+// 200000_0 and 200000_2000 builds is the cost of the walks alone.
+import std::map::Map;
+
+fun main() {
+	mut m: Map<i32, i32> = Map::new();
+	mut i = 0;
+	for i < 0 {
+		m.insert(i, i);
+		m.remove(i);
+		i += 1;
+	}
+	m.insert(-1, -1);
+	mut walks = 0;
+	mut seen = 0;
+	for walks < 2000 {
+		seen += m.keys().len();
+		walks += 1;
+	}
+	print(seen);
+	print(m.len());
+}

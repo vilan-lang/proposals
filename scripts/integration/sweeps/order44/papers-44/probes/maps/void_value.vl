@@ -1,0 +1,12 @@
+// A138: "does a set add anything beyond `MapCell<T, void>`?" - can a map carry
+// `void` values on 0.41.1?
+import std::map::Map;
+
+fun unit() {}
+
+fun main() {
+	mut m: Map<str, void> = Map::new();
+	m.insert("a", unit());
+	print(m.len());
+	print(m.contains_key("a"));
+}

@@ -1,0 +1,168 @@
+// A138's per-key tracking, measured on 0.41.1. Two arms over the same N keys,
+// each key observed once, then W writes to single keys:
+//
+//   coarse : kolt's shape (store.vl:257) - one SignalCell<Map<K, V>>, and per key
+//            `all.map(|m| m.get(key)).cell()`.
+//   keyed  : a toy MapCell - the map, a DeltaLog<MapOp<K, V>> (std's op, unused
+//            until now), and a per-key cell minted on first `at(key)`
+//            (Selector's shape, reactive.vl `Selector::of`).
+//
+// Counts: projection runs (coarse only), observer calls, and wall ms.
+import std::hash::Hashable;
+import std::map::Map;
+import std::reactive::{ DeltaCursor, DeltaLog, MapOp, Signal, SignalCell, Source, Subscription };
+import std::shared::Shared;
+import std::time;
+
+struct MapCell<K: Hashable, V> {
+	items: Shared<Map<K, V>>,
+	keys: Shared<Map<K, SignalCell<Option<V>>>>,
+	published: SignalCell<i32>,
+	log: DeltaLog<MapOp<K, V>>,
+}
+
+impl MapCell<type K: Hashable, type V> {
+	fun new(): MapCell<K, V> {
+		MapCell {
+			items = Shared::new(Map::new()),
+			keys = Shared::new(Map::new()),
+			published = SignalCell::new(0),
+			log = DeltaLog<MapOp<K, V>>::new(),
+		}
+	}
+
+	/// Put: record the op with what was there, wake the key's cell if anyone
+	/// asked for it, then the one whole-map notification.
+	fun insert(self, key: K, value: V) {
+		let previous = self.items.read().get(key);
+		self.items.write().insert(key, value);
+		self.log.record(MapOp::Put(key, previous, value));
+		match self.keys.read().get(key) {
+			Some(let cell) => cell.set(Some(value)),
+			None => {},
+		}
+		self.published.set(self.log.at());
+	}
+
+	fun remove(self, key: K) {
+		match self.items.read().get(key) {
+			None => {},
+			Some(let gone) => {
+				self.items.write().remove(key);
+				self.log.record(MapOp::Delete(key, gone));
+				match self.keys.read().get(key) {
+					Some(let cell) => cell.set(None),
+					None => {},
+				}
+				self.published.set(self.log.at());
+			},
+		}
+	}
+
+	/// The per-key face: depends on `key` only.
+	fun at(self, key: K): SignalCell<Option<V>> {
+		match self.keys.read().get(key) {
+			Some(let cell) => cell,
+			None => {
+				let cell: SignalCell<Option<V>> = SignalCell::new(self.items.read().get(key));
+				self.keys.write().insert(key, cell);
+				cell
+			},
+		}
+	}
+
+	fun cursor(self): DeltaCursor {
+		self.log.cursor()
+	}
+
+	fun since(self, cursor: DeltaCursor): List<MapOp<K, V>> {
+		match self.log.since(cursor) {
+			Some(let ops) => ops,
+			None => [MapOp::Reset(self.items.read())],
+		}
+	}
+}
+
+fun opt(o: Option<i32>): str {
+	match o {
+		Some(let v) => i"Some({v})",
+		None => "None",
+	}
+}
+
+fun describe(op: MapOp<i32, i32>): str {
+	match op {
+		MapOp::Put(let k, let was, let now) => i"Put({k}, {opt(was)}, {now})",
+		MapOp::Delete(let k, let v) => i"Delete({k}, {v})",
+		MapOp::Reset(let m) => i"Reset({m.len()})",
+	}
+}
+
+fun main() {
+	let n = 1000;
+	let w = 1000;
+
+	// --- coarse
+	let all: SignalCell<Map<i32, i32>> = Signal::new(Map::new());
+	let runs = Shared::new(0);
+	let calls = Shared::new(0);
+	mut subs: List<Subscription> = [];
+	mut k = 0;
+	for k < n {
+		let key = k;
+		let one = all.map(|m| {
+			runs.write() += 1;
+			m.get(key)
+		}).cell();
+		subs.push(one.on_change(|_v| {
+			calls.write() += 1;
+		}));
+		k += 1;
+	}
+	runs.write() = 0;
+	let start = time::now();
+	mut i = 0;
+	for i < w {
+		let key = (i * 7) % n;
+		all.update(|&mut m| {
+			m.insert(key, i);
+		});
+		i += 1;
+	}
+	let coarse_ms = time::now().millis - start.millis;
+	print(i"coarse: n={n} writes={w} projection_runs={runs.read()} observer_calls={calls.read()} ms={coarse_ms}");
+
+	// --- keyed
+	let cell: MapCell<i32, i32> = MapCell::new();
+	let kcalls = Shared::new(0);
+	mut ksubs: List<Subscription> = [];
+	k = 0;
+	for k < n {
+		ksubs.push(cell.at(k).on_change(|_v| {
+			kcalls.write() += 1;
+		}));
+		k += 1;
+	}
+	let cursor = cell.cursor();
+	let kstart = time::now();
+	i = 0;
+	for i < w {
+		cell.insert((i * 7) % n, i);
+		i += 1;
+	}
+	let keyed_ms = time::now().millis - kstart.millis;
+	print(i"keyed:  n={n} writes={w} observer_calls={kcalls.read()} ms={keyed_ms}");
+
+	// --- the op log: what a delta consumer is told
+	let told = cell.since(cursor);
+	print(i"keyed log: {told.len()} ops; first={describe(told[0])}");
+	let c2 = cell.cursor();
+	cell.insert(3, 99);
+	cell.insert(3, 100);
+	cell.remove(3);
+	cell.remove(3);          // absent: no op, no wake
+	for op in cell.since(c2) {
+		print(describe(op));
+	}
+	print(i"at(3) now={opt(cell.at(3).get())} at(4)={opt(cell.at(4).get())}");
+}

@@ -1,0 +1,87 @@
+// A138's census: `KeyedCell<K, T>` (rpc.vl) held against a map face.
+//  1. remove cost by position: `remove` re-indexes everything after the hole
+//     (rpc.vl `KeyedCell::remove` -> `reindex(list, at)`), so front removes are O(N).
+//  2. what a map face reads: `locate` is a snapshot, and the only subscription is
+//     the whole list's (`Source<List<T>>`).
+//  3. a set as `KeyedCell<T, T>`: needs `T: Keyed<T>`, i.e. an impl on the element.
+import std::display::Display;
+import std::reactive::{ Source, Subscription };
+import std::rpc::KeyedCell;
+import std::shared::Shared;
+import std::time;
+import std::wire::Keyed;
+
+struct Row {
+	id: i32,
+	label: str,
+}
+
+impl Row with Keyed<i32> {
+	fun key(self): i32 {
+		self.id
+	}
+}
+
+// A set of strings through the keyed cell: the element is its own key.
+impl str with Keyed<str> {
+	fun key(self): str {
+		self
+	}
+}
+
+fun rows(n: i32): List<Row> {
+	mut out: List<Row> = [];
+	mut i = 0;
+	for i < n {
+		out.push(Row { id = i, label = i"r{i}" });
+		i += 1;
+	}
+	out
+}
+
+fun main() {
+	let n = 10000;
+	let removes = 1000;
+
+	let front: KeyedCell<i32, Row> = KeyedCell::new(rows(n));
+	let t0 = time::now();
+	mut i = 0;
+	for i < removes {
+		front.remove(i);
+		i += 1;
+	}
+	let front_ms = time::now().millis - t0.millis;
+
+	let back: KeyedCell<i32, Row> = KeyedCell::new(rows(n));
+	let t1 = time::now();
+	i = 0;
+	for i < removes {
+		back.remove(n - 1 - i);
+		i += 1;
+	}
+	let back_ms = time::now().millis - t1.millis;
+	print(i"remove x{removes} from {n}: front ms={front_ms} back ms={back_ms}");
+
+	// Every write wakes every observer: the only subscription is the list's.
+	let wakes = Shared::new(0);
+	let _s = back.on_change(|_list| {
+		wakes.write() += 1;
+	});
+	back.update(5, |&mut r| {
+		r.label = "five";
+	});
+	back.update(6, |&mut r| {
+		r.label = "six";
+	});
+	print(i"two updates to two keys: list observer woke {wakes.read()} times");
+	match back.locate(5) {
+		Some(let found) => print(i"locate(5) = at {found.0}, label {found.1.label} (a snapshot, not a source)"),
+		None => print("locate(5) = None"),
+	}
+
+	// The set door.
+	let tags: KeyedCell<str, str> = KeyedCell::new(["a", "b"]);
+	tags.insert("a");        // already held: an Update, not an insert
+	tags.insert("c");
+	print(i"set via KeyedCell<str, str>: {tags.get().join(",")}");
+}
