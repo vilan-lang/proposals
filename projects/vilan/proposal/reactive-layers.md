@@ -8,7 +8,8 @@
 > and dissolves the cold-node problem the first revision spent §4.2 on. Each
 > ruling is quoted where it governs and collected in §10. The pipe model raised
 > Q15–Q20, ruled as recommended the same day (R30–R35), and Q13–Q14 followed
-> (R36–R37). §11 keeps the questions; none remains open.
+> (R36–R37). Two language rules the build found were ruled the same day (R38–R39,
+> §3.4). §11 keeps the questions; none remains open.
 >
 > Origin: the owner's second `kolt/src/lib/reactive2.vl` sketch (2026-09-29).
 > This file name was reused: A124's paper answered an earlier sketch at the same
@@ -215,6 +216,11 @@ The prototype hit this with `derive(self)`: branching went undetected and the
 resource was copied. A concrete impl refuses the same body. Until B463 is fixed,
 every combinator and every sealing operation is written `own self`, which the
 prototype confirms closes the gap.
+
+**Two language rules the pipe model stands on** (native-44's finds, RULED by the owner 2026-09-29):
+
+- **R38 (B469).** A field may be moved out of an aggregate the function OWNS when nothing uses the aggregate afterwards and no `Drop` is anywhere inside it, read as a destructure. Every node body does this (`self.up.start(..)` under `own self`). Before the ruling, generic nodes compiled only because the partial-move rule was not re-checked per instantiation, which is B463's class of hole.
+- **R39 (B470).** A resource with no `Drop` anywhere inside it may become a trait object. That trait object is itself move-only. `dyn Flow`/`dyn Pipe` holders (§3.2's mixed-arm selectors, §5's `latest()`/`is_pending()`) depend on it. A resource with `Drop` stays refused.
 
 ## 4. Owners: every body runs in exactly one instance
 
@@ -578,6 +584,8 @@ None of them blocks the std work. Each has a working spelling today: `dyn`,
 | R35 | Q20 → `map` starts a returned pipe per element and carries its value; it still never flattens a returned `Source`. |
 | R36 | Q13 → over a flow of `Task<Result<T, E>>`, `.transient()` lifts `Err(e)` into `Failed(e, stale)`; over a flow of bare `Task<T>`, `E` is `str` (the panic's message). |
 | R37 | Q14 → the sealing operation from a flow of tasks to a transient is `.transient()`. |
+| R38 | B469 (native-44's find, ruled 2026-09-29) → a field may be moved out of an owned, otherwise-dead aggregate with no `Drop` inside (§3.4). |
+| R39 | B470 (native-44's find, ruled 2026-09-29) → a resource with no `Drop` inside may become a trait object, itself move-only (§3.4). |
 
 ## 11. Questions
 
