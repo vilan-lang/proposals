@@ -83,8 +83,12 @@ train after it ships.
 
 **The anchor.** A-rules apply unchanged. A1/A4: the narrowest
 identifying span — the callee *name* at a call (the method/call
-re-anchor precedent: names over argument lists), the failing *segment*
-at an import, the type name at a type position. A2: the warning fires
+re-anchor precedent: names over argument lists), the type name at a type
+position. An import line is NOT an anchor (§ "An `import` line alone does
+not warn", below; RULED 2026-09-29 as E224 door (b), one rule for types
+and functions — the line as first written here named "the failing
+segment at an import" and contradicted that rule). The one exception is
+a deprecated RE-EXPORT, whose reaching import is its only use site. A2: the warning fires
 **only when the use site is user code**. Mechanically this is
 `check_must_use`'s pattern inverted to the same effect
 (analyzer.rs:16764 keys its skip on the *discarding statement's* home,
