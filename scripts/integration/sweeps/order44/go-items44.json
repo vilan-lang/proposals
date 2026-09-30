@@ -70,5 +70,78 @@
   "step0": "run by the integrator at GO on --backend rust over Appendix A (0.41.1): the rust backend refuses every [resource] type -> F56 (filed at GO), native-44 item 0 FIRST; reactive-44 cherry-picks it for native gates and starts at GO; `dyn Up<T>` cannot be sealed (R34 as ruled — noted, not filed)",
   "filed_at_go": [
     "F56"
-  ]
+  ],
+  "merged": {
+    "date": "2026-09-30",
+    "tip": "c4f80f4e",
+    "order": [
+      "solver-44 eb99d1d6",
+      "native-44 453bd3cc",
+      "reactive-44 d3560fad",
+      "syntax-44 280f7231",
+      "native-44 (phase 2) ddb4229b",
+      "transient-44 46fd66d1",
+      "collections-44 9ede427c",
+      "tracking-44 6a8405ce",
+      "editor-44 c4f80f4e"
+    ],
+    "papers": "papers-44 to proposals 848691e"
+  },
+  "seal": {
+    "1": "c4f80f4e local GREEN (seal-44.log) but CI wasm RED — the smoke program's `.map` → fixed 170562b9",
+    "2": "170562b9 CI: wasm green, windows-2 RED — deep_nesting canary stack overflow → seal-44 lane (walk frame −46%) merged 3ca733f3",
+    "3": "3ca733f3 CI 36749538302 GREEN 11/11"
+  },
+  "sealed": {
+    "tip": "3ca733f3",
+    "date": "2026-09-30",
+    "ci": "36749538302 GREEN 11/11 (changes, fmt, audit, wasm, vilan-fmt, clippy, check, test ubuntu 1+2, test windows 1+2)"
+  },
+  "sweep": {
+    "date": "2026-09-30",
+    "closed": 34,
+    "filed": [
+      "F56",
+      "A143",
+      "B464",
+      "B465",
+      "B466",
+      "B467",
+      "B468",
+      "M91",
+      "B469",
+      "B470",
+      "F57",
+      "B471",
+      "E234",
+      "A144",
+      "B472",
+      "B473",
+      "B474",
+      "B475",
+      "B476",
+      "B477",
+      "B478",
+      "B479",
+      "B480",
+      "F58",
+      "J7",
+      "E235",
+      "A145",
+      "M92",
+      "B481",
+      "F59",
+      "F60",
+      "B482",
+      "B483",
+      "B484",
+      "F61",
+      "F62",
+      "F63",
+      "F64",
+      "A146",
+      "M93"
+    ],
+    "tracker_open_after": 139
+  }
 }
