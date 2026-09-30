@@ -541,6 +541,10 @@ maker builds outlives the caller; a lease belongs at the call site. A mirror who
 `Subscribe` joins a forward a sibling already holds is seeded from the sibling on the
 client (A137). (reactive-43's paragraph, placed by the integrator 2026-09-28.)
 
+### 2j′. One forward per channel, fanned out by demand (A143, ruled door (b), Order 44)
+
+A client carries ONE forward per channel at the UNION of its mirrors' demands: the whole collection if any mirror holds it, otherwise each held key once. Every mirror's Subscribe/Unsubscribe goes through the client's `WireDemand`, which sends the new demand before withdrawing the old one (a dynamic channel is revoked by the Unsubscribe that leaves it empty), and a registration the wire already covers sends nothing and is seeded from a sibling (§2j's A137/A139 seeds). Frames still name only a channel; the client fans each op out by demand — a whole-collection mirror takes every op, a key holder only its keys', a mirror with no demand nothing. No wire change. (transient-44, Order 44; the services guide's "Last lease" paragraph says the same.)
+
 ### 2k. The in-process seed is inline, by contract (A133, ruled door (c), Order 44)
 
 A `duplex_pair` answers a mirror's `Subscribe` with its seeding `Update` inside the send, under the subscribing turn; a socket answers on a later task. So a mirror read right after its first lease holds the value in process and `None` over a socket, and a node over a mirror that pulls as it subscribes is told the seed twice in process (the pull, then the seed's notification) and once over a socket — the same value, one more notification. The in-process pair is the test and wiring transport, not the wire: a pin that counts notifications runs over a socket. Deferring in-process delivery (door (a)) was prototyped in Order 43 and rejected: it rewrote the synchronous-seed contract and ~20 pins. (transient-44 documented the same contract at `duplex_pair`'s doc and in the services guide, pinned by `a133_an_in_process_seed_is_inline_and_a_node_over_the_mirror_sees_it_twice`.)
