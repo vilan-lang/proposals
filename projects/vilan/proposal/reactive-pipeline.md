@@ -65,6 +65,8 @@ vocabulary" does not survive the sketch: the root IS a `Source`, the result of
 §2.5's relocation argument — totality is not avoided, only moved to the fallback —
 and §8's "an effect writing a cell is a state machine, not a missing combinator".
 
+**Revisited by A142 (built as S6, 2026-09-30, Order 44 — tracking-44).** The tracked `computed` withdrawn here returns as `reactive-layers.md` §7's free `derive(|| body)`, a pipe whose only dependencies are the ones it tracks, and every other pipe body tracks too. The three reasons are answered: (1) only `track()` consults the scope, and the scope is a compile-time context, so no ambient frame is consulted on any `get()`; (2) the untracked-callback footgun is closed — a `track()` in a callback written outside a body is a compile error, and a callback minted inside a body registers nothing once that run is over (a scope is one run; the fully static form §7.3 intends is B482, an Order 45 follow-up); (3) the base keeps the explicit-tracking stance, and tracking is opt-in sugar over it.
+
 ## 1. Ground truth
 
 ### 1.1 What the sketch is

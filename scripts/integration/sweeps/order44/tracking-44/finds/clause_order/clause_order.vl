@@ -1,0 +1,17 @@
+// The native backend orders an injected literal's hidden parameters one way and
+// the closure TYPE's (the clause as written) another: a clause that does not list
+// its contexts in declaration order builds on JS and is refused by rustc natively
+// ("expected `i32`, found `str`"). Found by tracking-44 (A142 S6).
+import std::context::Context;
+import std::io::print;
+
+let first: Context<i32> = Context::new();
+let second: Context<str> = Context::new();
+
+fun both(body: (|| str) context (second, first)): str {
+	first.run(1, || second.run("two", || body()))
+}
+
+fun main() {
+	print(both(|| i"{first.get()} {second.get()}"));
+}

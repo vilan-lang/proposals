@@ -1,0 +1,21 @@
+import std::context::Context;
+import std::option::Option::{ Some, None };
+
+let flavor: Context<i32> = Context::new();
+
+fun call_cleared(cb: (|| void) context flavor) {
+	flavor.clear(|| cb());
+}
+
+fun describe(): str {
+	match flavor.get_safe() {
+		Some(let value) => i"flavor {value}",
+		None => "no flavor",
+	}
+}
+
+fun main() {
+	flavor.run(3, || {
+		call_cleared(|| print(describe()));
+	});
+}

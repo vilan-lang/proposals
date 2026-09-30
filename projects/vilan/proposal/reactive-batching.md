@@ -294,3 +294,8 @@ generic over a zero-arg closure (the same shape `Owner::take` already relies on)
   default, for UI event handlers) is a *future* addition — deferred like `reactive-ownership.md`'s
   ambient owner (no magic until proven against `async` and indirection) — but it *will* land; the
   explicit `flush`/`batch` primitives are the foundation it builds on.
+
+## Amended by A142 S6 (built 2026-09-30, Order 44 — tracking-44)
+
+The explicit stance holds for the base layer: `get()` never tracks, and a derivation names its inputs. Tracked reads are now an optional layer on top (`reactive-layers.md` §7): inside a body a pipe runs, `source.track()` makes the source a dependency of that body, through a context read with the strict `get`, so a `track()` outside every body is a compile error and no run-time frame is consulted. The `untrack` row above is no longer N/A: it is `tracking.clear(..)` (B458), which runs its body with no scope — a closure minted inside holds none, and a `track()` written inside is refused. The fully static form for callbacks (an injected closure called inside `clear` of its own context gets the cleared state) is B482, ruled 2026-09-30 as an Order 45 follow-up; until then a scope lasts one run, and a callback minted inside a body registers nothing once that run is over.
+
