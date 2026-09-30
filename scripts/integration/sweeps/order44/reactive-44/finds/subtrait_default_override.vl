@@ -1,0 +1,41 @@
+import std::io::print;
+
+trait Base {
+	fun name(self): str {
+		"the default"
+	}
+}
+
+trait Sub with Base {
+	fun tag(self): i32;
+}
+
+struct Mine {}
+
+impl Mine with Base {
+	fun name(self): str {
+		"the override"
+	}
+}
+
+impl Mine with Sub {
+	fun tag(self): i32 {
+		7
+	}
+}
+
+fun through_base<S: Base>(value: S): str {
+	value.name()
+}
+
+fun through_sub<S: Sub>(value: S): str {
+	value.name()
+}
+
+fun main() {
+	let mine = Mine {};
+	print(through_base(mine));
+	print(through_sub(mine));
+}
+
+main();

@@ -1,0 +1,16 @@
+import std::io::print;
+import std::reactive::{ Owner, Signal, SignalCell, Source, run_with_owner };
+
+fun show(value: i32) {
+	print(i"saw {value}");
+}
+
+fun main() {
+	let root: SignalCell<i32> = Signal::new(1);
+	let boundary = Owner::new();
+	run_with_owner(boundary, || root.effect(show));
+	root.set(2);
+	boundary.dispose();
+}
+
+main();

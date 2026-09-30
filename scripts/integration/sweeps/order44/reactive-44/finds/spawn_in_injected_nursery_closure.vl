@@ -1,0 +1,32 @@
+import std::task::{ ambient_nursery, detached_nursery, Nursery };
+import std::reactive::{ owner_scope, Owner };
+import std::time::sleep;
+
+fun single(body: (|| void) context ambient_nursery) {
+	let n = detached_nursery();
+	ambient_nursery.run(n, body);
+	n.cancel();
+}
+
+fun double(body: (|| void) context (owner_scope, ambient_nursery)) {
+	let n = detached_nursery();
+	owner_scope.run(Owner::new(), || ambient_nursery.run(n, || body()));
+	n.cancel();
+}
+
+fun main() {
+	single(|| {
+		let _t = async {
+			sleep(20);
+			print("single survived");
+		};
+	});
+	double(|| {
+		let _t = async {
+			sleep(20);
+			print("double survived");
+		};
+	});
+	sleep(60);
+	print("done");
+}

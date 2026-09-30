@@ -1,0 +1,11 @@
+import std::io::print;
+import std::reactive::{ MemoCell, Signal, SignalCell, Source };
+
+fun main() {
+	let first = Signal::new(1);
+	let outer = Signal::new(first);
+	let joined: MemoCell<i32> = outer.flatten().memo();
+	print(joined.get());
+}
+
+main();

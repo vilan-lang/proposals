@@ -1,0 +1,10 @@
+import std::reactive::{ Signal, SignalCell, Source };
+fun main() {
+	let path: SignalCell<str> = Signal::new("/");
+	let erased: dyn Source<str> = path;
+	let m = erased.derive(|p| p + "x").memo();
+	print(m.get());
+	print(path.derive(|p| p.len()).switch(|n| path).memo().get());
+	let s = erased.sub(|v| print(v));
+	path.set("/a");
+}

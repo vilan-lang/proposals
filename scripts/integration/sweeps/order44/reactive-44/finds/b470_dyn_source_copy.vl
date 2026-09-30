@@ -1,0 +1,15 @@
+import std::io::print;
+import std::reactive::{ Signal, SignalCell, Source };
+
+fun read_twice(source: dyn Source<i32>): i32 {
+	let first: dyn Source<i32> = source;
+	let second: dyn Source<i32> = source;
+	first.get() + second.get()
+}
+
+fun main() {
+	let count: SignalCell<i32> = Signal::new(2);
+	print(i"{read_twice(count)}");
+}
+
+main();

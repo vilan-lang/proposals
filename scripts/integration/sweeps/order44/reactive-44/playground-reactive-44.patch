@@ -1,0 +1,31 @@
+diff -ruN a/todo/src/client.vl b/todo/src/client.vl
+--- a/todo/src/client.vl	2026-09-29 21:33:19.428587701 -0400
++++ b/todo/src/client.vl	2026-09-29 21:39:17.787198785 -0400
+@@ -15,11 +15,11 @@
+ 
+ async fun main() {
+ 	let token = Signal::new(storage::get("notes-token"));
+-	let route = current_path().map(parse);
++	let route = current_path().derive(|path| parse(path)).cell();
+ 
+ 	match NotesClient::connect("/", json_codec()) {
+ 		Ok(let client) => {
+-			let _root = mount_root("app", || client_context.run(client, || app(token, route.cell())));
++			let _root = mount_root("app", || client_context.run(client, || app(token, route)));
+ 		}
+ 		Err(let error) => print(i"connect failed: {error.debug()}")
+ 	}
+@@ -27,11 +27,11 @@
+ 
+ fun app(token: Signal<str>, route: Signal<Route>) {
+ 	let client = client_context.get();
+-	let notes = client.notes.or([]);
++	let notes = client.notes.or([]).memo();
+ 
+ 	<div>
+ 		{add_note()}
+-		<ul>{each_by(notes, |x| x.id, |note| <li>{note.map(|n| n.text)}</li>)}</ul>
++		<ul>{each_by(notes, |x| x.id, |note| <li>{note.derive(|n| n.text)}</li>)}</ul>
+ 	</div>
+ }
+ 

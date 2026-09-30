@@ -1,0 +1,649 @@
+diff -ruN a/src/channel.vl b/src/channel.vl
+--- a/src/channel.vl	2026-09-29 20:35:37.331066177 -0400
++++ b/src/channel.vl	2026-09-29 21:32:28.327628948 -0400
+@@ -34,13 +34,21 @@
+ 	<div .styled(css { padding(rem(8 / 16)); })>
+ 		{ui::each_values(messages, |message_id| {
+ 			let message = Message::find(message_id);
+-			let author = message.map(|x| x.map(|x| x.author.user())).flatten().map(|x| x.flatten());
++			// Sealed: `combine` takes sources (A142).
++			let author = message
++				.derive(|x| x.map(|x| x.author.user()))
++				.flatten()
++				.derive(|x| x.flatten())
++				.memo();
+ 
+ 			// `when_some` keeps the row across a payload change and hands the body
+ 			// a live cell, so an edited message updates in place instead of
+ 			// rebuilding its row.
+-			ui::when_some(reactive::combine((message, author)).map(|(message, author)| message.zip(author)), |pair| {
++			ui::when_some(reactive::combine((message, author)).derive(|(message, author)| message.zip(author)), |pair| {
++				// Each output is read twice (a handler and a hole): sealed once.
+ 				let (message, author) = reactive::divorce(pair);
++				let message = message.memo();
++				let author = author.memo();
+ 
+ 				<div
+ 					on:contextmenu(|event| {
+@@ -54,9 +62,9 @@
+ 					})
+ 				>
+ 					<span .styled(css { font-weight("600"); })>
+-						{author.map(|current| current.username)}
++						{author.derive(|current| current.username)}
+ 					</span>
+-					<span>{message.map(|current| current.content)}</span>
++					<span>{message.derive(|current| current.content)}</span>
+ 				</div>
+ 			})
+ 		})}
+@@ -185,9 +193,9 @@
+ 					.color(Theme::danger())
+ 					.padding_y(style::Length::rem(8 / 16))
+ 					.padding_x(style::Length::rem(16 / 16)))
+-				.show(error_text.map(|x| x.is_some()))
++				.show(error_text.derive(|x| x.is_some()))
+ 			>
+-				{error_text.map(|x| x.unwrap_or_default())}
++				{error_text.derive(|x| x.unwrap_or_default())}
+ 			</div>
+ 		</form>
+ 	});
+@@ -384,9 +392,9 @@
+ 					.color(Theme::danger())
+ 					.padding_y(style::Length::rem(8 / 16))
+ 					.padding_x(style::Length::rem(16 / 16)))
+-				.show(error_text.map(|x| x.is_some()))
++				.show(error_text.derive(|x| x.is_some()))
+ 			>
+-				{error_text.map(|x| x.unwrap_or_default())}
++				{error_text.derive(|x| x.unwrap_or_default())}
+ 			</div>
+ 		</form>
+ 	});
+diff -ruN a/src/client.vl b/src/client.vl
+--- a/src/client.vl	2026-09-29 20:35:37.294552794 -0400
++++ b/src/client.vl	2026-09-29 20:38:47.447632401 -0400
+@@ -62,7 +62,7 @@
+ 		// through `parse_path` and percent-DECODES): a path like "/%6Cogin" must stay
+ 		// `NotFound`, not become `Route::Login`. A72 owns the raw-vs-decoded rule.
+ 		let route: SignalCell<Route> = current_path()
+-			.map(|path| Route::from_segments(segments(path)))
++			.derive(|path| Route::from_segments(segments(path)))
+ 			.cell();
+ 		let sidebar_tab = Signal::new(sidebar_tab_of_route(route.get()));
+ 		let drag_status = Signal::new(DragStatus::None);
+diff -ruN a/src/command_palette.vl b/src/command_palette.vl
+--- a/src/command_palette.vl	2026-09-29 20:35:37.292723363 -0400
++++ b/src/command_palette.vl	2026-09-29 21:13:31.824513296 -0400
+@@ -171,7 +171,7 @@
+ 		let search_text = Signal::new("");
+ 		let search_focused = Signal::new(false);
+ 		let items = Channel::get_channel_ids()
+-			.map(|x| sorted_commands
++			.derive(|x| sorted_commands
+ 				.iter()
+ 				// .chain(x
+ 				// 	.iter()
+@@ -188,14 +188,16 @@
+ 		let commands_searchable: Searchable<Command> = Searchable::documents(items, |x| x.document);
+ 		// An empty query lists every command, one per exclusive group.
+ 		let filtered_commands: SignalCell<List<Hit<Command>>> = search_text
+-			.map(|text| commands_searchable.hits(text))
++			.derive(|text| commands_searchable.hits(text))
+ 			.cell();
+ 		let selected_index: SignalCell<usize> = Signal::new(0);
+ 		filtered_commands.effect(|x| selected_index.set(0));
++		// Read by the submit handler and by every row's focus: sealed once.
+ 		let selected_command = combine((filtered_commands, selected_index))
+-			.map(|(filtered_commands, selected_index)| filtered_commands
++			.derive(|(filtered_commands, selected_index)| filtered_commands
+ 				.get(selected_index)
+-				.map(|hit| hit.item));
++				.map(|hit| hit.item))
++			.memo();
+ 
+ 		<form
+ 			on:submit(|event| {
+@@ -264,12 +266,11 @@
+ 					let command = hit.get().item;
+ 					// The row's text in pieces, the matched ones marked. Keyed by
+ 					// position: the cut moves with every keystroke.
+-					let parts = hit.map(|hit| pieces(hit.text, hit.ranges)
+-						.iter()
+-						.enumerate()
+-						.to_list());
++					let parts = hit
++						.derive(|hit| pieces(hit.text, hit.ranges).iter().enumerate().to_list())
++						.memo();
+ 					let focused = combine((selected_command, search_focused))
+-						.map(|(selected_command, search_focused)| selected_command
++						.derive(|(selected_command, search_focused)| selected_command
+ 							.is_some_and(|x| x == command)
+ 							&& search_focused);
+ 					<button
+@@ -279,7 +280,7 @@
+ 							activate(command);
+ 							modal.close();
+ 						})
+-						.bind_attr("x-focused", focused.map(|x| x.to_string()))
++						.bind_attr("x-focused", focused.derive(|x| x.to_string()))
+ 						.styled(const button_style(style::Color::current()) + css {
+ 							width(pct(100));
+ 						})
+@@ -288,10 +289,10 @@
+ 							{each_by(parts, |part| part.0, |part| {
+ 								<span
+ 									.bind_attr("x-marked", part
+-										.map(|part| part.1.marked.to_string()))
++										.derive(|part| part.1.marked.to_string()))
+ 									.styled(const search_mark_style())
+ 								>
+-									{part.map(|part| part.1.text)}
++									{part.derive(|part| part.1.text)}
+ 								</span>
+ 							})}
+ 						</span>
+@@ -299,7 +300,7 @@
+ 				}))
+ 			>
+ 				<div
+-					.show(filtered_commands.map(|x| x.len() == 0))
++					.show(filtered_commands.derive(|x| x.len() == 0))
+ 					.styled(const style::style()
+ 						.padding_x(style::Length::rem(8 / 16))
+ 						.padding_y(style::Length::rem(4 / 16))
+diff -ruN a/src/lib/overlay.vl b/src/lib/overlay.vl
+--- a/src/lib/overlay.vl	2026-09-29 20:35:37.293609623 -0400
++++ b/src/lib/overlay.vl	2026-09-29 20:38:47.448208524 -0400
+@@ -428,7 +428,7 @@
+ 	fun new(input: InputSystem): OverlayDriver {
+ 		let scrims = Signal::new(0);
+ 		mut layers: List<Layer> = [];
+-		let container = view("div").bind_styled(scrims.map(|count| if count > 0 {
++		let container = view("div").bind_styled(scrims.derive(|count| if count > 0 {
+ 			container_style + container_scrim_style
+ 		} else {
+ 			container_style
+@@ -445,7 +445,7 @@
+ 	/// Whether any open overlay has a scrim - for making the rest of the app
+ 	/// `inert` while a modal is up.
+ 	fun has_scrim(self): SignalCell<bool> {
+-		self.scrims.map(|count| count > 0).cell()
++		self.scrims.derive(|count| count > 0).cell()
+ 	}
+ 
+ 	/// Mount `overlay` into this container whenever it is open. `body` builds
+diff -ruN a/src/lib/scoped_effect.vl b/src/lib/scoped_effect.vl
+--- a/src/lib/scoped_effect.vl	2026-09-29 20:35:37.293886629 -0400
++++ b/src/lib/scoped_effect.vl	1969-12-31 19:00:00.000000000 -0500
+@@ -1,21 +0,0 @@
+-import std::reactive::{ Owner, Source, get_owner, owner_scope, run_with_owner };
+-import std::shared::Shared;
+-
+-export impl Source<type T> {
+-	fun scoped_effect(self, body: (sync |T| void) context owner_scope) {
+-		let current_owner: Shared<Option<Owner>> = Shared::new(None);
+-		self.effect(|value: T| {
+-			if current_owner.read() is Some(let old_owner) {
+-				old_owner.dispose();
+-			}
+-			let new_owner = Owner::new();
+-			current_owner.write() = new_owner;
+-			run_with_owner(new_owner, || body(value));
+-		});
+-		get_owner().defer(|| {
+-			if current_owner.read() is Some(let old_owner) {
+-				old_owner.dispose();
+-			}
+-		});
+-	}
+-}
+diff -ruN a/src/lib/search.vl b/src/lib/search.vl
+--- a/src/lib/search.vl	2026-09-29 20:35:37.293815828 -0400
++++ b/src/lib/search.vl	2026-09-29 21:32:28.383628948 -0400
+@@ -908,7 +908,9 @@
+ 	fun documents_config(list: SignalCell<List<T>>, key: |T| Document, config: SearchConfig) {
+ 		Searchable {
+ 			list,
+-			index = list.map(|items| SearchIndex::new(items.map(|item| key(item)), config)).cell(),
++			index = list
++				.derive(|items| SearchIndex::new(items.map(|item| key(item)), config))
++				.cell(),
+ 		}
+ 	}
+ 
+@@ -916,7 +918,9 @@
+ 		let config = SearchConfig::new();
+ 		Searchable {
+ 			list,
+-			index = list.map(|items| SearchIndex::many(items.map(|item| key(item)), config)).cell(),
++			index = list
++				.derive(|items| SearchIndex::many(items.map(|item| key(item)), config))
++				.cell(),
+ 		}
+ 	}
+ 
+diff -ruN a/src/lib/storage.vl b/src/lib/storage.vl
+--- a/src/lib/storage.vl	2026-09-29 20:35:37.316509900 -0400
++++ b/src/lib/storage.vl	2026-09-29 21:10:27.324042730 -0400
+@@ -1,6 +1,7 @@
+ import std::dom::window;
+ import std::hash::{ Hash, Hashable, canonical_hash };
+ import std::set::Set;
++import std::reactive::{ Subscriber, Subscription };
+ import std::storage;
+ 
+ export *;
+@@ -72,9 +73,11 @@
+ 		self.signal.get()
+ 	}
+ 
++	// A142: a source's attach is `on_settle`; `on_change`/`sub`/`derive`
++	// arrive through `Flow`.
+ 	[must_use]
+-	fun on_change(self, observer: |T| void) {
+-		self.signal.on_change(observer)
++	fun on_settle(self, subscriber: Subscriber): Subscription {
++		self.signal.on_settle(subscriber)
+ 	}
+ 
+ 	fun notify(self) {
+diff -ruN a/src/login_page.vl b/src/login_page.vl
+--- a/src/login_page.vl	2026-09-29 20:35:37.292911308 -0400
++++ b/src/login_page.vl	2026-09-29 20:38:47.449415711 -0400
+@@ -39,7 +39,7 @@
+ 				.margin_gap_y(size(4));
+ 			})
+ 		>
+-			{swap(get_route().map(|x| x is Route::SignUp), |sign_up| {
++			{swap(get_route().derive(|x| x is Route::SignUp), |sign_up| {
+ 				if sign_up {
+ 					register_block(username, password)
+ 				} else {
+diff -ruN a/src/model.vl b/src/model.vl
+--- a/src/model.vl	2026-09-29 20:35:37.039812679 -0400
++++ b/src/model.vl	2026-09-29 21:18:51.699553916 -0400
+@@ -36,7 +36,7 @@
+ import std::reactive::{ Owner, combine, run_with_owner };
+ import std::rpc::{ RemoteSource, RpcError, SocketTransport, Status };
+ import std::shared::Shared;
+-import pkg::shared::{ Account, Channel, Message, Transient, User, UserId };
++import pkg::shared::{ Account, Channel, Message, Transient, User, UserId, flatten_transient };
+ import pkg::store::KoltClient;
+ 
+ let client_context = Context<SignalCell<Option<KoltClient<SocketTransport>>>>::new();
+@@ -48,7 +48,7 @@
+ impl Account {
+ 	fun user(): SignalCell<Option<User>> {
+ 		get_client()
+-			.map(|client| client.map(|client| client.get_account_user()))
++			.derive(|client| client.map(|client| client.get_account_user()))
+ 			.cell()
+ 			.and_then(|mirror| mirror.or(None))
+ 			.cell()
+@@ -62,8 +62,8 @@
+ impl User {
+ 	fun find(user_id: UserId): SignalCell<Option<User>> {
+ 		user_handles
+-			.get_or(user_id, || get_client()
+-				.map(|client| client.map(|client| client.get_user(user_id)))
++			.get_or_insert(user_id, || get_client()
++				.derive(|client| client.map(|client| client.get_user(user_id)))
+ 				.cell_global())
+ 			.and_then(|mirror| mirror.or(None))
+ 			.cell()
+@@ -101,10 +101,10 @@
+ 			.switch(|client| match client {
+ 				None => Signal::new(Transient::Loading),
+ 				Some(let client) => channel_handles
+-					.get_or(channel_id, || run_with_owner(Owner::new(), || client
++					.get_or_insert(channel_id, || run_with_owner(Owner::new(), || client
+ 						.get_channel(channel_id)
+ 						.remote()
+-						.flatten()
++						.derive(|x| flatten_transient(x))
+ 						.cell())),
+ 			})
+ 			.cell()
+@@ -113,11 +113,11 @@
+ 	fun name(self): SignalCell<str> {
+ 		let id = self.id;
+ 		channel_name_handles
+-			.get_or(id, || get_client()
+-				.map(|client| client.map(|client| client.get_channel_name(id)))
++			.get_or_insert(id, || get_client()
++				.derive(|client| client.map(|client| client.get_channel_name(id)))
+ 				.cell_global())
+ 			.and_then(|mirror| mirror)
+-			.map(|x| x.unwrap_or_default())
++			.derive(|x| x.unwrap_or_default())
+ 			.cell()
+ 	}
+ 
+@@ -130,11 +130,11 @@
+ 	fun messages(self): SignalCell<List<u53>> {
+ 		let id = self.id;
+ 		channel_message_handles
+-			.get_or(id, || get_client()
+-				.map(|client| client.map(|client| client.get_messages(id)))
++			.get_or_insert(id, || get_client()
++				.derive(|client| client.map(|client| client.get_messages(id)))
+ 				.cell_global())
+ 			.and_then(|mirror| mirror)
+-			.map(|x| x.unwrap_or_default())
++			.derive(|x| x.unwrap_or_default())
+ 			.cell()
+ 	}
+ 
+@@ -167,7 +167,7 @@
+ 
+ 	fun get_channels(): SignalCell<Transient<List<SignalCell<Transient<Channel>>>>> {
+ 		Channel::get_channel_ids()
+-			.map(|x| x.map(|ids| ids.map(|channel_id| Channel::find(channel_id))))
++			.derive(|x| x.map(|ids| ids.map(|channel_id| Channel::find(channel_id))))
+ 			.cell()
+ 	}
+ }
+@@ -177,11 +177,11 @@
+ impl Message {
+ 	fun find(id: u53): SignalCell<Option<Message>> {
+ 		message_handles
+-			.get_or(id, || get_client()
+-				.map(|client| client.map(|client| client.get_message(id)))
++			.get_or_insert(id, || get_client()
++				.derive(|client| client.map(|client| client.get_message(id)))
+ 				.cell_global())
+ 			.and_then(|mirror| mirror)
+-			.map(|x| x.flatten())
++			.derive(|x| x.flatten())
+ 			.cell()
+ 	}
+ }
+diff -ruN a/src/shared.vl b/src/shared.vl
+--- a/src/shared.vl	2026-09-29 20:35:37.040133606 -0400
++++ b/src/shared.vl	2026-09-29 21:10:44.500249799 -0400
+@@ -60,7 +60,7 @@
+ 		import std::reactive::combine;
+ 		import std::rpc::Status;
+ 
+-		combine((self.status(), self)).map(|x| match x {
++		combine((self.status(), self)).derive(|x| match x {
+ 			(Status::Waiting, Some(let x)) => Transient::Refreshing(x),
+ 			(Status::Waiting, _) => Transient::Loading,
+ 			(Status::Ready, Some(let x)) => Transient::Ready(x),
+@@ -71,17 +71,18 @@
+ 	}
+ }
+ 
+-impl type S: Source<Transient<Option<type T>>> {
+-	fun flatten(self) {
+-		self.map(|x| match x {
+-			Transient::Refreshing(Some(let x)) => Transient::Refreshing(x),
+-			Transient::Refreshing(None) => Transient::Loading,
+-			Transient::Ready(Some(let x)) => Transient::Ready(x),
+-			Transient::Ready(None) => Transient::Gone,
+-			Transient::Loading => Transient::Loading,
+-			Transient::Gone => Transient::Gone,
+-			Transient::Failed(let e) => Transient::Failed(e),
+-		})
++// A142: a blanket `flatten` over a flow would collide with std's `Flow` join
++// (two same-named blankets over `Flow` subjects resolve by declaration order), so
++// the Transient join is a function a `derive` applies.
++fun flatten_transient<T>(x: Transient<Option<T>>): Transient<T> {
++	match x {
++		Transient::Refreshing(Some(let x)) => Transient::Refreshing(x),
++		Transient::Refreshing(None) => Transient::Loading,
++		Transient::Ready(Some(let x)) => Transient::Ready(x),
++		Transient::Ready(None) => Transient::Gone,
++		Transient::Loading => Transient::Loading,
++		Transient::Gone => Transient::Gone,
++		Transient::Failed(let e) => Transient::Failed(e),
+ 	}
+ }
+ 
+@@ -91,7 +92,7 @@
+ 	//         instead of default instantiation for better performance (theoretically).
+ 	fun unwrap(self): I {
+ 		let mirror: I = I::default();
+-		self.flatten().effect(|x| mirror.set(x));
++		self.switch(|inner: I| inner).effect(|x: U| mirror.set(x));
+ 		mirror
+ 	}
+ }
+diff -ruN a/src/sidebar.vl b/src/sidebar.vl
+--- a/src/sidebar.vl	2026-09-29 20:35:37.293193964 -0400
++++ b/src/sidebar.vl	2026-09-29 21:17:37.923939428 -0400
+@@ -75,7 +75,7 @@
+ 	<div
+ 		.styled(sidebar_style)
+ 		.style_var("width", prefs.sidebar_width.signal
+-			.map(|width| style::Length::px(width).css_text()))
++			.derive(|width| style::Length::px(width).css_text()))
+ 	>
+ 		<div
+ 			.styled(css {
+@@ -84,11 +84,11 @@
+ 				min-height("0");
+ 			})
+ 		>
+-			{ui::when_some(channels.map(|x| x.ready()), |channels| {
++			{ui::when_some(channels.derive(|x| x.ready()), |channels| {
+ 				let items = ListCell<Option<Channel>>::of(channels
+ 					.get()
+ 					.map(|channel| channel.get().ready()));
+-				channels.scoped_effect(|channels| {
++				channels.effect(|channels| {
+ 					if items.size() > channels.len() {
+ 						items.remove_range(channels.len(), items.size() - channels.len());
+ 					}
+@@ -98,7 +98,7 @@
+ 						});
+ 					}
+ 				});
+-				let filtered_items = items.map(|list| list.filter_map(|x| x)).cell();
++				let filtered_items = items.derive(|list| list.filter_map(|x| x)).cell();
+ 
+ 				<div
+ 					.styled(css {
+@@ -116,8 +116,10 @@
+ 						{ui::each(filtered_items, |x| x.id, |channel| {
+ 							let path = href(Route::Channel(channel.id));
+ 							let name = channel.name();
++							// Two consumers (the attribute and the toggle): sealed once.
+ 							let selected = get_route()
+-								.map(|route| route == Route::Channel(channel.id));
++								.derive(|route| route == Route::Channel(channel.id))
++								.memo();
+ 
+ 							<a
+ 								href(path)
+@@ -141,7 +143,7 @@
+ 									}
+ 								})
+ 								.toggle_attr("disabled", selected)
+-								.bind_attr("x-selected", selected.map(|x| x.to_string()))
++								.bind_attr("x-selected", selected.derive(|x| x.to_string()))
+ 								.styled(const button_style(style::Color::current())
+ 									+ selectable_button_style
+ 									+ css {
+@@ -185,16 +187,16 @@
+ 		>
+ 			<button
+ 				title("Messages")
+-				.toggle_attr("disabled", get_sidebar_tab().map(|x| x == SidebarTab::Messages))
++				.toggle_attr("disabled", get_sidebar_tab().derive(|x| x == SidebarTab::Messages))
+ 				.bind_attr("x-selected", get_sidebar_tab()
+-					.map(|x| (x == SidebarTab::Messages).to_string()))
++					.derive(|x| (x == SidebarTab::Messages).to_string()))
+ 				.styled(const icon_button_style(style::Color::current()))
+ 			>
+ 				{icon(lucide::messages_square())}
+ 			</button>
+ 		</div>
+ 		<div
+-			.show(prefs.sidebar_drag_handle_hidden.map(|x| !x))
++			.show(prefs.sidebar_drag_handle_hidden.derive(|x| !x))
+ 			.on_interact(InteractionHandler::new()
+ 				.on_drag(0, || {
+ 					get_app_context().drag_status.set(DragStatus::Horizontal);
+@@ -291,9 +293,9 @@
+ 
+ 	get_overlays().attach(modal, || {
+ 		let width_text = Signal::new("");
+-		let width = width_text.map(|text| text
+-			.parse_f64()
+-			.map(|x| x.clamp(sidebar_min_width, sidebar_max_width)));
++		let width = width_text
++			.derive(|text| text.parse_f64().map(|x| x.clamp(sidebar_min_width, sidebar_max_width)))
++			.memo();
+ 
+ 		<form
+ 			on:submit(|event| {
+@@ -322,7 +324,7 @@
+ 					.padding_y(style::Length::rem(8 / 16))
+ 					.padding_x(style::Length::rem(16 / 16)))
+ 				.show(combine((width_text, width))
+-					.map(|(width_text, width)| !width_text.is_empty() && width.is_none()))
++					.derive(|(width_text, width)| !width_text.is_empty() && width.is_none()))
+ 			>
+ 				"Invalid value. Please enter a number like "
+ 				<span .styled(const style::style().font_family("var(--default-mono-font-family)"))>
+diff -ruN a/src/store.vl b/src/store.vl
+--- a/src/store.vl	2026-09-29 20:35:37.293286716 -0400
++++ b/src/store.vl	2026-09-29 21:18:51.699630347 -0400
+@@ -157,7 +157,7 @@
+ 
+ 	[rpc]
+ 	fun get_user(self, user_id: UserId): SignalCell<Option<User>> {
+-		self.global_store.users.get_or(user_id, || Signal::new(db
++		self.global_store.users.get_or_insert(user_id, || Signal::new(db
+ 			.prepare("SELECT username FROM account WHERE username = ?")
+ 			.first([user_id.uuid])
+ 			.map(|x| {
+@@ -193,7 +193,7 @@
+ 
+ 	[rpc]
+ 	fun get_channels(self): SignalCell<List<u53>> {
+-		self.global_store.channels.map(|x| x.keys()).cell()
++		self.global_store.channels.derive(|x| x.keys()).cell()
+ 	}
+ 
+ 	// The snapshot for one id, live: `None` for an id the server does not
+@@ -201,7 +201,7 @@
+ 	[rpc]
+ 	fun get_channel(self, channel: u53): SignalCell<Option<Channel>> {
+ 		self.global_store.channels
+-			.map(|x| x.get(channel).map(|record| Channel { id = record.id }))
++			.derive(|x| x.get(channel).map(|record| Channel { id = record.id }))
+ 			.cell()
+ 	}
+ 
+@@ -254,7 +254,7 @@
+ 
+ 	[rpc]
+ 	fun get_message(self, message: u53): SignalCell<Option<Message>> {
+-		self.global_store.messages.map(|x| x.get(message)).cell()
++		self.global_store.messages.derive(|x| x.get(message)).cell()
+ 	}
+ 
+ 	[rpc]
+diff -ruN a/src/theme.vl b/src/theme.vl
+--- a/src/theme.vl	2026-09-29 20:35:37.292806685 -0400
++++ b/src/theme.vl	2026-09-29 21:12:08.300083659 -0400
+@@ -123,7 +123,7 @@
+ 			}
+ 		}));
+ 		let themes_searchable: Searchable<Theme> = Searchable::new(sorted_themes, |x| x.name);
+-		let filtered_themes = filter_text.map(|text| themes_searchable.search(text));
++		let filtered_themes = filter_text.derive(|text| themes_searchable.search(text)).memo();
+ 		let selected_index: SignalCell<usize> = Signal::new(0usize);
+ 
+ 		filtered_themes.effect(|x| {
+@@ -222,7 +222,7 @@
+ 					.gap(style::Length::rem(4 / 16)))
+ 				.child(each_values(filtered_themes, |theme| {
+ 					let focused = combine((selected_theme, filter_focused))
+-						.map(|(selected_theme, filter_focused)| selected_theme == theme && filter_focused);
++						.derive(|(selected_theme, filter_focused)| selected_theme == theme && filter_focused);
+ 					<button
+ 						type("button")
+ 						tabindex("-1")
+@@ -230,7 +230,7 @@
+ 							commit_theme(theme);
+ 							modal.close();
+ 						})
+-						.bind_attr("x-focused", focused.map(|x| x.to_string()))
++						.bind_attr("x-focused", focused.derive(|x| x.to_string()))
+ 						.styled(const button_style(style::Color::current())
+ 							+ selectable_button_style
+ 							+ css { width(pct(100)); })
+@@ -240,7 +240,7 @@
+ 				}))
+ 			>
+ 				<div
+-					.show(filtered_themes.map(|x| x.len() == 0))
++					.show(filtered_themes.derive(|x| x.len() == 0))
+ 					.styled(const style::style()
+ 						.padding_x(style::Length::rem(8 / 16))
+ 						.padding_y(style::Length::rem(4 / 16))
+@@ -263,7 +263,7 @@
+ 			>
+ 				<button
+ 					type("button")
+-					title(get_prefs().theme_selection_delay_enabled.map(|x| if x {
++					title(get_prefs().theme_selection_delay_enabled.derive(|x| if x {
+ 						"Disable delay when switching themes [EPILEPSY WARNING]"
+ 					} else {
+ 						"Enable delay when switching themes"
+diff -ruN a/src/views.vl b/src/views.vl
+--- a/src/views.vl	2026-09-29 20:38:10.440143178 -0400
++++ b/src/views.vl	2026-09-29 21:17:37.919898808 -0400
+@@ -32,14 +32,14 @@
+ 	let theme_modal = create_theme_modal();
+ 
+ 	<div
+-		data-theme(get_prefs().theme.map(|theme| theme.id))
+-		data-user-select(get_prefs().text_selection_enabled.map(|x| x.to_string()))
++		data-theme(get_prefs().theme.derive(|theme| theme.id))
++		data-user-select(get_prefs().text_selection_enabled.derive(|x| x.to_string()))
+ 		on:contextmenu(|event| {
+ 			if !get_prefs().context_menu_enabled.get() {
+ 				event.prevent_default();
+ 			}
+ 		})
+-		.bind_attr("data-dragging", get_app_context().drag_status.map(|x| match x {
++		.bind_attr("data-dragging", get_app_context().drag_status.derive(|x| match x {
+ 			DragStatus::None => None,
+ 			DragStatus::Vertical => Some("row"),
+ 			DragStatus::Horizontal => Some("col"),
+@@ -49,7 +49,7 @@
+ 			.on(style::element("selection"), style::style().paint_primary()))
+ 	>
+ 		<div .toggle_attr("inert", overlays.has_scrim()) .styled(const style::style().paint_ink2())>
+-			{swap(get_route().map(shell_of), |shell| match shell {
++			{swap(get_route().derive(|route| shell_of(route)), |shell| match shell {
+ 				Shell::Unauthenticated => login_page::login(theme_modal),
+ 				Shell::App => main_shell(theme_modal),
+ 			})}
+@@ -128,7 +128,7 @@
+ 					.overflow(style::Overflow::Hidden))
+ 			>
+ 				{sidebar_shell(sidebar_width_modal, sidebar_menu).show(get_prefs().sidebar_collapsed
+-					.map(|x| !x))}
++					.derive(|x| !x))}
+ 				{page_content()}
+ 			</div>
+ 		</div>
+@@ -168,7 +168,10 @@
+ // arriving (`None` -> `Some`) or the channel going away does.
+ fun channel_page(id: u53) {
+ 	<div
+-		.child(swap(Channel::find(id), |found| match found {
++		// PRE-EXISTING at kolt 0309177 (not A142's): `Channel::find` answers a
++		// `Transient<Channel>` and this match reads `Option` arms. `latest()` keeps
++		// the page through a refresh - the owner's call to make.
++		.child(swap(Channel::find(id).derive(|found| found.latest()), |found| match found {
+ 			Some(let channel) => channel_component(channel),
+ 			None => not_found_component(),
+ 		}))

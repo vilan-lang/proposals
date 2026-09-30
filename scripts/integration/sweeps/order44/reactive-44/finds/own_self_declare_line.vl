@@ -1,0 +1,8 @@
+// The "declare `…`" line for a missing `own self` member renders the receiver
+// as a bare `self`: expected `fun on_change(own self, observer: |i32| void): Subscription`,
+// got `fun on_change(self, observer: |i32| void): Subscription`. Copied verbatim,
+// the line is then refused ("receives `self`, but `Flow` declares `own self`").
+import std::reactive::Flow;
+struct Counted { n: i32 }
+impl Counted with Flow<i32> { }
+fun main() {}

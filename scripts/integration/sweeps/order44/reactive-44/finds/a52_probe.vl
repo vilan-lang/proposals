@@ -1,0 +1,44 @@
+// Compare the three routes on fresh mirrors: generic-attach / generic-flow print 9,
+// generic-sub (through `S: Source<T>`) prints none — see a52_inherent_sub_hijacks_generic_sub.vl.
+import std::json::json_codec;
+import std::io::print;
+import std::option::Option::{ None, Some, self };
+import std::reactive::{ Signal, SignalCell, Source, Flow };
+import std::rpc::{ ReactiveClient, ReactiveServer, RemoteSource, duplex_pair };
+
+fun show(value: Option<i32>): str {
+	match value {
+		Some(let n) => i"{n}",
+		None => "none",
+	}
+}
+
+fun via_sub<T, S: Source<T>>(source: S, observe: |T| void) {
+	let live = source.sub(observe);
+	live.dispose();
+}
+
+fun via_attach<T, S: Source<T>>(source: S, observe: |T| void) {
+	let live = source.attach_observer(observe, true);
+	live.dispose();
+}
+
+fun via_flow<T, F: Flow<T>>(flow: F, observe: |T| void) {
+	let live = flow.sub(observe);
+	live.dispose();
+}
+
+fun fresh(): RemoteSource<i32> {
+	let (client_end, server_end) = duplex_pair();
+	let counter: SignalCell<i32> = Signal::new(9);
+	let channel = ReactiveServer::new(server_end, json_codec()).expose(counter);
+	ReactiveClient::new(client_end, json_codec()).source(channel)
+}
+
+fun main() {
+	via_attach(fresh(), |value: Option<i32>| print(i"generic-attach:{show(value)}"));
+	via_flow(fresh(), |value: Option<i32>| print(i"generic-flow:{show(value)}"));
+	via_sub(fresh(), |value: Option<i32>| print(i"generic-sub:{show(value)}"));
+	let direct = fresh().attach_observer(|value| print(i"direct-attach:{show(value)}"), true);
+	direct.dispose();
+}

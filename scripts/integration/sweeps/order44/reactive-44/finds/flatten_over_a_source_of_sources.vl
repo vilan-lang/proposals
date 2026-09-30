@@ -1,0 +1,11 @@
+import std::io::print;
+import std::reactive::{ Signal, SignalCell, Source };
+
+fun main() {
+	let first = Signal::new(1);
+	let outer = Signal::new(first);
+	let joined = outer.flatten().memo();
+	print(joined.get());
+}
+
+main();

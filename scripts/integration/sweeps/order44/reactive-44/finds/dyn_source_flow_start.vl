@@ -1,0 +1,15 @@
+// MISCOMPILE (A142): `Flow::start` on a `dyn Source<T>` (reached through std's blanket
+// `impl type S: Source<T> with Flow<T>`) is emitted as a table call `$x[1].start(..)`;
+// the object's table has no `start` slot -> "TypeError: $x[1].start is not a function".
+// Hits every pipe over a dyn Source: `object.derive(..)`, `outer.switch(|inner| inner)` over
+// a cell of `dyn Source`. Expected output: 2
+import std::reactive::{ Source, SignalCell };
+
+// A `dyn Source<i32>` used as a `Flow` upstream: `Flow::start` is reached
+// through std's blanket `impl type S: Source<T> with Flow<T>`, but the emitter
+// dispatches it through the object's table, which has no `start` slot.
+fun main() {
+	let cell = SignalCell::new(1);
+	let object: dyn Source<i32> = cell;
+	print(object.derive(|n| n + 1).sample());
+}

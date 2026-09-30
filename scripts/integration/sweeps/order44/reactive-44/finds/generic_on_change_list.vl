@@ -1,0 +1,14 @@
+import std::io::print;
+import std::delta::ListCell;
+import std::reactive::Source;
+
+fun watch<S: Source<List<str>>>(source: S) {
+	let _w = source.on_change(|list| print(i"changed {list.len()}"));
+}
+
+fun main() {
+	let source: ListCell<str> = ListCell::new();
+	watch(source);
+	source.push("b");
+}
+main();

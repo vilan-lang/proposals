@@ -1,0 +1,31 @@
+// MISCOMPILE (A142 regression): inside a body generic over `S: Source<T>`,
+// `source.sub(observe)` instantiated at `S = RemoteSource<i32>` is emitted as a
+// call to RemoteSource's INHERENT `sub(|T|)` (which unwraps the Option and hands
+// the observer a bare i32), not `Flow::sub` through the Source blanket (→
+// `attach_observer(observer, true)` → `lease`). The `|Option<i32>|` observer
+// receives `9`, reads it as not-`Some`, and prints "generic-sub:none".
+// Expected: "generic-sub:9". Through `F: Flow<T>` (`flow.sub`) or calling
+// `source.attach_observer(o, true)` directly, the same program prints 9.
+// Before A142 `sub` was a `Source` member the impl overrode, so the trait's
+// member won. Run: vilan run a52_inherent_sub_hijacks_generic_sub.vl
+import std::json::json_codec;
+import std::io::print;
+import std::option::Option::{ None, Some, self };
+import std::reactive::{ Signal, SignalCell, Source };
+import std::rpc::{ ReactiveClient, ReactiveServer, RemoteSource, duplex_pair };
+
+fun via_sub<T, S: Source<T>>(source: S, observe: |T| void) {
+	let live = source.sub(observe);
+	live.dispose();
+}
+
+fun main() {
+	let (client_end, server_end) = duplex_pair();
+	let counter: SignalCell<i32> = Signal::new(9);
+	let channel = ReactiveServer::new(server_end, json_codec()).expose(counter);
+	let remote: RemoteSource<i32> = ReactiveClient::new(client_end, json_codec()).source(channel);
+	via_sub(remote, |value: Option<i32>| match value {
+		Some(let n) => print(i"generic-sub:{n}"),
+		None => print("generic-sub:none"),
+	});
+}
