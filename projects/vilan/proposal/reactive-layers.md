@@ -220,7 +220,7 @@ prototype confirms closes the gap.
 **Two language rules the pipe model stands on** (native-44's finds, RULED by the owner 2026-09-29):
 
 - **R38 (B469).** A field may be moved out of an aggregate the function OWNS when nothing uses the aggregate afterwards and no `Drop` is anywhere inside it, read as a destructure. Every node body does this (`self.up.start(..)` under `own self`). Before the ruling, generic nodes compiled only because the partial-move rule was not re-checked per instantiation, which is B463's class of hole.
-- **R39 (B470).** A resource with no `Drop` anywhere inside it may become a trait object. That trait object is itself move-only. `dyn Flow`/`dyn Pipe` holders (§3.2's mixed-arm selectors, §5's `latest()`/`is_pending()`) depend on it. A resource with `Drop` stays refused.
+- **R39 (B470).** A resource with no `Drop` anywhere inside it may become a trait object, but only of a trait DECLARED `[resource]` (`[resource] trait Flow<T>`). A declared trait's `dyn` is move-only; an undeclared trait's `dyn` stays data, so `dyn Source<T>` is unchanged. std declares `Flow` and `Pipe`. The owner chose the declared rule over inferring it from erasures, which would be non-local. `dyn Flow`/`dyn Pipe` holders (§3.2's mixed-arm selectors, §5's `latest()`/`is_pending()`) depend on it. A resource with `Drop` stays refused.
 
 ## 4. Owners: every body runs in exactly one instance
 
@@ -585,7 +585,7 @@ None of them blocks the std work. Each has a working spelling today: `dyn`,
 | R36 | Q13 → over a flow of `Task<Result<T, E>>`, `.transient()` lifts `Err(e)` into `Failed(e, stale)`; over a flow of bare `Task<T>`, `E` is `str` (the panic's message). |
 | R37 | Q14 → the sealing operation from a flow of tasks to a transient is `.transient()`. |
 | R38 | B469 (native-44's find, ruled 2026-09-29) → a field may be moved out of an owned, otherwise-dead aggregate with no `Drop` inside (§3.4). |
-| R39 | B470 (native-44's find, ruled 2026-09-29) → a resource with no `Drop` inside may become a trait object, itself move-only (§3.4). |
+| R39 | B470 (native-44's find, ruled 2026-09-29) → a resource with no `Drop` inside may become the trait object of a trait declared `[resource]`; that `dyn` is move-only; `Flow` and `Pipe` are declared (§3.4). |
 
 ## 11. Questions
 
