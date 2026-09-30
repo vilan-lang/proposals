@@ -1,0 +1,7 @@
+struct Square { side: i32 }
+fun make_square(side: i32) {
+	Square { side = side }
+}
+fun main() {
+	print(make_square(2).side);
+}
