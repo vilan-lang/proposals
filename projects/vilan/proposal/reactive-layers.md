@@ -353,6 +353,15 @@ The faces follow §3:
   `CollPipe<T>`, R33). It is sealed with `.memo()` into a
   `CollSource`, or consumed by `each`/`each_by`.
 
+  As built (collections-44, Order 44): `CollFlow<T>` is `Flow`'s twin (what a
+  collection pipeline starts from), `.memo()` seals into `ListMemo<T>`, `each`/
+  `each_by` take a `RowFeed<T>`, and `CollInstance<T>`, `IntoElement<T>` and
+  `SameElement` are the operators' machinery. `CollSignal` (R23) was not built:
+  `SequenceCell` stays the write surface. Per-element owners are lazy (an
+  element's run splits into its own owner only when it registered something),
+  and a task started in an operator's closure belongs to the stage, cancelled
+  when the pipe's consumer releases it.
+
 ### 6.1 Operators follow the reactive value their closure returns
 
 > **R9 (RULED, the owner on rough edge (a)).** Collection operators do not open
