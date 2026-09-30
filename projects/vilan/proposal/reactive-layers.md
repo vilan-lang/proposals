@@ -305,7 +305,7 @@ export enum TransientState<T, E> {
 
 export trait TransientSource<T, E> with Source<Option<T>> {
 	// `get()`: Ready(v) is Some(v); every other state is None.
-	fun state(self): dyn Source<TransientState<T, E>>;   // sealed, read-only (R28)
+	fun state(self): MemoCell<TransientState<T, E>>;    // sealed, read-only (R28); the concrete face — as built (transient-44), a `dyn Source` would meet B475
 
 	/// A fresh pipe per call. Opts in to the stale value: Ready(v), Refreshing(v)
 	/// and Failed(_, Some(v)) are Some(v).
