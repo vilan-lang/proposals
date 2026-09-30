@@ -1,0 +1,5 @@
+{"items": [{"id": "F60", "section": "F", "kind": "bug (native — refusal by name; JS runs it)", "area": "Native targets & rendering",
+  "status": "OPEN — filed 2026-09-30 (Order 44, native-44's final find 2)",
+  "title": "native — a PIPE that is never consumed (`outer.flatten();` as a statement, its value dropped) is refused 'unbound generic type parameter (#3823)' while JS runs it — an unconsumed pipe's element parameter has nothing to bind it",
+  "discussion": "native-44 (Order 44); repro `sweeps/order44/reactive-44/finds/flatten_total_join_bare.vl` (B476's program, whose JS half is the unchecked-bound find); F58 (`bind_provider_binders` — the same binder family)",
+  "body": "Either bind the dropped pipe's parameters from its receiver as F58 does for calls, or refuse an unconsumed pipe on BOTH backends with a steer ('a pipe is consumed once: seal it or hand it to a consumer'), which is the better answer — an unconsumed pipe is a mistake. Rec: the warning/refusal on both backends (analyzer), with B476's bound check. Sizing S; solver + native, Order 45."}]}
