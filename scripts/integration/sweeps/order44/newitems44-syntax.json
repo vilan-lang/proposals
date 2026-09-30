@@ -1,0 +1,12 @@
+{"items": [
+ {"id": "B471", "section": "B", "kind": "diagnostics (S)", "area": "Type system & the type solver",
+  "status": "OPEN — filed 2026-09-29 (Order 44, syntax-44's owner Q1; RULED as recommended)",
+  "title": "after B414 S4 put `css` in the member tier, `space(4).css` / `Length::css(..)` get the ordinary 'no such member' error instead of the v0.38 rename note — add an analyzer did-you-mean at a member position named `css` that steers to `text`/`raw` (the rename)",
+  "discussion": "syntax-44 (Order 44, B414 S4 @0950caea); the v0.38 rename note (still guards a `css` binding); the four K2c member-position pins rewritten by syntax-44",
+  "body": "RULED 2026-09-29 (the owner, as recommended): keep `css` in the member tier and restore the steer in the ANALYZER — when member lookup fails on the name `css` over a style/length receiver, the error gains the rename's did-you-mean (`.text(..)` / `.raw(..)` as v0.38 documented). Pin the two shapes syntax-44 named. Sizing S; solver-44 at its tail if time, else Order 45."},
+ {"id": "E234", "section": "E", "kind": "tooling (bindgen; S)", "area": "LSP & tooling",
+  "status": "OPEN — filed 2026-09-29 (Order 44, syntax-44's owner Q2; RULED as recommended — a follow-up)",
+  "title": "bindgen still ESCAPES reserved METHOD names (`type` → `type_`) although B414 S4 admits any word as a member after `.` — contextual-keywords.md's S4 says the escape stops for members",
+  "discussion": "syntax-44 (Order 44); B414 S4 @0950caea; `proposal/contextual-keywords.md` S4; `examples/canvas` (its bindings move)",
+  "body": "RULED 2026-09-29 (the owner, as recommended): a follow-up, not this order's syntax lane — bindgen emits a reserved word unescaped at a METHOD/FIELD (member) position and keeps escaping it at binding/parameter/free-function positions (still reserved there); regenerate `examples/canvas`'s bindings and any golden, classify the moves. Sizing S; Order 45 (editor/tooling)."}
+]}
