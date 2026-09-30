@@ -1,0 +1,16 @@
+diff --git a/crates/vilan-core/tests/inference/generics.rs b/crates/vilan-core/tests/inference/generics.rs
+index 0f18e046..bcac0875 100644
+--- a/crates/vilan-core/tests/inference/generics.rs
++++ b/crates/vilan-core/tests/inference/generics.rs
+@@ -9110,9 +9110,9 @@ fn b434_and_then_over_a_constructed_cell_binds_its_value_type() {
+         import std::reactive::SignalCell;
+         fun main() {
+             let maybe = SignalCell::new(Some(1));
+-            let chained = maybe.and_then(|v| SignalCell::new(Some(v)));
++            let chained = maybe.and_then(|v| SignalCell::new(Some(v))).memo();
+             print(chained.get().unwrap());
+-            let computed = maybe.and_then(|v| SignalCell::new(Some(v + 10)));
++            let computed = maybe.and_then(|v| SignalCell::new(Some(v + 10))).memo();
+             print(computed.get().unwrap());
+         }
+         "#,
