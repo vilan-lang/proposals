@@ -2763,3 +2763,16 @@ Three seals. (1) c4f80f4e green on every local leg (union 9151/9151, doc-tests, 
 ## v0.42.0 — CUT 2026-09-30 @61d15612 (the release commit and tag; release run 36760569845 GREEN 17/17), FOLDED @6e6830df
 
 The pipe train's release: 97 entries — breaking 7, miscompile 12, feature 31, fix 28, tooling 15, diagnostics 4. All five publishes green (GitHub release with 10 assets, brew, npm, Open VSX, the Marketplace). Folded the same day: `main` = 6e6830df, `next` fast-forwarded onto it, the book then the site deployed, the playground manifest reads v0.42.0; the website migrated to the pipe spellings before the dispatch. Toolchain `vilan 0.42.0 (6e6830dfc)` in both locations and the 0.42.0 extension in the local VS Code server. `release/0.41` is gone. Kolt is the owner's: it needs the owed Order 43 changes (B419's `storage.vl` half — the `command_palette.vl` hunks no longer apply — and A122's `divorce` edit), then `kolt-reactive-44.patch` and `codemod_i9.py` over the owner's tree (`sweeps/order44/`); three pre-existing errors (`shared.vl:106`, `views.vl:172-173`) are fixed by the reactive patch's `views.vl` hunk and the owner's own edits. Order 45 opens on: B473 (the subtrait-default MISCOMPILE), B483 (`Shared::new` aliases its argument on JS) and B466 (`*view` does not copy) FIRST in solver; B482 (the static `untrack`, ruled); B475/B476/B477/B478/B480/B484 (the pipe model's solver debts); F60–F64 + F57 (native); A146, M92, M93, J7 (the model's follow-ups); E234, E235; the `Store` build (store.md's Q1–Q12 to rule) and the reactive maps/sets build (reactive-maps-sets.md's Q1–Q7, Q9 to rule); B460's opacity paper; B471's control pin.
+
+## Order 45 — GO 2026-10-01 (cycle 63) off vilan next @6e6830df
+
+After the pipe train. Order 44 filed 40 items against 34 closed; this order pays that down. The owner said "Go": R-a through R-m as recommended, which RULES `store.md` Q1–Q12 and `reactive-maps-sets.md` Q1–Q7 and Q9, so both builds are lanes. Nine lanes:
+- solver-a-45: the miscompiles B473, B483, B466 FIRST, with B465 and B474 (the copy rule, R-c);
+- solver-b-45: the pipe model's solver debts (B475–B480, B484) and B482's context pass;
+- native-45: F62 FIRST, then F57, F60–F64, F52/F54/F55, M91;
+- reactive-45: J7, M92, M93, A146, B482's std half, A144, the workarounds removed;
+- maps-45: `MapCell`/`SetCell` S0–S2 and a kolt patch;
+- store-45: `[derive(Storable)]` and `Store<T>` S1–S2;
+- syntax-45, editor-45 (the hover arc E235/E237–E239, E236's baseline), papers-45 (B485, B460's opacity).
+
+The cut proposed at the seal is v0.43.0 (R-h): B482 and A144 are breaking.

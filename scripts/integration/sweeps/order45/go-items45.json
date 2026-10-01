@@ -1,0 +1,71 @@
+{
+  "drafted": "2026-10-01 off vilan next @6e6830df (the v0.42.0 fold; main = next); GO 2026-10-01",
+  "cycle": 63,
+  "ledger_next_id": 604,
+  "tracker_open": 144,
+  "shared_census": 180,
+  "copy_elision_census": 578,
+  "expr_walk_bytes_per_level": 26376,
+  "unreleased_entries": 0,
+  "asked_at_go": {
+    "R-a": "store.md Q1–Q12 as recommended (macro door first; tree layout; opt-in by derive; [reactive(coarse)]; Store::new only; variant handles = Source<Option<P>> + patch; a store write compares; Store<T> everywhere; collision refusal; Storable; by_key not at(index); per-subscription slots) — rec rule and build S1 + S2 in store-45",
+    "R-b": "reactive-maps-sets.md Q1–Q7 + Q9 as recommended (MapCell/SetCell; KeyedCell re-founded on MapCell; SetCell its own type; per-subscription key slots; at(k) a MapEntry; Reset wakes live keys; insertion order the HashMap contract + SortedMap/SortedSet by comparator value; clear() one Reset) — rec rule and build S0 + S1 + S2 in maps-45",
+    "R-c": "the copy family (B483, B466, B465): a value taken out of a place the binding does not own is copied; std's storing constructors take `own`; the JS emitter copies an `own` argument at a non-last use; a closure's view parameter is a view — rec yes",
+    "R-d": "F60: door (a) the pipe nodes are [must_use] (a dropped pipe WARNS on both backends; native binds the dropped node's parameters) vs (b) refuse — rec (a)",
+    "R-e": "B468: door (a) apply a struct type parameter's default where the argument is omitted — rec (a)",
+    "R-f": "A144: the contract hash reads the RESOLVED type (every service's hash moves once) — rec yes, this order",
+    "R-g": "B482 (ruled door (a) 2026-09-30) builds now: the context pass in solver-b-45, the std callback clauses in reactive-45; BREAKING for a callback value typed without the clause — rec build",
+    "R-h": "the cut at the seal: v0.43.0 if any entry is breaking (B482, A144 are), else v0.42.1 from release/0.42 — rec v0.43.0",
+    "R-i": "E236 is a seal-time REPORT first, a gate once the numbers hold over two orders — rec report",
+    "R-j": "B485 (keywords vs attributes) and B460's opaque returns are PAPERS this order — rec papers",
+    "R-k": "`.transient()` joins A130's module-binding refusal, with `transient_global()` — rec yes",
+    "R-l": "the deprecated `Map`/`Set` aliases stay this release; removed at v0.44.0 — rec hold",
+    "R-m": "carried: M60, A87/A111, A131, B183's concrete arm, self:: paths, store S5, maps S4/S5 — rec carry"
+  },
+  "lanes": {
+    "solver-a-45": "B473 FIRST (miscompile; sha to LANE-STATUS.md), B483 + B466 + B465 (R-c), B474, B453, B444, B464, B467",
+    "solver-b-45": "REBASED onto solver-a-45: B475, B476 + B477, B478, B480 + B484, B479, B482's context pass (R-g), B468 (R-e), B481, B455's remainder, B472, B454, B471's control pin",
+    "native-45": "F62 FIRST, F57, F60's native half (R-d), F61, F63, F64, F52, F54, F55, M91 (or maps-45's S0); the copy + leak censuses",
+    "reactive-45": "REBASED onto solver-b-45: J7 + M92, M93, A146, B482's std half (R-g), F60's [must_use] (R-d), A144 (R-f), R-k, the workarounds removed (std::ui's duplicate Source arms, map_each, OwnerCell/TrackRuns if F62 merged), A135's tail warning names the seal",
+    "maps-45": "IF R-b: reactive-maps-sets.md S0 + S1 + S2 (S3 if time) + the kolt GlobalStore patch — REBASED onto reactive-45",
+    "store-45": "IF R-a: store.md S1 + S2 (S3 if maps-45 merged) — REBASED onto maps-45 (or reactive-45)",
+    "syntax-45": "B445, B446, the marker census for B485's paper",
+    "editor-45": "the hover arc (E238 ruled (b), E235, E239, E237 ruled) as one change; E236's harness + baseline (R-i); E234; B436 + B437 — LAST to merge",
+    "papers-45": "B485 (keywords vs attributes), B460's opacity — proposals only"
+  },
+  "merge_order": [
+    "solver-a-45",
+    "solver-b-45",
+    "native-45",
+    "reactive-45",
+    "maps-45",
+    "store-45",
+    "syntax-45",
+    "editor-45"
+  ],
+  "mechanics_added": [
+    "kill by PID, never by pattern",
+    "a lane touching walk_expr_node_inner re-measures expr-walk B/level (26,376 at the base) and puts an arm with real locals out of line",
+    "every CHANGELOG entry carries its family marker",
+    "a lane that cannot write its REPORT file sends the text; the integrator saves it under sweeps/order45/",
+    "full gates re-run on a rebased tip; say which base the numbers are from",
+    "pins over std spellings are re-read after a rebase onto a renaming lane",
+    "seal.sh runs ci-local.sh wasm and the deep_nesting canary at 1.5 MiB (the integrator edits seal.sh before the seal)",
+    "the paper is the spec"
+  ],
+  "after_the_seal": "the cut (R-h), the fold, toolchain both locations + the vsix, the website re-checked",
+  "kolt_owed_at_word": [
+    "commit the store's three sealed views (uncommitted since 2026-10-01)",
+    "B482's callback clause if any site exists (reactive-45's patch)",
+    "maps-45's GlobalStore patch (MapCell + at(id))",
+    "A120's §9.7.10 rewrite + A127's header token (still owed)"
+  ],
+  "order46_queue": [
+    "maps S3–S5 and store S3–S6 as their lanes leave them",
+    "B485's and B460's rulings and builds",
+    "E236 as a gate if the numbers hold",
+    "remove the deprecated Map/Set aliases at v0.44.0",
+    "M60, A87/A111, A131"
+  ],
+  "go": "2026-10-01 — the owner: 'Go' — R-a through R-m all as recommended; store.md Q1–Q12 and reactive-maps-sets.md Q1–Q7 + Q9 RULED as recommended; nine lanes"
+}

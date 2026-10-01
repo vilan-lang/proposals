@@ -1,6 +1,6 @@
 # Reactive maps and sets — the Map and Set shapes, and the order a hash collection keeps (A138, I10)
 
-> Status: **DRAFT, for ruling** (2026-09-29). Tracker A138, with I10 folded in:
+> Status: **RULED 2026-10-01** — Q1–Q7 and Q9 (Q8 on 2026-09-29) as recommended (the owner, at Order 45's GO); the build is Order 45's. Drafted 2026-09-29. Tracker A138, with I10 folded in:
 > an ordered map is a shape question, so the ordering strategy is decided here.
 > Written by lane papers-44 of Order 44 against `vilan 0.41.1 (07e8db372)`, while
 > the same order builds I9's rename. Names below are I9's: `HashMap<K, V>` in

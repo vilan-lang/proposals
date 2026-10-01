@@ -1,6 +1,6 @@
 # `Store` — the fine-grained version of a type, generated from its shape (A142 S7)
 
-> Status: **DRAFT, for ruling** (2026-09-29). Tracker A142, slice S7: the paper
+> Status: **RULED 2026-10-01** — Q1–Q12 as recommended (the owner, at Order 45's GO); the build is Order 45's. Drafted 2026-09-29. Tracker A142, slice S7: the paper
 > `reactive-layers.md` §8 deferred ("This gets its own paper when the base has
 > shipped"). Written by lane papers-44 of Order 44 against `vilan 0.41.1
 > (07e8db372)`, before the train's A142 S1 lands. Nothing in the compiler or std
