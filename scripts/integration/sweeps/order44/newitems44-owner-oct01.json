@@ -1,27 +1,54 @@
-{"items": [
- {"id": "E236", "section": "E", "kind": "performance (LSP; measurement first)", "area": "LSP & tooling",
-  "status": "OPEN — filed 2026-10-01 (the owner's item)",
-  "title": "an LSP PERFORMANCE TEST on kolt during DOCUMENT CHANGES: drive `vilan-lsp` over kolt's real tree with scripted `didChange` edits (a keystroke in a leaf file, in a widely-imported file such as `shared.vl`/`styles.vl`, in a `.vl` holding css, an edit that breaks and then repairs the parse) and record, per edit, time-to-diagnostics, time-to-hover/completion/inlay answers, CPU time and peak memory — against E121's mandate (<10 ms on the keystroke path, <500 ms to errors)",
-  "discussion": "the owner (2026-10-01); E121 (the editor-latency mandate + `proposal/editor-latency.md`), M19 (per-module analysis reuse — kolt's client leg reuses 57/57 modules per warm keystroke), E232 (hints follow edits, Order 44), vilan-benchmarking-under-load (CPU time + callgrind, not wall)",
-  "body": "Deliverable: a repeatable harness (a script that speaks LSP over stdio to the installed `vilan-lsp`, replays a fixed edit script over a scratch COPY of kolt at a pinned commit, and prints a table), the baseline table on v0.42.0, and the top offenders by callgrind for the slowest edit. Measure CPU time, not wall (the box is noisy under lanes). Decide after the baseline whether it becomes a CI/seal gate with a budget (rec: a seal-time report first, a gate once the numbers are stable). Sizing M; editor lane, Order 45."},
- {"id": "E237", "section": "E", "kind": "feature (hover; S)", "area": "LSP & tooling",
-  "status": "OPEN — filed 2026-10-01 (the owner's item)",
-  "title": "hovering a VARIABLE or FIELD whose type is a struct (or enum) should show that type's DEFINITION below the `name: Type` line shown today — the fields (or variants) with their types, so the reader need not jump to the declaration",
-  "discussion": "the owner (2026-10-01); vilan-lsp `document.rs` hover; E227 (the `~Trait` abbreviation — hover already shows both forms), E238/E239 (the sibling hover items)",
-  "body": "Render under the existing line, in a second code block: `struct Channel { id: u53, name: str }` / the enum's variants; for a generic type, the definition as declared plus the instantiation's arguments substituted (rec: substituted, so `Memo<UserId, User>` reads with its real field types). Questions: (1) depth — one level only (rec), a nested struct stays a name; (2) a size cap for large types (rec: the first ~12 members, then `…`); (3) std types — show (rec yes, same rule); (4) a trait-typed or `dyn` value shows the trait's required members. Pins in the LSP hover suite. Sizing S; editor lane, Order 45."},
- {"id": "E238", "section": "E", "kind": "feature (hover; S)", "area": "LSP & tooling",
-  "status": "OPEN — filed 2026-10-01 (the owner's item)",
-  "title": "a METHOD's hover should name the type or trait it belongs to — today it shows only `fun get_or_insert(self, key: K, make: || V): V`; the owner's two candidate spellings: `fun Memo<K: Hashable, V>.get_or_insert(self, key: K, make: || V): V`, or `impl Memo<K: Hashable, V> fun get_or_insert(self, key: K, make: || V): V`",
-  "discussion": "the owner (2026-10-01); vilan-lsp hover; E235 (the receiver's `own` dropped in the same signature printer), E239 (the type of `self`), E237",
-  "body": "Decide the spelling (OWNER): (a) `fun Memo<K: Hashable, V>.get_or_insert(..)` — one line, reads as a qualified name, but is not vilan syntax; (b) `impl Memo<K: Hashable, V>` on its own line above the `fun` line — two lines of REAL syntax, and it extends naturally to a trait impl (`impl Memo<K, V> with Source<V>`), a blanket (`impl type S: Source<type T>`) and a trait default (`trait Flow<T>`). Rec (b), as two lines: the header is copyable, shows bounds where they are declared, and distinguishes an inherent method, a trait's requirement, a default and a blanket — which (a) cannot. Completion's detail line takes the same header. Sizing S; editor lane, Order 45 (with E235)."},
- {"id": "E239", "section": "E", "kind": "feature (hover; S)", "area": "LSP & tooling",
-  "status": "OPEN — filed 2026-10-01 (the owner's item)",
-  "title": "hovering `self` should show its TYPE — the impl's subject with its binders (`self: Memo<K, V>`), the receiver convention (`self` / `own self` / `&self` / `&mut self`), and inside a trait default the trait (`self: Self` where `Self: Flow<T>`)",
-  "discussion": "the owner (2026-10-01); vilan-lsp hover; E238 (the method's owner in its hover), E235 (`own self` renders as `self`), E237 (the struct definition under a variable — applies to `self` too)",
-  "body": "Today `self` hovers as a keyword or not at all. Show it as any other binding: the line `self: <subject>` with the convention, then E237's definition block. In a blanket impl show the bound (`self: S` where `S: Source<T>`). Pins: an inherent impl, a trait impl, a trait default, a blanket. Sizing S; editor lane, Order 45 (one change with E237/E238)."},
- {"id": "B485", "section": "B", "kind": "design discussion", "area": "Type system & the type solver",
-  "status": "OPEN — filed 2026-10-01 (the owner's item); DISCUSSION — a short paper, then a ruling",
-  "title": "which words should be KEYWORDS and which ATTRIBUTES: the language marks declarations two ways — keywords (`export`, `external`, `async`, `sync`, `lazy`, `own`, `mut`, `const`, `macro`, `dyn`, `borrows`, `context`) and bracket attributes (`[resource]`, `[platform(..)]`, `[deprecated]`, `[internal]`, `[must_use]`, `[rpc]`, `[expose]`, `[service]`, `[derive(..)]`, `[hint(..)]`, `[lints]`) — with no stated rule for which a new marker becomes; B413 already moved `resource` from a keyword to an attribute",
-  "discussion": "the owner (2026-10-01); B413 (`resource` → `[resource]`), B414 + `proposal/contextual-keywords.md` (which words are reserved vs contextual — the neighbouring question), B470 (`[resource] trait`), E227 (`[hint]`), F27/B415 (`[platform(..)] mod self;`), B445 (`[platform]` before `export impl` fails to parse — attribute/keyword ORDER is part of this)",
-  "body": "The paper: (1) a census of every marker, where it may appear, and whether it changes TYPING/semantics (`async`, `own`, `mut`, `dyn`, `lazy`), ownership class (`[resource]`), visibility/linkage (`export`, `external`, `[internal]`), tooling only (`[deprecated]`, `[must_use]`, `[hint]`), or code generation (`[derive]`, `[service]`, `[rpc]`, `[expose]`); (2) a candidate RULE — e.g. a keyword when the word changes how the item is typed or called and a reader must see it to read the signature; an attribute when it is metadata, a check, or generation a reader can ignore on first pass; (3) the misfits under that rule in each direction (is `export`/`external` an attribute? is `[resource]` a keyword again now that it changes move semantics and marks traits? `macro`, `const`, `lazy`?), with the migration cost of each move; (4) one ORDER for stacked markers (attributes then keywords, or free — B445). Doors per misfit, recs, then the owner rules. No build until ruled. Sizing: paper S–M; papers lane, Order 45."}
-]}
+{
+ "items": [
+  {
+   "id": "E236",
+   "section": "E",
+   "kind": "performance (LSP; measurement first)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-01 (the owner's item)",
+   "title": "an LSP PERFORMANCE TEST on kolt during DOCUMENT CHANGES: drive `vilan-lsp` over kolt's real tree with scripted `didChange` edits (a keystroke in a leaf file, in a widely-imported file such as `shared.vl`/`styles.vl`, in a `.vl` holding css, an edit that breaks and then repairs the parse) and record, per edit, time-to-diagnostics, time-to-hover/completion/inlay answers, CPU time and peak memory — against E121's mandate (<10 ms on the keystroke path, <500 ms to errors)",
+   "discussion": "the owner (2026-10-01); E121 (the editor-latency mandate + `proposal/editor-latency.md`), M19 (per-module analysis reuse — kolt's client leg reuses 57/57 modules per warm keystroke), E232 (hints follow edits, Order 44), vilan-benchmarking-under-load (CPU time + callgrind, not wall)",
+   "body": "Deliverable: a repeatable harness (a script that speaks LSP over stdio to the installed `vilan-lsp`, replays a fixed edit script over a scratch COPY of kolt at a pinned commit, and prints a table), the baseline table on v0.42.0, and the top offenders by callgrind for the slowest edit. Measure CPU time, not wall (the box is noisy under lanes). Decide after the baseline whether it becomes a CI/seal gate with a budget (rec: a seal-time report first, a gate once the numbers are stable). Sizing M; editor lane, Order 45."
+  },
+  {
+   "id": "E237",
+   "section": "E",
+   "kind": "feature (hover; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-01 (the owner's item)",
+   "title": "hovering a VARIABLE or FIELD whose type is a struct (or enum) should show that type's DEFINITION below the `name: Type` line shown today — the fields (or variants) with their types, so the reader need not jump to the declaration",
+   "discussion": "the owner (2026-10-01); vilan-lsp `document.rs` hover; E227 (the `~Trait` abbreviation — hover already shows both forms), E238/E239 (the sibling hover items)",
+   "body": "Render under the existing line, in a second code block: `struct Channel { id: u53, name: str }` / the enum's variants; for a generic type, the definition as declared plus the instantiation's arguments substituted (rec: substituted, so `Memo<UserId, User>` reads with its real field types). Questions: (1) depth — one level only (rec), a nested struct stays a name; (2) a size cap for large types (rec: the first ~12 members, then `…`); (3) std types — show (rec yes, same rule); (4) a trait-typed or `dyn` value shows the trait's required members. Pins in the LSP hover suite. Sizing S; editor lane, Order 45."
+  },
+  {
+   "id": "E238",
+   "section": "E",
+   "kind": "feature (hover; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-01 (the owner's item)",
+   "title": "a METHOD's hover should name the type or trait it belongs to — today it shows only `fun get_or_insert(self, key: K, make: \\|\\| V): V`; the owner's two candidate spellings: `fun Memo<K: Hashable, V>.get_or_insert(self, key: K, make: \\|\\| V): V`, or `impl Memo<K: Hashable, V> fun get_or_insert(self, key: K, make: \\|\\| V): V`",
+   "discussion": "the owner (2026-10-01); vilan-lsp hover; E235 (the receiver's `own` dropped in the same signature printer), E239 (the type of `self`), E237",
+   "body": "Decide the spelling (OWNER): (a) `fun Memo<K: Hashable, V>.get_or_insert(..)` — one line, reads as a qualified name, but is not vilan syntax; (b) `impl Memo<K: Hashable, V>` on its own line above the `fun` line — two lines of REAL syntax, and it extends naturally to a trait impl (`impl Memo<K, V> with Source<V>`), a blanket (`impl type S: Source<type T>`) and a trait default (`trait Flow<T>`). Rec (b), as two lines: the header is copyable, shows bounds where they are declared, and distinguishes an inherent method, a trait's requirement, a default and a blanket — which (a) cannot. Completion's detail line takes the same header. Sizing S; editor lane, Order 45 (with E235)."
+  },
+  {
+   "id": "E239",
+   "section": "E",
+   "kind": "feature (hover; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-01 (the owner's item)",
+   "title": "hovering `self` should show its TYPE — the impl's subject with its binders (`self: Memo<K, V>`), the receiver convention (`self` / `own self` / `&self` / `&mut self`), and inside a trait default the trait (`self: Self` where `Self: Flow<T>`)",
+   "discussion": "the owner (2026-10-01); vilan-lsp hover; E238 (the method's owner in its hover), E235 (`own self` renders as `self`), E237 (the struct definition under a variable — applies to `self` too)",
+   "body": "Today `self` hovers as a keyword or not at all. Show it as any other binding: the line `self: <subject>` with the convention, then E237's definition block. In a blanket impl show the bound (`self: S` where `S: Source<T>`). Pins: an inherent impl, a trait impl, a trait default, a blanket. Sizing S; editor lane, Order 45 (one change with E237/E238)."
+  },
+  {
+   "id": "B485",
+   "section": "B",
+   "kind": "design discussion",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (the owner's item); DISCUSSION — a short paper, then a ruling",
+   "title": "which words should be KEYWORDS and which ATTRIBUTES: the language marks declarations two ways — keywords (`export`, `external`, `async`, `sync`, `lazy`, `own`, `mut`, `const`, `macro`, `dyn`, `borrows`, `context`) and bracket attributes (`[resource]`, `[platform(..)]`, `[deprecated]`, `[internal]`, `[must_use]`, `[rpc]`, `[expose]`, `[service]`, `[derive(..)]`, `[hint(..)]`, `[lints]`) — with no stated rule for which a new marker becomes; B413 already moved `resource` from a keyword to an attribute",
+   "discussion": "the owner (2026-10-01); B413 (`resource` → `[resource]`), B414 + `proposal/contextual-keywords.md` (which words are reserved vs contextual — the neighbouring question), B470 (`[resource] trait`), E227 (`[hint]`), F27/B415 (`[platform(..)] mod self;`), B445 (`[platform]` before `export impl` fails to parse — attribute/keyword ORDER is part of this)",
+   "body": "The paper: (1) a census of every marker, where it may appear, and whether it changes TYPING/semantics (`async`, `own`, `mut`, `dyn`, `lazy`), ownership class (`[resource]`), visibility/linkage (`export`, `external`, `[internal]`), tooling only (`[deprecated]`, `[must_use]`, `[hint]`), or code generation (`[derive]`, `[service]`, `[rpc]`, `[expose]`); (2) a candidate RULE — e.g. a keyword when the word changes how the item is typed or called and a reader must see it to read the signature; an attribute when it is metadata, a check, or generation a reader can ignore on first pass; (3) the misfits under that rule in each direction (is `export`/`external` an attribute? is `[resource]` a keyword again now that it changes move semantics and marks traits? `macro`, `const`, `lazy`?), with the migration cost of each move; (4) one ORDER for stacked markers (attributes then keywords, or free — B445). Doors per misfit, recs, then the owner rules. No build until ruled. Sizing: paper S–M; papers lane, Order 45."
+  }
+ ]
+}
