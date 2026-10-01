@@ -1,0 +1,74 @@
+{
+ "items": [
+  {
+   "id": "B486",
+   "section": "B",
+   "kind": "diagnostics (M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (papers-45's find, Order 45)",
+   "title": "out-of-order MARKERS get no steer or a wrong one (B445 generalised): all 29 adjacent swaps are refused with \"cannot find '<attr>'\" or \"expected `;`\"; `[derive(..)] export struct` steers to `import std::reactive::derive;`; `[resource] [deprecated] struct` says `[resource]` may only label a struct",
+   "discussion": "papers-45 (Order 45); proposal/keywords-vs-attributes.md",
+   "body": "Repro: `sweeps/order45/papers-45/probes/order/order_matrix.py` and `order_matrix.out`. In an external stack the semantic error prints before the parse error. Rec: keywords-vs-attributes.md's order (Q6–Q8, unruled) plus a steer that names the keyword order. Sizing S–M; syntax lane."
+  },
+  {
+   "id": "B487",
+   "section": "B",
+   "kind": "hole (M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (papers-45's find, Order 45)",
+   "title": "`const fun` / `const let` cannot carry `[deprecated]`, `[internal]` or `[must_use]` in either order, so the deprecation policy cannot reach them",
+   "discussion": "papers-45 (Order 45); proposal/keywords-vs-attributes.md",
+   "body": "Repro: `sweeps/order45/papers-45/probes/census/const_labels.vl`. Rec: the label prefix leads `const` declarations. Sizing S."
+  },
+  {
+   "id": "B488",
+   "section": "B",
+   "kind": "diagnostics (L)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (papers-45's find, Order 45)",
+   "title": "stale steer for `const x = 1;` in a body: \"Vilan has no const declarations; write `let x = const ..`\" — but `const let` exists (G24)",
+   "discussion": "papers-45 (Order 45); proposal/keywords-vs-attributes.md",
+   "body": "Repro: `sweeps/order45/papers-45/probes/census/const_stale_steer.vl`. Rec: steer to `const let`. Sizing XS."
+  },
+  {
+   "id": "B489",
+   "section": "B",
+   "kind": "bug (M; inference)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (papers-45's find, Order 45)",
+   "title": "a bare-trait return's TYPE ARGUMENTS never reach the body: `fun nothing(): Source<Option<i32>> { SignalCell::new(None) }` types as `SignalCell<Option<unknown>>` and is accepted; native refuses to emit \"an unresolved type\"",
+   "discussion": "papers-45 (Order 45); proposal/opaque-returns.md",
+   "body": "Repro: `sweeps/order45/papers-45/probes/opaque/o2_*.vl`. Rec: the annotation is the expected type of the body's tail, as a `let`'s is. Sizing S–M; solver."
+  },
+  {
+   "id": "F65",
+   "section": "F",
+   "kind": "MISCOMPILE (native; M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (papers-45's find, Order 45)",
+   "title": "native: a generic bare-trait-returning function instantiated twice gives every instance ONE instantiation's return type (both `wrap` instances return the `Str` cell; rustc E0308); JS is correct and the JS pin hides it",
+   "discussion": "papers-45 (Order 45); proposal/opaque-returns.md",
+   "body": "Repro: `sweeps/order45/papers-45/probes/opaque/o5_generic.vl`, controls `o5_generic_one.vl` and `o5_generic_concrete.vl`. Rec: compute the return type per instance; add a native_differential pin. Sizing S–M; native lane."
+  },
+  {
+   "id": "B490",
+   "section": "B",
+   "kind": "diagnostics (L)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (papers-45's find, Order 45)",
+   "title": "`[rpc]` with a bare-trait return fails INSIDE generated code with B253's stale \"a generic for a return\" steer; nothing points at the method",
+   "discussion": "papers-45 (Order 45); proposal/opaque-returns.md",
+   "body": "Repro: `sweeps/order45/papers-45/probes/opaque/o9_rpc.vl`. Rec: the service macro refuses at the method with a steer to `MemoCell<T>` (opaque-returns.md Q9). Sizing S."
+  },
+  {
+   "id": "B491",
+   "section": "B",
+   "kind": "diagnostics (L)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (papers-45's find, Order 45)",
+   "title": "the trait-method bare-trait-return refusal steers to `dyn Source` without its type arguments (should be `dyn Source<i32>`)",
+   "discussion": "papers-45 (Order 45); proposal/opaque-returns.md",
+   "body": "Repro: `sweeps/order45/papers-45/probes/opaque/o4_trait_method.vl`. Sizing XS."
+  }
+ ]
+}
