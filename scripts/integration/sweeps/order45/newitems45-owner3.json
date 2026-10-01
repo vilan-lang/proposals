@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "K25",
+   "section": "K",
+   "kind": "bug (playground; S)",
+   "area": "Web presence (site, playground, docs delivery)",
+   "status": "OPEN — filed 2026-10-01 (the owner's item)",
+   "title": "the PLAYGROUND's examples are broken on v0.42.0: they still spell the reactive `.map` that A142 renamed to `.derive` (and whatever else the pipe model changed)",
+   "discussion": "the owner (2026-10-01); A142 S1 (`map` → `derive`, move-only pipes), I9 (`HashMap`/`HashSet`), Order 44's seal (the playground SMOKE program had the same `.map` and reddened CI's wasm leg; fixed at 170562b9 — the examples themselves were not swept), `sweeps/order44/reactive-44/playground-reactive-44.patch`",
+   "body": "Sweep every example the playground ships (and any snippet it loads from the site) against the released compiler: `.map` on a source → `.derive`, a derived value consumed once (`.memo()`/`.cell()` where it is read twice), `Map`/`Set` → `HashMap`/`HashSet`, tracked reads where the old examples nested `.get()`. Check whether reactive-44's playground patch was ever applied. GATE so it cannot recur: a test (playground repo CI, or vilan's wasm smoke) that compiles EVERY shipped example with the wasm compiler and fails on any diagnostic. Sizing S."
+  },
+  {
+   "id": "K26",
+   "section": "K",
+   "kind": "docs + examples (M)",
+   "area": "Web presence (site, playground, docs delivery)",
+   "status": "OPEN — filed 2026-10-01 (the owner's item)",
+   "title": "the vilan SITE, the PLAYGROUND and the DOCS use ELEMENT SYNTAX (`<div class(..)> … </div>`) wherever it applies, instead of `view(\"div\")` builder chains",
+   "discussion": "the owner (2026-10-01); A46 (fragments) and the element-syntax arc; kolt and `lucide/lib.vl` already write it; K25 (the playground examples' sweep — do both in one pass over the playground)",
+   "body": "Scope: vilan-website's own source, every playground example, the book/std docs' UI snippets and the examples directory's UI programs. Where it applies: a statically-shaped element tree. Where it does not (say so in a short style note in the docs): a dynamically chosen tag, a builder passed around as a value, a chain that is mostly reactive bindings — decide the rule from what reads better, write it down once, apply it uniformly. No behaviour change: emitted output stays identical where the desugar is the same (the site's build and the doc snippets' tests are the proof). `vilan fmt` formats the result. Sizing M; a docs/web lane."
+  }
+ ]
+}
