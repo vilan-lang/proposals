@@ -20,6 +20,11 @@ cargo fmt --all --check > "$S/fmt-$tip.log" 2>&1; f=$?; echo "fmt exit=$f"
 # The tree's VILAN sources (CI's `vilan-fmt` job): Orders 41 and 42 both went red on CI here after a green seal —
 # a formatter rule landed in the same order as std edits formatted under the old rule.
 scripts/ci-local.sh vilan-fmt > "$S/vilan-fmt-$tip.log" 2>&1; vf=$?; echo "vilan-fmt exit=$vf"
+# CI's `wasm` leg and the stack canary's MARGIN (Order 44: both were CI-only finds after a green seal — the playground
+# smoke program spelled a renamed method; the walk frame grew past Windows's 2 MiB thread). The canary honours
+# VILAN_CANARY_STACK_KIB (deep_nesting.rs, added in Order 45); 1536 leaves ~25% under the 2 MiB it must hold.
+scripts/ci-local.sh wasm > "$S/wasm-$tip.log" 2>&1; wa=$?; echo "wasm exit=$wa"
+VILAN_CANARY_STACK_KIB=1536 cargo nextest run -p vilan-core --test deep_nesting > "$S/canary-$tip.log" 2>&1; cn=$?; echo "canary@1.5MiB exit=$cn"
 python3 - "$W/CHANGELOG.md" <<'PY'
 import sys
 ls = open(sys.argv[1]).read().split("\n")
@@ -27,4 +32,4 @@ s = next(i for i, l in enumerate(ls) if l.startswith("## Unreleased"))
 e = next((i for i in range(s + 1, len(ls)) if ls[i].startswith("## ")), len(ls))
 print("changelog parity", sum(l.startswith("<!-- family:") for l in ls[s:e]), "/", sum(l.startswith("**") for l in ls[s:e]))
 PY
-echo "verdict: union=$u doctests=$d native=$n clippy=$c windows=$w audit=$a fmt=$f vilan-fmt=$vf"
+echo "verdict: union=$u doctests=$d native=$n clippy=$c windows=$w audit=$a fmt=$f vilan-fmt=$vf wasm=$wa canary=$cn"
