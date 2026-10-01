@@ -1,0 +1,9 @@
+// B460 opacity, probe 1b: the diagnostic names the concrete type, not the trait.
+import std::reactive::{ Source, SignalCell };
+
+fun counter(start: i32): Source<i32> { SignalCell::new(start) }
+
+fun main() {
+	let n: i32 = counter(1);
+	print(n);
+}

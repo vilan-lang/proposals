@@ -1,0 +1,13 @@
+// B485 §2: what deleting `[resource]` changes. Checked as written (refused:
+// the second use of a moved resource), then with the attribute deleted
+// (accepted: the struct is data and copies). No Drop impl, so the deletion
+// is SILENT — the one case the attribute's removal changes meaning without a
+// diagnostic.
+[resource] struct Token { id: i32 }
+fun take(own t: Token): i32 { t.id }
+fun main() {
+	let a = Token { id = 1 };
+	let b = a;
+	print(take(b));
+	print(a.id);
+}

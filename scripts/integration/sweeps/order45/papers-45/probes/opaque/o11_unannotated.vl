@@ -1,0 +1,14 @@
+// B460 opacity, probe 11: an UNANNOTATED return is inferred from the body —
+// the "not hidden" reading already has a spelling: write nothing.
+import std::reactive::{ Source, SignalCell };
+
+fun counter(start: i32) { SignalCell::new(start) }
+
+export fun exported_counter(start: i32) { SignalCell::new(start) }
+
+fun main() {
+	let c = counter(1);
+	c.set(5);
+	print(c.get());
+	print(exported_counter(2).get());
+}

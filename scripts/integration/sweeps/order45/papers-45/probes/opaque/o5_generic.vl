@@ -1,0 +1,14 @@
+// B460 opacity, probe 5: a generic function's bare-trait return is decided per
+// instantiation, and each caller holds that instantiation's concrete type.
+import std::reactive::{ Source, SignalCell };
+
+fun wrap<T>(x: T): Source<T> { SignalCell::new(x) }
+
+fun main() {
+	let a = wrap(1);
+	let b = wrap("s");
+	a.set(2);       // SignalCell<i32>
+	b.set("t");     // SignalCell<str>
+	print(a.get());
+	print(b.get());
+}

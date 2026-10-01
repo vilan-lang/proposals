@@ -1,0 +1,66 @@
+files: std 71, examples 29, kolt 29
+
+## Keyword sites
+| marker | std | examples | kolt | total |
+|---|---:|---:|---:|---:|
+| `export <decl>` | 890 | 0 | 6 | 896 |
+| `export [attr] <decl>` | 84 | 0 | 0 | 84 |
+| `export import (re-export)` | 26 | 0 | 0 | 26 |
+| `export(in ..)` | 0 | 0 | 0 | 0 |
+| `export *;` | 34 | 12 | 22 | 68 |
+| `external fun` | 473 | 67 | 2 | 542 |
+| `external struct` | 64 | 7 | 1 | 72 |
+| `async fun / async external` | 50 | 6 | 2 | 58 |
+| `async (expr / closure type)` | 47 | 0 | 5 | 52 |
+| `const let` | 0 | 0 | 3 | 3 |
+| `const fun` | 0 | 0 | 0 | 0 |
+| `const <expr>` | 0 | 15 | 106 | 121 |
+| `macro fun` | 19 | 0 | 0 | 19 |
+| `macro <invocation/block>` | 0 | 0 | 0 | 0 |
+| `mut binding (statement head)` | 597 | 18 | 76 | 691 |
+| `&mut` | 284 | 2 | 7 | 293 |
+| `own <param>` | 276 | 0 | 14 | 290 |
+| `lazy let` | 0 | 0 | 2 | 2 |
+| `lazy <param>` | 5 | 0 | 0 | 5 |
+| `dyn <Trait>` | 20 | 0 | 0 | 20 |
+| `borrows` | 3 | 0 | 0 | 3 |
+| `context <clause>` | 49 | 0 | 2 | 51 |
+| `sync (closure type)` | 38 | 0 | 1 | 39 |
+| `[platform] mod self;` | 0 | 0 | 0 | 0 |
+
+## Attribute sites (declaration and field heads)
+| attribute | std | examples | kolt | total |
+|---|---:|---:|---:|---:|
+| `[extern]` | 408 | 67 | 2 | 477 |
+| `[platform]` | 0 | 62 | 0 | 62 |
+| `[must_use]` | 54 | 0 | 1 | 55 |
+| `[derive]` | 10 | 8 | 12 | 30 |
+| `[resource]` | 26 | 0 | 0 | 26 |
+| `[hint]` | 26 | 0 | 0 | 26 |
+| `[internal]` | 25 | 0 | 0 | 25 |
+| `[rpc]` | 0 | 12 | 12 | 24 |
+| `[deprecated]` | 7 | 0 | 0 | 7 |
+| `[service]` | 0 | 3 | 1 | 4 |
+| `[expose]` | 0 | 3 | 0 | 3 |
+
+## Stacked-marker orders (one-line heads with two or more markers)
+| order | std | examples | kolt | total | first site |
+|---|---:|---:|---:|---:|---|
+| `[extern] external fun` | 340 | 5 | 2 | 347 | `src/string.vl: [extern(method, "")] external fun code_at(self, index: usize): u32;` |
+| `[extern] [platform] external fun` | 0 | 62 | 0 | 62 | `examples/canvas/canvas.vl: [extern(get, "")] [platform("")] external fun type_(self): str;` |
+| `[extern] async external fun` | 35 | 0 | 0 | 35 | `src/time.vl: [extern("")] async external fun __sleep(ms: i32, signal: Option<CancelSignal>): void;` |
+| `export external struct` | 31 | 0 | 0 | 31 | `src/time.vl: export external struct TimerHandle;` |
+| `export [extern] external fun` | 21 | 0 | 0 | 21 | `src/time.vl: export [extern("")] external fun now_millis(): f64;` |
+| `export macro fun` | 16 | 0 | 0 | 16 | `src/json.vl: export macro fun struct_json_impls(target: StructItem): str {` |
+| `export [hint] [resource] struct` | 14 | 0 | 0 | 14 | `src/delta.vl: export [hint(CollPipe<U>)] [resource] struct CollFlatten<F, S, U> {` |
+| `export [extern] async external fun` | 12 | 0 | 0 | 12 | `src/process/fs.vl: export [extern("", "")] async external fun read_file_encoded(path: str, encoding: str): str;` |
+| `export [internal] fun` | 10 | 0 | 0 | 10 | `src/task.vl: export [internal("")] fun detached_nursery(): Nursery {` |
+| `export [derive] enum` | 7 | 0 | 0 | 7 | `src/rpc.vl: export [derive(PartialEq, Debug)] enum ConnectionState {` |
+| `export [resource] trait` | 5 | 0 | 0 | 5 | `src/delta.vl: export [resource] trait CollFlow<T> {` |
+| `export [resource] struct` | 4 | 0 | 0 | 4 | `src/task.vl: export [resource] struct OwnedNursery {` |
+| `export [hint] struct` | 4 | 0 | 0 | 4 | `src/transient.vl: export [hint(TransientSource<T, E>)] struct Transient<T, E> {` |
+| `export async fun` | 3 | 0 | 0 | 3 | `src/jwt.vl: export async fun sign_hs512<C: Wire>(secret: Bytes, claims: C): str {` |
+| `export [resource] external struct` | 3 | 0 | 0 | 3 | `src/process/db.vl: export [resource] external struct Database;` |
+| `export [deprecated] import` | 2 | 0 | 0 | 2 | `src/map.vl: export [deprecated("")] import pkg::hash_map::HashMap as Map;` |
+| `export [derive] struct` | 2 | 0 | 0 | 2 | `src/time.vl: export [derive(Wire, PartialEq)] struct Instant {` |
+| `export external fun` | 1 | 0 | 0 | 1 | `src/hash.vl: export external fun canonical_hash(value: any): Hash;` |

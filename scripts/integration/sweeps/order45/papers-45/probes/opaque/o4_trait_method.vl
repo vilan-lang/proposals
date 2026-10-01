@@ -1,0 +1,18 @@
+// B460 opacity, probe 4: a TRAIT method's bare-trait return stays refused,
+// in the trait declaration and in the impl.
+import std::reactive::{ Source, SignalCell };
+
+trait Model {
+	fun count(self): Source<i32>;
+}
+
+struct Counter { cell: SignalCell<i32> }
+
+impl Counter with Model {
+	fun count(self): Source<i32> { self.cell }
+}
+
+fun main() {
+	let m = Counter { cell = SignalCell::new(4) };
+	print(m.count().get());
+}

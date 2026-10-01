@@ -1,0 +1,13 @@
+// B460 opacity, probe 5c: probe 5 with the concrete return written (native control).
+import std::reactive::{ Source, SignalCell };
+
+fun wrap<T>(x: T): SignalCell<T> { SignalCell::new(x) }
+
+fun main() {
+	let a = wrap(1);
+	let b = wrap("s");
+	a.set(2);
+	b.set("t");
+	print(a.get());
+	print(b.get());
+}

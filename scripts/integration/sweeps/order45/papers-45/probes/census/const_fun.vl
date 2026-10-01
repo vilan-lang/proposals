@@ -1,0 +1,12 @@
+// B485 §2: `const fun` is a PROMISE on the signature — a plain `fun` is
+// const-callable too (G24: Zig's rule), so the keyword changes no call site
+// today; what it adds is the declaration-site check, which is what keeps the
+// promise when the body later changes.
+fun plain(n: f64): f64 { n * 2f }
+const fun promised(n: f64): f64 { n * 3f }
+const let a = plain(2f);
+const let b = promised(2f);
+fun main() {
+	print(a);
+	print(b);
+}

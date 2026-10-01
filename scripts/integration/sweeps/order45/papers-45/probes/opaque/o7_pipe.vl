@@ -1,0 +1,19 @@
+// B460 opacity, probe 7: the pipe model's case (reactive-layers.md §4.3): a
+// model method that builds a pipe. The call's type is the node chain; the
+// diagnostic below prints it in full.
+import std::reactive::{ Source, SignalCell, Flow, Pipe };
+
+struct Model { count: SignalCell<i32> }
+
+impl Model {
+	fun doubled_label(self): Pipe<str> {
+		self.count.derive(|x| x * 2).distinct().derive(|x| i"{x}")
+	}
+}
+
+fun main() {
+	let m = Model { count = SignalCell::new(2) };
+	let shown = m.doubled_label().memo();
+	print(shown.get());
+	let wrong: i32 = m.doubled_label();
+}

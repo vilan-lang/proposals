@@ -1,0 +1,12 @@
+// B460 opacity, probe 6: a bare-trait return whose body reaches the function
+// itself. The function's type is its body's, so the recursive call has no
+// type yet when the body is typed.
+import std::reactive::{ Source, SignalCell };
+
+fun deep(n: i32): Source<i32> {
+	if n == 0 { SignalCell::new(0) } else { deep(n - 1) }
+}
+
+fun main() {
+	print(deep(3).get());
+}

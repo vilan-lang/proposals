@@ -1,0 +1,381 @@
+# vilan: vilan 0.42.0 (6e6830dfc)
+
+## census.py (B485 §1, §5)
+files: std 71, examples 29, kolt 29
+
+## Keyword sites
+| marker | std | examples | kolt | total |
+|---|---:|---:|---:|---:|
+| `export <decl>` | 890 | 0 | 6 | 896 |
+| `export [attr] <decl>` | 84 | 0 | 0 | 84 |
+| `export import (re-export)` | 26 | 0 | 0 | 26 |
+| `export(in ..)` | 0 | 0 | 0 | 0 |
+| `export *;` | 34 | 12 | 22 | 68 |
+| `external fun` | 473 | 67 | 2 | 542 |
+| `external struct` | 64 | 7 | 1 | 72 |
+| `async fun / async external` | 50 | 6 | 2 | 58 |
+| `async (expr / closure type)` | 47 | 0 | 5 | 52 |
+| `const let` | 0 | 0 | 3 | 3 |
+| `const fun` | 0 | 0 | 0 | 0 |
+| `const <expr>` | 0 | 15 | 106 | 121 |
+| `macro fun` | 19 | 0 | 0 | 19 |
+| `macro <invocation/block>` | 0 | 0 | 0 | 0 |
+| `mut binding (statement head)` | 597 | 18 | 76 | 691 |
+| `&mut` | 284 | 2 | 7 | 293 |
+| `own <param>` | 276 | 0 | 14 | 290 |
+| `lazy let` | 0 | 0 | 2 | 2 |
+| `lazy <param>` | 5 | 0 | 0 | 5 |
+| `dyn <Trait>` | 20 | 0 | 0 | 20 |
+| `borrows` | 3 | 0 | 0 | 3 |
+| `context <clause>` | 49 | 0 | 2 | 51 |
+| `sync (closure type)` | 38 | 0 | 1 | 39 |
+| `[platform] mod self;` | 0 | 0 | 0 | 0 |
+
+## Attribute sites (declaration and field heads)
+| attribute | std | examples | kolt | total |
+|---|---:|---:|---:|---:|
+| `[extern]` | 408 | 67 | 2 | 477 |
+| `[platform]` | 0 | 62 | 0 | 62 |
+| `[must_use]` | 54 | 0 | 1 | 55 |
+| `[derive]` | 10 | 8 | 12 | 30 |
+| `[hint]` | 26 | 0 | 0 | 26 |
+| `[resource]` | 26 | 0 | 0 | 26 |
+| `[internal]` | 25 | 0 | 0 | 25 |
+| `[rpc]` | 0 | 12 | 12 | 24 |
+| `[deprecated]` | 7 | 0 | 0 | 7 |
+| `[service]` | 0 | 3 | 1 | 4 |
+| `[expose]` | 0 | 3 | 0 | 3 |
+
+## Stacked-marker orders (one-line heads with two or more markers)
+| order | std | examples | kolt | total | first site |
+|---|---:|---:|---:|---:|---|
+| `[extern] external fun` | 340 | 5 | 2 | 347 | `src/string.vl: [extern(method, "")] external fun code_at(self, index: usize): u32;` |
+| `[extern] [platform] external fun` | 0 | 62 | 0 | 62 | `examples/canvas/canvas.vl: [extern(get, "")] [platform("")] external fun type_(self): str;` |
+| `[extern] async external fun` | 35 | 0 | 0 | 35 | `src/time.vl: [extern("")] async external fun __sleep(ms: i32, signal: Option<CancelSignal>): void;` |
+| `export external struct` | 31 | 0 | 0 | 31 | `src/time.vl: export external struct TimerHandle;` |
+| `export [extern] external fun` | 21 | 0 | 0 | 21 | `src/time.vl: export [extern("")] external fun now_millis(): f64;` |
+| `export macro fun` | 16 | 0 | 0 | 16 | `src/json.vl: export macro fun struct_json_impls(target: StructItem): str {` |
+| `export [hint] [resource] struct` | 14 | 0 | 0 | 14 | `src/delta.vl: export [hint(CollPipe<U>)] [resource] struct CollFlatten<F, S, U> {` |
+| `export [extern] async external fun` | 12 | 0 | 0 | 12 | `src/process/fs.vl: export [extern("", "")] async external fun read_file_encoded(path: str, encoding: str): str;` |
+| `export [internal] fun` | 10 | 0 | 0 | 10 | `src/task.vl: export [internal("")] fun detached_nursery(): Nursery {` |
+| `export [derive] enum` | 7 | 0 | 0 | 7 | `src/rpc.vl: export [derive(PartialEq, Debug)] enum ConnectionState {` |
+| `export [resource] trait` | 5 | 0 | 0 | 5 | `src/delta.vl: export [resource] trait CollFlow<T> {` |
+| `export [hint] struct` | 4 | 0 | 0 | 4 | `src/transient.vl: export [hint(TransientSource<T, E>)] struct Transient<T, E> {` |
+| `export [resource] struct` | 4 | 0 | 0 | 4 | `src/task.vl: export [resource] struct OwnedNursery {` |
+| `export async fun` | 3 | 0 | 0 | 3 | `src/jwt.vl: export async fun sign_hs512<C: Wire>(secret: Bytes, claims: C): str {` |
+| `export [resource] external struct` | 3 | 0 | 0 | 3 | `src/process/db.vl: export [resource] external struct Database;` |
+| `export [deprecated] import` | 2 | 0 | 0 | 2 | `src/map.vl: export [deprecated("")] import pkg::hash_map::HashMap as Map;` |
+| `export [derive] struct` | 2 | 0 | 0 | 2 | `src/time.vl: export [derive(Wire, PartialEq)] struct Instant {` |
+| `export external fun` | 1 | 0 | 0 | 1 | `src/hash.vl: export external fun canonical_hash(value: any): Hash;` |
+
+## order_matrix.py (B485 §6, B445)
+### fun (with body): `fun f(): i32 { 1 }`
+
+| first \ second | `export` | `[deprecated("use g")]` | `[internal("why")]` | `[must_use]` | `[platform("browser")]` | `async` |
+|---|---|---|---|---|---|---|
+| `export` | — | OK | OK | OK | OK | OK |
+| `[deprecated("use g")]` | PARSE | — | OK | OK | OK | OK |
+| `[internal("why")]` | PARSE | PARSE | — | OK | OK | OK |
+| `[must_use]` | PARSE | PARSE | PARSE | — | OK | OK |
+| `[platform("browser")]` | PARSE | PARSE | PARSE | PARSE | — | OK |
+| `async` | PARSE | PARSE | PARSE | PARSE | PARSE | — |
+
+<details><summary>first errors</summary>
+
+- `[deprecated("use g")] export fun f(): i32 { 1 }` — PARSE: cannot find 'deprecated' in this scope
+- `[internal("why")] export fun f(): i32 { 1 }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [deprecated("use g")] fun f(): i32 { 1 }` — PARSE: cannot find 'internal' in this scope
+- `[must_use] export fun f(): i32 { 1 }` — PARSE: cannot find 'must_use' in this scope
+- `[must_use] [deprecated("use g")] fun f(): i32 { 1 }` — PARSE: cannot find 'must_use' in this scope
+- `[must_use] [internal("why")] fun f(): i32 { 1 }` — PARSE: cannot find 'must_use' in this scope
+- `[platform("browser")] export fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [deprecated("use g")] fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [internal("why")] fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [must_use] fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+- `async export fun f(): i32 { 1 }` — PARSE: found 'export' expected an expression
+- `async [deprecated("use g")] fun f(): i32 { 1 }` — PARSE: cannot find 'deprecated' in this scope
+- `async [internal("why")] fun f(): i32 { 1 }` — PARSE: cannot find 'internal' in this scope
+- `async [must_use] fun f(): i32 { 1 }` — PARSE: cannot find 'must_use' in this scope
+- `async [platform("browser")] fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+
+</details>
+
+### struct: `struct S { a: i32 }`
+
+| first \ second | `export` | `[derive(PartialEq)]` | `[deprecated("use T")]` | `[internal("why")]` | `[platform("browser")]` | `[resource]` |
+|---|---|---|---|---|---|---|
+| `export` | — | OK | OK | OK | OK | OK |
+| `[derive(PartialEq)]` | PARSE | — | OK | OK | OK | OK |
+| `[deprecated("use T")]` | PARSE | PARSE | — | OK | OK | OK |
+| `[internal("why")]` | PARSE | PARSE | PARSE | — | OK | OK |
+| `[platform("browser")]` | PARSE | PARSE | PARSE | PARSE | — | OK |
+| `[resource]` | RULE | RULE | RULE | RULE | RULE | — |
+
+<details><summary>first errors</summary>
+
+- `[derive(PartialEq)] export struct S { a: i32 }` — PARSE: cannot find 'derive' in this scope; import it first (`import std::reactive::derive;`)
+- `[deprecated("use T")] export struct S { a: i32 }` — PARSE: cannot find 'deprecated' in this scope
+- `[deprecated("use T")] [derive(PartialEq)] struct S { a: i32 }` — PARSE: cannot find 'deprecated' in this scope
+- `[internal("why")] export struct S { a: i32 }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [derive(PartialEq)] struct S { a: i32 }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [deprecated("use T")] struct S { a: i32 }` — PARSE: cannot find 'internal' in this scope
+- `[platform("browser")] export struct S { a: i32 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [derive(PartialEq)] struct S { a: i32 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [deprecated("use T")] struct S { a: i32 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [internal("why")] struct S { a: i32 }` — PARSE: cannot find 'platform' in this scope
+- `[resource] export struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [derive(PartialEq)] struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [deprecated("use T")] struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [internal("why")] struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [platform("browser")] struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+
+</details>
+
+### trait: `trait T { fun t(self): i32; }`
+
+| first \ second | `export` | `[resource]` | `[deprecated("use U")]` | `[internal("why")]` | `[platform("browser")]` |
+|---|---|---|---|---|---|
+| `export` | — | OK | OK | OK | OK |
+| `[resource]` | RULE | — | RULE | RULE | RULE |
+| `[deprecated("use U")]` | PARSE | OK | — | OK | OK |
+| `[internal("why")]` | PARSE | OK | PARSE | — | OK |
+| `[platform("browser")]` | PARSE | OK | PARSE | PARSE | — |
+
+<details><summary>first errors</summary>
+
+- `[resource] export trait T { fun t(self): i32; }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [deprecated("use U")] trait T { fun t(self): i32; }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [internal("why")] trait T { fun t(self): i32; }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [platform("browser")] trait T { fun t(self): i32; }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[deprecated("use U")] export trait T { fun t(self): i32; }` — PARSE: cannot find 'deprecated' in this scope
+- `[internal("why")] export trait T { fun t(self): i32; }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [deprecated("use U")] trait T { fun t(self): i32; }` — PARSE: cannot find 'internal' in this scope
+- `[platform("browser")] export trait T { fun t(self): i32; }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [deprecated("use U")] trait T { fun t(self): i32; }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [internal("why")] trait T { fun t(self): i32; }` — PARSE: cannot find 'platform' in this scope
+
+</details>
+
+### impl: `impl S { fun s(self): i32 { 1 } }`
+
+| first \ second | `export` | `[platform("browser")]` | `[internal("why")]` |
+|---|---|---|---|
+| `export` | — | OK | RULE |
+| `[platform("browser")]` | PARSE | — | PARSE |
+| `[internal("why")]` | PARSE | RULE | — |
+
+<details><summary>first errors</summary>
+
+- `export [internal("why")] impl S { fun s(self): i32 { 1 } }` — RULE: `[deprecated(..)]` and `[internal(..)]` label a declaration a reader names, and nobody names an `impl` block — write the label on the member
+- `[platform("browser")] export impl S { fun s(self): i32 { 1 } }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [internal("why")] impl S { fun s(self): i32 { 1 } }` — PARSE: cannot find 'platform' in this scope
+- `[internal("why")] export impl S { fun s(self): i32 { 1 } }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [platform("browser")] impl S { fun s(self): i32 { 1 } }` — RULE: `[deprecated(..)]` and `[internal(..)]` label a declaration a reader names, and nobody names an `impl` block — write the label on the member
+
+</details>
+
+### module let: `let x = 1;`
+
+| first \ second | `export` | `[deprecated("use y")]` | `[internal("why")]` | `lazy` |
+|---|---|---|---|---|
+| `export` | — | OK | OK | OK |
+| `[deprecated("use y")]` | PARSE | — | OK | OK |
+| `[internal("why")]` | PARSE | PARSE | — | OK |
+| `lazy` | PARSE | PARSE | PARSE | — |
+
+<details><summary>first errors</summary>
+
+- `[deprecated("use y")] export let x = 1;` — PARSE: cannot find 'deprecated' in this scope
+- `[internal("why")] export let x = 1;` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [deprecated("use y")] let x = 1;` — PARSE: cannot find 'internal' in this scope
+- `lazy export let x = 1;` — PARSE: cannot find 'lazy' in this scope
+- `lazy [deprecated("use y")] let x = 1;` — PARSE: cannot find 'lazy' in this scope
+- `lazy [internal("why")] let x = 1;` — PARSE: cannot find 'lazy' in this scope
+
+</details>
+
+### Adjacent swaps of the full canonical stack
+
+| kind | canonical stack | result | each adjacent swap |
+|---|---|---|---|
+| external fun | `export [deprecated("use g")] [internal("why")] [extern("f")] [must_use] [platform("node")] async external fun f(): i32;` | OK | `[deprecated("use g")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use g")]`: RULE — `external fun f` names no body: an external needs an `[extern(..)]` binding saying what th<br>`[extern("f")]`↔`[internal("why")]`: RULE — `external fun f` names no body: an external needs an `[extern(..)]` binding saying what th<br>`[must_use]`↔`[extern("f")]`: RULE — `external fun f` names no body: an external needs an `[extern(..)]` binding saying what th<br>`[platform("node")]`↔`[must_use]`: RULE — `external fun f` names no body: an external needs an `[extern(..)]` binding saying what th<br>`async`↔`[platform("node")]`: PARSE — cannot find 'platform' in this scope<br>`external`↔`async`: RULE — function 'f' must have a body or be declared `external` |
+| fun | `export [deprecated("use g")] [internal("why")] [must_use] [platform("node")] async fun f(): i32 { 1 }` | OK | `[deprecated("use g")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use g")]`: PARSE — expected `;` to end this statement<br>`[must_use]`↔`[internal("why")]`: PARSE — expected `;` to end this statement<br>`[platform("node")]`↔`[must_use]`: PARSE — expected `;` to end this statement<br>`async`↔`[platform("node")]`: PARSE — cannot find 'platform' in this scope |
+| external struct | `export [deprecated("use T")] [internal("why")] [platform("node")] [resource] external struct H;` | OK | `[deprecated("use T")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use T")]`: PARSE — expected `;` to end this statement<br>`[platform("node")]`↔`[internal("why")]`: PARSE — expected `;` to end this statement<br>`[resource]`↔`[platform("node")]`: PARSE — expected `;` to end this statement<br>`external`↔`[resource]`: RULE — struct 'H' must declare a body or be declared `external` |
+| derived struct | `export [derive(PartialEq)] [deprecated("use T")] [internal("why")] [platform("node")] [resource] struct S { a: i32 }` | OK | `[derive(PartialEq)]`↔`export`: PARSE — cannot find 'derive' in this scope; import it first (`import std::reactive::derive;`)<br>`[deprecated("use T")]`↔`[derive(PartialEq)]`: PARSE — expected `;` to end this statement<br>`[internal("why")]`↔`[deprecated("use T")]`: PARSE — expected `;` to end this statement<br>`[platform("node")]`↔`[internal("why")]`: PARSE — expected `;` to end this statement<br>`[resource]`↔`[platform("node")]`: PARSE — expected `;` to end this statement |
+| trait | `export [deprecated("use U")] [internal("why")] [platform("node")] [resource] trait T { fun t(self): i32; }` | OK | `[deprecated("use U")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use U")]`: PARSE — expected `;` to end this statement<br>`[platform("node")]`↔`[internal("why")]`: PARSE — expected `;` to end this statement<br>`[resource]`↔`[platform("node")]`: PARSE — expected `;` to end this statement |
+| module let | `export [deprecated("use y")] [internal("why")] lazy let x = 1;` | OK | `[deprecated("use y")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use y")]`: PARSE — expected `;` to end this statement<br>`lazy`↔`[internal("why")]`: PARSE — found '(' expected ',' or ']' |
+
+## B485 marker probes
+### resource_erasure.vl (js)
+Error: use of `a` after it was moved: a resource has a single owner
+ 10 │     let b = a;
+ 12 │     print(a.id);
+### resource_erased.vl (js)
+1
+1
+### resource_drop_on_data.vl (js)
+Error: `Guard` implements `Drop` but is not a resource: destruction without move discipline is exactly the double-close bug; mark it `[resource]` so it moves instead of being copied
+ 5 │ impl Guard with Drop { fun drop(&mut self) { print(self.label); } }
+### trait_only.vl (js)
+Error: S has no method 'name'; it is `[trait_only]` on trait `Named`: reach it through a `Named` bound, not the concrete type
+ 11 │     print(s.name());
+### must_use.vl (js)
+Warning: unused result of a `[must_use]` call: bind it (e.g. `owner.take(…)`), or `let _ = …` to discard.
+ 6 │     total(1, 2);
+7
+### const_fun.vl (js)
+4
+6
+### const_fun_broken.vl (js)
+Error: `stamp` is declared `const fun`, but its body reaches the host binding `Date.now`, which has no compile-time answer: a `const fun` promises its body is const-evaluable, and that promise is checked here rather than at a call site. Drop the `const` to keep an ordinary function, or move the capability out of the body
+ 4 │ const fun stamp(): f64 { now_millis() }
+### const_labels.vl (js)
+Error: expected `;` to end this statement
+ 3 │ [deprecated("use g")] const fun f(): i32 { 1 }
+Error: expected `;` to end this statement
+ 4 │ const [deprecated("use g")] fun h(): i32 { 1 }
+Error: expected `;` to end this statement
+ 5 │ export const [deprecated("use y")] let x = 1;
+### const_stale_steer.vl (js)
+Error: Vilan has no const declarations; write `let x = const ..`
+ 3 │     const x = 1;
+Error: cannot find 'x' in this scope
+ 4 │     x
+### platform_impl_dispatch.vl (js)
+Error: `name` requires the `browser` platform its `impl` declares and cannot run on `node:24`
+  reachable from `main`, which its declaration `[platform("node")]` fences: main → name
+ 14 │     print(s.name());
+  reachable from `main`, which its declaration `[platform("node")]` fences: main → name
+Error: `name` requires the `browser` platform its `impl` declares and cannot run on `node:24`
+  reachable from the entry: main → name
+
+## B460 opacity probes (js)
+### o10_let_and_param.vl (js)
+Error: Source has no method 'set'
+ 9 │     s.set(9);
+### o11_unannotated.vl (js)
+5
+2
+### o1_leak.vl (js)
+5
+2
+3
+### o1_reveal.vl (js)
+Error: Expected i32, but got SignalCell<i32> instead.
+ 7 │     let n: i32 = counter(1);
+### o2_annotation_does_not_flow.vl (js)
+true
+true
+true
+### o2_reveal.vl (js)
+Error: Expected i32, but got SignalCell<Option<unknown>> instead.
+ 7 │     let n: i32 = nothing();
+### o3_branches_dyn.vl (js)
+1
+2
+### o3_branches.vl (js)
+Error: `if` arms have mismatched types: expected SignalCell<i32>, but got MemoCell<i32> instead. `pick` returns `Source<i32>`, a trait: that is ONE type the body picks, so every branch must produce it; for branches of different types return `dyn Source<i32>`
+ 6 │     if flag { s } else { s.derive(|x| x * 2).memo() }
+### o4_trait_method.vl (js)
+Error: 'Source' is a trait, not a type: a TRAIT method cannot return a bare trait yet — each impl would pick its own type, an associated type vilan does not have. Return `dyn Source` from `count` (the object), or a concrete type; a free `fun` or an inherent method may return `Source` itself
+ 6 │     fun count(self): Source<i32>;
+Error: 'Source' is a trait, not a type: a TRAIT method cannot return a bare trait yet — each impl would pick its own type, an associated type vilan does not have. Return `dyn Source` from `count` (the object), or a concrete type; a free `fun` or an inherent method may return `Source` itself
+ 12 │     fun count(self): Source<i32> { self.cell }
+### o5_generic_concrete.vl (js)
+2
+t
+### o5_generic_one.vl (js)
+2
+### o5_generic.vl (js)
+2
+t
+### o6_recursion.vl (js)
+0
+### o7_pipe_moved.vl (js)
+Error: use of `p` after it was moved: a resource has a single owner
+ 10 │     print(p.sample());
+ 11 │     print(p.sample());
+### o7_pipe_ok.vl (js)
+4
+10
+10
+### o7_pipe.vl (js)
+Error: Expected i32, but got Derive<Distinct<Derive<SignalCell<i32>, i32, i32>, i32>, i32, str> instead.
+ 18 │     let wrong: i32 = m.doubled_label();
+### o9_rpc_concrete.vl (js)
+Warning: `doubled` returns a signal handle it builds with `.cell()` on every call: each call mints a fresh cell, so the reply never matches a channel this connection already carries (a capability and a forward per call), and the cell's subscription lives as long as the handler's owner (the connection under `Service::factory`, the service under `Service::new`). Return a cell that outlives the call — keep it on the service, keyed by the arguments (a `Memo` whose maker writes `.cell_global()`)
+ 15 │        self.count.derive(|x| x * 2).memo()
+4
+### o9_rpc.vl (js)
+Error: in code generated by this attribute: 'MemoCell<i32>' does not implement trait 'Wire', required by a generic bound of this call
+    8 │ ╭─▶ struct Counter {
+   10 │ ├─▶ }
+ 1748 │ export fun reply<T: Wire>(value: T): RpcOutcome {
+Error: in code generated by this attribute: 'Source' is a trait, not a type: a trait names a bound, and a value needs a type. Write `fun f(x: Source)` for a parameter, `dyn Source` for a field or any other position that holds a value — the trait OBJECT, whose concrete type is erased — or a generic for a return, `<T: Source>` with 'T' written here.
+    8 │ ╭─▶ struct Counter {
+   10 │ ├─▶ }
+ 1874 │ export trait Source<T> with Flow<T> {
+
+## B460 opacity probes (rust)
+### o1_leak.vl (rust)
+5
+2
+3
+### o2_annotation_does_not_flow.vl (rust)
+Error: the `rust` backend does not emit a value of type `an unresolved type` yet — this is F1's slice S1b, whose scope is structs, enums, generics, `Option`/`Result`, `str`, `List`, `Map`/`Set`, closures, `impl`s, traits, operators, `?`, `print`, `panic` and the reactive cell. Build this program with `--backend js`.
+### o3_branches_dyn.vl (rust)
+1
+2
+### o5_generic.vl (rust)
+error[E0308]: mismatched types
+  --> src/main.rs:90:5
+   |
+89 | fn wrap_20827_0(mut x_20828: i32) -> SignalCell_9594_0 {
+   |                                      ----------------- expected `SignalCell_9594_0` because of return type
+90 |     new_9697_0(x_20828)
+   |     ^^^^^^^^^^^^^^^^^^^ expected `SignalCell_9594_0`, found `SignalCell_9594_1`
+error[E0308]: mismatched types
+### o5_generic_one.vl (rust)
+2
+### o5_generic_concrete.vl (rust)
+2
+t
+### o6_recursion.vl (rust)
+0
+### o7_pipe_ok.vl (rust)
+4
+10
+10
+
+## o8: the module boundary (v1, then v2 with the same signature)
+### v1
+7
+### v2
+Error: MemoCell<i32> has no method 'set'
+ 8 │     c.set(7);
+
+## fmt_today.vl through vilan fmt (B485 §6)
+// B485 §6: what `vilan fmt` (0.42.0) does to stacked markers today. Input below;
+// the formatted output is fmt_today.out. `export` stays glued to the FIRST
+// attribute, each further attribute takes its own line, `[resource]` stays on
+// the declaration line — so `export` and `fun` end up on different lines.
+export [deprecated("use g")]
+[must_use]
+[platform("node")]
+async fun f(): i32 {
+	1
+}
+export [extern("f")]
+external fun e(): i32;
+[extern("q")]
+[must_use]
+external fun q(): i32;
+export [hint(Source<i32>)]
+[resource] struct H {
+	a: i32,
+}
+export [derive(PartialEq)]
+[deprecated("x")]
+struct D {
+	a: i32,
+}

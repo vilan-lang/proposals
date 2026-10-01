@@ -1,0 +1,8 @@
+// B460 opacity, probe 2b: what `nothing()`'s call type is (the message prints it).
+import std::reactive::{ Source, SignalCell };
+
+fun nothing(): Source<Option<i32>> { SignalCell::new(None) }
+
+fun main() {
+	let n: i32 = nothing();
+}

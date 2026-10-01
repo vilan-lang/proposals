@@ -1,0 +1,12 @@
+// B460 opacity, probe 3: two arms of two concrete types are refused with the
+// steer to `dyn`; the `dyn` spelling compiles (o3_branches_dyn.vl).
+import std::reactive::{ Source, SignalCell, Flow, Pipe };
+
+fun pick(flag: bool, s: SignalCell<i32>): Source<i32> {
+	if flag { s } else { s.derive(|x| x * 2).memo() }
+}
+
+fun main() {
+	let s = SignalCell::new(1);
+	print(pick(true, s).get());
+}

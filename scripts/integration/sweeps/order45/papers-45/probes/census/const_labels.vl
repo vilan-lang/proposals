@@ -1,0 +1,7 @@
+// B485 find: a `const fun` / `const let` takes no attribute in EITHER order —
+// it cannot be `[deprecated]`, `[internal]` or `[must_use]`. Every line refused.
+[deprecated("use g")] const fun f(): i32 { 1 }
+const [deprecated("use g")] fun h(): i32 { 1 }
+export const [deprecated("use y")] let x = 1;
+[deprecated("use y")] const let y = 1;
+fun main() { print(f()); }
