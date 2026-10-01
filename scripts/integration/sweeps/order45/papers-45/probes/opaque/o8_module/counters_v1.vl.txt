@@ -1,0 +1,5 @@
+// B460 opacity, probe 8 (library side, version 1): the published signature
+// promises a read-only `Source<i32>`; the body picks a `SignalCell`.
+import std::reactive::{ Source, SignalCell };
+
+export fun counter(start: i32): Source<i32> { SignalCell::new(start) }

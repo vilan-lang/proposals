@@ -1,0 +1,12 @@
+// B460 opacity, probe 7c: the returned pipe is move-only through the concrete
+// node type ([resource] trait Pipe's nodes are [resource] structs).
+import std::reactive::{ Source, SignalCell, Flow, Pipe };
+
+fun doubled(s: SignalCell<i32>): Pipe<i32> { s.derive(|x| x * 2) }
+
+fun main() {
+	let s = SignalCell::new(1);
+	let p = doubled(s);
+	print(p.sample());
+	print(p.sample());
+}

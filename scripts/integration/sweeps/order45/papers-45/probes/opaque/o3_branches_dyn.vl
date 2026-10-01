@@ -1,0 +1,12 @@
+// B460 opacity, probe 3b: the same arms through the trait object.
+import std::reactive::{ Source, SignalCell, Flow, Pipe };
+
+fun pick(flag: bool, s: SignalCell<i32>): dyn Source<i32> {
+	if flag { s } else { s.derive(|x| x * 2).memo() }
+}
+
+fun main() {
+	let s = SignalCell::new(1);
+	print(pick(true, s).get());
+	print(pick(false, s).get());
+}

@@ -1,0 +1,18 @@
+// B460 opacity, probe 1: what leaks through a bare trait return today.
+// `counter` says it returns a `Source<i32>` (read-only). The caller holds the
+// concrete `SignalCell<i32>`: it can WRITE through it, bind it to the concrete
+// type, and pass it where only a `SignalCell` is accepted.
+import std::reactive::{ Source, SignalCell };
+
+fun counter(start: i32): Source<i32> { SignalCell::new(start) }
+
+fun wants_cell(c: SignalCell<i32>): i32 { c.get() }
+
+fun main() {
+	let c = counter(1);
+	c.set(5);                                  // a Signal method, through a "Source"
+	let concrete: SignalCell<i32> = counter(2); // the concrete annotation is accepted
+	print(c.get());
+	print(concrete.get());
+	print(wants_cell(counter(3)));             // and so is a concrete parameter
+}

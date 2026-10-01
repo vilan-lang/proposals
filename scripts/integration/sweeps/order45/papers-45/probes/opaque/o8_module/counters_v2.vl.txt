@@ -1,0 +1,5 @@
+// B460 opacity, probe 8 (library side, version 2): the SAME signature; the
+// body now picks a sealed memo — a legal change under the written contract.
+import std::reactive::{ Source, SignalCell, Flow, Pipe };
+
+export fun counter(start: i32): Source<i32> { SignalCell::new(start).derive(|x| x).memo() }

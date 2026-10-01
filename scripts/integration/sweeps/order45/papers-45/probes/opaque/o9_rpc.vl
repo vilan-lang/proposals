@@ -1,0 +1,22 @@
+// B460 opacity, probe 9: an `[rpc]` method returning a bare trait. The service
+// macro reads the WRITTEN return type (a `TypeExpr`), so it sees `Source<i32>`
+// and not the `MemoCell<i32>` callers hold; the concrete spelling is the control
+// (o9_rpc_concrete.vl).
+import std::reactive::{ Source, SignalCell, MemoCell, Flow, Pipe };
+
+[service(CounterClient)]
+struct Counter {
+	count: SignalCell<i32>,
+}
+
+impl Counter {
+	[rpc]
+	fun doubled(self): Source<i32> {
+		self.count.derive(|x| x * 2).memo()
+	}
+}
+
+fun main() {
+	let c = Counter { count = SignalCell::new(2) };
+	print(c.doubled().get());
+}

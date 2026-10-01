@@ -1,0 +1,10 @@
+// B460 opacity, probe 8 (caller side): written against v1, it writes through
+// the "Source" — accepted, because the return is not hidden. Swap v2 in and
+// this caller breaks although `counter`'s signature did not change.
+import pkg::counters::counter;
+
+fun main() {
+	let c = counter(1);
+	c.set(7);
+	print(c.get());
+}

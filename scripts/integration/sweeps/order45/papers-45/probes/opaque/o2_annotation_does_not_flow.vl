@@ -1,0 +1,17 @@
+// B460 opacity, probe 2: the annotation is checked AFTER the body is typed
+// (the function "types as if its return were unannotated"), so the trait's
+// arguments do not flow into the body. `SignalCell::new(None)` has no element
+// type to infer from. The concrete annotation (control) and a `let` with the
+// same trait annotation (B161) are shown beside it.
+import std::reactive::{ Source, SignalCell };
+
+fun nothing(): Source<Option<i32>> { SignalCell::new(None) }
+
+fun nothing_concrete(): SignalCell<Option<i32>> { SignalCell::new(None) }
+
+fun main() {
+	let a: Source<Option<i32>> = SignalCell::new(None);
+	print(a.get().is_none());
+	print(nothing_concrete().get().is_none());
+	print(nothing().get().is_none());
+}

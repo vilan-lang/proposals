@@ -1,0 +1,18 @@
+// B460 opacity, probe 10: the other two bare-trait positions, for symmetry.
+// At a `let` (B161) the annotation is checked and the binding keeps the
+// concrete type ("checked wide, kept narrow"): `.set` through a `Source`
+// binding compiles. At a parameter (B186) the trait is an implicit generic:
+// inside the body only the trait's members exist, so `.set` is refused.
+import std::reactive::{ Source, SignalCell };
+
+fun read_only(s: Source<i32>): i32 {
+	s.set(9);
+	s.get()
+}
+
+fun main() {
+	let a: Source<i32> = SignalCell::new(1);
+	a.set(2);
+	print(a.get());
+	print(read_only(SignalCell::new(3)));
+}
