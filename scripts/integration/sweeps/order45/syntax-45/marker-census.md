@@ -1,4 +1,4 @@
-<!-- syntax-45, Order 45: regenerated at branch syntax-45 @9fa5aff9 (census e0476402 + B445 37f234ef + B446 5baaf432; the fmt flip 9fa5aff9 moves no cell). B445 applied: I2/I5/I10/I13 (an attribute written ahead of export) now accept every attribute their item takes. Source of truth: crates/vilan-core/tests/marker_census.golden.md. -->
+<!-- syntax-45, Order 45: generated at branch syntax-45 tip @b2caf49a (base next 6e6830df; census e0476402, B445 37f234ef, B446 6ea9c9d6, fmt flip b2caf49a). B445 applied: I2/I5/I10/I13 (an attribute written ahead of export) take every attribute their item takes. Source of truth: crates/vilan-core/tests/marker_census.golden.md (regenerate: VILAN_REGENERATE_MARKER_CENSUS=1 cargo test -p vilan-core --test marker_census). -->
 
 # Marker census (B485)
 

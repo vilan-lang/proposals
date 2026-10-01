@@ -78,6 +78,9 @@
 | [B489](items/B489.md) | a bare-trait return's TYPE ARGUMENTS never reach the body: `fun nothing(): Source<Option<i32>> { SignalCell::new(None) }` types as `SignalCell<Option<unknown>>` and is accepted; native refuses to emit "an unresolved type" | bug (M; inference) | papers-45 (Order 45); proposal/opaque-returns.md |
 | [B490](items/B490.md) | `[rpc]` with a bare-trait return fails INSIDE generated code with B253's stale "a generic for a return" steer; nothing points at the method | diagnostics (L) | papers-45 (Order 45); proposal/opaque-returns.md |
 | [B491](items/B491.md) | the trait-method bare-trait-return refusal steers to `dyn Source` without its type arguments (should be `dyn Source<i32>`) | diagnostics (L) | papers-45 (Order 45); proposal/opaque-returns.md |
+| [B492](items/B492.md) | `export export fun f()` is accepted silently | hole (parser; L) | syntax-45 (Order 45); sweeps/order45/syntax-45/marker-census.md |
+| [B493](items/B493.md) | a `[platform]`, `[deprecated]` or `[hint]` label on a LOCAL `let` is refused with a message that names `[internal(..)]` whatever the label was | diagnostics (L) | syntax-45 (Order 45); sweeps/order45/syntax-45/marker-census.md |
+| [B494](items/B494.md) | `async x = 1;` parses as an expression statement and then fails "cannot find x" | diagnostics (L) | syntax-45 (Order 45); sweeps/order45/syntax-45/marker-census.md |
 
 ## C. Memory model
 

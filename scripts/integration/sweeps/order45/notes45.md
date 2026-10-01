@@ -42,3 +42,10 @@
 - **B455 → (B)** `(impl Box with One)`; Order 46. solver-b-45 told.
 - **K25 now** (lane web-45, launched — no cargo), **K26 later** (Order 46). K25, K26 FILED.
 - Swap: the owner disabled it on purpose (WSL2 pegged CPU/disk at the memory limit); the cap of four stands.
+
+## syntax-45 — REPORTED 2026-10-01 (tip b2caf49a off 6e6830df; Opus) — NOT merged yet: HELD to merge after the std-editing lanes
+- LANDED 4/4: the census (e0476402; generator `tests/marker_census.rs` + golden), B445 (37f234ef; both orders parse), B446 (6ea9c9d6; premise CORRECTED — any failed parameter binder mis-reported at the previous `>`), and the B485 fmt FLIP (b2caf49a; attributes, then `export` + keywords, then the declaration word; std reformatted, 84 sites in 17 files). Not done (Order 46): Q10 `[resource]` on its own line, Q7, Q8, the v0.44 refusal.
+- Gates at the tip (base 6e6830df): nextest 9160/9160 (41 skipped), fmt, clippy, `vilan fmt --check` std + examples clean.
+- WHY HELD: the flip moves `export` on 84 std lines that solver-a (shared.vl/delta.vl), reactive-45, maps-45 and store-45 are editing. Merging it last, the integrator takes next's std at conflicts and re-runs the MERGED `vilan fmt` over std (mechanical); merging it first would hand every std lane a conflict on each `export` line.
+- Finds FILED: B492, B493, B494. Lesson for briefs46: lanes log under their own `target/<lane>-scratch/` (native-45 clobbered syntax-45's suite log in the shared scratchpad).
+- Slot → maps-45 resumed (told to rebase onto ba2eebd9).
