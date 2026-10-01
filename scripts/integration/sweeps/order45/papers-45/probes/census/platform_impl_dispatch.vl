@@ -1,0 +1,15 @@
+[platform("node")] mod self;
+// B485 §3 (the proviso): does skipping `[platform(..)]` ever mislead a reader
+// silently? A blanket impl and a platform-fenced specific impl of one trait:
+// in a node file, the fenced impl does not run. Does `s.name()` then resolve
+// to the blanket SILENTLY (a dispatch change no diagnostic shows), or is it
+// refused? (Refused, naming the impl's platform: the proviso holds.)
+trait Named { fun name(self): str; }
+impl type T with Named { fun name(self): str { "blanket" } }
+struct S { a: i32 }
+[platform("browser")] impl S with Named { fun name(self): str { "browser S" } }
+
+fun main() {
+	let s = S { a = 1 };
+	print(s.name());
+}

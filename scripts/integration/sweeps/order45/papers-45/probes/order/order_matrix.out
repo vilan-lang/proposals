@@ -1,0 +1,135 @@
+### fun (with body): `fun f(): i32 { 1 }`
+
+| first \ second | `export` | `[deprecated("use g")]` | `[internal("why")]` | `[must_use]` | `[platform("browser")]` | `async` |
+|---|---|---|---|---|---|---|
+| `export` | — | OK | OK | OK | OK | OK |
+| `[deprecated("use g")]` | PARSE | — | OK | OK | OK | OK |
+| `[internal("why")]` | PARSE | PARSE | — | OK | OK | OK |
+| `[must_use]` | PARSE | PARSE | PARSE | — | OK | OK |
+| `[platform("browser")]` | PARSE | PARSE | PARSE | PARSE | — | OK |
+| `async` | PARSE | PARSE | PARSE | PARSE | PARSE | — |
+
+<details><summary>first errors</summary>
+
+- `[deprecated("use g")] export fun f(): i32 { 1 }` — PARSE: cannot find 'deprecated' in this scope
+- `[internal("why")] export fun f(): i32 { 1 }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [deprecated("use g")] fun f(): i32 { 1 }` — PARSE: cannot find 'internal' in this scope
+- `[must_use] export fun f(): i32 { 1 }` — PARSE: cannot find 'must_use' in this scope
+- `[must_use] [deprecated("use g")] fun f(): i32 { 1 }` — PARSE: cannot find 'must_use' in this scope
+- `[must_use] [internal("why")] fun f(): i32 { 1 }` — PARSE: cannot find 'must_use' in this scope
+- `[platform("browser")] export fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [deprecated("use g")] fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [internal("why")] fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [must_use] fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+- `async export fun f(): i32 { 1 }` — PARSE: found 'export' expected an expression
+- `async [deprecated("use g")] fun f(): i32 { 1 }` — PARSE: cannot find 'deprecated' in this scope
+- `async [internal("why")] fun f(): i32 { 1 }` — PARSE: cannot find 'internal' in this scope
+- `async [must_use] fun f(): i32 { 1 }` — PARSE: cannot find 'must_use' in this scope
+- `async [platform("browser")] fun f(): i32 { 1 }` — PARSE: cannot find 'platform' in this scope
+
+</details>
+
+### struct: `struct S { a: i32 }`
+
+| first \ second | `export` | `[derive(PartialEq)]` | `[deprecated("use T")]` | `[internal("why")]` | `[platform("browser")]` | `[resource]` |
+|---|---|---|---|---|---|---|
+| `export` | — | OK | OK | OK | OK | OK |
+| `[derive(PartialEq)]` | PARSE | — | OK | OK | OK | OK |
+| `[deprecated("use T")]` | PARSE | PARSE | — | OK | OK | OK |
+| `[internal("why")]` | PARSE | PARSE | PARSE | — | OK | OK |
+| `[platform("browser")]` | PARSE | PARSE | PARSE | PARSE | — | OK |
+| `[resource]` | RULE | RULE | RULE | RULE | RULE | — |
+
+<details><summary>first errors</summary>
+
+- `[derive(PartialEq)] export struct S { a: i32 }` — PARSE: cannot find 'derive' in this scope; import it first (`import std::reactive::derive;`)
+- `[deprecated("use T")] export struct S { a: i32 }` — PARSE: cannot find 'deprecated' in this scope
+- `[deprecated("use T")] [derive(PartialEq)] struct S { a: i32 }` — PARSE: cannot find 'deprecated' in this scope
+- `[internal("why")] export struct S { a: i32 }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [derive(PartialEq)] struct S { a: i32 }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [deprecated("use T")] struct S { a: i32 }` — PARSE: cannot find 'internal' in this scope
+- `[platform("browser")] export struct S { a: i32 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [derive(PartialEq)] struct S { a: i32 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [deprecated("use T")] struct S { a: i32 }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [internal("why")] struct S { a: i32 }` — PARSE: cannot find 'platform' in this scope
+- `[resource] export struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [derive(PartialEq)] struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [deprecated("use T")] struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [internal("why")] struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [platform("browser")] struct S { a: i32 }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+
+</details>
+
+### trait: `trait T { fun t(self): i32; }`
+
+| first \ second | `export` | `[resource]` | `[deprecated("use U")]` | `[internal("why")]` | `[platform("browser")]` |
+|---|---|---|---|---|---|
+| `export` | — | OK | OK | OK | OK |
+| `[resource]` | RULE | — | RULE | RULE | RULE |
+| `[deprecated("use U")]` | PARSE | OK | — | OK | OK |
+| `[internal("why")]` | PARSE | OK | PARSE | — | OK |
+| `[platform("browser")]` | PARSE | OK | PARSE | PARSE | — |
+
+<details><summary>first errors</summary>
+
+- `[resource] export trait T { fun t(self): i32; }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [deprecated("use U")] trait T { fun t(self): i32; }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [internal("why")] trait T { fun t(self): i32; }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[resource] [platform("browser")] trait T { fun t(self): i32; }` — RULE: `[resource]` marks a type as a resource: it may label only a `struct`, an `enum` or a `trait` declaration
+- `[deprecated("use U")] export trait T { fun t(self): i32; }` — PARSE: cannot find 'deprecated' in this scope
+- `[internal("why")] export trait T { fun t(self): i32; }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [deprecated("use U")] trait T { fun t(self): i32; }` — PARSE: cannot find 'internal' in this scope
+- `[platform("browser")] export trait T { fun t(self): i32; }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [deprecated("use U")] trait T { fun t(self): i32; }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [internal("why")] trait T { fun t(self): i32; }` — PARSE: cannot find 'platform' in this scope
+
+</details>
+
+### impl: `impl S { fun s(self): i32 { 1 } }`
+
+| first \ second | `export` | `[platform("browser")]` | `[internal("why")]` |
+|---|---|---|---|
+| `export` | — | OK | RULE |
+| `[platform("browser")]` | PARSE | — | PARSE |
+| `[internal("why")]` | PARSE | RULE | — |
+
+<details><summary>first errors</summary>
+
+- `export [internal("why")] impl S { fun s(self): i32 { 1 } }` — RULE: `[deprecated(..)]` and `[internal(..)]` label a declaration a reader names, and nobody names an `impl` block — write the label on the member
+- `[platform("browser")] export impl S { fun s(self): i32 { 1 } }` — PARSE: cannot find 'platform' in this scope
+- `[platform("browser")] [internal("why")] impl S { fun s(self): i32 { 1 } }` — PARSE: cannot find 'platform' in this scope
+- `[internal("why")] export impl S { fun s(self): i32 { 1 } }` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [platform("browser")] impl S { fun s(self): i32 { 1 } }` — RULE: `[deprecated(..)]` and `[internal(..)]` label a declaration a reader names, and nobody names an `impl` block — write the label on the member
+
+</details>
+
+### module let: `let x = 1;`
+
+| first \ second | `export` | `[deprecated("use y")]` | `[internal("why")]` | `lazy` |
+|---|---|---|---|---|
+| `export` | — | OK | OK | OK |
+| `[deprecated("use y")]` | PARSE | — | OK | OK |
+| `[internal("why")]` | PARSE | PARSE | — | OK |
+| `lazy` | PARSE | PARSE | PARSE | — |
+
+<details><summary>first errors</summary>
+
+- `[deprecated("use y")] export let x = 1;` — PARSE: cannot find 'deprecated' in this scope
+- `[internal("why")] export let x = 1;` — PARSE: cannot find 'internal' in this scope
+- `[internal("why")] [deprecated("use y")] let x = 1;` — PARSE: cannot find 'internal' in this scope
+- `lazy export let x = 1;` — PARSE: cannot find 'lazy' in this scope
+- `lazy [deprecated("use y")] let x = 1;` — PARSE: cannot find 'lazy' in this scope
+- `lazy [internal("why")] let x = 1;` — PARSE: cannot find 'lazy' in this scope
+
+</details>
+
+### Adjacent swaps of the full canonical stack
+
+| kind | canonical stack | result | each adjacent swap |
+|---|---|---|---|
+| external fun | `export [deprecated("use g")] [internal("why")] [extern("f")] [must_use] [platform("node")] async external fun f(): i32;` | OK | `[deprecated("use g")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use g")]`: RULE — `external fun f` names no body: an external needs an `[extern(..)]` binding saying what th<br>`[extern("f")]`↔`[internal("why")]`: RULE — `external fun f` names no body: an external needs an `[extern(..)]` binding saying what th<br>`[must_use]`↔`[extern("f")]`: RULE — `external fun f` names no body: an external needs an `[extern(..)]` binding saying what th<br>`[platform("node")]`↔`[must_use]`: RULE — `external fun f` names no body: an external needs an `[extern(..)]` binding saying what th<br>`async`↔`[platform("node")]`: PARSE — cannot find 'platform' in this scope<br>`external`↔`async`: RULE — function 'f' must have a body or be declared `external` |
+| fun | `export [deprecated("use g")] [internal("why")] [must_use] [platform("node")] async fun f(): i32 { 1 }` | OK | `[deprecated("use g")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use g")]`: PARSE — expected `;` to end this statement<br>`[must_use]`↔`[internal("why")]`: PARSE — expected `;` to end this statement<br>`[platform("node")]`↔`[must_use]`: PARSE — expected `;` to end this statement<br>`async`↔`[platform("node")]`: PARSE — cannot find 'platform' in this scope |
+| external struct | `export [deprecated("use T")] [internal("why")] [platform("node")] [resource] external struct H;` | OK | `[deprecated("use T")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use T")]`: PARSE — expected `;` to end this statement<br>`[platform("node")]`↔`[internal("why")]`: PARSE — expected `;` to end this statement<br>`[resource]`↔`[platform("node")]`: PARSE — expected `;` to end this statement<br>`external`↔`[resource]`: RULE — struct 'H' must declare a body or be declared `external` |
+| derived struct | `export [derive(PartialEq)] [deprecated("use T")] [internal("why")] [platform("node")] [resource] struct S { a: i32 }` | OK | `[derive(PartialEq)]`↔`export`: PARSE — cannot find 'derive' in this scope; import it first (`import std::reactive::derive;`)<br>`[deprecated("use T")]`↔`[derive(PartialEq)]`: PARSE — expected `;` to end this statement<br>`[internal("why")]`↔`[deprecated("use T")]`: PARSE — expected `;` to end this statement<br>`[platform("node")]`↔`[internal("why")]`: PARSE — expected `;` to end this statement<br>`[resource]`↔`[platform("node")]`: PARSE — expected `;` to end this statement |
+| trait | `export [deprecated("use U")] [internal("why")] [platform("node")] [resource] trait T { fun t(self): i32; }` | OK | `[deprecated("use U")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use U")]`: PARSE — expected `;` to end this statement<br>`[platform("node")]`↔`[internal("why")]`: PARSE — expected `;` to end this statement<br>`[resource]`↔`[platform("node")]`: PARSE — expected `;` to end this statement |
+| module let | `export [deprecated("use y")] [internal("why")] lazy let x = 1;` | OK | `[deprecated("use y")]`↔`export`: PARSE — cannot find 'deprecated' in this scope<br>`[internal("why")]`↔`[deprecated("use y")]`: PARSE — expected `;` to end this statement<br>`lazy`↔`[internal("why")]`: PARSE — found '(' expected ',' or ']' |

@@ -1,0 +1,9 @@
+// B485 §6: what `vilan fmt` (0.42.0) does to stacked markers today. Input below;
+// the formatted output is fmt_today.out. `export` stays glued to the FIRST
+// attribute, each further attribute takes its own line, `[resource]` stays on
+// the declaration line — so `export` and `fun` end up on different lines.
+export [deprecated("use g")] [must_use] [platform("node")] async fun f(): i32 { 1 }
+export [extern("f")] external fun e(): i32;
+[extern("q")] [must_use] external fun q(): i32;
+export [hint(Source<i32>)] [resource] struct H { a: i32 }
+export [derive(PartialEq)] [deprecated("x")] struct D { a: i32 }

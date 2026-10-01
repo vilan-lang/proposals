@@ -1,0 +1,6 @@
+// B485 §2: `Drop` on a type without `[resource]` is refused with a steer —
+// the loud case of deleting the attribute from a leaf that has a destructor.
+import std::drop::Drop;
+struct Guard { label: str }
+impl Guard with Drop { fun drop(&mut self) { print(self.label); } }
+fun main() { let g = Guard { label = "x" }; print(g.label); }

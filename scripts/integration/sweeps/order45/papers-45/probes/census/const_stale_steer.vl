@@ -1,0 +1,6 @@
+// B485 find: the steer for `const x = 1;` in a body predates G24 (`const let`).
+fun f(): i32 {
+	const x = 1;
+	x
+}
+fun main() { print(f()); }

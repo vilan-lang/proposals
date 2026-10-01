@@ -1,0 +1,5 @@
+// B485 §2: the promise broken at the declaration — refused THERE, not at a
+// distant `const` call site.
+import std::time::now_millis;
+const fun stamp(): f64 { now_millis() }
+fun main() { print(1); }

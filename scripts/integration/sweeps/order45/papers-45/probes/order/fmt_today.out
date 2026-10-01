@@ -1,0 +1,20 @@
+export [deprecated("use g")]
+[must_use]
+[platform("node")]
+async fun f(): i32 {
+	1
+}
+export [extern("f")]
+external fun e(): i32;
+[extern("q")]
+[must_use]
+external fun q(): i32;
+export [hint(Source<i32>)]
+[resource] struct H {
+	a: i32,
+}
+export [derive(PartialEq)]
+[deprecated("x")]
+struct D {
+	a: i32,
+}

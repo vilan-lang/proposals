@@ -1,0 +1,8 @@
+// B485 §2: `[must_use]` is a label — dropping the result WARNS, and deleting
+// the attribute changes only that warning.
+[must_use]
+fun total(a: i32, b: i32): i32 { a + b }
+fun main() {
+	total(1, 2);
+	print(total(3, 4));
+}
