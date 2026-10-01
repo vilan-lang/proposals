@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "E240",
+   "section": "E",
+   "kind": "feature (hover; S–M)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-01 (the owner's item)",
+   "title": "hover is not RICH on generic parameters and their constraints: `Flow` in `fun switch<U, I: Flow<U>>`; `F`, `Flow` and `T` in `impl type F: Flow<type T>`; `T` in `fun sub(own self, observer: \\|T\\| void)`",
+   "discussion": "the owner (2026-10-01); E237/E238/E239 (the hover arc, Order 45's editor-45)",
+   "body": "Expected: a trait named in a bound hovers as the trait (its header, doc and required members, as E237 does for a trait-typed value); a type parameter hovers as a type parameter — its name, its bounds, and where it is declared (`type T` of `impl type F: Flow<type T>`, or `U` of `fun switch<U, ..>`) — at the declaration AND at every use (a closure type's `T`, a parameter type, a return type). Pins per shape in the title. Sizing S–M; editor lane."
+  },
+  {
+   "id": "E241",
+   "section": "E",
+   "kind": "bug (hover; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-01 (the owner's item)",
+   "title": "hover is WRONG on a match case's pattern: `None` in `match x { None => {}, _ => {} }`",
+   "discussion": "the owner (2026-10-01); E240, the hover arc (E237–E239)",
+   "body": "Expected: a variant pattern hovers as the variant of the SCRUTINEE's type with its type arguments substituted (`Option<i32>::None`, a payload variant with its fields), with the variant's doc; a binding inside a pattern hovers as a binding with its type. Reproduce first and record what is shown today (the item does not say); check the sibling shapes: `Some(v)`, a struct-variant pattern, a qualified `Option::None`, a literal and `_`. Sizing S; editor lane."
+  }
+ ]
+}

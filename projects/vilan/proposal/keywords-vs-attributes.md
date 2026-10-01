@@ -1,6 +1,6 @@
 # Keywords and attributes — which one a marker becomes, and the order they stack in (B485, B445)
 
-> Status: **DRAFT 2026-10-01, for the owner's ruling** (R-j: a paper this order,
+> Status: **RULED 2026-10-01** — Q1–Q11 as recommended (the owner); the build is queued for Order 46. Drafted 2026-10-01 (R-j: a paper this order,
 > nothing built). Tracker B485 (the owner's item) and B445 (the stacking order).
 > Written by lane papers-45 of Order 45 against `vilan 0.42.0 (6e6830dfc)`,
 > reading `next` @6e6830df. Nothing in the compiler or std changed. Every claim

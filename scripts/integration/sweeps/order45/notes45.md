@@ -9,3 +9,7 @@
 - B485's paper: Q1–Q11 OWNER. Nothing changes spelling; the order does (attributes → keywords → declaration word; `export` after the attributes; v0.43 accepts both, v0.44 refuses the old). syntax-45's "accept both orders" for B445 is its step 1.
 - B460's opacity paper: Q1–Q11 OWNER. Rec: make a bare-trait return OPAQUE now (reversing "checked, not hidden") — no site in std, examples or kolt uses one yet; build after B473 + B474.
 - Seven finds FILED (newitems45-papers.json): B486–B491, F65 (native MISCOMPILE: a generic bare-trait-returning function's instances share one return type). Find 8 (the `[rpc]` fresh-handle warning names `.cell()`) is reactive-45's item 9 already.
+
+## Owner rulings mid-order (2026-10-01)
+- **Both papers RULED as recommended**: keywords-vs-attributes.md Q1–Q11; opaque-returns.md Q1–Q11 (a bare-trait return becomes OPAQUE, reversing Order 44's door (i); build after B473 + B474 → Order 46). Status lines, stamps (B485, B486, B489), go-items45.
+- **E240, E241 FILED** (the owner's hover items: generic parameters and bounds; match-case patterns). editor-45 told: take them after the arc if time.

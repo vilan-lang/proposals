@@ -1,6 +1,6 @@
 # Opaque returns — what `fun f(): Trait` should hide (B460's opacity)
 
-> Status: **DRAFT 2026-10-01, for the owner's ruling** (R-j: a paper this order,
+> Status: **RULED 2026-10-01** — Q1–Q11 as recommended (the owner); the build is queued for Order 46. Drafted 2026-10-01 (R-j: a paper this order,
 > nothing built). This is the follow-up B460's build named: "opacity is a later
 > slice after a paper". Written by lane papers-45 of Order 45 against
 > `vilan 0.42.0 (6e6830dfc)`, reading `next` @6e6830df. Nothing in the compiler
