@@ -19,3 +19,6 @@
 - Every agent stopped; the repos are intact (`git fsck` clean), every lane's commits and working tree survived: solver-a-45 30b6eb56 (B473), solver-b-45 87ad8c66 (B475), native-45 c7faf517 (F62 F57 F60 F61 F63 F64), syntax-45 37f234ef (census, B445), maps-45 ac7c2836 (S0; S1 files uncommitted), reactive-45 and editor-45 uncommitted work only.
 - RESUMED under a CAP: four agents at a time, `CARGO_BUILD_JOBS=4`, nextest `-j 4`, never two cargo invocations per lane. First four: solver-a-45, native-45 (+F65 if time), syntax-45 (told the marker order is RULED attributes-first — its B445 fmt output is the other way), the kolt perf investigation (+ peak RSS). Waiting for a slot: solver-b-45, reactive-45, maps-45, editor-45; store-45 after solver-a's merge.
 - RULE for briefs46: a lane cap of four and the jobs caps, until the machine has swap.
+
+## perf-kolt-45 — REPORTED 2026-10-01 (investigation; REPORT-perf-kolt-45.md)
+- v0.42.0 REGRESSED kolt's check 3.3× CPU / 3.9× memory (7.5 s vs 2.3 s; 1,087 MB vs 280 MB); trigger R39's resource traits → R11 over every pipe generic. FILED M94–M100, N137. Lane **perf-45** launched in the freed slot (the same agent, its worktree): M94, M96, M97, then M95; M98/M100 if time. Touches analyzer.rs — merges after solver-b-45, rebased.

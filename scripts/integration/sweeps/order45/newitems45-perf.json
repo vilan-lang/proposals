@@ -1,0 +1,84 @@
+{
+ "items": [
+  {
+   "id": "M94",
+   "section": "M",
+   "kind": "PERF REGRESSION (v0.42.0; HIGH)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-01 (the kolt check investigation, Order 45; lane perf-45)",
+   "title": "R11 (`check_resource_generic_instantiations`) re-scans the WHOLE program and mints a TypeId per place for every resource instantiation: kolt's client has 27 instances × ~53k mints = 1.45M scratch type slots (570 ms, +109 MB; 10.6 ms on v0.41.1)",
+   "discussion": "the owner's report (kolt `vilan check` slow), sweeps/order45/REPORT-perf-kolt-45.md; v0.42.0 vs v0.41.1 on kolt: 7.5 s vs 2.3 s CPU, 1,087 MB vs 280 MB peak; trigger A142 R39 (`[resource] trait Flow`/`Pipe`, 25c740d3)",
+   "body": "Since `Flow`/`Pipe` are `[resource]` traits, every std reactive generic called with a pipe is an R11 instance. Fix: scan only the instance's own body (`r11_body_calls_and_closures` already returns `body_exprs`) in `collect_instantiation_bindings`, `collect_instantiation_value_places`, `collect_is_refinements`, and read `place_value_type_id` rather than `get_type_id`. Expected −550 ms, −110 MB, and 1.45M fewer roots for M95. Sizing S."
+  },
+  {
+   "id": "M95",
+   "section": "M",
+   "kind": "PERF + MEMORY REGRESSION (v0.42.0; HIGH)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-01 (the kolt check investigation, Order 45; lane perf-45)",
+   "title": "`compute_resource_types` classifies EVERY type slot, scratch included, and its TypeId-keyed memo misses on non-interned types: 2,352 ms and +481 MB on kolt's client (76 ms on v0.41.1); 1.78M roots, the memo grows to 2.67M entries",
+   "discussion": "the owner's report (kolt `vilan check` slow), sweeps/order45/REPORT-perf-kolt-45.md; v0.42.0 vs v0.41.1 on kolt: 7.5 s vs 2.3 s CPU, 1,087 MB vs 280 MB peak; trigger A142 R39 (`[resource] trait Flow`/`Pipe`, 25c740d3)",
+   "body": "Fix: classify only the slots consumers ask about (ids reachable from bindings and expressions, or a lazy per-query memo), or key the memo structurally. Audit `resource_types`' consumers. Carries the type-interning question in `type_id_for_type`'s comment. Expected −2.0–2.3 s, −480 MB. Sizing M."
+  },
+  {
+   "id": "M96",
+   "section": "M",
+   "kind": "performance (MEDIUM)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-01 (the kolt check investigation, Order 45; lane perf-45)",
+   "title": "B457's `function_reaches_an_in_place_write` is O(functions × expressions): each call filters the whole expression map — 48 calls × ~95M instructions, 815 ms on kolt's client (13 ms on v0.41.1)",
+   "discussion": "the owner's report (kolt `vilan check` slow), sweeps/order45/REPORT-perf-kolt-45.md; v0.42.0 vs v0.41.1 on kolt: 7.5 s vs 2.3 s CPU, 1,087 MB vs 280 MB peak; trigger A142 R39 (`[resource] trait Flow`/`Pipe`, 25c740d3)",
+   "body": "Fix: build a function → contained-calls index once (one pass over the expression map, sorted spans per source). Expected −750 ms. Sizing S."
+  },
+  {
+   "id": "M97",
+   "section": "M",
+   "kind": "performance (MEDIUM)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-01 (the kolt check investigation, Order 45; lane perf-45)",
+   "title": "`dispatch_refine::refined_edges` is computed TWICE per analysis (in `context::thread_contexts` and in `const_eval::evaluate`), 9.8% of all instructions each",
+   "discussion": "the owner's report (kolt `vilan check` slow), sweeps/order45/REPORT-perf-kolt-45.md; v0.42.0 vs v0.41.1 on kolt: 7.5 s vs 2.3 s CPU, 1,087 MB vs 280 MB peak; trigger A142 R39 (`[resource] trait Flow`/`Pipe`, 25c740d3)",
+   "body": "Fix: compute once per Program and share. Expected −350 ms on kolt's client. Sizing S."
+  },
+  {
+   "id": "M98",
+   "section": "M",
+   "kind": "performance (MEDIUM)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-01 (the kolt check investigation, Order 45; lane perf-45)",
+   "title": "the emission walk `vilan check` still runs (`transformer::diagnose`) spends 846 ms on kolt's client in impl selection: `select_member` costs 8.4M instructions a call (965 calls), `applying_implementations` runs `subject_applies` against every impl; and ~1.1 s (the walk + the Program drop) prints in no phase line",
+   "discussion": "the owner's report (kolt `vilan check` slow), sweeps/order45/REPORT-perf-kolt-45.md; v0.42.0 vs v0.41.1 on kolt: 7.5 s vs 2.3 s CPU, 1,087 MB vs 280 MB peak; trigger A142 R39 (`[resource] trait Flow`/`Pipe`, 25c740d3)",
+   "body": "Fix: memoize `select_member`/`applying_trait_ids` per (subject, member/trait), or index impls by head nominal; add a `VILAN_PHASE_TIMING` bucket for the emission walk and the drop. Expected −600 ms. Sizing M."
+  },
+  {
+   "id": "M99",
+   "section": "M",
+   "kind": "performance (MEDIUM; reuse)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-01 (the kolt check investigation, Order 45; lane perf-45)",
+   "title": "M19's reuse cannot reach the hot passes: a FULL hit (`reused 53/53`) still pays 96% of `checks`, and reuse is all-or-nothing per world, so an edit to a widely-imported file (`model.vl`) re-pays everything",
+   "discussion": "the owner's report (kolt `vilan check` slow), sweeps/order45/REPORT-perf-kolt-45.md; v0.42.0 vs v0.41.1 on kolt: 7.5 s vs 2.3 s CPU, 1,087 MB vs 280 MB peak; trigger A142 R39 (`[resource] trait Flow`/`Pipe`, 25c740d3)",
+   "body": "After M94 + M95 remove the cost, re-measure; then decide whether R11 and resource classification need reuse windows. E236's harness measures the LSP side. Sizing M; measurement first."
+  },
+  {
+   "id": "M100",
+   "section": "M",
+   "kind": "performance (wall; LOW)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-01 (the kolt check investigation, Order 45; lane perf-45)",
+   "title": "`check_workspace` runs the FIRST entry alone and only then spawns the rest: a two-entry package (kolt's client + server) checks fully serially",
+   "discussion": "the owner's report (kolt `vilan check` slow), sweeps/order45/REPORT-perf-kolt-45.md; v0.42.0 vs v0.41.1 on kolt: 7.5 s vs 2.3 s CPU, 1,087 MB vs 280 MB peak; trigger A142 R39 (`[resource] trait Flow`/`Pipe`, 25c740d3)",
+   "body": "`crates/vilan-cli/src/main.rs` `check_workspace`. Fix: start the second entry once the base world is warm. Up to −1.5 s wall on kolt, no CPU saved, peak memory rises (client 1,087 MB + server 314 MB today). Sizing S; after M94/M95."
+  },
+  {
+   "id": "N137",
+   "section": "N",
+   "kind": "tooling (LOW)",
+   "area": "Build, CI & release",
+   "status": "OPEN — filed 2026-10-01 (the kolt check investigation, Order 45; lane perf-45)",
+   "title": "`~/.vilan/check-cache` grows without bound: ~19,000 directories / 374 MB on the dev machine, one macro-expansion table per package PATH, most minted by test temp dirs; only a manual `vilan cache prune` (7-day guard) removes them",
+   "discussion": "the owner's report (kolt `vilan check` slow), sweeps/order45/REPORT-perf-kolt-45.md; v0.42.0 vs v0.41.1 on kolt: 7.5 s vs 2.3 s CPU, 1,087 MB vs 280 MB peak; trigger A142 R39 (`[resource] trait Flow`/`Pipe`, 25c740d3)",
+   "body": "Fix: auto-prune on write past a count/age budget, and point the test harnesses at a temp root. Sizing S."
+  }
+ ]
+}
