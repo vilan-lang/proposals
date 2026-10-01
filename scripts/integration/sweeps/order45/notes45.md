@@ -27,3 +27,4 @@
 - LANDED F62 F57 F61 F63 F64 F52 F54 F55 M91; F60's native half is a pin (premise corrected); F65 STOPPED → solver-b-45 (the analyzer's inferred return is the last call site's). Finds FILED: F66 F67 F68 E243.
 - Integrator commit on next before the merge: 523ff681 (the walk canary honours `VILAN_CANARY_STACK_KIB`; the PARSER canary has no margin at 1.5 MiB in a debug build and stays at 2 MiB).
 - Slot → solver-b-45 resumed (with F65 + the B476 repro).
+- native-45 MERGED @eb8a8840 (pushed; gates native_differential, vilan-rt, ci_ignored_pins, release_scripts, split green; merge-native-45.log). Worktree + branch reaped.
