@@ -28,3 +28,11 @@
 - Integrator commit on next before the merge: 523ff681 (the walk canary honours `VILAN_CANARY_STACK_KIB`; the PARSER canary has no margin at 1.5 MiB in a debug build and stays at 2 MiB).
 - Slot → solver-b-45 resumed (with F65 + the B476 repro).
 - native-45 MERGED @eb8a8840 (pushed; gates native_differential, vilan-rt, ci_ignored_pins, release_scripts, split green; merge-native-45.log). Worktree + branch reaped.
+
+## perf-45 — REPORTED + MERGED 2026-10-01 @ba2eebd9 (lane tip e5818d76; Opus, 525k tokens; merge-perf-45.log)
+- LANDED M94 (86f700d1), M96 (4c01a08e), M97 (9659b4be), M95 (91bac36d; the memo made cheap rather than the set narrowed — consumers are `copy_applies` (JS) and `is_resource_type` (native)), M98 both halves (12f33bf5 `VILAN_PHASE_TIMING=passes` + the emission-walk/program-drop row; e5818d76 `applying_implementations` memoized). M100 NOT started (≤0.6 s wall now) → Order 46. M99 re-measured: a `model.vl` edit in `--watch` — client 0/82 reused, `checks` 730 ms (was 5,183); server 53/53, 110 ms (was 900).
+- Kolt (load ~14): wall 10.4–11.3 → 3.95–4.09 s; user 9.0–9.4 → 3.33–3.53 s; peak RSS 1,087 → 258 MB. v0.41.1 (on kolt f04d4cb): 2.37–2.80 s / 2.03–2.14 s / 247 MB. Output byte-identical; no golden moved; lane gates 9156/9156, native both modes.
+- Pins: M94, M95, M97, M98 each red with the fix planted back; M96 none (behaviour pins + goldens).
+- Left for Order 46: `contexts+graph` 470 vs 170 ms, the emission walk 683 vs 188 ms (`maxima`/`subject_outranks`, the wanted-at-arguments path), M100; `const-interp` 259 ms is kolt's own `lib/search.vl`.
+- Merge: CHANGELOG union (2 hunks, parity 15/15); gates inference resources/bounds/traits 1196, diagnostics phase_timing, corpus, release_scripts, split green. Worktree + branch reaped. Slot → reactive-45 resumed (phase 1; told F62 merged).
+- solver-b-45 STOPPED B455's remainder for a spelling ruling ((A) `(impl Box)::One` vs (B) `(impl Box with One)`) — put to the owner.
