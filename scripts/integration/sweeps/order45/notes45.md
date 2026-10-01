@@ -36,3 +36,9 @@
 - Left for Order 46: `contexts+graph` 470 vs 170 ms, the emission walk 683 vs 188 ms (`maxima`/`subject_outranks`, the wanted-at-arguments path), M100; `const-interp` 259 ms is kolt's own `lib/search.vl`.
 - Merge: CHANGELOG union (2 hunks, parity 15/15); gates inference resources/bounds/traits 1196, diagnostics phase_timing, corpus, release_scripts, split green. Worktree + branch reaped. Slot → reactive-45 resumed (phase 1; told F62 merged).
 - solver-b-45 STOPPED B455's remainder for a spelling ruling ((A) `(impl Box)::One` vs (B) `(impl Box with One)`) — put to the owner.
+
+## Owner rulings (2026-10-01, evening)
+- **The perf fix NOW, both ways**: a dev toolchain from next @ba2eebd9 installed (install-dev-ba2eebd9.log), AND **v0.42.1** cut with only perf-45's six commits — `release/0.42` from the tag, cherry-picks f3d81234 d9ff9478 85f06178 80b650bb 9676e5ae 3d1791a3 + `commit:` markers (41d02223, adc771d0), pushed for CI (run 36941187043); the cut follows green. The markers must be cherry-picked to next too (§7.3).
+- **B455 → (B)** `(impl Box with One)`; Order 46. solver-b-45 told.
+- **K25 now** (lane web-45, launched — no cargo), **K26 later** (Order 46). K25, K26 FILED.
+- Swap: the owner disabled it on purpose (WSL2 pegged CPU/disk at the memory limit); the cap of four stands.
