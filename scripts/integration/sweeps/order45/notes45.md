@@ -13,3 +13,4 @@
 ## Owner rulings mid-order (2026-10-01)
 - **Both papers RULED as recommended**: keywords-vs-attributes.md Q1–Q11; opaque-returns.md Q1–Q11 (a bare-trait return becomes OPAQUE, reversing Order 44's door (i); build after B473 + B474 → Order 46). Status lines, stamps (B485, B486, B489), go-items45.
 - **E240, E241 FILED** (the owner's hover items: generic parameters and bounds; match-case patterns). editor-45 told: take them after the arc if time.
+- **E242 FILED** (the owner): error spans stay pinned to their code through edits until the next paint. Not handed to editor-45 (its plate is full); Order 46 unless it reports early.

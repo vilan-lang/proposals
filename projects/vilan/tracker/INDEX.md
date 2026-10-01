@@ -111,6 +111,7 @@
 | [E239](items/E239.md) | hovering `self` should show its TYPE — the impl's subject with its binders (`self: Memo<K, V>`), the receiver convention (`self` / `own self` / `&self` / `&mut self`), and inside a trait default the trait (`self: Self` where `Self: Flow<T>`) | feature (hover; S) | the owner (2026-10-01); vilan-lsp hover; E238 (the method's owner in its hover), E235 (`own self` renders as `self`), E237 (the struct definition under a variable — applies to `self` too) |
 | [E240](items/E240.md) | hover is not RICH on generic parameters and their constraints: `Flow` in `fun switch<U, I: Flow<U>>`; `F`, `Flow` and `T` in `impl type F: Flow<type T>`; `T` in `fun sub(own self, observer: \|T\| void)` | feature (hover; S–M) | the owner (2026-10-01); E237/E238/E239 (the hover arc, Order 45's editor-45) |
 | [E241](items/E241.md) | hover is WRONG on a match case's pattern: `None` in `match x { None => {}, _ => {} }` | bug (hover; S) | the owner (2026-10-01); E240, the hover arc (E237–E239) |
+| [E242](items/E242.md) | error spans DRIFT while typing: a diagnostic should stay pinned to the code it applies to until the next paint — typing lines above an error makes it slide up a line | bug (LSP diagnostics; S–M) | the owner (2026-10-01, on kolt while Order 45's lanes loaded the machine — the stale window is long, so the drift is visible); E232 (inlay hints follow edits, Order 44 — the same idea for hints), E121 (editor latency), E236 (the latency harness) |
 ## F. Native targets & rendering — NEW SECTION
 
 | ID | Title | Kind | Discussion |
