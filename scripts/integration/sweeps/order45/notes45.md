@@ -22,3 +22,8 @@
 
 ## perf-kolt-45 — REPORTED 2026-10-01 (investigation; REPORT-perf-kolt-45.md)
 - v0.42.0 REGRESSED kolt's check 3.3× CPU / 3.9× memory (7.5 s vs 2.3 s; 1,087 MB vs 280 MB); trigger R39's resource traits → R11 over every pipe generic. FILED M94–M100, N137. Lane **perf-45** launched in the freed slot (the same agent, its worktree): M94, M96, M97, then M95; M98/M100 if time. Touches analyzer.rs — merges after solver-b-45, rebased.
+
+## native-45 — REPORTED 2026-10-01 (tip 6984d3a0, 15 commits; REPORT-native-45.md) — merging FIRST (it touches no solver file)
+- LANDED F62 F57 F61 F63 F64 F52 F54 F55 M91; F60's native half is a pin (premise corrected); F65 STOPPED → solver-b-45 (the analyzer's inferred return is the last call site's). Finds FILED: F66 F67 F68 E243.
+- Integrator commit on next before the merge: 523ff681 (the walk canary honours `VILAN_CANARY_STACK_KIB`; the PARSER canary has no margin at 1.5 MiB in a debug build and stays at 2 MiB).
+- Slot → solver-b-45 resumed (with F65 + the B476 repro).

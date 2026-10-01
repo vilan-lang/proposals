@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "F66",
+   "section": "F",
+   "kind": "latent miscompile risk (native; M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (native-45's find, Order 45)",
+   "title": "the variant-constructor type arguments the native emitter derives INSIDE generic instances are wrong: `map`'s `Some(f(x))` records `Some::<(Str, i32)>` (the receiver's `T`, not `U`); `and_then`'s `Err` records the wrong `T`",
+   "discussion": "native-45 (Order 45); sweeps/order45/REPORT-native-45.md",
+   "body": "Latent only because Rust's inference ignores the bare path today (native-45's F55 first attempt — a turbofish on every constructor — broke six pins and was reverted). Rec: record per-instance variant arguments, or keep them out of anything emitted. Related: F65 (inferred returns are not per-instance either). Sizing M."
+  },
+  {
+   "id": "F67",
+   "section": "F",
+   "kind": "bug (native refusal by rustc; M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (native-45's find, Order 45)",
+   "title": "calling a LOCAL closure binding and then reading a member of the result fails rustc: `let make = \\|n: i32\\| Row {..}; print(make(1).name)` → E0282; `print(i\"{f()}\")` with `f = \\|\\| row.name` → E0277 (str unsized)",
+   "discussion": "native-45 (Order 45); sweeps/order45/REPORT-native-45.md",
+   "body": "Cause: the closure literal is cast `as Rc<dyn Fn(..) -> _>` and a cast's `_` resolves too late. Present at the Order 45 base. Rec: write the closure's return type in the cast when it is grounded, non-async and not a view. Sizing S."
+  },
+  {
+   "id": "F68",
+   "section": "F",
+   "kind": "output parity (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (native-45's find, Order 45)",
+   "title": "`print` of a long `List` diverges between backends: node's `util.inspect` wraps arrays past ~72 columns or 6 elements into rows; native prints one line (a 22-element `List<str>`)",
+   "discussion": "native-45 (Order 45); sweeps/order45/REPORT-native-45.md",
+   "body": "Rec: define `print` of a list as single-line on both backends (N136's spirit), or implement node's grouping in the native `js_of`. An owner question if the JS output should change. Sizing S."
+  },
+  {
+   "id": "E243",
+   "section": "E",
+   "kind": "tooling (L)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-01 (native-45's find, Order 45)",
+   "title": "the JS `vilan run` prints its asset report (`Bundled  …`) on STDOUT ahead of the program's output; native prints nothing (`estate.vl` diverges for it)",
+   "discussion": "native-45 (Order 45); sweeps/order45/REPORT-native-45.md",
+   "body": "Rec: build chatter goes to stderr. Sizing XS."
+  }
+ ]
+}

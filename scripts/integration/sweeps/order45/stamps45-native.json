@@ -1,0 +1,7 @@
+{
+ "prefix": "- 2026-10-01 (Order 45, native-45): ",
+ "stamps": {
+  "F65": "STOPPED in native-45 with the diagnosis: the ANALYZER's `inferred_return_types[f]` for a generic function with an inferred return records the LAST call site's instantiation, also with no annotation (`fun cell<T>(x: T) { SignalCell::new(x) }`); no per-call record exists. Ignored pin `a_generic_inferred_return_is_per_instance_on_both_backends` (f52f927e). Handed to solver-b-45.",
+  "F60": "native-45 CORRECTED the premise: every well-typed dropped pipe already builds natively (pinned, 695a65d7); the item's repro is refused kept or dropped — it is B476/B477's unchecked blanket bound. What remains is reactive-45's `[must_use]`."
+ }
+}

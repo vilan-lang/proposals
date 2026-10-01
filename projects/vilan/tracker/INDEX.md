@@ -112,6 +112,7 @@
 | [E240](items/E240.md) | hover is not RICH on generic parameters and their constraints: `Flow` in `fun switch<U, I: Flow<U>>`; `F`, `Flow` and `T` in `impl type F: Flow<type T>`; `T` in `fun sub(own self, observer: \|T\| void)` | feature (hover; S–M) | the owner (2026-10-01); E237/E238/E239 (the hover arc, Order 45's editor-45) |
 | [E241](items/E241.md) | hover is WRONG on a match case's pattern: `None` in `match x { None => {}, _ => {} }` | bug (hover; S) | the owner (2026-10-01); E240, the hover arc (E237–E239) |
 | [E242](items/E242.md) | error spans DRIFT while typing: a diagnostic should stay pinned to the code it applies to until the next paint — typing lines above an error makes it slide up a line | bug (LSP diagnostics; S–M) | the owner (2026-10-01, on kolt while Order 45's lanes loaded the machine — the stale window is long, so the drift is visible); E232 (inlay hints follow edits, Order 44 — the same idea for hints), E121 (editor latency), E236 (the latency harness) |
+| [E243](items/E243.md) | the JS `vilan run` prints its asset report (`Bundled  …`) on STDOUT ahead of the program's output; native prints nothing (`estate.vl` diverges for it) | tooling (L) | native-45 (Order 45); sweeps/order45/REPORT-native-45.md |
 ## F. Native targets & rendering — NEW SECTION
 
 | ID | Title | Kind | Discussion |
@@ -136,6 +137,9 @@
 | [F63](items/F63.md) | native — an operator closure whose body is `cells[id]` (a non-`Copy` element read by index) fails rustc E0507 ('cannot move out of index'): an indexed read of a non-Copy element needs a clone (or a borrow) in the emitted Rust | bug (native — rustc E0507) | collections-44 (Order 44, S4); F46/F58's family (the emitter's copy decision at a read) |
 | [F64](items/F64.md) | native — a struct field of type `Option<\|\| V>` in a GENERIC struct is refused by name (native-44's parity 2 covered `Option<Shared<List<closure>>>`; the bare closure-typed optional field in a generic struct is the remaining shape) | bug (native — refusal by name) | collections-44 (Order 44, S4); native-44's parity 2 @59f689ed (`ReferenceEq` for `Shared`/`Weak`) |
 | [F65](items/F65.md) | native: a generic bare-trait-returning function instantiated twice gives every instance ONE instantiation's return type (both `wrap` instances return the `Str` cell; rustc E0308); JS is correct and the JS pin hides it | MISCOMPILE (native; M) | papers-45 (Order 45); proposal/opaque-returns.md |
+| [F66](items/F66.md) | the variant-constructor type arguments the native emitter derives INSIDE generic instances are wrong: `map`'s `Some(f(x))` records `Some::<(Str, i32)>` (the receiver's `T`, not `U`); `and_then`'s `Err` records the wrong `T` | latent miscompile risk (native; M) | native-45 (Order 45); sweeps/order45/REPORT-native-45.md |
+| [F67](items/F67.md) | calling a LOCAL closure binding and then reading a member of the result fails rustc: `let make = \|n: i32\| Row {..}; print(make(1).name)` → E0282; `print(i"{f()}")` with `f = \|\| row.name` → E0277 (str unsized) | bug (native refusal by rustc; M) | native-45 (Order 45); sweeps/order45/REPORT-native-45.md |
+| [F68](items/F68.md) | `print` of a long `List` diverges between backends: node's `util.inspect` wraps arrays past ~72 columns or 6 elements into rows; native prints one line (a 22-element `List<str>`) | output parity (M) | native-45 (Order 45); sweeps/order45/REPORT-native-45.md |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
