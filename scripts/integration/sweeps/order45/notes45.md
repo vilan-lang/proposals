@@ -126,3 +126,8 @@
 ## store-45 — MERGED 2026-10-02 @276f4ed2 (final tip 7c65dc69: A147 fixed with `std::shared::fresh_identity()`; nextest 9323/9323; merge gates native_differential 136, corpus, inference store+maps+tracking 98, diagnostics_ledger, check_scope_differential, vilan-core lib 931, release_scripts, split). Reaped. A142 S7's S1 + S2 are on next.
 - **rename-45 LAUNCHED** (A148) off 276f4ed2; **syntax-45 resumed** for its rebase (redo the std reformat, the `reactive` census row, B488/B492/B507 if small). editor-45 gets one small rebase after both. perf-b-45 still running (M103 blocks the cut).
 - Ledger prose WRITTEN 2026-10-02 (604–610; amendments to 15, 219, 220, 229, 575, 576 and the view-parameter row).
+
+## rename-45 (A148) — REPORTED 2026-10-02 (tip 2d5d471d on 276f4ed2; nextest 9323/9323; native 136/136) — MERGING
+- `HashMapCell`, `HashSetCell`, `HashMapEntry`, `HashSetEntry`, `HashMapMemo`, `HashSetMemo`, `TrackedHashMap`; modules `std::hash_map_cell`/`std::hash_set_cell`; shape names and `MemoEntry`, `MapKeys`/`MapValues`/`MapEntries`/`MapMapValues`/`MapFilter` kept. One grep hit left: the CHANGELOG's old → new list.
+- The kolt patch rewritten (names) and `get_channels` moved to `channels.keys()` (same `MemoCell<List<u53>>` return; checks clean, builds JS + native; runtime unverified — the client leg has the owner's in-progress errors).
+- NOTE for the syntax-45 merge: tree-wide `vilan fmt --check` is red on eight `tests/native/*.vl` fixtures (pre-existing on next; CI's vilan-fmt leg) — the reformat at that merge covers them.

@@ -5,7 +5,7 @@
  import std::json::{ FromJson, Json, JsonKind, JsonValue };
  import std::memo::Memo;
 -import std::reactive::MemoCell;
-+import std::reactive::{ MapCell, MapEntry, MemoCell };
++import std::reactive::{ HashMapCell, HashMapEntry, MemoCell };
  import std::rpc_server::{ Connection, Handshake, Reject, Session };
  import std::shared::Shared;
  import std::time::Instant;
@@ -19,17 +19,17 @@
 +// and handed to EVERY connection's store, so one write is the broadcast. Every
  // later write goes SQL-first through the methods above.
 +//
-+// The two maps are `MapCell`s: their writes are recorded per key, and
++// The two maps are `HashMapCell`s: their writes are recorded per key, and
 +// `at(id)` is a handle that depends on that id only - a write to message 7
 +// wakes the readers of message 7 and nobody else. So `get_message` answers
 +// the cell's own handle and needs no view kept for it.
  struct GlobalStore {
  	next_channel_id: Shared<u53>,
 -	channels: SignalCell<HashMap<u53, ChannelRecord>>,
-+	channels: MapCell<u53, ChannelRecord>,
++	channels: HashMapCell<u53, ChannelRecord>,
  	free_message_ids: Shared<List<u53>>,
 -	messages: SignalCell<HashMap<u53, Message>>,
-+	messages: MapCell<u53, Message>,
++	messages: HashMapCell<u53, Message>,
  	users: Memo<UserId, SignalCell<Option<User>>>,
 -	// The read-only views the handle methods hand out, built ONCE and kept for
 -	// the program: every connection asking for the same id is answered with
@@ -39,9 +39,9 @@
 -	// keeps a write to another id from re-sending an unchanged snapshot.
 +	// The read-only views the handle methods still hand out, built ONCE and
 +	// kept for the program. The id list is the map's key set: `channels.keys()`
-+	// is the per-op form, and it waits on the native backend (it emits `SetOp`s,
-+	// which the native build refuses today), so it stays a derivation of the
-+	// whole map - the channel map is written only to create or delete one.
++	// follows the map per op (a create adds one id, a delete removes one, and a
++	// write to a channel's record is no key change at all), sealed once and read
++	// as the list the client mirrors.
  	channel_ids: Shared<Option<MemoCell<List<u53>>>>,
 +	// A channel's wire snapshot projects a record that is not Wire, so it is
 +	// still a view - but a view over the channel's OWN key (`at(id)`), which a
@@ -55,10 +55,10 @@
  		GlobalStore {
  			next_channel_id = Shared::new(0u53),
 -			channels = Signal::new(HashMap::new()),
-+			channels = MapCell::new(),
++			channels = HashMapCell::new(),
  			free_message_ids = Shared::new([]),
 -			messages = Signal::new(HashMap::new()),
-+			messages = MapCell::new(),
++			messages = HashMapCell::new(),
  			users = Memo::new(),
  			channel_ids = Shared::new(None),
  			channel_views = Memo::new(),
@@ -99,7 +99,18 @@
  		true
  	}
  
-@@ -219,19 +220,20 @@
+@@ -208,7 +209,9 @@
+ 	fun get_channels(self): MemoCell<List<u53>> {
+ 		let channels = self.global_store.channels;
+ 		self.global_store.channel_ids.get_or_insert(|| channels
+-			.derive(|x| x.keys())
++			.keys()
++			.memo_global()
++			.derive(|ids| ids.values())
+ 			.distinct()
+ 			.memo_global())
+ 	}
+@@ -219,19 +222,20 @@
  	fun get_channel(self, channel: u53): MemoCell<Option<Channel>> {
  		let channels = self.global_store.channels;
  		self.global_store.channel_views.get_or_insert(channel, || channels
@@ -123,7 +134,7 @@
  			channel.name.set(name);
  			true
  		} else {
-@@ -241,14 +243,12 @@
+@@ -241,14 +245,12 @@
  
  	[rpc]
  	fun add_message(self, channel: u53, message: str): Result<u53, str> {
@@ -141,7 +152,7 @@
  			channel.messages.update(|&mut messages| {
  				messages.push(id);
  			});
-@@ -262,7 +262,7 @@
+@@ -262,7 +264,7 @@
  	// message is already the state it asked for.
  	[rpc]
  	fun remove_message(self, channel_id: u53, message_id: u53) {
@@ -150,7 +161,7 @@
  			channel.messages.update(|&mut messages| {
  				if messages.index_of(message_id) is Some(let index) {
  					messages.remove(index);
-@@ -271,18 +271,15 @@
+@@ -271,18 +273,15 @@
  		}
  	}
  
@@ -162,7 +173,7 @@
 -			.derive(|x| x.get(message_id))
 -			.distinct()
 -			.memo_global())
-+	fun get_message(self, message_id: u53): MapEntry<u53, Message> {
++	fun get_message(self, message_id: u53): HashMapEntry<u53, Message> {
 +		self.global_store.messages.at(message_id)
  	}
  
