@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "M103",
+   "section": "M",
+   "kind": "PERF REGRESSION (this order; HIGH — before the cut)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-02 (editor-45's E236 table, Order 45; lane perf-b-45)",
+   "discussion": "editor-45 (Order 45), `scripts/lsp-latency.py`; tables under sweeps/order45/editor-45/ (r2-base = v0.42.1, r2-next = f67def61, r2-tip2); M101, M99",
+   "title": "next @f67def61 is 25–30% SLOWER than v0.42.1 on every kolt edit in the LSP, and peaks higher (926 → 1,042 MB): leaf 1,130 → 1,420 ms CPU to diagnostics, `model.vl` 370 → 490, css 1,230 → 1,520, multi-document settle 5.5 s → 7.1 s",
+   "body": "editor-45 adds nothing on top of next, so another Order 45 merge did it (native-45, solver-a-45, solver-b-45, reactive-45, solver-c-45 or maps-45 — std grew by `MapCell`/`SetCell`/the operators; solver-b grounds blanket-provided arguments at candidate selection; B482's union-find; A144's contract pass). Bisect on the harness over the merge commits, then fix. MUST land before v0.43.0 is cut. Sizing S–M."
+  },
+  {
+   "id": "M104",
+   "section": "M",
+   "kind": "performance (LSP; HIGH — the owner's reported case)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-02 (editor-45's E236 table, Order 45; lane perf-b-45)",
+   "discussion": "editor-45 (Order 45), `scripts/lsp-latency.py`; tables under sweeps/order45/editor-45/ (r2-base = v0.42.1, r2-next = f67def61, r2-tip2); M101, M99; the owner (2026-10-01): \"editing `kolt/src/model.vl` … quite slow\"",
+   "title": "a `model.vl` keystroke with its importers open (`client.vl`, `channel.vl`, `views.vl`) publishes its own diagnostics in 0.4–0.6 s of CPU, but every open file settles only after 5.5 s (v0.42.1) / 7.2 s (next) of CPU — the dependents' re-analyses",
+   "body": "The single-document row cannot show it. Establish what is re-analysed: each open document as its own world? the same entry world once per open document? Rec: analyse an entry's world ONCE per edit and publish to every open document in it; make the dependent sweep incremental or debounce it apart from the edited file; then M101's caches. Sizing M–L; perf lane."
+  }
+ ]
+}

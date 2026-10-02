@@ -1,0 +1,28 @@
+server pid 889338: /home/reed/code/vilan-lang/vilan/.claude/worktrees/editor-45/target/profiling/vilan-lsp
+  leaf keystroke ...
+  shared.vl keystroke ...
+  model.vl keystroke ...
+  model.vl keystroke, importers open ...
+  css keystroke ...
+  parse break ...
+vilan-lsp latency — vilan-lsp 0.42.1 (fd6b0c028) on kolt @984a1dfb (VILAN_STD=/home/reed/code/vilan-lang/vilan/.claude/worktrees/editor-45/vilan/std); 5 run(s) per edit; loadavg 1.81 4.91 8.84 before, 1.92 3.44 7.49 after; 16 cores
+
+| edit | CPU to diagnostics ms | CPU to idle ms | wall to diagnostics ms | errors | keystroke wall ms (hover / completion / inlay / tokens) | idle CPU ms (hover / completion / inlay / tokens) | VmHWM MB |
+|---|---:|---:|---:|---:|---|---|---:|
+| open src/views.vl | 2190 | 2190 | 2195 | | | | 364 |
+| open src/shared.vl | 940 | 940 | 947 | | | | 544 |
+| open src/model.vl | 700 | 710 | 700 | | | | 544 |
+| open src/model.vl (beside 3 open importers) | 2130 | 5750 | 865 | | | | 1016 |
+| open src/styles.vl | 1730 | 1740 | 1736 | | | | 1016 |
+| open src/channel.vl | 1820 | 1830 | 1821 | | | | 1016 |
+| leaf keystroke | 1400 | 1400 | 1549 | 0 | 2.4 / 0.9 / 0.4 / 0.4 | 3.27 / 0.85 / 0.27 / 0.33 | 544 |
+| shared.vl keystroke | 490 | 490 | 653 | 0 | 1.0 / 0.6 / 0.2 / 0.3 | 0.74 / 0.49 / 0.26 / 0.29 | 544 |
+| model.vl keystroke | 500 | 510 | 649 | 0 | 1.4 / 0.9 / 0.3 / 0.4 | 1.18 / 0.75 / 0.26 / 0.30 | 551 |
+| model.vl keystroke, importers open | 600 | 7230 | 754 | 0 | 1.5 / 0.8 / 0.3 / 0.4 | 1.39 / 0.82 / 0.26 / 0.31 | 1016 |
+| css keystroke | 1570 | 1570 | 1715 | 0 | 2.4 / 1.4 / 0.3 / 0.5 | 1.96 / 1.32 / 0.31 / 0.31 | 1016 |
+| parse break | 1550 | 1560 | 1711 | 1 | 2.0 / 1.2 / 0.3 / 0.6 | 2.64 / 1.41 / 0.32 / 0.38 | 1016 |
+| parse repair | 1570 | 1570 | 1707 | 0 | 2.2 / 1.2 / 0.3 / 0.6 | 2.40 / 1.37 / 0.31 / 0.42 | 1016 |
+| model.vl keystroke, importers open: every open file | 7150 | | 7310 | 6 files | | | |
+
+Medians over the runs. E121's targets: <10 ms on the keystroke path, <500 ms to errors.
+CPU is the whole server process (every thread) from the edit to the analysis's publish for the file, and to idle; wall includes the debounce and the machine's load. Keystroke requests are asked before the analysis lands; idle requests after it.

@@ -1,0 +1,28 @@
+server pid 882335: /home/reed/.vilan/bin/vilan-lsp
+  leaf keystroke ...
+  shared.vl keystroke ...
+  model.vl keystroke ...
+  model.vl keystroke, importers open ...
+  css keystroke ...
+  parse break ...
+vilan-lsp latency — vilan-lsp 0.42.1 (44f45dd3b) on kolt @984a1dfb (the server's embedded std); 5 run(s) per edit; loadavg 2.47 7.33 10.27 before, 1.80 4.96 8.88 after; 16 cores
+
+| edit | CPU to diagnostics ms | CPU to idle ms | wall to diagnostics ms | errors | keystroke wall ms (hover / completion / inlay / tokens) | idle CPU ms (hover / completion / inlay / tokens) | VmHWM MB |
+|---|---:|---:|---:|---:|---|---|---:|
+| open src/views.vl | 1810 | 1810 | 1831 | | | | 278 |
+| open src/shared.vl | 670 | 670 | 671 | | | | 467 |
+| open src/model.vl | 530 | 540 | 533 | | | | 511 |
+| open src/model.vl (beside 3 open importers) | 1710 | 4650 | 712 | | | | 926 |
+| open src/styles.vl | 1370 | 1370 | 1362 | | | | 926 |
+| open src/channel.vl | 1470 | 1480 | 1478 | | | | 926 |
+| leaf keystroke | 1130 | 1130 | 1278 | 0 | 1.8 / 0.9 / 0.3 / 0.4 | 3.02 / 0.83 / 0.27 / 0.31 | 410 |
+| shared.vl keystroke | 390 | 390 | 533 | 0 | 0.9 / 0.6 / 0.2 / 0.3 | 0.78 / 0.48 / 0.25 / 0.28 | 511 |
+| model.vl keystroke | 370 | 370 | 519 | 0 | 1.2 / 0.7 / 0.3 / 0.4 | 0.90 / 0.73 / 0.26 / 0.32 | 513 |
+| model.vl keystroke, importers open | 420 | 5570 | 573 | 0 | 1.4 / 0.8 / 0.3 / 0.4 | 1.03 / 0.78 / 0.28 / 0.34 | 926 |
+| css keystroke | 1230 | 1240 | 1389 | 0 | 1.7 / 1.3 / 0.3 / 0.4 | 1.42 / 1.18 / 0.30 / 0.29 | 926 |
+| parse break | 1270 | 1280 | 1424 | 1 | 1.6 / 1.1 / 0.3 / 0.5 | 1.90 / 1.45 / 0.29 / 0.39 | 926 |
+| parse repair | 1290 | 1290 | 1435 | 0 | 1.6 / 1.0 / 0.3 / 0.5 | 1.95 / 1.36 / 0.28 / 0.39 | 926 |
+| model.vl keystroke, importers open: every open file | 5500 | | 5658 | 6 files | | | |
+
+Medians over the runs. E121's targets: <10 ms on the keystroke path, <500 ms to errors.
+CPU is the whole server process (every thread) from the edit to the analysis's publish for the file, and to idle; wall includes the debounce and the machine's load. Keystroke requests are asked before the analysis lands; idle requests after it.

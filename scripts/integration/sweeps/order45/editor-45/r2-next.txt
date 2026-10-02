@@ -1,0 +1,28 @@
+server pid 908599: /home/reed/code/vilan-lang/vilan/.claude/worktrees/editor-45/target/editor-45-scratch/next-target/profiling/vilan-lsp
+  leaf keystroke ...
+  shared.vl keystroke ...
+  model.vl keystroke ...
+  model.vl keystroke, importers open ...
+  css keystroke ...
+  parse break ...
+vilan-lsp latency — vilan-lsp 0.42.1 (fd6b0c028-dirty) on kolt @984a1dfb (VILAN_STD=/home/reed/code/vilan-lang/vilan/.claude/worktrees/editor-45/target/editor-45-scratch/next-src/vilan/std); 5 run(s) per edit; loadavg 3.72 3.66 7.13 before, 1.60 2.81 6.14 after; 16 cores
+
+| edit | CPU to diagnostics ms | CPU to idle ms | wall to diagnostics ms | errors | keystroke wall ms (hover / completion / inlay / tokens) | idle CPU ms (hover / completion / inlay / tokens) | VmHWM MB |
+|---|---:|---:|---:|---:|---|---|---:|
+| open src/views.vl | 2280 | 2280 | 2287 | | | | 364 |
+| open src/shared.vl | 940 | 940 | 944 | | | | 544 |
+| open src/model.vl | 770 | 770 | 768 | | | | 557 |
+| open src/model.vl (beside 3 open importers) | 2180 | 5940 | 1031 | | | | 1042 |
+| open src/styles.vl | 1810 | 1810 | 1806 | | | | 1042 |
+| open src/channel.vl | 1790 | 1800 | 1789 | | | | 1042 |
+| leaf keystroke | 1420 | 1420 | 1572 | 0 | 2.3 / 0.9 / 0.3 / 0.4 | 3.35 / 0.85 / 0.27 / 0.32 | 544 |
+| shared.vl keystroke | 490 | 490 | 641 | 0 | 1.0 / 0.6 / 0.3 / 0.3 | 0.76 / 0.51 / 0.25 / 0.30 | 557 |
+| model.vl keystroke | 490 | 490 | 633 | 0 | 1.4 / 0.8 / 0.3 / 0.4 | 1.28 / 0.81 / 0.26 / 0.31 | 571 |
+| model.vl keystroke, importers open | 590 | 7180 | 732 | 0 | 9.1 / 0.9 / 0.3 / 0.4 | 6.29 / 0.88 / 0.26 / 0.35 | 1042 |
+| css keystroke | 1520 | 1520 | 1673 | 0 | 2.3 / 1.5 / 0.3 / 0.4 | 2.05 / 1.21 / 0.30 / 0.31 | 1042 |
+| parse break | 1480 | 1480 | 1630 | 1 | 2.1 / 1.2 / 0.3 / 0.6 | 2.50 / 1.36 / 0.36 / 0.40 | 1042 |
+| parse repair | 1460 | 1470 | 1609 | 0 | 2.0 / 1.1 / 0.3 / 0.5 | 2.43 / 1.47 / 0.32 / 0.40 | 1042 |
+| model.vl keystroke, importers open: every open file | 7110 | | 7266 | 6 files | | | |
+
+Medians over the runs. E121's targets: <10 ms on the keystroke path, <500 ms to errors.
+CPU is the whole server process (every thread) from the edit to the analysis's publish for the file, and to idle; wall includes the debounce and the machine's load. Keystroke requests are asked before the analysis lands; idle requests after it.
