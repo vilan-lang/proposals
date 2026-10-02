@@ -85,3 +85,10 @@
 
 ## reactive-45 — FINAL REPORT 2026-10-01 (tip 1658fc57 on d9d786ed; REPORT-reactive-45-final.md) — MERGING (merge-reactive-45.log)
 - Phase 2 LANDED: `own` on `SignalCell::new`, B482's std half (BREAKING; + a context.rs fix without which native refused every `effect`), F60 as a TYPE rule (no struct-level `[must_use]` exists), the workarounds removed. Finds FILED F78, B510.
+
+## reactive-45 — MERGED 2026-10-01 @e76e506c (ledger row 605 assigned; 576 edited in place; gates native_differential 119, corpus, inference 5022, copy census, diagnostics_ledger, check_scope_differential 15 (vilan-core's, not vilan-cli's — the first spec was wrong), release_scripts, split green). Reaped.
+## v0.42.1 — PUBLISHED 2026-10-01 (tag f2cbb7f3; release run 36953316628 GREEN 17/17; 10 assets)
+- The cut: release/0.42 from v0.42.0, six perf cherry-picks + `commit:` markers, 78627243 (the Windows pin fix — the first CI run was red on `test (windows-latest, 1)`: no thread CPU clock, so no `[vilan pass]` line), `cut-release.sh --commit 0.42.1` → f2cbb7f3, CI 36949385432 green on it, then the tag.
+- The fold by hand (next had moved): main 44f45dd3 (`Merge v0.42.1 — main catches the release train`); main into next c619d663 (CHANGELOG: the six perf entries moved under `## v0.42.1`; traits.rs took next's) + c93a672c + the header fix — the integrator's fold script DROPPED B473's entry with its neighbour (two entries shared one `---` chunk) and then wrote the restore inside the header comment; both fixed, parity 40/40, `cut-release --dry-run 0.43.0` parses the section. LESSON: fold CHANGELOG sections by marker+head, never by splitting on rules.
+- `fold-release.sh v0.42.1` running (docs.yml, deploy.yml, the manifest, the toolchain in both locations): fold-v0421.log.
+- maps-45 resumed: final rebase onto next.
