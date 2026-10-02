@@ -20,6 +20,8 @@
 > `contextual-keywords.md` (which words are reserved), B415 (`mod self;`),
 > E227 (`[hint]`), G24 (`const let`/`const fun`), B318 (`visibility.md`),
 > R-d/F60 (`[must_use]` on the pipe node types, this order).
+>
+> **Amendment (ruled 2026-10-02):** Q10 covers DECLARATIONS only. Field and variant attributes (`[expose]`, `[reactive(..)]`, `[internal(..)]`) stay inline on the member's own line.
 
 ## 0. The ask, and the answer up front
 

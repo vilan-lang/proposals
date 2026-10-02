@@ -152,3 +152,4 @@
 - editor-45 MERGED @d2e3fa04 (pushed; gates vilan-lsp, vilan-ide, inference dyn_objects+hints 78, native_differential 137, corpus, split, copy census, release_scripts). Reaped.
 - Merge order as it happened: native-45 eb8a8840, perf-45 ba2eebd9, solver-a-45 51de7eb9, solver-b-45 d9d786ed, reactive-45 e76e506c, (v0.42.1 merge-back c619d663), solver-c-45 611cb003, maps-45 f67def61, native-b-45 4656ad9f, store-45 276f4ed2, rename-45 c848659d, perf-b-45 44d63c90, syntax-45 4fdf7cc1, editor-45 d2e3fa04. Papers: papers-45, papers-b-45 to proposals. Web: K25, K27 to the website.
 - THE SEAL started on d2e3fa04 (seal-45.log): union, doc-tests, whole-set native, clippy, windows, audit, fmt, vilan-fmt, wasm, the canary at 1.5 MiB, the perf comparison vs v0.42.1.
+- RULED (the owner): field and variant attributes stay INLINE; Q10 covers declarations only. Stamped on B485; the paper amended.
