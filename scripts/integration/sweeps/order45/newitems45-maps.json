@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "F72",
+   "section": "F",
+   "kind": "bug (native refusal; M) — blocks native `SetCell`/`keys()`",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (maps-45's find, Order 45)",
+   "title": "native: a variant constructor of a ONE-parameter enum with a BOUNDED parameter is typed as a trait object: `enum Op<T: Hashable> { Add(T), Gone }` then `let op: Op<i32> = Op::Add(3);` → \"a value of type `a trait object`\"",
+   "discussion": "maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md",
+   "body": "With two parameters, or no bound, it builds. Blocks `SetCell`, `SetOp` and `MapCell::keys()` natively (refused by name today; kolt's `get_channels` stays a coarse derive for it). After the fix: flip `a138_map_and_set_cells_build_the_same_on_both_backends_or_are_refused_by_name` to identical. Sizing S–M; native lane, Order 46 FIRST."
+  },
+  {
+   "id": "F73",
+   "section": "F",
+   "kind": "bug (native refusal; M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (maps-45's find, Order 45)",
+   "title": "native: `set(None)` on a two-parameter struct's `Signal<Option<V>>` impl → \"unbound generic type parameter (parameter 2 of struct `Pair`)\"",
+   "discussion": "maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md",
+   "body": "Repro: `struct Pair<K, V> { cell: SignalCell<Option<V>>, key: K }` implementing `Source`/`Signal<Option<V>>`; `pair.set(None)`. An annotated `None` binding builds (the workaround in maps-45's pins). Sizing S."
+  },
+  {
+   "id": "B498",
+   "section": "B",
+   "kind": "bug (internal error on emission; M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (maps-45's find, Order 45)",
+   "title": "a STATIC trait call on a type bound only through an impl subject's NESTED binder raises an internal error: `N::default()` inside a method of `impl Stage<.., type R: IntoFlow<type N: Default>>` → \"internal: a call resolved to `Default`'s requirement `default`, which has no body … please report\"",
+   "discussion": "maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md",
+   "body": "Works when `N` is a direct impl parameter. Sizing M; solver."
+  },
+  {
+   "id": "B499",
+   "section": "B",
+   "kind": "inference (L)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (maps-45's find, Order 45)",
+   "title": "`Source::get(x)` with no annotation does not infer the trait's `T` from the receiver: `Source::get(cell).keys()` → \"cannot call method 'keys' on T\"",
+   "discussion": "maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md",
+   "body": "It matters for `MapCell`: the inherent `get(key)` shadows the whole-map read on a concrete receiver, so the whole map is read as an annotated `Source::get(cell)` or `peek`. Rec: infer a qualified trait call's trait arguments from the receiver's impl. Sizing S–M; solver."
+  }
+ ]
+}

@@ -63,3 +63,8 @@
 - LANDED 12 + F65; B455 STOPPED (ruled (B), Order 46); B489 not done (rides opacity). Finds FILED: F71, B497.
 - INTEGRATOR OWES on next: `vilan fmt` over `crates/vilan-cli/tests/native/` (five native-45 fixtures red on CI's vilan-fmt leg); the Windows pin fix for perf-45's per-pass split (78627243 on release/0.42) carried to next.
 - solver-a-45 MERGED @51de7eb9 (pushed; gates native_differential 111, corpus, inference 4970, copy_elision_census, release_scripts, split green). On next after it: 9ed87261 (the Windows pin fix, cherry-picked from release/0.42's 78627243), baa57390 (five native fixtures formatted). solver-b-45 told to rebase onto baa57390. solver-a worktree + branch reaped. store-45 launches when solver-b's rebase is in (cap).
+
+## maps-45 — REPORTED 2026-10-01 (tip 32d8b8ff on ba2eebd9; REPORT-maps-45.md; the kolt patch saved) — rebase onto reactive-45's merge OWED
+- LANDED S0 + S1 + S2 + S3's wire-reply half. Keyed `at(k)`: 3 ms vs 77 s coarse. Finds FILED F72 (blocks native `SetCell`/`keys()`), F73, B498, B499; its find 1 is B473, verified fixed on next.
+- Slot → **store-45 LAUNCHED** off baa57390 (S1 + S2; S3 if maps-45 merges in time).
+- v0.42.1: release commit pushed on release/0.42 (cut-release --commit; body written); CI verifying it; tag follows.

@@ -1,0 +1,26 @@
+import std::io::print;
+
+trait Base<T> {
+	fun get(self): T;
+}
+
+struct Box2 { value: i32 }
+
+impl Box2 {
+	fun get(self, offset: i32): i32 { self.value + offset }
+}
+
+impl Box2 with Base<i32> {
+	fun get(self): i32 { self.value }
+}
+
+trait Keyed with Base<i32> {}
+impl Box2 with Keyed {}
+
+fun f<S: Keyed>(s: S): i32 { s.get() }
+fun g<S: Base<i32>>(s: S): i32 { s.get() }
+
+fun main() {
+	print(f(Box2 { value = 7 }));
+	print(g(Box2 { value = 7 }));
+}

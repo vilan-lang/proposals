@@ -1,0 +1,175 @@
+--- a/src/store.vl
++++ b/src/store.vl
+@@ -19,7 +19,7 @@
+ import std::hash_map::HashMap;
+ import std::json::{ FromJson, Json, JsonKind, JsonValue };
+ import std::memo::Memo;
+-import std::reactive::MemoCell;
++import std::reactive::{ MapCell, MapEntry, MemoCell };
+ import std::rpc_server::{ Connection, Handshake, Reject, Session };
+ import std::shared::Shared;
+ import std::time::Instant;
+@@ -101,37 +101,42 @@
+ 	messages: SignalCell<List<u53>>,
+ }
+ 
+-// The mirror: module-level cell loaded once from the already-open database and
+-// handed to EVERY connection's store, so one write is the broadcast. Every
++// The mirror: module-level cells loaded once from the already-open database
++// and handed to EVERY connection's store, so one write is the broadcast. Every
+ // later write goes SQL-first through the methods above.
++//
++// The two maps are `MapCell`s: their writes are recorded per key, and
++// `at(id)` is a handle that depends on that id only - a write to message 7
++// wakes the readers of message 7 and nobody else. So `get_message` answers
++// the cell's own handle and needs no view kept for it.
+ struct GlobalStore {
+ 	next_channel_id: Shared<u53>,
+-	channels: SignalCell<HashMap<u53, ChannelRecord>>,
++	channels: MapCell<u53, ChannelRecord>,
+ 	free_message_ids: Shared<List<u53>>,
+-	messages: SignalCell<HashMap<u53, Message>>,
++	messages: MapCell<u53, Message>,
+ 	users: Memo<UserId, SignalCell<Option<User>>>,
+-	// The read-only views the handle methods hand out, built ONCE and kept for
+-	// the program: every connection asking for the same id is answered with
+-	// the same sealed derivation, so its reply matches the channel that
+-	// connection already carries instead of minting a cell (and a store
+-	// subscription that lives as long as the connection) per call. `distinct`
+-	// keeps a write to another id from re-sending an unchanged snapshot.
++	// The read-only views the handle methods still hand out, built ONCE and
++	// kept for the program. The id list is the map's key set: `channels.keys()`
++	// is the per-op form, and it waits on the native backend (it emits `SetOp`s,
++	// which the native build refuses today), so it stays a derivation of the
++	// whole map - the channel map is written only to create or delete one.
+ 	channel_ids: Shared<Option<MemoCell<List<u53>>>>,
++	// A channel's wire snapshot projects a record that is not Wire, so it is
++	// still a view - but a view over the channel's OWN key (`at(id)`), which a
++	// write to another channel never runs.
+ 	channel_views: Memo<u53, MemoCell<Option<Channel>>>,
+-	message_views: Memo<u53, MemoCell<Option<Message>>>,
+ }
+ 
+ impl GlobalStore {
+ 	fun new() {
+ 		GlobalStore {
+ 			next_channel_id = Shared::new(0u53),
+-			channels = Signal::new(HashMap::new()),
++			channels = MapCell::new(),
+ 			free_message_ids = Shared::new([]),
+-			messages = Signal::new(HashMap::new()),
++			messages = MapCell::new(),
+ 			users = Memo::new(),
+ 			channel_ids = Shared::new(None),
+ 			channel_views = Memo::new(),
+-			message_views = Memo::new(),
+ 		}
+ 	}
+ }
+@@ -183,24 +188,20 @@
+ 	fun create_channel(self, name: str): u53 {
+ 		let id = self.global_store.next_channel_id.read();
+ 		self.global_store.next_channel_id.write() += 1;
+-		self.global_store.channels.update(|&mut channels| {
+-			channels.insert(id, ChannelRecord {
+-				id,
+-				name = Signal::new(name),
+-				messages = Signal::new([]),
+-			});
++		self.global_store.channels.insert(id, ChannelRecord {
++			id,
++			name = Signal::new(name),
++			messages = Signal::new([]),
+ 		});
+ 		id
+ 	}
+ 
+ 	[rpc]
+ 	fun delete_channel(self, channel_id: u53): bool {
+-		self.global_store.channels.update(|&mut channels| {
+-			channels.remove(channel_id);
+-			if channels.len() == 0 {
+-				self.global_store.next_channel_id.write() = 0;
+-			}
+-		});
++		self.global_store.channels.remove(channel_id);
++		if self.global_store.channels.len() == 0 {
++			self.global_store.next_channel_id.write() = 0;
++		}
+ 		true
+ 	}
+ 
+@@ -219,19 +220,20 @@
+ 	fun get_channel(self, channel: u53): MemoCell<Option<Channel>> {
+ 		let channels = self.global_store.channels;
+ 		self.global_store.channel_views.get_or_insert(channel, || channels
+-			.derive(|x| x.get(channel).map(|record| Channel { id = record.id }))
++			.at(channel)
++			.derive(|record| record.map(|held| Channel { id = held.id }))
+ 			.distinct()
+ 			.memo_global())
+ 	}
+ 
+ 	[rpc]
+ 	fun get_channel_name(self, channel: u53): Option<SignalCell<str>> {
+-		self.global_store.channels.get().get(channel).map(|channel| channel.name)
++		self.global_store.channels.get(channel).map(|channel| channel.name)
+ 	}
+ 
+ 	[rpc]
+ 	fun set_channel_name(self, channel: u53, name: str): bool {
+-		if self.global_store.channels.get().get(channel) is Some(let channel) {
++		if self.global_store.channels.get(channel) is Some(let channel) {
+ 			channel.name.set(name);
+ 			true
+ 		} else {
+@@ -241,14 +243,12 @@
+ 
+ 	[rpc]
+ 	fun add_message(self, channel: u53, message: str): Result<u53, str> {
+-		if self.global_store.channels.get().get(channel) is Some(let channel) {
++		if self.global_store.channels.get(channel) is Some(let channel) {
+ 			let id = self.global_store.free_message_ids
+ 				.write()
+ 				.pop()
+-				.unwrap_or(self.global_store.messages.get().len().as_u53());
+-			self.global_store.messages.update(|&mut messages| {
+-				messages.insert(id, Message { id, author = self.user_id, content = message });
+-			});
++				.unwrap_or(self.global_store.messages.len().as_u53());
++			self.global_store.messages.insert(id, Message { id, author = self.user_id, content = message });
+ 			channel.messages.update(|&mut messages| {
+ 				messages.push(id);
+ 			});
+@@ -262,7 +262,7 @@
+ 	// message is already the state it asked for.
+ 	[rpc]
+ 	fun remove_message(self, channel_id: u53, message_id: u53) {
+-		if self.global_store.channels.get().get(channel_id) is Some(let channel) {
++		if self.global_store.channels.get(channel_id) is Some(let channel) {
+ 			channel.messages.update(|&mut messages| {
+ 				if messages.index_of(message_id) is Some(let index) {
+ 					messages.remove(index);
+@@ -271,18 +271,15 @@
+ 		}
+ 	}
+ 
++	// The message's own key: a write to another message never reaches it.
+ 	[rpc]
+-	fun get_message(self, message_id: u53): MemoCell<Option<Message>> {
+-		let messages = self.global_store.messages;
+-		self.global_store.message_views.get_or_insert(message_id, || messages
+-			.derive(|x| x.get(message_id))
+-			.distinct()
+-			.memo_global())
++	fun get_message(self, message_id: u53): MapEntry<u53, Message> {
++		self.global_store.messages.at(message_id)
+ 	}
+ 
+ 	[rpc]
+ 	fun get_messages(self, channel: u53): Option<SignalCell<List<u53>>> {
+-		self.global_store.channels.get().get(channel).map(|channel| channel.messages)
++		self.global_store.channels.get(channel).map(|channel| channel.messages)
+ 	}
+ }
+ 

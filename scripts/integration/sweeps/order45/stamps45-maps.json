@@ -1,0 +1,7 @@
+{
+ "prefix": "- 2026-10-01 (Order 45): ",
+ "stamps": {
+  "B473": "MERGED to next @51de7eb9 (solver-a-45 30b6eb56). It also covers maps-45's find: through `S: Sub` (`trait Sub with Base<i32>`), `s.get()` dispatched to the implementor's INHERENT `get(offset)` (JS printed NaN on ba2eebd9); next prints 7 (`sweeps/order45/maps-45/find1_subtrait_inherent.vl`).",
+  "A138": "maps-45 REPORTED (tip 32d8b8ff): S0 + S1 + S2 landed, plus S3's wire-reply half (an `[rpc]` method may return `MapEntry`/`MemoEntry`). Keyed `at(k)`: 1,000 watched keys × 1,000 writes = 1,000 observer calls in 3 ms, against 1,000,000 projections in 77 s for the coarse shape. Not built: the `KeyedCell` re-founding, `min_by`/`max_by`, set algebra, `index_by`, S4, S5. Native: `SetCell` and `keys()` refused by name (F72)."
+ }
+}

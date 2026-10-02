@@ -84,6 +84,8 @@
 | [B495](items/B495.md) | `closure_type_parameter_views` is a side table keyed by the WRITTEN annotation's type id, so a closure type's view parameters are lost whenever the type is copied or substituted (`let typed: \|&str\| void = h` with `h` a let-bound literal does not adopt its views; F69 natively) | design (paper; views in closure types) | solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md |
 | [B496](items/B496.md) | JS: `out = &aggregate` — a Reference EXPRESSION assigned into a value place — still aliases: rule 3 excludes it from copies and B465's refusal covers only view bindings and parameters | MISCOMPILE (JS aliasing; M) | solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md |
 | [B497](items/B497.md) | the "never fully determined" steer still suggests the DEPRECATED name: `: Map<str, i32>` (should be `HashMap`) | diagnostics (S) | solver-b-45 (Order 45); sweeps/order45/REPORT-solver-b-45.md |
+| [B498](items/B498.md) | a STATIC trait call on a type bound only through an impl subject's NESTED binder raises an internal error: `N::default()` inside a method of `impl Stage<.., type R: IntoFlow<type N: Default>>` → "internal: a call resolved to `Default`'s requirement `default`, which has no body … please report" | bug (internal error on emission; M) | maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md |
+| [B499](items/B499.md) | `Source::get(x)` with no annotation does not infer the trait's `T` from the receiver: `Source::get(cell).keys()` → "cannot call method 'keys' on T" | inference (L) | maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md |
 
 ## C. Memory model
 
@@ -149,6 +151,8 @@
 | [F69](items/F69.md) | native: a closure value that reaches its call through a match capture, a loop binding or a nested closure parameter LOSES its view parameters (rustc E0308: expected `&mut Rc<str>`, found `Rc<str>`) | bug (native refusal; M) | solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md |
 | [F70](items/F70.md) | native: a NESTED tuple index (`nested.1.0`, `&mut nested.1.0`) emits the flat JS offset as a Rust tuple index (`nested.1 = 9`); rustc refuses | bug (native refusal; M) | solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md |
 | [F71](items/F71.md) | native: an UNBOUND generic in a generic function's nested pipe stages — `fun switch_to<T,U,S: Source<T>,I: Source<U>>(s: S, f: sync \|T\| I): SignalCell<U> { s.derive(\|v\| f(v)).switch(\|inner: I\| inner).cell() }` is refused "unbound generic parameter (parameter 3 of `switch_to`)" | bug (native refusal by name; M) | solver-b-45 (Order 45); sweeps/order45/REPORT-solver-b-45.md |
+| [F72](items/F72.md) | native: a variant constructor of a ONE-parameter enum with a BOUNDED parameter is typed as a trait object: `enum Op<T: Hashable> { Add(T), Gone }` then `let op: Op<i32> = Op::Add(3);` → "a value of type `a trait object`" | bug (native refusal; M) — blocks native `SetCell`/`keys()` | maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md |
+| [F73](items/F73.md) | native: `set(None)` on a two-parameter struct's `Signal<Option<V>>` impl → "unbound generic type parameter (parameter 2 of struct `Pair`)" | bug (native refusal; M) | maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
