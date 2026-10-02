@@ -160,3 +160,7 @@
 
 ## B519 — the owner's kolt client throws `__mirrors_KoltClient_get_channels is not defined` (2026-10-02)
 - Reproduced on v0.42.1, next @d2e3fa04 and kolt HEAD; reduced to `sweeps/order45/b519/`: a macro-generated module-level `let` in an IMPORTED module is never emitted on JS (A134's mirror tables; every pin was single-file). FILED B519 (HIGH). **The cut is HELD**; lane fix-45 launched; a re-seal follows.
+
+## CI 37060266455 on d2e3fa04 — RED on `test (windows-latest, 2)` only (everything else green)
+- `dead_item_clock_tests::an_open_entrys_landed_analysis_answers_its_union_leg` (perf-b-45's pin): (2, 0) not (1, 1) on Windows — the reuse does not happen there (a path comparison suspected). `debounce::b277_…`: an extra `cancelled-never` — a 10 ms sleep against a 50 ms window, timing-fragile (or M92/J7; to rule out). Both handed to fix-45 after B519; the failed shard re-run to see which is a flake.
+- LESSON for briefs46: the integrator WATCHES CI on next after every merge (two reds on vilan-fmt at native-b-45 and store-45 went unread until the seal; a lane's new pin never ran on Windows before the last merge).
