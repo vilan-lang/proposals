@@ -62,3 +62,4 @@
 ## solver-b-45 — REPORTED 2026-10-01 (tip 3f89b642 on ba2eebd9; REPORT-solver-b-45.md) — rebase onto solver-a-45's merge OWED, then merge
 - LANDED 12 + F65; B455 STOPPED (ruled (B), Order 46); B489 not done (rides opacity). Finds FILED: F71, B497.
 - INTEGRATOR OWES on next: `vilan fmt` over `crates/vilan-cli/tests/native/` (five native-45 fixtures red on CI's vilan-fmt leg); the Windows pin fix for perf-45's per-pass split (78627243 on release/0.42) carried to next.
+- solver-a-45 MERGED @51de7eb9 (pushed; gates native_differential 111, corpus, inference 4970, copy_elision_census, release_scripts, split green). On next after it: 9ed87261 (the Windows pin fix, cherry-picked from release/0.42's 78627243), baa57390 (five native fixtures formatted). solver-b-45 told to rebase onto baa57390. solver-a worktree + branch reaped. store-45 launches when solver-b's rebase is in (cap).
