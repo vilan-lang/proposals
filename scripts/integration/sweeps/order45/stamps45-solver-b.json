@@ -1,0 +1,8 @@
+{
+ "prefix": "- 2026-10-01 (Order 45, solver-b-45): ",
+ "stamps": {
+  "B489": "NOT fixed by F65's change (the function-level inferred return is written only under an empty substitution, 1a909f32); it needs the opaque tail to take the annotation as its expectation — rides the opaque-returns build, Order 46.",
+  "B480": "The premise did NOT reproduce on next (`switch`'s `U` already binds from a `dyn Flow<i32>`); the pin is written with no type arguments (e70e0943, with B484).",
+  "B455": "solver-b-45 on why (A) was unsound: a selector tail cannot tell a trait name from a member name, and neither is case-enforced."
+ }
+}

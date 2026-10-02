@@ -58,3 +58,7 @@
 ## solver-a-45 — REPORTED 2026-10-01 (tip 2477ae79; REPORT-solver-a-45.md) — MERGING (native_differential.rs folded by name: 7 fns + 7 consts; the native copy census regenerated over the merged tree)
 - LANDED 7/7: B473, B467+B439, R-c (B483 B466 B465), B474, B453, B444, B464 (BREAKING). Finds FILED: F69 F70 B495 B496.
 - Slot → editor-45 resumed (told: rebase before E236; E240/E241 after the arc; E242 only if time). store-45 launches when the merge is pushed.
+
+## solver-b-45 — REPORTED 2026-10-01 (tip 3f89b642 on ba2eebd9; REPORT-solver-b-45.md) — rebase onto solver-a-45's merge OWED, then merge
+- LANDED 12 + F65; B455 STOPPED (ruled (B), Order 46); B489 not done (rides opacity). Finds FILED: F71, B497.
+- INTEGRATOR OWES on next: `vilan fmt` over `crates/vilan-cli/tests/native/` (five native-45 fixtures red on CI's vilan-fmt leg); the Windows pin fix for perf-45's per-pass split (78627243 on release/0.42) carried to next.

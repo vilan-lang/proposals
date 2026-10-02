@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "F71",
+   "section": "F",
+   "kind": "bug (native refusal by name; M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (solver-b-45's find, Order 45)",
+   "discussion": "solver-b-45 (Order 45); sweeps/order45/REPORT-solver-b-45.md",
+   "title": "native: an UNBOUND generic in a generic function's nested pipe stages — `fun switch_to<T,U,S: Source<T>,I: Source<U>>(s: S, f: sync \\|T\\| I): SignalCell<U> { s.derive(\\|v\\| f(v)).switch(\\|inner: I\\| inner).cell() }` is refused \"unbound generic parameter (parameter 3 of `switch_to`)\"",
+   "body": "Also refused on 0.42.0. B479's std pin builds on JS only for this reason. Sizing M; native lane, Order 46."
+  },
+  {
+   "id": "B497",
+   "section": "B",
+   "kind": "diagnostics (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (solver-b-45's find, Order 45)",
+   "discussion": "solver-b-45 (Order 45); sweeps/order45/REPORT-solver-b-45.md",
+   "title": "the \"never fully determined\" steer still suggests the DEPRECATED name: `: Map<str, i32>` (should be `HashMap`)",
+   "body": "Sweep every steer and example string for `Map<`/`Set<` before the aliases are removed at v0.44.0. Sizing XS."
+  }
+ ]
+}
