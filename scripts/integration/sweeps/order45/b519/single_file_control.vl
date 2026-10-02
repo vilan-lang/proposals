@@ -1,0 +1,25 @@
+import std::io::print;
+import std::json::json_codec;
+import std::reactive::{ Signal, SignalCell };
+
+
+[service(MirClient)]
+struct MirStore {
+	count: SignalCell<i32>,
+}
+
+impl MirStore {
+	[rpc]
+	fun get_count(self): SignalCell<i32> {
+		self.count
+	}
+}
+fun main() {
+	match MirClient::connect("/", json_codec()) {
+		Ok(let client) => {
+			let count = client.get_count();
+			print(count.get());
+		}
+		Err(let failure) => print("no"),
+	}
+}

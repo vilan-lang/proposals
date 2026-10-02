@@ -1,0 +1,15 @@
+import std::reactive::{ Signal, SignalCell };
+
+export *;
+
+[service(MirClient)]
+struct MirStore {
+	count: SignalCell<i32>,
+}
+
+impl MirStore {
+	[rpc]
+	fun get_count(self): SignalCell<i32> {
+		self.count
+	}
+}

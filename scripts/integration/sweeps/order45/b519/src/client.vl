@@ -1,0 +1,13 @@
+import std::io::print;
+import std::json::json_codec;
+import pkg::store::MirClient;
+
+fun main() {
+	match MirClient::connect("/", json_codec()) {
+		Ok(let client) => {
+			let count = client.get_count();
+			print(count.get());
+		}
+		Err(let failure) => print("no"),
+	}
+}

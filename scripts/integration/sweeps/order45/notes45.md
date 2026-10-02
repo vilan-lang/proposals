@@ -157,3 +157,6 @@
 ## THE SEAL — 2026-10-02 on d2e3fa04 (seal-45.log): union 9383/9383, doc-tests, whole-set native, clippy, windows, audit, fmt, vilan-fmt, wasm, canary@1.5MiB all 0; changelog parity 87/87; perf=1 as expected
 - The perf leg re-run QUIET (load 0.75; perf-d2e3fa04-quiet.log), tip vs v0.42.1 on kolt: check CPU ×0.96 (2,562 → 2,462 ms), peak RSS ×1.27 (259 → 329 MB) — the RULED M108 exception. LSP (5 runs): leaf 1110 → 1000 ms / 14.16 → 9.20 G; +pause 2680 → 2400 / 34.35 → 21.73 G; shared 370 → 300; model.vl 360 → 290 / 5.10 → 2.33 G; with importers open, all settled 5570 → 5410 ms / 58.03 → 41.19 G; css 1190 → 1090; parse 1170/1240 → 1120/1160; VmHWM 817–862 → 910–973 MB.
 - closes45.json drafted: 80 closes validated. A149 FILED (Store S3–S6; A142 closes). Waiting on CI 37060266455 for d2e3fa04.
+
+## B519 — the owner's kolt client throws `__mirrors_KoltClient_get_channels is not defined` (2026-10-02)
+- Reproduced on v0.42.1, next @d2e3fa04 and kolt HEAD; reduced to `sweeps/order45/b519/`: a macro-generated module-level `let` in an IMPORTED module is never emitted on JS (A134's mirror tables; every pin was single-file). FILED B519 (HIGH). **The cut is HELD**; lane fix-45 launched; a re-seal follows.
