@@ -125,4 +125,4 @@
 
 ## store-45 — MERGED 2026-10-02 @276f4ed2 (final tip 7c65dc69: A147 fixed with `std::shared::fresh_identity()`; nextest 9323/9323; merge gates native_differential 136, corpus, inference store+maps+tracking 98, diagnostics_ledger, check_scope_differential, vilan-core lib 931, release_scripts, split). Reaped. A142 S7's S1 + S2 are on next.
 - **rename-45 LAUNCHED** (A148) off 276f4ed2; **syntax-45 resumed** for its rebase (redo the std reformat, the `reactive` census row, B488/B492/B507 if small). editor-45 gets one small rebase after both. perf-b-45 still running (M103 blocks the cut).
-- Ledger prose still OWED in diagnostics-ledger.md (604 B482, 605 F60, 219/220, 575/576, row 15, two solver-a rows, store's five NEW rows, row 229's count 57 → 59).
+- Ledger prose WRITTEN 2026-10-02 (604–610; amendments to 15, 219, 220, 229, 575, 576 and the view-parameter row).
