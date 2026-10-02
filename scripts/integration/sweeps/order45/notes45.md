@@ -143,3 +143,4 @@
 - The merge: three std conflicts (delta.vl and the two renamed cell files) taken from next and re-formatted with the MERGED compiler; `ci-local.sh vilan-fmt` green before the commit.
 - Q10 and field attributes: the ruled paper covers declarations only; field/variant attributes print inline, unchanged — a separate ruling if the owner wants them on their own lines. Left for Order 46: Q10 for `[resource]`, Q7, Q8.
 - Ledger prose owed: row 22's re-key (B488), row 229's count 59 → 60, the `export` refusal.
+- syntax-45 MERGED @4fdf7cc1 (pushed; markdown golden regenerated; gates vilan-core lib 940, inference 5075, parse_differential, marker_census, deep_nesting 18, module_resolution 216, corpus, native_differential 136, diagnostics_ledger, markdown_golden, shared_census, split, docs, check_scope_differential, release_scripts). Reaped. editor-45 resumed for its FINAL rebase (+ E244's pause row and instruction column in the harness). Then the seal.
