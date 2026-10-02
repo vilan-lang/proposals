@@ -137,3 +137,9 @@
 - **M103 FIXED**: the regression was maps-45; kolt's check is now 30% UNDER v0.42.1 by instructions (24.40 → 17.01 G). M104: one fix landed, the entry-world design is the OWNER's (diagnostics would change). M107: two of five passes. Peak memory still +20% → M108 FILED; E244 FILED.
 - RULED (the owner): M104 → the entry-world design (Order 46 FIRST in editor); the cut goes ahead with M108 as a written exception (the seal's memory leg will read red).
 - perf-b-45 MERGED @44d63c90 (pushed; gates vilan-core lib 932, vilan-lsp 930, inference bounds+resources+traits 1265, std_surface, corpus, native_differential, copy census, split, release_scripts). Reaped.
+
+## syntax-45 — REBASED 2026-10-02 (tip 7fdf9ca8 on 276f4ed2; nextest 9336/9336) — MERGING onto 44d63c90
+- New on the rebase: the `reactive` census row; **B488, B492, B507 LANDED** (53494611, 2f48900f, f9ae62c7); a formatter fix for two shapes next's own fixtures use (87850c24 → B517 FILED); the std reformat REDONE (113 `export [..]` heads in 21 files) + 8 native fixtures formatted. Rule-site count 59 → 60 (`EXPORT_IS_WRITTEN_ONCE`); ledger row 22 re-keyed.
+- The merge: three std conflicts (delta.vl and the two renamed cell files) taken from next and re-formatted with the MERGED compiler; `ci-local.sh vilan-fmt` green before the commit.
+- Q10 and field attributes: the ruled paper covers declarations only; field/variant attributes print inline, unchanged — a separate ruling if the owner wants them on their own lines. Left for Order 46: Q10 for `[resource]`, Q7, Q8.
+- Ledger prose owed: row 22's re-key (B488), row 229's count 59 → 60, the `export` refusal.

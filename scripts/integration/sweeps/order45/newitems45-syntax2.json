@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B517",
+   "section": "B",
+   "kind": "bug (formatter; S) — FIXED in Order 45 (syntax-45 87850c24), filed for the record",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-02 (syntax-45's find, Order 45); fixed on its branch, closes at the sweep",
+   "discussion": "syntax-45 (Order 45); F81's and F74's native fixtures (`deref_of_a_conditional_view.vl`, `position_typed_bindings.vl`)",
+   "title": "`vilan fmt` DECLINED two shapes next's own fixtures use: `*if c {..} else {..}` (a deref of a conditional) and `kept.read()(2)` (a call of a call's result) — CI's vilan-fmt leg was red on next before the lane",
+   "body": "Both reprint as written now; pinned, each half planted red. Lesson for briefs46: a lane that adds a `.vl` fixture runs `scripts/ci-local.sh vilan-fmt` (eight unformatted native fixtures reached next this order)."
+  }
+ ]
+}

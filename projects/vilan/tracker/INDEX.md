@@ -105,6 +105,7 @@
 | [B514](items/B514.md) | JS: `*if c { &a } else { &b }` over a SCALAR or `str` prints the place pair — `let n = 4; let m = 5; print(*if n < m { &n } else { &m })` prints `[ [ 4 ], 0 ]` | MISCOMPILE (JS; S–M) — the view family | native-b-45 (Order 45); B444, B496, B504–B506 (the view family, Order 45) |
 | [B515](items/B515.md) | a trait's methods resolve in user code with NO import once any LOADED std module imports the trait: `import std::markdown;` makes `42.to_string()` compile without importing `Display` | HOLE (solver/visibility; M) | store-45 report 2 (Order 45); repros under `sweeps/order45/store-45/finds/` |
 | [B516](items/B516.md) | an annotated `let lend: \|(\|&i32\| void)\| void = \|f\| ..` does not type `f`: "f is never given a type" | inference (L) | store-45 report 2 (Order 45); repros under `sweeps/order45/store-45/finds/` |
+| [B517](items/B517.md) | `vilan fmt` DECLINED two shapes next's own fixtures use: `*if c {..} else {..}` (a deref of a conditional) and `kept.read()(2)` (a call of a call's result) — CI's vilan-fmt leg was red on next before the lane | bug (formatter; S) — FIXED in Order 45 (syntax-45 87850c24), filed for the record | syntax-45 (Order 45); F81's and F74's native fixtures (`deref_of_a_conditional_view.vl`, `position_typed_bindings.vl`) |
 
 ## C. Memory model
 
