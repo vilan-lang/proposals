@@ -1,6 +1,6 @@
 # Performance gates — what fails a build for being slow (M105)
 
-> Status: **DRAFT 2026-10-02**, for the owner to rule on (Q1–Q12). Written by
+> Status: **RULED 2026-10-02** — Q1–Q12 as recommended (the owner); the build (S1–S8) is Order 46's, the seal-time comparison exists. Drafted 2026-10-02, for the owner to rule on (Q1–Q12). Written by
 > lane papers-b-45 of Order 45. Nothing in the compiler changed. Every number
 > was measured on the owner's machine with the released `vilan 0.42.1
 > (44f45dd3b)` and `vilan-lsp 0.42.1` (`~/.vilan/bin`), or is cited and marked

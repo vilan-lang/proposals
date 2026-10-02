@@ -1,0 +1,8 @@
+{
+ "prefix": "- 2026-10-02 (the owner): ",
+ "stamps": {
+  "M105": "RULED: performance-gates.md Q1–Q12 as recommended — three tiers (compiler counters + growth tests in every gate; instruction budgets in a required CI `perf` job; literal CPU limits on the quiet reference machine at the seal and the cut, refused above loadavg 2); `cut-release.sh` refuses a tag without a green verdict (`--allow-perf-regression \"<reason>\"` goes into the release notes); ceilings in `perf/budgets.toml` at measured +1%, a bump row with a reason in the same commit, the owner approves >3% or anything on kolt; the corpus is the examples + a seeded generated app shaped like kolt (kolt and the website only at the seal; kolt never enters the repo); E121's rows enforced on kolt at the seal (red-reporting until green at two consecutive seals, then blocking); a growth test (≤ ×2.3 per doubling) once M107 is fixed; optimization order M103 → M104 → M107 → M101 → allocator probe → M100 → on-disk world cache → parallel analysis (its own paper). Build S1–S8: Order 46 (S1's `perf_compare.py` fixes are done).",
+  "M107": "The owner's ruled optimization order puts this third, after M103 and M104; perf-b-45 has it queued in Order 45 if time, else Order 46 FIRST in perf.",
+  "M106": "Its first slice (per-item cost attribution) shares the counters with M105's S5 (`VILAN_COUNTERS=1`)."
+ }
+}
