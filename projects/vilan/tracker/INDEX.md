@@ -97,6 +97,8 @@
 | [B508](items/B508.md) | a blanket `impl type T with Trait` does not reach a CLOSURE type: `f.named()` on `\|\| void` → "cannot call method" | hole (solver; L–M) | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
 | [B509](items/B509.md) | no pattern binds a WRITABLE view into an enum payload, so a through-variant write copies the payload out and back | language gap (design; L) | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
 | [B510](items/B510.md) | a trait default passing `self` to a generic over the same trait — `Flow::observe` as a default calling `observe_flow<F: Flow<T>>(self, ..)` — fails browser examples with "internal: a call resolved to `Flow`'s requirement `start`, which has no body" | bug (internal error; M; not live) — B473's family | reactive-45 phase 2 (Order 45); sweeps/order45/REPORT-reactive-45-final.md |
+| [B511](items/B511.md) | a QUALIFIED call to a blanket impl's member is not monomorphized: `impl type T: PartialEq with Same { fun same(&self, other: &T) }; Same::same(a, &b)` prints `false` on JS (an un-instanced `self === other` over two pairs); natively "a value of an unbound generic type parameter"; `a.same(&b)` is right | MISCOMPILE (JS; HIGH) + native refusal | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
+| [B512](items/B512.md) | an unannotated `let x = if c { &a } else { &b }` is not seen as a view binding (`view_binding_mutability` does not look through branches): it binds the aggregate itself | aliasing (JS; M; read from the code, not run) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 
 ## C. Memory model
 
@@ -169,6 +171,9 @@
 | [F76](items/F76.md) | native: a bare variant of a generic USER enum — `let n: Maybe<i32> = Maybe::Nothing;` — is refused as unbound even with the binding annotated | bug (native refusal; M) | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
 | [F77](items/F77.md) | native: a closure literal in a field typed `\|(\|&T\| void)\| void` with its parameter unannotated (`\|f\| f(&cell.write())`) emits `Fn(T)` instead of `Fn(&T)` (rustc E0308); and on JS an annotated `let lend: \|(\|&i32\| void)\| void = \|f\| ..` never types `f` | bug (native; M) | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
 | [F78](items/F78.md) | native: a trait DEFAULT that calls an overridable hook reached through a blanket — `on_change`/`sub` as `Flow` defaults — is refused: "unbound generic type parameter … of `ListCell`" (`delta-law.vl`); F58's provider binding does not cover the default→blanket hop | bug (native; M; not live) | reactive-45 phase 2 (Order 45); sweeps/order45/REPORT-reactive-45-final.md |
+| [F79](items/F79.md) | native: a `mut` PATTERN binder is emitted without `mut`: `match Some(1) { Some(mut p) => bump(&mut p) }` and `mut (c, d) = (3, 4); bump(&mut c)` → rustc E0596 | bug (native refusal; M) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
+| [F80](items/F80.md) | native: a `for e in &mut xs` element handed on inside a generic body is emitted `&mut e` instead of a reborrow `&mut *e` (E0596): `fun each<T>(xs: &mut List<T>, f: \|&mut T\| void) { for e in &mut xs { f(e) } }` | bug (native refusal; M) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
+| [F81](items/F81.md) | native: `*if c { &a } else { &b }` is emitted as a deref of `.clone()`d branches (E0614) | bug (native refusal; S–M) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |

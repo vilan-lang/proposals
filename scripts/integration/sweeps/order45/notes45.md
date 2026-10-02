@@ -95,3 +95,6 @@
 - v0.42.1 FOLDED: book + site deployed, manifest v0.42.1, toolchain `vilan 0.42.1 (44f45dd3b)` both locations + the 0.42.1 vsix. Chronicle entry written.
 
 ## 2026-10-02 — WSL restarted by the owner (30 GB, 16 cores, 4 GB swap, swappiness 10, earlyoom). Every worktree clean; maps-45 (rebased, b2650cbe), solver-c-45 (5ffd8674, 4 commits), native-b-45 (b6a15fe8, 6 commits) RESUMED to finish gates and report. Cap raised to five lanes, jobs 6.
+
+## solver-c-45 — REPORTED 2026-10-02 (tip 7477edc5 on e071b662; REPORT-solver-c-45.md) — MERGING
+- LANDED 4/4 (B504, B506, B505, B496) with one shared cause; no golden moved. Finds FILED B511 (HIGH), B512, F79–F81. store-45 told at its rebase which workarounds can go.
