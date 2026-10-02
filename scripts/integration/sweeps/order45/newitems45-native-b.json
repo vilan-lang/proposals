@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "B513",
+   "section": "B",
+   "kind": "inference (M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-02 (native-b-45's find, Order 45)",
+   "discussion": "native-b-45 (Order 45); sweeps/order45/REPORT-native-b-45.md",
+   "title": "the analyzer leaves CLOSURE PARAMETERS untyped when only a generic call's annotated result types them: `let shown: Shared<\\|str\\| void> = Shared::new(\\|key\\| print(i\"{key}\"));` — natively refused (\"unresolved type\")",
+   "body": "F74 (native-b-45) covers only the case where the body never reads the parameter. B501's family (expected-type inference through a generic argument). Rec: carry the let annotation's expectation into the generic call's `T`, and from there into the closure's parameters. Sizing M; solver."
+  },
+  {
+   "id": "F82",
+   "section": "F",
+   "kind": "native refusal by name (S–M) + design",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-02 (native-b-45's find, Order 45)",
+   "discussion": "native-b-45 (Order 45); sweeps/order45/REPORT-native-b-45.md",
+   "title": "native: a SWAPPED struct literal inside the struct's own impl — `fun swap(self, value: V): Pair<V, K> { Pair { key = value, .. } }` — is refused (\"instantiated at `any`\"): the emitter cannot mint a substituted TypeId",
+   "body": "The shared cause of F71/F73/F75 this order: every place that hands a type across a substitution boundary must keep in force the binding that interprets it. Rec: a small overlay of minted types in vilan-rust (21 direct `type_id_to_type_map` reads) so expectations substitute structurally; retires F73's guard. Sizing M; native lane."
+  }
+ ]
+}

@@ -99,6 +99,7 @@
 | [B510](items/B510.md) | a trait default passing `self` to a generic over the same trait — `Flow::observe` as a default calling `observe_flow<F: Flow<T>>(self, ..)` — fails browser examples with "internal: a call resolved to `Flow`'s requirement `start`, which has no body" | bug (internal error; M; not live) — B473's family | reactive-45 phase 2 (Order 45); sweeps/order45/REPORT-reactive-45-final.md |
 | [B511](items/B511.md) | a QUALIFIED call to a blanket impl's member is not monomorphized: `impl type T: PartialEq with Same { fun same(&self, other: &T) }; Same::same(a, &b)` prints `false` on JS (an un-instanced `self === other` over two pairs); natively "a value of an unbound generic type parameter"; `a.same(&b)` is right | MISCOMPILE (JS; HIGH) + native refusal | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 | [B512](items/B512.md) | an unannotated `let x = if c { &a } else { &b }` is not seen as a view binding (`view_binding_mutability` does not look through branches): it binds the aggregate itself | aliasing (JS; M; read from the code, not run) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
+| [B513](items/B513.md) | the analyzer leaves CLOSURE PARAMETERS untyped when only a generic call's annotated result types them: `let shown: Shared<\|str\| void> = Shared::new(\|key\| print(i"{key}"));` — natively refused ("unresolved type") | inference (M) | native-b-45 (Order 45); sweeps/order45/REPORT-native-b-45.md |
 
 ## C. Memory model
 
@@ -174,6 +175,7 @@
 | [F79](items/F79.md) | native: a `mut` PATTERN binder is emitted without `mut`: `match Some(1) { Some(mut p) => bump(&mut p) }` and `mut (c, d) = (3, 4); bump(&mut c)` → rustc E0596 | bug (native refusal; M) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 | [F80](items/F80.md) | native: a `for e in &mut xs` element handed on inside a generic body is emitted `&mut e` instead of a reborrow `&mut *e` (E0596): `fun each<T>(xs: &mut List<T>, f: \|&mut T\| void) { for e in &mut xs { f(e) } }` | bug (native refusal; M) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 | [F81](items/F81.md) | native: `*if c { &a } else { &b }` is emitted as a deref of `.clone()`d branches (E0614) | bug (native refusal; S–M) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
+| [F82](items/F82.md) | native: a SWAPPED struct literal inside the struct's own impl — `fun swap(self, value: V): Pair<V, K> { Pair { key = value, .. } }` — is refused ("instantiated at `any`"): the emitter cannot mint a substituted TypeId | native refusal by name (S–M) + design | native-b-45 (Order 45); sweeps/order45/REPORT-native-b-45.md |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
