@@ -86,6 +86,8 @@
 | [B497](items/B497.md) | the "never fully determined" steer still suggests the DEPRECATED name: `: Map<str, i32>` (should be `HashMap`) | diagnostics (S) | solver-b-45 (Order 45); sweeps/order45/REPORT-solver-b-45.md |
 | [B498](items/B498.md) | a STATIC trait call on a type bound only through an impl subject's NESTED binder raises an internal error: `N::default()` inside a method of `impl Stage<.., type R: IntoFlow<type N: Default>>` → "internal: a call resolved to `Default`'s requirement `default`, which has no body … please report" | bug (internal error on emission; M) | maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md |
 | [B499](items/B499.md) | `Source::get(x)` with no annotation does not infer the trait's `T` from the receiver: `Source::get(cell).keys()` → "cannot call method 'keys' on T" | inference (L) | maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md |
+| [B500](items/B500.md) | an `[rpc]` signature written with a MODULE PATH — `std::hash_map::HashMap<str, i32>` — is refused as "not Wire" | bug (L) | reactive-45 phase 1 (Order 45); sweeps/order45/REPORT-reactive-45-phase1.md |
+| [B501](items/B501.md) | expected-type inference stops at a generic argument: `counted(client.source(channel))` with `counted<S>(inner: S)` → "cannot infer 'T' for this call; its bound ': Wire' cannot be checked"; an annotated `let` is needed | inference (L) | reactive-45 phase 1 (Order 45); sweeps/order45/REPORT-reactive-45-phase1.md |
 
 ## C. Memory model
 
@@ -153,6 +155,7 @@
 | [F71](items/F71.md) | native: an UNBOUND generic in a generic function's nested pipe stages — `fun switch_to<T,U,S: Source<T>,I: Source<U>>(s: S, f: sync \|T\| I): SignalCell<U> { s.derive(\|v\| f(v)).switch(\|inner: I\| inner).cell() }` is refused "unbound generic parameter (parameter 3 of `switch_to`)" | bug (native refusal by name; M) | solver-b-45 (Order 45); sweeps/order45/REPORT-solver-b-45.md |
 | [F72](items/F72.md) | native: a variant constructor of a ONE-parameter enum with a BOUNDED parameter is typed as a trait object: `enum Op<T: Hashable> { Add(T), Gone }` then `let op: Op<i32> = Op::Add(3);` → "a value of type `a trait object`" | bug (native refusal; M) — blocks native `SetCell`/`keys()` | maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md |
 | [F73](items/F73.md) | native: `set(None)` on a two-parameter struct's `Signal<Option<V>>` impl → "unbound generic type parameter (parameter 2 of struct `Pair`)" | bug (native refusal; M) | maps-45 (Order 45); sweeps/order45/REPORT-maps-45.md |
+| [F74](items/F74.md) | native refuses an in-process `duplex_pair` program that uses a generic `Counted<S>` wrapper ("unresolved type") | bug (native refusal; L–M) | reactive-45 phase 1 (Order 45); sweeps/order45/REPORT-reactive-45-phase1.md |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |

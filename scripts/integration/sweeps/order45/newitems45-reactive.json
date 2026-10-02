@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B500",
+   "section": "B",
+   "kind": "bug (L)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (reactive-45's find, Order 45)",
+   "title": "an `[rpc]` signature written with a MODULE PATH — `std::hash_map::HashMap<str, i32>` — is refused as \"not Wire\"",
+   "discussion": "reactive-45 phase 1 (Order 45); sweeps/order45/REPORT-reactive-45-phase1.md",
+   "body": "A144 made the contract hash read the resolved type; the Wire check still reads the spelling. Repro: change the return type in the `a144_an_alias_and_its_target_hash_alike` pin program. Rec: run the Wire check on the resolved type. Sizing S."
+  },
+  {
+   "id": "B501",
+   "section": "B",
+   "kind": "inference (L)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (reactive-45's find, Order 45)",
+   "title": "expected-type inference stops at a generic argument: `counted(client.source(channel))` with `counted<S>(inner: S)` → \"cannot infer 'T' for this call; its bound ': Wire' cannot be checked\"; an annotated `let` is needed",
+   "discussion": "reactive-45 phase 1 (Order 45); sweeps/order45/REPORT-reactive-45-phase1.md",
+   "body": "Rec: carry the bound check through the outer generic's argument. Sizing S–M."
+  },
+  {
+   "id": "F74",
+   "section": "F",
+   "kind": "bug (native refusal; L–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (reactive-45's find, Order 45)",
+   "title": "native refuses an in-process `duplex_pair` program that uses a generic `Counted<S>` wrapper (\"unresolved type\")",
+   "discussion": "reactive-45 phase 1 (Order 45); sweeps/order45/REPORT-reactive-45-phase1.md",
+   "body": "The probe is A146's inference pin program; A146's mirror half (`RemoteSource`/`KeyedSource` identity) is pinned on JS only for it. Sizing S–M; native lane."
+  }
+ ]
+}

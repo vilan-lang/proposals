@@ -68,3 +68,6 @@
 - LANDED S0 + S1 + S2 + S3's wire-reply half. Keyed `at(k)`: 3 ms vs 77 s coarse. Finds FILED F72 (blocks native `SetCell`/`keys()`), F73, B498, B499; its find 1 is B473, verified fixed on next.
 - Slot → **store-45 LAUNCHED** off baa57390 (S1 + S2; S3 if maps-45 merges in time).
 - v0.42.1: release commit pushed on release/0.42 (cut-release --commit; body written); CI verifying it; tag follows.
+
+## reactive-45 — PHASE 1 REPORTED 2026-10-01 (tip 8e49e5c6 on ba2eebd9; REPORT-reactive-45-phase1.md) — NOT merged; phase 2 after solver-b-45's merge (it rebases then)
+- LANDED J7+M92 (a context.rs change — solver-b's file, ~30 lines), the F62 field writes, M93, A146, A135's tail, R-k, A144 (BREAKING in principle; no existing hash pin moved). Finds FILED B500, B501, F74.
