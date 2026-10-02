@@ -75,3 +75,4 @@
 ## solver-b-45 — REBASED 2026-10-01 onto baa57390 (tip 08aadca3; nextest 9231/9231; copy census 567) — MERGING (merge-solver-b-45.log)
 ## editor-45 — REPORTED 2026-10-01 (tip b228cd4c on baa57390; REPORT-editor-45.md) — merges LAST
 - LANDED 10/10: the hover arc, E234, E241, E240, B437 (a real JS miscompile) + B436, E236 (harness + baseline), E242. Finds FILED M101 (a keystroke costs 1.1–1.3 s CPU on kolt; post-passes 57%), M102, B502, B503.
+- solver-b-45 MERGED @d9d786ed (pushed; ledger row 604 assigned, 219/220 edited in place; gates native_differential 116, corpus, inference 5004, copy census, diagnostics_ledger, release_scripts, split green). Reaped. reactive-45 resumed: rebase + PHASE 2. Ledger prose OWED in diagnostics-ledger.md: 604 (B482), 219/220 (B478), 576 + 575 (reactive-45), the two solver-a rows.
