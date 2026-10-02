@@ -96,6 +96,7 @@
 | [B507](items/B507.md) | `vilan fmt` declines a closure parameter written `\|&x: &i32\|` (a view binder and a type together): `print_parameters_inner` drops the prefix when the type is a reference | bug (formatter; L) | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
 | [B508](items/B508.md) | a blanket `impl type T with Trait` does not reach a CLOSURE type: `f.named()` on `\|\| void` → "cannot call method" | hole (solver; L–M) | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
 | [B509](items/B509.md) | no pattern binds a WRITABLE view into an enum payload, so a through-variant write copies the payload out and back | language gap (design; L) | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
+| [B510](items/B510.md) | a trait default passing `self` to a generic over the same trait — `Flow::observe` as a default calling `observe_flow<F: Flow<T>>(self, ..)` — fails browser examples with "internal: a call resolved to `Flow`'s requirement `start`, which has no body" | bug (internal error; M; not live) — B473's family | reactive-45 phase 2 (Order 45); sweeps/order45/REPORT-reactive-45-final.md |
 
 ## C. Memory model
 
@@ -167,6 +168,7 @@
 | [F75](items/F75.md) | native: a generic `W<P>` implementing `Source<Option<P>>` and consumed through the `Flow` blanket (`w.effect(..)`) is refused "unbound generic type parameter (parameter 1 of struct W)" | bug (native refusal; M) — blocks observing `StoreSome` natively | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
 | [F76](items/F76.md) | native: a bare variant of a generic USER enum — `let n: Maybe<i32> = Maybe::Nothing;` — is refused as unbound even with the binding annotated | bug (native refusal; M) | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
 | [F77](items/F77.md) | native: a closure literal in a field typed `\|(\|&T\| void)\| void` with its parameter unannotated (`\|f\| f(&cell.write())`) emits `Fn(T)` instead of `Fn(&T)` (rustc E0308); and on JS an annotated `let lend: \|(\|&i32\| void)\| void = \|f\| ..` never types `f` | bug (native; M) | store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/` |
+| [F78](items/F78.md) | native: a trait DEFAULT that calls an overridable hook reached through a blanket — `on_change`/`sub` as `Flow` defaults — is refused: "unbound generic type parameter … of `ListCell`" (`delta-law.vl`); F58's provider binding does not cover the default→blanket hop | bug (native; M; not live) | reactive-45 phase 2 (Order 45); sweeps/order45/REPORT-reactive-45-final.md |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |

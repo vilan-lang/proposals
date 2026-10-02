@@ -82,3 +82,6 @@
 - Nine finds FILED: B504–B506 (three HIGH JS miscompiles in the view family), F75–F77, B507–B509.
 - TWO LANES ADDED off d9d786ed (the order's first priority is miscompiles, and the native refusals block what the order built): **solver-c-45** (B504, B505, B506, B496) and **native-b-45** (F72 FIRST, F76, F73, F75; F71/F74 if time). Running with reactive-45 phase 2: three lanes.
 - v0.42.1: tag pushed @f2cbb7f3 after CI green on the release commit; release.yml running.
+
+## reactive-45 — FINAL REPORT 2026-10-01 (tip 1658fc57 on d9d786ed; REPORT-reactive-45-final.md) — MERGING (merge-reactive-45.log)
+- Phase 2 LANDED: `own` on `SignalCell::new`, B482's std half (BREAKING; + a context.rs fix without which native refused every `effect`), F60 as a TYPE rule (no struct-level `[must_use]` exists), the workarounds removed. Finds FILED F78, B510.
