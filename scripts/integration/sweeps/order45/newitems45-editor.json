@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "M101",
+   "section": "M",
+   "kind": "performance (LSP; MEDIUM–HIGH)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-01 (editor-45's find, Order 45)",
+   "title": "one kolt keystroke costs 1.1–1.3 s of CPU to diagnostics (E121's target is 500 ms) and 57% of it is POST-ANALYSIS passes: `impl_members_for_bound`'s uncached path scans every impl through `subject_applies` (31%), `refined_edges` 25%, const-eval of unchanged `const style::declare`s 13%",
+   "discussion": "editor-45 (Order 45); sweeps/order45/REPORT-editor-45.md; E236's harness `scripts/lsp-latency.py`",
+   "body": "E236's baseline (kolt @984a1dfb, tip 6f5942f4, medians of 5, load 5–7): leaf `views.vl` 1,120 ms; `shared.vl` and `model.vl` 370; css `styles.vl` 1,230; parse break/repair 1,230/1,250; keystroke-path requests all under 2.5 ms; VmHWM 565–733 MB. Callgrind (css keystroke, 58.0 G Ir) is in the report. Rec: cache `impl_members_for_bound` ACROSS analyses keyed on the base world (M97's cache is per Program); cache const-eval of unchanged `const` declarations by content; then M99 (reuse windows). Sizing M; perf lane, Order 46 FIRST."
+  },
+  {
+   "id": "M102",
+   "section": "M",
+   "kind": "performance (LSP; MEDIUM; verify first)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-01 (editor-45's find, Order 45)",
+   "title": "under callgrind one css keystroke ran `analyze_on_this_thread` FIVE times (`analyze_over_world` 3 + 2)",
+   "discussion": "editor-45 (Order 45); sweeps/order45/REPORT-editor-45.md; E236's harness `scripts/lsp-latency.py`",
+   "body": "Valgrind's slowness may have stretched the debounce; check natively by counting analyses per edit in the harness log (`scripts/lsp-latency.py`), then coalesce. Sizing S."
+  },
+  {
+   "id": "B502",
+   "section": "B",
+   "kind": "bug (solver; M; observed once, not reduced)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (editor-45's find, Order 45)",
+   "title": "`fun measure<T, S: Shape<T>>(shape: S): T` called with `dyn Shape<i32>` and then `dyn Shape<str>` refuses the SECOND call: \"'dyn Shape<str>' does not implement trait 'Shape<i32>'\" — `T` looks bound across calls",
+   "discussion": "editor-45 (Order 45); sweeps/order45/REPORT-editor-45.md; E236's harness `scripts/lsp-latency.py`",
+   "body": "Reduce first. Possibly F65's family (a per-function record written at one instantiation) or B475's object table. Sizing S–M; solver."
+  },
+  {
+   "id": "B503",
+   "section": "B",
+   "kind": "output parity remainder (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (editor-45's find, Order 45)",
+   "title": "a `List<dyn T>` printed still shows `[value, {}]` pairs on both backends (B436 fixed the top-level `dyn` at an `any` host parameter only)",
+   "discussion": "editor-45 (Order 45); sweeps/order45/REPORT-editor-45.md; E236's harness `scripts/lsp-latency.py`",
+   "body": "Rec: convert containers at the host boundary. Sizing S."
+  }
+ ]
+}

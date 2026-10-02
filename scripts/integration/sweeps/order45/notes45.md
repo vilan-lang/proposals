@@ -71,3 +71,7 @@
 
 ## reactive-45 — PHASE 1 REPORTED 2026-10-01 (tip 8e49e5c6 on ba2eebd9; REPORT-reactive-45-phase1.md) — NOT merged; phase 2 after solver-b-45's merge (it rebases then)
 - LANDED J7+M92 (a context.rs change — solver-b's file, ~30 lines), the F62 field writes, M93, A146, A135's tail, R-k, A144 (BREAKING in principle; no existing hash pin moved). Finds FILED B500, B501, F74.
+
+## solver-b-45 — REBASED 2026-10-01 onto baa57390 (tip 08aadca3; nextest 9231/9231; copy census 567) — MERGING (merge-solver-b-45.log)
+## editor-45 — REPORTED 2026-10-01 (tip b228cd4c on baa57390; REPORT-editor-45.md) — merges LAST
+- LANDED 10/10: the hover arc, E234, E241, E240, B437 (a real JS miscompile) + B436, E236 (harness + baseline), E242. Finds FILED M101 (a keystroke costs 1.1–1.3 s CPU on kolt; post-passes 57%), M102, B502, B503.
