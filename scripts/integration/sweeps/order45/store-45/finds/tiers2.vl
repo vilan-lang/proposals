@@ -1,0 +1,32 @@
+import std::compare::PartialEq;
+
+trait Leaf {
+	fun kind(&self, other: &Self): str;
+}
+impl type T with Leaf {
+	fun kind(&self, other: &T): str {
+		"bare"
+	}
+}
+impl type T: PartialEq with Leaf {
+	fun kind(&self, other: &T): str {
+		if *self != *other { "compared: differ" } else { "compared: same" }
+	}
+}
+trait Sto {
+	fun skind(&self, other: &Self): str;
+}
+impl type T: Leaf with Sto {
+	fun skind(&self, other: &T): str {
+		self.kind(other)
+	}
+}
+fun reach<F: Sto>(a: F, b: F): str {
+	a.skind(&b)
+}
+fun main() {
+	print("x".kind(&"x"));
+	print("x".skind(&"x"));
+	print(reach("x", "x"));
+	print(reach(1, 2));
+}

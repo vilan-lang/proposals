@@ -1,0 +1,62 @@
+import std::shared::Shared;
+import std::io::panic;
+
+struct Address {
+	city: str,
+	zip: str,
+}
+
+struct User {
+	name: str,
+	address: Address,
+}
+
+struct Lens<T> {
+	lend: |(|&T| void)| void,
+	modify: |(|&mut T| void)| void,
+}
+
+fun root<T>(own value: T): Lens<T> {
+	let cell = Shared::new(value);
+	Lens<T> {
+		lend = |f: |&T| void| f(&cell.write()),
+		modify = |f: |&mut T| void| f(&mut cell.write()),
+	}
+}
+
+fun project<P, F>(parent: Lens<P>, read: |&P, (|&F| void)| void, write: |&mut P, (|&mut F| void)| void): Lens<F> {
+	Lens<F> {
+		lend = |f: |&F| void| (parent.lend)(|&p: &P| read(&p, f)),
+		modify = |f: |&mut F| void| (parent.modify)(|&mut p: &mut P| write(&mut p, f)),
+	}
+}
+
+fun get<T>(lens: Lens<T>): T {
+	mut out: Option<T> = None;
+	(lens.lend)(|&v| {
+		out = Some(*v);
+	});
+	match out {
+		Some(let v) => v,
+		None => panic("dead"),
+	}
+}
+
+fun set<T>(lens: Lens<T>, value: T) {
+	(lens.modify)(|&mut place| {
+		place = value;
+	});
+}
+
+fun main() {
+	let u = root(User { name = "a", address = Address { city = "Oslo", zip = "0150" } });
+	let address: Lens<Address> = project(u, |&p, f: |&Address| void| f(&p.address), |&mut p, f: |&mut Address| void| f(&mut p.address));
+	let city: Lens<str> = project(address, |&p, f: |&str| void| f(&p.city), |&mut p, f: |&mut str| void| f(&mut p.city));
+	print(get(city));
+	let snapshot: Address = get(address);
+	set(city, "Bergen");
+	print(get(city));
+	print(snapshot.city);
+	let whole: User = get(u);
+	print(whole.address.city);
+}

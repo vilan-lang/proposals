@@ -1,0 +1,13 @@
+import std::reactive::{ Signal, Source };
+import std::store::{ Storable, Store, StoreSome, StoreFlag };
+
+[derive(PartialEq, Storable)]
+struct Device {
+	name: str,
+	since: i32,
+}
+
+fun main() {
+	let d = Store::new(Device { name = "a", since = 1 });
+	print(d.name().get());
+}

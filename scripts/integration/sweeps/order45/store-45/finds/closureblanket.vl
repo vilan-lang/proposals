@@ -1,0 +1,17 @@
+trait Named {
+	fun named(self): str;
+}
+
+impl type T with Named {
+	fun named(self): str {
+		"anything"
+	}
+}
+
+fun nothing() {}
+
+fun main() {
+	print(5.named());
+	let f: || void = nothing;
+	print(f.named());
+}

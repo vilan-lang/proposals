@@ -1,0 +1,56 @@
+import std::reactive::{ Owner, Signal, Source, run_with_owner };
+import std::store::{ Storable, Store, StoreSome };
+
+[derive(PartialEq, Storable)]
+struct Session {
+	user: str,
+	since: i32,
+}
+
+[derive(PartialEq, Storable)]
+enum Connection {
+	Offline,
+	Connecting(i32),
+	Online(Session),
+}
+
+[derive(Storable)]
+struct Account {
+	fullname: str,
+	username: str,
+	nickname: Option<str>,
+	[reactive(coarse)]
+	channels: List<u53>,
+	connection: Connection,
+}
+
+fun join_channel(account: Store<Account>, channel_id: u53) {
+	account.channels().set_with(|held| {
+		mut channels = held;
+		channels.push(channel_id);
+		channels
+	});
+}
+
+fun main() {
+	let account = Store::new(Account {
+		fullname = "Reed Syllas",
+		username = "reedsyllas",
+		nickname = None,
+		channels = [],
+		connection = Connection::Offline,
+	});
+	let page = Owner::new();
+	run_with_owner(page, || {
+		account.fullname().effect(|name| print(i"name: {name}"));
+		account.channels().effect(|ids| print(i"channels: {ids.len()}"));
+		account.connection().is_online().effect(|live| print(i"online: {live}"));
+	});
+	account.nickname().set(Some("Reed"));            // wakes nothing above: nobody reads it
+	join_channel(account, 7);                          // channels: 1
+	account.connection().set(Connection::Connecting(1));
+	account.connection().set(Connection::Online(Session { user = "reed", since = 100 }));   // online: true
+	let since: StoreSome<i32> = account.connection().online().since();
+	print(since.patch(101));                           // true, and `online` does not wake
+	page.dispose();
+}

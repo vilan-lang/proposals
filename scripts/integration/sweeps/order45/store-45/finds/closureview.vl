@@ -1,0 +1,7 @@
+import std::shared::Shared;
+
+fun main() {
+	let cell = Shared::new(1);
+	let lend: |(|&i32| void)| void = |f| f(&cell.write());
+	lend(|v: &i32| print(*v));
+}

@@ -1,0 +1,22 @@
+import std::reactive::{ Signal, SignalCell, Source };
+
+struct Address {
+	city: str,
+}
+
+struct Box<T> {
+	value: T,
+}
+
+impl Box<type T> {
+	fun read(self): T {
+		self.value
+	}
+}
+
+fun main() {
+	let cell = SignalCell::new(Address { city = "Oslo" });
+	print(cell.get().city);
+	let b = Box { value = Address { city = "Rome" } };
+	print(b.read().city);
+}

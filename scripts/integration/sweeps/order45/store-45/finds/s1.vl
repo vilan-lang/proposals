@@ -1,0 +1,109 @@
+import std::reactive::{ Signal, Source, comp, batch };
+import std::shared::Shared;
+import std::store::{ Storable, StoreNode, StoreSlot, Store, StoreSome, StoreFlag, store_kid, store_has_me, store_wake_me, store_switch, store_census };
+
+[derive(PartialEq)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+struct User {
+	name: str,
+	age: i32,
+	address: Address,
+}
+
+impl Address with Storable {
+	fun store_diff(self, other: Address, node: Option<Shared<StoreNode>>, need: bool, woken: &mut List<StoreSlot>): bool {
+		if !need && node.is_none() {
+			ret false;
+		}
+		let here = need || store_has_me(node);
+		mut changed = self.city.store_diff(other.city, store_kid(node, 0), here, woken);
+		changed = self.zip.store_diff(other.zip, store_kid(node, 1), here && !changed, woken) || changed;
+		store_wake_me(node, changed, woken);
+		changed
+	}
+}
+
+impl Store<Address> {
+	fun city(self): Store<str> {
+		self.project(0, |&held: &Address, f: |&str| void| f(&held.city), |&mut held: &mut Address, f: |&mut str| void| f(&mut held.city))
+	}
+	fun zip(self): Store<str> {
+		self.project(1, |&held: &Address, f: |&str| void| f(&held.zip), |&mut held: &mut Address, f: |&mut str| void| f(&mut held.zip))
+	}
+}
+
+impl User with Storable {
+	fun store_diff(self, other: User, node: Option<Shared<StoreNode>>, need: bool, woken: &mut List<StoreSlot>): bool {
+		if !need && node.is_none() {
+			ret false;
+		}
+		let here = need || store_has_me(node);
+		mut changed = self.name.store_diff(other.name, store_kid(node, 0), here, woken);
+		changed = self.age.store_diff(other.age, store_kid(node, 1), here && !changed, woken) || changed;
+		changed = self.address.store_diff(other.address, store_kid(node, 2), here && !changed, woken) || changed;
+		store_wake_me(node, changed, woken);
+		changed
+	}
+}
+
+impl Store<User> {
+	fun name(self): Store<str> {
+		self.project(0, |&held: &User, f: |&str| void| f(&held.name), |&mut held: &mut User, f: |&mut str| void| f(&mut held.name))
+	}
+	fun age(self): Store<i32> {
+		self.project(1, |&held: &User, f: |&i32| void| f(&held.age), |&mut held: &mut User, f: |&mut i32| void| f(&mut held.age))
+	}
+	fun address(self): Store<Address> {
+		self.project(2, |&held: &User, f: |&Address| void| f(&held.address), |&mut held: &mut User, f: |&mut Address| void| f(&mut held.address))
+	}
+}
+
+fun joined(items: List<str>): str {
+	mut out = "";
+	for item in items {
+		if out != "" {
+			out = out + " ";
+		}
+		out = out + item;
+	}
+	out
+}
+
+fun census<T>(store: Store<T>): str {
+	let (slots, nodes) = store_census(store);
+	i"slots={slots} nodes={nodes}"
+}
+
+fun main() {
+	let log = Shared::new([""]);
+	let _run = comp(|| {
+		let user = Store::new(User { name = "Alice", age = 30, address = Address { city = "Oslo", zip = "0150" } });
+		let city = user.address().city();
+		print(i"read: {city.get()} census={census(user)}");
+		user.name().effect(|n| log.write().push(i"name={n}"));
+		city.effect(|c| log.write().push(i"city={c}"));
+		user.address().effect(|a| log.write().push(i"address={a.city}/{a.zip}"));
+		user.effect(|u| log.write().push(i"user={u.name}"));
+		print(i"census={census(user)}");
+		log.write() = [];
+		city.set("Bergen");
+		print(i"city.set: {joined(log.read())}");
+		log.write() = [];
+		city.set("Bergen");
+		print(i"same: {joined(log.read())}");
+		log.write() = [];
+		user.set(User { name = "Alice", age = 31, address = Address { city = "Bergen", zip = "0150" } });
+		print(i"whole age: {joined(log.read())}");
+		log.write() = [];
+		user.address().zip().set("5003");
+		let now: User = user.get();
+		print(i"zip: {joined(log.read())} root={now.address.zip}");
+		log.write() = [];
+		user.age().notify();
+		print(i"notify age: {joined(log.read())}");
+	});
+}

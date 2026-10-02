@@ -1,0 +1,94 @@
+{
+ "items": [
+  {
+   "id": "B504",
+   "section": "B",
+   "kind": "MISCOMPILE (JS; HIGH) — the view family",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (store-45's find, Order 45)",
+   "title": "`&binder` of a MATCH-PATTERN binding is emitted as `[binder, 0]` but the binder is never boxed: `match o { Some(let p) => f(&p) }` with `\\|v: &str\\| print(*v)` prints `a` instead of `ally`, `undefined` for an i32",
+   "discussion": "store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/`",
+   "body": "Native is correct. Repro `localview.vl`. Rec: pattern binders whose view is taken join `boxed_locals`. Lane solver-c-45. Sizing S."
+  },
+  {
+   "id": "B505",
+   "section": "B",
+   "kind": "MISCOMPILE (JS; HIGH) — the view family",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (store-45's find, Order 45)",
+   "title": "a `&self` receiver, or a `&b` argument, of a SCALAR local or rvalue is passed bare: `let a = 1; a.same(&b)` and `1.same(&1)` throw `self[0][self[1]]`, directly and through a generic",
+   "discussion": "store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/`",
+   "body": "Native is correct. Repro `viewfind.vl`, `viewfind2.vl`. Lane solver-c-45. Sizing S–M."
+  },
+  {
+   "id": "B506",
+   "section": "B",
+   "kind": "MISCOMPILE (JS; HIGH) — the view family",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (store-45's find, Order 45)",
+   "title": "`&p.left` where the field's declared type is a generic `T` resolving to a scalar passes the VALUE instead of a pair: `fun lend<T>(p: &Pair<T>, f: \\|&T\\| void) { f(&p.left) }` then `lend(&Pair { left = 1 }, \\|v: &i32\\| print(*v))` throws a TypeError",
+   "discussion": "store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/`",
+   "body": "Repro `genfield.vl`. Rec: resolve the field's type at the mono, as `generic_referenced_roots` does for locals. Lane solver-c-45. Sizing S–M."
+  },
+  {
+   "id": "F75",
+   "section": "F",
+   "kind": "bug (native refusal; M) — blocks observing `StoreSome` natively",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (store-45's find, Order 45)",
+   "title": "native: a generic `W<P>` implementing `Source<Option<P>>` and consumed through the `Flow` blanket (`w.effect(..)`) is refused \"unbound generic type parameter (parameter 1 of struct W)\"",
+   "discussion": "store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/`",
+   "body": "Pinned as `OPTION_SOURCE_OBSERVED` in native_differential.rs (refused by name). Lane native-b-45. Sizing M."
+  },
+  {
+   "id": "F76",
+   "section": "F",
+   "kind": "bug (native refusal; M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (store-45's find, Order 45)",
+   "title": "native: a bare variant of a generic USER enum — `let n: Maybe<i32> = Maybe::Nothing;` — is refused as unbound even with the binding annotated",
+   "discussion": "store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/`",
+   "body": "Repro `gen.vl`. Family of F72/F73. Lane native-b-45. Sizing S."
+  },
+  {
+   "id": "F77",
+   "section": "F",
+   "kind": "bug (native; M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (store-45's find, Order 45)",
+   "title": "native: a closure literal in a field typed `\\|(\\|&T\\| void)\\| void` with its parameter unannotated (`\\|f\\| f(&cell.write())`) emits `Fn(T)` instead of `Fn(&T)` (rustc E0308); and on JS an annotated `let lend: \\|(\\|&i32\\| void)\\| void = \\|f\\| ..` never types `f`",
+   "discussion": "store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/`",
+   "body": "B495's family (views in closure types). Workaround in std and the Storable derive: annotate every closure parameter. Sizing M."
+  },
+  {
+   "id": "B507",
+   "section": "B",
+   "kind": "bug (formatter; L)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (store-45's find, Order 45)",
+   "title": "`vilan fmt` declines a closure parameter written `\\|&x: &i32\\|` (a view binder and a type together): `print_parameters_inner` drops the prefix when the type is a reference",
+   "discussion": "store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/`",
+   "body": "std uses the `x: &T` spelling. Sizing XS; syntax lane."
+  },
+  {
+   "id": "B508",
+   "section": "B",
+   "kind": "hole (solver; L–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (store-45's find, Order 45)",
+   "title": "a blanket `impl type T with Trait` does not reach a CLOSURE type: `f.named()` on `\\|\\| void` → \"cannot call method\"",
+   "discussion": "store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/`",
+   "body": "Repro `closureblanket.vl`. The Store uses `store_opaque` for closure-typed fields because of it. Sizing M."
+  },
+  {
+   "id": "B509",
+   "section": "B",
+   "kind": "language gap (design; L)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (store-45's find, Order 45)",
+   "title": "no pattern binds a WRITABLE view into an enum payload, so a through-variant write copies the payload out and back",
+   "discussion": "store-45 (Order 45); sweeps/order45/REPORT-store-45.md; repros under `sweeps/order45/store-45/finds/`",
+   "body": "Found building `StoreSome::patch`. A design item: `Some(&mut let p)` or the like; paper or ruling first. Sizing M."
+  }
+ ]
+}

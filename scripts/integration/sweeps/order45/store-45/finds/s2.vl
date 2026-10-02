@@ -1,0 +1,106 @@
+import std::reactive::{ Signal, Source, comp };
+import std::shared::Shared;
+import std::store::{ Storable, Store, StoreSome, StoreFlag, store_census };
+
+[derive(PartialEq, Storable)]
+struct Device {
+	name: str,
+	since: i32,
+}
+
+[derive(PartialEq, Storable)]
+enum Presence {
+	Offline,
+	Online(Device),
+}
+
+[derive(PartialEq, Storable)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+[derive(Storable)]
+struct User {
+	name: str,
+	age: i32,
+	address: Address,
+	presence: Presence,
+	nick: Option<str>,
+}
+
+fun joined(items: List<str>): str {
+	mut out = "";
+	for item in items {
+		if out != "" {
+			out = out + " ";
+		}
+		out = out + item;
+	}
+	if out == "" { "-" } else { out }
+}
+
+fun census<T>(store: Store<T>): str {
+	let (slots, nodes) = store_census(store);
+	i"slots={slots} nodes={nodes}"
+}
+
+fun alice(): User {
+	User {
+		name = "Alice",
+		age = 30,
+		address = Address { city = "Oslo", zip = "0150" },
+		presence = Presence::Online(Device { name = "laptop", since = 100 }),
+		nick = None,
+	}
+}
+
+fun main() {
+	let log = Shared::new([""]);
+	let _run = comp(|| {
+		let user = Store::new(alice());
+		print(i"read: {user.address().city().get()} {census(user)}");
+		user.name().effect(|n| log.write().push(i"name"));
+		user.address().city().effect(|c| log.write().push(i"address.city"));
+		user.address().zip().effect(|c| log.write().push(i"address.zip"));
+		user.address().effect(|a| log.write().push(i"address"));
+		user.effect(|u| log.write().push(i"user"));
+		user.presence().effect(|p| log.write().push(i"presence"));
+		user.presence().is_online().effect(|p| log.write().push(i"presence.tag={p}"));
+		user.presence().online().name().effect(|n| log.write().push(i"online.name={n.unwrap_or("-")}"));
+		user.presence().online().since().effect(|n| log.write().push(i"online.since"));
+		user.nick().some().effect(|n| log.write().push(i"nick={n.unwrap_or("-")}"));
+		print(i"subscribed: {census(user)}");
+		log.write() = [];
+		mut next = alice();
+		next.address.zip = "0151";
+		user.set(next);
+		print(i"whole write, zip changed: [{joined(log.read())}]");
+		log.write() = [];
+		next.presence = Presence::Online(Device { name = "laptop", since = 101 });
+		user.set(next);
+		print(i"same-variant write, since changed: [{joined(log.read())}]");
+		log.write() = [];
+		next.presence = Presence::Offline;
+		user.set(next);
+		print(i"variant switch to Offline: [{joined(log.read())}]");
+		log.write() = [];
+		let landed = user.presence().online().name().patch("ghost");
+		print(i"patch through a dead variant: landed={landed} [{joined(log.read())}]");
+		log.write() = [];
+		user.presence().set(Presence::Online(Device { name = "phone", since = 5 }));
+		print(i"handle set, variant back Online: [{joined(log.read())}]");
+		log.write() = [];
+		let landed2 = user.presence().online().name().patch("tablet");
+		print(i"patch through the live variant: landed={landed2} [{joined(log.read())}]");
+		log.write() = [];
+		user.set(user.get());
+		print(i"whole write, nothing changed: [{joined(log.read())}]");
+		log.write() = [];
+		user.nick().set(Some("ally"));
+		print(i"nick None -> Some: [{joined(log.read())}]");
+		log.write() = [];
+		let _p = user.nick().some().patch("al");
+		print(i"nick patch: [{joined(log.read())}]");
+	});
+}

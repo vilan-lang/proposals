@@ -1,0 +1,14 @@
+import std::shared::Shared;
+import std::shared::Shared;
+import std::compare::PartialEq;
+
+[derive(PartialEq)]
+struct A {
+	x: i32,
+}
+
+fun main() {
+	let s = Shared::new(1);
+	print(s.read());
+	print(A { x = 1 } == A { x = 1 });
+}

@@ -1,0 +1,16 @@
+import std::reactive::{ Signal, Source };
+import std::store::{ Storable, Store };
+
+fun main() {
+	let n = Store::new(5);
+	n.set(6);
+	print(n.get());
+	let t = Store::new((1, "x"));
+	t.set((2, "y"));
+	let now: (i32, str) = t.get();
+	print(now.1);
+	let o = Store::new(Some(3));
+	print(o.some().get().unwrap_or(0));
+	let landed = o.some().patch(4);
+	print(i"{landed} {o.get().unwrap_or(0)}");
+}

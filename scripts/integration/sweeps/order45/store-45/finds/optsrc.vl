@@ -1,0 +1,24 @@
+import std::reactive::{ Signal, SignalCell, Source, Subscriber, Subscription, comp };
+
+struct W<P> {
+	cell: SignalCell<Option<P>>,
+}
+
+impl W<type P> with Source<Option<P>> {
+	fun get(self): Option<P> {
+		self.cell.get()
+	}
+
+	[must_use]
+	fun on_settle(self, subscriber: Subscriber): Subscription {
+		self.cell.on_settle(subscriber)
+	}
+}
+
+fun main() {
+	let _run = comp(|| {
+		let w = W { cell = SignalCell::new(Some("a")) };
+		w.effect(|n| print(n.unwrap_or("-")));
+		w.cell.set(Some("b"));
+	});
+}

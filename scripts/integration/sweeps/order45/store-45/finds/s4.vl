@@ -1,0 +1,22 @@
+import std::reactive::{ Signal, Source };
+import std::store::{ Storable, Store, StoreSome, StoreFlag };
+
+[derive(PartialEq, Storable)]
+struct Device {
+	name: str,
+	since: i32,
+}
+
+[derive(PartialEq, Storable)]
+enum Presence {
+	Offline,
+	Online(Device),
+}
+
+fun main() {
+	let p = Store::new(Presence::Offline);
+	print(p.is_online().get());
+	let online = p.online();
+	print(online.get().is_some());
+	print(online.name().get().unwrap_or("-"));
+}

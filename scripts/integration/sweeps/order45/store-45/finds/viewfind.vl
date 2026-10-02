@@ -1,0 +1,21 @@
+import std::compare::PartialEq;
+
+trait Same {
+	fun same(&self, other: &Self): bool;
+}
+
+impl type T: PartialEq with Same {
+	fun same(&self, other: &T): bool {
+		*self == *other
+	}
+}
+
+fun generic<T: Same>(a: T, b: T): bool {
+	a.same(&b)
+}
+
+fun main() {
+	print(1.same(&1));
+	print(generic("x", "x"));
+	print(generic(1, 1));
+}

@@ -76,3 +76,9 @@
 ## editor-45 — REPORTED 2026-10-01 (tip b228cd4c on baa57390; REPORT-editor-45.md) — merges LAST
 - LANDED 10/10: the hover arc, E234, E241, E240, B437 (a real JS miscompile) + B436, E236 (harness + baseline), E242. Finds FILED M101 (a keystroke costs 1.1–1.3 s CPU on kolt; post-passes 57%), M102, B502, B503.
 - solver-b-45 MERGED @d9d786ed (pushed; ledger row 604 assigned, 219/220 edited in place; gates native_differential 116, corpus, inference 5004, copy census, diagnostics_ledger, release_scripts, split green). Reaped. reactive-45 resumed: rebase + PHASE 2. Ledger prose OWED in diagnostics-ledger.md: 604 (B482), 219/220 (B478), 576 + 575 (reactive-45), the two solver-a rows.
+
+## store-45 — REPORTED 2026-10-01 (tip 1ac5ce4c on baa57390; REPORT-store-45.md) — S1 + S2 landed; merges after maps-45 (rebased)
+- A compiler touch for the ruled `[reactive(..)]` field attribute (parser, formatter, macros, grammars) — overlaps syntax-45 and editor-45 at the merge. Deviation for the OWNER: `StoreSome<P>` as its own type (Q6 vs Q8).
+- Nine finds FILED: B504–B506 (three HIGH JS miscompiles in the view family), F75–F77, B507–B509.
+- TWO LANES ADDED off d9d786ed (the order's first priority is miscompiles, and the native refusals block what the order built): **solver-c-45** (B504, B505, B506, B496) and **native-b-45** (F72 FIRST, F76, F73, F75; F71/F74 if time). Running with reactive-45 phase 2: three lanes.
+- v0.42.1: tag pushed @f2cbb7f3 after CI green on the release commit; release.yml running.

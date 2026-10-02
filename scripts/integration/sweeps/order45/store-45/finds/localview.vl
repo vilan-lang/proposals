@@ -1,0 +1,25 @@
+fun lend_local(f: |&str| void) {
+	let s = "ally";
+	f(&s);
+}
+
+fun lend_match(held: Option<str>, f: |&str| void) {
+	match held {
+		Some(let payload) => f(&payload),
+		None => {},
+	}
+}
+
+fun lend_generic<T>(held: Option<T>, f: |&T| void) {
+	match held {
+		Some(let payload) => f(&payload),
+		None => {},
+	}
+}
+
+fun main() {
+	lend_local(|&v: &str| print(*v));
+	lend_match(Some("ally"), |&v: &str| print(*v));
+	lend_generic(Some("ally"), |&v: &str| print(*v));
+	lend_generic(Some(7), |&v: &i32| print(*v));
+}

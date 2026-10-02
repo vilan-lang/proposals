@@ -1,0 +1,12 @@
+enum Maybe<T> {
+	Nothing,
+	Just(T),
+}
+
+fun main() {
+	let n: Maybe<i32> = Maybe::Nothing;
+	match n {
+		Maybe::Nothing => print("nothing"),
+		Maybe::Just(let x) => print(x),
+	}
+}

@@ -1,0 +1,297 @@
+// === `[derive(Storable)]` (§3.1, Q3, Q4, Q9, Q10) =============================
+//
+// Everything per type is emitted here — the macro door. A derive sees one item at a
+// time, so the slot tree is one uniform node type and a field's type is reached
+// only through the `Storable` bound: a field whose type nothing derives is a leaf,
+// by the tiers above. Per struct it writes:
+//
+//   - `impl T with Storable`: one diff line per field, in declaration order, each
+//     handed the field's child node and whether an answer is still needed;
+//   - `impl Store<T>` and `impl StoreSome<T>`: one projection per field, each one
+//     in-place step (`|&held, f| f(&held.field)`) onto its parent's handle.
+//
+// Per enum: the diff (the discriminant, then the live payload), and on both handle
+// types the discriminant projection per variant (`is_online()`) and, per payload
+// variant, the through-variant handle (`online()`, a `StoreSome`).
+//
+// Every closure the output writes carries its parameter types. The native backend
+// types an unannotated closure parameter from the value it is matched against and,
+// for a closure-typed one, drops the view on ITS parameter (`|&F| void` arrives as
+// `|F| void`), which rustc refuses.
+
+/// The members of the handle surface — `Store`'s, `StoreSome`'s and every `Source`,
+/// `Signal` and `Flow` member a handle reaches. An inherent member wins over a
+/// generated projection of the same name (spec `names.md` §4.6), so a field
+/// spelled like one could never be reached; the derive refuses it (Q9).
+macro fun store_reserved(name: str): bool {
+	let reserved = [
+		"get", "set", "set_with", "notify", "new", "on_settle", "attach_observer", "identity",
+		"constant", "start", "on_change", "sub", "effect", "effect_on_change",
+		"scoped_effect", "scoped_effect_on_change", "derive", "switch", "distinct",
+		"distinct_by", "switch_some", "and_then", "then_some", "flatten", "track", "load",
+		"bind", "delta_cursor", "delta_since", "drop_delta_cursor", "start_element",
+		"start_element_value", "coll", "coll_by", "place", "apply", "bind_attribute",
+		"project", "variant", "tag", "some", "is_some", "assume", "patch",
+	];
+	for word in reserved {
+		if word == name {
+			ret true;
+		}
+	}
+	false
+}
+
+/// `Online` -> `online`, `HttpError` -> `http_error`: a variant's projection names.
+macro fun store_snake(name: str): str {
+	mut out = "";
+	mut index: usize = 0;
+	for index < name.len() {
+		let letter = name.substring(index, index + 1);
+		let lower = letter.to_lowercase();
+		if lower != letter && index > 0 {
+			out = out + "_";
+		}
+		out = out + lower;
+		index = index + 1;
+	}
+	out
+}
+
+/// A written type as it stands inside a closure type's parameter list: a closure
+/// type is parenthesized, so `|&F| void` over `F = || void` stays one type.
+macro fun store_operand(type_: TypeExpr): str {
+	let written = type_.render();
+	if written.contains("|") {
+		ret i"({written})";
+	}
+	written
+}
+
+/// The `<type A, type B>` an inherent impl on `Store<Subject<A, B>>` binds, bare.
+macro fun store_bare_binders(generics: List<GenericParameter>): str {
+	import macro_std::build::join;
+
+	if generics.len() == 0 {
+		ret "";
+	}
+	mut parts: List<str> = [];
+	for parameter in generics {
+		parts.push(i"type {parameter.name}");
+	}
+	"<" + join(parts, ", ") + ">"
+}
+
+/// One field projection on a handle type (`Store` or `StoreSome`): the in-place
+/// read and write of `held.{field}`, one step below the handle's own.
+macro fun store_projection(handle: str, subject: str, method: str, field: str, index: usize, type_: TypeExpr): str {
+	let operand = store_operand(type_);
+	let written = type_.render();
+	let read = i"|&held: &{subject}, f: |&{operand}| void| f(&held.{field})";
+	let write = i"|&mut held: &mut {subject}, f: |&mut {operand}| void| f(&mut held.{field})";
+	i"fun {method}(self): {handle}<{written}> \{\n\tself.project({index}, {read}, {write})\n" + "}"
+}
+
+export macro fun store_struct_impls(target: StructItem): str {
+	import macro_std::build::{ impl_of, fun_of };
+	import macro_std::panic;
+
+	let subject = target.subject();
+	mut diff = fun_of("store_diff")
+		.parameter("self")
+		.parameter(i"other: {subject}")
+		.parameter("node: Option<Shared<StoreNode>>")
+		.parameter("need: bool")
+		.parameter("woken: &mut List<StoreSlot>")
+		.returns("bool")
+		.line("if !need && node.is_none() {\n\tret false;\n}")
+		.line("let here = need || store_has_me(node);")
+		.line("mut changed = false;");
+	mut store_impl = impl_of(i"Store<{target.name}{store_bare_binders(target.generics)}>");
+	mut some_impl = impl_of(i"StoreSome<{target.name}{store_bare_binders(target.generics)}>");
+	mut index: usize = 0;
+	for field in target.fields {
+		let method = if field.reactive_name != "" { field.reactive_name } else { field.name };
+		if store_reserved(method) {
+			panic(i"`[derive(Storable)]` on `{target.name}`: the field `{field.name}` would project as `{method}()`, which a store handle already has (`{method}` is a handle member, and an inherent member wins over a projection) — rename the projection with `[reactive(name = \"..\")]` on the field");
+		}
+		let step = if field.reactive_coarse { "store_leaf_diff" } else { "store_diff" };
+		diff = diff.line(i"changed = self.{field.name}.{step}(other.{field.name}, store_kid(node, {index}), here && !changed, woken) || changed;");
+		store_impl = store_impl.member(store_projection("Store", subject, method, field.name, index, field.type_));
+		some_impl = some_impl.member(store_projection("StoreSome", subject, method, field.name, index, field.type_));
+		index = index + 1;
+	}
+	diff = diff.line("store_wake_me(node, changed, woken);").expr("changed");
+	mut out = impl_of(target.name)
+		.generics(target.binders("Storable"))
+		.implements("Storable")
+		.method(diff)
+		.render();
+	if target.fields.len() > 0 {
+		out = out + store_impl.render() + some_impl.render();
+	}
+	out
+}
+
+export macro fun store_enum_impls(target: EnumItem): str {
+	import macro_std::option::Option::{ self, Some, None };
+	import macro_std::build::{ impl_of, fun_of, match_of, join };
+	import macro_std::panic;
+
+	let subject = target.subject();
+	let name = target.name;
+	// Which payload child the WRITTEN value's variant owns: child `1 + i` for
+	// variant `i`, child 0 being the discriminant.
+	mut to_arms = match_of("other");
+	mut index: usize = 0;
+	for variant in target.variants {
+		let pattern = if variant.payload.len() == 0 { i"{name}::{variant.name}" } else {
+			mut blanks: List<str> = [];
+			for _type in variant.payload {
+				blanks.push("_");
+			}
+			i"{name}::{variant.name}({join(blanks, ", ")})"
+		};
+		to_arms = to_arms.arm(pattern, i"{index + 1}");
+		index = index + 1;
+	}
+	mut self_arms = match_of("self");
+	mut store_impl = impl_of(i"Store<{name}{store_bare_binders(target.generics)}>");
+	mut some_impl = impl_of(i"StoreSome<{name}{store_bare_binders(target.generics)}>");
+	mut seen: List<str> = [];
+	index = 0;
+	for variant in target.variants {
+		let child = index + 1;
+		let arity = variant.payload.len();
+		let snake = store_snake(variant.name);
+		let flag = i"is_{snake}";
+		for taken in seen {
+			if taken == snake {
+				panic(i"`[derive(Storable)]` on `{name}`: two variants project as `{snake}()`");
+			}
+		}
+		seen.push(snake);
+		if store_reserved(flag) || (arity > 0 && store_reserved(snake)) {
+			panic(i"`[derive(Storable)]` on `{name}`: the variant `{variant.name}` would project as `{snake}()`/`{flag}()`, which a store handle already has — rename the variant");
+		}
+		mut blanks: List<str> = [];
+		mut mine: List<str> = [];
+		mut theirs: List<str> = [];
+		mut position: usize = 0;
+		for _type in variant.payload {
+			blanks.push("_");
+			mine.push(i"let a{position}");
+			theirs.push(i"let b{position}");
+			position = position + 1;
+		}
+		let bare = if arity == 0 { i"{name}::{variant.name}" } else { i"{name}::{variant.name}({join(blanks, ", ")})" };
+		let test = i"|&held: &{subject}| match held \{\n\t{bare} => true,\n\t_ => false,\n" + "}";
+		let flag_method = i"fun {flag}(self): StoreFlag \{\n\tself.tag({test})\n" + "}";
+		store_impl = store_impl.member(flag_method);
+		some_impl = some_impl.member(flag_method);
+		if arity == 0 {
+			self_arms = self_arms.arm(bare, match_of("other").arm(bare, "false").arm("_", i"store_switch(node, {child}, to, woken)").render());
+		} else {
+			let mine_pattern = i"{name}::{variant.name}({join(mine, ", ")})";
+			let theirs_pattern = i"{name}::{variant.name}({join(theirs, ", ")})";
+			// The payload diff: one position is the payload node itself; several
+			// are its children, by position.
+			mut same: List<str> = [];
+			if arity == 1 {
+				same.push(i"a0.store_diff(b0, store_kid(node, {child}), here, woken)");
+			} else {
+				same.push(i"let payload = store_kid(node, {child});");
+				same.push("let deep = here || store_has_me(payload);");
+				same.push("mut moved = false;");
+				position = 0;
+				for _type in variant.payload {
+					same.push(i"moved = a{position}.store_diff(b{position}, store_kid(payload, {position}), deep && !moved, woken) || moved;");
+					position = position + 1;
+				}
+				same.push("store_wake_me(payload, moved, woken);");
+				same.push("moved");
+			}
+			let same_body = if arity == 1 { same[0] } else { "{\n" + join(same, "\n") + "\n}" };
+			self_arms = self_arms.arm(mine_pattern, match_of("other").arm(theirs_pattern, same_body).arm("_", i"store_switch(node, {child}, to, woken)").render());
+			// The through-variant handle: the payload type, a tuple for several.
+			mut payload_types: List<str> = [];
+			mut operands: List<str> = [];
+			for type_ in variant.payload {
+				payload_types.push(type_.render());
+				operands.push(store_operand(type_));
+			}
+			let payload = if arity == 1 { payload_types[0] } else { "(" + join(payload_types, ", ") + ")" };
+			let operand = if arity == 1 { operands[0] } else { payload };
+			mut binds: List<str> = [];
+			mut parts: List<str> = [];
+			position = 0;
+			for _type in variant.payload {
+				binds.push(i"let p{position}");
+				parts.push(i"p{position}");
+				position = position + 1;
+			}
+			let bound = i"{name}::{variant.name}({join(binds, ", ")})";
+			let built = if arity == 1 { "p0" } else { "(" + join(parts, ", ") + ")" };
+			mut unpacked: List<str> = [];
+			if arity == 1 {
+				unpacked.push("payload");
+			} else {
+				position = 0;
+				for _type in variant.payload {
+					unpacked.push(i"payload.{position}");
+					position = position + 1;
+				}
+			}
+			let read = i"|&held: &{subject}, f: |&{operand}| void| \{\n\tmatch held \{\n\t\t{bound} => f(&{built}),\n\t\t_ => \{" + "},\n\t" + "}\n" + "}";
+			let write = i"|&mut held: &mut {subject}, f: |&mut {operand}| void| \{\n\tmatch held \{\n\t\t{bound} => \{\n\t\t\tmut payload = {built};\n\t\t\tf(&mut payload);\n\t\t\theld = {name}::{variant.name}({join(unpacked, ", ")});\n\t\t" + "},\n\t\t_ => \{" + "},\n\t" + "}\n" + "}";
+			let through = i"fun {snake}(self): StoreSome<{payload}> \{\n\tself.variant({child}, {read}, {write})\n" + "}";
+			store_impl = store_impl.member(through);
+			some_impl = some_impl.member(through);
+		}
+		index = index + 1;
+	}
+	let diff = fun_of("store_diff")
+		.parameter("self")
+		.parameter(i"other: {subject}")
+		.parameter("node: Option<Shared<StoreNode>>")
+		.parameter("need: bool")
+		.parameter("woken: &mut List<StoreSlot>")
+		.returns("bool")
+		.line("if !need && node.is_none() {\n\tret false;\n}")
+		.line("let here = need || store_has_me(node);")
+		.line(i"let to: usize = {to_arms.render()};")
+		.line(i"let changed = {self_arms.render()};")
+		.line("store_wake_me(node, changed, woken);")
+		.expr("changed");
+	impl_of(name)
+		.generics(target.binders("Storable"))
+		.implements("Storable")
+		.method(diff)
+		.render()
+		+ store_impl.render()
+		+ some_impl.render()
+}
+
+/// `[derive(Storable)]`: the struct's or enum's store surface (§3.1). Its output
+/// carries its own imports.
+export macro fun Storable2(item: Item): Source {
+	import macro_std::option::Option::{ self, Some, None };
+
+	let header = "import std::option::Option;\n"
+		+ "import std::shared::Shared;\n"
+		+ "import std::store::{ Storable, StoreFlag, StoreLeaf, StoreNode, StoreSlot, Store, StoreSome, store_has_me, store_kid, store_switch, store_wake_me };\n";
+	if item.as_struct() is Some(let target) {
+		ret source(header + store_struct_impls(target));
+	}
+	if item.as_enum() is Some(let target) {
+		ret source(header + store_enum_impls(target));
+	}
+	source("")
+}
+
+[derive(Storable2)]
+struct Device {
+	name: str,
+	since: i32,
+}
+
+fun main() {}

@@ -1,0 +1,30 @@
+fun lend_generic<T>(held: Option<T>, f: |&T| void) {
+	match held {
+		Some(let payload) => {
+			let local = payload;
+			f(&local);
+		},
+		None => {},
+	}
+}
+
+fun write_generic<T>(held: &mut Option<T>, f: |&mut T| void) {
+	match held.take() {
+		Some(let taken) => {
+			mut payload = taken;
+			f(&mut payload);
+			held = Some(payload);
+		},
+		None => {},
+	}
+}
+
+fun main() {
+	lend_generic(Some("ally"), |&v: &str| print(*v));
+	lend_generic(Some(7), |&v: &i32| print(*v));
+	mut o = Some(3);
+	write_generic(&mut o, |&mut v: &mut i32| { v = *v + 1; });
+	print(o.unwrap_or(0));
+	mut t = (1, "x");
+	lend_generic(Some(t), |&v: &(i32, str)| print(v.1));
+}

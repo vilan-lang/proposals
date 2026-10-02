@@ -1,0 +1,14 @@
+struct Pair<T> {
+	left: T,
+}
+
+fun lend<T>(pair: &Pair<T>, f: |&T| void) {
+	f(&pair.left);
+}
+
+fun main() {
+	let pair = Pair { left = 1 };
+	lend(&pair, |v: &i32| print(*v));
+	let words = Pair { left = "ab" };
+	lend(&words, |v: &str| print(*v));
+}

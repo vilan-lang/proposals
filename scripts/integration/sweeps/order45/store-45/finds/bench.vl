@@ -1,0 +1,74 @@
+// The paper's measurement (store.md §3.1): 2,000 leaf reads on a 1,000-key root,
+// through the store's in-place lend against a handle that hands the VALUE up
+// through every level (`read = || parent_read().field`).
+import std::hash_map::HashMap;
+import std::reactive::{ Signal, Source };
+import std::shared::Shared;
+import std::store::{ Storable, Store };
+import std::time;
+
+[derive(PartialEq, Storable)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+[derive(Storable)]
+struct User {
+	name: str,
+	address: Address,
+	scores: HashMap<str, i32>,
+}
+
+/// The copying door: a handle whose read is the parent's VALUE, then a field.
+struct Copying<T> {
+	read: || T,
+}
+
+fun with_keys(n: i32): User {
+	mut scores: HashMap<str, i32> = HashMap::new();
+	mut i = 0;
+	for i < n {
+		scores.insert(i"k{i}", i);
+		i += 1;
+	}
+	User { name = "Alice", address = Address { city = "Oslo", zip = "0150" }, scores }
+}
+
+fun main() {
+	let reads = 2000;
+	let store = Store::new(with_keys(1000));
+	let city = store.address().city();
+	mut total = 0;
+	mut i = 0;
+	let t0 = time::now();
+	for i < reads {
+		total += city.get().len().as_i32();
+		i += 1;
+	}
+	let t0_end = time::now();
+	let lent = t0_end.millis - t0.millis;
+	let root = Shared::new(with_keys(1000));
+	let user: Copying<User> = Copying { read = || root.read() };
+	let address: Copying<Address> = Copying {
+		read = || {
+			let whole: User = (user.read)();
+			whole.address
+		},
+	};
+	let copied_city: Copying<str> = Copying {
+		read = || {
+			let whole: Address = (address.read)();
+			whole.city
+		},
+	};
+	i = 0;
+	let t1 = time::now();
+	for i < reads {
+		total += (copied_city.read)().len().as_i32();
+		i += 1;
+	}
+	let t1_end = time::now();
+	let copied = t1_end.millis - t1.millis;
+	print(i"lend: {lent} ms; composed value read: {copied} ms; chars={total}");
+}

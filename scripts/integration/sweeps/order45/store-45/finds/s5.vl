@@ -1,0 +1,23 @@
+import std::reactive::{ Signal, Source, comp };
+import std::store::{ Storable, Store, StoreSome, StoreFlag };
+
+[derive(PartialEq, Storable)]
+struct Device {
+	name: str,
+	since: i32,
+}
+
+[derive(PartialEq, Storable)]
+enum Presence {
+	Offline,
+	Online(Device),
+}
+
+fun main() {
+	let _run = comp(|| {
+		let p = Store::new(Presence::Offline);
+		p.online().name().effect(|n| print(n.unwrap_or("-")));
+		p.set(Presence::Online(Device { name = "x", since = 1 }));
+		print(p.online().name().patch("y"));
+	});
+}
