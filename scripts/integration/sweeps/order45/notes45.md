@@ -93,3 +93,5 @@
 - `fold-release.sh v0.42.1` running (docs.yml, deploy.yml, the manifest, the toolchain in both locations): fold-v0421.log.
 - maps-45 resumed: final rebase onto next.
 - v0.42.1 FOLDED: book + site deployed, manifest v0.42.1, toolchain `vilan 0.42.1 (44f45dd3b)` both locations + the 0.42.1 vsix. Chronicle entry written.
+
+## 2026-10-02 — WSL restarted by the owner (30 GB, 16 cores, 4 GB swap, swappiness 10, earlyoom). Every worktree clean; maps-45 (rebased, b2650cbe), solver-c-45 (5ffd8674, 4 commits), native-b-45 (b6a15fe8, 6 commits) RESUMED to finish gates and report. Cap raised to five lanes, jobs 6.
