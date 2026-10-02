@@ -116,3 +116,8 @@
 
 ## web-45b (K27) — MERGED + DEPLOYED 2026-10-02 (vilan-website main 06efc1f)
 - The playground's keyword lists are generated from `vilan --print-keywords` (28 reserved, 14 contextual); contextual words painted only in position (`then`, `as`, `context`, `dyn`, `lazy`, `only`, `sync`; `with`/`own`/`jump`/`borrows` no longer everywhere); `resource` removed, `css` added. Gate `tests/keywords.test.mjs` (245 checks) in the harness CI and deploy run. For the vilan repo: neither toolchain grammar paints `only`; `--print-keywords` could emit positions.
+
+## papers-b-45 — REPORTED + MERGED 2026-10-02 (proposals main eb2ef88; performance-gates.md, 6,755 words; Opus, 209k tokens)
+- Measured on v0.42.1 (load 6–24): wall spread 242%; CPU 62% (CV 6.9% at steady load, +37% under 16 busy loops; the LSP row 2× from load alone); `instructions:u` 1.2 ppm; callgrind Ir 0.12 ppm; peak RSS 0.04%. kolt's check is ~100% serial; Amdahl: parallel analysis ×1.79–2.48 on 8 cores, entries overlapped too ×2.31–3.21; M100 alone ×1.22. Per 1,000 lines: vilan 36 → 107 ms (6k → 49k), kolt 122–143; `cargo check` on syn 24–31; `tsc` 5–11.
+- Q1–Q12 OWNER (three tiers: counters + shape tests in every gate; instruction budgets in a required CI `perf` job; CPU limits on the quiet reference machine at the seal and the cut; the cut refuses without a green verdict). Slices S1–S8.
+- Finds: **M107 FILED (HIGH: check is close to quadratic in package size)**; `perf_compare.py` fixed by the integrator — per-child usage via `os.wait4` (the RSS ratio was ×1.00 by construction), a load guard (`--max-load 2`), a discarded warm-up run; the LSP leg still only prints (the harness is on editor-45, unmerged). malloc+free are 21.7% of kolt's check (allocator probe — in the paper's order).
