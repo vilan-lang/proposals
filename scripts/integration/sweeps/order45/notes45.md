@@ -122,3 +122,7 @@
 - Q1–Q12 OWNER (three tiers: counters + shape tests in every gate; instruction budgets in a required CI `perf` job; CPU limits on the quiet reference machine at the seal and the cut; the cut refuses without a green verdict). Slices S1–S8.
 - Finds: **M107 FILED (HIGH: check is close to quadratic in package size)**; `perf_compare.py` fixed by the integrator — per-child usage via `os.wait4` (the RSS ratio was ×1.00 by construction), a load guard (`--max-load 2`), a discarded warm-up run; the LSP leg still only prints (the harness is on editor-45, unmerged). malloc+free are 21.7% of kolt's check (allocator probe — in the paper's order).
 - **performance-gates.md Q1–Q12 RULED as recommended** (the owner, 2026-10-02). Status line, stamps (M105, M106, M107), go-items45's Order 46 queue.
+
+## store-45 — MERGED 2026-10-02 @276f4ed2 (final tip 7c65dc69: A147 fixed with `std::shared::fresh_identity()`; nextest 9323/9323; merge gates native_differential 136, corpus, inference store+maps+tracking 98, diagnostics_ledger, check_scope_differential, vilan-core lib 931, release_scripts, split). Reaped. A142 S7's S1 + S2 are on next.
+- **rename-45 LAUNCHED** (A148) off 276f4ed2; **syntax-45 resumed** for its rebase (redo the std reformat, the `reactive` census row, B488/B492/B507 if small). editor-45 gets one small rebase after both. perf-b-45 still running (M103 blocks the cut).
+- Ledger prose still OWED in diagnostics-ledger.md (604 B482, 605 F60, 219/220, 575/576, row 15, two solver-a rows, store's five NEW rows, row 229's count 57 → 59).
