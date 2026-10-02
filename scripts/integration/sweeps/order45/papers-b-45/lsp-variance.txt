@@ -1,0 +1,14 @@
+server pid 1182207: /home/reed/.vilan/bin/vilan-lsp
+  leaf keystroke ...
+  model.vl keystroke ...
+vilan-lsp latency — vilan-lsp 0.42.1 (44f45dd3b) on kolt @984a1dfb (the server's embedded std); 10 run(s) per edit; loadavg 16.56 10.41 7.04 before, 16.90 12.41 8.11 after; 16 cores
+
+| edit | CPU to diagnostics ms | CPU to idle ms | wall to diagnostics ms | errors | keystroke wall ms (hover / completion / inlay / tokens) | idle CPU ms (hover / completion / inlay / tokens) | VmHWM MB |
+|---|---:|---:|---:|---:|---|---|---:|
+| open src/views.vl | 3900 | 3900 | 3955 | | | | 278 |
+| open src/model.vl | 910 | 910 | 907 | | | | 500 |
+| leaf keystroke | 2280 | 2280 | 2547 | 0 | 5.0 / 1.4 / 0.3 / 0.5 | 2.32 / 1.01 / 0.15 / 0.24 | 475 |
+| model.vl keystroke | 615 | 615 | 773 | 0 | 0.9 / 0.9 / 0.2 / 0.3 | 0.92 / 0.76 / 0.13 / 0.20 | 515 |
+
+Medians over the runs. E121's targets: <10 ms on the keystroke path, <500 ms to errors.
+CPU is the whole server process (every thread) from the edit to the analysis's publish for the file, and to idle; wall includes the debounce and the machine's load. Keystroke requests are asked before the analysis lands; idle requests after it.
