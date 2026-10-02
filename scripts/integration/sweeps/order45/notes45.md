@@ -167,3 +167,4 @@
 
 ## fix-45 — REPORTED 2026-10-02 (tip a2245c37 on d2e3fa04; REPORT-fix-45.md) — MERGING
 - **B519 FIXED** (general cause: a generated `let`'s declaring scope is its expansion scope; every macro, every non-entry module, both backends; also a soundness hole in the loan-only rule). Kolt's six tables are emitted. The Windows clock failure was a REAL bug (path spelling) — fixed; the debounce failure a fragile pin — widened. Finds FILED N138, N139, G27.
+- fix-45 MERGED @dcb06444 (pushed; gates vilan-lsp, inference resources, module_resolution 220, reactive_channels 40, native_differential 138, corpus 13, examples 6, debounce 4, split, release_scripts). Reaped. THE RE-SEAL started on dcb06444 (seal-45b.log); CI watched.
