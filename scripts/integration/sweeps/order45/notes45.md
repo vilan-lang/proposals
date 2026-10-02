@@ -136,3 +136,4 @@
 ## perf-b-45 — REPORTED 2026-10-02 (tip 86f4466e on 276f4ed2; REPORT-perf-b-45.md) — MERGING
 - **M103 FIXED**: the regression was maps-45; kolt's check is now 30% UNDER v0.42.1 by instructions (24.40 → 17.01 G). M104: one fix landed, the entry-world design is the OWNER's (diagnostics would change). M107: two of five passes. Peak memory still +20% → M108 FILED; E244 FILED.
 - RULED (the owner): M104 → the entry-world design (Order 46 FIRST in editor); the cut goes ahead with M108 as a written exception (the seal's memory leg will read red).
+- perf-b-45 MERGED @44d63c90 (pushed; gates vilan-core lib 932, vilan-lsp 930, inference bounds+resources+traits 1265, std_surface, corpus, native_differential, copy census, split, release_scripts). Reaped.
