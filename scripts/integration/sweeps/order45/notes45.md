@@ -104,3 +104,4 @@
 
 ## native-b-45 — REPORTED 2026-10-02 (tip ed357d74 on e071b662; REPORT-native-b-45.md) — merges after maps-45, with the maps pin flipped
 - LANDED 6/6: F72, F76, F75, F73 (already fixed at base; pinned + the defect beside it), F71, F74. Native `SetCell`, `keys()`, observing a `StoreSome`, the A146 mirror all build now. Finds FILED B513, F82.
+- maps-45 MERGED @f67def61 (pushed; markdown golden regenerated into the merge; gates native_differential 125, corpus, inference 5045, copy census, reactive_channels 38, service_layer 59, check_scope_differential 15, release_scripts, split). Reaped. native-b-45 resumed: rebase onto f67def61, flip the maps pin + stale notes, F79–F81 if small. store-45 rebases after native-b merges (it flips its own pin and drops the B504/B506 workarounds); its S3 goes to Order 46 — the order closes instead.
