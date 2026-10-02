@@ -100,6 +100,7 @@
 | [B511](items/B511.md) | a QUALIFIED call to a blanket impl's member is not monomorphized: `impl type T: PartialEq with Same { fun same(&self, other: &T) }; Same::same(a, &b)` prints `false` on JS (an un-instanced `self === other` over two pairs); natively "a value of an unbound generic type parameter"; `a.same(&b)` is right | MISCOMPILE (JS; HIGH) + native refusal | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 | [B512](items/B512.md) | an unannotated `let x = if c { &a } else { &b }` is not seen as a view binding (`view_binding_mutability` does not look through branches): it binds the aggregate itself | aliasing (JS; M; read from the code, not run) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 | [B513](items/B513.md) | the analyzer leaves CLOSURE PARAMETERS untyped when only a generic call's annotated result types them: `let shown: Shared<\|str\| void> = Shared::new(\|key\| print(i"{key}"));` — natively refused ("unresolved type") | inference (M) | native-b-45 (Order 45); sweeps/order45/REPORT-native-b-45.md |
+| [B514](items/B514.md) | JS: `*if c { &a } else { &b }` over a SCALAR or `str` prints the place pair — `let n = 4; let m = 5; print(*if n < m { &n } else { &m })` prints `[ [ 4 ], 0 ]` | MISCOMPILE (JS; S–M) — the view family | native-b-45 (Order 45); B444, B496, B504–B506 (the view family, Order 45) |
 
 ## C. Memory model
 

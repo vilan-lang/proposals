@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B514",
+   "section": "B",
+   "kind": "MISCOMPILE (JS; S–M) — the view family",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-02 (native-b-45's find, Order 45)",
+   "discussion": "native-b-45 (Order 45); B444, B496, B504–B506 (the view family, Order 45)",
+   "title": "JS: `*if c { &a } else { &b }` over a SCALAR or `str` prints the place pair — `let n = 4; let m = 5; print(*if n < m { &n } else { &m })` prints `[ [ 4 ], 0 ]`",
+   "body": "Native prints the value. B444's read-through, through a conditional (transformer.rs). F81's native pin holds aggregates only because of it. With B512 (an unannotated `let x = if c { &a } else { &b }`). Sizing S; solver, Order 46 FIRST with B511."
+  }
+ ]
+}
