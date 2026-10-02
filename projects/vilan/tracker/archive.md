@@ -1550,3 +1550,165 @@ chain when it does not resolve in `items/`.
 - **E232. inlay hints on the line being EDITED are cleared on-type, so the whole line JUMPS the moment typing starts. Two doors, the owner's words: (1) keep the hints on the current line that sit BEFORE the cursor and clear only those after it; or — preferred — (2) make hints BEHAVE and never clear them on-type: typing before a hint shifts it right by the typed width instantly, typing after it does nothing; a new line above shifts it down one line, typing on any line below does nothing to it — i.e. a hint's anchor follows the document's edits like any other position until the next analysis replaces the set — CLOSED 2026-09-30** (Order 44, lane editor-44, vilan fd8a9e37: RULED door (2) and built — hints follow edits (`LandedHint`, `EditTrail`); limit: without an edit log two far-apart edits read as one region)
 
 - **E227. inlay hints show a type by the TRAIT it is used as, not by its exact implementation, when the type declares one: `Map<Combine<(List<Command>, usize)>, (List<Command>, usize), Option<Command>>` reads as `Source<Option<Command>>`; hover, completion and diagnostics keep the full type — CLOSED 2026-09-30** (Order 44, lane editor-44, vilan f76e6094: RULED per the paper and built — `[hint(Trait<..>)]`, `~Trait<..>` inlay rendering admitted per instantiation, `vilan.inlayHints.abbreviate`, hints on the 8 pipe stages, `TrackedDerive`, `CollTally`, the four `CollPipe` stages, `ListMemo`, `MemoCell`, `Transient`, `RemoteSource`, the 8 iterator adapters (ledger 600–603); `CollMap`/`CollFilterMap` not hintable)
+
+- **F62. native — reading or writing a FIELD through a `Shared` VIEW (`s.write().n`, `s.write().n = x`) is refused by name; A142's `OwnerCell` and S6's `TrackRuns` are written WHOLE to avoid it, and `a.write().n = a.write().n + 1` (vilan/test/shared.vl) needs a temporary (the right side's borrow would stay live across the left's) — CLOSED 2026-10-02** (Order 45, lane native-45, vilan eb8a8840: a field read/written through a `Shared` view builds natively (`Shared::read_with`; a `write()` place settles its reads first))
+
+- **F57. `vilan/test/crypto.vl` fails natively on the BASE toolchain — rustc E0382 'use of moved value `salt_…`'; the native sweep skips it because it is not platform-free, so no gate has seen it — CLOSED 2026-10-02** (Order 45, lane native-45, vilan eb8a8840: crypto.vl builds natively; a `match` literal pattern takes its subject's width; the platform-bound gate)
+
+- **F61. native — an injected closure's HIDDEN PARAMETERS are ordered two ways: the closure LITERAL orders them by the contexts' DECLARATION order, the closure TYPE by the clause AS WRITTEN — a clause not in declaration order builds on JS but rustc refuses it ('expected `i32`, found `Rc<str>`'); std's body clauses are written in declaration order with a comment as the workaround — CLOSED 2026-10-02** (Order 45, lane native-45, vilan eb8a8840: a closure type's hidden context slots take the pass's order)
+
+- **F63. native — an operator closure whose body is `cells[id]` (a non-`Copy` element read by index) fails rustc E0507 ('cannot move out of index'): an indexed read of a non-Copy element needs a clone (or a borrow) in the emitted Rust — CLOSED 2026-10-02** (Order 45, lane native-45, vilan eb8a8840: a closure's expression body is a consuming position natively)
+
+- **F64. native — a struct field of type `Option<|| V>` in a GENERIC struct is refused by name (native-44's parity 2 covered `Option<Shared<List<closure>>>`; the bare closure-typed optional field in a generic struct is the remaining shape) — CLOSED 2026-10-02** (Order 45, lane native-45, vilan eb8a8840: premise corrected; an `Option<|| V>` field in a generic struct builds; a `match` leg handing back a place copies)
+
+- **F52. native — a `lazy let` MODULE binding passed as the argument of a `lazy` PARAMETER is never emitted, so rustc fails with `cannot find value config_N` — CLOSED 2026-10-02** (Order 45, lane native-45, vilan eb8a8840: a module `lazy let` forwarded to a `lazy` parameter passes a thunk)
+
+- **F54. native — a value `if`'s CONDITION literal takes the ARMS' literal type: `n > 2i32` where `n: u53` (the arms are `i32`) fails rustc E0308 — CLOSED 2026-10-02** (Order 45, lane native-45, vilan eb8a8840: comparisons and `&&`/`||` clear the inherited expectation)
+
+- **F55. native — an UNUSED annotated `Result` binding LOSES its annotation at emission (rustc E0282: type annotations needed) — CLOSED 2026-10-02** (Order 45, lane native-45, vilan eb8a8840: a written annotation over an Option/Result variant initializer is emitted)
+
+- **M91. the native `Map`/`Set` never COMPACT removed entries: a map that churned through 200,000 keys and holds ONE walks every tombstone — 0.130–0.162 s for 2,000 walks against ~0.001 s for a fresh map (release builds) — and its memory stays at the high-water mark — CLOSED 2026-10-02** (Order 45, lane native-45, vilan eb8a8840: `vilan_rt::Map` compacts tombstones past half, order kept)
+
+- **M94. R11 (`check_resource_generic_instantiations`) re-scans the WHOLE program and mints a TypeId per place for every resource instantiation: kolt's client has 27 instances × ~53k mints = 1.45M scratch type slots (570 ms, +109 MB; 10.6 ms on v0.41.1) — CLOSED 2026-10-02** (Order 45, lane perf-45, vilan ba2eebd9: R11 scans the instantiated callee's body and mints no slot per place)
+
+- **M95. `compute_resource_types` classifies EVERY type slot, scratch included, and its TypeId-keyed memo misses on non-interned types: 2,352 ms and +481 MB on kolt's client (76 ms on v0.41.1); 1.78M roots, the memo grows to 2.67M entries — CLOSED 2026-10-02** (Order 45, lane perf-45, vilan ba2eebd9: resource classification reads a member's own slot where substitution cannot change it)
+
+- **M96. B457's `function_reaches_an_in_place_write` is O(functions × expressions): each call filters the whole expression map — 48 calls × ~95M instructions, 815 ms on kolt's client (13 ms on v0.41.1) — CLOSED 2026-10-02** (Order 45, lane perf-45, vilan ba2eebd9: B457's write summaries read a span index)
+
+- **M97. `dispatch_refine::refined_edges` is computed TWICE per analysis (in `context::thread_contexts` and in `const_eval::evaluate`), 9.8% of all instructions each — CLOSED 2026-10-02** (Order 45, lane perf-45, vilan ba2eebd9: `impl_members_for_bound` answers once per Program)
+
+- **M98. the emission walk `vilan check` still runs (`transformer::diagnose`) spends 846 ms on kolt's client in impl selection: `select_member` costs 8.4M instructions a call (965 calls), `applying_implementations` runs `subject_applies` against every impl; and ~1.1 s (the walk + the Program drop) prints in no phase line — CLOSED 2026-10-02** (Order 45, lane perf-45, vilan ba2eebd9: `VILAN_PHASE_TIMING=passes` + the emission-walk row; `applying_implementations` memoized)
+
+- **B473. through a SUBTRAIT bound, a supertrait method with a DEFAULT runs the default even when the type OVERRIDES it — 0.41.1 prints 'the override' then 'the default'; A142 exposed it (`map_each` took `ListCell`'s lazy default instead of its observer, keeping 92 cells live natively) and `RemoteSource`/`KeyedSource` are exposed the same way (through a subtrait bound they would take the lazy default, not the lease path) — CLOSED 2026-10-02** (Order 45, lane solver-a-45, vilan 51de7eb9: through a sub-trait the DECLARING trait's impl answers — the override, then the default; both backends)
+
+- **B483. `Shared::new(x)` ALIASES the caller's value on JS: a later `write()` through the new cell mutates `x`, and `ListCell::of(xs)` followed by `push` mutates `xs`; native refuses the same program (rustc E0382) — rule 1 (a binding copies) broken at a constructor that stores its argument — CLOSED 2026-10-02** (Order 45, lane solver-a-45, vilan 51de7eb9: R-c: std's storing constructors take `own`; JS copies)
+
+- **B466. `*view` of an AGGREGATE does not COPY on JS: `mut c: P = *v; c.x = 99;` writes 99 into the CALLER's value, and a snapshot `Some(*v)` changes with the next in-place write — rule 1 (a binding copies) is broken at a dereference; native refuses the emitted Rust — CLOSED 2026-10-02** (Order 45, lane solver-a-45, vilan 51de7eb9: R-c: `*view` of an aggregate is a copy)
+
+- **B465. a SHARED VIEW passed to a closure parameter reads as the view's internal PLACE PAIR: `f(&a.city)` into `|c| out = c` arrives as `[ [ 'Oslo', '1' ], 0 ]` on JS, `out = c` is accepted without `*`, and native refuses the emitted Rust — blocks the Store macro door's cheap read path (store.md) — CLOSED 2026-10-02** (Order 45, lane solver-a-45, vilan 51de7eb9: R-c: a closure's view parameter is a view (`adopt_closure_parameter_views`); `out = c` refused without `*`)
+
+- **B474. `sub` called through an `S: Source` BOUND is emitted as `RemoteSource`'s own INHERENT `sub(|T|)` when S is a RemoteSource — the emitter picks the inherent member where the bound asked for the trait's — CLOSED 2026-10-02** (Order 45, lane solver-a-45, vilan 51de7eb9: pins; B473 was the root)
+
+- **B453. MISCOMPILE (JS) — a `&mut` VIEW of a TUPLE POSITION (`let v = &mut pair.1; v = 3`) throws a TypeError at run time: the view's write path does not know a tuple slot as a place — CLOSED 2026-10-02** (Order 45, lane solver-a-45, vilan 51de7eb9: the JS view of a tuple position is (tuple, flat offset))
+
+- **B444. `i"{first(&xs)}"` where `first` returns a `&i32` VIEW (`borrows xs`) prints `7,8,0` — the view's internal representation — instead of `7`: interpolation of a `&T` view value stringifies the view, not the element it reads — CLOSED 2026-10-02** (Order 45, lane solver-a-45, vilan 51de7eb9: a scalar view at a binary operand or by-value argument is read through on JS)
+
+- **B464. a closure-typed `&mut` parameter CALLED with a bare place — `f(a.s)` where `f: |&mut str| void` — is ACCEPTED (a `fun` with the same parameter refuses the call) and the JS output throws `TypeError: Cannot create property`; native prints the right answer — CLOSED 2026-10-02** (Order 45, lane solver-a-45, vilan 51de7eb9: BREAKING: a bare place at a closure view parameter is refused)
+
+- **B467. the view-escape rule is inconsistent at FIELDS: `struct { f: |&mut str| void }` is refused ('a view cannot escape') while the same closure type nested one level down (inside an `Option` or a second struct) is accepted — CLOSED 2026-10-02** (Order 45, lane solver-a-45, vilan 51de7eb9: a closure's own view parameters are not captures, at every depth)
+
+- **B475. a `dyn Source<T>`'s METHOD TABLE has no slot for `Flow::start` (a supertrait/blanket-provided member), so a pipe built over a Source OBJECT fails at run time with a TypeError — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: a `dyn` table carries the members a supertrait's bound reaches, both directions)
+
+- **B476. a bounded BLANKET impl over `Flow<X>` does not CHECK `X`: a bare `outer.flatten()` on `SignalCell<SignalCell<i32>>` compiles silently as the `Option` join, and sealed it types as the undetermined `MemoCell<Option<U>>` — which is why `std::ui` keeps a `Source` arm beside each `Flow` arm — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: blanket-provided arguments grounded; the element bound checked at candidate selection)
+
+- **B477. two SAME-NAMED blanket methods over `Flow` subjects with different element bounds (the two `flatten`s) resolve by DECLARATION ORDER, not by which bound holds — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: two same-named blankets resolve by which bound holds, either order)
+
+- **B478. a NAMED FUNCTION is refused at a `context`-typed closure parameter — `root.effect(show)` must be written `root.effect(|v| show(v))` now that pipe bodies are `context (owner_scope, ambient_nursery)` closures — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: named functions and variants at `context`-typed closure positions)
+
+- **B480. `switch<U, I: Flow<U>>` does not infer `U` when the selector returns a `dyn Flow<i32>` ('cannot infer U') — the mixed-arm selector only compiles with its type arguments written out — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: premise did not reproduce on next; pinned with no type arguments)
+
+- **B484. `f<U, R: IntoFlow<Option<U>>>(xs, |x| x)` cannot infer `U` when `R` is a FLOW (the closure returns a `Source<Option<T>>`/pipe): the trait argument's `U` is not read back from the flow's element — the collection operators route around it through the impl subject — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: call-site bound derivation picks the provider by the bound's pattern)
+
+- **B479. a pipe stage's CLOSURE PARAMETER inside a GENERIC body is typed as the trait's unsubstituted `T` (`derive` then `switch` under `S: Flow<X>`) — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: a generic carried by the receiver counts as an answer)
+
+- **B468. a DEFAULTED struct type parameter is ACCEPTED at declaration but never APPLIED: with `struct Ordered<K, V, O = Insertion>`, a signature's `Ordered<str, i32>` is a different type from a literal's `Ordered<str, i32, Insertion>` — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: R-e: omitted defaulted struct/enum type arguments take the declared default)
+
+- **B481. a `for` loop whose `next` is an INHERITED DEFAULT reachable only through a DECLINED impl block still compiles: B401's post-build refusal looks only at CALLS, and a loop's `next` is not a call — predates B401 — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: the admission pass walks for-each sites too)
+
+- **B472. the import steer indexes only DECLARED names, so an unimported `Map`/`Set` (now a deprecated alias import in `std::map`/`std::set`) gets NO hint, while an unimported `HashMap` gets the right one — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: alias re-exports indexed; the steer names `HashMap`/`HashSet`)
+
+- **B454. in `ok.and(Ok(5))` the ARGUMENT constructor's own error parameter stays OPEN — the new wall of `result-combinators.vl` after B424 (refused by name natively; JS runs it with `any`) — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: premise corrected: a self-binding no longer replaces a held binding)
+
+- **F65. native: a generic bare-trait-returning function instantiated twice gives every instance ONE instantiation's return type (both `wrap` instances return the `Str` cell; rustc E0308); JS is correct and the JS pin hides it — CLOSED 2026-10-02** (Order 45, lane solver-b-45, vilan d9d786ed: the function-level inferred return is written only under an empty substitution)
+
+- **J7. a spawn inside a USER-WRITTEN `context ambient_nursery` closure is NOT registered with the injected nursery: A142 S2's per-run task is cancelled with the run but UNOWNED, so its AbortError is reported on stderr instead of being absorbed — CLOSED 2026-10-02** (Order 45, lane reactive-45, vilan e76e506c: a spawn under an `ambient_nursery` clause registers with the injected nursery (a context.rs gate))
+
+- **M92. A142 S2 allocates a DETACHED NURSERY on every pipe-body run, including runs that start no task — a lazily created nursery (on the first spawn, like the lazy owner of §4.1) would make a task-free run free — CLOSED 2026-10-02** (Order 45, lane reactive-45, vilan e76e506c: an unspawned nursery is carried into the next epoch (`Nursery::has_spawned`))
+
+- **M93. A142 S6's `Tracker` is 5 cells per stage instance plus 1 per `effect`, allocated whether or not the body tracks anything — allocate it lazily on the first `track()` (the §4.1 lazy-owner shape), which makes an untracked body free — CLOSED 2026-10-02** (Order 45, lane reactive-45, vilan e76e506c: the Tracker's lists are made at the first `track()`)
+
+- **A146. `RemoteSource`, `KeyedSource`, `KeyedCell` and `ListCell` answer `None` for the new `Source::identity()`, so a TRACKED read of one re-attaches its edge on EVERY run — correct, but an attach per run, and for a mirror a lease-count bump with no frame — CLOSED 2026-10-02** (Order 45, lane reactive-45, vilan e76e506c: `identity()` for ListCell, KeyedCell, RemoteSource, KeyedSource)
+
+- **A144. a service's CONTRACT HASH reads its annotations AS WRITTEN, so a type ALIAS and its target hash apart: a whole-value `[expose]` or an `[rpc]` signature spelled `Map<..>` (the deprecated alias) and one spelled `HashMap<..>` get different hashes for the same wire contract (the plain twin's pin moved c63e39e3 → d093c571) — CLOSED 2026-10-02** (Order 45, lane reactive-45, vilan e76e506c: R-f BREAKING: the contract hash reads resolved types (a post-analysis pass, `contract_hash.rs`))
+
+- **B482. an INJECTED closure called inside `clear` of its own context should get the CLEARED state — strict reads in its literal fail to compile, safe reads get `None` — so a callback parameter typed `context tracking` and called under `tracking.clear(..)` is the STATIC `untrack` of reactive-layers.md §7.3; today the compiler refuses the call ('an injected closure is called here, but this code can be reached without an enclosing `run`'), and a callback captures its context at creation (spec §8.4), so a `clear` around the call cannot reach it — CLOSED 2026-10-02** (Order 45, lane reactive-45, vilan e76e506c: R-g BREAKING: the static `untrack` — the context pass (solver-b-45 dd521da6) + std's callbacks under `tracking.clear(..)`)
+
+- **F60. native — a PIPE that is never consumed (`outer.flatten();` as a statement, its value dropped) is refused 'unbound generic type parameter (#3823)' while JS runs it — an unconsumed pipe's element parameter has nothing to bind it — CLOSED 2026-10-02** (Order 45, lane reactive-45, vilan e76e506c: R-d door (a) as a TYPE rule: a discarded pipe statement warns (ledger 605); dropped pipes build natively)
+
+- **B504. `&binder` of a MATCH-PATTERN binding is emitted as `[binder, 0]` but the binder is never boxed: `match o { Some(let p) => f(&p) }` with `|v: &str| print(*v)` prints `a` instead of `ally`, `undefined` for an i32 — CLOSED 2026-10-02** (Order 45, lane solver-c-45, vilan 611cb003: every binder declaration can be the cell (`declare_cell_if_boxed`))
+
+- **B505. a `&self` receiver, or a `&b` argument, of a SCALAR local or rvalue is passed bare: `let a = 1; a.same(&b)` and `1.same(&1)` throw `self[0][self[1]]`, directly and through a generic — CLOSED 2026-10-02** (Order 45, lane solver-c-45, vilan 611cb003: a scalar `&self` receiver and a cell-less scalar view work on JS)
+
+- **B506. `&p.left` where the field's declared type is a generic `T` resolving to a scalar passes the VALUE instead of a pair: `fun lend<T>(p: &Pair<T>, f: |&T| void) { f(&p.left) }` then `lend(&Pair { left = 1 }, |v: &i32| print(*v))` throws a TypeError — CLOSED 2026-10-02** (Order 45, lane solver-c-45, vilan 611cb003: a view of a generic place is decided per instance)
+
+- **B496. JS: `out = &aggregate` — a Reference EXPRESSION assigned into a value place — still aliases: rule 3 excludes it from copies and B465's refusal covers only view bindings and parameters — CLOSED 2026-10-02** (Order 45, lane solver-c-45, vilan 611cb003: a view EXPRESSION assigned into a value place is refused; the spelled copy copies)
+
+- **F72. native: a variant constructor of a ONE-parameter enum with a BOUNDED parameter is typed as a trait object: `enum Op<T: Hashable> { Add(T), Gone }` then `let op: Op<i32> = Op::Add(3);` → "a value of type `a trait object`" — CLOSED 2026-10-02** (Order 45, lane native-b-45, vilan 4656ad9f: `is_grounded` no longer reads a bounded parameter's constraint as closed — native `HashSetCell`/`keys()` build)
+
+- **F76. native: a bare variant of a generic USER enum — `let n: Maybe<i32> = Maybe::Nothing;` — is refused as unbound even with the binding annotated — CLOSED 2026-10-02** (Order 45, lane native-b-45, vilan 4656ad9f: a bare variant takes the constructor's rule (recorded type, else the position))
+
+- **F75. native: a generic `W<P>` implementing `Source<Option<P>>` and consumed through the `Flow` blanket (`w.effect(..)`) is refused "unbound generic type parameter (parameter 1 of struct W)" — CLOSED 2026-10-02** (Order 45, lane native-b-45, vilan 4656ad9f: provider binders bound where a trait default is specialized — observing a `StoreSome` builds natively)
+
+- **F73. native: `set(None)` on a two-parameter struct's `Signal<Option<V>>` impl → "unbound generic type parameter (parameter 2 of struct `Pair`)" — CLOSED 2026-10-02** (Order 45, lane native-b-45, vilan 4656ad9f: already fixed at the base; pinned, and a struct literal's field expectation keeps its instance's bindings)
+
+- **F71. native: an UNBOUND generic in a generic function's nested pipe stages — `fun switch_to<T,U,S: Source<T>,I: Source<U>>(s: S, f: sync |T| I): SignalCell<U> { s.derive(|v| f(v)).switch(|inner: I| inner).cell() }` is refused "unbound generic parameter (parameter 3 of `switch_to`)" — CLOSED 2026-10-02** (Order 45, lane native-b-45, vilan 4656ad9f: `default_instance` composes onto the caller's substitution)
+
+- **F74. native refuses an in-process `duplex_pair` program that uses a generic `Counted<S>` wrapper ("unresolved type") — CLOSED 2026-10-02** (Order 45, lane native-b-45, vilan 4656ad9f: premise corrected: `keyed_mirror_of`'s untyped closure parameter and empty literal)
+
+- **F79. native: a `mut` PATTERN binder is emitted without `mut`: `match Some(1) { Some(mut p) => bump(&mut p) }` and `mut (c, d) = (3, 4); bump(&mut c)` → rustc E0596 — CLOSED 2026-10-02** (Order 45, lane native-b-45, vilan 4656ad9f: a `mut` pattern binder is emitted `mut`)
+
+- **F80. native: a `for e in &mut xs` element handed on inside a generic body is emitted `&mut e` instead of a reborrow `&mut *e` (E0596): `fun each<T>(xs: &mut List<T>, f: |&mut T| void) { for e in &mut xs { f(e) } }` — CLOSED 2026-10-02** (Order 45, lane native-b-45, vilan 4656ad9f: a `for e in &mut xs` element is reborrowed)
+
+- **F81. native: `*if c { &a } else { &b }` is emitted as a deref of `.clone()`d branches (E0614) — CLOSED 2026-10-02** (Order 45, lane native-b-45, vilan 4656ad9f: `*` over a conditional view is lowered per leaf)
+
+- **A147. `KeySlots::identity` mints from `fresh_id()`, whose counter overlaps `Shared::identity`'s (and so `SignalCell::identity`'s): a tracked body that reads a cell and a map entry with equal numbers dedups them and the entry's edge is never attached (`collide.vl`: `sealed=4, want 103`) — CLOSED 2026-10-02** (Order 45, lane store-45, vilan 276f4ed2: one std minting function (`std::shared::fresh_identity`) for every identity)
+
+- **A142. PAPER — reactive LAYERS: `Source`s (state, readable) and MOVE-ONLY PIPES (transformations — `derive`, `switch`, … — consumed exactly once by `.memo()`/`.cell()`/`.sample()`/`.transient()` or a consumer, so every body runs once per change and per-run owners always cohere), `TransientSource` for values that come and go, collections per SHAPE whose operators follow a returned flow, and tracked reads (`.track()`) and `Store` as sugar layers on top — CLOSED 2026-10-02** (Order 45, lane store-45, vilan 276f4ed2: S1–S6 (Order 44) + S7's S1 and S2 (`std::store`: `[derive(Storable)]`, `Store<T>`, `StoreSome<P>`, `StoreFlag`, `when_live`); the Store's remaining slices are A149)
+
+- **A148. rename `SetCell`, `MapCell` and their family to `HashSetCell`, `HashMapCell` and so on, to match the plain collections' names (`HashSet`, `HashMap`, I9) — CLOSED 2026-10-02** (Order 45, lane rename-45, vilan c848659d: `HashMapCell`, `HashSetCell`, `HashMapEntry`, `HashSetEntry`, `HashMapMemo`, `HashSetMemo`, `TrackedHashMap`; shape names kept short)
+
+- **M103. next @f67def61 is 25–30% SLOWER than v0.42.1 on every kolt edit in the LSP, and peaks higher (926 → 1,042 MB): leaf 1,130 → 1,420 ms CPU to diagnostics, `model.vl` 370 → 490, css 1,230 → 1,520, multi-document settle 5.5 s → 7.1 s — CLOSED 2026-10-02** (Order 45, lane perf-b-45, vilan 44d63c90: the regression was maps-45; three scans made exact and cheap — kolt's check 24.4 G (v0.42.1) → 17.0 G instructions; memory → M108)
+
+- **M102. under callgrind one css keystroke ran `analyze_on_this_thread` FIVE times (`analyze_over_world` 3 + 2) — CLOSED 2026-10-02** (Order 45, lane perf-b-45, vilan 44d63c90: answered: one analysis per keystroke per open world; the 'five' were the E124 clock under valgrind)
+
+- **B445. `[platform("browser")]` written BEFORE `export impl` fails to parse with NO steer; the working spelling is `export [platform(..)] impl` — the parser should accept the attribute in either position, or refuse with the steer — CLOSED 2026-10-02** (Order 45, lane syntax-45, vilan 4fdf7cc1: attributes may stand ahead of `export`; `vilan fmt` prints attributes, then `export` + keywords, then the declaration word (B485 Q6))
+
+- **B446. a PARAMETER named `own` is reported as "found '>'" at the PREVIOUS parameter's `>` — after B414 `own` is contextual (`eat_binder_prefix` reads it as the keyword when a binder follows), and a bare `own` parameter following a generic-typed one mis-parses with the error pointed at the wrong token — CLOSED 2026-10-02** (Order 45, lane syntax-45, vilan 4fdf7cc1: premise corrected: a failed parameter binder reports at the offending token)
+
+- **B488. stale steer for `const x = 1;` in a body: "Vilan has no const declarations; write `let x = const ..`" — but `const let` exists (G24) — CLOSED 2026-10-02** (Order 45, lane syntax-45, vilan 4fdf7cc1: the `const x = 3;` steer names `const let`)
+
+- **B492. `export export fun f()` is accepted silently — CLOSED 2026-10-02** (Order 45, lane syntax-45, vilan 4fdf7cc1: `export export` is refused once per run)
+
+- **B507. `vilan fmt` declines a closure parameter written `|&x: &i32|` (a view binder and a type together): `print_parameters_inner` drops the prefix when the type is a reference — CLOSED 2026-10-02** (Order 45, lane syntax-45, vilan 4fdf7cc1: `vilan fmt` no longer declines `|&x: &i32|`)
+
+- **B517. `vilan fmt` DECLINED two shapes next's own fixtures use: `*if c {..} else {..}` (a deref of a conditional) and `kept.read()(2)` (a call of a call's result) — CI's vilan-fmt leg was red on next before the lane — CLOSED 2026-10-02** (Order 45, lane syntax-45, vilan 4fdf7cc1: `*if ..` and `kept.read()(2)` reprint as written)
+
+- **E235. the declaration line of a method whose receiver is `own self` RENDERS as `self` (hover / inlay / docs) — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: the signature printer prints every convention (`own x`, `&T`, `&mut T`, `&self`))
+
+- **E237. hovering a VARIABLE or FIELD whose type is a struct (or enum) should show that type's DEFINITION below the `name: Type` line shown today — the fields (or variants) with their types, so the reader need not jump to the declaration — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: the type's definition under a variable's or field's line, one level deep)
+
+- **E238. a METHOD's hover should name the type or trait it belongs to — today it shows only `fun get_or_insert(self, key: K, make: || V): V`; the owner's two candidate spellings: `fun Memo<K: Hashable, V>.get_or_insert(self, key: K, make: || V): V`, or `impl Memo<K: Hashable, V> fun get_or_insert(self, key: K, make: || V): V` — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: the `impl`/`trait` header above a method's `fun` line)
+
+- **E239. hovering `self` should show its TYPE — the impl's subject with its binders (`self: Memo<K, V>`), the receiver convention (`self` / `own self` / `&self` / `&mut self`), and inside a trait default the trait (`self: Self` where `Self: Flow<T>`) — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: `self: <subject>` under the header)
+
+- **E240. hover is not RICH on generic parameters and their constraints: `Flow` in `fun switch<U, I: Flow<U>>`; `F`, `Flow` and `T` in `impl type F: Flow<type T>`; `T` in `fun sub(own self, observer: |T| void)` — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: type parameters and bounds hover as what they are)
+
+- **E241. hover is WRONG on a match case's pattern: `None` in `match x { None => {}, _ => {} }` — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: match patterns hover as the variant of the scrutinee's type; `_` no longer `void`)
+
+- **E242. error spans DRIFT while typing: a diagnostic should stay pinned to the code it applies to until the next paint — typing lines above an error makes it slide up a line — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: diagnostics follow edits until the next analysis)
+
+- **E236. an LSP PERFORMANCE TEST on kolt during DOCUMENT CHANGES: drive `vilan-lsp` over kolt's real tree with scripted `didChange` edits (a keystroke in a leaf file, in a widely-imported file such as `shared.vl`/`styles.vl`, in a `.vl` holding css, an edit that breaks and then repairs the parse) and record, per edit, time-to-diagnostics, time-to-hover/completion/inlay answers, CPU time and peak memory — against E121's mandate (<10 ms on the keystroke path, <500 ms to errors) — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: the harness `scripts/lsp-latency.py` + the baseline; gating is M105's)
+
+- **E244. E236's harness never pauses 600 ms, so it never sees the dead-code clock's cost: a real pause after a leaf keystroke runs THREE analyses and 3.65 s of CPU where the harness reports 1.1 s — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: a keystroke-plus-pause row, instructions and analyses columns)
+
+- **E234. bindgen still ESCAPES reserved METHOD names (`type` → `type_`) although B414 S4 admits any word as a member after `.` — contextual-keywords.md's S4 says the escape stops for members — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: bindgen escapes reserved member names)
+
+- **B436. `print` of a `dyn` value prints the erased PAIR — `[ [ 5 ], {} ]` — on JS, and native copies that on purpose (`vilan-rt/src/lib.rs:777-781`); the value is what the reader wants — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: a `dyn` at an `any` host parameter crosses as its value)
+
+- **B437. the JS `type_key` has NO `Dyn` arm — a `dyn` at a keyed position falls through to whatever the default arm answers — CLOSED 2026-10-02** (Order 45, lane editor-45, vilan d2e3fa04: a real JS miscompile: the vtable key carries the trait's arguments)
+
+- **K25. the PLAYGROUND's examples are broken on v0.42.0: they still spell the reactive `.map` that A142 renamed to `.derive` (and whatever else the pipe model changed) — CLOSED 2026-10-02** (Order 45, lane web-45, vilan 06efc1f (vilan-website): the examples were not broken — a restored stale buffer and the landing panel were; retired-example swap + a gate that compiles every shipped program (f1d51b2))
+
+- **K27. `then` is highlighted as a keyword in the VS Code grammar and the book's highlighter (both carry B459's contextual rule) but NOT in the PLAYGROUND editor, whose keyword list is hand-kept and stale — CLOSED 2026-10-02** (Order 45, lane web-45, vilan 06efc1f (vilan-website): the playground's keyword lists come from `vilan --print-keywords`; contextual words painted in position; gated)
+
+- **B519. a module-level `let` GENERATED BY A MACRO in an IMPORTED module is never emitted on JS: a `[service(Client)]` declared outside the entry file calls `origin_source(__mirrors_Client_method, ..)` and the table's declaration is missing — `ReferenceError: __mirrors_KoltClient_get_channels is not defined` in the browser — CLOSED 2026-10-02** (Order 45, lane fix-45, vilan dcb06444: a macro-generated module-level `let` is its module's binding outside the entry (`generated_expansion_scopes`); every macro, inline `mod`s, dependency libraries, both backends; the loan-only rule too; eight pins + a generic dangling-table check)

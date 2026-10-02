@@ -84,5 +84,53 @@
     "2026-10-01": "keywords-vs-attributes.md Q1–Q11 and opaque-returns.md Q1–Q11 RULED as recommended (opacity REVERSES Order 44's 'checked, not hidden'); E240 + E241 filed (the owner's hover items), handed to editor-45 if time",
     "2026-10-02": "v0.42.1 cut + folded (the perf patch); B455 (B) `(impl Box with One)`; K25 + K27 now, K26 later; A148's scope (Hash prefix on the cells, shape names short) — built this order; M106 as recommended (complexity counts, not time); performance-gates.md Q1–Q12 as recommended (M105); two lanes added for late miscompiles/refusals (solver-c-45, native-b-45) and perf-b-45 for M103 (blocks the cut) + M104",
     "2026-10-02b": "M104 → the entry-world design (Order 46 FIRST in editor); v0.43.0 is cut with M108 (peak memory +20%) as a written exception"
+  },
+  "merged": {
+    "date": "2026-10-02",
+    "tip": "dcb06444",
+    "order": [
+      "native-45 eb8a8840",
+      "perf-45 ba2eebd9",
+      "solver-a-45 51de7eb9",
+      "solver-b-45 d9d786ed",
+      "reactive-45 e76e506c",
+      "v0.42.1 merge-back c619d663",
+      "solver-c-45 611cb003",
+      "maps-45 f67def61",
+      "native-b-45 4656ad9f",
+      "store-45 276f4ed2",
+      "rename-45 c848659d",
+      "perf-b-45 44d63c90",
+      "syntax-45 4fdf7cc1",
+      "editor-45 d2e3fa04",
+      "fix-45 dcb06444"
+    ],
+    "papers": "papers-45 7178967, papers-b-45 eb2ef88 (proposals)",
+    "web": "K25 f1d51b2, K27 06efc1f (vilan-website)"
+  },
+  "lanes_added": {
+    "perf-45": "M94–M98 (the v0.42.0 check regression; also v0.42.1)",
+    "solver-c-45": "B504 B505 B506 B496 (view miscompiles found by store-45)",
+    "native-b-45": "F72 F76 F75 F73 F71 F74 + F79 F80 F81",
+    "rename-45": "A148",
+    "perf-b-45": "M103 (BLOCKED the cut) M104 M107-part",
+    "papers-b-45": "M105's paper",
+    "web-45": "K25, K27",
+    "fix-45": "B519 (the owner's kolt client) + two Windows pins"
+  },
+  "seal": {
+    "1": "d2e3fa04 local green but perf (M108 exception); CI red on windows-2 (the clock pin — a REAL Windows path bug; the b277 debounce pin — fragile)",
+    "2": "dcb06444 local green (perf: CPU x0.97, RSS x1.27 = the ruled M108 exception); CI 37071847134 GREEN"
+  },
+  "sealed": {
+    "tip": "dcb06444",
+    "date": "2026-10-02",
+    "ci": "37071847134 GREEN"
+  },
+  "sweep": {
+    "date": "2026-10-02",
+    "closed": 81,
+    "filed": 84,
+    "tracker_open_after": 147
   }
 }
