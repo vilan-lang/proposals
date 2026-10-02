@@ -1,0 +1,21 @@
+import std::reactive::{ Owner, Signal, SignalCell, Source, batch, run_with_owner };
+import std::shared::Shared;
+
+fun main() {
+	let a = SignalCell::new(0);
+	let b = SignalCell::new(0);
+	let fired = Shared::new(0);
+	let watching = Owner::new();
+	run_with_owner(watching, || {
+		a.effect_on_change(|_x| fired.write() += 1);
+		b.effect_on_change(|_x| fired.write() += 1);
+	});
+	a.set(1);
+	print(i"inline: {fired.read()}");
+	batch(|| {
+		a.set(2);
+		b.set(2);
+	});
+	print(i"batched: {fired.read()}");
+	watching.dispose();
+}

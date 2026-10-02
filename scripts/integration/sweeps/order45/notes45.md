@@ -109,3 +109,5 @@
 - native-b-45 MERGED @4656ad9f (pushed; gates native_differential 134, corpus, inference tracking+maps, release_scripts, split). Reaped. store-45 resumed: rebase onto 4656ad9f, drop the B504/B506/F79/B505 workarounds, flip its F75 pin, B482's rule, `identity()`. **perf-b-45 LAUNCHED** off next: M103 (bisect + fix the 25–30% LSP regression; BLOCKS the cut), M104 (the multi-document `model.vl` settle), M101's caches if time.
 
 ## The owner (2026-10-02): performance must be GATED — M105 FILED; `perf_compare.py` written and wired into `seal.sh` (tip vs the previous release on kolt: check CPU + RSS, and the LSP harness when the tree has it; red past x1.10; smoke-run release vs release: x0.96, green). Paper lane papers-b-45 launched.
+
+## store-45 — REBASED 2026-10-02 onto 4656ad9f (tip 0380a96b; nextest 9321/9322 → fixed; native 136/136; shared census 196) — one more commit owed before the merge: A147 (maps' `KeySlots::identity` collides with cell identities — WRONG VALUE on next), which the lane fixes with one std minting function. Finds FILED A147, F83, B515, B516.

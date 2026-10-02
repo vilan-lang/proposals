@@ -24,6 +24,7 @@
 | [A142](items/A142.md) | PAPER — reactive LAYERS: `Source`s (state, readable) and MOVE-ONLY PIPES (transformations consumed once by `.memo()`/`.cell()`/`.sample()`/`.transient()` or a consumer — per-run owners always cohere), `TransientSource`, per-shape collection operators that follow a returned flow, tracked reads and `Store` as sugar | design (paper; L) | the owner's `reactive2.vl` sketch (2026-09-29); `proposal/reactive-layers.md` RATIFIED rev 2 (R1–R37; R29 = pipes, supersedes R16–R19), unbuilt; no question open; A124, A112, B458–B463 |
 | [A144](items/A144.md) | a service's CONTRACT HASH reads its annotations AS WRITTEN, so a type ALIAS and its target hash apart: a whole-value `[expose]` or an `[rpc]` signature spelled `Map<..>` (the deprecated alias) and one spelled `HashMap<..>` get different hashes for the same wire contract (the plain twin's pin moved c63e39e3 → d093c571) | bug (rpc contract) — design | collections-44 (Order 44, I9 @0a4ab701); rpc.vl's `[service]` expansion; keyed exposures hash the value type and did not move |
 | [A146](items/A146.md) | `RemoteSource`, `KeyedSource`, `KeyedCell` and `ListCell` answer `None` for the new `Source::identity()`, so a TRACKED read of one re-attaches its edge on EVERY run — correct, but an attach per run, and for a mirror a lease-count bump with no frame | feature (S) | tracking-44 (Order 44, S6 @2dc418d3 — `Source::identity(): Option<i32>`, default `None`; `SignalCell`/`MemoCell` return their cell's identity); rpc.vl and delta.vl were other lanes' files |
+| [A147](items/A147.md) | `KeySlots::identity` mints from `fresh_id()`, whose counter overlaps `Shared::identity`'s (and so `SignalCell::identity`'s): a tracked body that reads a cell and a map entry with equal numbers dedups them and the entry's edge is never attached (`collide.vl`: `sealed=4, want 103`) | WRONG VALUE (HIGH; unreleased — maps-45 on next) | store-45 report 2 (Order 45); repros under `sweeps/order45/store-45/finds/` |
 ## B. Type system & the type solver
 
 | ID | Title | Kind | Discussion |
@@ -101,6 +102,8 @@
 | [B512](items/B512.md) | an unannotated `let x = if c { &a } else { &b }` is not seen as a view binding (`view_binding_mutability` does not look through branches): it binds the aggregate itself | aliasing (JS; M; read from the code, not run) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 | [B513](items/B513.md) | the analyzer leaves CLOSURE PARAMETERS untyped when only a generic call's annotated result types them: `let shown: Shared<\|str\| void> = Shared::new(\|key\| print(i"{key}"));` — natively refused ("unresolved type") | inference (M) | native-b-45 (Order 45); sweeps/order45/REPORT-native-b-45.md |
 | [B514](items/B514.md) | JS: `*if c { &a } else { &b }` over a SCALAR or `str` prints the place pair — `let n = 4; let m = 5; print(*if n < m { &n } else { &m })` prints `[ [ 4 ], 0 ]` | MISCOMPILE (JS; S–M) — the view family | native-b-45 (Order 45); B444, B496, B504–B506 (the view family, Order 45) |
+| [B515](items/B515.md) | a trait's methods resolve in user code with NO import once any LOADED std module imports the trait: `import std::markdown;` makes `42.to_string()` compile without importing `Display` | HOLE (solver/visibility; M) | store-45 report 2 (Order 45); repros under `sweeps/order45/store-45/finds/` |
+| [B516](items/B516.md) | an annotated `let lend: \|(\|&i32\| void)\| void = \|f\| ..` does not type `f`: "f is never given a type" | inference (L) | store-45 report 2 (Order 45); repros under `sweeps/order45/store-45/finds/` |
 
 ## C. Memory model
 
@@ -177,6 +180,7 @@
 | [F80](items/F80.md) | native: a `for e in &mut xs` element handed on inside a generic body is emitted `&mut e` instead of a reborrow `&mut *e` (E0596): `fun each<T>(xs: &mut List<T>, f: \|&mut T\| void) { for e in &mut xs { f(e) } }` | bug (native refusal; M) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 | [F81](items/F81.md) | native: `*if c { &a } else { &b }` is emitted as a deref of `.clone()`d branches (E0614) | bug (native refusal; S–M) | solver-c-45 (Order 45); sweeps/order45/REPORT-solver-c-45.md |
 | [F82](items/F82.md) | native: a SWAPPED struct literal inside the struct's own impl — `fun swap(self, value: V): Pair<V, K> { Pair { key = value, .. } }` — is refused ("instantiated at `any`"): the emitter cannot mint a substituted TypeId | native refusal by name (S–M) + design | native-b-45 (Order 45); sweeps/order45/REPORT-native-b-45.md |
+| [F83](items/F83.md) | native: `fired.write() += 1` in an effect run from a turn drain (a `batch`) aborts "a cell was read while it is being updated"; the same line works inline, and `fired.write() = fired.read() + 1` works in the drain | bug (native RUNTIME abort; M) | store-45 report 2 (Order 45); repros under `sweeps/order45/store-45/finds/` |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |

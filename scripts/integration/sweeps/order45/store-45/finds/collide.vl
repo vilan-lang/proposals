@@ -1,0 +1,28 @@
+import std::reactive::{ MapCell, Signal, SignalCell, Source, derive };
+
+fun main() {
+	let map: MapCell<str, i32> = MapCell::new();
+	map.insert("a", 1);
+	mut cells: List<SignalCell<i32>> = [];
+	mut i = 0;
+	for i < 20 {
+		let cell: SignalCell<i32> = Signal::new(i);
+		let _id = cell.identity();
+		cells.push(cell);
+		i += 1;
+	}
+	let warm: SignalCell<i32> = Signal::new(0);
+	let _a = warm.on_change(|_v| {});
+	let _b = warm.on_change(|_v| {});
+	let _c = warm.on_change(|_v| {});
+	let _d = warm.on_change(|_v| {});
+	let entry_id = map.at("a").identity().unwrap_or(-1);
+	for cell in cells {
+		if cell.identity().unwrap_or(-2) == entry_id {
+			let sealed = derive(|| cell.track() + map.at("a").track().unwrap_or(0)).memo();
+			map.insert("a", 100);
+			print(i"collided (id {entry_id}): sealed={sealed.get()}, want {cell.get() + 100}");
+		}
+	}
+	print(i"entry id {entry_id}");
+}
