@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "A148",
+   "section": "A",
+   "kind": "rename (UNRELEASED surface — cheapest before v0.43.0 is cut)",
+   "area": "Reactive core & UI (`std::reactive`, `std::ui`)",
+   "status": "OPEN — filed 2026-10-02 (the owner's item)",
+   "title": "rename `SetCell`, `MapCell` and their family to `HashSetCell`, `HashMapCell` and so on, to match the plain collections' names (`HashSet`, `HashMap`, I9)",
+   "discussion": "the owner (2026-10-02); A138 / `proposal/reactive-maps-sets.md` Q1 (ruled `MapCell`/`SetCell` on 2026-10-01 — this re-rules it); I9 (`Map`/`Set` → `HashMap`/`HashSet`); maps-45 (merged to next @f67def61, unreleased)",
+   "body": "The family as built: `MapCell`, `SetCell`, `MapEntry`, `SetEntry`, `MapSource`, `MapSignal`, `SetSource`, `SetSignal`, `MapMemo`, `SetMemo`, `MemoEntry`, `MapFlow`, `MapPipe`, `MapInstance`, `SetFlow`, `SetPipe`, `SetInstance`, `MapOp`, `SetOp`, `TrackedMap`, `MapCount`, `MapSum`, `KeySlots`, files `map_cell.vl`/`set_cell.vl`. OWNER QUESTION inside the item: which of these take the `Hash` prefix — rec: the two CELLS and what is named after them (`HashMapCell`, `HashSetCell`, `HashMapEntry`, `HashSetEntry`, `HashMapMemo`, `HashSetMemo`, `TrackedHashMap`, files `hash_map_cell.vl`/`hash_set_cell.vl`), while the SHAPE names stay short (`MapSource`, `MapSignal`, `MapFlow`, `MapPipe`, `MapOp`, `SetSource`, `SetOp` …) because a future `SortedMapCell` (paper S4) implements the same faces. Nothing is released under the old names, so no deprecation window is needed if it lands before the cut; after the cut it needs `[deprecated]` aliases for one release. Also the paper, the docs, the CHANGELOG entries, the kolt patch (`sweeps/order45/maps-45/kolt-maps-45.patch`), the store's S3 plan. Sizing S (mechanical)."
+  },
+  {
+   "id": "M106",
+   "section": "M",
+   "kind": "feature (diagnostics; M — design first)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-02 (the owner's item)",
+   "title": "the compiler SUGGESTS how to make a slow program check faster — e.g. a type annotation where inference is measured to be exceedingly slow — as a warning or an info, never an error",
+   "discussion": "the owner (2026-10-02); M105 (performance gates), M101/M103/M104, `VILAN_PHASE_TIMING=passes`; Rust's `-Ztime-passes`/`cargo --timings`, TypeScript's `--generateTrace` and its \"expression produces a union type that is too complex\" class",
+   "body": "Shape to decide (rec in each): WHAT is measured — a deterministic COST per declaration/expression (unification steps, candidate selections, fixpoint rounds, instantiations minted), not time, so the suggestion is the same on every machine and never flickers (rec: counts, with a threshold per kind); WHAT is suggested — an annotation on the binding/closure parameter/return whose inference dominated, a named type for a deep generic chain, sealing a long pipe chain into a named function, a narrower import that prunes a blanket's candidates — each only where the compiler can show the annotation it would write (a quick fix); SEVERITY — rec an `info` in the editor (a hint with a code action) and a line in `vilan check --timings`, promoted to a warning only past a much higher threshold, never an error, suppressible per site; WHERE it shows — LSP hint, `vilan check --timings` report (top N costs with spans), not the default CLI output. First step is the instrument: per-item cost attribution in the analyzer (also what M105's counters and the per-release 'top offenders' report need). Sizing M (instrument) + M (suggestions); a short paper or a section of M105's paper first."
+  },
+  {
+   "id": "K27",
+   "section": "K",
+   "kind": "bug (highlighting; S) — verified 2026-10-02",
+   "area": "Web presence (site, playground, docs delivery)",
+   "status": "OPEN — filed 2026-10-02 (the owner's item)",
+   "title": "`then` is highlighted as a keyword in the VS Code grammar and the book's highlighter (both carry B459's contextual rule) but NOT in the PLAYGROUND editor, whose keyword list is hand-kept and stale",
+   "discussion": "the owner (2026-10-02: \"double check that `then` was added as a keyword to the syntax highlighting rules\"); B459 (`then`/`else`, Order 44); B414 (contextual keywords), B413 (`resource` is `[resource]` now); `grammar_sync.rs` (the test that keeps the TextMate grammar in step with the lexer)",
+   "body": "Checked: `editors/vscode/syntaxes/vilan.tmLanguage.json` and `vilan/docs/theme/vilan.js` each have the B459 rule (`then` between a complete operand and a branch; `let then = 1`, `promise.then(f)` stay plain). The website's `playground/editor-src/editor.mjs` `KEYWORDS` set has no `then` — and no `lazy`, `context`, `dyn`, `only`, `break`/`continue` if those are keywords — while still listing `resource`. Fix: regenerate that list from the compiler's tables (`lexing::KEYWORDS` + `CONTEXTUAL_KEYWORDS`; syntax-45's marker census is the source), add the contextual `then` rule, and gate it: a test in the website repo that fails when the playground's list differs from the installed compiler's. Sizing S; with K26."
+  }
+ ]
+}
