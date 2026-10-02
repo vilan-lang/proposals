@@ -112,3 +112,4 @@
 
 ## store-45 — REBASED 2026-10-02 onto 4656ad9f (tip 0380a96b; nextest 9321/9322 → fixed; native 136/136; shared census 196) — one more commit owed before the merge: A147 (maps' `KeySlots::identity` collides with cell identities — WRONG VALUE on next), which the lane fixes with one std minting function. Finds FILED A147, F83, B515, B516.
 - **A148, M106, K27 FILED** (the owner, 2026-10-02): the `Hash` prefix on the reactive map/set cells (unreleased — cheapest before the cut; which names take it is the owner's); compiler optimization suggestions; `then` is highlighted in VS Code and the book but NOT in the playground editor.
+- RULED (the owner): A148's scope as recommended → lane rename-45 after store-45 merges; K27 now (web lane resumed); M106 as recommended — COMPLEXITY counts, not time; Order 46.
