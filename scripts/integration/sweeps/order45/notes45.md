@@ -98,3 +98,6 @@
 
 ## solver-c-45 — REPORTED 2026-10-02 (tip 7477edc5 on e071b662; REPORT-solver-c-45.md) — MERGING
 - LANDED 4/4 (B504, B506, B505, B496) with one shared cause; no golden moved. Finds FILED B511 (HIGH), B512, F79–F81. store-45 told at its rebase which workarounds can go.
+- solver-c-45 MERGED @611cb003 (pushed; gates native_differential 123, corpus, inference 5030, copy census, release_scripts, split). Reaped.
+## maps-45 — FINAL (rebased tip b2650cbe on e071b662; nextest 9272/9272; native 121/121; shared census 192; copy census 571) — MERGING (merge-maps-45.log)
+- After the rebase: B473 and B484 workarounds removed (`sum_by` follows its measure), B482's rule in `MapCount`/`MapSum`, `identity()` on the cells/memos/`SetEntry`. The kolt patch unchanged and re-checked. The harness's interference flag: the lane killed nothing; it removed its own gate logs.
