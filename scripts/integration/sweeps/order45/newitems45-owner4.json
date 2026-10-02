@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "M105",
+   "section": "M",
+   "kind": "process + tooling (the owner's ask; paper first, the seal step built)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-02 (the owner's item); the seal-time comparison BUILT (`scripts/integration/perf_compare.py`, in `seal.sh`); the paper is lane papers-b-45",
+   "title": "PERFORMANCE is gated, not only measured: (1) detect regressions before they ship, (2) name what needs optimizing — budgets on deterministic counts in the normal gate, CPU-time comparison against the previous release at every seal and cut, a standing per-release target report",
+   "discussion": "the owner (2026-10-02): \"it would make sense to enforce strict time to completion constraints (1) to prevent or at least detect regressions and (2) to identify areas that need optimization\" — on a Ryzen 7 9800X3D `vilan check` and the LSP should be faster, and on a MacBook they feel sluggish; v0.42.0's 3x regression (M94–M98, v0.42.1), M103 (next 25–30% slower than v0.42.1), M104; E121 (<10 ms keystroke, <500 ms to diagnostics — on paper only), E236 (the LSP harness), `proposal/perf-baseline.md` (why absolute seconds are not asserted), M15 (CPU time, not wall)",
+   "body": "Today almost nothing fails a build for being slow: `perf_baseline` is ignored for its cost, one ratio pin and a handful of counter pins run in the gate, E121's targets are unenforced. BUILT now: `perf_compare.py` — the tip vs the previous release on kolt (`vilan check` CPU + peak RSS, interleaved cold runs, medians; the LSP harness for both servers), red past x1.10, wired into `seal.sh`. THE PAPER decides: which deterministic counters get budgets in the normal gate (instruction counts under callgrind per corpus program? the compiler's own counters — type slots minted, analyses per edit, impl selections, expressions walked?) and the tolerance; where each gate runs (nextest, CI, the seal, the cut script refusing a regressed tag); the reference corpus (kolt is the owner's and private — the examples, the website, a synthetic app?); the per-release target table and its profile; E121's numbers as enforced budgets; what single-thread vs parallel analysis means for the targets (the type-check is one thread per entry, entries serial). Sizing M (paper) + M (build)."
+  }
+ ]
+}
