@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "A149",
+   "section": "A",
+   "kind": "feature (the Store's remaining slices; L)",
+   "area": "Reactive core & UI (`std::reactive`, `std::ui`)",
+   "status": "OPEN — filed 2026-10-02 (Order 45's sweep: A142 closes with S7's S1 + S2 built; this carries the rest)",
+   "title": "`Store` S3–S6: map, set and list FIELDS as keyed and sequence nodes (S3), field-syntax sugar + completion/hover (S4), compiler-generated nodes only on a measured need (S5), the kolt patch (S6)",
+   "discussion": "`proposal/store.md` (ruled 2026-10-01); store-45's S3 plan in `sweeps/order45/REPORT-store-45.md`; the reactive hash collections (A138: `HashMapCell`, `KeySlots`, `MapOp`); the owner's open question on `StoreSome<P>` (a separate type for through-variant/`Option` handles — Q6 against Q8; merged as built)",
+   "body": "S3 per the lane's plan: the path becomes `List<StoreStep { Field(usize), Key(Hash) }>`; keyed children are full NODES; `impl HashMap<K, V: Storable> with Storable` wakes only changed live keys; `at(key): Store<Option<V>>` (a real Signal there: `set(None)` removes the key); a lazily made `DeltaLog<MapOp>` per watched field so the field handle is a `MapSource`; sets likewise (`contains(x): Store<bool>`); lists as sequence nodes recording `SeqOp`, `by_key`, no `at(index)` (Q11). Also owed: `store_opaque` goes when B508 is fixed; the write-back under a match binder goes with B509. Then S6: kolt's `Account`, `ChannelRecord`/`GlobalStore`, `get_message` as `global.messages().at(id)`. Sizing L; Order 46."
+  }
+ ]
+}

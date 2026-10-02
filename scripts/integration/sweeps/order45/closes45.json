@@ -1,0 +1,486 @@
+{
+ "date": "2026-10-02",
+ "order": "Order 45",
+ "closes": [
+  {
+   "id": "F62",
+   "lane": "native-45",
+   "commit": "eb8a8840",
+   "text": "a field read/written through a `Shared` view builds natively (`Shared::read_with`; a `write()` place settles its reads first)"
+  },
+  {
+   "id": "F57",
+   "lane": "native-45",
+   "commit": "eb8a8840",
+   "text": "crypto.vl builds natively; a `match` literal pattern takes its subject's width; the platform-bound gate"
+  },
+  {
+   "id": "F61",
+   "lane": "native-45",
+   "commit": "eb8a8840",
+   "text": "a closure type's hidden context slots take the pass's order"
+  },
+  {
+   "id": "F63",
+   "lane": "native-45",
+   "commit": "eb8a8840",
+   "text": "a closure's expression body is a consuming position natively"
+  },
+  {
+   "id": "F64",
+   "lane": "native-45",
+   "commit": "eb8a8840",
+   "text": "premise corrected; an `Option<|| V>` field in a generic struct builds; a `match` leg handing back a place copies"
+  },
+  {
+   "id": "F52",
+   "lane": "native-45",
+   "commit": "eb8a8840",
+   "text": "a module `lazy let` forwarded to a `lazy` parameter passes a thunk"
+  },
+  {
+   "id": "F54",
+   "lane": "native-45",
+   "commit": "eb8a8840",
+   "text": "comparisons and `&&`/`||` clear the inherited expectation"
+  },
+  {
+   "id": "F55",
+   "lane": "native-45",
+   "commit": "eb8a8840",
+   "text": "a written annotation over an Option/Result variant initializer is emitted"
+  },
+  {
+   "id": "M91",
+   "lane": "native-45",
+   "commit": "eb8a8840",
+   "text": "`vilan_rt::Map` compacts tombstones past half, order kept"
+  },
+  {
+   "id": "M94",
+   "lane": "perf-45",
+   "commit": "ba2eebd9",
+   "text": "R11 scans the instantiated callee's body and mints no slot per place"
+  },
+  {
+   "id": "M95",
+   "lane": "perf-45",
+   "commit": "ba2eebd9",
+   "text": "resource classification reads a member's own slot where substitution cannot change it"
+  },
+  {
+   "id": "M96",
+   "lane": "perf-45",
+   "commit": "ba2eebd9",
+   "text": "B457's write summaries read a span index"
+  },
+  {
+   "id": "M97",
+   "lane": "perf-45",
+   "commit": "ba2eebd9",
+   "text": "`impl_members_for_bound` answers once per Program"
+  },
+  {
+   "id": "M98",
+   "lane": "perf-45",
+   "commit": "ba2eebd9",
+   "text": "`VILAN_PHASE_TIMING=passes` + the emission-walk row; `applying_implementations` memoized"
+  },
+  {
+   "id": "B473",
+   "lane": "solver-a-45",
+   "commit": "51de7eb9",
+   "text": "through a sub-trait the DECLARING trait's impl answers — the override, then the default; both backends"
+  },
+  {
+   "id": "B483",
+   "lane": "solver-a-45",
+   "commit": "51de7eb9",
+   "text": "R-c: std's storing constructors take `own`; JS copies"
+  },
+  {
+   "id": "B466",
+   "lane": "solver-a-45",
+   "commit": "51de7eb9",
+   "text": "R-c: `*view` of an aggregate is a copy"
+  },
+  {
+   "id": "B465",
+   "lane": "solver-a-45",
+   "commit": "51de7eb9",
+   "text": "R-c: a closure's view parameter is a view (`adopt_closure_parameter_views`); `out = c` refused without `*`"
+  },
+  {
+   "id": "B474",
+   "lane": "solver-a-45",
+   "commit": "51de7eb9",
+   "text": "pins; B473 was the root"
+  },
+  {
+   "id": "B453",
+   "lane": "solver-a-45",
+   "commit": "51de7eb9",
+   "text": "the JS view of a tuple position is (tuple, flat offset)"
+  },
+  {
+   "id": "B444",
+   "lane": "solver-a-45",
+   "commit": "51de7eb9",
+   "text": "a scalar view at a binary operand or by-value argument is read through on JS"
+  },
+  {
+   "id": "B464",
+   "lane": "solver-a-45",
+   "commit": "51de7eb9",
+   "text": "BREAKING: a bare place at a closure view parameter is refused"
+  },
+  {
+   "id": "B467",
+   "lane": "solver-a-45",
+   "commit": "51de7eb9",
+   "text": "a closure's own view parameters are not captures, at every depth"
+  },
+  {
+   "id": "B475",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "a `dyn` table carries the members a supertrait's bound reaches, both directions"
+  },
+  {
+   "id": "B476",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "blanket-provided arguments grounded; the element bound checked at candidate selection"
+  },
+  {
+   "id": "B477",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "two same-named blankets resolve by which bound holds, either order"
+  },
+  {
+   "id": "B478",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "named functions and variants at `context`-typed closure positions"
+  },
+  {
+   "id": "B480",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "premise did not reproduce on next; pinned with no type arguments"
+  },
+  {
+   "id": "B484",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "call-site bound derivation picks the provider by the bound's pattern"
+  },
+  {
+   "id": "B479",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "a generic carried by the receiver counts as an answer"
+  },
+  {
+   "id": "B468",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "R-e: omitted defaulted struct/enum type arguments take the declared default"
+  },
+  {
+   "id": "B481",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "the admission pass walks for-each sites too"
+  },
+  {
+   "id": "B472",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "alias re-exports indexed; the steer names `HashMap`/`HashSet`"
+  },
+  {
+   "id": "B454",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "premise corrected: a self-binding no longer replaces a held binding"
+  },
+  {
+   "id": "F65",
+   "lane": "solver-b-45",
+   "commit": "d9d786ed",
+   "text": "the function-level inferred return is written only under an empty substitution"
+  },
+  {
+   "id": "J7",
+   "lane": "reactive-45",
+   "commit": "e76e506c",
+   "text": "a spawn under an `ambient_nursery` clause registers with the injected nursery (a context.rs gate)"
+  },
+  {
+   "id": "M92",
+   "lane": "reactive-45",
+   "commit": "e76e506c",
+   "text": "an unspawned nursery is carried into the next epoch (`Nursery::has_spawned`)"
+  },
+  {
+   "id": "M93",
+   "lane": "reactive-45",
+   "commit": "e76e506c",
+   "text": "the Tracker's lists are made at the first `track()`"
+  },
+  {
+   "id": "A146",
+   "lane": "reactive-45",
+   "commit": "e76e506c",
+   "text": "`identity()` for ListCell, KeyedCell, RemoteSource, KeyedSource"
+  },
+  {
+   "id": "A144",
+   "lane": "reactive-45",
+   "commit": "e76e506c",
+   "text": "R-f BREAKING: the contract hash reads resolved types (a post-analysis pass, `contract_hash.rs`)"
+  },
+  {
+   "id": "B482",
+   "lane": "reactive-45",
+   "commit": "e76e506c",
+   "text": "R-g BREAKING: the static `untrack` — the context pass (solver-b-45 dd521da6) + std's callbacks under `tracking.clear(..)`"
+  },
+  {
+   "id": "F60",
+   "lane": "reactive-45",
+   "commit": "e76e506c",
+   "text": "R-d door (a) as a TYPE rule: a discarded pipe statement warns (ledger 605); dropped pipes build natively"
+  },
+  {
+   "id": "B504",
+   "lane": "solver-c-45",
+   "commit": "611cb003",
+   "text": "every binder declaration can be the cell (`declare_cell_if_boxed`)"
+  },
+  {
+   "id": "B505",
+   "lane": "solver-c-45",
+   "commit": "611cb003",
+   "text": "a scalar `&self` receiver and a cell-less scalar view work on JS"
+  },
+  {
+   "id": "B506",
+   "lane": "solver-c-45",
+   "commit": "611cb003",
+   "text": "a view of a generic place is decided per instance"
+  },
+  {
+   "id": "B496",
+   "lane": "solver-c-45",
+   "commit": "611cb003",
+   "text": "a view EXPRESSION assigned into a value place is refused; the spelled copy copies"
+  },
+  {
+   "id": "F72",
+   "lane": "native-b-45",
+   "commit": "4656ad9f",
+   "text": "`is_grounded` no longer reads a bounded parameter's constraint as closed — native `HashSetCell`/`keys()` build"
+  },
+  {
+   "id": "F76",
+   "lane": "native-b-45",
+   "commit": "4656ad9f",
+   "text": "a bare variant takes the constructor's rule (recorded type, else the position)"
+  },
+  {
+   "id": "F75",
+   "lane": "native-b-45",
+   "commit": "4656ad9f",
+   "text": "provider binders bound where a trait default is specialized — observing a `StoreSome` builds natively"
+  },
+  {
+   "id": "F73",
+   "lane": "native-b-45",
+   "commit": "4656ad9f",
+   "text": "already fixed at the base; pinned, and a struct literal's field expectation keeps its instance's bindings"
+  },
+  {
+   "id": "F71",
+   "lane": "native-b-45",
+   "commit": "4656ad9f",
+   "text": "`default_instance` composes onto the caller's substitution"
+  },
+  {
+   "id": "F74",
+   "lane": "native-b-45",
+   "commit": "4656ad9f",
+   "text": "premise corrected: `keyed_mirror_of`'s untyped closure parameter and empty literal"
+  },
+  {
+   "id": "F79",
+   "lane": "native-b-45",
+   "commit": "4656ad9f",
+   "text": "a `mut` pattern binder is emitted `mut`"
+  },
+  {
+   "id": "F80",
+   "lane": "native-b-45",
+   "commit": "4656ad9f",
+   "text": "a `for e in &mut xs` element is reborrowed"
+  },
+  {
+   "id": "F81",
+   "lane": "native-b-45",
+   "commit": "4656ad9f",
+   "text": "`*` over a conditional view is lowered per leaf"
+  },
+  {
+   "id": "A147",
+   "lane": "store-45",
+   "commit": "276f4ed2",
+   "text": "one std minting function (`std::shared::fresh_identity`) for every identity"
+  },
+  {
+   "id": "A142",
+   "lane": "store-45",
+   "commit": "276f4ed2",
+   "text": "S1–S6 (Order 44) + S7's S1 and S2 (`std::store`: `[derive(Storable)]`, `Store<T>`, `StoreSome<P>`, `StoreFlag`, `when_live`); the Store's remaining slices are A149"
+  },
+  {
+   "id": "A148",
+   "lane": "rename-45",
+   "commit": "c848659d",
+   "text": "`HashMapCell`, `HashSetCell`, `HashMapEntry`, `HashSetEntry`, `HashMapMemo`, `HashSetMemo`, `TrackedHashMap`; shape names kept short"
+  },
+  {
+   "id": "M103",
+   "lane": "perf-b-45",
+   "commit": "44d63c90",
+   "text": "the regression was maps-45; three scans made exact and cheap — kolt's check 24.4 G (v0.42.1) → 17.0 G instructions; memory → M108"
+  },
+  {
+   "id": "M102",
+   "lane": "perf-b-45",
+   "commit": "44d63c90",
+   "text": "answered: one analysis per keystroke per open world; the 'five' were the E124 clock under valgrind"
+  },
+  {
+   "id": "B445",
+   "lane": "syntax-45",
+   "commit": "4fdf7cc1",
+   "text": "attributes may stand ahead of `export`; `vilan fmt` prints attributes, then `export` + keywords, then the declaration word (B485 Q6)"
+  },
+  {
+   "id": "B446",
+   "lane": "syntax-45",
+   "commit": "4fdf7cc1",
+   "text": "premise corrected: a failed parameter binder reports at the offending token"
+  },
+  {
+   "id": "B488",
+   "lane": "syntax-45",
+   "commit": "4fdf7cc1",
+   "text": "the `const x = 3;` steer names `const let`"
+  },
+  {
+   "id": "B492",
+   "lane": "syntax-45",
+   "commit": "4fdf7cc1",
+   "text": "`export export` is refused once per run"
+  },
+  {
+   "id": "B507",
+   "lane": "syntax-45",
+   "commit": "4fdf7cc1",
+   "text": "`vilan fmt` no longer declines `|&x: &i32|`"
+  },
+  {
+   "id": "B517",
+   "lane": "syntax-45",
+   "commit": "4fdf7cc1",
+   "text": "`*if ..` and `kept.read()(2)` reprint as written"
+  },
+  {
+   "id": "E235",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "the signature printer prints every convention (`own x`, `&T`, `&mut T`, `&self`)"
+  },
+  {
+   "id": "E237",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "the type's definition under a variable's or field's line, one level deep"
+  },
+  {
+   "id": "E238",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "the `impl`/`trait` header above a method's `fun` line"
+  },
+  {
+   "id": "E239",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "`self: <subject>` under the header"
+  },
+  {
+   "id": "E240",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "type parameters and bounds hover as what they are"
+  },
+  {
+   "id": "E241",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "match patterns hover as the variant of the scrutinee's type; `_` no longer `void`"
+  },
+  {
+   "id": "E242",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "diagnostics follow edits until the next analysis"
+  },
+  {
+   "id": "E236",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "the harness `scripts/lsp-latency.py` + the baseline; gating is M105's"
+  },
+  {
+   "id": "E244",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "a keystroke-plus-pause row, instructions and analyses columns"
+  },
+  {
+   "id": "E234",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "bindgen escapes reserved member names"
+  },
+  {
+   "id": "B436",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "a `dyn` at an `any` host parameter crosses as its value"
+  },
+  {
+   "id": "B437",
+   "lane": "editor-45",
+   "commit": "d2e3fa04",
+   "text": "a real JS miscompile: the vtable key carries the trait's arguments"
+  },
+  {
+   "id": "K25",
+   "lane": "web-45",
+   "commit": "06efc1f (vilan-website)",
+   "text": "the examples were not broken — a restored stale buffer and the landing panel were; retired-example swap + a gate that compiles every shipped program (f1d51b2)"
+  },
+  {
+   "id": "K27",
+   "lane": "web-45",
+   "commit": "06efc1f (vilan-website)",
+   "text": "the playground's keyword lists come from `vilan --print-keywords`; contextual words painted in position; gated"
+  }
+ ]
+}

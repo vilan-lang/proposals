@@ -153,3 +153,7 @@
 - Merge order as it happened: native-45 eb8a8840, perf-45 ba2eebd9, solver-a-45 51de7eb9, solver-b-45 d9d786ed, reactive-45 e76e506c, (v0.42.1 merge-back c619d663), solver-c-45 611cb003, maps-45 f67def61, native-b-45 4656ad9f, store-45 276f4ed2, rename-45 c848659d, perf-b-45 44d63c90, syntax-45 4fdf7cc1, editor-45 d2e3fa04. Papers: papers-45, papers-b-45 to proposals. Web: K25, K27 to the website.
 - THE SEAL started on d2e3fa04 (seal-45.log): union, doc-tests, whole-set native, clippy, windows, audit, fmt, vilan-fmt, wasm, the canary at 1.5 MiB, the perf comparison vs v0.42.1.
 - RULED (the owner): field and variant attributes stay INLINE; Q10 covers declarations only. Stamped on B485; the paper amended.
+
+## THE SEAL — 2026-10-02 on d2e3fa04 (seal-45.log): union 9383/9383, doc-tests, whole-set native, clippy, windows, audit, fmt, vilan-fmt, wasm, canary@1.5MiB all 0; changelog parity 87/87; perf=1 as expected
+- The perf leg re-run QUIET (load 0.75; perf-d2e3fa04-quiet.log), tip vs v0.42.1 on kolt: check CPU ×0.96 (2,562 → 2,462 ms), peak RSS ×1.27 (259 → 329 MB) — the RULED M108 exception. LSP (5 runs): leaf 1110 → 1000 ms / 14.16 → 9.20 G; +pause 2680 → 2400 / 34.35 → 21.73 G; shared 370 → 300; model.vl 360 → 290 / 5.10 → 2.33 G; with importers open, all settled 5570 → 5410 ms / 58.03 → 41.19 G; css 1190 → 1090; parse 1170/1240 → 1120/1160; VmHWM 817–862 → 910–973 MB.
+- closes45.json drafted: 80 closes validated. A149 FILED (Store S3–S6; A142 closes). Waiting on CI 37060266455 for d2e3fa04.
