@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "N138",
+   "section": "N",
+   "kind": "hygiene (S)",
+   "area": "Hygiene & rot",
+   "status": "OPEN — filed 2026-10-02 (fix-45's find, Order 45)",
+   "discussion": "fix-45 (Order 45)",
+   "title": "CI's `vilan-fmt` leg scans `target/`: the test suite leaves unformatted scratch projects under `target/tmp`, so `scripts/ci-local.sh vilan-fmt` goes red after any local full suite",
+   "body": "Fix: the leg skips `target/` (and any ignored directory), or the tests clean up. Sizing XS."
+  },
+  {
+   "id": "N139",
+   "section": "N",
+   "kind": "hygiene (tests; S)",
+   "area": "Hygiene & rot",
+   "status": "OPEN — filed 2026-10-02 (fix-45's find, Order 45)",
+   "discussion": "fix-45 (Order 45); B277's pin (fixed a2245c37 — a 10 ms sleep against a 50 ms window failed on a Windows runner)",
+   "title": "other `Debounce` pins use 50 ms windows against fixed sleeps and carry the same margin risk on a loaded Windows runner",
+   "body": "Sweep `crates/vilan-cli/tests/debounce.rs` and the std `Debounce` pins; widen each window past any plausible stall, with the reason in a comment. Sizing S."
+  },
+  {
+   "id": "G27",
+   "section": "G",
+   "kind": "question (macros; S)",
+   "area": "Macros & const",
+   "status": "OPEN — filed 2026-10-02 (fix-45's find, Order 45)",
+   "discussion": "fix-45 (Order 45); B519",
+   "title": "a `macro fun` declared inside an inline `mod { }` is not in scope for an attribute in that same `mod` (\"no macro named `tabled` is in scope\")",
+   "body": "May be by design (macros resolve at file scope). Decide and either fix or document with a steer. Sizing S."
+  }
+ ]
+}

@@ -164,3 +164,6 @@
 ## CI 37060266455 on d2e3fa04 — RED on `test (windows-latest, 2)` only (everything else green)
 - `dead_item_clock_tests::an_open_entrys_landed_analysis_answers_its_union_leg` (perf-b-45's pin): (2, 0) not (1, 1) on Windows — the reuse does not happen there (a path comparison suspected). `debounce::b277_…`: an extra `cancelled-never` — a 10 ms sleep against a 50 ms window, timing-fragile (or M92/J7; to rule out). Both handed to fix-45 after B519; the failed shard re-run to see which is a flake.
 - LESSON for briefs46: the integrator WATCHES CI on next after every merge (two reds on vilan-fmt at native-b-45 and store-45 went unread until the seal; a lane's new pin never ran on Windows before the last merge).
+
+## fix-45 — REPORTED 2026-10-02 (tip a2245c37 on d2e3fa04; REPORT-fix-45.md) — MERGING
+- **B519 FIXED** (general cause: a generated `let`'s declaring scope is its expansion scope; every macro, every non-entry module, both backends; also a soundness hole in the loan-only rule). Kolt's six tables are emitted. The Windows clock failure was a REAL bug (path spelling) — fixed; the debounce failure a fragile pin — widened. Finds FILED N138, N139, G27.
