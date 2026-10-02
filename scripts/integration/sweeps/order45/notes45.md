@@ -132,3 +132,6 @@
 - The kolt patch rewritten (names) and `get_channels` moved to `channels.keys()` (same `MemoCell<List<u53>>` return; checks clean, builds JS + native; runtime unverified — the client leg has the owner's in-progress errors).
 - NOTE for the syntax-45 merge: tree-wide `vilan fmt --check` is red on eight `tests/native/*.vl` fixtures (pre-existing on next; CI's vilan-fmt leg) — the reformat at that merge covers them.
 - rename-45 MERGED @c848659d (pushed; gates native_differential 136, inference maps+traits+store 380, docs 12, shared_census, markdown_golden, reactive_channels 38, release_scripts, split). Reaped. LESSON for briefs46: resolve a gate's crate from the tree (`find crates -path '*/tests/<name>.rs'`), never from memory — two merges stopped at exit 8 this order.
+
+## perf-b-45 — REPORTED 2026-10-02 (tip 86f4466e on 276f4ed2; REPORT-perf-b-45.md) — MERGING
+- **M103 FIXED**: the regression was maps-45; kolt's check is now 30% UNDER v0.42.1 by instructions (24.40 → 17.01 G). M104: one fix landed, the entry-world design is the OWNER's (diagnostics would change). M107: two of five passes. Peak memory still +20% → M108 FILED; E244 FILED.
