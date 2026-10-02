@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "F69",
+   "section": "F",
+   "kind": "bug (native refusal; M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (solver-a-45's find, Order 45)",
+   "title": "native: a closure value that reaches its call through a match capture, a loop binding or a nested closure parameter LOSES its view parameters (rustc E0308: expected `&mut Rc<str>`, found `Rc<str>`)",
+   "discussion": "solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md",
+   "body": "Repro: the inference pin `b467_a_closure_whose_view_is_its_own_parameter_is_stored_at_every_depth` built with `--backend rust`; JS passes. Root: B495. Rec: carry view conventions in the closure type, or let native read the argument's `&` spelling at a closure call site. Sizing M."
+  },
+  {
+   "id": "F70",
+   "section": "F",
+   "kind": "bug (native refusal; M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-01 (solver-a-45's find, Order 45)",
+   "title": "native: a NESTED tuple index (`nested.1.0`, `&mut nested.1.0`) emits the flat JS offset as a Rust tuple index (`nested.1 = 9`); rustc refuses",
+   "discussion": "solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md",
+   "body": "Repro: `mut nested = (1, (2, \"x\")); nested.1.0 = 9; print(nested.1.0)`. Rec: map the flat offset back to the nested path in vilan-rust. Sizing S."
+  },
+  {
+   "id": "B495",
+   "section": "B",
+   "kind": "design (paper; views in closure types)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (solver-a-45's find, Order 45)",
+   "title": "`closure_type_parameter_views` is a side table keyed by the WRITTEN annotation's type id, so a closure type's view parameters are lost whenever the type is copied or substituted (`let typed: \\|&str\\| void = h` with `h` a let-bound literal does not adopt its views; F69 natively)",
+   "discussion": "solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md",
+   "body": "Rec: a paper — `Type::Closure` carries its parameters' conventions (own / view / mut view), with what that costs in type identity, inference and both emitters. B465/B467 (Order 45) built the adoption pass on the side table. Sizing M–L; paper first."
+  },
+  {
+   "id": "B496",
+   "section": "B",
+   "kind": "MISCOMPILE (JS aliasing; M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-01 (solver-a-45's find, Order 45)",
+   "title": "JS: `out = &aggregate` — a Reference EXPRESSION assigned into a value place — still aliases: rule 3 excludes it from copies and B465's refusal covers only view bindings and parameters",
+   "discussion": "solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md",
+   "body": "R-c's family, one site left. Rec: refuse it like `out = c` (write `*`), or copy as native's B109 reads through. Sizing S; solver."
+  }
+ ]
+}

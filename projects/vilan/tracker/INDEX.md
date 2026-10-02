@@ -81,6 +81,8 @@
 | [B492](items/B492.md) | `export export fun f()` is accepted silently | hole (parser; L) | syntax-45 (Order 45); sweeps/order45/syntax-45/marker-census.md |
 | [B493](items/B493.md) | a `[platform]`, `[deprecated]` or `[hint]` label on a LOCAL `let` is refused with a message that names `[internal(..)]` whatever the label was | diagnostics (L) | syntax-45 (Order 45); sweeps/order45/syntax-45/marker-census.md |
 | [B494](items/B494.md) | `async x = 1;` parses as an expression statement and then fails "cannot find x" | diagnostics (L) | syntax-45 (Order 45); sweeps/order45/syntax-45/marker-census.md |
+| [B495](items/B495.md) | `closure_type_parameter_views` is a side table keyed by the WRITTEN annotation's type id, so a closure type's view parameters are lost whenever the type is copied or substituted (`let typed: \|&str\| void = h` with `h` a let-bound literal does not adopt its views; F69 natively) | design (paper; views in closure types) | solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md |
+| [B496](items/B496.md) | JS: `out = &aggregate` — a Reference EXPRESSION assigned into a value place — still aliases: rule 3 excludes it from copies and B465's refusal covers only view bindings and parameters | MISCOMPILE (JS aliasing; M) | solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md |
 
 ## C. Memory model
 
@@ -143,6 +145,8 @@
 | [F66](items/F66.md) | the variant-constructor type arguments the native emitter derives INSIDE generic instances are wrong: `map`'s `Some(f(x))` records `Some::<(Str, i32)>` (the receiver's `T`, not `U`); `and_then`'s `Err` records the wrong `T` | latent miscompile risk (native; M) | native-45 (Order 45); sweeps/order45/REPORT-native-45.md |
 | [F67](items/F67.md) | calling a LOCAL closure binding and then reading a member of the result fails rustc: `let make = \|n: i32\| Row {..}; print(make(1).name)` → E0282; `print(i"{f()}")` with `f = \|\| row.name` → E0277 (str unsized) | bug (native refusal by rustc; M) | native-45 (Order 45); sweeps/order45/REPORT-native-45.md |
 | [F68](items/F68.md) | `print` of a long `List` diverges between backends: node's `util.inspect` wraps arrays past ~72 columns or 6 elements into rows; native prints one line (a 22-element `List<str>`) | output parity (M) | native-45 (Order 45); sweeps/order45/REPORT-native-45.md |
+| [F69](items/F69.md) | native: a closure value that reaches its call through a match capture, a loop binding or a nested closure parameter LOSES its view parameters (rustc E0308: expected `&mut Rc<str>`, found `Rc<str>`) | bug (native refusal; M) | solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md |
+| [F70](items/F70.md) | native: a NESTED tuple index (`nested.1.0`, `&mut nested.1.0`) emits the flat JS offset as a Rust tuple index (`nested.1 = 9`); rustc refuses | bug (native refusal; M) | solver-a-45 (Order 45); sweeps/order45/REPORT-solver-a-45.md |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
