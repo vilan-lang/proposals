@@ -2776,3 +2776,7 @@ After the pipe train. Order 44 filed 40 items against 34 closed; this order pays
 - syntax-45, editor-45 (the hover arc E235/E237–E239, E236's baseline), papers-45 (B485, B460's opacity).
 
 The cut proposed at the seal is v0.43.0 (R-h): B482 and A144 are breaking.
+
+## v0.42.1 — CUT 2026-10-01 @f2cbb7f3 (release run 36953316628 GREEN 17/17), FOLDED @44f45dd3
+
+A patch for one thing, cut mid-Order 45 at the owner's word: v0.42.0 made `vilan check` and the editor about three times slower and four times hungrier on a pipe-model program. `[resource] trait Flow`/`Pipe` (A142 R39) turned every std reactive generic called with a pipe into an R11 instance, and three whole-program passes scaled with program × instances. Found by the owner on kolt ("editing `model.vl` and running `vilan check` are both quite slow"), measured by an investigation lane, fixed by perf-45 (M94–M98): kolt's check 9.2 s → 3.4 s of CPU, peak 1,087 → 258 MB (v0.41.1: 2.1 s, 247 MB), output byte-identical. `release/0.42` from the tag, six cherry-picks with `commit:` markers; the first CI run was red on one Windows shard (the per-pass split's pin assumed a thread CPU clock) — fixed on the branch and on next. All five publishes green, 10 assets. Folded by hand because next had moved (main 44f45dd3; next c619d663 and two CHANGELOG corrections), then `fold-release.sh`: the book, the site, the manifest reads v0.42.1, toolchain `vilan 0.42.1 (44f45dd3b)` in both locations and the 0.42.1 extension. `release/0.42` stays until v0.43.0 ships.

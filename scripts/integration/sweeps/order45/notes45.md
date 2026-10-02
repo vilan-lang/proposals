@@ -92,3 +92,4 @@
 - The fold by hand (next had moved): main 44f45dd3 (`Merge v0.42.1 — main catches the release train`); main into next c619d663 (CHANGELOG: the six perf entries moved under `## v0.42.1`; traits.rs took next's) + c93a672c + the header fix — the integrator's fold script DROPPED B473's entry with its neighbour (two entries shared one `---` chunk) and then wrote the restore inside the header comment; both fixed, parity 40/40, `cut-release --dry-run 0.43.0` parses the section. LESSON: fold CHANGELOG sections by marker+head, never by splitting on rules.
 - `fold-release.sh v0.42.1` running (docs.yml, deploy.yml, the manifest, the toolchain in both locations): fold-v0421.log.
 - maps-45 resumed: final rebase onto next.
+- v0.42.1 FOLDED: book + site deployed, manifest v0.42.1, toolchain `vilan 0.42.1 (44f45dd3b)` both locations + the 0.42.1 vsix. Chronicle entry written.
