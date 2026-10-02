@@ -15,3 +15,8 @@ Callgrind (css keystroke, 58.0 G Ir): post_analysis_passes 57% (impl_members_for
 
 Gates on baa57390: nextest 9224/9224 (40 skipped) at 5b464105; after E242 vilan-lsp + vilan-ide 991/991; fmt, clippy, vscode 18/18; no golden moved. No arm added to `walk_expr_node_inner`.
 Finds FILED: M101, M102, B502, B503.
+
+## ADDENDUM 2 (2026-10-02) — final rebase onto 4fdf7cc1, tip b6c96444
+Gates: nextest 9383/9383 (vilan-lsp 966, vilan-ide 26); fmt, clippy, vilan-fmt leg, vscode 18/18. Hover spot-checks: `Store<User>` shows its block and "Shown as `~Signal<User>`"; `HashMapCell` renders under its new name. Harness (E244): an `instructions:u` column, an analyses column, a `leaf keystroke + pause` row, kolt's `src/search-dict/` copied; `perf_compare.py`'s flags unchanged.
+THE TABLE (kolt @984a1dfb, medians of 5, load 1–3; v0.42.1 → tip): leaf 1140 → 1040 ms CPU, 14.16 → 9.27 G instr; leaf + pause 2750 → 2480 ms, 34.37 → 21.89 G (3 analyses); shared.vl 390 → 310, 4.76 → 2.82 G; model.vl 360 → 300, 5.10 → 2.36 G; model.vl with importers open: own diagnostics 430 → 390 ms, ALL SETTLED 5540 → 5540 ms, 58.04 → 41.55 G (4 analyses); css 1190 → 1170, 14.61 → 10.09 G; parse break/repair 1210/1260 → 1140/1180. Worst keystroke-path wall 2.1 → 10.2 ms (hover, importers-open row; E245). VmHWM 803 → 1013 MB (M108).
+Finds FILED: E245, B518.

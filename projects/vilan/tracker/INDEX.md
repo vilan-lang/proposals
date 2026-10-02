@@ -106,6 +106,7 @@
 | [B515](items/B515.md) | a trait's methods resolve in user code with NO import once any LOADED std module imports the trait: `import std::markdown;` makes `42.to_string()` compile without importing `Display` | HOLE (solver/visibility; M) | store-45 report 2 (Order 45); repros under `sweeps/order45/store-45/finds/` |
 | [B516](items/B516.md) | an annotated `let lend: \|(\|&i32\| void)\| void = \|f\| ..` does not type `f`: "f is never given a type" | inference (L) | store-45 report 2 (Order 45); repros under `sweeps/order45/store-45/finds/` |
 | [B517](items/B517.md) | `vilan fmt` DECLINED two shapes next's own fixtures use: `*if c {..} else {..}` (a deref of a conditional) and `kept.read()(2)` (a call of a call's result) — CI's vilan-fmt leg was red on next before the lane | bug (formatter; S) — FIXED in Order 45 (syntax-45 87850c24), filed for the record | syntax-45 (Order 45); F81's and F74's native fixtures (`deref_of_a_conditional_view.vl`, `position_typed_bindings.vl`) |
+| [B518](items/B518.md) | a closure type whose PARAMETER is itself a closure prints without parentheses: `Store`'s `lend: \|\|User\| void\| void` (it means `\|(\|User\| void)\| void`) — in hover and in diagnostics alike (`pretty_print_type`) | bug (type printer; S) | editor-45 addendum 2 (Order 45); tables `sweeps/order45/editor-45/r3-*.txt` |
 
 ## C. Memory model
 
@@ -142,6 +143,7 @@
 | [E242](items/E242.md) | error spans DRIFT while typing: a diagnostic should stay pinned to the code it applies to until the next paint — typing lines above an error makes it slide up a line | bug (LSP diagnostics; S–M) | the owner (2026-10-01, on kolt while Order 45's lanes loaded the machine — the stale window is long, so the drift is visible); E232 (inlay hints follow edits, Order 44 — the same idea for hints), E121 (editor latency), E236 (the latency harness) |
 | [E243](items/E243.md) | the JS `vilan run` prints its asset report (`Bundled  …`) on STDOUT ahead of the program's output; native prints nothing (`estate.vl` diverges for it) | tooling (L) | native-45 (Order 45); sweeps/order45/REPORT-native-45.md |
 | [E244](items/E244.md) | E236's harness never pauses 600 ms, so it never sees the dead-code clock's cost: a real pause after a leaf keystroke runs THREE analyses and 3.65 s of CPU where the harness reports 1.1 s | tooling (harness; S) | perf-b-45 (Order 45); sweeps/order45/REPORT-perf-b-45.md; E236 (`scripts/lsp-latency.py`), E124 (the dead-code clock) |
+| [E245](items/E245.md) | with `model.vl` and its importers open, a HOVER at idle costs 6–10 ms of CPU (about 1 ms when the file is open alone); the keystroke-path hover reads 10.2 ms, just over E121's 10 ms | performance (LSP keystroke path; S) | editor-45 addendum 2 (Order 45); tables `sweeps/order45/editor-45/r3-*.txt`; E121 (<10 ms), M63 (released documents), M104 |
 ## F. Native targets & rendering — NEW SECTION
 
 | ID | Title | Kind | Discussion |

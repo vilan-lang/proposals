@@ -144,3 +144,6 @@
 - Q10 and field attributes: the ruled paper covers declarations only; field/variant attributes print inline, unchanged — a separate ruling if the owner wants them on their own lines. Left for Order 46: Q10 for `[resource]`, Q7, Q8.
 - Ledger prose WRITTEN (row 22, row 229 → 60).
 - syntax-45 MERGED @4fdf7cc1 (pushed; markdown golden regenerated; gates vilan-core lib 940, inference 5075, parse_differential, marker_census, deep_nesting 18, module_resolution 216, corpus, native_differential 136, diagnostics_ledger, markdown_golden, shared_census, split, docs, check_scope_differential, release_scripts). Reaped. editor-45 resumed for its FINAL rebase (+ E244's pause row and instruction column in the harness). Then the seal.
+
+## editor-45 — FINAL (rebased tip b6c96444 on 4fdf7cc1; nextest 9383/9383) — MERGING, the last lane
+- The seal-time table vs v0.42.1: instructions 30–50% BELOW on every row; CPU level or slightly below; the multi-document `model.vl` settle unchanged at 5.5 s CPU (M104, ruled → Order 46); VmHWM +26% (M108, the ruled exception). Finds FILED E245, B518.
