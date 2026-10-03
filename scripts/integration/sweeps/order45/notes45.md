@@ -170,3 +170,4 @@
 - fix-45 MERGED @dcb06444 (pushed; gates vilan-lsp, inference resources, module_resolution 220, reactive_channels 40, native_differential 138, corpus 13, examples 6, debounce 4, split, release_scripts). Reaped. THE RE-SEAL started on dcb06444 (seal-45b.log); CI watched.
 
 ## v0.43.0 — the cut started 2026-10-02: `cut-release.sh --commit 0.43.0` on dcb06444 → release commit on next (89 entries: breaking 4, miscompile 17, feature 14, fix 27, performance 13, tooling 11, diagnostics 3; the M108 exception in the commit body); pushed; CI on it watched; the tag follows green.
+- v0.43.0: CI 37077042087 GREEN on the release commit a408d5db; tag v0.43.0 pushed; release.yml running. The installed toolchain was found to be a dev build of dcb06444 (installed by a lane or a script after the fix-45 merge — not by the integrator); the fold replaces it.
