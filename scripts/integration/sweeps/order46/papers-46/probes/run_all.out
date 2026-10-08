@@ -1,0 +1,203 @@
+# vilan: vilan 0.43.0 (fe092e8d1)
+
+## A153 — mirrored store
+### store/s1_today_traffic.vl (js)
+-- (A0) one message row, traced
+  up   rpc  {"method":"get_message","args":[0]}
+  down rpc  {"Success":0}
+  up   live {"Subscribe":[0,null]}
+  down live {"Update":[0,{"id":0,"author":{"uuid":"alice"},"content":"message number 0 says hello"}]}
+A0 one message: rpc 2 frames / 56 B (up 1/39, down 1/17); live 2 frames / 115 B (up 1/24, down 1/91); TOTAL 4 frames / 171 B
+-- (A) open channel 0: get_channel, get_channel_name, get_messages, 50 x get_message, 2 x get_user
+A  open (49 more rows + channel + name + list + 2 users): rpc 108 frames / 3229 B (up 54/2220, down 54/1009); live 108 frames / 6198 B (up 54/1341, down 54/4857); TOTAL 216 frames / 9427 B
+A+A0 open channel, 50 messages: rpc 110 frames / 3285 B (up 55/2259, down 55/1026); live 110 frames / 6313 B (up 55/1365, down 55/4948); TOTAL 220 frames / 9598 B
+-- (B) rename channel 0
+  up   rpc  {"method":"set_channel_name","args":[0,"general-renamed"]}
+  down live {"Update":[2,"general-renamed"]}
+  down rpc  {"Success":true}
+B  rename: rpc 2 frames / 84 B (up 1/63, down 1/21); live 1 frames / 34 B (up 0/0, down 1/34); TOTAL 3 frames / 118 B
+-- (C) edit message 7
+  up   rpc  {"method":"edit_message","args":[7,"message number 7 says goodbye"]}
+  down live {"Update":[10,{"id":7,"author":{"uuid":"bob"},"content":"message number 7 says goodbye"}]}
+  down rpc  {"Success":true}
+C  edit one message: rpc 2 frames / 94 B (up 1/73, down 1/21); live 1 frames / 92 B (up 0/0, down 1/92); TOTAL 3 frames / 186 B
+-- (D) write the SAME name again (a cell never compares, R7)
+  up   rpc  {"method":"set_channel_name","args":[0,"general-renamed"]}
+  down live {"Update":[2,"general-renamed"]}
+  down rpc  {"Success":true}
+D  same-value write: rpc 2 frames / 84 B (up 1/63, down 1/21); live 1 frames / 34 B (up 0/0, down 1/34); TOTAL 3 frames / 118 B
+D  client observer runs on the same-value write: 1
+held 56 leases
+### store/s2_store_wire_bytes.vl (js)
+rpc global: {"method":"global","args":[]} | {"Success":[0,[]]}
+sub channel: {"Subscribe":[0,[[0,0]]]}
+seed channel: 211 B
+one message seed: {"Patch":[0,[{"Seed":[[1,7],{"id":7,"author":{"uuid":"bob"},"content":"message number 7 says hello"}]}]]}
+S  open, per-path frames: 108 frames / 7465 B (of which the once-per-session rpc: 2 / 55 B)
+S+ open, coalesced per turn: 8 frames / 5565 B
+Z sub channel: {"Subscribe":[0,[[0,[0,0]]]]}
+Z one message seed: {"Patch":[0,[{"Seed":[8,{"id":7,"author":{"uuid":"bob"},"content":"message number 7 says hello"}]}]]}
+Z  open, slot-addressed, per-slot frames: 108 frames / 7483 B
+Z+ open, slot-addressed, coalesced per turn: 8 frames / 5583 B
+Z  rename push: {"Patch":[0,[{"Set":[0,[1],"general-renamed"]}]]} = 51 B
+Z  edit push: {"Patch":[0,[{"Set":[8,[2],"message number 7 says goodbye"]}]]} = 65 B
+S  rename push: {"Patch":[0,[{"Set":[[0,0,1],"general-renamed"]}]]} = 53 B
+N  rename push (snapshot is the unit): 203 B
+S  edit push: {"Patch":[0,[{"Set":[[1,7,2],"message number 7 says goodbye"]}]]} = 67 B
+### store/s3_hash_v1.vl (js)
+v1 contract_hash=b8fcf645
+### store/s3_hash_v2.vl (js)
+v2 contract_hash=b8fcf645
+### store/s3_hash_v3.vl (js)
+v3 contract_hash=b8fcf645
+### store/s4_map_field_is_a_leaf.vl (js)
+edit m7 (id kept, content changed): row observers run=50
+insert m99: row observers run=50
+### store/s4b_no_at.vl (js)
+Error: Store<HashMap<u53, str>> has no method 'at'
+ 13 │     let one = global.messages().at(7);
+### store/s5_rpc_store_return.vl (js)
+Error: return type of `[rpc]` method `record` is `Store<Option<Record>>`, which is not Wire: every `[rpc]` parameter and return must be Wire (a scalar, `str`, `bool`, `List`/`Option`/`HashMap` of Wire, a `[derive(Wire)]` type, or a type with an `impl .. with Wire`)
+ 18 │     fun record(self): Store<Option<Record>> {
+Error: return type of `[rpc]` method `live_record` is `StoreSome<Record>`, which is not Wire: every `[rpc]` parameter and return must be Wire (a scalar, `str`, `bool`, `List`/`Option`/`HashMap` of Wire, a `[derive(Wire)]` type, or a type with an `impl .. with Wire`)
+ 23 │     fun live_record(self): StoreSome<Record> {
+### store/s6_owner_rule_today.vl (js)
+after patch: maybe=edited held=edited
+after delete: maybe=<none> held=hello
+wakes:  maybe=edited held=edited maybe=<none> held=hello
+same identity: true; the assumed handle shares the path identity: true
+### store/s7_identity_eq_leaf.vl (js)
+edit keeping the id: observer runs=0 held=edited
+
+## B495 — views in closure types
+### views/v1_let_typed.vl (js)
+typed through a let: out=Oslo,0
+### views/v2_value_into_view.vl (js)
+value closure called through a view type: out=Oslo,0
+view closure called through a value type: out=Oslo
+### views/v3_generic_identity.vl (js)
+through hold<T>: out=Bergen,0
+### views/v4_option_capture.vl (js)
+Error: cannot mutate immutable 'x'; declare it `mut x` to mutate this function's copy, or `&mut x` to mutate the caller's value.
+ 12 │        x += 10;
+Error: cannot mutate immutable 'x'; declare it `mut x` to mutate this function's copy, or `&mut x` to mutate the caller's value.
+ 20 │        x += 100;
+### views/v5_generic_struct.vl (js)
+through Holder<T>: n=6
+### views/v6_direct_control.vl (js)
+handed to a fun parameter: n=11
+annotated let, literal SPELLS the view: n=111
+### views/v7_let_literal_adopt.vl (js)
+Error: cannot mutate immutable 'x'; declare it `mut x` to mutate this function's copy, or `&mut x` to mutate the caller's value.
+ 9 │        x += 100;
+### views/v7b_let_literal_read.vl (js)
+annotated let, bare literal, read view: out=Oslo,0
+### views/v8_spelled_through_option.vl (js)
+through a match capture: n=11
+through a loop binding: n=111
+### views/v9_read_controls.vl (js)
+(a) fun parameter, bare literal: out=Oslo
+(b) annotated let, spelled view: out=Oslo
+(c) struct field, bare literal: out=Oslo
+### views/v1_let_typed.vl (rust, emitted, grep 'Error|dyn Fn')
+Error: the `rust` backend does not emit a value of type `an unresolved type` yet — this is F1's slice S1b, whose scope is structs, enums, generics, `Option`/`Result`, `str`, `List`, `Map`/`Set`, closures, `impl`s, traits, operators, `?`, `print`, `panic` and the reactive cell. Build this program with `--backend js`.
+### views/v2_value_into_view.vl (rust, emitted, grep 'dyn Fn')
+    } }) as std::rc::Rc<dyn Fn(vilan_rt::Str) -> _> };
+    } }) as std::rc::Rc<dyn Fn(vilan_rt::Str) -> _> };
+### views/v3_generic_identity.vl (rust, emitted, grep 'fn hold|dyn Fn')
+fn hold_9483_0(mut x_9484: std::rc::Rc<dyn Fn(vilan_rt::Str) -> ()>) -> std::rc::Rc<dyn Fn(vilan_rt::Str) -> ()> {
+    } }) as std::rc::Rc<dyn Fn(vilan_rt::Str) -> _> });
+### views/v5_generic_struct.vl (rust, emitted, grep 'dyn Fn|\(h_[0-9]+\.f\)')
+    f: std::rc::Rc<dyn Fn(&mut i32) -> ()>,
+    } }) as std::rc::Rc<dyn Fn(&mut i32) -> _> } };
+    (h_9423.f)((n_9421).clone());
+### views/v8_spelled_through_option.vl (rust, emitted, grep 'dyn Fn|\(f_[0-9]+\)|\(g_[0-9]+\)')
+    } }) as std::rc::Rc<dyn Fn(&mut i32) -> _> });
+        Some(f_9437) => (f_9437)((c_9420.n).clone()),
+    } }) as std::rc::Rc<dyn Fn(&mut i32) -> _> }];
+        (g_9466)((c_9420.n).clone());
+### views/v9_read_controls.vl (rust, emitted, grep 'dyn Fn')
+    f: std::rc::Rc<dyn Fn(&vilan_rt::Str) -> ()>,
+fn with_city_9483(city_9484: &vilan_rt::Str, mut f_9485: std::rc::Rc<dyn Fn(&vilan_rt::Str) -> ()>) -> () {
+    } }) as std::rc::Rc<dyn Fn(&vilan_rt::Str) -> _> });
+    } }) as std::rc::Rc<dyn Fn(&vilan_rt::Str) -> _> };
+    } }) as std::rc::Rc<dyn Fn(&vilan_rt::Str) -> _> } };
+### views/v1_let_typed.vl (js, emitted)
+const home = [ "Oslo" ];
+const h = (c) => {
+	out.v = c;
+	return;
+};
+const typed = h;
+typed([ home, 0 ]);
+
+## B509 — payload views
+### payload/b1_today.vl (js)
+(1) Some(mut p), p.x = 2: held.x=1
+(2) take, write, put back: held.x=3
+### payload/b2_match_ref_mut.vl (js)
+Error: cannot mutate immutable 'p'; declare it `mut` to allow mutation.
+ 14 │          p.x = 2;
+### payload/b3_pattern_spellings.vl (js)
+Error: found '&' expected a pattern
+ 12 │        Some(&mut p) => {
+### payload/b3b_ref_let.vl (js)
+Error: found '&' expected a pattern
+ 12 │        Some(&mut let p) => {
+### payload/b4_wrapped_view_fn.vl (js)
+through a wrapped-view call: items[0].x=7
+through `for e in &mut`: items[0].x=8
+### payload/b5_some_mut_fn.vl (js)
+Error: a view cannot escape its scope: it may not be returned, stored in a field, placed in a collection, or carried in an enum payload. Return an owned value or a handle instead.
+ 12 │        Some(let p) => Some(&mut p),
+Error: cannot take a writable view of immutable 'p'; declare it `mut` to allow mutation.
+ 12 │        Some(let p) => Some(&mut p),
+Error: cannot mutate immutable 'p'; declare it `mut` to allow mutation.
+ 21 │          p.x = 5;
+### payload/b6_cost.vl (js)
+(a) take/put-back: 1 ms  x=2000
+(b) direct field:  2 ms  x=2000
+### payload/b7_derive_shape_cost.vl (js)
+(a) derive's through-variant write: 470 ms  x=2000
+(b) direct, through a &mut lend:   0 ms  x=2000
+### payload/b8_subject_frozen_precedent.vl (js)
+Error: a view can't be read as a value here; write `*` to copy the value out (a view's value is explicit: `*v` is the only way to cross from view to value)
+ 9 │        if e == 3 {
+Error: cannot reassign 'list' while a view into it is live (rule 4: no invalidating mutation under a live view).
+ 10 │          list = [];
+### payload/b9_wrapped_subject_write.vl (js)
+after replacing the list under the view: items[0].x=50
+### payload/b10_match_ref_read.vl (js)
+read through &held: x=1
+### payload/b11_rule4_liveness.vl (js)
+after the loop, reassigned: len=0 a=3
+### payload/b12_view_subject.vl (js)
+Error: cannot mutate immutable 'p'; declare it `mut` to allow mutation.
+ 14 │          p.x = 2;
+### payload/b12b_view_subject_spelled.vl (js)
+read p.x=1
+### payload/b7_derive_shape_cost.vl (js, emitted through_variant)
+function through_variant(held, f) {
+	const $a = held;
+	let $b = null;
+	if ($a[0] === 0) {
+		let p0 = __clone($a[1]);
+		f(p0);
+		__replace(held, [ 0, __clone(p0) ]);
+		$b = undefined;
+	} else {
+		$b = undefined;
+### payload/b7_derive_shape_cost.vl (rust, emitted, grep 'clone|fn through_variant')
+fn through_variant_10304(held_10305: &mut E_10280, mut f_10306: std::rc::Rc<dyn Fn(&mut P_10279) -> ()>) -> () {
+    match (held_10305).clone() {
+            (*held_10305) = E_10280::A((p0_10309).clone());
+            p_10350.x = ((p_10350.x).clone() + (1i32));
+            p_10384.x = ((p_10384.x).clone() + (1i32));
+    let x_10403 = match (e_10331).clone() {
+### payload/b1_today.vl (rust, emitted, grep 'take|held_[0-9]+ = Some')
+    match (held_9421).take() {
+            held_9421 = Some(p_9456);
+    vilan_rt::print(&(vilan_rt::str_concat(&vilan_rt::str_concat(&vilan_rt::str_new(""), &vilan_rt::str_new("(2) take, write, put back: held.x=")), &vilan_rt::js_of(&(unwrap_or_6594_0(map_6611_0(held_9421, { std::rc::Rc::new(move |mut p_9480: P_9419| { p_9480.x }) as std::rc::Rc<dyn Fn(P_9419) -> _> }), (0i32)))))));
+### payload/b9_wrapped_subject_write.vl (rust, emitted, grep 'match first|bag_[0-9]+\.items =')
+    match first_9421(&mut bag_9438) {
+            bag_9438.items = vec![P_9419 { x: (50i32) }];

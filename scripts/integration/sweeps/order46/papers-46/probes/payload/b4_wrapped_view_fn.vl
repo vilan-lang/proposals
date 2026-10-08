@@ -1,0 +1,36 @@
+// B509 probe b4: the EXISTING route — a function returning a wrapped view
+// (`Option<&mut T>`), matched with `Some(let p)`; and whether such a function
+// can be written for an `Option` place itself (it would need B509's pattern).
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+struct P {
+	x: i32,
+}
+
+struct Bag {
+	items: List<P>,
+}
+
+fun first(bag: &mut Bag): Option<&mut P> {
+	if bag.items.len() > 0 {
+		Some(&mut bag.items[0])
+	} else {
+		None
+	}
+}
+
+fun main() {
+	mut bag = Bag { items = [P { x = 1 }] };
+	match first(&mut bag) {
+		Some(let p) => {
+			p.x = 7;
+		},
+		None => {},
+	}
+	print(i"through a wrapped-view call: items[0].x={bag.items[0].x}");
+	for e in &mut bag.items {
+		e.x += 1;
+	}
+	print(i"through `for e in &mut`: items[0].x={bag.items[0].x}");
+}

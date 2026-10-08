@@ -1,0 +1,31 @@
+// A153 probe s5: an `[rpc]` returning `Store<T>` / `StoreSome<P>` on 0.43.0.
+import std::io::print;
+import std::store::{ Storable, Store, StoreSome };
+
+[derive(Storable, Wire)]
+struct Record {
+	id: u53,
+	name: str,
+}
+
+[service(SvcClient)]
+struct Svc {
+	root: Store<Option<Record>>,
+}
+
+impl Svc {
+	[rpc]
+	fun record(self): Store<Option<Record>> {
+		self.root
+	}
+
+	[rpc]
+	fun live_record(self): StoreSome<Record> {
+		self.root.some()
+	}
+}
+
+fun main() {
+	let svc = Svc { root = Store::new(Some(Record { id = 1, name = "general" })) };
+	print(svc.contract_hash());
+}

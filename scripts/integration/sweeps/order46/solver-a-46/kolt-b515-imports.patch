@@ -1,0 +1,80 @@
+--- a/src/lib/input_system.vl
++++ b/src/lib/input_system.vl
+@@ -16,6 +16,7 @@
+ 
+ import std::display;
+ import std::dom::{ Event, window };
++import std::iterator::Iterator;
+ import std::reactive::get_owner;
+ import std::shared::Shared;
+ 
+--- a/src/sidebar.vl
++++ b/src/sidebar.vl
+@@ -1,8 +1,11 @@
+ import std::compare::{ Ordering, PartialEq };
+ import std::delta::ListCell;
++import std::display::Display;
++import std::iterator::Iterator;
+ import std::reactive::{ DraftState, FlushPolicy, combine, turn };
+ import std::router::{ navigate, plain_left_click };
+ import std::rpc::{ ConnectionState, RemoteSource, RpcError, SocketTransport };
++import std::style::CssValue;
+ import std::time::{ Duration, Instant };
+ import pkg::app_context::{ get_app_context, get_overlays, get_prefs, get_route, get_sidebar_tab };
+ import pkg::channel::{
+--- a/src/channel.vl
++++ b/src/channel.vl
+@@ -1,6 +1,7 @@
+ // The channel view. The client half of `Channel` and `Message` - the methods
+ // over the flat rpc surface and the memoized handles - is `model.vl`; this
+ // module is the view over it.
++import std::debug::Debug;
+ import std::reactive::{ DraftState, draft };
+ import std::router::navigate;
+ import pkg::app_context::{ get_input_system, get_overlays, get_user };
+--- a/src/store.vl
++++ b/src/store.vl
+@@ -16,6 +16,7 @@
+ import std::compare::PartialEq;
+ import std::crypto::random_bytes;
+ import std::db::Database;
++import std::delta::SetPipe;
+ import std::json::{ FromJson, Json, JsonKind, JsonValue };
+ import std::memo::Memo;
+ import std::reactive::{ HashMapCell, HashMapEntry, MemoCell };
+--- a/src/theme.vl
++++ b/src/theme.vl
+@@ -1,4 +1,5 @@
+ import std::compare::{ Ord, Ordering, PartialEq };
++import std::display::Display;
+ import std::hash::{ Hash, Hashable };
+ import std::reactive::{ DraftState, FlushPolicy, combine, get_owner, turn };
+ import std::rpc::{ ConnectionState, RemoteSource, RpcError, SocketTransport };
+--- a/src/views.vl
++++ b/src/views.vl
+@@ -1,4 +1,5 @@
+ import std::compare::{ Ordering, PartialEq };
++import std::display::Display;
+ import std::reactive::{ DraftState, FlushPolicy, turn };
+ import std::rpc::{ ConnectionState, RemoteSource, RpcError, SocketTransport };
+ import std::time::{ Duration, Instant };
+--- a/src/command_palette.vl
++++ b/src/command_palette.vl
+@@ -1,6 +1,8 @@
+ import std::compare::{ Ordering, PartialEq };
++import std::display::Display;
+ import std::hash::{ Hash, Hashable };
+ import std::hash_map::{ HashMap, (impl HashMap<_, _>) };
++import std::iterator::Iterator;
+ import std::reactive::{ DraftState, FlushPolicy, combine, turn };
+ import std::rpc::{ ConnectionState, RemoteSource, RpcError, SocketTransport };
+ import std::time::{ self, Duration, Instant };
+--- a/src/login_page.vl
++++ b/src/login_page.vl
+@@ -1,4 +1,6 @@
+ import std::fetch;
++import std::json::FromJson;
++import std::json::Json;
+ import std::router::navigate;
+ import pkg::app_context::{ get_prefs, get_route };
+ import pkg::lib::overlay::Overlay;

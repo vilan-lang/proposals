@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B546",
+   "section": "B",
+   "kind": "bug (std::ui focus scope; S)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-10-03 (ui-46's find, Order 46)",
+   "discussion": "ui-46 (Order 46, A157); sweeps/order46/REPORT-ui-46.md; repro under the ui-46 worktree's target/ui-46-scratch/probe-restore",
+   "title": "a focus scope installed AFTER its content's `.autofocus()` took focus remembers the autofocused element as its restore target, so closing the overlay returns focus nowhere (the opener is lost)",
+   "body": "`focus_scope` captures `restore = active_element()` at install. When the content is built before the scope is installed — `let content = <input .autofocus() />;` then `<div .on_mount(\\|element\\| { focus_scope(element, Contain); })>{content}</div>`, so the content's mount microtask runs before the panel's — and the panel is visible, the content takes focus first and the scope records IT as the element to restore. On close the restore target is detached, the `is_connected()` guard skips the restore, and focus falls to `<body>` instead of returning to the opener. With the content written inline (built after the panel's head) the panel's microtask runs first and the opener is restored. Pre-dates A157 (the bounded clock always focused); A157 only makes a scope that is already installed win. kolt is NOT affected: `lib/overlay.vl` calls `focus_scope(panel_element, ..)` synchronously in the same render that built the body. Repro (DOM stub): focus `opener`, open → `open=inner`, close → `closed=inner` (detached; a browser shows `<body>`); inline variant → `closed=opener`. A fix candidate: when the active element at install is already inside `root`, take the restore target from the focus history (the last `focusout` target outside every scope) rather than from `active_element()`."
+  },
+  {
+   "id": "M116",
+   "section": "M",
+   "kind": "perf instrument (S)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-03 (ui-46's find, Order 46)",
+   "discussion": "ui-46 (Order 46, A157); sweeps/order46/REPORT-ui-46.md; M105 (performance-gates.md)",
+   "title": "kolt's `vilan check` instruction count moved +564M (+2.2%) from adding items to `elements.rs` that check never executes: the release profile's 16 codegen units make a counter-based gate read codegen repartitioning as a regression",
+   "body": "Measured with `scripts/perf_count.py` (VILAN_SEQUENTIAL_CHECK=1, warm, deterministic to ~10k instructions) on one kolt copy: next @c3da9fa3 25,612.2M; the same tree with ONLY ui-46's additions to `crates/vilan-core/src/elements.rs` (two consts, a struct and two functions that only the LSP calls) 26,169.5M; the same items moved into `parsing.rs` 25,621.5M. analyzer.rs reverted to base did not change the first reading. So whole-crate inlining in vilan-core depends on which codegen unit an unrelated item lands in, by about 2%. That is the size of a real regression M108/M107 chase, and it makes an instruction ceiling flaky across unrelated commits. Options: measure under a profile with `codegen-units = 1` (and possibly `lto = \"thin\"`) for the perf gate and the shipped binary alike; or accept a band and say so in performance-gates.md. Shipping with codegen-units = 1 also removes the variance from users' builds."
+  },
+  {
+   "id": "E264",
+   "section": "E",
+   "kind": "LSP completion (XS)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (ui-46's find, Order 46)",
+   "discussion": "ui-46 (Order 46, A157); vilan-ide `html_attributes.rs` (E69's table)",
+   "title": "element-head completion offers bare `autofocus` at `<input \\|>` (it is a global attribute in E69's HTML table), which A157's steer now warns on — the offer could be the dotted `.autofocus()` instead",
+   "body": "A157 steers a written `autofocus` attribute in an element head to `.autofocus()` (code `element-attribute/autofocus`, with a quick fix). The element-head completion still offers `autofocus` as an attribute name from the generated HTML attribute table, so accepting the completion produces a warning on the next analysis. The table is generated and name-blind by design (element-syntax.md §2), so the change belongs in the completion layer: replace or annotate the one name the compiler steers, rather than editing the vendored dataset."
+  }
+ ]
+}

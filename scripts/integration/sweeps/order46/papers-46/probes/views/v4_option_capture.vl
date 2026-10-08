@@ -1,0 +1,26 @@
+// B495 probe v4 (F69's shape): the closure type written inside `Option<..>`;
+// the closure reaches its call through a match capture, and through a loop.
+import std::io::print;
+
+struct Counter {
+	n: i32,
+}
+
+fun main() {
+	mut c = Counter { n = 1 };
+	let bump: Option<|&mut i32| void> = Some(|x| {
+		x += 10;
+	});
+	match bump {
+		Some(let f) => f(&mut c.n),
+		None => {},
+	}
+	print(i"through a match capture: n={c.n}");
+	let all: List<|&mut i32| void> = [|x| {
+		x += 100;
+	}];
+	for g in all {
+		g(&mut c.n);
+	}
+	print(i"through a loop binding: n={c.n}");
+}

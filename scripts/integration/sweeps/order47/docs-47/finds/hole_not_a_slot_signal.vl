@@ -1,0 +1,11 @@
+import std::web::ui::{ View, render };
+import std::reactive::{ Signal, SignalCell };
+
+fun a(): View {
+	let count = Signal::new(0);
+	<p>{count}</p>
+}
+
+fun main() {
+	print(render(a()));
+}

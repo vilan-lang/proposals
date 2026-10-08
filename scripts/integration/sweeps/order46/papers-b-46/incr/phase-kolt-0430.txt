@@ -1,0 +1,64 @@
+[vilan pass] (macro world) 1.6cpu rss=63MB analyzer.infer_bumps()
+[vilan pass] (macro world) 1.2cpu rss=63MB analyzer.check_view_escape()
+[vilan pass] (macro world) 1.3cpu rss=63MB analyzer.check_invalidation()
+[vilan pass] (macro world) 1.2cpu rss=63MB analyzer.check_generic_bound_satisfaction()
+[vilan pass] (macro world) 1.3cpu rss=63MB analyzer.check_exposed_unexported_types()
+[vilan pass] (macro world) 2.0cpu rss=63MB liveness::LastUse::compute
+[vilan pass] (macro world) 1.1cpu rss=64MB analyzer.compute_resource_types()
+[vilan pass] (macro world) 1.3cpu rss=64MB analyzer.compute_clone_sites()
+[vilan pass] (macro world) 5.4cpu rss=64MB the remaining tables, labels and records
+[vilan pass] (macro world) 2.4cpu rss=72MB the remaining tables, labels and records
+[vilan pass] (macro world) 2.4cpu rss=79MB the remaining tables, labels and records
+[vilan pass] (macro world) 2.7cpu rss=87MB the remaining tables, labels and records
+[vilan phase] resolve_world imports 0.8ms/0.8cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 6.3ms/6.3cpu locals 4.8ms/4.8cpu types 6.5ms/6.5cpu conformance 3.6ms/3.6cpu divergence+guards 1.3ms/1.3cpu contexts 1.0ms/1.0cpu fixpoint 387.4ms/387.4cpu
+[vilan phase] resolve_world imports 0.0ms/0.0cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 0.0ms/0.0cpu locals 0.0ms/0.0cpu types 0.3ms/0.3cpu conformance 0.0ms/0.0cpu divergence+guards 2.6ms/2.6cpu contexts 1.1ms/1.1cpu fixpoint 1.1ms/1.1cpu
+[vilan pass] 6.0cpu rss=279MB analyzer.adopt_closure_parameter_views()
+[vilan pass] 1.3cpu rss=279MB analyzer.infer_borrows()
+[vilan pass] 35.3cpu rss=279MB analyzer.infer_bumps()
+[vilan pass] 3.2cpu rss=279MB analyzer.record_lazy_arguments()
+[vilan pass] 4.3cpu rss=279MB analyzer.check_mutable_arguments()
+[vilan pass] 4.6cpu rss=279MB analyzer.check_view_arguments()
+[vilan pass] 7.4cpu rss=279MB analyzer.check_view_value_reads()
+[vilan pass] 2.9cpu rss=279MB analyzer.check_deprecated()
+[vilan pass] 1.2cpu rss=279MB analyzer.check_element_attribute_shadowing()
+[vilan pass] 5.3cpu rss=279MB analyzer.check_view_escape()
+[vilan pass] 6.2cpu rss=279MB analyzer.check_invalidation()
+[vilan pass] 204.4cpu rss=316MB analyzer.check_generic_bound_satisfaction()
+[vilan pass] 1.5cpu rss=316MB analyzer.check_written_nominal_bounds()
+[vilan pass] 1.6cpu rss=316MB analyzer.check_hmr_transfer_bounds()
+[vilan pass] 34.7cpu rss=316MB analyzer.check_container_resource_arguments()
+[vilan pass] 5.2cpu rss=316MB analyzer.check_resource_any_coercion()
+[vilan pass] 22.0cpu rss=316MB analyzer.check_resource_moves()
+[vilan pass] 41.2cpu rss=317MB analyzer.check_resource_generic_instantiations()
+[vilan pass] 28.1cpu rss=317MB analyzer.plan_resource_drops()
+[vilan pass] 19.6cpu rss=318MB liveness::LastUse::compute
+[vilan pass] 34.1cpu rss=318MB the drop extents, shared cells and capture plan
+[vilan pass] 234.9cpu rss=408MB analyzer.compute_resource_types()
+[vilan pass] 25.1cpu rss=408MB analyzer.compute_clone_sites()
+[vilan pass] 2.3cpu rss=408MB analyzer.compute_return_clone_sites()
+[vilan pass] 31.9cpu rss=408MB the remaining tables, labels and records
+[vilan phase] load+walk 399.9ms/399.4cpu base 412.1ms/412.1cpu build 18.0ms/18.0cpu checks 771.4ms/771.3cpu
+[vilan phase] macro-worlds 4 load+walk 39.5ms/39.5cpu base 20.4ms/20.4cpu build 10.0ms/10.0cpu checks 45.9ms/45.9cpu post-passes 14.7ms/14.7cpu
+[vilan phase] reused 0/85 entry-dirty 0 alias-reaching 0 tables 0
+[vilan phase] post-passes 463.9ms/463.9cpu contexts+graph 106.4ms/106.4cpu async-infer 78.3ms/78.3cpu view-suspensions 0.0ms/0.0cpu async-drops 0.0ms/0.0cpu context-drops 0.0ms/0.0cpu platform-color 42.3ms/42.3cpu const-pass 221.7ms/221.7cpu const-lower 10.5ms/10.6cpu const-interp 185.7ms/185.8cpu const-fuel-max 248917 init-order 0.5ms/0.5cpu dispatch-refine 27.7ms/27.5cpu
+[vilan phase] emission-walk 398.5ms/398.5cpu program-drop 54.4ms/54.4cpu
+[vilan phase] resolve_world imports 0.6ms/0.6cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 4.4ms/4.4cpu locals 1.2ms/1.2cpu types 3.2ms/3.2cpu conformance 1.5ms/1.5cpu divergence+guards 0.4ms/0.4cpu contexts 0.0ms/0.0cpu fixpoint 52.3ms/52.3cpu
+[vilan phase] resolve_world imports 0.0ms/0.0cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 0.0ms/0.0cpu locals 0.0ms/0.0cpu types 0.1ms/0.1cpu conformance 0.0ms/0.0cpu divergence+guards 0.3ms/0.3cpu contexts 0.0ms/0.0cpu fixpoint 0.7ms/0.7cpu
+[vilan pass] 8.2cpu rss=308MB analyzer.infer_bumps()
+[vilan pass] 1.1cpu rss=309MB analyzer.check_view_escape()
+[vilan pass] 26.1cpu rss=325MB analyzer.check_generic_bound_satisfaction()
+[vilan pass] 1.4cpu rss=325MB analyzer.check_written_nominal_bounds()
+[vilan pass] 13.0cpu rss=325MB analyzer.check_container_resource_arguments()
+[vilan pass] 8.0cpu rss=325MB analyzer.check_resource_moves()
+[vilan pass] 6.5cpu rss=325MB analyzer.check_resource_generic_instantiations()
+[vilan pass] 6.6cpu rss=325MB analyzer.plan_resource_drops()
+[vilan pass] 6.1cpu rss=325MB liveness::LastUse::compute
+[vilan pass] 9.2cpu rss=325MB the drop extents, shared cells and capture plan
+[vilan pass] 53.9cpu rss=358MB analyzer.compute_resource_types()
+[vilan pass] 10.7cpu rss=358MB analyzer.compute_clone_sites()
+[vilan pass] 16.1cpu rss=358MB the remaining tables, labels and records
+[vilan phase] load+walk 62.4ms/62.4cpu base 63.6ms/63.6cpu build 6.6ms/6.6cpu checks 175.1ms/175.1cpu
+[vilan phase] macro-worlds 0 load+walk 0.0ms/0.0cpu base 0.0ms/0.0cpu build 0.0ms/0.0cpu checks 0.0ms/0.0cpu post-passes 0.0ms/0.0cpu
+[vilan phase] reused 0/56 entry-dirty 0 alias-reaching 0 tables 0
+[vilan phase] post-passes 56.6ms/56.6cpu contexts+graph 15.1ms/15.1cpu async-infer 24.5ms/24.5cpu view-suspensions 0.0ms/0.0cpu async-drops 0.0ms/0.0cpu context-drops 0.0ms/0.0cpu platform-color 9.5ms/9.5cpu const-pass 4.5ms/4.5cpu const-lower 0.0ms/0.0cpu const-interp 0.0ms/0.0cpu const-fuel-max 2225 init-order 0.1ms/0.1cpu dispatch-refine 2.9ms/2.9cpu
+[vilan phase] emission-walk 79.9ms/79.9cpu program-drop 12.9ms/12.9cpu

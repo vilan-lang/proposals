@@ -1,0 +1,16 @@
+// Closure-owned state without the loop condition: ONE closure expression,
+// the enclosing frame never touches `n` after it, but the expression runs
+// three times, and the three closures share the one binding: 1 2 3.
+fun main() {
+	mut n = 0;
+	mut fs: List<|| i32> = [];
+	for _i in [0, 1, 2] {
+		fs.push(|| {
+			n += 1;
+			n
+		});
+	}
+	for f in fs {
+		print(f());
+	}
+}

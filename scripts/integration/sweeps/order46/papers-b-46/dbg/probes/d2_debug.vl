@@ -1,0 +1,16 @@
+import std::debug::Debug;
+
+[derive(Debug)]
+struct Point { x: i32, y: i32 }
+[derive(Debug)]
+struct Line { from: Point, to: Point, label: str }
+[derive(Debug)]
+enum Shape { Circle(f64), Rect(i32, i32), Empty }
+
+fun main() {
+	print(Point { x = 1, y = 2 }.debug());
+	print(Line { from = Point { x = 1, y = 2 }, to = Point { x = 3, y = 4 }, label = "di\"ag" }.debug());
+	print(Shape::Circle(1.5).debug());
+	print(Shape::Empty.debug());
+	print(3.0.debug());
+}

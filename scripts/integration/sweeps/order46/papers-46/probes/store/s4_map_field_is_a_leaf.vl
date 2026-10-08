@@ -1,0 +1,59 @@
+// A153 probe s4: on 0.43.0 (before A149 S3) a `HashMap` field of a derived
+// struct is a LEAF: there is no `at(key)` on it, and a write to ONE key through
+// the map's handle wakes every observer of the map — the coarse cell's cost.
+// (Message has `PartialEq` by id, as kolt's does: an edit that keeps the id is
+// "no change" to the leaf compare, which this probe also shows.)
+import std::compare::PartialEq;
+import std::hash_map::HashMap;
+import std::io::print;
+import std::reactive::{ Owner, run_with_owner };
+import std::shared::Shared;
+import std::store::{ Storable, Store };
+
+[derive(Wire, PartialEq)]
+struct Message {
+	id: u53,
+	content: str,
+}
+
+[derive(Storable)]
+struct Global {
+	name: str,
+	messages: HashMap<u53, Message>,
+}
+
+let runs = Shared::new(0);
+
+fun main() {
+	mut seed: HashMap<u53, Message> = HashMap::new();
+	mut n: u53 = 0;
+	for n < 50 {
+		seed.insert(n, Message { id = n, content = i"m{n}" });
+		n += 1;
+	}
+	let global = Store::new(Global { name = "g", messages = seed });
+	let messages = global.messages();
+	let owner = Owner::new();
+	run_with_owner(owner, || {
+		mut k: u53 = 0;
+		for k < 50 {
+			let key = k;
+			messages.effect_on_change(|map| {
+				let _row = map.get(key);
+				runs.write() += 1;
+			});
+			k += 1;
+		}
+	});
+	runs.write() = 0;
+	mut next = messages.get();
+	next.insert(7, Message { id = 7, content = "m7 edited, content differs" });
+	messages.set(next);
+	print(i"edit m7 (id kept, content changed): row observers run={runs.read()}");
+	runs.write() = 0;
+	mut grown = messages.get();
+	grown.insert(99, Message { id = 99, content = "new" });
+	messages.set(grown);
+	print(i"insert m99: row observers run={runs.read()}");
+	owner.dispose();
+}

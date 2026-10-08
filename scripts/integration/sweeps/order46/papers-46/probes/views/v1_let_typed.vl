@@ -1,0 +1,20 @@
+// B495 probe v1 (the item's repro): a let-bound literal re-typed through an
+// annotation `let typed: |&str| void = h` — does `h`'s parameter adopt the view?
+import std::io::print;
+import std::shared::Shared;
+
+struct City {
+	name: str,
+}
+
+let out = Shared::new("");
+
+fun main() {
+	let home = City { name = "Oslo" };
+	let h = |c| {
+		out.write() = *c;
+	};
+	let typed: |&str| void = h;
+	typed(&home.name);
+	print(i"typed through a let: out={out.read()}");
+}

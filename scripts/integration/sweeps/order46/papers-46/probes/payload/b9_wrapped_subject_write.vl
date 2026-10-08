@@ -1,0 +1,32 @@
+// B509 probe b9: the wrapped-view capture (b4's route) with the SUBJECT written
+// inside the arm — the hazard a payload view must refuse.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+struct P {
+	x: i32,
+}
+
+struct Bag {
+	items: List<P>,
+}
+
+fun first(bag: &mut Bag): Option<&mut P> {
+	if bag.items.len() > 0 {
+		Some(&mut bag.items[0])
+	} else {
+		None
+	}
+}
+
+fun main() {
+	mut bag = Bag { items = [P { x = 1 }] };
+	match first(&mut bag) {
+		Some(let p) => {
+			bag.items = [P { x = 50 }];
+			p.x = 7;
+		},
+		None => {},
+	}
+	print(i"after replacing the list under the view: items[0].x={bag.items[0].x}");
+}

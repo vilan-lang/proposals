@@ -1,0 +1,8 @@
+import std::io::print;
+import pkg::account::Opaque;
+
+fun main() {
+	print(Opaque { value = 1 }.value);
+}
+
+main();

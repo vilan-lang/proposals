@@ -1,0 +1,29 @@
+import std::io::print;
+
+// A BLOCK-bodied closure handed to a generic callee without a written return:
+// the analyzer records the call's `U` as `Maybe` with NO type arguments (the
+// emitter's `is_grounded` passes it, vacuously) and the block's local `d` as
+// unresolved, so natively `apply`'s instance meets an unbound `T` of `Maybe`
+// and is refused; the `let block` binding carries the same argument-less type.
+// JS prints 4. The expression-bodied form (`|k| Maybe::Just(k * 2)`) builds
+// since F85.
+enum Maybe<T> {
+	Just(T),
+	Nothing,
+}
+
+fun apply<T, U>(value: T, f: |T| U): U {
+	f(value)
+}
+
+fun main() {
+	let block = apply(2, |k| {
+		let d = k * 2;
+		Maybe::Just(d)
+	});
+	if block is Maybe::Just(let v) {
+		print(v);
+	}
+}
+
+main();

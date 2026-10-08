@@ -1,0 +1,64 @@
+{
+ "items": [
+  {
+   "id": "B532",
+   "section": "B",
+   "kind": "MISCOMPILE (JS; M) + native rustc refusal",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-a-46's find, Order 46)",
+   "title": "a `dyn Named<str>` over the SUPERTRAIT `Shape<str>`, on a type implementing `Shape` at two instantiations, answers `area` from `Shape<i32>`'s table on JS (prints `4` where `big` is right); natively rustc refuses the emitted program (E0308)",
+   "discussion": "solver-a-46 (Order 46), met reducing B502; sweeps/order46/REPORT-solver-a-46.md",
+   "body": "Repro: `trait Shape<T> { fun area(self): T; } trait Named<T> with Shape<T> {} struct Square { side: i32 } impl Square with Shape<i32> { .. side * side } impl Square with Shape<str> { .. \"big\" } impl Square with Named<str> {}` then `let titled: dyn Named<str> = Square { side = 2 }; print(titled.area());` — on 0.43.0 too, outside any bound. B436/B437's per-application tables, one level up the supertrait chain: the object's table for `Named<str>` must take the supertrait's members at the arguments the chain passes (`Shape<str>`). Sizing S–M; solver/transformer + native."
+  },
+  {
+   "id": "B533",
+   "section": "B",
+   "kind": "bug (solver; false refusal / silent first-provider pick; M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-a-46's find, Order 46)",
+   "title": "a type implementing a bound's trait at TWO instantiations binds the callee's `T` from the FIRST provider and ignores the call's expectation: `let s: str = measure(Square { side = 2 })` with `measure<T, S: Shape<T>>` and `Square: Shape<i32> + Shape<str>` is refused \"Expected str, but got i32\"; with no expectation it silently picks `i32`",
+   "discussion": "solver-a-46 (Order 46), met reducing B502; sweeps/order46/REPORT-solver-a-46.md",
+   "body": "`derive_generics_from_bounds` asks `trait_args_for_pattern`, which falls back to the first agreeing provider when the maxima do not rank. Rec: an unranked pair binds nothing there, so the expectation (`bind_callee_own_generics_from_expectation`) decides; a call nothing decides is refused as ambiguous, naming both instantiations. The trait-object half (B502) is fixed. Sizing M; solver."
+  },
+  {
+   "id": "B534",
+   "section": "B",
+   "kind": "bug (analyzer; false refusal; S–M) — B465's family",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-a-46's find, Order 46)",
+   "title": "a closure LITERAL whose position's closure type takes a `&mut` is refused \"cannot mutate immutable 'list'\" at three positions B465 does not cover: a RETURN (`fun make(): \\|&mut List<i32>\\| void { \\|list\\| list.push(9) }`), a generic parameter instantiated with the closure type (`edits.push(\\|list\\| list.push(7))` on `List<\\|&mut List<i32>\\| void>`), and an annotated binding that is never called (`let single: \\|&mut List<i32>\\| void = \\|list\\| ..` — \"never given a type\")",
+   "discussion": "solver-a-46 (Order 46), met verifying B439; sweeps/order46/REPORT-solver-a-46.md",
+   "body": "B465 (R-c) made a literal at a parameter, a struct field and an annotated binding take view parameters whether it writes `&` or not; writing `|&mut list|` works at all three positions here, so these are the positions the rule does not yet reach. Sizing S–M; solver."
+  },
+  {
+   "id": "F88",
+   "section": "F",
+   "kind": "native backend (rustc refusal; S)",
+   "area": "Native backend",
+   "status": "OPEN — filed 2026-10-03 (solver-a-46's find, Order 46)",
+   "title": "`*{ &m }` (a deref of a block whose tail is a view of a scalar) is refused by rustc natively — E0614 \"type `i32` cannot be dereferenced\" (the block emits `m.clone()`, then the `*`)",
+   "discussion": "solver-a-46 (Order 46), met building B514's native pin; sweeps/order46/REPORT-solver-a-46.md",
+   "body": "On 0.43.0 as well. `*if c { &a } else { &b }` and `*match ..` build natively; the block tail is the one form that does not. JS reads the value since B514. Sizing S; native."
+  },
+  {
+   "id": "A156",
+   "section": "A",
+   "kind": "design (language; paper)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-a-46's find, Order 46)",
+   "title": "a value `if`/`match` choosing between two VIEWS cannot initialize a view binding — `let v = if c { &mut a } else { &mut b }; v.x = 10` is refused since B512 (B496's sentence at each leaf); Rust's equivalent is ordinary",
+   "discussion": "solver-a-46 (Order 46), B512's ruling took the refusal door; sweeps/order46/REPORT-solver-a-46.md",
+   "body": "B512's rec offered two doors: a conditional of views is a view initializer, or refuse with B496's sentence. The refusal shipped (sound, small). The other door needs the binding rooted at every leaf's place for the borrow and liveness checks, `view_binding_mutability` and `compute_view_bindings` to look through branches, and both emitters to bind the chosen pair/reference. Paper: is it wanted, and at what cost."
+  },
+  {
+   "id": "B535",
+   "section": "B",
+   "kind": "follow-up (B515's v0.45.0 flip; S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-a-46's find, Order 46)",
+   "title": "B515's v0.45.0 half: the trait-not-in-scope WARNING becomes a refusal — first migrate the estate's own 32 sites (the corpus's 5 in `delta-law.vl`, `number-math.vl`, `time.vl`; the docs' 27 in runnable fences), apply kolt's patch, and give the warning its quick fix (insert the import it names; editor)",
+   "discussion": "solver-a-46 (Order 46), R-g door (b); sweeps/order46/REPORT-solver-a-46.md",
+   "body": "Order 46 shipped door (b): `check_trait_method_scope` warns. The flip is the same pass pushing a diagnostic. Most docs sites are `Iterator` defaults (`filter`, `map`, `to_list`, `fold`…) and pipe sealers (`memo` is `CollPipe`'s / `SetPipe`'s) — worth an owner look at whether those traits belong in the base prelude before the flip, since every iterator chain otherwise needs `import std::iterator::Iterator;`. Sizing S (+ the docs sweep)."
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{"prefix":"- 2026-10-03 (the owner's rulings, mid-Order 46): ","stamps":{
+"F68":"RULED: keep what native-46 built (node's layout on both backends) until `dbg` lands (E257).",
+"B525":"RULED, rec accepted: the fix rides v0.44.0 in reactive-46, so every service's contract hash moves ONCE (it is mirrored-store.md's S0, with B526).",
+"B536":"RULED: the attribute-order WARNING becomes an ERROR in v0.45.0, after the formatter has had a release to migrate code.",
+"B535":"RULED: the pipe sealers (`CollPipe`, `SetPipe`) join the WEB prelude (with `Iterator` in the base prelude), so `memo` on a collection or set pipe needs no import. reactive-46.",
+"A153":"RULED: mirrored-store.md Q1–Q15 as recommended. S0 (the hash over Wire type shapes = B525, and `assume()` reading the last value = B526) builds in reactive-46 this order; S1+ wait for A149 S3 and go to Order 47.",
+"B495":"RULED: closure-type-views.md Q1–Q5 as recommended (parameter modes in `Type::Closure`, adoption inside unification, a written-mode mismatch refused, modes in equality and hashing, no separate F69 stopgap). It fixes silent JS miscompiles (B527): build in solver-c-46 this order, after solver-b-46 merges.",
+"B509":"RULED: payload-views.md Q1–Q7 as recommended (the match subject carries the mode: `match &mut place` binds writable views; `mut` capture under a reference subject refused; rule 4 guards the subject to the capture's last use; `is` the same). Build in solver-c-46 after B495; B528 and M109 with it.",
+"K26":"The website half SHIPPED: site-46 merged to the website's main @7016f2b (the owner: 'Deploy site') and deploying. The book's snippets and `vilan/examples/` remain (after A154).",
+"K14":"SHIPPED with site-46 (website main @7016f2b).",
+"K15":"SHIPPED with site-46 (website main @7016f2b)."}}

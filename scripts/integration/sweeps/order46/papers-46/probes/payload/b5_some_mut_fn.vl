@@ -1,0 +1,26 @@
+// B509 probe b5: writing `some_mut(o: &mut Option<P>): Option<&mut P>` — the
+// helper that would make b4's route reach an Option place.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+struct P {
+	x: i32,
+}
+
+fun some_mut(o: &mut Option<P>): Option<&mut P> {
+	match o {
+		Some(let p) => Some(&mut p),
+		None => None,
+	}
+}
+
+fun main() {
+	mut held: Option<P> = Some(P { x = 1 });
+	match some_mut(&mut held) {
+		Some(let p) => {
+			p.x = 5;
+		},
+		None => {},
+	}
+	print(i"through some_mut: held.x={held.map(|p| p.x).unwrap_or(0)}");
+}

@@ -1,0 +1,13 @@
+// A copy of a closure value is the same binding (the environment holds the
+// binding itself): closure-owned state stays sound only while closure values
+// share one environment (F16's `Rc<dyn Fn>`): 1 2.
+fun main() {
+	mut n = 0;
+	let f = || {
+		n += 1;
+		n
+	};
+	let g = f;
+	print(f());
+	print(g());
+}

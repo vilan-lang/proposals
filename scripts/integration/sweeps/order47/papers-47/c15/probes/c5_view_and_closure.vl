@@ -1,0 +1,14 @@
+// A `&mut` view of the captured binding handed to the call that runs the
+// closure: two accessors live at once. JS: 11.
+fun apply(x: &mut i32, f: || void) {
+	f();
+	x += 10;
+}
+
+fun main() {
+	mut n = 0;
+	apply(&mut n, || {
+		n += 1;
+	});
+	print(n);
+}

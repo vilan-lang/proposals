@@ -1,0 +1,17 @@
+// B509 probe b10: `match &held { Some(let p) => .. }` (a READ view subject) on
+// 0.43.0: accepted, and the capture is a copy (see the emitted `__clone`).
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+struct P {
+	x: i32,
+	tags: List<str>,
+}
+
+fun main() {
+	let held: Option<P> = Some(P { x = 1, tags = ["a"] });
+	match &held {
+		Some(let p) => print(i"read through &held: x={p.x}"),
+		None => {},
+	}
+}

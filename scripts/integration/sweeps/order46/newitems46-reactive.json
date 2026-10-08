@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B542",
+   "section": "B",
+   "kind": "bug (type solver; S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (reactive-46's find, Order 46)",
+   "discussion": "reactive-46 (Order 46); sweeps/order46/REPORT-reactive-46.md",
+   "title": "inside `impl SignalCell<type T: (2..)>` a method call on ANOTHER instance of the same type reads the block's `T`: `SignalCell::new(part)` and `parts.get(key).set(whole.get(key))` over a part of type `U` are refused \"Expected T, but got U\"",
+   "body": "Met building A152's `SignalCell::unzip`. The body `let parts = (part in self.get() => SignalCell::new(part)); .. parts.get(key).set(current.get(key))` written inside `export impl SignalCell<type T: (2..)> { fun unzip(self): (U in T: SignalCell<U>) { .. } }` is refused twice (\"Expected T, but got U\"); the same body in a free function `fun unzip_cell<W: (2..)>(whole: SignalCell<W>)` compiles and runs. So a bare `SignalCell::new` (or a member of a `SignalCell<U>` receiver) inside the type's own impl block is resolved against the block's binder rather than instantiated fresh. std works around it (`unzip_cell`, its comment names this item). Repro: move `unzip_cell`'s body back into the impl."
+  },
+  {
+   "id": "B543",
+   "section": "B",
+   "kind": "bug (type solver; S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (reactive-46's find, Order 46)",
+   "discussion": "reactive-46 (Order 46); sweeps/order46/REPORT-reactive-46.md",
+   "title": "`entries()` and `get(key)` on a MAPPED tuple type the element as the family's template: over `values: (U in T: Option<U>)`, `for (key, value) in values.entries()` and `values.get(key)` read `U`, not `Option<U>` — \"cannot call method 'is_none' on U\"",
+   "body": "Met writing A152's `zip_options`. `std::tuple`'s doc says a key minted for `T` indexes every tuple mapped from `T` at the MAPPED element type; keys minted from the mapped tuple itself (`values.keys()`, `values.entries()`) answer the template instead. A tuple comprehension over the same value types its binder correctly (`(value in values => value.is_none())` compiles), which is what std's `zip_options` uses (one pass with a captured `mut`, then the unwrap). Repro: `fun zip_a<T: (2..)>(values: (U in T: Option<U>)): bool { for (key, value) in values.entries() { if value.is_none() { ret false; } } true }`. Also: a `(U in T: bool)` tuple's entries read `U` (\"this `if` condition is `U`\")."
+  },
+  {
+   "id": "E261",
+   "section": "E",
+   "kind": "diagnostics (S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (reactive-46's find, Order 46)",
+   "discussion": "reactive-46 (Order 46); sweeps/order46/REPORT-reactive-46.md",
+   "title": "a `match` whose legs are two different pipe stages (`Source::constant(..)` and a `.derive(..)`) says \"match legs have mismatched types: expected Constant<TransientState<unknown, unknown>>, but got Derive<dyn Flow<..>, ..>\" — it could say that two stages meet only through an erased `dyn Flow<T>` and name the annotation",
+   "body": "B480's re-check (reactive-46): kolt's `Channel::find` selector infers with no `switch` type arguments once its `match` is bound to an annotated `let state: dyn Flow<TransientState<Channel, RpcError>> = match ..` (pinned: `dyn_objects::b480_a_selector_matching_two_erased_arms_needs_no_switch_type_arguments`), so B480 does not reproduce. Without the annotation the refusal above is correct but names two internal stage types and an `unknown`; the fix every reader needs is the `dyn Flow<..>` binding. A steer when both legs implement `Flow<T>` for one `T`."
+  },
+  {
+   "id": "N143",
+   "section": "N",
+   "kind": "hygiene (XS)",
+   "area": "Hygiene & rot",
+   "status": "OPEN — filed 2026-10-03 (reactive-46's find, Order 46)",
+   "discussion": "reactive-46 (Order 46); sweeps/order46/REPORT-reactive-46.md",
+   "title": "`std/vilan.toml`'s census comment is stale: it says 741 declarations across 63 files and 33 `export *;` modules; the tree has 1109, 69 and 34 (after R-e removed `map.vl` and `set.vl`)",
+   "body": "The comment gives the recipe and the figures beside it; nothing gates them, so they drift every order. Either regenerate them at the seal or drop the numbers and keep the recipe."
+  },
+  {
+   "id": "E262",
+   "section": "E",
+   "kind": "diagnostics (S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (reactive-46's find, Order 46)",
+   "discussion": "reactive-46 (Order 46); sweeps/order46/REPORT-reactive-46.md",
+   "title": "the \"missing '…'; declare `fun …`\" steer drops a callback parameter's `context` clause for a program's own trait: `trait Watched<T> { fun watch(own self, observer: (\\|T\\| void) context tracking): Subscription; }` suggests `fun watch(own self, observer: \\|i32\\| void): Subscription`, which conformance refuses when copied",
+   "body": "Met re-aiming B249's pin after F78 made `Flow::on_change` a default: std's `Flow::on_change` requirement rendered `(\\|i32\\| void) context tracking` (B482's std half), the same shape declared in the program's own trait renders without the clause. Pin today holds only the substitution (`inference::platform::b249_a_trait_parameter_takes_the_impls_argument`)."
+  }
+ ]
+}

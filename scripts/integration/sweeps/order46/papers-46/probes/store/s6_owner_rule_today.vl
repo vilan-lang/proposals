@@ -1,0 +1,43 @@
+// A153 probe s6: the owner's rule as the LOCAL store already types it (0.43.0).
+// `Store<Option<Message>>` stands in for `global.messages().at(id)` (A149 S3).
+// - a field reached through the maybe is itself a maybe (`StoreSome<str>`);
+// - `assume()` (what `when_live` hands a body) types the same field as a plain
+//   `Store<str>`, and after the parent is DELETED it holds the last value —
+//   the amendment's "inside the parent's scope an Absent field means the scope is
+//   about to be disposed: hold the last value";
+// - two projections of one path share one identity (A146), the dedup key a
+//   wire channel would use.
+// - `[derive(Storable, Wire)]` on one struct compiles.
+import std::display::Display;
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{ Owner, Source, run_with_owner };
+import std::shared::Shared;
+import std::store::{ Storable, Store, StoreSome };
+
+[derive(Storable, Wire, PartialEq)]
+struct Message {
+	id: u53,
+	content: str,
+}
+
+let seen = Shared::new([""]);
+
+fun main() {
+	let slot: Store<Option<Message>> = Store::new(Some(Message { id = 7, content = "hello" }));
+	let maybe_content: StoreSome<str> = slot.some().content();
+	let held: Store<Message> = slot.some().assume();
+	let content: Store<str> = held.content();
+	let owner = Owner::new();
+	run_with_owner(owner, || {
+		maybe_content.effect_on_change(|c| seen.write().push(i"maybe={c.unwrap_or("<none>")}"));
+		content.effect_on_change(|c| seen.write().push(i"held={c}"));
+	});
+	let _p = slot.some().content().patch("edited");
+	print(i"after patch: maybe={maybe_content.get().unwrap_or("<none>")} held={content.get()}");
+	slot.set(None);
+	print(i"after delete: maybe={maybe_content.get().unwrap_or("<none>")} held={content.get()}");
+	print("wakes: " + seen.read().join(" "));
+	print(i"same identity: {slot.some().content().identity() == maybe_content.identity()}; the assumed handle shares the path identity: {held.identity() == slot.some().identity()}");
+	owner.dispose();
+}

@@ -1,0 +1,13 @@
+// FIND (solver-47): natively the call to an `async fun` returning a `Task` is
+// not assimilated — the emitted Rust holds a `Task<i32>` where the program
+// (and, since B149, the analyzer) has the `i32`: rustc E0369 "cannot add `i32`
+// to `Task<i32>`". JS prints 8 and 4.
+import std::io::print;
+import std::task::Task;
+async fun make(): Task<i32> { async { 7 } }
+async fun plain(): i32 { 3 }
+fun main() {
+    let result: i32 = make();
+    print(result + 1);
+    print(plain() + 1);
+}

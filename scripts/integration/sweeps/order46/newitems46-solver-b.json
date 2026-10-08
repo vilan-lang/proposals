@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B538",
+   "section": "B",
+   "kind": "miscompile (JS: load-time SyntaxError; native: rustc E0070) — M",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-b-46's find, Order 46)",
+   "title": "a TUPLE assignment target holding an element (`(list[0], x) = (1, 2)`), a nested tuple (`((x, y), z) = ((1, 2), 3)`) or a tuple-typed binding (`(p, z) = ((1, 2), 3)`) emits an invalid JS destructuring pattern (`[ __at(list, 0), x ] = ..`, `[ ...[ x, y ], z ] = ..`) that throws at load; natively the nested and tuple-typed shapes are refused by rustc",
+   "discussion": "solver-b-46 (Order 46), met pinning B522's place shapes; sweeps/order46/REPORT-solver-b-46.md",
+   "body": "Each target IS a place (B522 admits it), so the defect is the emitters'. JS `Expr::Assignment` walks a tuple target as an array literal: an element becomes the `__at` READ, a tuple-typed element a `...spread`, both illegal in a pattern. `(a, b) = (b, a)` over plain bindings is fine on both backends. Rec: lower a tuple target to a temporary plus one assignment per element (each through the ordinary assignment path, a tuple-typed element taking its flat slice), on both emitters. Sizing M; transformer + vilan-rust."
+  },
+  {
+   "id": "B539",
+   "section": "B",
+   "kind": "inference (M) — surfaces as a native refusal",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-b-46's find, Order 46)",
+   "title": "a trait-annotated `let` does not carry the trait's ARGUMENTS into its initializer: `let a: Source<Option<i32>> = SignalCell::new(None);` types as `SignalCell<Option<unknown>>` (natively refused, \"an unresolved type\"); B489's twin at a binding",
+   "discussion": "solver-b-46 (Order 46), met building B489; opaque-returns.md §1.3 says the `let` types correctly — on next @7ee822af it does not",
+   "body": "B489 (a bare-trait RETURN) is fixed by a constraint that runs after the tail's call resolves and fills the holes the annotation's arguments determine (read through the value's one impl of the trait). The same post-build fill at `check_binding_trait_constraints` was tried and is not enough: the `None` literal's own argument is a separate slot the binding's type does not share, and natively the program then fails \"an unbound generic type parameter (parameter 1 of enum `Option`)\". Rec: give the binding's initializer the concrete expectation BEFORE its call resolves (the `ReturnType` route a concrete annotation takes, priority 10 before `CallSubject` 11), computed from the callee's declared return head. Sizing M; solver."
+  },
+  {
+   "id": "B540",
+   "section": "B",
+   "kind": "inference (M) — surfaces as a native refusal",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-b-46's find, Order 46; B530's diagnosis)",
+   "title": "B530's cause: `mut found = Maybe::Nothing` never reaches the `Variable` constraint's grounding at all — its first value stays unresolved through the fixpoint and the binding is committed to `Maybe<any>` afterwards, so a later `found = Maybe::Just(item)` is never consulted",
+   "discussion": "solver-b-46 (Order 46), working B530; the fix was attempted and withdrawn",
+   "body": "Closing the hole from a reassignment inside `resolve_variable` (both the in-pass reassignment loop and the re-queued first-value path) changes nothing: instrumenting both shows neither runs for the binding. The nullary variant's open argument defers the readiness probe, and the post-fixpoint commit types the binding without the reassignments. Rec: let the readiness probe accept a nullary variant with an open argument (the binding grounds to `Maybe<hole>`), so the reassignment loop sees it and fills the hole from `Maybe::Just(item)`; `fill_holes_from` (B489) is the writer. Sizing M; solver."
+  },
+  {
+   "id": "B541",
+   "section": "B",
+   "kind": "diagnostics (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-b-46's find, Order 46)",
+   "title": "a mapped-tuple argument whose element gives the family NO evidence (`count((Some(1), None, Some(\"two\")))` at `(U in T: Option<U>)`, `T` bound nowhere else) is refused \"Expected (U in T: Option<U>), but got (Option<i32>, Option<unknown>, Option<str>)\" — a mismatch message for what is an underdetermined `T`",
+   "discussion": "solver-b-46 (Order 46): B442's single-parameter repro; the bound-elsewhere shape is fixed with B440",
+   "body": "With `T` bound by another parameter the `None` now takes the family's element (B440's bound-source path; pinned as `b442_*`). Alone, the middle element of `T` has no evidence, so a refusal is right, but it should say so: \"cannot infer `T`'s element 2: `None` names no type — annotate the argument or bind `T` elsewhere\". Sizing S."
+  }
+ ]
+}

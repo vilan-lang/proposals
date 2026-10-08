@@ -1,0 +1,5 @@
+{"items":[
+{"id":"E278","section":"E","kind":"editor feature (S)","area":"Editor & tooling","status":"OPEN — filed 2026-10-05 (the owner's idea; Order 48, with B571)","discussion":"the owner, 2026-10-05; B571, B570",
+"title":"inlay hints per stage of a chain split onto several lines — each line's stage shows its type in B571's spelling (`as Derive<..>`), with a code action that writes it into the file",
+"body":"Today inlay hints show a binding's type at its `let`. The owner asked for the same on a chain that is split one stage per line: at the end of each line, the stage's type as a hint, spelled the way B571's ascription would be written (`as T`), so that accepting the hint is one code action (`.. as T`, or `.. as auto T` once B570 exists) and the file then reads the same as the editor did. Scope: method chains and pipe chains with one `.stage()` per line; a hint only where the line ends a stage; the type spelled as hover spells it (opaque stage types in their opaque form). Pin in vilan-lsp beside the existing inlay-hint tests."}
+]}

@@ -1,0 +1,15 @@
+{"prefix":"- 2026-10-05 (the owner, all recommendations accepted): ","stamps":{
+"A158":"`Items<T>` accepted as the trait's name, in `std::iterator`. Fixed-size arrays follow as A161.",
+"A149":"S4 as built stands: field syntax does not extend to enum variants (the paper's scope). Construction of a struct with std-internal fields outside std is to be refused too: B568 (Order 48).",
+"B562":"RULED a bug: a method call on a scalar view (`n.abs()` with `n: &i32`) must auto-deref, as transparent-references R4 says.",
+"E257":"debug-47's five decisions RULED: (1) a written Debug impl overrides dbg, the derive spells variants qualified, `.debug()` stays opt-in (E275); (2) N136's generic-instance gap is fixed, not accepted (N149); (3) only a statement `dbg(..);` reads in place, a block-tail `dbg(x)` moves, as Rust's does - accepted; (4) `dbg(-0.0)` prints `-0.0` (E276); (5) scalar lists fill lines to 80 columns (E277).",
+"A155":"class-writes.md RULED on all five questions as recommended: last-wins, never append; the visible double write becomes an error at the next breaking cut (A162); the two warning gaps are fixed first (A159, A160); cross-function double writes stay silent, append options parked; this item CLOSES on the paper (at the Order 47 sweep).",
+"C15":"closure-captures.md RULED on all six questions as recommended: spec 6.9 and R3 (box every mutably-captured binding) stand unchanged; the one-non-escaping-closure rule is recorded UNSOUND as a copy, the borrow version with its third condition stays on file as the candidate; the reentrancy abort is refused at compile time (F102); F49 is widened to field reads (F103) and fixed before the store's server half runs natively; the one-struct out-parameter option is offered to the lane that builds the store's server half; this item CLOSES on the paper (at the sweep), with F50.",
+"F102":"RULED: refuse at compile time, the way F39 was answered.",
+"F49":"RULED: widened to field reads (F103); both fixed before the store's server half runs natively. Order 48, native lane (perf-47 left it as a native behaviour call: `read_with` changes evaluation order against the borrow).",
+"F103":"RULED: fixed with F49 before the store's server half runs natively (Order 48).",
+"F50":"done on next by native-47 (census column, leak-census row, spec note); closes at the Order 47 sweep.",
+"A153":"closure-captures.md Q5 RULED: the lane that builds the mirrored store's server half is offered the one-struct option for the store write's three out-parameters (about 7% of a write).",
+"M117":"ANSWERED by perf-47 (+4.4% at its tip: 1.9% std load tax, 2.5% kolt's own code; nothing disproportionate in the derive). RULED: the HOLD on kolt's store exhibits patch is RELEASED; it is applied with the v0.45.0 kolt patches, migrated to the new std paths.",
+"M126":"RULED: pin the CI `perf` job's Rust toolchain to the repo's own version, in Order 47 (integrator, after perf-47 merges).",
+"M124":"RULED: left for Order 48's solver work (what an object provides a blanket trait at is a language question; B533's ambiguity rule touches it)."}}

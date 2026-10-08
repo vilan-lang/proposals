@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "M115",
+   "section": "M",
+   "kind": "performance (LSP; HIGH) — a regression of reuse introduced by M104's shape",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-03 (papers-b-46's find, Order 46)",
+   "title": "since M104, a keystroke in any MODULE of an entry world misses the base cache and re-stores the whole world: the lookup refuses a world when any loaded file other than the entry changed, so every edit outside the entry file evicts the stored world, rebuilds it cold and clones it back for the next edit to evict — M19's reuse is unreachable for every edit but the entry's",
+   "discussion": "papers-b-46 (Order 46), incremental-analysis.md §1.4 and find 1; M104, M19, M99, M110",
+   "body": "Read: `base_cache_lookup_locked` validates every loaded source except `sources[0]` (`analyzer.rs:66657-66666`, next @7ee822af); under M104 (`analyze_world`, editor-46 `main.rs:2053`) the entry is `client.vl` and the edited buffer is one of its modules, so the check fails, the world is evicted (`:66706-66716`), built cold, and `base_cache_store` clones it whole into the cache (`:66935`). Cited evidence (REPORT-editor-46.md, instructions): `model.vl` alone 2.37 → 14.26 G, leaf `views.vl` 9.27 → 14.35 G, css 10.10 → 14.25 G — every non-entry edit converges on one cold client world (~1.3 s CPU at ~11 G/s; E121's target ~5.5 G). Measure first: the store's share (clone + `base_cache_world_bytes`) in a callgrind of the tip. Fix: incremental-analysis.md S1 (hot-set worlds: store the world minus the edited module and its reverse import closure; M19's reuse applies again; measured analogue −30–35%). Stop-gap XS: skip the store when an open buffer is inside the world being stored. Sizing XS (stop-gap) / M (S1)."
+  },
+  {
+   "id": "E258",
+   "section": "E",
+   "kind": "developer experience (diagnostics at run time; S–M)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (papers-b-46's find, Order 46)",
+   "title": "a PANIC carries no location on either backend: `panic`, `assert` and an index out of bounds `throw` a bare string on JS, so node prints only the message (no file, no line, no stack) and points at `node --trace-uncaught`; native prints the message alone by design (F25)",
+   "discussion": "papers-b-46 (Order 46), debugging.md §1.4, find 1, slice S0",
+   "body": "Repro: `sweeps/order46/papers-b-46/dbg/probes/d6_panic.vl` (`values[5]` on a 2-list prints `index out of bounds: the length is 2 but the index is 5` and node's `triggerUncaughtException` frame, nothing else) and `d7_panic2.vl` (`assert(n > 3, \"n too small\")`, the same). Emitted: `__at` does `throw \"index out of bounds: ...\"`; `assert` lowers to `throw message`. Native: `vilan-rt/src/lib.rs:344` `panic_with` + the F25 main shape (message on stderr, exit 1). Rec (debugging.md S0): a `[track_caller]` attribute with `std::debug::caller()` (a hidden Location parameter, the context pass's mechanism), applied to std's panic paths (`panic`, `assert`, index, `unwrap`/`expect`), reporting `panicked at src/x.vl:L:C: <message>` on both backends, and JS throwing an `Error` so a stack exists. Sizing S–M."
+  },
+  {
+   "id": "E259",
+   "section": "E",
+   "kind": "developer experience (emitted names; XS–S) — corpus goldens move",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (papers-b-46's find, Order 46)",
+   "title": "a GENERIC function's emitted instance is named `$a` even in the readable (debug) build — `fun first<T>` becomes `function $a(items)`, `fun total<T: Area>` the same — so every stack trace and any debugger shows `$a`",
+   "discussion": "papers-b-46 (Order 46), debugging.md §1.3, find 2, slice S5",
+   "body": "Repro: `sweeps/order46/papers-b-46/dbg/probes/d8_mono_names.vl` and `d5_emit.vl` (`vilan build`, debug preset): the plain `twice` keeps its name, both generics emit as `$a`. Cause: `NameGenerator::name_for` falls back to a fresh `$` name for an id with no source name (`transformer.rs:13920-13926`), and the instance's id is not in `NameSeed`'s `source_names` (built from the program's own functions, variables and parameters, `:13819-13851`). Rec: name an instance after its source function (`first`, then `first2` for a second instance, through `unique_readable`). Sizing XS–S; corpus goldens regenerate."
+  },
+  {
+   "id": "E260",
+   "section": "E",
+   "kind": "std gap (S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (papers-b-46's find, Order 46)",
+   "title": "`Debug` covers only scalars and derived types: `[derive(Debug)]` on a struct with a `List` or `Option` field fails inside the generated code, `T: Debug` refuses `List`, tuples and `Option`, and `3.0.debug()` is `\"3\"`",
+   "discussion": "papers-b-46 (Order 46), debugging.md §1.2, find 3, slice S4",
+   "body": "Repro: `sweeps/order46/papers-b-46/dbg/probes/d3_debug_list.vl` (`[derive(Debug)] struct Bag { items: List<i32>, maybe: Option<i32> }`: 'in code generated by this attribute: List<i32> has no method debug', and the same for Option<i32>), `d4_debug_generic.vl` (`fun show<T: Debug>` refuses `[1, 2]`, `(1, 2)`, `Some(1)`), `d2_debug.vl` (`3.0.debug()` prints `3`: the impls are `JSON.stringify`). `std/src/debug.vl` implements Debug for str, bool and the numeric types only. Rec: fold into debugging.md S4 (every type debuggable through the generated printer, written impls override, the derive redundant). Sizing S."
+  }
+ ]
+}

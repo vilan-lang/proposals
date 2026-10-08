@@ -1,0 +1,13 @@
+// R2a's shape: one closure handed to a callee that does not keep it, the
+// binding read only after the call: 8.
+fun with_value(seed: i32, f: |i32| void) {
+	f(seed * 3);
+}
+
+fun main() {
+	mut out = 0;
+	with_value(2, |v| {
+		out = v + 2;
+	});
+	print(out);
+}

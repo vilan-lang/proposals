@@ -1,0 +1,43 @@
+// A trait DEFAULT method with a generic parameter of its own, bounded by a trait,
+// that calls the bound's member — `fun shown<S: Show>(self, item: S): str {
+// item.show() }` in `trait Bag<T>` — is an INTERNAL error at emission ("a call
+// resolved to `Show`'s requirement `show`, which has no body ... please report
+// this program"), on any argument. The same method as an INHERENT member
+// builds. Found writing `SequenceCell::push_many<S: Items<T>>` (A158), which
+// became an inherent `ListCell` member for it. Expected: "i32".
+import std::io::print;
+
+trait Show {
+	fun show(self): str;
+}
+
+impl i32 with Show {
+	fun show(self): str {
+		"i32"
+	}
+}
+
+trait Bag<T> {
+	fun size(self): usize;
+
+	fun shown<S: Show>(self, item: S): str {
+		item.show()
+	}
+}
+
+struct Box {
+	held: List<i32>,
+}
+
+impl Box with Bag<i32> {
+	fun size(self): usize {
+		self.held.len()
+	}
+}
+
+fun main() {
+	let bag = Box { held = [1, 2] };
+	print(bag.shown(3));
+}
+
+main();

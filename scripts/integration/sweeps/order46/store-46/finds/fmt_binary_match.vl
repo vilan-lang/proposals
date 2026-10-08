@@ -1,0 +1,8 @@
+fun f(x: i32): str {
+	mut out = "";
+	out = out + match x {
+		1 => "a",
+		_ => "b",
+	};
+	out
+}

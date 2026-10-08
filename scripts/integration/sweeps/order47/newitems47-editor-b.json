@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "N150",
+   "section": "N",
+   "title": "`scripts/lsp-latency.py`'s `shared.vl keystroke` scenario cannot run: its edit inserts a space at offset 2 of `\\t\\tself.uuid.hash()` and its completion anchor is that same text, resolved in the EDITED buffer, so every run stops with \"the completion anchor '\\t\\tself.uuid.hash()' is not in src/shared.vl\"",
+   "kind": "harness bug (XS)",
+   "discussion": "editor-47 (Order 47), met taking E121's rows; N145 (perf-47's re-anchoring, 7bf10f45)",
+   "status": "OPEN — filed 2026-10-05 (editor-47's find, Order 47)",
+   "area": "Performance & benchmarks",
+   "body": "The keystroke-path requests are asked before the edit is undone, against the current text, and N145 re-anchored the edit and the completion on overlapping text. `anchor_problems` checks the anchors against the UNEDITED tree, so the pre-flight passes and the run dies mid-scenario. editor-47 measured E121's rows with a scratch copy whose completion anchor is `(\"self.uuid.hash()\", len(\"self.\"))`, which survives the edit (the one-line diff is in the editor-47 report). Rec: that anchor, and make `anchor_problems` also check hover/completion/references anchors against the text after the scenario's edit. Sizing XS; the seal's E121 rows need it."
+  }
+ ]
+}

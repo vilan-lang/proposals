@@ -1,0 +1,17 @@
+import std::web::ui::{ View, view, mount_root };
+import std::web::style::Style;
+import std::reactive::{ Signal, SignalCell };
+
+let card = const css { padding("4px"); color("red"); };
+let wide = const css { width("100%"); color("blue"); };
+
+fun boxed(): View { <div .styled(card) /> }
+fun decorate(v: View): View { v.styled(wide) }
+
+fun main() {
+	let flag = Signal::new(true);
+	let label = Signal::new("lbl");
+	let _owner = mount_root("app", || decorate(<div class("x") />));
+	flag.set(false);
+	label.set("lbl2");
+}

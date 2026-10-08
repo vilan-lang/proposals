@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B544",
+   "section": "B",
+   "kind": "bug (steer leads to a silent no-op; S) — B528's residual",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-c-46's find, Order 46)",
+   "title": "a WHOLE write to a bare `is` capture (`if held is Some(let v) { v += 1; }`) still steers to `mut`, and `Some(mut v)` then compiles and the write does not reach `held` — B528's steer was rewritten for writes INTO a capture and for every `match` leg capture, not for an `is` capture's own rebind",
+   "discussion": "solver-c-46 (Order 46), building B509/B528; sweeps/order46/REPORT-solver-c-46.md",
+   "body": "B528's new refusal (\"it is a COPY of the payload the pattern takes out of `held` … match a view of it, `match &mut held`\") is withheld from a whole assignment to an `is` capture because a guard's continuation binding (`if !(x is Some(let n)) { panic(..) } n = 5;`, B222/B237) is an ordinary local whose rebind `mut` answers. The scalar `is` capture inside the guarded block is the same shape and the same trap. Rec: tell the two apart by where the capture is visible (the guarded block vs the continuation) and give the block's capture B528's steer. Sizing S."
+  },
+  {
+   "id": "B545",
+   "section": "B",
+   "kind": "language gap (design; S–M) — B509's edge",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (solver-c-46's find, Order 46)",
+   "title": "under `match &mut place`, a capture inside a TUPLE sub-pattern (`Some((let a, let b))`) is still a copy: a write to it is refused with the old `declare it mut` steer, and `mut a` is accepted and its write does not land — the payload-view rule binds captures through variant payloads only",
+   "discussion": "solver-c-46 (Order 46), building B509 (payload-views.md §3 A says every `let` capture of the match is a view)",
+   "body": "Tuples store flat, so a tuple-typed leaf inside a tuple pattern is a reslice (`subject.slice(..)`), which cannot be a view; a one-slot leaf could be the `(tuple, offset)` pair. B509 S1 excluded tuple sub-patterns entirely, and the Q4 refusal (`mut` capture under a view subject) covers only the payload-view positions, so the trap B528 closed survives one pattern level down. Rec: one-slot tuple leaves become views (JS pair / native binding modes already give `&mut`), a multi-slot tuple leaf is refused under a view subject with a steer to bind the tuple whole; extend Q4 to every capture under a view subject. Sizing S–M."
+  },
+  {
+   "id": "E263",
+   "section": "E",
+   "kind": "editor (quick fix; S)",
+   "area": "Editor & language server",
+   "status": "OPEN — filed 2026-10-03 (solver-c-46's find, Order 46)",
+   "title": "B495's mode-mismatch refusal (\"this closure takes `str` by value where its type takes a view `&str` … `\\|c\\| f(*c)`\") carries no quick-fix data: offer the literal's parameter rewritten to the type's mode when the literal is right there, or the adapter `\\|c\\| f(*c)` / `\\|c\\| f(&c)` when it is not",
+   "discussion": "solver-c-46 (Order 46); closure-type-views.md §4 asks for the quick fix, S3",
+   "body": "The refusal is built in `closure_mode_mismatch_message` (analyzer) and reaches every mismatch site through `type_mismatch_message`; the parameter index and both modes are known there. Rec: a `ClosureModeFix { span, replacement }` beside the message in the style of `parsing::foreign_spelling_fix`, read by the LSP's code-action table. Sizing S; vilan-core + vilan-lsp."
+  }
+ ]
+}

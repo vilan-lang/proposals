@@ -1,0 +1,9 @@
+// FIND (solver-47): refused "Expected str, but got str instead." (base e5e15ca7 and tip).
+// B403 reads the bare `Cell::new` as `Self::new` (T rigid), so a refusal is right; the message
+// prints the rigid `T` as `str` — it should say "Expected T, but got str" and steer to `Cell<str>::new(..)`.
+struct Cell<T> { value: T }
+impl Cell<type T> {
+    fun new(value: T): Cell<T> { Cell { value = value } }
+    fun relabel(self, label: str): Cell<str> { Cell::new(label) }
+}
+fun main() {}

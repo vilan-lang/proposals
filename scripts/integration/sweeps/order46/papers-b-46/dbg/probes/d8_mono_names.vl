@@ -1,0 +1,7 @@
+fun first<T>(items: List<T>): T { items[0] }
+fun twice(n: i32): i32 { n * 2 }
+fun main() {
+	print(first([1, 2]));
+	print(first(["a", "b"]));
+	print(twice(3));
+}

@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B553",
+   "section": "B",
+   "kind": "semantics (M) — analyzer, a canonical-order asymmetry",
+   "area": "Language & type system",
+   "status": "OPEN — filed 2026-10-05 (incr-47's find, Order 47; met building M110 S1)",
+   "title": "an `impl` written in the ENTRY file is invisible to every MODULE's method resolution — `Foo has no method 'greet'` from `user.vl` when `impl Foo with Greet` sits in `main.vl` — while the same impl in ANY module serves every module, imported or not (i3); and a module's `Context::new()` whose only `run` is in the entry reports `T` unbounded",
+   "discussion": "incr-47 (Order 47); incremental-analysis.md §2.2 i3, §4.1; the two-phase pre-entry resolve (S3c, analysis-reuse.md §6.10)",
+   "body": "Repro (vilan 0.44.0 + incr-47, `vilan check src/main.vl` in a package): `shapes.vl`: `export struct Foo { n: i32 }` / `export trait Greet { fun greet(self): str; }`; `user.vl`: `import pkg::shapes::{ Foo, Greet }; export fun use_it(): str { let foo = Foo { n = 1 }; foo.greet() }`; `main.vl`: `import pkg::shapes::{ Foo, Greet }; import pkg::user::use_it; impl Foo with Greet { fun greet(self): str { \"hi\" } } fun main() { print(use_it()); }` -> `Foo has no method 'greet'` at user.vl:5. Move the impl into any module (`impls.vl`, imported by main only) and it checks clean. Second shape: `c.vl`: `import std::context::Context; export let flavor = Context::new(); export fun read_it(): i32 { flavor.get() + 1 }`; `main.vl`: `flavor.run(5, || { print(read_it()); })` -> \"`+` on `T` needs `T: Add` … `T` is unbounded\" at c.vl:6; with the `run` in a sibling module it is clean. Cause: modules RESOLVE before the entry walks (the base cache's pre-entry world), so anything only the entry contributes to a module's resolution — an impl, a context's first `run` — arrives after the module committed. The language says impls are program-wide (no orphan rule) and a context takes its type from its first run; the entry is the one file for which neither holds. Doors: (a) defer a module's failed member lookups and ungrounded element slots to the post-entry `build()` instead of committing them pre-entry; (b) state the asymmetry in the spec and refuse an entry impl on a foreign type. This is also what bounds M110 S1 (the hot set behaves like the entry): S1's impl and use-inferred-binding guards exist because of it. Sizing M."
+  },
+  {
+   "id": "B554",
+   "section": "B",
+   "kind": "diagnostics (S–M) — analyzer",
+   "area": "Language & type system",
+   "status": "OPEN — filed 2026-10-05 (incr-47's find, Order 47)",
+   "title": "where a module binding's element-type conflict is BLAMED depends on the modules' FILE NAMES: two modules push `1` and `\"two\"` into one `mut bag = []`, and the error lands on whichever push's module loads later in name order — rename `a_spoil.vl` to `z_spoil.vl` and the diagnostic moves to the other file",
+   "discussion": "incr-47 (Order 47); i7; diagnostics-standard.md C1 (an order is an answer, not an artifact)",
+   "body": "Repro: `bag.vl`: `export mut bag = []; export fun fill() { bag.push(1); }`; `a_spoil.vl`: `import pkg::bag::bag; export fun spoil() { bag.push(\"two\"); }`; `main.vl` imports and calls both. `vilan check` -> `Expected str, but got i32 instead.` at bag.vl:4. Rename `a_spoil.vl` to `z_spoil.vl` (and the import): -> `Expected i32, but got str instead.` at z_spoil.vl:4. The element slot takes the FIRST push in walk order, and walk order is the drain's name order. The declaration's module is the more honest anchor (it is the binding that has no single type), or the error could name both pushes. Not a wrong answer, but a diagnostic whose location is a fact about file names; and it is the one shape that makes any reordered analysis (M110 S1's hot set) disagree with a clean one, which S1 now refuses by guard. Sizing S–M."
+  },
+  {
+   "id": "M121",
+   "section": "M",
+   "kind": "performance (L) — design residue of M110 S1",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-05 (incr-47's find, Order 47; M110 S1 as built)",
+   "title": "M110 S1's hot-set world serves only hot sets whose impls the prefix cannot reach: on kolt that is `views.vl` (and the leaf importers like it), not the theme cycle, `model.vl` or the css file — each hot set writes an impl the prefix can reach (`impl style::Style` in styles.vl, `impl Channel`/`impl User` in model.vl on shared.vl's types, `impl Overlay` in app_overlay.vl on lib::overlay's) — so those keystrokes still pay a whole cold client world (~12.7 G; S0's session, `hot-refusal impl` on 30 of 30 keystrokes)",
+   "discussion": "incr-47 (Order 47); M110; B553 (the cause); the paper's §4.1 claim that the dirty bit and Class B/C cover the hot set's impls does not hold",
+   "body": "The prefix resolves before the hot set walks, so an impl in the hot set on a type the prefix can name is invisible to the prefix (B553's mechanism), and a canonical analysis would see it. S1 refuses such hot sets (`hot-refusal impl` on the phase line; the impl guard is proved by `edit_replay_differential`'s plant). On kolt's S1 session: views.vl is served (9.13–9.16 G per clean keystroke, from 12.7 G), theme.vl / model.vl / styles.vl are refused by the guard on every keystroke. Doors: (a) B553's door (a), which makes the order irrelevant for impls; (b) register the hot set's impl HEADERS and member signatures into the prefix before its resolve (a pre-walk of impl blocks only), keeping bodies post-store; (c) Door C (S5's id windows), which removes the reorder altogether. Sizing L; next order with S5's spike."
+  },
+  {
+   "id": "M122",
+   "section": "M",
+   "kind": "performance (S) — measurement",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-05 (incr-47's find, Order 47)",
+   "title": "a keystroke that leaves a body BROKEN is ~25% cheaper than one that leaves it clean on kolt (9.3–9.7 G against 12.6–12.8 G per world analysis, every file of S0's session): an error in the edited module stops work somewhere downstream — find what, and whether a clean keystroke can skip it too",
+   "discussion": "incr-47 (Order 47); M110 S0's session table",
+   "body": "S0's scripted session (ten keystrokes each in views.vl, theme.vl, model.vl and a css block, world mode, release build of e5e15ca7 + S0): every keystroke whose text parses and checks clean costs 12.6–12.8 G instructions; every one with an error 9.3–9.7 G, with the same sources walked (86) and the same functions checked (2,170). The interface fingerprints show the error moves nothing (interface-moved 0 on 36 of 40 keystrokes). Likely a whole-program pass gated on `diagnostics.is_empty()` (init-order's cycle check says it runs only for a clean program; the const pass or the emission-shaped tables may too). Measure with `VILAN_PHASE_TIMING=passes` on a broken and a clean keystroke; a pass the editor never reads on a clean program either is a free cut. Sizing S (measure)."
+  }
+ ]
+}

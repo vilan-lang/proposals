@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "N141",
+   "section": "N",
+   "kind": "test hygiene (S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (syntax-b-46's find, Order 46; met pinning E252)",
+   "title": "the formatter's `assert_formats(source, source)` identity pins are vacuous when the formatter DECLINES — `format` hands the source back on a decline, so a file the printer cannot reprint passes an identity expectation (E252's first pin passed with the bug planted back)",
+   "discussion": "syntax-b-46 (Order 46); REPORT-syntax-b-46.md; E252; N90 (the decline reasons)",
+   "body": "`formatter::reformats::assert_formats` compares `format(source)` with `expected`, and `format` returns the input unchanged when the reprint is declined (does not parse, no rule, the net threw it away). Where `expected == source` — 10 literal calls in `formatter.rs`'s tests, plus loops that feed one variable to both arguments — a decline is indistinguishable from a clean reprint. E252's pin was written that way first and stayed green with the parens planted back; it now asserts through `reprint`, which errs on a decline. Rec: make `assert_formats` assert `reprint(source).is_ok()` first (one line, every caller covered), then read what goes red. Sizing S."
+  },
+  {
+   "id": "B537",
+   "section": "B",
+   "kind": "diagnostics (XS)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (syntax-b-46's find, Order 46; B523's remainder)",
+   "title": "`return (y);` as a value body's last STATEMENT gets B523's `ret` steer AND \"Expected i32, but got void instead: this body ends without producing a value\" — the second is true of what was written, and is the cascade B520 avoided for `return value;` by rewriting the token",
+   "discussion": "syntax-b-46 (Order 46); B523; B520",
+   "body": "B523 steers an unbound `return` where the name fails to resolve (`resolve_prepped_local`); the read becomes `Expr::Error`, but the statement's `;` still leaves the body without a tail, so the return check reports the missing value too. The tail shapes (`return (y)`, `return -x` with no `;`) carry the steer alone. Doors: (a) leave it — both diagnostics are true; (b) let the return check stand down when the body's last statement is an expression statement over an unbound `return` (analyzer, solver's file). Rec: (a) unless it shows up in the editor as noise. Sizing XS."
+  },
+  {
+   "id": "N142",
+   "section": "N",
+   "kind": "hygiene (XS)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (syntax-b-46's find, Order 46; B485 S3's remainder)",
+   "title": "seven comments in `analyzer.rs` (B382/B472's re-export notes, `transparent_declarations`), one in `node.rs` and one in `tests/inference/modules.rs` still spell a deprecated re-export or a derive the pre-B485 way — `export [deprecated(..)] import …`, `export [derive(Wire)] struct` — which B485 S3 refuses",
+   "discussion": "syntax-b-46 (Order 46); B536 / B485 S3; analyzer.rs is the solver lanes' file, so syntax-b-46 left them",
+   "body": "Comments only; nothing reads them. `grep -n 'export \\[' crates/vilan-core/src/analyzer.rs crates/vilan-core/src/node.rs crates/vilan-core/tests/inference/modules.rs`. Rec: respell as `[deprecated(..)] export import …` and `[derive(Wire)] export struct` at the next touch of those files. Also: native-46's `crates/vilan-cli/tests/native/reassigned_closures.vl` binds `let third = adders[2];` only to dodge E252, now fixed; it may call `adders[2](30)` directly. Sizing XS."
+  }
+ ]
+}

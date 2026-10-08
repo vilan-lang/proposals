@@ -1,0 +1,90 @@
+diff --git a/src/channel.vl b/src/channel.vl
+index da54413d..28a0bc90 100644
+--- a/src/channel.vl
++++ b/src/channel.vl
+@@ -176,8 +176,8 @@ fun create_new_channel_modal() {
+ 		>
+ 			<input
+ 				name("channel-name")
+-				autofocus
+ 				placeholder("Enter channel name...")
++				.autofocus()
+ 				.bind_value(channel_name.local)
+ 				.styled(common_input_style)
+ 			/>
+@@ -308,10 +308,10 @@ fun create_channel_delete_modal(channel: Signal<Option<Channel>>) {
+ 			>
+ 				<button
+ 					type("button")
+-					autofocus
+ 					on:click(|_| {
+ 						modal.close();
+ 					})
++					.autofocus()
+ 					.rotary(rotary)
+ 					.styled(const button_style(style::Color::current()))
+ 				>
+@@ -373,8 +373,8 @@ fun create_channel_rename_modal(channel: Signal<Option<Channel>>) {
+ 		>
+ 			<input
+ 				name("channel-name")
+-				autofocus
+ 				placeholder("Enter new channel name...")
++				.autofocus()
+ 				.bind_value(channel_name.local)
+ 				.styled(common_input_style)
+ 			/>
+diff --git a/src/command_palette.vl b/src/command_palette.vl
+index 88ffcada..3d8e3ac5 100644
+--- a/src/command_palette.vl
++++ b/src/command_palette.vl
+@@ -214,7 +214,6 @@ fun create_search_modal(theme_modal: Overlay, sidebar_width_modal: Overlay) {
+ 			<input
+ 				name("command-search")
+ 				placeholder("Search...")
+-				autofocus
+ 				on:blur(|_| {
+ 					search_focused.set(false);
+ 				})
+@@ -251,6 +250,7 @@ fun create_search_modal(theme_modal: Overlay, sidebar_width_modal: Overlay) {
+ 						_ => {},
+ 					}
+ 				})
++				.autofocus()
+ 				.bind_value(search_text)
+ 				.styled(common_input_style)
+ 			/>
+diff --git a/src/sidebar.vl b/src/sidebar.vl
+index 1e26d0a9..03e4e6df 100644
+--- a/src/sidebar.vl
++++ b/src/sidebar.vl
+@@ -315,8 +315,8 @@ fun create_sidebar_width_modal() {
+ 		>
+ 			<input
+ 				name("sidebar-width")
+-				autofocus
+ 				placeholder("Enter number...")
++				.autofocus()
+ 				.bind_value(width_text)
+ 				.styled(common_input_style)
+ 			/>
+diff --git a/src/theme.vl b/src/theme.vl
+index bb9f5e0c..3a829e94 100644
+--- a/src/theme.vl
++++ b/src/theme.vl
+@@ -171,7 +171,6 @@ fun create_theme_modal() {
+ 			<input
+ 				name("theme-filter")
+ 				placeholder("Filter...")
+-				autofocus
+ 				on:blur(|_| {
+ 					filter_focused.set(false);
+ 				})
+@@ -208,6 +207,7 @@ fun create_theme_modal() {
+ 						_ => {},
+ 					}
+ 				})
++				.autofocus()
+ 				.bind_value(filter_text)
+ 				.styled(common_input_style)
+ 			/>

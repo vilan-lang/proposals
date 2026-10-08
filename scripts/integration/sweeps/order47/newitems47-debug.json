@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "F104",
+   "section": "F",
+   "kind": "bug (native backend; emitted Rust refused)",
+   "area": "Native backend",
+   "status": "OPEN",
+   "discussion": "",
+   "title": "A closure whose body only panics does not build natively: `let run: \\|\\| void = \\|\\| panic(\"x\");` (and the block form `\\|\\| { panic(\"x\"); }`) emits a closure rustc types as returning `!`, refused against `Rc<dyn Fn() -> ()>` (E0271)",
+   "body": "Repro (vilan 0.44.0 e5e15ca7, `vilan run --backend rust`):\n\n```vilan\nimport std::io::panic;\nfun main() {\n\tlet run: || void = || panic(\"x\");\n\trun();\n}\n```\n\nrustc: `error[E0271]: expected {closure@main.rs:9:39} to return (), but it returns !`. The JS leg throws `x` as expected. The block form `|| { panic(\"x\"); }` fails the same way (a block ending in a diverging statement is `!` too); a body whose panic sits under an `if` builds. Cause: the emitted closure's body is the `-> !` runtime call in TAIL position, so rustc infers the closure's return type as `!`, and a `!`-returning closure is not a `dyn Fn() -> ()`. Rec: emit a never-typed tail in a closure whose declared return is `void` as a statement (`{ panic(..); }`), or coerce at the `Rc::new` site. Found by debug-47 writing S0's panic-location probe (`crates/vilan-cli/tests/native/panic_locations.vl` puts the panic under an `if` for that reason)."
+  },
+  {
+   "id": "F105",
+   "section": "F",
+   "kind": "gap (native backend refuses a program the JS backend runs)",
+   "area": "Native backend",
+   "status": "OPEN",
+   "discussion": "",
+   "title": "A generic enum's variant constructed inside a list inside another variant is refused natively as \"a generic type instantiated at `any`\" even under an annotation: `let t: Tree<i32> = Tree::Node([Tree::Leaf(1), Tree::Node([Tree::Leaf(2)])]);`",
+   "body": "Repro (vilan 0.44.0 e5e15ca7, `vilan run --backend rust`):\n\n```vilan\nenum Tree<T> { Leaf(T), Node(List<Tree<T>>) }\nstruct Wrapper<T> { inner: T, tags: List<str> }\nfun main() {\n\tlet w = Wrapper { inner = Tree::Node([Tree::Leaf(1), Tree::Leaf(2)]), tags = [\"a\"] };\n\tprint(w.tags.len());\n\tlet t: Tree<i32> = Tree::Node([Tree::Leaf(1), Tree::Node([Tree::Leaf(2)])]);\n\tprint(1);\n}\n```\n\nnative: `the rust backend does not emit a generic type instantiated at any (the site's argument is still open) yet` at `Tree::Leaf(1)` (4:40), and the annotated `let` on line 6 is refused the same way. The JS backend runs it. The inner variant's `T` is grounded only through the outer constructor's list payload, which the native emitter's instance arguments do not follow. Found by debug-47 writing the `dbg` printer's differential fixture (`native/dbg_printer.vl` avoids the nested generic for that reason)."
+  },
+  {
+   "id": "B557",
+   "section": "B",
+   "kind": "bug (solver; false acceptance then an internal error)",
+   "area": "Type system",
+   "status": "OPEN",
+   "discussion": "",
+   "title": "A blanket impl over the tuple family (`impl type T: (2..: Show) with Show`) satisfies a `T: Show` bound for a NON-tuple struct at the bound check, and emission then dies with \"internal: a call resolved to `Show`'s requirement `show`, which has no body\"",
+   "body": "Repro (vilan 0.44.0 e5e15ca7, JS backend):\n\n```vilan\ntrait Show {\n\tfun show(self): str;\n}\nimpl type T: (2..: Show) with Show {\n\tfun show(self): str { \"tuple\" }\n}\nimpl i32 with Show {\n\tfun show(self): str { \"i32\" }\n}\nstruct Opaque { tag: i32 }\nfun needs<T: Show>(value: T): str { value.show() }\nfun main() {\n\tprint(needs((1, 2)));\n\tprint(needs(Opaque { tag = 1 }));\n}\n```\n\nExpected: `needs(Opaque { tag = 1 })` refused (`'Opaque' does not implement trait 'Show'`). Got: a clean check, then `internal: a call resolved to Show's requirement show, which has no body` at emission. The analyzer's impl selection admits the tuple-family blanket for any subject (the arity bound is applied only on the emission side, `tuple_bound_arities`). Found by debug-47 adding `impl type T: (2..: Debug) with Debug` to std for debugging.md S4 (E260's tuple case): with it in std, EVERY type satisfied `Debug` (pin `generics::b194_an_unmet_derived_bound_is_refused_at_the_use_site` went silent), so the tuple impl is held back and E260's `T: Debug` over a tuple waits on this."
+  }
+ ]
+}

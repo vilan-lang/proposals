@@ -1,0 +1,13 @@
+export trait Area {
+	fun area(self): i32;
+}
+
+export impl i32 with Area {
+	fun area(self): i32 {
+		self * self
+	}
+}
+
+export fun unit(): i32 {
+	1
+}

@@ -1,0 +1,19 @@
+// FIND (solver-47; B443's blocker): adding to std's compare.vl
+//
+//   export impl type T: (2..: PartialEq) with PartialEq {
+//       fun eq(self, b: T): bool { for key in self.keys() { if self.get(key) != b.get(key) { ret false; } } true }
+//   }
+//
+// (with `import pkg::tuple::Tuple;`) makes `(1, "a") == (1, "a")` and a
+// `(2..: PartialEq)` pack holding a pair compile — and breaks unrelated
+// programs: an `Option<usize>` (or a `ConnectionState`, a `Hash`) reaching
+// `==` through a generic body is refused "'Option<usize>' is not a tuple: this
+// argument's parameter is bound '(2..: PartialEq)'" — the tuple-bounded blanket
+// SUBJECT is admitted for a receiver that is no tuple. The full compare.vl /
+// hash.vl attempt is beside this file (b443_*.vl.txt). Repro once applied:
+import std::option::Option::{ self, Some, None };
+fun same<T: PartialEq>(a: T, b: T): bool { a == b }
+fun main() {
+    let x: Option<usize> = Some(1);
+    print(same(x, Some(1)));
+}

@@ -1,0 +1,4 @@
+mut items = [];
+fun add() { items.push("one"); }
+fun show(): str { i"{items.len()} {items[0] + 1}" }
+fun main() { add(); print(show()); }

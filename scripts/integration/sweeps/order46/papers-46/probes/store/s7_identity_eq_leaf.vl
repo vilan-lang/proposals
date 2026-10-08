@@ -1,0 +1,36 @@
+// A153 probe s7: kolt's `Message` is `PartialEq` BY ID. Held in a store as a
+// LEAF (not derived `Storable`), an edit that keeps the id compares equal, so
+// the store wakes nothing and the write is invisible to every observer — the
+// leaf tier's contract (store.md Q7) meeting an identity equality.
+import std::compare::PartialEq;
+import std::io::print;
+import std::reactive::{ Owner, run_with_owner };
+import std::shared::Shared;
+import std::store::{ Storable, Store };
+
+[derive(Wire)]
+struct Message {
+	id: u53,
+	content: str,
+}
+
+impl Message with PartialEq {
+	fun eq(self, peer: Message): bool {
+		self.id == peer.id
+	}
+}
+
+let runs = Shared::new(0);
+
+fun main() {
+	let slot = Store::new(Message { id = 7, content = "hello" });
+	let owner = Owner::new();
+	run_with_owner(owner, || {
+		slot.effect_on_change(|_m| {
+			runs.write() += 1;
+		});
+	});
+	slot.set(Message { id = 7, content = "edited" });
+	print(i"edit keeping the id: observer runs={runs.read()} held={slot.get().content}");
+	owner.dispose();
+}

@@ -1,0 +1,14 @@
+// "Written only before the capture", read textually: the write `x = k` sits
+// ABOVE the closure in the loop body, but the back edge carries it past every
+// earlier closure. All three closures share ONE binding: 2 2 2.
+fun main() {
+	mut x = 0;
+	mut fs: List<|| i32> = [];
+	for k in [0, 1, 2] {
+		x = k;
+		fs.push(|| x);
+	}
+	for f in fs {
+		print(f());
+	}
+}

@@ -1,0 +1,16 @@
+// B495 probe v5: a GENERIC struct instantiated at a view closure type —
+// `Holder<|&mut i32| void>` — the field's written type is `T`.
+import std::io::print;
+
+struct Holder<T> {
+	f: T,
+}
+
+fun main() {
+	mut n = 1;
+	let h: Holder<|&mut i32| void> = Holder { f = |x: &mut i32| {
+		x += 5;
+	} };
+	(h.f)(&mut n);
+	print(i"through Holder<T>: n={n}");
+}

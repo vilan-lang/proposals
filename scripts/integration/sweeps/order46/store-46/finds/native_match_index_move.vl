@@ -1,0 +1,12 @@
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+fun main() {
+	let names: List<Option<str>> = [Some("a"), None];
+	match names[0] {
+		Some(let name) => print(name),
+		None => print("-"),
+	}
+}
+
+main();

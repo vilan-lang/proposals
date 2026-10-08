@@ -1,0 +1,166 @@
+{
+ "drafted": "2026-10-04 while Order 46's last lane (layout-46) runs; base, ledger max and tracker count to be stamped at the v0.44.0 fold; NOT GO; asks RULED as recommended 2026-10-04; awaiting the v0.44.0 fold and GO",
+ "theme": "the owner, 2026-10-03: performance, bug fixes, quality of life; new features wait",
+ "asked_at_go": {
+  "R-a": "incremental analysis: S0 + S1 + the differential are the floor; S2–S4 measure-gated in the same lane; S5–S7 next order — rec yes",
+  "R-b": "debugging: S0, S1, S1b, S2, S4 this order; S3 (print adopts the printer), S5 (source maps), S6 (--inspect) in Order 48 — rec yes",
+  "R-c": "B515's warning and B536's attribute-order warning become errors at this order's cut (v0.45.0), each after its quick fix exists and the estate is clean — rec yes",
+  "R-d": "mirrored Store (A153): (a) hold for Order 48 and settle M117 first, or (b) build S1 now behind M117's answer — rec (a)",
+  "R-e": "A149 S4 field syntax, door chosen (internal fields hidden outside std) — rec build, store-47",
+  "R-f": "cut v0.45.0 at the seal — rec yes",
+  "R-g": "N136 negative zero: (a) print formats numbers the language's way on both backends (0), or (b) native prints -0 — rec (a), with dbg's printer",
+  "R-h": "the book takes element syntax and the new std paths (K26's second half) — rec yes",
+  "R-i": "Dependabot's upload-artifact v7 / download-artifact v8 bumps merge at the START of the order — rec yes",
+  "R-j": "adopt the CI class's perf ceilings after ten runs (M114) — rec yes",
+  "R-k": "A155: a census of double class writes in papers-47, no build — rec census",
+  "R-l": "carried: opaque-returns hiding; the mirrored store if R-d (a); incremental S5–S7; debugging S3, S5–S9; store S5; maps S4/S5; F1/F15/F17; F27 R5 + the rest of F28; A87/A111/A131; B521; B183; E62; L15 — rec carry"
+ },
+ "lanes": {
+  "incr-47": "M110 S0 + S1 + the edit-replay differential FIRST; S2, S3, S4 as each measures (R-a); closes M115, and M99/M73/M79/M101/M19 as subsumed",
+  "perf-47": "M111 + M118 + M117 FIRST; M113, M112, M114 (R-j), M60, M90, M109's remainder, F49, M89; N146 (the release tooling's four faults)",
+  "debug-47": "debugging.md S0, S1 + S1b, S2, S4 (R-b); E258, E260, E259; N136 (R-g); rebased on solver-47",
+  "solver-47": "B533, B539, B540 (+B530), B541, B542, B543 as a family FIRST; B544, B545, B537, B547, B501, B500, B438, B149, B443, B367; the two flips' compiler half LAST (R-c); ADDED 2026-10-05: B549 (std::web::document fails inside std in a browser build)",
+  "native-47": "F90 FIRST, F89, F85, F86, F88, F50; the differential's 27 refused programs classified",
+  "editor-47": "wave 2, rebased on incr-47, LAST: the two quick fixes the flips need FIRST; E253, E263, E264, E261, E262, E254, E265, N141; E121 rows re-measured; ADDED 2026-10-05: E269 (a bare `import std::web;` gets no migration fix), E267 (auto-import reads a package's top-level modules only)",
+  "store-47": "wave 2, after perf-47 reports M117: A149 S4 (R-e), store_opaque's removal, B546; mirrored-store S1 only if R-d (b)",
+  "docs-47": "wave 2: K26's book half (R-h), L16, N140, N142, N143",
+  "papers-47": "A155's census (R-k), C15; proposals only"
+ },
+ "waves": {
+  "1": [
+   "incr-47",
+   "perf-47",
+   "debug-47",
+   "solver-47",
+   "native-47"
+  ],
+  "2": [
+   "editor-47",
+   "store-47",
+   "docs-47"
+  ],
+  "beside": [
+   "papers-47"
+  ],
+  "cap": 5
+ },
+ "merge_order": [
+  "solver-47",
+  "native-47",
+  "perf-47",
+  "debug-47",
+  "incr-47",
+  "store-47",
+  "docs-47",
+  "editor-47"
+ ],
+ "mechanics_added": [
+  "a lane never runs git in kolt or the website checkout; cp -r + absolute cd in the same command",
+  "a lane probes beyond its items and files finds with repros",
+  "test programs import their traits and write attributes in canonical order",
+  "an #[ignore] reason leads with its tracker id",
+  "std paths are the new namespaces",
+  "analyzer/emitter lanes list functions touched, keep late writes at zero, run ci-local perf",
+  "a lane's report is its final message",
+  "a lane whose base moved in its files rebases and re-runs full gates before the merge",
+  "integrator: every merge gates ci_ignored_pins + hygiene; crates resolved from the tree; no push after a piped test",
+  "integrator: a push cancels the running CI - hold or batch",
+  "integrator: reference perf ceilings re-taken only at a seal, quiet machine, one codegen unit"
+ ],
+ "to_stamp_at_the_fold": [
+  "base sha (main = next)",
+  "v0.44.0 tag + release run",
+  "toolchain",
+  "ledger max",
+  "tracker open after Order 46's sweep",
+  "kolt's state"
+ ],
+ "rulings": {
+  "2026-10-04": "the owner: 'Accept the recommendations for R-a through R-l' — incremental S0+S1+differential with S2–S4 measure-gated; debugging S0/S1/S1b/S2/S4; both flips at v0.45.0; the mirrored Store HELD for Order 48 behind M117; A149 S4 built; v0.45.0 at the seal; N136 door (a); the book takes element syntax; the two release-workflow Dependabot bumps at the order's start; CI perf ceilings after ten runs; A155 census only; R-l carried",
+  "2026-10-05": "the owner: wave 1 keeps running, but NOTHING merges and no wave 2 lane starts until he says go (he will answer questions and compact the session first); F28's retry + B548 + E266 carried to Order 48; B549 to solver-47; E269 + E267 to editor-47; the `--fix` mixed-list rewrite accepted as built; no PAT; the website's k14 and site-46 branches and worktrees deleted; kolt committed by the owner (a05fcb6), then two small edits left uncommitted"
+ },
+ "go": "2026-10-04 — the owner: 'Go on Order 47 once the fold is done' — a standing GO, effective at the v0.44.0 fold; every ask ruled as recommended; wave 1 = incr-47, perf-47, debug-47, solver-47, native-47 — EFFECTIVE 2026-10-05 (the fold done: main = next = e5e15ca7); wave 1 launched",
+ "base": {
+  "sha": "e5e15ca7",
+  "main_equals_next": true,
+  "release": "v0.44.0 (tag 1a937ac4, run 37252287752)",
+  "toolchain": "vilan 0.44.0 (e5e15ca7b) both locations + vsix",
+  "ledger_max": 637,
+  "tracker_open": 148,
+  "date": "2026-10-05"
+ },
+ "hold": "LIFTED 2026-10-05 after the compaction: merges may proceed in order, wave 2 lanes launch as wave 1 lanes finish (cap five)",
+ "order48_queue": {
+  "ruled": "2026-10-05 by the owner",
+  "incremental": [
+   "M121 door (b) + B553",
+   "M110 S4 (const cache)",
+   "E279 sticky spans",
+   "N151 std once per test process",
+   "pass-map paper (analyzer passes: inputs, outputs, order dependence; special cases to delete)"
+  ],
+  "order49": "M110 S2 + S3 ALONE in the analyzer core (no solver/perf/debug lane in analyzer.rs, lib.rs, vilan-lsp)",
+  "then": "S5 spike decides S6/S7, alone",
+  "papers": [
+   "B569 named tuple fields",
+   "B570 auto annotations",
+   "B571 EXP as T (+ E278)"
+  ],
+  "carried": [
+   "F28 retry + B548 + E266 + B549",
+   "E254",
+   "F49 + F103 + F102",
+   "B568",
+   "A159 + A160 then A162",
+   "M124",
+   "E275 E276 E277 N149 (unless a follow-up lane takes them before the seal)",
+   "A161",
+   "B557 -> B443",
+   "B501 remainder",
+   "B545 view half",
+   "F107"
+  ]
+ },
+ "sealed": {
+  "date": "2026-10-06",
+  "tip": "071a5b54",
+  "ci_run": "37408104861",
+  "seal_logs": [
+   "seal-47.log (d970de50: one harness race, perf red on math/watch)",
+   "seal-47b.log (071a5b54: all green but a load-spoiled perf leg)",
+   "perf-071a5b54.log (the quiet perf leg: GREEN)"
+  ],
+  "perf": {
+   "kolt_instructions": 0.618,
+   "kolt_cpu": 0.773,
+   "kolt_rss": 1.0,
+   "e121_green": [
+    "leaf keystroke 300",
+    "model.vl keystroke 220",
+    "css keystroke 380",
+    "parse break 390"
+   ],
+   "e121_red": [
+    "model.vl, importers open 590"
+   ],
+   "e121_absent": [
+    "shared.vl keystroke (N150)"
+   ]
+  },
+  "sweep": {
+   "closed": 58,
+   "closes": "closes47.json",
+   "stamps": "stamps47-j.json"
+  }
+ },
+ "release": {
+  "version": "v0.45.0",
+  "date": "2026-10-08",
+  "tag": "9cc28660",
+  "release_run": "37806603753 green 17/17, 10 assets",
+  "fold": "e75bc57c (main = next on origin; verified)",
+  "toolchain": "vilan 0.45.0 (e75bc57c3) both locations + vilan-0.45.0.vsix",
+  "kolt": "store exhibits patch applied (sweeps/order47/kolt-store-exhibits-v0.45.0.patch), UNCOMMITTED, check 0/0; no migration patch needed",
+  "website": "src 0/0 under 0.45.0; manifest moved by the fold"
+ }
+}

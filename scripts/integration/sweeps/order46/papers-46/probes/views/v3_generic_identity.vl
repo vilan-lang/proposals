@@ -1,0 +1,19 @@
+// B495 probe v3: a closure type through a generic: `hold<T>(x: T): T` returns
+// the closure; the annotation at the binding takes a view.
+import std::io::print;
+import std::shared::Shared;
+
+let out = Shared::new("");
+
+fun hold<T>(x: T): T {
+	x
+}
+
+fun main() {
+	let city = "Bergen";
+	let f: |&str| void = hold(|c| {
+		out.write() = *c;
+	});
+	f(&city);
+	print(i"through hold<T>: out={out.read()}");
+}

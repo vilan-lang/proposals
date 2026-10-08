@@ -1,0 +1,4 @@
+import std::time;
+fun leaf(): i32 { 1 }
+fun middle(): i32 { leaf() + 1 }
+fun main() { print(middle()); }

@@ -1,0 +1,32 @@
+# One long-lived runner (a second is written below, commented: start it when one is not enough).
+# Caps leave the machine to the lanes: 8 of 16 CPUs, 12 of 30 GB. `_work` persists between jobs,
+# so `target/` stays warm without any cache action; the tool cache keeps setup-node's downloads.
+services:
+  runner-1:
+    build: .
+    image: vilan-ci-runner:local
+    container_name: vilan-runner-1
+    env_file: .env
+    environment:
+      RUNNER_NAME: vilan-linux-1
+    volumes:
+      - runner-1-home:/home/runner
+    cpus: 8
+    mem_limit: 12g
+    restart: unless-stopped
+  # runner-2:
+  #   build: .
+  #   image: vilan-ci-runner:local
+  #   container_name: vilan-runner-2
+  #   env_file: .env
+  #   environment:
+  #     RUNNER_NAME: vilan-linux-2
+  #   volumes:
+  #     - runner-2-home:/home/runner
+  #   cpus: 6
+  #   mem_limit: 10g
+  #   restart: unless-stopped
+
+volumes:
+  runner-1-home:
+  # runner-2-home:

@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "K30",
+   "section": "K",
+   "kind": "docs + templates (S)",
+   "area": "Web presence (site, playground, docs delivery)",
+   "status": "OPEN — filed 2026-10-05 (docs-47's find, Order 47)",
+   "discussion": "docs-47 (Order 47); K26's scope named the site, the playground, the book and vilan/examples, not `vilan init`'s templates",
+   "title": "`vilan init`'s two UI templates — `crates/vilan-cli/templates/browser/counter.vl` and `templates/fullstack/src/client.vl` — still build their counter with `view(\"section\").child(view(\"h1\").text(..))` chains: the first UI a new user reads is the one spelling the book now writes only where a tree's shape is not fixed",
+   "body": "After K26 the book (Building UI's \"Markup or chain\"), the examples and the site write a fixed-shape tree as element syntax; the templates are the one first-contact surface left on the chain. Each is four lines (`<section .styled(card)><h1>\"hello from Vilan\"</h1><p>{count.derive(..)}</p><button on:click(|| ..)>\"click me\"</button></section>`). Readers to move with them: `src/init.rs` embeds both by `include_str!`; `style_chain_order.rs` lists both files as style sources (the style chains themselves are unaffected); `tests/init.rs` builds the generated projects and asserts nothing on the view chain's text. Expect `vilan check` on a fresh project to cost about +0.15% per text child (K26's router measurement). Sizing S; vilan-cli."
+  },
+  {
+   "id": "E271",
+   "section": "E",
+   "kind": "diagnostic (S)",
+   "area": "Diagnostics & error messages",
+   "status": "OPEN — filed 2026-10-05 (docs-47's find, Order 47)",
+   "discussion": "docs-47 (Order 47); sweeps/order47/docs-47/finds/hole_not_a_slot_signal.vl, hole_not_a_slot_literal.vl",
+   "title": "a hole in element syntax that holds a non-text value — `<p>{count}</p>` over a `SignalCell<i32>`, `<p>{5}</p>` — is refused \"'SignalCell<i32>' does not implement trait 'Slot', required by a generic bound of this call\", spanned on the ELEMENT's `<` (not the hole) with a secondary label on std's `fun child<C: Slot>`, a call the author never wrote; no steer to the text form (`{count.derive(\\|n\\| i\"{n}\")}`, `i\"{5}\"`)",
+   "body": "Element syntax lowers `{expr}` to `.child(expr)` before analysis, so the bound failure is reported as a call-site bound failure of the desugared chain. Two improvements, either alone useful: (1) span the refusal on the hole's expression (the desugar knows it); (2) when the refused type is a number, a bool, or a `Source` of one, say that a hole takes a View, a str, a List<View> or a Source of one, and offer the i-string / `.derive(|n| i\"{n}\")` rewrite. The same refusal on an explicit `.child(5)` can keep today's wording. Repros: finds/hole_not_a_slot_signal.vl, finds/hole_not_a_slot_literal.vl (both 0.44.0 / next @b94cb47f). Sizing S; analyzer (the bound-failure reporter) or the element desugar's span."
+  },
+  {
+   "id": "E272",
+   "section": "E",
+   "kind": "diagnostic (XS–S)",
+   "area": "Diagnostics & error messages",
+   "status": "OPEN — filed 2026-10-05 (docs-47's find, Order 47)",
+   "discussion": "docs-47 (Order 47); sweeps/order47/docs-47/finds/fragment_as_view_return.vl; Building UI's Fragments section",
+   "title": "a fragment where ONE view is wanted — `fun pair(): View { <><p>\"a\"</p><p>\"b\"</p></> }` — is refused with the plain mismatch \"Expected View, but got List<View> instead\"; the book promises \"a type error that says so\", and nothing in it says fragment or how to fix it",
+   "body": "A fragment lowers to a list literal, so the mismatch is accurate but reads as if the author wrote a list. When the found expression is a fragment literal and the expected type is `View`, a steer would close the gap: \"a fragment `<>…</>` is a `List<View>`, not one view — wrap its children in an element (`<div>…</div>`), or return `List<View>`\". Repro: finds/fragment_as_view_return.vl. Sizing XS–S; the mismatch reporter keyed on the fragment's lowering marker."
+  }
+ ]
+}

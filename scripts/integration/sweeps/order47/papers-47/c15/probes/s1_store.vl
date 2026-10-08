@@ -1,0 +1,35 @@
+// C15: the store's out-parameter closures (`lend(|place| { out = .. })`),
+// natively: how many bindings box, and what a store write costs.
+import std::reactive::{ Owner, Signal, Source, run_with_owner };
+import std::reactive::store::{ Storable, Store };
+
+[derive(PartialEq, Storable)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+[derive(Storable)]
+struct User {
+	name: str,
+	address: Address,
+	visits: i32,
+}
+
+fun main() {
+	let user = Store::new(User { name = "Alice", address = Address { city = "Oslo", zip = "0150" }, visits = 0 });
+	let city: Store<str> = user.address().city();
+	let page = Owner::new();
+	run_with_owner(page, || {
+		city.effect(|now| print(i"city: {now}"));
+	});
+	city.set("Bergen");
+	mut n = 0;
+	for n < 20000 {
+		user.visits().set(n);
+		n += 1;
+	}
+	print(user.visits().get());
+	print(user.address().zip().get());
+	page.dispose();
+}

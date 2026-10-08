@@ -1,0 +1,46 @@
+diff --git a/src/channel.vl b/src/channel.vl
+index 12e46e6..da54413 100644
+--- a/src/channel.vl
++++ b/src/channel.vl
+@@ -35,18 +35,18 @@ fun channel_component(channel: Channel) {
+ 	<div .styled(css { padding(rem(8 / 16)); })>
+ 		{ui::when_some(messages.derive(|x| x.ready()), |messages| {
+ 			ui::each_values(messages, |message_id| {
+-				// `when_some` keeps the row across a payload change and hands the body
+-				// a live cell, so an edited message updates in place instead of
+-				// rebuilding its row.
+-				ui::when_some(Message::find(message_id), |message| {
+-					// The author follows the message's author id; the name reads empty
+-					// until that user's mirror answers.
+-					let author_name = message
+-						.derive(|current| current.author)
+-						.distinct()
+-						.switch(|author| author.user())
+-						.derive(|user| user.map(|user| user.username).unwrap_or_default());
+-
++				// The row waits for the message AND its author, and handles their
++				// absence here, once. The author follows the message's author id;
++				// `distinct` keeps an edit to the text from re-asking for the user.
++				let message = Message::find(message_id);
++				let author = message
++					.derive(|found| found.map(|current| current.author))
++					.distinct()
++					.and_then(|author| author.user());
++				// `when_all_some` keeps the row across a payload change and hands the
++				// body one live cell per part, so an edited message or a renamed
++				// author updates in place instead of rebuilding its row.
++				ui::when_all_some((message, author), |(message, author)| {
+ 					<div
+ 						on:contextmenu(|event| {
+ 							event.prevent_default();
+@@ -58,7 +58,9 @@ fun channel_component(channel: Channel) {
+ 							.flex_row();
+ 						})
+ 					>
+-						<span .styled(css { font-weight("600"); })>{author_name}</span>
++						<span .styled(css { font-weight("600"); })>
++							{author.derive(|user| user.username)}
++						</span>
+ 						<span>{message.derive(|current| current.content)}</span>
+ 					</div>
+ 				})

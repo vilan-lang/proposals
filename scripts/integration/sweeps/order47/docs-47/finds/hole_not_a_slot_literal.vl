@@ -1,0 +1,9 @@
+import std::web::ui::{ View, render };
+
+fun a(): View {
+	<p>{5}</p>
+}
+
+fun main() {
+	print(render(a()));
+}

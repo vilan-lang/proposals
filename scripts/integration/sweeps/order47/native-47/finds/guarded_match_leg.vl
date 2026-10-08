@@ -1,0 +1,14 @@
+// native: a guarded `match` leg (`let x if x <= 2 => ..`) is refused by name.
+// Rust has guards. Corpus: match-patterns.vl, capture-clones.vl. JS prints "large".
+import std::io::print;
+
+fun main() {
+	let n = 7;
+	let label = match n {
+		let x if x <= 2 => "small",
+		_ => "large",
+	};
+	print(label);
+}
+
+main();

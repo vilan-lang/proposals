@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "F106",
+   "section": "F",
+   "kind": "bug (native refusal; S–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (solver-47's find, Order 47)",
+   "title": "a `match` whose SUBJECT is a generic call returning a USER generic enum (`match wrap(3) { Maybe::Just(let v) => .. }`) is refused natively \"an unbound generic type parameter (parameter 1 of `wrap`)\" — the same subject bound by a `let` first runs, and so does the shape over std's `Option`",
+   "discussion": "solver-47 (Order 47), met pinning B540; repro sweeps/order47/solver-47/finds/match_subject_generic_call_user_enum_native.vl",
+   "body": "JS prints 3. Base e5e15ca7 and the solver-47 tip alike. `let r = wrap(3); match r { .. }` runs natively, and `fun wrap<T>(item: T): Option<T>` matched inline runs too, so the subject call's instance is reached without its substitution only for a user enum (the call's recorded binding, or the match's subject type, read unsubstituted on the native match path). Pin: a `native_differential` probe of the three shapes. Sizing S–M; native."
+  },
+  {
+   "id": "F107",
+   "section": "F",
+   "kind": "bug (native backend defect; S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (solver-47's find, Order 47)",
+   "title": "natively, a call to an `async fun` whose declared return is a `Task` is not assimilated: the emitted Rust holds a `Task<i32>` where the program has the `i32` (rustc E0369 \"cannot add `i32` to `Task<i32>`\") — B149's typing is JS-and-analyzer only",
+   "discussion": "solver-47 (Order 47), building B149; repro sweeps/order47/solver-47/finds/async_task_return_native_not_assimilated.vl",
+   "body": "B149 types `async fun make(): Task<i32>`'s call as `i32` (the host assimilates the returned handle on JS). The native backend awaits the call once and keeps the inner handle. Rec: a written-`async` callee whose declared return is a handle awaits the handle too (`.await.await` per layer `assimilated_task_payload` strips), or the callee's body awaits its tail before returning. Sizing S; native."
+  },
+  {
+   "id": "B558",
+   "section": "B",
+   "kind": "diagnostics (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-05 (solver-47's find, Order 47)",
+   "title": "a bare `Cell::new(label)` inside the impl block that DECLARES `new` (`impl Cell<type T>`), over a `label: str`, is refused \"Expected str, but got str instead.\" — the refusal is right (B403 reads it as `Self::new`, `T` rigid), the message prints the rigid `T` as `str`",
+   "discussion": "solver-47 (Order 47), met building B542; repro sweeps/order47/solver-47/finds/static_in_declaring_impl_says_expected_str_got_str.vl",
+   "body": "Base and tip alike. Rec: the message names the rigid parameter (\"Expected T, but got str\") and steers to the spelling that instantiates fresh, `Cell<str>::new(label)` — B542 made an argument decide only for a block that does not declare the static, because inside the declaring block the binder is the body's own `T`. Sizing S."
+  },
+  {
+   "id": "B559",
+   "section": "B",
+   "kind": "bug (typing; S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-05 (solver-47's find, Order 47)",
+   "title": "a WRITTEN nested handle annotation is not assimilated as a formed one is: `async fun deeper(): Task<Task<str>> { async { async { \"s\" } } }` is refused \"Expected Task<Task<str>>, but got Task<str> instead.\"",
+   "discussion": "solver-47 (Order 47), met building B149; repro sweeps/order47/solver-47/finds/written_nested_task_annotation_not_assimilated.vl",
+   "body": "`assimilated_task_payload` normalizes every handle the solver FORMS (`async { some_task }`, `Task<T>` at `T := Task<i32>`), so the body is `Task<str>`; the written annotation keeps its two layers and the two never reconcile. Rec: normalize a written `Task<Task<..>>` at the annotation (the layers ARE one) or refuse it with that sentence. Sizing S."
+  }
+ ]
+}

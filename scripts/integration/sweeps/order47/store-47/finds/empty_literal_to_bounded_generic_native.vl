@@ -1,0 +1,15 @@
+// An EMPTY list literal handed to a generic parameter whose element type is
+// fixed only through its BOUND — `names.push_many([])`, `push_many<S: Items<T>>`
+// on a `List<str>` — stays `List<unknown>`: JS runs it (prints 1), and natively
+// it is refused "does not emit a value of type `an unresolved type`" with NO span
+// or file, so the reader is not told which expression. `let none: List<str> =
+// []; names.push_many(none);` builds on both.
+import std::io::print;
+
+fun main() {
+	mut names: List<str> = ["a"];
+	names.push_many([]);
+	print(names.len());
+}
+
+main();

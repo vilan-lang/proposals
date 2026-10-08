@@ -1,0 +1,26 @@
+// native: a GENERIC call's own type is read unsubstituted at a field read — `b.unwrap().v`
+// over `Box<T>::unwrap(self): T` — refused "a field read of an unresolved subject".
+// The same disease as generic_call_is_subject.vl; corpus: generic-method-return.vl,
+// lift-chain.vl, self-return.vl. JS prints 5.
+import std::io::print;
+
+struct Box<T> {
+	value: T,
+}
+
+impl Box<type T> {
+	fun unwrap(self): T {
+		self.value
+	}
+}
+
+struct Node {
+	v: i32,
+}
+
+fun main() {
+	let b = Box { value = Node { v = 5 } };
+	print(b.unwrap().v);
+}
+
+main();

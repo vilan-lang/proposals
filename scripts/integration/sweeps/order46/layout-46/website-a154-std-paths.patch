@@ -1,0 +1,306 @@
+diff -ruN a/playground/editor-src/editor.mjs b/playground/editor-src/editor.mjs
+--- a/playground/editor-src/editor.mjs
++++ b/playground/editor-src/editor.mjs
+@@ -892,7 +892,7 @@
+ // the browser, the base set on the node leg — so a pasted single-file program
+ // means what it would inside a fresh `vilan init` package; WEB pins the web set
+ // whatever the mode, which is what a fullstack package's server leg resolves
+-// under (`prelude = "std::web"` covers every entry) and the set the E120 steer
++// under (`prelude = "std::web::prelude"` covers every entry) and the set the E120 steer
+ // names; OFF turns it off entirely, for teaching the explicit spellings. It
+ // rides the same rails the mode does: one setter both the page and the
+ // #prelude select route through, a re-check under the new scope, an echo back
+diff -ruN a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -9,8 +9,8 @@
+ sorts out what may run where by what each entry reaches.
+ 
+ - **`src/page.vl`** — the one `fun page(): View` the landing entries build, plus
+-  its `std::style` styles. Its views are element syntax over `std::ui`
+-  (ambient through the web prelude, `prelude = "std::web"` in `vilan.toml`),
++  its `std::web::style` styles. Its views are element syntax over `std::web::ui`
++  (ambient through the web prelude, `prelude = "std::web::prelude"` in `vilan.toml`),
+   which resolves per entry platform: live DOM in the client build, an HTML
+   string tree in the server build.
+ - **`src/server.vl`** — the node entry, at rung 2 of the full-stack ladder.
+@@ -125,8 +125,8 @@
+ browser and for the vendored editor bundle, which are the host from
+ `src/*.vl`'s point of view; nothing mocks the code under test. Its shape is
+ the toolchain repo's `crates/vilan-cli/tests/hmr.rs`, and its surface is
+-deliberately small (`tests/support/dom.mjs` names exactly what `std::ui` and
+-`std::dom` emit), so a change to std that reaches for a new host call fails
++deliberately small (`tests/support/dom.mjs` names exactly what `std::web::ui` and
++`std::web::dom` emit), so a change to std that reaches for a new host call fails
+ here rather than in a visitor's browser.
+ 
+ - `tests/playground-console.test.mjs` — the console's admission rule: a
+diff -ruN a/scripts/smoke-playground.mjs b/scripts/smoke-playground.mjs
+--- a/scripts/smoke-playground.mjs
++++ b/scripts/smoke-playground.mjs
+@@ -182,7 +182,7 @@
+ 	// the base set, which has no `Signal`.
+ 	const webOnly = "fun main() {\n\tlet count = Signal::new(0);\n\tprint(i\"{count.get()}\");\n}\n";
+ 	const base = glue.compile_with(webOnly, "node", undefined);
+-	const web = glue.compile_with(webOnly, "node", "std::web");
++	const web = glue.compile_with(webOnly, "node", "std::web::prelude");
+ 	if (base.js != null || web.js == null || web.diagnostics.length > 0) {
+ 		failed = true;
+ 		console.error("prelude toggle: FAILED - the web position does not pin the web set on the node leg");
+diff -ruN a/src/art.vl b/src/art.vl
+--- a/src/art.vl
++++ b/src/art.vl
+@@ -19,7 +19,7 @@
+ // same way. A blurred glow is a wash, so it keeps its hue at its alpha in
+ // both themes; a 7px LED or a 2px wire is a mark, so it must clear blush.
+ 
+-import std::style::{
++import std::web::style::{
+ 	AlignItems,
+ 	Color,
+ 	Display,
+diff -ruN a/src/client.vl b/src/client.vl
+--- a/src/client.vl
++++ b/src/client.vl
+@@ -71,7 +71,7 @@
+ }
+ 
+ /// `navigator.clipboard.writeText` — the member call keeps its receiver, the
+-/// same shape as std::router's `history.pushState`.
++/// same shape as std::web::router's `history.pushState`.
+ [extern("navigator.clipboard.writeText")]
+ external fun clipboard_write(text: str): void;
+ 
+diff -ruN a/src/code.vl b/src/code.vl
+--- a/src/code.vl
++++ b/src/code.vl
+@@ -2,7 +2,7 @@
+ // over a pre) and the inline code leafs - `[rpc]`, `vilan upgrade`, and
+ // friends read as code, not bare prose; the linked flavor jumps to the docs.
+ 
+-import std::style::{ Length, Overflow, WhiteSpace, space, style };
++import std::web::style::{ Length, Overflow, WhiteSpace, space, style };
+ import pkg::theme::{
+ 	accent,
+ 	code_callable,
+diff -ruN a/src/masthead.vl b/src/masthead.vl
+--- a/src/masthead.vl
++++ b/src/masthead.vl
+@@ -1,7 +1,7 @@
+ // The page top below the toolbar (which is topbar.vl's): the CSS-built bloom
+ // and the hero. One scale (`hero_scale`) rules every masthead dimension.
+ 
+-import std::style::{
++import std::web::style::{
+ 	AlignItems,
+ 	Display,
+ 	FlexDirection,
+diff -ruN a/src/page.vl b/src/page.vl
+--- a/src/page.vl
++++ b/src/page.vl
+@@ -1,7 +1,7 @@
+ // The one page both legs build: the server renders it to an HTML string for
+ // first paint (view source — the content is already there), the client rebuilds
+ // it as live DOM and replaces it on boot. Build pure, bind reactive: nothing
+-// here reaches for `std::dom`, so the same source compiles on both platforms.
++// here reaches for `std::web::dom`, so the same source compiles on both platforms.
+ // The client passes a live `scroll_fade` signal (the toolbar's --nav-fade,
+ // wired to the window in client.vl); the server passes a constant "0".
+ //
+@@ -20,7 +20,8 @@
+ // assets left are the brand marks and fonts, served from
+ // vilan-lang.org/assets so dev and deployed builds see the same bytes.
+ import std::shared::Shared;
+-import std::style::{
++import std::time::Timer;
++import std::web::style::{
+ 	AlignItems,
+ 	Color,
+ 	Cursor,
+@@ -36,7 +37,6 @@
+ 	space,
+ 	style,
+ };
+-import std::time::Timer;
+ import pkg::art::{ dataflow_art, diagram, editor_art, toolchain_art };
+ import pkg::code::{ blank, code_panel, fn, hl, kw, leaf, leaf_link, ln, pt, st, t, ty };
+ import pkg::masthead::{ bloom, masthead };
+@@ -630,7 +630,7 @@
+ }
+ 
+ // Card icons are Lucide (lucide.dev, ISC), baked with the accent stroke and
+-// served as plain images. They predate `std::ui` creating `<svg>` trees in the
++// served as plain images. They predate `std::web::ui` creating `<svg>` trees in the
+ // SVG namespace, which it does now, so an inline icon whose stroke follows the
+ // theme is open to them.
+ let card_icon = const (style().width(Length::px(28.0)).height(Length::px(28.0)) + no_drag);
+@@ -670,7 +670,7 @@
+ 				pt("One workspace compiles the node server and the browser client. The compiler tracks which code needs which platform and keeps each bundle honest."),
+ 			])}
+ 			{feature("server", "Rendered before it ships", "/docs/guide/ssr.html", [
+-				leaf("std::ui"),
++				leaf("std::web::ui"),
+ 				pt(" renders on the server too: first paint is real markup, then the client rebuilds it live. View source on this page and the content is already there."),
+ 			])}
+ 			{feature("refresh-cw", "A dev loop that keeps up", "/docs/guide/dev-loop.html", [
+diff -ruN a/src/playground/worker.js b/src/playground/worker.js
+--- a/src/playground/worker.js
++++ b/src/playground/worker.js
+@@ -84,7 +84,7 @@
+ 		case "off":
+ 			return "off";
+ 		case "web":
+-			return "std::web";
++			return "std::web::prelude";
+ 		default:
+ 			return undefined;
+ 	}
+diff -ruN a/src/playground_page.vl b/src/playground_page.vl
+--- a/src/playground_page.vl
++++ b/src/playground_page.vl
+@@ -2,14 +2,14 @@
+ // (the editor and runner panes ship as empty containers), the playground entry
+ // rebuilds it live and then hands the two containers to the vendored editor
+ // bundle — CodeMirror mounts into `#editor`, each Run swaps a sandboxed iframe
+-// into `#runner`. Nothing here reaches `std::dom`, so the same source compiles
++// into `#runner`. Nothing here reaches `std::web::dom`, so the same source compiles
+ // on both platforms; every browser-only piece lives in playground.vl.
+ //
+ // The reactive state (status line, diagnostics, console) flows in as signals,
+ // the actions (Run, example picks) as closures — the server passes inert
+ // stand-ins, the same split as `page()`.
+ 
+-import std::style::{
++import std::web::style::{
+ 	AlignItems,
+ 	Color,
+ 	Cursor,
+diff -ruN a/src/playground.vl b/src/playground.vl
+--- a/src/playground.vl
++++ b/src/playground.vl
+@@ -9,9 +9,9 @@
+ // an srcdoc needs escaping. This entry owns the APPLICATION: every signal the
+ // page renders, and what each compiler or program event means to it.
+ 
+-import std::asset::bundle;
+ import std::shared::Shared;
+ import std::time::Timer;
++import std::web::asset::bundle;
+ import pkg::playground_page::{ ConsoleRow, DiagRow, TraceRow, playground_page };
+ 
+ // --- the vendored files this leg carries into the build ---
+diff -ruN a/src/server.vl b/src/server.vl
+--- a/src/server.vl
++++ b/src/server.vl
+@@ -21,10 +21,10 @@
+ // `Display` is `List::join`'s bound — the import is what puts the method in
+ // scope (std-surface.md: discoverability follows the declaring file).
+ import std::display::Display;
+-import std::document::Document;
+ import std::fs;
+ import std::http::{ Response, Server };
+ import std::process::env;
++import std::web::document::Document;
+ import pkg::page::page;
+ import pkg::playground_page::{ ConsoleRow, DiagRow, playground_page };
+ import pkg::theme::{ fallback, theme_metas };
+diff -ruN a/src/theme.vl b/src/theme.vl
+--- a/src/theme.vl
++++ b/src/theme.vl
+@@ -3,7 +3,7 @@
+ // styles (shell, column, stack, reveal, dividers, grain).
+ 
+ import std::io::panic;
+-import std::style::{
++import std::web::style::{
+ 	Color,
+ 	Display,
+ 	FlexDirection,
+diff -ruN a/src/topbar.vl b/src/topbar.vl
+--- a/src/topbar.vl
++++ b/src/topbar.vl
+@@ -3,7 +3,7 @@
+ // chrome.vl) the book. Its own module so a leg that wants only the bar reaches
+ // only the bar's rules: the masthead's bloom and hero are the landing page's.
+ 
+-import std::style::{
++import std::web::style::{
+ 	AlignItems,
+ 	Color,
+ 	Display,
+diff -ruN a/tests/examples.test.mjs b/tests/examples.test.mjs
+--- a/tests/examples.test.mjs
++++ b/tests/examples.test.mjs
+@@ -52,7 +52,7 @@
+ /// compilers read the buffer under the same ambient scope.
+ function playgroundDir(prefix, platform) {
+ 	const dir = mkdtempSync(join(scratch, prefix));
+-	const prelude = platform === "browser" ? "std::web" : "std::prelude";
++	const prelude = platform === "browser" ? "std::web::prelude" : "std::prelude";
+ 	writeFileSync(join(dir, "vilan.toml"), `[package]\nname = "playground"\nprelude = "${prelude}"\n`);
+ 	return dir;
+ }
+diff -ruN a/tests/support/dom.mjs b/tests/support/dom.mjs
+--- a/tests/support/dom.mjs
++++ b/tests/support/dom.mjs
+@@ -7,16 +7,16 @@
+ // for, because they are the boundary the browser (not this repo) owns.
+ //
+ // The surface is deliberately tiny, and it is not a guess: it is exactly what
+-// `std::ui` and `std::dom` emit, which is why a change to std that reaches for
++// `std::web::ui` and `std::web::dom` emit, which is why a change to std that reaches for
+ // a new host call fails HERE, loudly, instead of in a visitor's browser. Run
+ //
+ //   grep -o 'document\.[a-zA-Z]*\|\.\(appendChild\|replaceChildren\|remove\|setAttribute\|textContent\|hidden\|addEventListener\)' dist/*.js | sort -u
+ //
+ // to see the whole set the built bundles actually touch.
+ 
+-/// A DOM element, as far as `std::ui` can tell: a tag, a class attribute, a
++/// A DOM element, as far as `std::web::ui` can tell: a tag, a class attribute, a
+ /// text body, an ordered child list, and listeners. `textContent = ` clears
+-/// children exactly as the real setter does — `std::ui`'s `text()` relies on
++/// children exactly as the real setter does — `std::web::ui`'s `text()` relies on
+ /// it, and a stub that kept them would report rows that a browser had
+ /// replaced.
+ export class StubElement {
+@@ -52,7 +52,7 @@
+ 	}
+ 
+ 	/// Insert before `anchor`, or at the end when `anchor` is null or not a
+-	/// child. A fragment empties into the position (`std::ui` stages a row's
++	/// child. A fragment empties into the position (`std::web::ui` stages a row's
+ 	/// content in one, A71/A112); a node already placed moves.
+ 	insertBefore(child, anchor) {
+ 		if (child.tagName === "#fragment") {
+@@ -106,7 +106,7 @@
+ /// Installs the stub globals and returns the handles a test drives it by.
+ /// `mounts` names the ids the page will look for (`mount_root("app", …)`);
+ /// anything else answers null, which is what a real document does and what
+-/// `std::ui`'s "mount: no element with id" refusal is built on.
++/// `std::web::ui`'s "mount: no element with id" refusal is built on.
+ ///
+ /// `vendored: true` adds the handful of members CodeMirror reads at import
+ /// time (`documentElement.style`, `body`, `head`, the selector pair). They are off by default so that the site's own bundles are
+diff -ruN a/vilan.toml b/vilan.toml
+--- a/vilan.toml
++++ b/vilan.toml
+@@ -2,7 +2,7 @@
+ #
+ # One package, four entries: the client and the server both build the one
+ # `fun page(): View` in `src/page.vl`, the playground builds its own, and the
+-# chrome leg exports the shared masthead for the book. `std::ui` resolves per
++# chrome leg exports the shared masthead for the book. `std::web::ui` resolves per
+ # entry platform — live DOM in the browser builds, an HTML string tree in the
+ # node builds — so the server renders each page to markup for first paint and
+ # the browser rebuilds it live and replaces on boot.
+@@ -19,8 +19,8 @@
+ # `view`/`View` and the slot functions (`each_by`, `when`, ...), and the ambient
+ # `ui::`/`style::` modules. It is what `vilan init` gives a web package, and it
+ # is the playground's browser mode, so the site is written in the idiom its own
+-# examples teach. Explicit imports still win (the `std::style` lists).
+-prelude = "std::web"
++# examples teach. Explicit imports still win (the `std::web::style` lists).
++prelude = "std::web::prelude"
+ 
+ [entry.client]
+ target = "browser"

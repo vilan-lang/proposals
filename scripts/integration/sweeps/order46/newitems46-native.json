@@ -1,0 +1,64 @@
+{
+ "items": [
+  {
+   "id": "F84",
+   "section": "F",
+   "kind": "native refusal by name (S) — FIXED on native-46",
+   "area": "Native targets & rendering",
+   "status": "FIXED on native-46 (6620ad0f), filed 2026-10-03 (native-46's find, Order 46) — close at the merge",
+   "discussion": "native-46 (Order 46); sweeps/order46/REPORT-native-46.md",
+   "title": "native: a closure's EXPRESSION body was emitted at the closure TYPE's expectation, so `\\|k: i32\\| Maybe::Just(k + 1)` (a constructor whose site records `Maybe<any>` and whose payload records nothing) was refused as \"a generic type instantiated at `any`\"",
+   "body": "Found while building F66's probe. `closure_body` handed the body the expectation the literal arrived under (the closure type), which matched nothing. The body now takes the position's closed return, else the literal's written one (`closure_return_position`, which F67's cast shares). Pin: `native_differential`'s `a_closure_body_takes_the_closures_return_as_its_position_on_both_backends`. The remainder is filed as its own item (a closure handed to a GENERIC callee)."
+  },
+  {
+   "id": "F85",
+   "section": "F",
+   "kind": "native refusal by name (S–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-03 (native-46's find, Order 46)",
+   "discussion": "native-46 (Order 46); sweeps/order46/REPORT-native-46.md",
+   "title": "native: a closure literal handed to a GENERIC callee without a written return — `apply(4, \\|k\\| Maybe::Just(k * 10))` with `fun apply<T, U>(value: T, f: \\|T\\| U): U` — is refused (\"instantiated at `any`\"): the literal's position is the callee's parameter type read UNSUBSTITUTED (`\\|T\\| U`), so its body has no closed return to build the constructor at",
+   "body": "The remainder of native-46's closure-body fix (6620ad0f). Writing the return (`\\|k: i32\\|: Maybe<i32> ..`) builds. Rec: render a call argument's expectation under the call's own substitution (`call_substitution`), so a closure argument's position is `\\|i32\\| Maybe<i32>` at this site. Sizing S–M; native lane."
+  },
+  {
+   "id": "F86",
+   "section": "F",
+   "kind": "native refusal by name (S–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-03 (native-46's find, Order 46)",
+   "discussion": "native-46 (Order 46); sweeps/order46/REPORT-native-46.md",
+   "title": "native: a variant constructor used as a METHOD RECEIVER with a literal payload — `Maybe::Just(3).and_then(big)`, `Maybe::Just(\"abc\").nest()` — is refused (\"instantiated at `any`\"); bound to a `let` first it builds",
+   "body": "The constructor's call expression has no `expr_type_ids` record, its literal payload records none either, and a method receiver sets no expectation, so `variant_arguments` has no source. Rec: give a method receiver the position the call already resolved (the impl subject under the call's substitution), or have the analyzer record the receiver's type at the constructor. Sizing S–M; native lane (the analyzer half, if taken, is the solver's)."
+  },
+  {
+   "id": "B530",
+   "section": "B",
+   "kind": "inference (M) — surfaces as a native refusal",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (native-46's find, Order 46)",
+   "discussion": "native-46 (Order 46); sweeps/order46/REPORT-native-46.md",
+   "title": "an unannotated `mut found = Maybe::Nothing;` in a GENERIC body, later assigned `found = Maybe::Just(value)`, keeps the binding typed `Maybe<any>`: the JS backend does not care, and natively it is refused (\"instantiated at `any`\")",
+   "body": "B357's shape at a binding: the nullary initializer leaves the argument open and the later assignment does not close it. `mut found: Maybe<T> = Maybe::Nothing;` builds on both backends (native-46's F66 fixture uses it). Rec: a binding's open argument closes from its assignments, as from its uses. Sizing M; solver."
+  },
+  {
+   "id": "E252",
+   "section": "E",
+   "kind": "formatter (S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (native-46's find, Order 46)",
+   "discussion": "native-46 (Order 46); sweeps/order46/REPORT-native-46.md",
+   "title": "`vilan fmt` DECLINES a call through a subscripted closure — `print(adders[2](30));` — \"reprinting it would have changed the code at this line\"",
+   "body": "Found writing native-46's F48 pin (`native/reassigned_closures.vl` binds the closure to a `let` first). The reprint changes the code, so the formatter's safety net throws it away and the whole file is reported unformatted (CI's `vilan-fmt` leg goes red on it). Sizing S; syntax lane (formatter.rs)."
+  },
+  {
+   "id": "F87",
+   "section": "F",
+   "kind": "output parity (S) — FIXED on native-46",
+   "area": "Native targets & rendering",
+   "status": "FIXED on native-46 (f8b2a785), filed 2026-10-03 (native-46's find, Order 46) — close at the merge",
+   "discussion": "native-46 (Order 46); sweeps/order46/REPORT-native-46.md",
+   "title": "native: a tuple nested in a tuple printed as a nested array — `print((1, (2, \"x\")))` was `[ 1, [ 2, 'x' ] ]` natively and `[ 1, 2, 'x' ]` on node (the JS backend stores tuples flat)",
+   "body": "Found with F68's printer work. Each tuple now contributes its elements' slots to the enclosing tuple's array (`Js::js_tuple_slots`); a tuple in a list, a struct field or an enum payload stays its own array, as on the JS backend. Pins: `native/print_layout.vl`, `vilan_rt::inspect`'s `a_tuple_nested_in_a_tuple_is_spliced_in`. Tuples are not `[derive(Json)]`-able, so the JSON twin has no reachable divergence."
+  }
+ ]
+}

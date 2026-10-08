@@ -1,0 +1,49 @@
+import std::hash_map::HashMap;
+import std::shared::Shared;
+import std::reactive::{ Signal, SignalCell };
+
+struct Point { x: i32, y: i32 }
+struct Line { from: Point, to: Point, label: str }
+struct Wrapper { inner: Line, tags: List<str> }
+enum Shape { Circle(f64), Rect(i32, i32), Empty }
+enum Tree { Leaf(i32), Node(List<Tree>) }
+
+trait Area { fun area(self): i32; }
+impl Point with Area { fun area(self): i32 { self.x * self.y } }
+
+struct Holder { item: dyn Area }
+
+fun main() {
+	print(Point { x = 1, y = 2 });
+	print(Line { from = Point { x = 1, y = 2 }, to = Point { x = 3, y = 4 }, label = "diag" });
+	print(Wrapper { inner = Line { from = Point { x = 1, y = 2 }, to = Point { x = 3, y = 4 }, label = "d" }, tags = ["a", "b"] });
+	print(Shape::Circle(1.5));
+	print(Shape::Rect(2, 3));
+	print(Shape::Empty);
+	print(Tree::Node([Tree::Leaf(1), Tree::Node([Tree::Leaf(2), Tree::Node([Tree::Leaf(3)])])]));
+	print([[1, 2], [3, 4]]);
+	print([[[[1]]]]);
+	print((1, "two", 3.0));
+	print(Some(5));
+	let none: Option<i32> = None;
+	print(none);
+	let ok: Result<i32, str> = Ok(1);
+	print(ok);
+	print(Holder { item = Point { x = 2, y = 3 } });
+	let shared = Shared::new(Point { x = 7, y = 8 });
+	print(shared);
+	let cell: SignalCell<i32> = Signal::new(3);
+	print(cell);
+	let piped = cell.derive(|v| v * 2);
+	print(piped.sample());
+	let add = |a: i32, b: i32| a + b;
+	print(add);
+	mut map: HashMap<str, i32> = HashMap::new();
+	map.insert("one", 1);
+	print(map);
+	print([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
+	print("a string");
+	print(42u8);
+	print(3.0);
+	print(i"x = {1}");
+}

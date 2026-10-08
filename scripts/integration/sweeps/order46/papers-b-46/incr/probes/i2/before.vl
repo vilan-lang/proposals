@@ -1,0 +1,11 @@
+import std::context::Context;
+
+let flavor: Context<i32> = Context::new();
+
+fun leaf(): i32 { 1 }
+fun middle(): i32 { leaf() + 1 }
+fun top(): i32 { middle() + 1 }
+
+fun main() {
+	print(top());
+}

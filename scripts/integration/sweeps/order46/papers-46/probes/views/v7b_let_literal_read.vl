@@ -1,0 +1,14 @@
+// B495 probe v7b: v7's position with a READ view (`|&str| void`, bare literal).
+import std::io::print;
+import std::shared::Shared;
+
+let out = Shared::new("");
+
+fun main() {
+	let city = "Oslo";
+	let typed: |&str| void = |c| {
+		out.write() = *c;
+	};
+	typed(&city);
+	print(i"annotated let, bare literal, read view: out={out.read()}");
+}

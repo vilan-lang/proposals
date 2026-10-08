@@ -1,0 +1,22 @@
+// A `&mut self` method whose argument closure writes the receiver's binding:
+// the receiver and the closure touch one boxed binding at once.
+struct Counter {
+	n: i32,
+}
+
+impl Counter {
+	fun bump_then(&mut self, f: || void) {
+		self.n += 1;
+		f();
+		self.n += 1;
+	}
+}
+
+fun main() {
+	mut c = Counter { n = 0 };
+	let poke = || {
+		c.n += 100;
+	};
+	c.bump_then(poke);
+	print(c.n);
+}

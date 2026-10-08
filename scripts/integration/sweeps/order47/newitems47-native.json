@@ -1,0 +1,124 @@
+{
+ "items": [
+  {
+   "id": "F91",
+   "section": "F",
+   "kind": "native rustc refusal (S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/is_capture_conjunction_body.vl",
+   "title": "native: an `is` capture to the left of `&&` in an `if` CONDITION, read in the `if` BODY — `if held is Some(let name) && name.len() > 0 { print(name) }` — is rustc E0425 (\"cannot find value `name`\"): the conjunction emits `match held { Some(name) => cond, _ => false }`, so the capture is scoped to the arm, not the body",
+   "body": "JS prints the capture. `conjunction` (vilan-rust) answers a capturing `&&` chain as a nested `match` that yields a bool, which is right for the condition and leaves the body outside the binding's scope; only a bare `if x is P(let v)` takes `if let`. The emitted crate is edition 2024, so a let-chain (`if let Some(name) = held.clone() && name.len() > 0 { .. }`) states it directly. Repro: finds/is_capture_conjunction_body.vl. Sizing S; native."
+  },
+  {
+   "id": "F92",
+   "section": "F",
+   "kind": "native refusal by name (S–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/generic_call_is_subject.vl, generic_call_field_read.vl",
+   "title": "native: a GENERIC call's own type is read UNSUBSTITUTED where the call is used directly — as an `if .. is` subject (`if wrap(\"deep\") is Maybe::Just(let s)`, `if bound.nest() is ..`), as a field subject (`b.unwrap().v`, `c.combine_twice().value`) and under a `?.` lift (`find(\"hit\")?.title`) — refused \"an unbound generic type parameter\" / \"a field read of an unresolved subject\"; the same call bound to a `let` first, or as a `match` subject, builds",
+   "body": "Three of the whole-set differential's 27 refusals are this one disease: generic-method-return.vl:27, lift-chain.vl:40, self-return.vl:28. The call expression records the callee's DECLARED return (`T`, `Maybe<T>`), and the use sites read `type_of(call)` raw; `settled_value_type` (F36) already resolves a call's generic return through `call_substitution`, but only where it is asked. Rec: one place — the call's type under its own substitution — read by the field arm, the `is` subject and the lift. Repros: finds/generic_call_is_subject.vl, finds/generic_call_field_read.vl. Sizing S–M; native."
+  },
+  {
+   "id": "B552",
+   "section": "B",
+   "kind": "solver: a recorded type missing its arguments (S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/generic_callee_block_closure.vl; F85",
+   "title": "a BLOCK-bodied closure handed to a generic callee without a written return — `apply(2, \\|k\\| { let d = k * 2; Maybe::Just(d) })` with `apply<T, U>(value: T, f: \\|T\\| U): U` — records the call's `U` as `Maybe` with NO type arguments and the block's local `d` as unresolved; JS runs it, natively the instance meets an unbound `T` of `Maybe` (refused by name), and the `let` it lands in carries the argument-less type",
+   "body": "The expression-bodied twin (`\\|k\\| Maybe::Just(k * 10)`) builds since F85 (native-47). The analyzer side is the cause: an enum type recorded with fewer arguments than its declaration has parameters. Native's `is_grounded` also passes such a type vacuously (`all` over an empty list), so the emitter cannot even see that it is open (an experiment that taught `is_grounded` the arity and bound `U` through the block's tail constructor got the call past, then met the binding's own `Maybe<>` record at the next use). Repro: finds/generic_callee_block_closure.vl. Sizing S–M; solver."
+  },
+  {
+   "id": "F93",
+   "section": "F",
+   "kind": "native refusal by name (S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/guarded_match_leg.vl; the whole-set differential's refused list",
+   "title": "native: a GUARDED `match` leg (`let x if x <= 2 => ..`, `Signal::Finished if count > 0 => ..`) is refused by name — two of the whole-set differential's 27 refusals (match-patterns.vl, capture-clones.vl)",
+   "body": "Rust has guards (`pat if cond =>`), and `match_expr` already writes literal guards for nested `str` patterns; a leg's own guard is the same text. The refusal is the only wall of capture-clones.vl and match-patterns.vl as far as the first refusal shows. Repro: finds/guarded_match_leg.vl. Sizing S; native."
+  },
+  {
+   "id": "F94",
+   "section": "F",
+   "kind": "native refusal by name (S–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/spread_parameter.vl; refused list",
+   "title": "native: a SPREAD parameter (`fun middle(...items: (i32, i32, i32))`) is refused by name — spread-parameters.vl and tuple-spread.vl, two of the 27",
+   "body": "variadic-generics.md §S defines a spread as a call convention over an ordinary tuple parameter (`f(a, b)` means `f((a, b))`), and the JS emission is the tuple form's flat construction; natively the call site packs the arguments into the tuple. tuple-spread.vl adds the generic `T: (..)` pack. Repro: finds/spread_parameter.vl. Sizing S–M; native."
+  },
+  {
+   "id": "F95",
+   "section": "F",
+   "kind": "native refusal by name (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/for_over_a_set.vl; refused list",
+   "title": "native: a `for` over anything but a `List` is refused by name — `for value in set` over a `HashSet` (set.vl) and `for element in &mut counter` over a user container's `next_mut` (for-mut-container.vl), two of the 27",
+   "body": "The refusal says why: an `Iterator` impl is a monomorphised generic, and the loop lowers to a `List` walk only. set.vl's first wall is the set loop. Repro: finds/for_over_a_set.vl. Sizing M; native."
+  },
+  {
+   "id": "F96",
+   "section": "F",
+   "kind": "native refusal by name (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/user_lift_container.vl; refused list",
+   "title": "native: a `?` lift over a USER `Lift` container (expression-lift.vl) and a `!` assertion through a USER `Try` impl (try-assert.vl) are refused by name — two of the 27; the `Option`/`Result` forms are emitted",
+   "body": "Both lower through the user impl's `map`/`and_then` (Lift) or `Try` members on JS. Repro: finds/user_lift_container.vl. Sizing M; native."
+  },
+  {
+   "id": "F97",
+   "section": "F",
+   "kind": "native refusal by name (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/resource_with_drop.vl; F56; refused list",
+   "title": "native: a `[resource]` type WITH a `Drop` impl is refused by name (\"destruction.md's teardown is a later slice\") — resource.vl, resource_exit.vl, resource_take.vl, three of the 27; F56 (Order 44) emitted the Drop-less half",
+   "body": "The teardown order destruction.md §5/§7 fixes (locals in reverse, early `ret`, overwrite, fields in reverse after the `Drop` body) maps onto Rust's own `Drop` for the move-only types the analyzer already enforces; the corpus programs are the spec's pins. Repro: finds/resource_with_drop.vl. Sizing M; native."
+  },
+  {
+   "id": "F98",
+   "section": "F",
+   "kind": "native refusal by name (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/const_non_plain_value.vl; refused list",
+   "title": "native: a `const` value that is not plain data (a `Style`, a struct) is refused by name — css-block.vl, preflight.vl, style-when.vl, style.vl, theme.vl, five of the 27",
+   "body": "The const channel hands the emitter a value, and the native emitter renders only strings, booleans, numbers and lists of those. A `Style` is a struct of lists and strings; rendering a const struct literal from the evaluated value would admit all five (they print class lists, platform-free). Repro: finds/const_non_plain_value.vl. Sizing M; native."
+  },
+  {
+   "id": "F99",
+   "section": "F",
+   "kind": "native refusal by name (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/option_view_payload.vl; F21",
+   "title": "native: F21's two remainders, each refused under its own name — an `Option` whose payload is a VIEW read anywhere but as a `match` subject (`arena.get(a).unwrap_or(-1)`, arena.vl) and a view binding that ALIASES another (`let c: &mut i32 = b;`, transparent-references.vl:35) — two of the 27",
+   "body": "F21 (closed Order 40) named both as different shapes and left them refused; neither has an item. The first needs a monomorphisation keyed on viewness (a generic over the payload monomorphises at the pointee); the second a model of aliasing loans. Repro: finds/option_view_payload.vl. Sizing M; native."
+  },
+  {
+   "id": "F100",
+   "section": "F",
+   "kind": "native refusal by name (S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/small_lowerings.vl; refused list",
+   "title": "native: three small lowerings, each the first wall of its corpus program — a triple-quoted string (multiline-string.vl), the repeat literal `[value; n]` (fixed-arrays.vl) and std's `f64::is_finite` host binding (`Number.isFinite`, math.vl); the repeat literal's refusal also doubles a backtick (\"the expression form `a `[value; n]` literal`\")",
+   "body": "Each is a direct Rust spelling: the string after the raw-string rule of spec §2, `vec![value; n]` (or `[value; n]` for a fixed array), `f64::is_finite`. Repro: finds/small_lowerings.vl (each line refused alone). Sizing S; native."
+  },
+  {
+   "id": "F101",
+   "section": "F",
+   "kind": "native refusal by name (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (native-47's find, Order 47)",
+   "discussion": "native-47 (Order 47); sweeps/order47/native-47/finds/mapped_tuple_parameter.vl; refused list",
+   "title": "native: a function over a MAPPED-TUPLE parameter (`values: (U in T: U)` with `T: (2..)`) is refused by name (\"a value of type `a mapped tuple`\") — side-effect-let.vl, one of the 27",
+   "body": "A mapped tuple is a type per instantiation (`T = (i32, str)` gives `(i32, str)`); natively the instance has to substitute the mapping before it renders. Repro: finds/mapped_tuple_parameter.vl. Sizing M; native."
+  }
+ ]
+}

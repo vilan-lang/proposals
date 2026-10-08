@@ -1,0 +1,9 @@
+// FIND (solver-47): a WRITTEN nested handle type is not normalized the way a
+// formed one is (`assimilated_task_payload`): refused "Expected
+// Task<Task<str>>, but got Task<str> instead." at the body. Either the
+// annotation assimilates (`Task<Task<str>>` IS `Task<str>`) or the refusal
+// says the layers collapse. Base e5e15ca7 and tip alike.
+import std::io::print;
+import std::task::Task;
+async fun deeper(): Task<Task<str>> { async { async { "s" } } }
+fun main() { print(deeper()); }

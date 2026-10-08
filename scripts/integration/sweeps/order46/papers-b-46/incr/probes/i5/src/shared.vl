@@ -1,0 +1,3 @@
+import std::process;
+export fun label(): str { i"x{args_count()}" }
+export fun args_count(): usize { process::args().len() }

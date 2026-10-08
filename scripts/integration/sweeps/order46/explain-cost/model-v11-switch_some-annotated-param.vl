@@ -1,0 +1,177 @@
+// The client-side MODEL: the domain types' methods over the flat rpc surface,
+// and the connection they use. DOM-free by construction, so a headless entry
+// can drive it exactly as a view does.
+//
+// The pattern: the wire snapshots live in `shared.vl` (no live fields, so they
+// stay Wire); the server's live records and the FLAT `[rpc]` surface live in
+// `store.vl`; the methods here wrap that surface, injecting the key from
+// `self` - the id, never the snapshot, so the server re-resolves from its own
+// state. Liveness is on the HANDLE, not in the value: `channel.messages()`
+// hands back a mirror, `Message::find(id)` another.
+//
+// A handle stub is sync and makes no call (vilan transport-rpc §9.2 as built
+// in Order 33): it hands back a mirror minted UNLEASED, and the first lease is
+// what asks the server. The stub is idempotent per ORIGIN (A134, Order 43): a
+// second call with the same arguments on the same client hands back the same
+// mirror, so nothing here memoizes handles - every call site asking for the
+// same id leases the one mirror the client holds, and demand decides the
+// channel's life. The lease is the caller's: a `.memo()` built inside a view
+// leases under the view's owner, is released with the view, and re-leases
+// (re-minting a released mirror from its origin) on the next visit. A mint
+// that failed retries itself the same way.
+//
+// Every method switches on the connection (`get_client()`): no client reads
+// as "nothing yet" (`None`, or `Pending`), and a reconnect re-runs the switch
+// over the new client, whose stubs mint fresh mirrors.
+import std::context::Context;
+import std::reactive::{ Flow, MemoCell, Source, combine };
+import std::rpc::{ RemoteSource, RpcError, SocketTransport, Status };
+import std::transient::TransientState;
+import pkg::shared::{ Account, Channel, Message, User, UserId };
+import pkg::store::KoltClient;
+
+let client_context = Context<MemoCell<Option<KoltClient<SocketTransport>>>>::new();
+
+fun get_client(): MemoCell<Option<KoltClient<SocketTransport>>> context client_context {
+	client_context.get()
+}
+
+// A mirror's state as a LEASED pipe. `mirror.state()` only REPORTS (std's
+// documented contract: it leases nothing, so an unwatched mirror stays
+// `Pending` forever), and `mirror.latest()` leases but keeps only the value.
+// This is `latest()`'s own shape - the mirror as a source (its lease) combined
+// with what the last mint said - re-read as the whole state, `Absent` and
+// `Failed` included.
+fun transient_of<T>(mirror: RemoteSource<T>): dyn Flow<TransientState<T, RpcError>> {
+	let leased: dyn Source<Option<T>> = mirror;
+	let told: dyn Source<Status> = mirror.status();
+	let state: dyn Flow<TransientState<T, RpcError>> = combine((leased, told))
+		.derive(|_both| mirror.transient_state());
+	state
+}
+
+// `TransientState::map`: the same state over `transform(value)`, the stale
+// value of a `Refreshing` or a `Failed` included.
+fun map_state<T, U>(
+	state: TransientState<T, RpcError>,
+	transform: |T| U,
+): TransientState<U, RpcError> {
+	match state {
+		TransientState::Pending => TransientState::Pending,
+		TransientState::Ready(let v) => TransientState::Ready(transform(v)),
+		TransientState::Refreshing(let v) => TransientState::Refreshing(transform(v)),
+		TransientState::Failed(let e, let v) => TransientState::Failed(e, v.map(transform)),
+		TransientState::Absent => TransientState::Absent,
+	}
+}
+
+impl Account {
+	fun user(): MemoCell<Option<User>> {
+		get_client().and_then(|client| client.get_account_user().or(None)).memo()
+	}
+
+	fun joined_channels() {}
+}
+
+impl User {
+	fun find(user_id: UserId): MemoCell<Option<User>> {
+		get_client().and_then(|client| client.get_user(user_id).or(None)).memo()
+	}
+}
+
+impl UserId {
+	fun user(self) {
+		User::find(self)
+	}
+}
+
+impl Channel {
+	// The flat call; the id comes back, the snapshot is found by it.
+	fun create(name: str): Result<u53, RpcError> {
+		get_client().get_safe()!.create_channel(name)
+	}
+
+	fun delete(channel_id: u53): Result<bool, RpcError> {
+		get_client().get_safe()!.delete_channel(channel_id)
+	}
+
+	// The channel's own mirror, as a state: `Pending` until the first frame,
+	// `Absent` for an id the server does not know (the server answers `None`
+	// for it, which is not a channel), `Failed` with the stale snapshot when a
+	// re-mint failed.
+	fun find(channel_id: u53): MemoCell<TransientState<Channel, RpcError>> {
+		get_client()
+			.switch_some(|client| transient_of(client.get_channel(channel_id)).derive(|x: TransientState<Option<Channel>, RpcError>| match x {
+				TransientState::Pending => TransientState::Pending,
+				TransientState::Ready(Some(let v)) => TransientState::Ready(v),
+				TransientState::Ready(None) => TransientState::Absent,
+				TransientState::Refreshing(Some(let v)) => TransientState::Refreshing(v),
+				TransientState::Refreshing(None) => TransientState::Pending,
+				TransientState::Failed(let e, let v) => TransientState::Failed(e, v.flatten()),
+				TransientState::Absent => TransientState::Absent,
+			}))
+			.derive(|x| x.unwrap_or(TransientState::Pending))
+			.memo()
+	}
+
+	// Empty until the first frame, and for an id the server does not know.
+	fun name(self): MemoCell<str> {
+		let id = self.id;
+		get_client()
+			.and_then(|client| client.get_channel_name(id))
+			.derive(|x| x.unwrap_or_default())
+			.memo()
+	}
+
+	fun set_name(self, name: str): Result<bool, RpcError> {
+		get_client().get_safe()!.set_channel_name(self.id, name)
+	}
+
+	// The live message list - a handle, so the snapshot stays Wire. An id the
+	// server does not know reads as an empty list (the mirror stays `Absent`).
+	fun messages(self): MemoCell<TransientState<List<u53>, RpcError>> {
+		let id = self.id;
+		get_client()
+			.switch_some(|client| transient_of(client.get_messages(id)))
+			.derive(|x| x.unwrap_or(TransientState::Pending))
+			.memo()
+	}
+
+	fun add_message(self, content: str): Result<Result<u53, str>, RpcError> {
+		get_client().get_safe()!.add_message(self.id, content)
+	}
+
+	// Awaited and empty: `Ok(void)` is the server's ack that the handler ran.
+	fun remove_message(self, message_id: u53): Result<void, RpcError> {
+		get_client().get_safe()!.remove_message(self.id, message_id)
+	}
+
+	// The list of channel ids, as a state: `Pending` with no client and until
+	// the first frame; the server's list after, live.
+	fun get_channel_ids(): MemoCell<TransientState<List<u53>, RpcError>> {
+		get_client()
+			.switch_some(|client| transient_of(client.get_channels()))
+			.derive(|x| x.unwrap_or(TransientState::Pending))
+			.memo()
+	}
+
+	// The channels themselves, each a `find` of its id, in the list's state.
+	fun get_channels(): MemoCell<TransientState<List<MemoCell<TransientState<Channel, RpcError>>>, RpcError>> {
+		Channel::get_channel_ids()
+			.derive(|state| map_state(state, |ids| ids.map(|channel_id| Channel::find(channel_id))))
+			.memo()
+	}
+}
+
+impl Message {
+	// `None` until the first frame, and for an id the server does not know.
+	fun find(id: u53): MemoCell<Option<Message>> {
+		get_client().and_then(|client| client.get_message(id).or(None)).memo()
+	}
+}
+
+impl Source<Option<KoltClient<SocketTransport>>> {
+	fun get_safe(self): Result<KoltClient<SocketTransport>, RpcError> {
+		self.get().ok_or(RpcError::Unavailable)
+	}
+}

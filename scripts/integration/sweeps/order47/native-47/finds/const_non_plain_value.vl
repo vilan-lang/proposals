@@ -1,0 +1,12 @@
+// native: a `const` value that is not plain data (a `Style`) is refused by name.
+// Corpus: css-block.vl, preflight.vl, style-when.vl, style.vl, theme.vl.
+import std::io::print;
+import std::web::style::{ Color, Style, style };
+
+let muted: Style = const style().color(Color::gray(400));
+
+fun main() {
+	print(muted.class_list());
+}
+
+main();

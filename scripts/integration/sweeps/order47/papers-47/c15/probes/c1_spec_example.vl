@@ -1,0 +1,9 @@
+// §6.9's own example: ONE closure, never escaping, read after a later write.
+// The candidate "one non-escaping closure stays unboxed" lowered as a COPY
+// prints `before`; the rule says `after`.
+fun main() {
+	mut label = "before";
+	let show = || label;
+	label = "after";
+	print(show());
+}

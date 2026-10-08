@@ -1,0 +1,29 @@
+// native: a `?` lift over a user `Lift` container is refused by name (and
+// try-assert.vl: a `!` through a user `Try` impl). Corpus: expression-lift.vl,
+// try-assert.vl. JS prints 8.
+import std::io::print;
+import std::operators::Lift;
+
+struct Boxy<T> {
+	value: T,
+}
+
+impl Boxy<type T> with Lift {}
+
+impl Boxy<type T> {
+	fun map<U>(self, fn: |T| U): Boxy<U> {
+		Boxy { value = fn(self.value) }
+	}
+
+	fun and_then<U>(self, fn: |T| Boxy<U>): Boxy<U> {
+		fn(self.value)
+	}
+}
+
+fun main() {
+	let boxed = Boxy { value = 4 };
+	let doubled = boxed? * 2;
+	print(doubled.value);
+}
+
+main();

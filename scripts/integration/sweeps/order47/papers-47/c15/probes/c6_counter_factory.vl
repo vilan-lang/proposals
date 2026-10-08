@@ -1,0 +1,17 @@
+// Closure-owned state, sound: one closure expression evaluated once per
+// binding instance; the frame never touches `n` after; escaping is fine.
+fun counter(): || i32 {
+	mut n = 0;
+	|| {
+		n += 1;
+		n
+	}
+}
+
+fun main() {
+	let a = counter();
+	let b = counter();
+	print(a());
+	print(a());
+	print(b());
+}

@@ -1,0 +1,19 @@
+import std::reactive::{ Subscription, tracking };
+
+// The trait's callback parameter carries `context tracking`; the impl's does
+// not. `vilan check` accepts it (and the reverse: a clause the trait does not
+// declare), so a call through the trait and a call on the concrete type
+// disagree about whether the callback is an injected closure.
+trait Plain {
+	fun watch(own self, observer: (|i32| void) context tracking): Subscription;
+}
+
+struct Bag {}
+
+impl Bag with Plain {
+	fun watch(own self, observer: |i32| void): Subscription {
+		Subscription::teardown(|| {})
+	}
+}
+
+fun main() {}

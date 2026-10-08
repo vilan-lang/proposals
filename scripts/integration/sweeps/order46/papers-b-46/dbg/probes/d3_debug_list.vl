@@ -1,0 +1,4 @@
+import std::debug::Debug;
+[derive(Debug)]
+struct Bag { items: List<i32>, maybe: Option<i32> }
+fun main() { print(Bag { items = [1, 2], maybe = Some(3) }.debug()); }

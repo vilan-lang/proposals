@@ -1,0 +1,29 @@
+// B509 probe b1: today's spellings for "write through a variant of a place".
+// (1) `Some(mut p)` binds a COPY: the write does not land.
+// (2) the store's spelling: take the payload out, write, put it back (two moves).
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+struct P {
+	x: i32,
+	tags: List<str>,
+}
+
+fun main() {
+	mut held: Option<P> = Some(P { x = 1, tags = ["a"] });
+	match held {
+		Some(mut p) => {
+			p.x = 2;
+		},
+		None => {},
+	}
+	print(i"(1) Some(mut p), p.x = 2: held.x={held.map(|p| p.x).unwrap_or(0)}");
+	match held.take() {
+		Some(mut p) => {
+			p.x = 3;
+			held = Some(p);
+		},
+		None => {},
+	}
+	print(i"(2) take, write, put back: held.x={held.map(|p| p.x).unwrap_or(0)}");
+}

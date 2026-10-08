@@ -1,0 +1,20 @@
+// B?4's repro: a HAND-WRITTEN `impl .. with Storable` in a module that is not the
+// entry, naming the trait through `std::store` (which re-exports it from
+// `std::store_core` and declares a derive macro of the same name). `vilan check .`
+// refuses "'Storable' is not a trait", with a span inside std's `lib.vl`; the same
+// impl in the entry file compiles.
+import std::option::Option;
+import std::shared::Shared;
+import std::store::{ Storable, StoreNode, StoreWoken };
+
+export *;
+
+struct Opaque {
+	value: i32,
+}
+
+impl Opaque with Storable {
+	fun store_diff(&self, other: &Opaque, node: Option<Shared<StoreNode>>, need: bool, woken: &mut StoreWoken): bool {
+		true
+	}
+}

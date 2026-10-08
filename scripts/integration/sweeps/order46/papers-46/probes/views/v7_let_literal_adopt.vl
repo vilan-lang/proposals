@@ -1,0 +1,13 @@
+// B495 probe v7: an annotated `let` whose initializer is the literal itself,
+// parameter left bare: B465 lists this position as adopting. Does the
+// mutability check see the adoption?
+import std::io::print;
+
+fun main() {
+	mut n = 1;
+	let typed: |&mut i32| void = |x| {
+		x += 100;
+	};
+	typed(&mut n);
+	print(i"annotated let, bare literal: n={n}");
+}

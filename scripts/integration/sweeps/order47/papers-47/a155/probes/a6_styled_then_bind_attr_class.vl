@@ -1,0 +1,16 @@
+import std::web::ui::{ View, view, render };
+import std::web::style::Style;
+import std::reactive::{ Signal, SignalCell };
+
+let card = const css { padding("4px"); color("red"); };
+let wide = const css { width("100%"); color("blue"); };
+
+fun boxed(): View { <div .styled(card) /> }
+fun decorate(v: View): View { v.styled(wide) }
+
+fun main() {
+	let flag = Signal::new(true);
+	let label = Signal::new("lbl");
+	let v = <div .styled(card) .bind_attr("class", flag.derive(|on| if on { "on" } else { "off" })) />;
+	print(render(v));
+}

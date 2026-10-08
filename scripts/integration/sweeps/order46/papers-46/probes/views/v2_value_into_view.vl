@@ -1,0 +1,23 @@
+// B495 probe v2: type IDENTITY — the view is not in the type, so a closure whose
+// parameter is a VALUE is accepted where the type takes a VIEW, and the other
+// way round.
+import std::io::print;
+import std::shared::Shared;
+
+let out = Shared::new("");
+
+fun main() {
+	let city = "Oslo";
+	let by_value: |str| void = |c| {
+		out.write() = c;
+	};
+	let as_view: |&str| void = by_value;
+	as_view(&city);
+	print(i"value closure called through a view type: out={out.read()}");
+	let by_view: |&str| void = |c| {
+		out.write() = *c;
+	};
+	let as_value: |str| void = by_view;
+	as_value(city);
+	print(i"view closure called through a value type: out={out.read()}");
+}

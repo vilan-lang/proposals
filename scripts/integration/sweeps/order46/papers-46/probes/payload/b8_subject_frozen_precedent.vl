@@ -1,0 +1,14 @@
+// B509 probe b8: the precedent for "the matched place is frozen while a view
+// into it is live": `for e in &mut list` that writes `list` inside the loop.
+import std::io::print;
+
+fun main() {
+	mut list: List<i32> = [1, 2, 3];
+	for e in &mut list {
+		e += 1;
+		if e == 3 {
+			list = [];
+		}
+	}
+	print(i"len={list.len()}");
+}

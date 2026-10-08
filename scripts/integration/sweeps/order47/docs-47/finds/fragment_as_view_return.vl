@@ -1,0 +1,12 @@
+import std::web::ui::{ View, render };
+
+fun pair(): View {
+	<>
+		<p>"a"</p>
+		<p>"b"</p>
+	</>
+}
+
+fun main() {
+	print(render(pair()));
+}

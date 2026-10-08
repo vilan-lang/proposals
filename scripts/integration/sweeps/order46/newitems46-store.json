@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "F89",
+   "section": "F",
+   "kind": "native refusal (rustc E0507) (S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-03 (store-46's find, Order 46)",
+   "discussion": "store-46 (Order 46); sweeps/order46/REPORT-store-46.md; repro sweeps/order46/store-46/finds/native_match_index_move.vl",
+   "title": "native: a `match` on an INDEXED element whose payload is not `Copy` — `match names[0] { Some(let name) => .. }` over a `List<Option<str>>` — moves out of the list (rustc E0507 \"cannot move out of index of `Vec<..>`\"); binding the element first (`let held = names[0]; match held`) builds",
+   "body": "Met three times in store-46's S3 (`store_core.vl`'s `prune_empty` over a `List<StoreStep>`, and the map and set feeds over `List<Option<..>>`); each site binds first with a comment naming this item. The emitter treats the scrutinee as a place and its payload binding as a move; an indexed place needs `.clone()` (or a `ref` binding) as a named local already gets. Pin: a native differential case over `Option<str>`, an enum with a `Hash` payload, and a tuple. Sizing S; native lane."
+  },
+  {
+   "id": "F90",
+   "section": "F",
+   "kind": "native RUNTIME abort (S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-03 (store-46's find, Order 46)",
+   "discussion": "store-46 (Order 46); sweeps/order46/REPORT-store-46.md; repro sweeps/order46/store-46/finds/native_indexed_compound.vl",
+   "title": "native: `counts.write()[0] += 1` on a `Shared<List<i32>>` aborts \"a cell was read while it is being updated\" — F83's INDEXED twin: native-46's fix settles the value of `cell.write() op= v` first, but not of `cell.write()[i] op= v`",
+   "body": "`let counts = Shared::new([0, 0]); counts.write()[0] += 1;` prints 1 on JS and aborts natively. The same settle-the-value-first rule F83 got (a2ddae1a) applies to an indexed (and presumably a field) place under `write()`. Pin it beside `shared-compound-write.vl`. Sizing S; native lane."
+  },
+  {
+   "id": "E265",
+   "section": "E",
+   "kind": "formatter (S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (store-46's find, Order 46)",
+   "discussion": "store-46 (Order 46); sweeps/order46/REPORT-store-46.md; repro sweeps/order46/store-46/finds/fmt_binary_match.vl",
+   "title": "`vilan fmt` DECLINES a binary operator whose right operand is a `match` — `out = out + match x { 1 => \"a\", _ => \"b\" };`, `let out = \"q\" + match x { .. };` — \"reprinting it would have changed the code at this line\"; in a larger file the declined line it names is FAR from the cause (line 25, a struct field, for a `+ match` at line 127)",
+   "body": "Two defects: the printer's reprint of `a + match ..` does not round-trip (E252's class, another expression shape), and the safety net's line attribution points elsewhere once the file has more than one item (`store_collections.vl` before its rewrite named `messages: List<i32>,` at line 25). The native fixture and the pins now bind the `match` to a `let` first. Sizing S; formatter."
+  },
+  {
+   "id": "B547",
+   "section": "B",
+   "kind": "bug (module resolution) (S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (store-46's find, Order 46)",
+   "discussion": "store-46 (Order 46); sweeps/order46/REPORT-store-46.md; repro sweeps/order46/store-46/finds/reexported_trait/ (`vilan check .`)",
+   "title": "a hand-written `impl X with Storable` in a module that is not the entry, naming the trait through `std::store` — which RE-EXPORTS the trait from `std::store_core` and DECLARES a derive macro of the same name — is refused \"'Storable' is not a trait\" (span inside std's `lib.vl`) when that module is the first to load `std::store`; in the entry file, or once the entry imports `std::store`, it compiles",
+   "body": "Found by store-46's S3 split (the core moved to `store_core.vl`, re-exported by `store.vl`). The derive's own output tripped it in every derived type of a non-entry module (kolt's `account.vl`); the derive now imports its names from `std::store_core` (pinned by `module_resolution::a149_s3_a_storable_derive_in_an_imported_module_resolves_and_keys_its_map`). What remains is the general hole: the `with` clause's trait lookup (`try_get_expr_id_by_name` in the conformance check) reaches the macro, not the re-exported trait, in a module loaded on demand; a bound (`T: Storable`) resolves. The span is also wrong (a generated-code span mapped into `lib.vl`). Sizing S–M; modules lane."
+  },
+  {
+   "id": "M117",
+   "section": "M",
+   "kind": "perf (report)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-03 (store-46's find, Order 46)",
+   "discussion": "store-46 (Order 46); sweeps/order46/REPORT-store-46.md",
+   "title": "kolt's `vilan check` costs +9.0% instructions once it adopts the store (A149 S6's patch): 25.64 G → 27.94 G, peak RSS flat (204 → 203 MB) — the client's `Account` +0.56 G, the server's `Global`/`ChannelRecord` store and its sealed per-key views +2.11 G, against solver counters that grow ~5%",
+   "body": "Measured on a scratch copy with `perf_count.py`, `VILAN_SEQUENTIAL_CHECK=1`, warm, release build of store-46's tip. The S3 split already keeps the collection layer out of programs that do not import `std::store` (kolt without the patch: +0.15%). The adopting program's own cost is not explained by `--explain-cost`'s work units (its store methods are a few thousand units of ~20k on the server leg), so the instructions go somewhere the counters do not see — macro expansion of the four derives, or mono/emission of the generic store code. Wants M106's attribution before kolt takes the patch, or a written exception (the owner approves any bump on kolt, M105 Q6)."
+  }
+ ]
+}

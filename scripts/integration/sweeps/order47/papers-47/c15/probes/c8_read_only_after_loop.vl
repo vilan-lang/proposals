@@ -1,0 +1,12 @@
+// R1's one site shape (std rpc.vl `enlist`'s `found`): written in a loop that
+// ENDS before the closure, only read by it after: a copy is unobservable. 3.
+fun main() {
+	mut found = 0;
+	for v in [1, 2, 3] {
+		if v > found {
+			found = v;
+		}
+	}
+	let show = || found;
+	print(show());
+}

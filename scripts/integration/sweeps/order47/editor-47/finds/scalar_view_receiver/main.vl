@@ -1,0 +1,17 @@
+struct P {
+	x: i32,
+}
+
+impl P {
+	fun get(self): i32 {
+		self.x
+	}
+}
+
+fun f(p: &P, n: &i32, xs: &List<i32>): i32 {
+	p.get() + xs.len().as_i32() + n.abs()
+}
+
+fun main() {
+	print(f(&P { x = 1 }, &2, &[1]));
+}

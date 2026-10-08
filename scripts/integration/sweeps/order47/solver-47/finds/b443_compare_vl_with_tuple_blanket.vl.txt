@@ -1,0 +1,300 @@
+import pkg::option::Option::{ self, None, Some };
+import pkg::tuple::Tuple;
+
+export *;
+
+trait PartialEq<B = Self> {
+	fun eq(self, b: B): bool;
+
+	fun ne(self, b: B): bool {
+		!self.eq(b)
+	}
+}
+
+trait Eq with PartialEq {}
+
+enum Ordering {
+	Less = -1,
+	Equal = 0,
+	Greater = 1,
+}
+
+trait PartialOrd<B = Self> with PartialEq<B> {
+	fun partial_compare(self, b: B): Option<Ordering>;
+
+	fun lt(self, b: B): bool {
+		self.partial_compare(b) is Some(let x) && x < Ordering::Equal
+	}
+
+	fun le(self, b: B): bool {
+		self.partial_compare(b) is Some(let x) && x <= Ordering::Equal
+	}
+
+	fun gt(self, b: B): bool {
+		self.partial_compare(b) is Some(let x) && x > Ordering::Equal
+	}
+
+	fun ge(self, b: B): bool {
+		self.partial_compare(b) is Some(let x) && x >= Ordering::Equal
+	}
+}
+
+trait Ord with Eq + PartialOrd {
+	fun compare(self, b: Self): Ordering;
+
+	fun min(self, b: Self): Self {
+		if self.compare(b) <= Ordering::Equal {
+			self
+		} else {
+			b
+		}
+	}
+
+	fun max(self, b: Self): Self {
+		if self.compare(b) >= Ordering::Equal {
+			self
+		} else {
+			b
+		}
+	}
+
+	fun clamp(self, min: Self, max: Self): Self {
+		self.min(max).max(min)
+	}
+}
+
+// The free-function forms of `min`/`max` (and `minmax`) moved to `std::math`
+// (backlog K2) — the trait METHODS above are the primary surface and stay.
+
+// `List`'s ordering- and equality-bounded methods live HERE, not in `list.vl`,
+// because they name traits this module declares (std-surface.md §1.1: a
+// method's discoverability is decided by which file it lives in). `compare` is
+// always loaded, so a program that imports nothing still reaches all four —
+// unlike `join`, whose `Display` bound strands it in `display.vl`.
+//
+// All four are eager and pure: they take `self` by value and return a new value,
+// matching `map`/`filter`/`fold`. `List`'s mutating methods
+// (`push`/`pop`/`insert`/`remove`) are the `&mut self` half of that line.
+impl List<type T> {
+	/// A new list ordered by `compare`, which reports how its first argument
+	/// relates to its second. STABLE: elements the comparator calls `Equal` keep
+	/// their input order (an intrinsic over the host's `Array.sort`, which ECMA-262
+	/// has guaranteed stable since ES2019).
+	///
+	/// `own self` because the result is built from the receiver's ELEMENTS: the
+	/// intrinsic reorders a copied spine, so without owning them the two lists
+	/// would share element storage (rule 1, A20). A receiver that is dead at the
+	/// call donates instead of copying.
+	external fun sort_by(own self, compare: |T, T| Ordering): List<T>;
+}
+
+impl List<type T: Ord> {
+	/// A new list in ascending `Ord` order — `sort_by(Ord::compare)`. Stable,
+	/// like `sort_by`. Named `sort`/`reverse` rather than the iterator paper's
+	/// lazy `rev`, so the eager and lazy surfaces never collide.
+	fun sort(self): List<T> {
+		self.sort_by(|a, b| a.compare(b))
+	}
+}
+
+impl List<type T: PartialEq> {
+	/// Whether any element equals `value`. For a PREDICATE (`|item| ...`), the
+	/// method is `find`, in `option.vl`.
+	fun contains(self, value: T): bool {
+		for item in self {
+			if item.eq(value) {
+				ret true;
+			}
+		}
+		false
+	}
+
+	/// The index of the FIRST element equal to `value` — `None` when there is none.
+	fun index_of(self, value: T): Option<usize> {
+		mut index: usize = 0;
+		for item in self {
+			if item.eq(value) {
+				ret Some(index);
+			}
+			index += 1;
+		}
+		None
+	}
+}
+
+/// Element-wise equality, length first (I4): two lists are equal when they
+/// are the same length and every pair of elements at the same index is. What
+/// this buys beyond `list == list`: `List<T>` satisfies `T: PartialEq`
+/// bounds, so lists nest (`List<List<i32>>` compares through it) and a
+/// struct holding a `List` field can `[derive(PartialEq)]` — the shape that
+/// used to be refused.
+///
+/// The elements compare with `==`, not `.eq()` — the `Option`/`Result`
+/// idiom: an operator on a `T: PartialEq` operand rides the `OnConstraint`
+/// generic dispatch, which lowers to native JS at an all-native binding
+/// (`List<i32> == List<i32>` emits this body UNSPECIALIZED — one emission
+/// shared by every native element type). An explicit `.eq()` works too
+/// since B135 (the emitter specializes an operator method whenever its
+/// body requires the substitution), but would cost one instance per native
+/// binding where this spelling costs none.
+impl List<type T: PartialEq> with PartialEq {
+	fun eq(self, b: List<T>): bool {
+		if self.len() != b.len() {
+			ret false;
+		}
+		mut index = 0;
+		for item in self {
+			if !(item == b[index]) {
+				ret false;
+			}
+			index += 1;
+		}
+		true
+	}
+}
+
+// `str` carries the full ordering family (lexicographic, the native `<`), so
+// generic `T: Ord` code (sorting, `math::min`/`max`, `clamp`) accepts it. The
+// numeric primitives' ordering impls live with their other trait impls in
+// `number.vl`; the floats are deliberately NOT `Ord` (NaN — see there).
+
+impl str with Eq {}
+
+impl str with PartialOrd {
+	fun partial_compare(self, b: str): Option<Ordering> {
+		if self < b {
+			Some(Ordering::Less)
+		} else {
+			if self > b {
+				Some(Ordering::Greater)
+			} else {
+				Some(Ordering::Equal)
+			}
+		}
+	}
+}
+
+impl str with Ord {
+	fun compare(self, b: str): Ordering {
+		if self < b {
+			Ordering::Less
+		} else {
+			if self > b {
+				Ordering::Greater
+			} else {
+				Ordering::Equal
+			}
+		}
+	}
+}
+
+// Primitive equality for `str` and `bool`. These satisfy `PartialEq` so generic
+// `T: PartialEq` code — and conditional impls like `Option<T>` / `Result<T, E>`
+// — works for primitive types; `==` on a primitive always lowers to native JS,
+// so the bodies don't recurse (reached only via an explicit `.eq()` / generic
+// dispatch). They live HERE, not with their types, because `string.vl` and
+// `boolean.vl` are deliberately dependency-free core modules (see boolean.vl's
+// header and option.vl's note on `parse_i32`) and this module pulls the
+// `option` chain through `PartialOrd`. The numeric impls live in `number.vl`,
+// which already carries imports.
+impl str with PartialEq {
+	fun eq(self, b: str): bool {
+		self == b
+	}
+}
+
+impl bool with PartialEq {
+	fun eq(self, b: bool): bool {
+		self == b
+	}
+}
+
+// The `PartialEq` derive (macro-engine.md §10): a prelude macro — `compare` is
+// always loaded, so `[derive(PartialEq)]` needs no import. Its output carries its
+// own trait import.
+
+macro fun PartialEq(item: Item): Source {
+	import macro_std::option::Option::{ self, Some, None };
+	import macro_std::build::{ impl_of, fun_of, match_of, join };
+
+	if item.as_struct() is Some(let target) {
+		// `self.a == other.a && self.b == other.b` (a field-less struct is always
+		// equal).
+		mut comparisons: List<str> = [];
+		for field in target.fields {
+			comparisons.push(i"self.{field.name} == other.{field.name}");
+		}
+		mut comparison = join(comparisons, " && ");
+		if comparison == "" {
+			comparison = "true";
+		}
+		// `other` is the subject spelled as an application of its own parameters
+		// (`Holder<T>`), and the impl binds them under `PartialEq` (B194's rule) —
+		// a bare `Holder` there is an under-supplied application (B188).
+		let eq = fun_of("eq")
+			.parameter("self")
+			.parameter(i"other: {target.subject()}")
+			.returns("bool")
+			.expr(comparison);
+		ret source("import std::compare::PartialEq;\n" + impl_of(target.name)
+			.generics(target.binders("PartialEq"))
+			.implements("PartialEq")
+			.method(eq)
+			.render());
+	}
+	if item.as_enum() is Some(let target) {
+		// `match (self, other) { (E::V(let s0,..), E::V(let o0,..)) => s0
+		// == o0 && .., (E::W, E::W) => true, _ => false }`.
+		mut arms = match_of("(self, other)");
+		for variant in target.variants {
+			let arity = variant.payload.len();
+			if arity == 0 {
+				arms = arms.arm(i"({target.name}::{variant.name}, {target.name}::{variant.name})", "true");
+			} else {
+				mut self_binds: List<str> = [];
+				mut other_binds: List<str> = [];
+				mut comparisons: List<str> = [];
+				mut index = 0;
+				for index < arity {
+					self_binds.push(i"let s{index}");
+					other_binds.push(i"let o{index}");
+					comparisons.push(i"s{index} == o{index}");
+					index = index + 1;
+				}
+				let self_pattern = join(self_binds, ", ");
+				let other_pattern = join(other_binds, ", ");
+				arms = arms.arm(i"({target.name}::{variant.name}({self_pattern}), {target.name}::{variant.name}({other_pattern}))", join(comparisons, " && "));
+			}
+		}
+		arms = arms.arm("_", "false");
+		let eq = fun_of("eq")
+			.parameter("self")
+			.parameter(i"other: {target.subject()}")
+			.returns("bool")
+			.expr(arms.render());
+		ret source("import std::compare::PartialEq;\n" + impl_of(target.name)
+			.generics(target.binders("PartialEq"))
+			.implements("PartialEq")
+			.method(eq)
+			.render());
+	}
+	// Anything else (a bodyless external struct): nothing, like the Rust generator.
+	// (One recorded divergence: the Rust path also skips a BODYLESS struct; the
+	// reflection cannot distinguish it from a field-less one, which derives
+	// `true`-equality — deriving on an external struct was never meaningful.)
+	source("")
+}
+
+/// B443: two tuples of one type are equal when every position is, at any arity
+/// — so a pack bounded `(2..: PartialEq)` holds a PAIR, and `==` reads a tuple
+/// the way it reads its elements.
+export impl type T: (2..: PartialEq) with PartialEq {
+	fun eq(self, b: T): bool {
+		for key in self.keys() {
+			if self.get(key) != b.get(key) {
+				ret false;
+			}
+		}
+		true
+	}
+}

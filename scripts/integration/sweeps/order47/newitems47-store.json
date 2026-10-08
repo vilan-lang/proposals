@@ -1,0 +1,64 @@
+{
+ "items": [
+  {
+   "id": "B564",
+   "section": "B",
+   "kind": "solver: blanket reach (S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-05 (store-47's find, Order 47)",
+   "discussion": "store-47 (Order 47); sweeps/order47/store-47/finds/two_tier_blanket_closure.vl; B508; A149",
+   "title": "B508's remainder: a blanket reaches a CLOSURE one tier deep and not two — under `impl type T with Leaf` and `impl type T: Leaf with Shape`, `g.leaf()` on `\\|str\\| bool` compiles and `g.shape()` is refused \"\\|str\\| bool has no method 'shape'\" (while `3.shape()` compiles)",
+   "body": "B508 (solver-b-46) routed a `Closure` receiver through the impl-member route, so a bare blanket answers it; a blanket whose BOUND is itself met by a blanket does not. This is the chain `[derive(Storable)]` needs to treat a closure-typed field uniformly: `impl type T: StoreLeaf with Storable` over the bare `impl type T with StoreLeaf`. store-47 removed `store_opaque` by routing a closure to `store_leaf_diff` (one tier), so the derive still special-cases a closure by the rendered type text (`contains(\"\\|\")`); this fix lets it call `store_diff` on every field. Repro: finds/two_tier_blanket_closure.vl. Sizing S–M; solver."
+  },
+  {
+   "id": "B565",
+   "section": "B",
+   "kind": "solver: blanket reach (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-05 (store-47's find, Order 47)",
+   "discussion": "store-47 (Order 47); sweeps/order47/store-47/finds/blanket_fn_item.vl; B508",
+   "title": "a blanket `impl type T with Leaf` does not reach a FUNCTION ITEM bound without an annotation — `let f = nothing; f.leaf()` is refused \"cannot call method 'leaf' on fn nothing()\"; `let f: \\|\\| void = nothing;` (B508's pin) compiles",
+   "body": "B508's pin annotates the binding, so it tests the closure type; the unannotated binding keeps the function-item type, which the impl-member route does not take. Repro: finds/blanket_fn_item.vl. Sizing S; solver."
+  },
+  {
+   "id": "E274",
+   "section": "E",
+   "kind": "editor: completion (S)",
+   "area": "Editor & language server",
+   "status": "OPEN — filed 2026-10-05 (store-47's find, Order 47)",
+   "discussion": "store-47 (Order 47); sweeps/order47/store-47/finds/completion_other_instantiation_methods.vl",
+   "title": "member completion on a generic struct offers the methods of inherent impls at OTHER type arguments — after `store.` on a `Store<App>`, `city` and `path` (the derive's `impl Store<Address>`) are offered beside `App`'s own projections, and accepting one is refused",
+   "body": "`nominal_member_completions` (vilan-ide) lists every impl on the struct by its id (`push_methods`), not by the receiver's arguments; E249 already admits blanket impls by the receiver's whole type. Every derived type in a program adds its projections to every store's list. Seen while pinning A149 S4's completion (store-47). Repro: finds/completion_other_instantiation_methods.vl. Sizing S; editor."
+  },
+  {
+   "id": "B566",
+   "section": "B",
+   "kind": "emission: internal error (S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-05 (store-47's find, Order 47)",
+   "discussion": "store-47 (Order 47); sweeps/order47/store-47/finds/trait_default_own_generic_internal_error.vl; A158",
+   "title": "a trait DEFAULT method with a generic parameter of its own, bounded by a trait, that calls the bound's member — `fun shown<S: Show>(self, item: S): str { item.show() }` in `trait Bag<T>` — is an INTERNAL error at emission (\"a call resolved to `Show`'s requirement `show`, which has no body ... please report this program\"); the same method as an inherent member builds",
+   "body": "Any argument, any implementor: the call through the default's own generic is never bound to the concrete impl when the inherited default is instantiated for the implementor. Met writing `SequenceCell::push_many<S: Items<T>>` (A158) as a default beside `extend`; store-47 made it an inherent `ListCell` (and `Tracked`) member instead, and the doc comment says why. Once fixed, it can move to `SequenceCell`/`Sequence` so every implementor inherits it. Repro: finds/trait_default_own_generic_internal_error.vl. Sizing S–M; solver/mono."
+  },
+  {
+   "id": "B567",
+   "section": "B",
+   "kind": "emission: internal error (S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-05 (store-47's find, Order 47)",
+   "discussion": "store-47 (Order 47); sweeps/order47/store-47/finds/trait_subject_blanket_internal_error.vl; A158",
+   "title": "a blanket written with a TRAIT as its subject — `impl Iterator<type T> with Pour<T>` — compiles, and calling its member on a concrete iterator is an INTERNAL error at emission (\"a call resolved to `Iterator`'s requirement `next`, which has no body\"); written `impl type I: Iterator<type T> with Pour<T>` it builds and runs on both backends",
+   "body": "std's own `impl Iterator<type T> with Iterable<T>` is this shape, and `it.iter()` on an adapter chain is refused \"cannot call 'to_list' on a value of bare trait type 'Iterator'\" — so `Iterable` is unusable today. Either the trait-subject spelling should mean what the type-binder one means, or it should be refused with a steer to it. A158's `Items<T>` uses the binder form. Repro: finds/trait_subject_blanket_internal_error.vl. Sizing S–M; solver."
+  },
+  {
+   "id": "F108",
+   "section": "F",
+   "kind": "native refusal + a spanless diagnostic (S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-05 (store-47's find, Order 47)",
+   "discussion": "store-47 (Order 47); sweeps/order47/store-47/finds/empty_literal_to_bounded_generic_native.vl; A158",
+   "title": "an EMPTY list literal handed to a generic parameter whose element is fixed only through its bound — `names.push_many([])` on a `List<str>` (`push_many<S: Items<T>>`) — stays `List<unknown>`: JS runs it, and natively it is refused \"does not emit a value of type `an unresolved type`\" with NO span or file",
+   "body": "Two halves: the solver could ground `S = List<T>` from the bound `Items<T>` with `T` known from the receiver (a typed binding `let none: List<str> = [];` builds on both), and the native refusal names no expression, so the reader cannot find it. Repro: finds/empty_literal_to_bounded_generic_native.vl. Sizing S; solver + native."
+  }
+ ]
+}

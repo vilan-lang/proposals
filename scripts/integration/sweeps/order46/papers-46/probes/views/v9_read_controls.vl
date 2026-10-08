@@ -1,0 +1,34 @@
+// B495 probe v9 (controls for v1/v7b): a READ view `|&str| void` reached
+// (a) as a fun parameter with a bare literal, (b) with the view spelled on the
+// literal in an annotated let, (c) a bare literal stored in a struct field
+// whose type is written `|&str| void`.
+import std::io::print;
+import std::shared::Shared;
+
+let out = Shared::new("");
+
+fun with_city(city: &str, f: |&str| void) {
+	f(city);
+}
+
+struct Sink {
+	f: |&str| void,
+}
+
+fun main() {
+	let city = "Oslo";
+	with_city(&city, |c| {
+		out.write() = *c;
+	});
+	print(i"(a) fun parameter, bare literal: out={out.read()}");
+	let spelled: |&str| void = |c: &str| {
+		out.write() = *c;
+	};
+	spelled(&city);
+	print(i"(b) annotated let, spelled view: out={out.read()}");
+	let sink = Sink { f = |c| {
+		out.write() = *c;
+	} };
+	(sink.f)(&city);
+	print(i"(c) struct field, bare literal: out={out.read()}");
+}

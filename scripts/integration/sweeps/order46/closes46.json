@@ -1,0 +1,552 @@
+{
+ "date": "2026-10-04",
+ "order": "Order 46",
+ "closes": [
+  {
+   "id": "B520",
+   "lane": "syntax-46",
+   "commit": "71cd1731",
+   "text": "`return`, `fn`/`function`/`func`/`def` and `-> T` each get ONE steer at the token and parse on; `ForeignSpelling` + `foreign_spelling_fix`; the editor's quick fixes in editor-46"
+  },
+  {
+   "id": "B486",
+   "lane": "syntax-46",
+   "commit": "71cd1731",
+   "text": "a head's attributes and keywords are canonicalized; a keyword ahead of an attribute or two keywords inverted is refused with the order named; the 29 swaps pinned (the attribute-order WARNING is B536)"
+  },
+  {
+   "id": "B487",
+   "lane": "syntax-46",
+   "commit": "71cd1731",
+   "text": "`const fun`/`const let` take `[deprecated]`, `[internal]`, `[must_use]`"
+  },
+  {
+   "id": "B493",
+   "lane": "syntax-46",
+   "commit": "71cd1731",
+   "text": "the local-`let` label refusal names the labels written"
+  },
+  {
+   "id": "B494",
+   "lane": "syntax-46",
+   "commit": "71cd1731",
+   "text": "`async x = 1;` and its three siblings get one refusal at `async`"
+  },
+  {
+   "id": "N138",
+   "lane": "syntax-46",
+   "commit": "71cd1731",
+   "text": "`vilan fmt` skips a directory named `target` beside a `Cargo.toml`"
+  },
+  {
+   "id": "F83",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "every `cell.write() op= v` aborted natively (not only in a drain): the value is computed before the set"
+  },
+  {
+   "id": "F66",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "a variant built inside a generic instance takes its type arguments from the position, the payload, then the recorded type"
+  },
+  {
+   "id": "F82",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "the minted-type overlay: a swapped struct literal's field types are rebuilt with the literal's own arguments"
+  },
+  {
+   "id": "F70",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "a nested tuple index used the JS flat offset as a Rust index (a silent wrong value): the recorded index chain is used"
+  },
+  {
+   "id": "F67",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "a closure literal's `Rc<dyn Fn>` cast writes its return type"
+  },
+  {
+   "id": "F77",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "closure view parameters natively (with F69): a written view argument passed as written; an unannotated parameter takes the position's views"
+  },
+  {
+   "id": "F48",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "not reproduced at the base (F44 closed it); pinned"
+  },
+  {
+   "id": "F51",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "not reproduced at the base (F63/F64 closed it); pinned"
+  },
+  {
+   "id": "F78",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "not reproduced natively; pinned - and reactive-46 then made `Flow::on_change`/`sub` trait defaults"
+  },
+  {
+   "id": "F68",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "native prints by node's layout rules (`vilan-rt/src/inspect.rs`); the owner: keep until `dbg` lands"
+  },
+  {
+   "id": "B503",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "a list of trait objects prints their values on both backends"
+  },
+  {
+   "id": "E243",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "`vilan run`'s `Bundled` lines go to stderr"
+  },
+  {
+   "id": "F84",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "a closure's expression body is emitted at its return type (fixed in the lane that found it)"
+  },
+  {
+   "id": "F87",
+   "lane": "native-46",
+   "commit": "b2ab29b4",
+   "text": "a tuple nested in a tuple prints flat natively, as on JS (fixed in the lane that found it)"
+  },
+  {
+   "id": "B511",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "a qualified call to a blanket impl's member is monomorphized (the subject IS its binder); both backends"
+  },
+  {
+   "id": "B514",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "`*if/match/{..}` over scalar views reads through on JS; the same read without `*` is refused"
+  },
+  {
+   "id": "B512",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "a `let` initialized by a conditional of views is refused at each leaf; `*` copies (the view-binding door is A156, ruled: the refusal stands)"
+  },
+  {
+   "id": "B441",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "a tuple pattern of another arity, or over a non-tuple, is refused in `let`, `for`, a closure parameter and `match`"
+  },
+  {
+   "id": "B498",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "a static trait call through a bound binds bound binders on JS as native does"
+  },
+  {
+   "id": "B510",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "a trait default passing `self` to a generic over its trait: `Self`'s bound answers from the trait's own parameters"
+  },
+  {
+   "id": "B515",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "door (b) built after the count (55 sites): a WARNING when a file calls a trait method without importing its trait; the refusal is B535, v0.45.0"
+  },
+  {
+   "id": "B439",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "not reproduced: fixed and pinned in Order 45 (5dbc8430)"
+  },
+  {
+   "id": "B502",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "a trait object binds a bound's arguments from its own trait chain"
+  },
+  {
+   "id": "B455",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "`(impl Box with One)` as ruled (B): a whole-block selector admits a marker block; the empty slot is gone"
+  },
+  {
+   "id": "A156",
+   "lane": "solver-a-46",
+   "commit": "7ee822af",
+   "text": "RULED 2026-10-03: B512's refusal stands; a view-binding door may be reopened later"
+  },
+  {
+   "id": "M104",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "entry-world analysis as a HYBRID (the owner's condition): a lone file keeps its own analysis; a second open document of the world switches to the entry's world (4 docs: 41.6 G/4 analyses -> 14.8 G/1); Find References and rename on a lone file read the entry's world"
+  },
+  {
+   "id": "E249",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "completion asks the solver's `applying_implementations`: blanket members were never offered on ANY receiver"
+  },
+  {
+   "id": "E250",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "the import fix at a struct literal head, `match`/`is` pattern heads, an impl's `with` trait; the census in the report"
+  },
+  {
+   "id": "E251",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "Organize Imports removes duplicates and merges into the `self` form; idempotent"
+  },
+  {
+   "id": "E246",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "one canonical hover order: diagnostic lead, signature, signature note, doc, preview under a rule, platform"
+  },
+  {
+   "id": "E247",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "the status bar reads `vilan <version>`; a menu with information, toggle and action rows"
+  },
+  {
+   "id": "E248",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "`vilan.stopServer` / `vilan.startServer`; stop does not auto-restart"
+  },
+  {
+   "id": "E255",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "a duplicate import warns (`duplicate-import`) with the Organize Imports fix"
+  },
+  {
+   "id": "E245",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "not reproduced: idle hover 1.4 ms at the base, 2.1–2.6 ms on the tip"
+  },
+  {
+   "id": "E214",
+   "lane": "editor-46",
+   "commit": "1c3b2272",
+   "text": "nothing to build: editor-43's overtype pins pass"
+  },
+  {
+   "id": "M108",
+   "lane": "perf-46",
+   "commit": "8088b438",
+   "text": "the checks minted a copy of types that already existed (604k of 782k slots): after the fixpoint types intern (`types_settled`); kolt's check RSS 328 -> 252 MB, under v0.42.1's 259; the v0.43.0 exception CLOSED by the owner on the CLI figure"
+  },
+  {
+   "id": "M107",
+   "lane": "perf-46",
+   "commit": "8088b438",
+   "text": "six quadratic lookups indexed: the doubling 24k -> 49k lines x2.99 -> x1.94 (above 50k: M113)"
+  },
+  {
+   "id": "M105",
+   "lane": "perf-46",
+   "commit": "8088b438",
+   "text": "S2–S8 landed: the CI `perf` job, `perf/budgets.toml`, the generated kolt-shaped app, `VILAN_COUNTERS`, the cut refusing without a verdict, the nightly report, E121's rows; the CI class's ceilings are M114"
+  },
+  {
+   "id": "M100",
+   "lane": "perf-46",
+   "commit": "8088b438",
+   "text": "every entry starts at once; a one-shot check stores no world clones"
+  },
+  {
+   "id": "N137",
+   "lane": "perf-46",
+   "commit": "8088b438",
+   "text": "the check-cache is bounded; `vilan cache clean`"
+  },
+  {
+   "id": "B524",
+   "lane": "syntax-b-46",
+   "commit": "be4aba49",
+   "text": "`async macro fun` is canonical; `macro async fun` gets the steer"
+  },
+  {
+   "id": "E256",
+   "lane": "syntax-b-46",
+   "commit": "be4aba49",
+   "text": "`self` and `self as name` sort first in an import group"
+  },
+  {
+   "id": "B523",
+   "lane": "syntax-b-46",
+   "commit": "be4aba49",
+   "text": "an unbound `return` (bare, `return (x)`, `return -x`, a block tail) gets the `ret` steer and fix"
+  },
+  {
+   "id": "E252",
+   "lane": "syntax-b-46",
+   "commit": "be4aba49",
+   "text": "`vilan fmt` prints an index callee as written (`adders[2](30)`)"
+  },
+  {
+   "id": "K28",
+   "lane": "syntax-b-46",
+   "commit": "be4aba49",
+   "text": "the book's 20 `[resource]` heads are on their own line"
+  },
+  {
+   "id": "B485",
+   "lane": "syntax-b-46",
+   "commit": "be4aba49",
+   "text": "every ruled step is built: Q7 REVISED by the owner to one canonical order (B536 carries the warning's flip), Q8, Q10, and S3 (`export`/`macro` ahead of the attributes refused in v0.44.0)"
+  },
+  {
+   "id": "B522",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "an assignment whose target is not a place is refused once, naming what it is; a call returning a `&mut` view still assigns"
+  },
+  {
+   "id": "B532",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "an object-table slot is selected at the DECLARING trait's application (`mono::object_member_preference`); both backends"
+  },
+  {
+   "id": "B529",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "rule 4 at a PART of the root: an aggregate write into a part a live view points into is refused (`compute_view_anchors`); wider than filed"
+  },
+  {
+   "id": "B531",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "a native number's arithmetic refuses a grounded non-numeric right operand"
+  },
+  {
+   "id": "B489",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "opaque-returns S0: a bare-trait return's arguments reach the body (`Constraint::OpaqueReturn`)"
+  },
+  {
+   "id": "B490",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "an `[rpc]` method returning a bare trait is refused once, at the method"
+  },
+  {
+   "id": "B491",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "the trait-method refusal steers to `dyn Holder<i32>` with its arguments"
+  },
+  {
+   "id": "B516",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "a binding annotated with a closure type probes its initializer in that direction"
+  },
+  {
+   "id": "B447",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "B389's literal rule reaches a tuple literal element"
+  },
+  {
+   "id": "B440",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "`invert_mapped` handles a constant template and a family already bound"
+  },
+  {
+   "id": "B513",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "a closure literal with unannotated parameters is typed from an annotated result"
+  },
+  {
+   "id": "B518",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "a closure-typed parameter prints in parentheses"
+  },
+  {
+   "id": "B497",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "the steer spells `HashMap`"
+  },
+  {
+   "id": "B508",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "a `Closure` receiver takes the impl-member route, so blankets reach closures (the two-tier chain is store-47's)"
+  },
+  {
+   "id": "B499",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "not reproduced on the base"
+  },
+  {
+   "id": "B442",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "fixed where `T` is bound by another parameter; the single-parameter message is B541"
+  },
+  {
+   "id": "B530",
+   "lane": "solver-b-46",
+   "commit": "c7c1e3bc",
+   "text": "superseded by B540 (its root cause, filed by solver-b-46)"
+  },
+  {
+   "id": "A152",
+   "lane": "reactive-46",
+   "commit": "5255c5ab",
+   "text": "`reactive::zip_some`, `ui::when_all_some` on both twins (one tuple parameter), `SignalCell<(..)>::unzip`"
+  },
+  {
+   "id": "A150",
+   "lane": "reactive-46",
+   "commit": "5255c5ab",
+   "text": "door (b): `states()` leases a mirror; `state()` stays passive; `TransientState::map`, `and_then`, `zip`"
+  },
+  {
+   "id": "B525",
+   "lane": "reactive-46",
+   "commit": "5255c5ab",
+   "text": "the contract hash covers Wire struct and enum SHAPES (breaking once)"
+  },
+  {
+   "id": "B526",
+   "lane": "reactive-46",
+   "commit": "5255c5ab",
+   "text": "`StoreSome::assume()` holds the last value read"
+  },
+  {
+   "id": "A151",
+   "lane": "reactive-46",
+   "commit": "5255c5ab",
+   "text": "superseded before it shipped by A157 (the owner's `.autofocus()` design): no `data-autofocus` marker"
+  },
+  {
+   "id": "A157",
+   "lane": "ui-46",
+   "commit": "0e769fd1",
+   "text": "`.autofocus()` registers the element in a `WeakSet` (no DOM attribute); the scope starts on the first registered descendant; the server writes the native attribute; a written `autofocus` in an element head warns with a quick fix"
+  },
+  {
+   "id": "B495",
+   "lane": "solver-c-46",
+   "commit": "bdfb6ea2",
+   "text": "parameter modes live in `Type::Closure`; adoption inside unification; a written-mode mismatch refused (estate count 0); the side table is gone"
+  },
+  {
+   "id": "B527",
+   "lane": "solver-c-46",
+   "commit": "bdfb6ea2",
+   "text": "closed by B495: an annotated `let` with a bare closure literal adopts the annotation's modes"
+  },
+  {
+   "id": "F69",
+   "lane": "solver-c-46",
+   "commit": "bdfb6ea2",
+   "text": "closed by B495: the native emitter reads the type's modes; native-46's stopgaps retired"
+  },
+  {
+   "id": "B509",
+   "lane": "solver-c-46",
+   "commit": "bdfb6ea2",
+   "text": "payload views: `match &mut place` / `&mut place is V(let p)` bind writable views; std's `Option` steps and the derive's single-payload step write in place (20,034 clones for one write -> 0)"
+  },
+  {
+   "id": "B528",
+   "lane": "solver-c-46",
+   "commit": "bdfb6ea2",
+   "text": "a write through a copy capture says it is a copy and steers to `match &mut`"
+  },
+  {
+   "id": "B538",
+   "lane": "solver-c-46",
+   "commit": "bdfb6ea2",
+   "text": "tuple assignment targets holding an element, a nested tuple or a tuple-typed place assign each leaf; both backends"
+  },
+  {
+   "id": "B534",
+   "lane": "solver-c-46",
+   "commit": "bdfb6ea2",
+   "text": "all three positions (two in solver-b-46; the generic-parameter position with B495)"
+  },
+  {
+   "id": "A154",
+   "lane": "layout-46",
+   "commit": "98cae8a0",
+   "text": "std's namespaces as ruled (`std::web::`, `std::reactive::`, `std::js::`, `std::rpc::server`); old paths refused with a steer and a quick fix; `vilan check --fix` migrates a package (fix-46)"
+  },
+  {
+   "id": "B550",
+   "lane": "layout-46",
+   "commit": "98cae8a0",
+   "text": "a prelude in a module directory is loaded and resolved (fixed in the lane that found it)"
+  },
+  {
+   "id": "B551",
+   "lane": "layout-46",
+   "commit": "98cae8a0",
+   "text": "`vilan fmt` formats a file leading with `[platform(..)] mod self;` plus `export *;` (fixed in the lane that found it)"
+  },
+  {
+   "id": "N144",
+   "lane": "layout-46",
+   "commit": "98cae8a0",
+   "text": "the layer contract checks nested modules (fixed in the lane that found it)"
+  },
+  {
+   "id": "E268",
+   "lane": "fix-46",
+   "commit": "a1c1551a",
+   "text": "the moved-path fix rewrites a mixed web list to `std::web::{ prelude::Signal, dom::x }`"
+  },
+  {
+   "id": "M116",
+   "lane": "fix-46",
+   "commit": "a1c1551a",
+   "text": "one codegen unit for the release profile (kolt's check -1.85%; release build 63 s -> 144 s)"
+  },
+  {
+   "id": "K14",
+   "lane": "site-46",
+   "commit": "website 7016f2b",
+   "text": "the playground's buffers carry the prelude; the three-position prelude selector; deployed 2026-10-03"
+  },
+  {
+   "id": "K15",
+   "lane": "site-46",
+   "commit": "website 7016f2b",
+   "text": "the playground says when the formatter declined; deployed 2026-10-03"
+  },
+  {
+   "id": "K24",
+   "lane": "syntax-46",
+   "commit": "-",
+   "text": "already met since K27: the keyword lists come from `vilan --print-keywords`; the positional rules stay hand-copied (three copies agree)"
+  }
+ ]
+}

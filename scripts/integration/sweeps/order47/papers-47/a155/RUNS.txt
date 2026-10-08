@@ -1,0 +1,10 @@
+A155 runtime census, vilan 0.44.0 (b94cb47fc) with instrument_std.sh's std, 2026-10-05.
+website (copy of vilan-website/src at the working tree, no git):
+  SSR  `PORT=47155 node dist/server.mjs`, GET / /playground /docs/ /nonexistent: 443 + 39 classed elements
+       rendered (/, /playground); chrome leg `node dist/chrome.mjs`: A155-DOUBLE traces 0.
+  client  tests/support/home.mjs bootHome(dist/client.js) under the site's own DOM stub (+hasAttribute):
+       443 classed elements, traces 0; playground-console/runner/format tests (3 pass): traces 0.
+kolt (copy; port moved to 59447 because 59401 was in use): build clean; its client e2e harness
+  (e2e/client-harness.js) predates the current std's DOM surface (replaceState, removeAttribute,
+  parentNode, createRange, fragments) and could not boot the client: kolt's runtime half NOT run.
+`vilan check` (stock std): kolt . / website . / every example: 0 "written twice" warnings.

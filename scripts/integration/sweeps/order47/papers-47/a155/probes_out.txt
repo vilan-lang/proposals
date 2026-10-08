@@ -1,0 +1,65 @@
+== a10_class_then_class
+  warnings: 1
+  ssr: <div class="b"></div>
+  client:
+    <div#3> class writes: ["a","b"] -> final "b"
+== a11_reactive_attr_class
+  warnings: 1
+  ssr: <div class="s3sbz2x ss5mdns"></div>
+  client:
+    <div#3> class writes: ["lbl","s3sbz2x ss5mdns","lbl2"] -> final "lbl2"
+== a12_styled_then_toggle_attr_class
+  warnings: 0
+  ssr: <div class=""></div>
+  client:
+    <div#3> class writes: ["s3sbz2x ss5mdns","","<removed>"] -> final ""
+== a13_bind_styled_then_class
+  warnings: 1
+  ssr: <div class="x"></div>
+  client:
+    <div#3> class writes: ["s3sbz2x ss5mdns","x","s178flj9 s5qpnud"] -> final "s178flj9 s5qpnud"
+== a1_attr_then_styled
+  warnings: 1
+  ssr: <div class="s3sbz2x ss5mdns"></div>
+  client:
+    <div#3> class writes: ["x","s3sbz2x ss5mdns"] -> final "s3sbz2x ss5mdns"
+== a2_styled_then_attr
+  warnings: 1
+  ssr: <div class="x"></div>
+  client:
+    <div#3> class writes: ["s3sbz2x ss5mdns","x"] -> final "x"
+== a3_two_styled
+  warnings: 1
+  ssr: <div class="s178flj9 s5qpnud"></div>
+  client:
+    <div#3> class writes: ["s3sbz2x ss5mdns","s178flj9 s5qpnud"] -> final "s178flj9 s5qpnud"
+== a4_composed
+  warnings: 0
+  ssr: <div class="s3sbz2x s5qpnud s178flj9"></div>
+  client:
+    <div#3> class writes: ["s3sbz2x s5qpnud s178flj9"] -> final "s3sbz2x s5qpnud s178flj9"
+== a5_styled_then_bind_class
+  warnings: 1
+  ssr: <div class="on"></div>
+  client:
+    <div#3> class writes: ["s3sbz2x ss5mdns","on",""] -> final ""
+== a6_styled_then_bind_attr_class
+  warnings: 0
+  ssr: <div class="on"></div>
+  client:
+    <div#3> class writes: ["s3sbz2x ss5mdns","on","off"] -> final "off"
+== a7_helper_then_class
+  warnings: 0
+  ssr: <div class="x"></div>
+  client:
+    <div#3> class writes: ["s3sbz2x ss5mdns","x"] -> final "x"
+== a8_decorator
+  warnings: 0
+  ssr: <div class="s178flj9 s5qpnud"></div>
+  client:
+    <div#3> class writes: ["x","s178flj9 s5qpnud"] -> final "s178flj9 s5qpnud"
+== a9_postfix_on_element
+  warnings: 1
+  ssr: <div class="x"></div>
+  client:
+    <div#3> class writes: ["s3sbz2x ss5mdns","x"] -> final "x"

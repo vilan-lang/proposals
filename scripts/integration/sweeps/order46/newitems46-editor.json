@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "E253",
+   "section": "E",
+   "kind": "LSP hover / navigation (S–M) — analyzer",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (editor-46's find, Order 46; met establishing E249)",
+   "title": "hover and go-to-definition answer NOTHING on a call whose argument is a closure carrying a `context` clause — `m.switch_some(\\|v\\| ..)`, `n.switch(\\|v\\| ..)`, `and_then` — blanket or not: the analysis leaves no entity record (`entity_map`, `function_calls`) for the call, only its span",
+   "discussion": "editor-46 (Order 46); E249; REPORT-editor-46.md; pinned #[ignore]d as `member_admission_tests::hover_on_a_call_taking_a_context_closure_names_the_member`",
+   "body": "Probe on editor-46 (fe092e8d + lane): `fun pick(m: MemoCell<Option<i32>>, n: MemoCell<i32>) { let _ = m.switch_some(|value| MemoCell::new(value)); let _ = n.distinct(); let _ = n.switch(|value| MemoCell::new(value)); }` — hover on `distinct` answers (`impl type F: Flow<type T: PartialEq>` …), hover on `switch_some` and `switch` answers `None`. The call's id has a span in `span_map` but no `entity_map` entry and no `function_calls` record; the parameter type `(sync |T| I) context (owner_scope, tracking, ambient_nursery)` suggests the context pass's lowering replaces the call record without keeping the source subject (E72/E75's `source_call_subject` cannot reach it). The editor cannot resolve what the program no longer says. Rec: keep the call's record (or an erased-subject entry, as `context_erased_subjects` does for `get_safe`) through the lowering. analyzer.rs / context.rs. Sizing S–M."
+  },
+  {
+   "id": "E254",
+   "section": "E",
+   "kind": "LSP performance / semantics (M)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (editor-46's find, Order 46; M104's carried edge)",
+   "title": "M104 leaves a file holding platform-fenced TWINS on its own analysis: serve each twin leg from the world of the entry whose platform admits it",
+   "discussion": "editor-46 (Order 46); M104; F27 R3; `world::RootResolver::roots`",
+   "body": "Entry-world analysis serves a module from its primary entry's world, and a module both platforms reach reports the other entry's world's diagnostics too. A file with platform-fenced twins keeps F27 R3's kept legs (one whole analysis per platform, the file as its own entry), so it pays its own worlds and shows module-local diagnostics, unlike its neighbours. Build: the primary leg is a view of the primary entry's world, each kept twin leg a view of the entry whose platform admits that twin (`TwinLeg { document: Document::view_of(..) }`), and a twin no entry's platform admits keeps today's leg. kolt carries no twins. Sizing M."
+  },
+  {
+   "id": "E255",
+   "section": "E",
+   "kind": "diagnostics (S) — analyzer",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (editor-46's find, Order 46; E251's remainder)",
+   "title": "a DUPLICATE import carries no warning — `import std::json::Json;` twice, `import a::{ B, B };` — though Organize Imports now removes it (E251); a warning naming the duplicate, with the organize action as its quick fix",
+   "discussion": "editor-46 (Order 46); E251",
+   "body": "E251 asked for a warning 'if it does not already': the analyzer reports nothing for a duplicate leaf (both resolve to one definition; the unused-import paint does not fade either, since each is 'used'). Rec: a warning at the second leaf (`` `Json` is already imported on line 1 ``), keyed so the editor offers `source.organizeImports` as its fix. analyzer.rs's import walk. Sizing S."
+  },
+  {
+   "id": "B531",
+   "section": "B",
+   "kind": "type checking (S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (editor-46's find, Order 46; met writing M104's pins)",
+   "title": "`let x: i32 = 2 * true;` checks clean and the JS build prints `2` — an integer multiplied by a `bool` is accepted",
+   "discussion": "editor-46 (Order 46)",
+   "body": "Repro on v0.43.0 (installed toolchain): a package whose `server.vl` is `fun main() { let x: i32 = 2 * true; print(x); }` — `vilan check .` reports nothing, `vilan run .` prints 2 (JS coerces `true` to 1). `model.count * true` inside a function body was equally clean. Expected: `i32: Mul<bool>` has no impl — the operator refusal every other mismatched operand gets. Native untested. Sizing S–M."
+  },
+  {
+   "id": "E256",
+   "section": "E",
+   "kind": "design (XS) — owner",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-03 (editor-46's find, Order 46; E251)",
+   "title": "`self as name` sorts AMONG the names (`import std::json::{ Json, JsonValue, self as j };`) by E146's rule, while E251's ruling says `self` sorts first",
+   "discussion": "editor-46 (Order 46); E251; E146 (`BranchKey::SelfLeaf` — only a bare `self` ranks first)",
+   "body": "E251's merge writes `self as j` and keeps its alias, as ruled; the printer orders the group, and E146 deliberately keys `self as name` as the rename it is. Doors: (a) keep E146 (today); (b) rank `self as name` first too — a printer change that also moves every existing `{ …, self as x }` group under `vilan fmt` (formatter.rs, syntax's file). Rec: (b) if the owner reads `self as` as the namespace's own head; it is a one-line key change plus the fmt corpus. Sizing XS."
+  }
+ ]
+}

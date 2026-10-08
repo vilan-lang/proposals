@@ -1,0 +1,355 @@
+diff -ru '--exclude=dist' '--exclude=.git' '--exclude=worktrees' '--exclude=lucide' '--exclude=search-dict' '--exclude=*.db' /home/reed/code/kolt/src/account.vl kolt-store/src/account.vl
+--- a/src/account.vl	2026-09-21 14:23:03.421171231 -0400
++++ b/src/account.vl	2026-10-08 12:10:48.161893924 -0400
+@@ -1,25 +1,32 @@
++import std::reactive::delta::SequenceCell;
++import std::reactive::store::{ Storable, Store };
++
+ export *;
+ 
++// The signed-in account's local state, fine-grained by its shape: every field
++// is a handle (`account.nickname()`), a write to one wakes that field's readers
++// only, and a join is one splice on the channel list.
++[derive(Storable)]
+ struct Account {
+-	fullname: SignalCell<str>,
+-	username: SignalCell<str>,
+-	nickname: SignalCell<str>,
+-	channels: SignalCell<List<u53>>,
++	fullname: str,
++	username: str,
++	nickname: str,
++	channels: List<u53>,
+ }
+ 
+ impl Account {
+-	fun stub(): SignalCell<Account> {
+-		Signal::new(Account {
+-			fullname = Signal::new("Reed Syllas"),
+-			username = Signal::new("reedsyllas"),
+-			nickname = Signal::new("Reed"),
+-			channels = Signal::new([]),
++	fun stub(): Store<Account> {
++		Store::new(Account {
++			fullname = "Reed Syllas",
++			username = "reedsyllas",
++			nickname = "Reed",
++			channels = [],
+ 		})
+ 	}
++}
+ 
++impl Store<Account> {
+ 	fun join_channel(self, channel_id: u53) {
+-		self.channels.update(|&mut channels| {
+-			channels.push(channel_id);
+-		});
++		self.channels().push(channel_id);
+ 	}
+ }
+diff -ru '--exclude=dist' '--exclude=.git' '--exclude=worktrees' '--exclude=lucide' '--exclude=search-dict' '--exclude=*.db' /home/reed/code/kolt/src/app_context.vl kolt-store/src/app_context.vl
+--- a/src/app_context.vl	2026-09-21 14:23:30.410592532 -0400
++++ b/src/app_context.vl	2026-10-08 12:10:48.161893924 -0400
+@@ -1,4 +1,5 @@
+ import std::context::Context;
++import std::reactive::store::Store;
+ import pkg::account::Account;
+ import pkg::app_input_system::AppInputSystem;
+ import pkg::drag::DragStatus;
+@@ -44,8 +45,8 @@
+ 	app_context.get().input_system
+ }
+ 
+-let user_context = Context<SignalCell<Account>>::new();
++let user_context = Context<Store<Account>>::new();
+ 
+-fun get_user(): SignalCell<Account> {
++fun get_user(): Store<Account> {
+ 	user_context.get()
+ }
+diff -ru '--exclude=dist' '--exclude=.git' '--exclude=worktrees' '--exclude=lucide' '--exclude=search-dict' '--exclude=*.db' /home/reed/code/kolt/src/channel.vl kolt-store/src/channel.vl
+--- a/src/channel.vl	2026-10-05 14:59:27.396183808 -0400
++++ b/src/channel.vl	2026-10-08 12:10:18.946776435 -0400
+@@ -153,7 +153,7 @@
+ 			!channel_name.is_empty() else ret Some("A channel name is required.");
+ 			match Channel::create(channel_name) {
+ 				Ok(let channel_id) => {
+-					get_user().get().join_channel(channel_id);
++					get_user().join_channel(channel_id);
+ 					modal.close();
+ 					navigate(href(Route::Channel(channel_id)));
+ 				},
+diff -ru '--exclude=dist' '--exclude=.git' '--exclude=worktrees' '--exclude=lucide' '--exclude=search-dict' '--exclude=*.db' /home/reed/code/kolt/src/shared.vl kolt-store/src/shared.vl
+--- a/src/shared.vl	2026-10-01 15:14:14.686713685 -0400
++++ b/src/shared.vl	2026-10-08 12:10:48.161893924 -0400
+@@ -1,6 +1,7 @@
+ import std::compare::PartialEq;
+ import std::hash::Hashable;
+ import std::json::Json;
++import std::reactive::store::Storable;
+ 
+ export *;
+ 
+@@ -69,8 +70,11 @@
+ }
+ 
+ // A message as the wire carries it; `Message::find(id)` (`channel.vl`) is
+-// its live handle. Equal by identity, as `Channel`.
+-[derive(Wire)]
++// its live handle. Equal by identity, as `Channel` - which is why it derives
++// `Storable`: the server's store diffs it FIELD BY FIELD, so an edit to its
++// content wakes its readers, where a leaf compared by this identity equality
++// would swallow the edit.
++[derive(Storable, Wire)]
+ struct Message {
+ 	id: u53,
+ 	author: UserId,
+diff -ru '--exclude=dist' '--exclude=.git' '--exclude=worktrees' '--exclude=lucide' '--exclude=search-dict' '--exclude=*.db' /home/reed/code/kolt/src/store.vl kolt-store/src/store.vl
+--- a/src/store.vl	2026-10-05 09:24:35.998531433 -0400
++++ b/src/store.vl	2026-10-08 12:11:29.102813085 -0400
+@@ -16,10 +16,12 @@
+ import std::compare::PartialEq;
+ import std::crypto::random_bytes;
+ import std::db::Database;
++import std::hash_map::HashMap;
+ import std::json::{ FromJson, Json, JsonKind, JsonValue };
+ import std::memo::Memo;
+-import std::reactive::delta::SetPipe;
+-import std::reactive::{ HashMapCell, HashMapEntry, MemoCell };
++import std::reactive::MemoCell;
++import std::reactive::delta::{ SequenceCell, SetPipe };
++import std::reactive::store::{ Storable, Store };
+ import std::rpc::server::{ Connection, Handshake, Reject, Session };
+ import std::shared::Shared;
+ import std::time::Instant;
+@@ -94,49 +96,61 @@
+ 
+ // The server's LIVE channel: the wire snapshot (`shared::Channel`) plus the
+ // message list the client reaches as a handle. Not Wire, and never sent -
+-// `get_channel` projects the snapshot out of it.
++// `get_channel` projects the snapshot out of it. A plain record now: the
++// store below makes each field a handle (`at(id).some().name()`), so it no
++// longer carries a cell per field.
++[derive(Storable)]
+ struct ChannelRecord {
+ 	id: u53,
+-	name: SignalCell<str>,
+-	messages: SignalCell<List<u53>>,
++	name: str,
++	messages: List<u53>,
+ }
+ 
+-// The mirror: module-level cells loaded once from the already-open database
+-// and handed to EVERY connection's store, so one write is the broadcast. Every
+-// later write goes SQL-first through the methods above.
++// The mirror: ONE store, loaded once from the already-open database and handed
++// to EVERY connection's `KoltStore`, so one write is the broadcast. Every later
++// write goes SQL-first through the methods below.
+ //
+-// The two maps are `HashMapCell`s: their writes are recorded per key, and
+-// `at(id)` is a handle that depends on that id only - a write to message 7
+-// wakes the readers of message 7 and nobody else. So `get_message` answers
+-// the cell's own handle and needs no view kept for it.
++// Both maps are keyed nodes: `at(id)` is a handle that depends on that id only
++// - a write to message 7 wakes the readers of message 7 and nobody else - and
++// a write inside one channel's record (its name, a pushed message id) wakes
++// that channel's readers only.
++[derive(Storable)]
++struct Global {
++	channels: HashMap<u53, ChannelRecord>,
++	messages: HashMap<u53, Message>,
++}
++
+ struct GlobalStore {
+ 	next_channel_id: Shared<u53>,
+-	channels: HashMapCell<u53, ChannelRecord>,
+ 	free_message_ids: Shared<List<u53>>,
+-	messages: HashMapCell<u53, Message>,
++	global: Store<Global>,
+ 	users: Memo<UserId, SignalCell<Option<User>>>,
+-	// The read-only views the handle methods still hand out, built ONCE and
+-	// kept for the program. The id list is the map's key set: `channels.keys()`
+-	// follows the map per op (a create adds one id, a delete removes one, and a
+-	// write to a channel's record is no key change at all), sealed once and read
+-	// as the list the client mirrors.
++	// The read-only views the handle methods still hand out, built ONCE per
++	// key and kept for the program. A store handle does not cross the wire yet
++	// (the mirrored store is A153), so each per-key handle a method returns is
++	// sealed into the `MemoCell` the client mirrors. The id list is the map's
++	// key set: `channels().keys()` follows the map per op (a create adds one
++	// id, a delete removes one, and a write inside a channel's record is no key
++	// change at all).
+ 	channel_ids: Shared<Option<MemoCell<List<u53>>>>,
+-	// A channel's wire snapshot projects a record that is not Wire, so it is
+-	// still a view - but a view over the channel's OWN key (`at(id)`), which a
+-	// write to another channel never runs.
+ 	channel_views: Memo<u53, MemoCell<Option<Channel>>>,
++	channel_names: Memo<u53, MemoCell<str>>,
++	channel_messages: Memo<u53, MemoCell<List<u53>>>,
++	message_views: Memo<u53, MemoCell<Option<Message>>>,
+ }
+ 
+ impl GlobalStore {
+ 	fun new() {
+ 		GlobalStore {
+ 			next_channel_id = Shared::new(0u53),
+-			channels = HashMapCell::new(),
+ 			free_message_ids = Shared::new([]),
+-			messages = HashMapCell::new(),
++			global = Store::new(Global { channels = HashMap::new(), messages = HashMap::new() }),
+ 			users = Memo::new(),
+ 			channel_ids = Shared::new(None),
+ 			channel_views = Memo::new(),
++			channel_names = Memo::new(),
++			channel_messages = Memo::new(),
++			message_views = Memo::new(),
+ 		}
+ 	}
+ }
+@@ -188,18 +202,15 @@
+ 	fun create_channel(self, name: str): u53 {
+ 		let id = self.global_store.next_channel_id.read();
+ 		self.global_store.next_channel_id.write() += 1;
+-		self.global_store.channels.insert(id, ChannelRecord {
+-			id,
+-			name = Signal::new(name),
+-			messages = Signal::new([]),
+-		});
++		self.global_store.global.channels().insert(id, ChannelRecord { id, name, messages = [] });
+ 		id
+ 	}
+ 
+ 	[rpc]
+ 	fun delete_channel(self, channel_id: u53): bool {
+-		self.global_store.channels.remove(channel_id);
+-		if self.global_store.channels.len() == 0 {
++		let channels = self.global_store.global.channels();
++		channels.remove(channel_id);
++		if channels.len() == 0 {
+ 			self.global_store.next_channel_id.write() = 0;
+ 		}
+ 		true
+@@ -207,7 +218,7 @@
+ 
+ 	[rpc]
+ 	fun get_channels(self): MemoCell<List<u53>> {
+-		let channels = self.global_store.channels;
++		let channels = self.global_store.global.channels();
+ 		self.global_store.channel_ids.get_or_insert(|| channels
+ 			.keys()
+ 			.memo_global()
+@@ -220,72 +231,76 @@
+ 	// know. The client's `Channel::find` is this call behind a mirror.
+ 	[rpc]
+ 	fun get_channel(self, channel: u53): MemoCell<Option<Channel>> {
+-		let channels = self.global_store.channels;
+-		self.global_store.channel_views.get_or_insert(channel, || channels
+-			.at(channel)
++		let record = self.global_store.global.channels().at(channel);
++		self.global_store.channel_views.get_or_insert(channel, || record
+ 			.derive(|record| record.map(|held| Channel { id = held.id }))
+ 			.distinct()
+ 			.memo_global())
+ 	}
+ 
++	// The name of one channel, live: a view over that channel's own name, which
++	// a write to another channel - or to this channel's messages - never runs.
+ 	[rpc]
+-	fun get_channel_name(self, channel: u53): Option<SignalCell<str>> {
+-		self.global_store.channels.get(channel).map(|channel| channel.name)
++	fun get_channel_name(self, channel: u53): Option<MemoCell<str>> {
++		let record = self.global_store.global.channels().at(channel);
++		record.get().is_some() else ret None;
++		Some(self.global_store.channel_names.get_or_insert(channel, || record
++			.some()
++			.name()
++			.derive(|name| name.unwrap_or_default())
++			.distinct()
++			.memo_global()))
+ 	}
+ 
+ 	[rpc]
+ 	fun set_channel_name(self, channel: u53, name: str): bool {
+-		if self.global_store.channels.get(channel) is Some(let channel) {
+-			channel.name.set(name);
+-			true
+-		} else {
+-			false
+-		}
++		self.global_store.global.channels().at(channel).some().name().patch(name)
+ 	}
+ 
+ 	[rpc]
+ 	fun add_message(self, channel: u53, message: str): Result<u53, str> {
+-		if self.global_store.channels.get(channel) is Some(let channel) {
+-			let id = self.global_store.free_message_ids
+-				.write()
+-				.pop()
+-				.unwrap_or(self.global_store.messages.len().as_u53());
+-			self.global_store.messages.insert(id, Message {
+-				id,
+-				author = self.user_id,
+-				content = message,
+-			});
+-			channel.messages.update(|&mut messages| {
+-				messages.push(id);
+-			});
+-			Ok(id)
+-		} else {
+-			Err(i"no such channel: {channel}")
+-		}
++		let record = self.global_store.global.channels().at(channel).some();
++		record.live().get() else ret Err(i"no such channel: {channel}");
++		let messages = self.global_store.global.messages();
++		let id = self.global_store.free_message_ids
++			.write()
++			.pop()
++			.unwrap_or(messages.len().as_u53());
++		messages.insert(id, Message { id, author = self.user_id, content = message });
++		record.messages().push(id);
++		Ok(id)
+ 	}
+ 
+ 	// Nothing to answer: the caller awaits the ack, and an unknown channel or
+ 	// message is already the state it asked for.
+ 	[rpc]
+ 	fun remove_message(self, channel_id: u53, message_id: u53) {
+-		if self.global_store.channels.get(channel_id) is Some(let channel) {
+-			channel.messages.update(|&mut messages| {
+-				if messages.index_of(message_id) is Some(let index) {
+-					messages.remove(index);
+-				}
+-			});
++		let messages = self.global_store.global.channels().at(channel_id).some().messages();
++		if messages.get() is Some(let ids) {
++			if ids.index_of(message_id) is Some(let index) {
++				messages.remove_at(index);
++			}
+ 		}
+ 	}
+ 
+ 	// The message's own key: a write to another message never reaches it.
+ 	[rpc]
+-	fun get_message(self, message_id: u53): HashMapEntry<u53, Message> {
+-		self.global_store.messages.at(message_id)
++	fun get_message(self, message_id: u53): MemoCell<Option<Message>> {
++		let message = self.global_store.global.messages().at(message_id);
++		self.global_store.message_views.get_or_insert(message_id, || message
++			.derive(|held| held)
++			.memo_global())
+ 	}
+ 
+ 	[rpc]
+-	fun get_messages(self, channel: u53): Option<SignalCell<List<u53>>> {
+-		self.global_store.channels.get(channel).map(|channel| channel.messages)
++	fun get_messages(self, channel: u53): Option<MemoCell<List<u53>>> {
++		let record = self.global_store.global.channels().at(channel);
++		record.get().is_some() else ret None;
++		Some(self.global_store.channel_messages.get_or_insert(channel, || record
++			.some()
++			.messages()
++			.derive(|ids| ids.unwrap_or([]))
++			.memo_global()))
+ 	}
+ }
+ 

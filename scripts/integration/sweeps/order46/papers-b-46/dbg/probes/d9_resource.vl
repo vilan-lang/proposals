@@ -1,0 +1,6 @@
+[resource]
+struct Guard { id: i32 }
+fun main() {
+	let guard = Guard { id = 1 };
+	print(guard);
+}

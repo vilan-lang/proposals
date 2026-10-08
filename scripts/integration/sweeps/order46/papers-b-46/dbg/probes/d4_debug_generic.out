@@ -1,0 +1,30 @@
+Error: 'List<i32>' does not implement trait 'Debug', required by a generic bound of this call
+   ╭─[ d4_debug_generic.vl:3:20 ]
+   │
+ 2 │ fun show<T: Debug>(value: T): str { value.debug() }
+   │          ┬  
+   │          ╰── the bound is declared here
+ 3 │ fun main() { print(show([1, 2])); print(show((1, 2))); print(show(Some(1))); }
+   │                    ──────┬─────  
+   │                          ╰─────── 'List<i32>' does not implement trait 'Debug', required by a generic bound of this call
+───╯
+Error: '(i32, i32)' does not implement trait 'Debug', required by a generic bound of this call
+   ╭─[ d4_debug_generic.vl:3:41 ]
+   │
+ 2 │ fun show<T: Debug>(value: T): str { value.debug() }
+   │          ┬  
+   │          ╰── the bound is declared here
+ 3 │ fun main() { print(show([1, 2])); print(show((1, 2))); print(show(Some(1))); }
+   │                                         ──────┬─────  
+   │                                               ╰─────── '(i32, i32)' does not implement trait 'Debug', required by a generic bound of this call
+───╯
+Error: 'Option<i32>' does not implement trait 'Debug', required by a generic bound of this call
+   ╭─[ d4_debug_generic.vl:3:62 ]
+   │
+ 2 │ fun show<T: Debug>(value: T): str { value.debug() }
+   │          ┬  
+   │          ╰── the bound is declared here
+ 3 │ fun main() { print(show([1, 2])); print(show((1, 2))); print(show(Some(1))); }
+   │                                                              ──────┬──────  
+   │                                                                    ╰──────── 'Option<i32>' does not implement trait 'Debug', required by a generic bound of this call
+───╯

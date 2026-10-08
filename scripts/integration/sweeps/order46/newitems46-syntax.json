@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B522",
+   "section": "B",
+   "kind": "miscompile (JS; M) — HIGH",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (syntax-46's find, Order 46; met probing B494)",
+   "title": "an assignment whose left side is not a place — `-x = 1;`, `!b = true;`, `(x + 1) = 2;`, `await x = 1;`, `async (x) = 1;` — passes `vilan check` and the JS backend emits an invalid left-hand side (`SyntaxError: Invalid left-hand side in assignment` at load)",
+   "discussion": "syntax-46 (Order 46); REPORT-syntax-46.md; B494 (which made `async x = 1;` a parse-level steer, the one spelling a person plausibly writes)",
+   "body": "Repro on v0.43.0 (fe092e8d): `fun main() { mut x = 0; (x + 1) = 2; -x = 1; print(x); }` checks clean; `vilan run` throws at load (`x + 1 = 2;` in the emitted module). `parsing::Parser::parse_assignment` takes any struct-free precedence chain as the place and only checks that an assignment operator follows; nothing downstream refuses a non-place. `async x += 1;` happens to be refused by the operator check (`Promise` has no `Add`), which is how B494's shape surfaced. Rec: refuse at the parser with a steer naming what a place is (a name, a member, an index, a `*` deref — and a tuple of places if the language admits one), so both backends are covered; or in the analyzer's assignment arm. Native untested. Sizing S–M."
+  },
+  {
+   "id": "B523",
+   "section": "B",
+   "kind": "diagnostics (M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (syntax-46's find, Order 46; B520's remainder)",
+   "title": "a bare `return;` (and `return (x);`, `return -x;`, a block's tail `{ return }`) still says \"cannot find 'return' in this scope\" — each is a VALID parse (a read of a binding named `return`, a call, a subtraction), so B520's parser steer cannot reach it; the analyzer's unresolved-name path should add it",
+   "discussion": "syntax-46 (Order 46); REPORT-syntax-46.md; B520",
+   "body": "B520 steers `return value` where no name can stand. `return;` with `let return = 1;` in scope is a valid program today (it reads the binding and discards it), so the parser must leave it a name; only resolution knows the name is unbound. Rec: in the analyzer's 'cannot find' path (`import_steer` or beside it), when the unresolved name is `return`, append \"vilan spells this `ret`\" and let the editor's B520 fix (`parsing::foreign_spelling_fix` keys on the message) offer the rewrite; the same for a call `fn(..)`/`function(..)`/`def(..)` only if a probe shows it is common. `parsing::ForeignSpelling` is public for this. analyzer.rs is solver-b-46's file. Sizing S."
+  },
+  {
+   "id": "B524",
+   "section": "B",
+   "kind": "design (XS) — owner",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-03 (syntax-46's find, Order 46)",
+   "title": "`macro async fun` parses and `async macro fun` does not, though B485 Q8's written order puts `async` before `macro`; is an async macro meaningful at all?",
+   "discussion": "syntax-46 (Order 46); keywords-vs-attributes.md Q8; marker census I1/I3/M1",
+   "body": "B486's canonicalizer leaves a keyword set it does not list as legal exactly as written, and `async`+`macro` is not listed, so today's behaviour stands (census: `macro` < `async`, one order only). Doors: (a) an async macro is not a thing — refuse both orders with a steer; (b) it is — admit the ruled order `async macro fun`, steer the other, and teach the printer. Rec: (a), unless the macro engine has a use. Sizing XS."
+  },
+  {
+   "id": "K28",
+   "section": "K",
+   "kind": "docs (XS)",
+   "area": "Web presence (site, playground, docs delivery)",
+   "status": "OPEN — filed 2026-10-03 (syntax-46's find, Order 46)",
+   "title": "the book still spells `[resource]` on the declaration line in 20 fence lines (`tour/resources.md` ×6, `guide/persistence.md` ×3, `std/process.md` ×4, `std/reactive.md` ×4, `std/misc.md`, `spec/memory.md` ×2), the layout `vilan fmt` stopped printing at B485 Q10",
+   "discussion": "syntax-46 (Order 46); B485 Q10; the vilan-fmt leg does not format docs fences (ci-local.sh's stated exclusion)",
+   "body": "Both layouts parse, so nothing is wrong, only inconsistent with what `vilan fmt` writes. Several are signature summaries aligned with trailing comments, where a line of its own costs the alignment. Rec: rewrite the tour page's six (the teaching page) and leave the summaries, or rewrite all; the owner's taste. Sizing XS."
+  },
+  {
+   "id": "N140",
+   "section": "N",
+   "kind": "hygiene (XS)",
+   "area": "Hygiene & rot",
+   "status": "OPEN — filed 2026-10-03 (syntax-46's find, Order 46)",
+   "title": "`crates/vilan-cli/tests/diagnostics-ledger.tsv` carries a `NEW` row in the middle of the file (line 598, \"`{name}` is unsigned ({range}), so the negative literal `-{whole}` is out of range…\") — an earlier order's row that integration never numbered",
+   "discussion": "syntax-46 (Order 46); the ledger's own rule: `NEW` rows sit at the END and are numbered at integration",
+   "body": "Present on next @fe092e8d. Rec: the integrator numbers it (and writes its prose in diagnostics-ledger.md) with this order's NEW rows. Sizing XS."
+  }
+ ]
+}

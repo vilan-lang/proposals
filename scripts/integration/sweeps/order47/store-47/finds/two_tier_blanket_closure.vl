@@ -1,0 +1,34 @@
+// B508's remainder: a blanket reaches a closure ONE tier deep, not two.
+// `impl type T with Leaf` answers `g.leaf()`; `impl type T: Leaf with Shape`
+// does not answer `g.shape()` on the same closure — while `3.shape()` compiles.
+// Expected: "shape over leaf" twice. Got: "|str| bool has no method 'shape'".
+import std::io::print;
+
+trait Leaf {
+	fun leaf(&self): str;
+}
+
+trait Shape {
+	fun shape(&self): str;
+}
+
+impl type T with Leaf {
+	fun leaf(&self): str {
+		"leaf"
+	}
+}
+
+impl type T: Leaf with Shape {
+	fun shape(&self): str {
+		i"shape over {self.leaf()}"
+	}
+}
+
+fun main() {
+	let g = |k: str| k == "x";
+	print(g.leaf());
+	print(3.shape());
+	print(g.shape());
+}
+
+main();

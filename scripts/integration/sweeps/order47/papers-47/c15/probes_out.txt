@@ -1,0 +1,14 @@
+run.sh against vilan 0.44.0 (b94cb47fc), 2026-10-05 (c2, c3, c9 re-run after the loop and receiver fixes)
+c1_spec_example | js: after  | boxed-bindings=1  | native: after vilan-native: cells minted=1 live=0
+c2_loop_write_before | js: 2 2 2  | boxed-bindings=1  | native: 2 2 2 vilan-native: cells minted=1 live=0
+c3_loop_closure_owned | js: 1 2 3  | boxed-bindings=1  | native: 1 2 3 vilan-native: cells minted=1 live=0
+c4_closure_copy | js: 1 2  | boxed-bindings=1  | native: 1 2 vilan-native: cells minted=1 live=0
+c5_view_and_closure | js: 11  | boxed-bindings=1  | native: a cell was read while it is being updated: a read inside `update` reached the same cell through another handle (the JS backend answers the in-progress value; the native backend cannot)
+c6_counter_factory | js: 1 2 1  | boxed-bindings=1  | native: 1 2 1 vilan-native: cells minted=2 live=0
+c7_out_param_nonescaping | js: 8  | boxed-bindings=1  | native: 8 vilan-native: cells minted=1 live=0
+c8_read_only_after_loop | js: 3  | boxed-bindings=1  | native: 3 vilan-native: cells minted=1 live=0
+c9_self_call_reentrant | js: 102  | boxed-bindings=1  | native: a cell was read while it is being updated: a read inside `update` reached the same cell through another handle (the JS backend answers the in-progress value; the native backend cannot)
+
+hand-lowered (handlowered/, cargo run against the same vilan-rt):
+c1_copy.rs          (candidate "one non-escaping closure stays unboxed", as a copy)  prints: before   (JS: after; rustc warns the later write is never read)
+c3_closure_owned.rs (closure-owned state without the once-per-instance condition)   prints: 1 1 1    (JS: 1 2 3)

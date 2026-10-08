@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "K29",
+   "section": "K",
+   "kind": "feature (S)",
+   "area": "Web presence (site, playground, docs delivery)",
+   "status": "OPEN — filed 2026-10-03 (site-46's find, Order 46)",
+   "title": "the playground's \"Prelude: web\" position spells a std PATH (`\"std::web\"`, in the website's worker.js) that A154 renames to `std::web::prelude`; and the page can pin an older compiler (`?v=`), so after v0.44.0 no single string is right for every wasm the page loads",
+   "discussion": "site-46 (Order 46); REPORT-site-46.md; K14 (the toggle); A154 (RULED: `std::web` becomes `std::web::prelude`, hard break, no forwarders)",
+   "body": "site-46 added the third prelude position K14's 2026-09-01 gap note asked for. vilan-wasm's `compile_with` takes `undefined` (the mode's set), `\"off\"`, or a module path, so the page's worker maps the word `web` to the path `\"std::web\"`. When A154 lands that path stops resolving on the new compiler, while the version selector still loads older compilers, where only the old path resolves. Rec: vilan-wasm accepts a second reserved word, `\"web\"`, beside `\"off\"` (`PlaygroundPrelude::from_option` maps it to `manifest::WEB_PRELUDE`, whatever that constant names in a given release), so the page never spells a std path. The worker feature-detects it the way it detects `compile_with` (a new export, or a `version()` comparison) and falls back to the old path on older wasm. The website's own copies of the string to update at that point: `src/playground/worker.js` (`preludeArgument`), `scripts/smoke-playground.mjs` (claim 6's web half), `tests/examples.test.mjs` (`playgroundDir`), and `vilan.toml`'s `prelude = \"std::web\"`. Sizing S (wasm plus the site)."
+  },
+  {
+   "id": "A155",
+   "section": "A",
+   "kind": "diagnostics (S)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-10-03 (site-46's find, Order 46)",
+   "title": "an element that writes its class twice — `.styled(a)` plus an undotted `class(\"x\")`, a `.class(..)`, or a second `.styled(..)` — silently keeps only the LAST: all three call `set_attribute(\"class\", ..)` in both ui twins, so `<div class(\"x\") .styled(card) />` renders `class=\"<card's classes>\"` and `<div .styled(card) class(\"x\") />` renders `class=\"x\"`",
+   "discussion": "site-46 (Order 46); REPORT-site-46.md; K26 (element syntax makes `class(..)` the obvious spelling for anyone arriving from HTML or JSX)",
+   "body": "Probed on v0.43.0 (fe092e8d), node leg: `ui::render(<div class(\"x\") .styled(card) />)` prints `<div class=\"s1ufvp8\"></div>` and the reverse order prints `<div class=\"x\"></div>`; `std/src/browser/ui.vl` and `std/src/process/ui.vl` both implement `styled` and `class` as a plain set. E151's head sort does not cross a dotted link, so the formatter keeps whatever order was written. Element syntax makes the trap more likely: `class(\"x\")` is what an HTML or JSX hand writes first, and nothing says it fought `.styled`. Doors: (a) a warning when one element's head or chain writes `class` more than once, naming both writers and pointing at `+` for composing styles; (b) `.styled` and `.class` APPEND to the class list (classList.add, and a join on the server), so the writers compose. (b) changes behaviour for existing code that leans on replace (`bind_styled` swapping a whole class set, for one), so it needs its own census first. Rec: (a) now, with (b) as a question for the owner. Sizing S."
+  }
+ ]
+}

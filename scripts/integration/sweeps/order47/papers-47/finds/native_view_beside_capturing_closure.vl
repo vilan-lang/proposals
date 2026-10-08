@@ -1,0 +1,36 @@
+// A closure that writes a captured binding while a `&mut` view of the same
+// binding is live. JS prints 11 and 102. Natively the binding is boxed (spec
+// §6.9, R3), the view holds the cell's `borrow_mut` for the call, and the
+// closure's write reaches the same cell: "a cell was read while it is being
+// updated ... (the JS backend answers the in-progress value; the native backend
+// cannot)", exit 1. No `Shared` is written anywhere in the program.
+fun apply(x: &mut i32, f: || void) {
+	f();
+	x += 10;
+}
+
+struct Counter {
+	n: i32,
+}
+
+impl Counter {
+	fun bump_then(&mut self, f: || void) {
+		self.n += 1;
+		f();
+		self.n += 1;
+	}
+}
+
+fun main() {
+	mut n = 0;
+	apply(&mut n, || {
+		n += 1;
+	});
+	print(n);
+	mut c = Counter { n = 0 };
+	let poke = || {
+		c.n += 100;
+	};
+	c.bump_then(poke);
+	print(c.n);
+}

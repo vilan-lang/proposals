@@ -1,0 +1,8 @@
+// `vilan check src/main.vl` from the package root: no errors.
+// `cd src && vilan check main.vl`: "cannot find type `Signal`; ... set
+// `prelude = \"std::web::prelude\"` in vilan.toml" - the edit the package has made.
+// `cd src && vilan check $PWD/main.vl`: no errors.
+fun main() {
+	let s = Signal::new(1);
+	print(s.get());
+}

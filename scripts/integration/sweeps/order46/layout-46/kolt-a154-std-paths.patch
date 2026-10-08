@@ -1,0 +1,308 @@
+diff -ruN a/e2e/lucide-check.js b/e2e/lucide-check.js
+--- a/e2e/lucide-check.js
++++ b/e2e/lucide-check.js
+@@ -7,7 +7,7 @@
+ // Run it through e2e/lucide-run.sh, which starts the server for it.
+ //
+ // The stub differs from client-harness.js in one load-bearing way:
+-// createElementNS. `std::ui::view` routes every svg tag through it (an
++// createElementNS. `std::web::ui::view` routes every svg tag through it (an
+ // HTML-namespace <svg> renders nothing in a browser), so a DOM stub without
+ // createElementNS cannot render an icon at all - it throws inside mount.
+ 
+diff -ruN a/scripts/lucide.mjs b/scripts/lucide.mjs
+--- a/scripts/lucide.mjs
++++ b/scripts/lucide.mjs
+@@ -68,7 +68,7 @@
+ 	"with", "BigInt", "List", "Map", "Option", "Set",
+ 	// The names element syntax lowers onto. `<path d(...) />` desugars to a
+ 	// `view("path")` call resolved in MODULE scope, so a lucide icon named
+-	// `view` - and there is one - silently shadows `std::ui::view` and every
++	// `view` - and there is one - silently shadows `std::web::ui::view` and every
+ 	// element in the file stops compiling ("`view` expects 0 arguments").
+ 	// Found by building it.
+ 	"view", "style", "render", "Style", "Slot", "AttrValue",
+@@ -225,7 +225,7 @@
+ 		"// is what keeps `vilan fmt` off it, so a save cannot restale the hook.",
+ 		"",
+ 		"import std::option::Option;",
+-		"import std::ui::{ View, view };",
++		"import std::web::ui::{ View, view };",
+ 		"",
+ 		"export *;",
+ 		"",
+diff -ruN a/src/app_overlay.vl b/src/app_overlay.vl
+--- a/src/app_overlay.vl
++++ b/src/app_overlay.vl
+@@ -1,4 +1,4 @@
+-import std::dom::Element;
++import std::web::dom::Element;
+ import pkg::lib::overlay::{ Anchor, AxisRole, AxisSpec, Overlay, Pin, Strategy };
+ import pkg::theme::{ self, Theme };
+ 
+diff -ruN a/src/channel.vl b/src/channel.vl
+--- a/src/channel.vl
++++ b/src/channel.vl
+@@ -3,7 +3,7 @@
+ // module is the view over it.
+ import std::debug::Debug;
+ import std::reactive::{ DraftState, draft };
+-import std::router::navigate;
++import std::web::router::navigate;
+ import pkg::app_context::{ get_input_system, get_overlays, get_user };
+ import pkg::app_input_system::{ ChannelMenuInputLayerData, MessageMenuInputLayerData };
+ import pkg::lib::overlay::{ Overlay, Pin };
+diff -ruN a/src/client.vl b/src/client.vl
+--- a/src/client.vl
++++ b/src/client.vl
+@@ -4,11 +4,11 @@
+ // route are client-local signals, and the server serves the shell for every
+ // path, so a deep link reloads clean.
+ 
+-import std::asset::{ bundle, bundle_as };
+ import std::json::json_codec;
+ import std::reactive::MemoCell;
+-import std::router::{ current_path, navigate_replace, segments };
+ import std::rpc::{ RpcError, SocketTransport, rpc_protocols };
++import std::web::asset::{ bundle, bundle_as };
++import std::web::router::{ current_path, navigate_replace, segments };
+ import pkg::app_context::{ AppContext, DragStatus, app_context };
+ import pkg::app_input_system::create_input_system;
+ import pkg::lib::overlay::OverlayDriver;
+diff -ruN a/src/lib/input_system.vl b/src/lib/input_system.vl
+--- a/src/lib/input_system.vl
++++ b/src/lib/input_system.vl
+@@ -15,10 +15,10 @@
+ // registered whenever they happened to mount.
+ 
+ import std::display;
+-import std::dom::{ Event, window };
+ import std::iterator::Iterator;
+ import std::reactive::get_owner;
+ import std::shared::Shared;
++import std::web::dom::{ Event, window };
+ 
+ export *;
+ 
+diff -ruN a/src/lib/interact.vl b/src/lib/interact.vl
+--- a/src/lib/interact.vl
++++ b/src/lib/interact.vl
+@@ -1,7 +1,7 @@
+-import std::dom::{ Event, window };
+ import std::math::Vec2;
+ import std::reactive::{ FlushPolicy, turn };
+ import std::time::{ Duration, Instant, now_millis };
++import std::web::dom::{ Event, window };
+ 
+ export *;
+ 
+diff -ruN a/src/lib/overlay.vl b/src/lib/overlay.vl
+--- a/src/lib/overlay.vl
++++ b/src/lib/overlay.vl
+@@ -52,11 +52,11 @@
+ // or ALIGNED with it (the cross axis of an anchored menu), with a `Slide` or
+ // `Flip` strategy for staying inside the container.
+ 
+-import std::dom::{ DomRect, Element, Event, window };
+ import std::reactive::{ Owner, get_owner, owner_scope };
+ import std::shared::Shared;
+-import std::style::Style;
+-import std::ui::{ FocusContainment, focus_scope };
++import std::web::dom::{ DomRect, Element, Event, window };
++import std::web::style::Style;
++import std::web::ui::{ FocusContainment, focus_scope };
+ import pkg::lib::input_system::{ InputBinding, InputLayer, InputShortcut, InputSystem };
+ 
+ export *;
+diff -ruN a/src/lib/rotary.vl b/src/lib/rotary.vl
+--- a/src/lib/rotary.vl
++++ b/src/lib/rotary.vl
+@@ -1,6 +1,6 @@
+-import std::dom::Element;
+ import std::hash_map::HashMap;
+ import std::shared::Shared;
++import std::web::dom::Element;
+ 
+ export *;
+ 
+diff -ruN a/src/lib/scale_step.vl b/src/lib/scale_step.vl
+--- a/src/lib/scale_step.vl
++++ b/src/lib/scale_step.vl
+@@ -1,5 +1,5 @@
+ import std::operators::Callable;
+-import std::style::Length;
++import std::web::style::Length;
+ 
+ export struct Scale {
+ 	unit: f64,
+diff -ruN a/src/lib/search_dict.vl b/src/lib/search_dict.vl
+--- a/src/lib/search_dict.vl
++++ b/src/lib/search_dict.vl
+@@ -1,4 +1,4 @@
+-import std::asset;
++import std::web::asset;
+ import pkg::lib::search::{ Document, Segment, word_ranges };
+ 
+ export *;
+diff -ruN a/src/lib/storage.vl b/src/lib/storage.vl
+--- a/src/lib/storage.vl
++++ b/src/lib/storage.vl
+@@ -1,8 +1,8 @@
+-import std::dom::window;
+ import std::hash::{ Hash, Hashable, canonical_hash };
+ import std::hash_set::HashSet;
+ import std::reactive::{ Subscriber, Subscription };
+-import std::storage;
++import std::web::dom::window;
++import std::web::storage;
+ 
+ export *;
+ 
+diff -ruN a/src/login_page.vl b/src/login_page.vl
+--- a/src/login_page.vl
++++ b/src/login_page.vl
+@@ -1,7 +1,7 @@
+ import std::fetch;
+ import std::json::FromJson;
+ import std::json::Json;
+-import std::router::navigate;
++import std::web::router::navigate;
+ import pkg::app_context::{ get_prefs, get_route };
+ import pkg::lib::overlay::Overlay;
+ import pkg::lucide;
+diff -ruN a/src/model.vl b/src/model.vl
+--- a/src/model.vl
++++ b/src/model.vl
+@@ -24,9 +24,9 @@
+ // as "nothing yet" (`None`, or `Pending`), and a reconnect re-runs the switch
+ // over the new client, whose stubs mint fresh mirrors.
+ import std::context::Context;
++import std::reactive::transient::{ TransientSource, TransientState };
+ import std::reactive::{ Flow, MemoCell, Source };
+ import std::rpc::{ RpcError, SocketTransport };
+-import std::transient::{ TransientSource, TransientState };
+ import pkg::shared::{ Account, Channel, Message, User, UserId };
+ import pkg::store::KoltClient;
+ 
+diff -ruN a/src/routes.vl b/src/routes.vl
+--- a/src/routes.vl
++++ b/src/routes.vl
+@@ -3,7 +3,7 @@
+ // mirrors the layout shape (Kolt's `/:ws`, `/:ws/task/:id`). The org
+ // segment of the target `/w/ORG/WS/*` scheme arrives with organizations.
+ 
+-import std::router::{ FromPath, Routable };
++import std::web::router::{ FromPath, Routable };
+ 
+ export *;
+ 
+diff -ruN a/src/server.vl b/src/server.vl
+--- a/src/server.vl
++++ b/src/server.vl
+@@ -3,13 +3,13 @@
+ // chain, the build served from
+ // its own description, and the generated shell for every unclaimed path.
+ 
+-import std::asset;
+ import std::build::require_build;
+-import std::document::Document;
+ import std::http::{ CachePolicy, Request, Response, Server };
+ import std::json::json_codec;
+ import std::range::Range;
+-import std::rpc_server::Service;
++import std::rpc::server::Service;
++import std::web::asset;
++import std::web::document::Document;
+ import pkg::store::{ KoltAuth, authorize_connection, store_for };
+ 
+ async fun main() {
+diff -ruN a/src/sidebar.vl b/src/sidebar.vl
+--- a/src/sidebar.vl
++++ b/src/sidebar.vl
+@@ -1,12 +1,12 @@
+ import std::compare::{ Ordering, PartialEq };
+-import std::delta::ListCell;
+ import std::display::Display;
+ import std::iterator::Iterator;
++import std::reactive::delta::ListCell;
+ import std::reactive::{ DraftState, FlushPolicy, combine, turn };
+-import std::router::{ navigate, plain_left_click };
+ import std::rpc::{ ConnectionState, RemoteSource, RpcError, SocketTransport };
+-import std::style::CssValue;
+ import std::time::{ Duration, Instant };
++import std::web::router::{ navigate, plain_left_click };
++import std::web::style::CssValue;
+ import pkg::app_context::{ get_app_context, get_overlays, get_prefs, get_route, get_sidebar_tab };
+ import pkg::channel::{
+ 	create_channel_delete_modal,
+diff -ruN a/src/store.vl b/src/store.vl
+--- a/src/store.vl
++++ b/src/store.vl
+@@ -4,7 +4,7 @@
+ // here and takes only the generated stubs - the bodies are server-colored,
+ // and only the server entry reaches them.
+ //
+-// Auth is decided at the HANDSHAKE (std::rpc_server::Service::authorize): the
++// Auth is decided at the HANDSHAKE (std::rpc::server::Service::authorize): the
+ // browser offers its session token as a subprotocol, `authorize_connection`
+ // looks it up, and the connection's `Session.identity` is the user - so the
+ // per-connection `KoltStore` carries `user` as a field and no method takes a
+@@ -16,11 +16,11 @@
+ import std::compare::PartialEq;
+ import std::crypto::random_bytes;
+ import std::db::Database;
+-import std::delta::SetPipe;
+ import std::json::{ FromJson, Json, JsonKind, JsonValue };
+ import std::memo::Memo;
++import std::reactive::delta::SetPipe;
+ import std::reactive::{ HashMapCell, HashMapEntry, MemoCell };
+-import std::rpc_server::{ Connection, Handshake, Reject, Session };
++import std::rpc::server::{ Connection, Handshake, Reject, Session };
+ import std::shared::Shared;
+ import std::time::Instant;
+ import std::wire::{ Deserialize, Serialize, Wire };
+diff -ruN a/src/styles.vl b/src/styles.vl
+--- a/src/styles.vl
++++ b/src/styles.vl
+@@ -1,6 +1,6 @@
+ // The style vocabulary the chains below are written in - one import for the
+ // file, from the module std curates for exactly this.
+-import std::style::prelude::{
++import std::web::style::prelude::{
+ 	AlignItems,
+ 	Cursor,
+ 	Length,
+diff -ruN a/src/theme.vl b/src/theme.vl
+--- a/src/theme.vl
++++ b/src/theme.vl
+@@ -3,8 +3,8 @@
+ import std::hash::{ Hash, Hashable };
+ import std::reactive::{ DraftState, FlushPolicy, combine, get_owner, turn };
+ import std::rpc::{ ConnectionState, RemoteSource, RpcError, SocketTransport };
+-import std::style::{ Color, Declarations, Style };
+ import std::time::{ self, Debounce, Duration, Instant };
++import std::web::style::{ Color, Declarations, Style };
+ import pkg::app_context::{ get_overlays, get_prefs };
+ import pkg::app_overlay::{ (impl Overlay) };
+ import pkg::lib::overlay::{ DismissReason, Overlay, Pin };
+@@ -310,7 +310,7 @@
+ }
+ 
+ impl Theme {
+-	// The palette rides a per-theme declaration block (`std::style::declare`)
++	// The palette rides a per-theme declaration block (`std::web::style::declare`)
+ 	// and the elements read it back through `Color::var` - switching themes
+ 	// is one `data-theme` attribute write on an ancestor.
+ 	fun new(id: str, name: str, scheme: ThemeScheme, variables: ThemeVariables) {
+diff -ruN a/vilan.toml b/vilan.toml
+--- a/vilan.toml
++++ b/vilan.toml
+@@ -23,7 +23,7 @@
+ default-entry = "server"
+ # The web prelude: the base seven plus Signal/SignalCell/view/View and the
+ # ambient style/ui modules. Weakest scope - explicit imports and locals win.
+-prelude = "std::web"
++prelude = "std::web::prelude"
+ # The lucide hook's products (`src/lucide/lib.vl`). Declaring the root keeps
+ # `vilan fmt` off them, which is what stops a format-on-save from restaling the
+ # hook and paying for the whole icon set again on the next build. Worth a line

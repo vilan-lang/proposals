@@ -1,0 +1,24 @@
+// B509 probe b11: rule 4's liveness — is a reassignment refused while a view is
+// lexically in scope but DEAD (past its last use)?
+import std::io::print;
+
+struct X {
+	a: i32,
+}
+
+fun bump(v: &mut i32) {
+	v += 1;
+}
+
+fun main() {
+	mut x = X { a = 1 };
+	for e in &mut [1, 2] {
+		bump(&mut x.a);
+	}
+	mut list: List<i32> = [1, 2, 3];
+	for e in &mut list {
+		e += 1;
+	}
+	list = [];
+	print(i"after the loop, reassigned: len={list.len()} a={x.a}");
+}

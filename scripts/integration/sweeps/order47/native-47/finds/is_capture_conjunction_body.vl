@@ -1,0 +1,14 @@
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+// native: an `is` capture to the left of `&&` in an `if` condition is read in
+// the BODY. JS prints "abc"; natively rustc E0425 (`name` is scoped to the
+// conjunction's `match` arm, not the `if` body).
+fun main() {
+	let held: Option<str> = Some("abc");
+	if held is Some(let name) && name.len() > 0 {
+		print(name);
+	}
+}
+
+main();

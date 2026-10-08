@@ -1,0 +1,10 @@
+import std::io::print;
+import std::shared::Shared;
+
+fun main() {
+	let counts = Shared::new([0, 0]);
+	counts.write()[0] += 1;
+	print(counts.read()[0]);
+}
+
+main();

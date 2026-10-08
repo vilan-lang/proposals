@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "M111",
+   "section": "M",
+   "kind": "PERFORMANCE (HIGH) — emission",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-03 (perf-46's find, Order 46)",
+   "discussion": "perf-46 (Order 46); sweeps/order46/REPORT-perf-46.md; M101 (the bound cache), M94/M98 (impl selection memo)",
+   "title": "`impl_select::applying_implementations` is ~32% of kolt's `vilan check` instructions (8.6 G of 27.1 G, callgrind, profiling build at fe092e8d+M108), reached almost entirely from the transformer's `select_member_here` during the emission walk — the selection memo misses (`applying_implementations_uncached` → `subject_applies` 8.4 G), so every emitted member call re-ranks the impls",
+   "body": "Measured on kolt @984a1dfb (`callgrind_annotate --inclusive`): `walk_entity` → `select_member_here` → `select_member` → `applying_implementations` → `subject_applies` (recursive). The analyzer side of member lookup now reads M107's head index; the emission side still scans. Rec: key the selection memo on the resolved subject type + member (the shape M19's bound memo uses), or give `applying_implementations` the same subject-head narrowing (`MemberRowIndex`). Expect the emission walk's share of kolt's check (23.9% of thread CPU) to fall sharply. Sizing M."
+  },
+  {
+   "id": "M112",
+   "section": "M",
+   "kind": "tooling (calibration; S)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-03 (perf-46's find, Order 46)",
+   "discussion": "perf-46 (Order 46); M105 S4 (`scripts/perf_genapp.py`), `performance-gates.md` §5",
+   "title": "the kolt-shaped generated app's emission-walk share drifts 18.6 points from kolt's (5.3% vs 23.9% of thread CPU, `perf_gate.py calibrate` at the perf-46 tip): every other phase is within 10 points",
+   "body": "The generated app has no shape that drives the emitter's impl selection the way kolt's code does (see M?1 — kolt's emission cost is mostly `applying_implementations`). Rec: retune the generator (generic method calls through blanket impls in the view bodies, a Store-like keyed state module) until calibrate passes, OR fix M?1 first and recalibrate — kolt's share may come down to meet the generator's. Sizing S."
+  },
+  {
+   "id": "M113",
+   "section": "M",
+   "kind": "PERFORMANCE (LOW) — residual superlinearity",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-03 (perf-46's find, Order 46)",
+   "discussion": "perf-46 (Order 46); M107 (closed by the doubling test at 24k→49k)",
+   "title": "`vilan check` on generated plain code is x1.94 per doubling from 24k to 49k lines but x2.33 from 49k to 98k (5.57 G → 13.0 G instructions, warm): a smaller quadratic term remains above 50k lines",
+   "body": "At 640 modules the costs that still grow faster than linear were not separated in the lane (the 640-module macro-expansion table was not served from the check-cache under callgrind, which masked the profile). Reproduce: `scripts/perf_genapp.py OUT --plain 320` and `640`, `VILAN_CHECK_CACHE=… vilan check .` twice each (the second warm), then callgrind both. Candidates seen at 320→640 before the last fixes: `Program::derived_origin` callers outside the indexed paths, the fixpoint's pass count (28 → 90 `resolve_constraints` calls). Sizing S to measure."
+  },
+  {
+   "id": "M114",
+   "section": "M",
+   "kind": "tooling (S2's measurement; S)",
+   "area": "Build, CI & release",
+   "status": "OPEN — filed 2026-10-03 (perf-46's find, Order 46)",
+   "discussion": "perf-46 (Order 46); M105 S2/S3, `performance-gates.md` §4 and Q7",
+   "title": "the CI `perf` job's first runs decide the tolerance and the counter: read the `perf-measured` artifacts of ~10 runs (which counter GitHub's ubuntu runner allowed — `instructions:u` or the callgrind fallback — and the spread between runners), then adopt the `ci` class's ceilings at a seal (`perf_gate.py ratchet --from measured.json`)",
+   "body": "Until a seal adopts them, the `ci` class's rows REPORT and only the growth row refuses. Q7: under 0.2% spread → tolerance 0.5%; several percent → switch the job to an A/B against the previous release built on the same runner. Sizing S (the integrator, after the merge)."
+  }
+ ]
+}

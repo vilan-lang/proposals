@@ -1,0 +1,23 @@
+// native: a `resource` type WITH a `Drop` impl is refused by name ("destruction.md's
+// teardown is a later slice"); F56 built the Drop-less half. Corpus: resource.vl,
+// resource_exit.vl, resource_take.vl. JS prints "a" then "drop a".
+import std::drop::Drop;
+import std::io::print;
+
+[resource]
+struct Res {
+	tag: str,
+}
+
+impl Res with Drop {
+	fun drop(&mut self) {
+		print(i"drop {self.tag}");
+	}
+}
+
+fun main() {
+	let held = Res { tag = "a" };
+	print(held.tag);
+}
+
+main();

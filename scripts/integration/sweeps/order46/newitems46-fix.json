@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "E269",
+   "section": "E",
+   "kind": "diagnostics + quick fix (XS)",
+   "area": "Editor & tooling",
+   "status": "OPEN — filed 2026-10-04 (fix-46's find, Order 46)",
+   "discussion": "fix-46 (Order 46); A154; `vilan check --fix` probe on a v0.43.0-shaped file",
+   "title": "a bare `import std::web;` (v0.43.0's import of the web prelude as a module, read as `web::Signal`) gets A65's generic namespace refusal - no `std-path/moved` code, no quick fix, nothing for `vilan check --fix` to apply",
+   "body": "Probe (fix-46 tip): `import std::web;\\nfun main() { let _ = web::Signal::new(1); }` is refused with \"`std::web` is a directory with no `web.vl`, so it is a namespace rather than a module ... Import one of its modules instead: `std::web::asset`, ..., `std::web::prelude`, ...\" and then \"cannot find type 'web'\" at the use. The moved-module refusal is raised only where a path MISSES (`moved_std_segment`), and `std::web` resolves (it is the namespace), so the bare import never reaches it; `std::web::{ self, .. }` is the same shape inside a brace list (which `--fix` leaves for a hand with a reason). Rec: when the namespace-only refusal fires on `std::web` itself, raise the moved refusal instead (\"`std::web` moved to `std::web::prelude`\"), and give it an edit that keeps the binding's name: `import std::web::prelude as web;` (and `prelude as web` in a brace list). Rare - no estate file writes it - but it is the one v0.43.0 spelling of the web prelude the migration cannot fix today."
+  },
+  {
+   "id": "N145",
+   "section": "N",
+   "kind": "perf harness (XS)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-04 (fix-46's find, Order 46)",
+   "discussion": "fix-46 (Order 46); `scripts/lsp-latency.py`; E236/E244",
+   "title": "`lsp-latency.py`'s `shared.vl keystroke` scenario no longer lands in today's kolt: its three anchors (`fun ready(self): Option<T> {`, `fun latest(self)`, `Transient::Refreshing(let x) => Some(x)`) are not in `src/shared.vl` of the owner's working tree, the migrated tree, or `vilan check --fix`'s output",
+   "body": "fix-46 added an anchor preflight (every anchor looked up before the server starts; a missing one, or an edit anchor that occurs twice, refuses the run by name). On the migrated kolt (the integrator's recipe: kolt + the A152, A150 and A154 patches) it refuses the `shared.vl keystroke` scenario; every other scenario's anchors occur exactly once. The base at kolt@984a1dfb still has them, so a seal across v0.44.0 compares the other six rows only (`--scenario` for each, on both sides). Rec: re-anchor the scenario on text both the release's commit and today's tree hold, or retire it in favour of a widely imported file kolt still has, when the seal's base next moves past 984a1dfb."
+  }
+ ]
+}

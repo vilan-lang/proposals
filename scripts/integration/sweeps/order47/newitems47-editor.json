@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B561",
+   "section": "B",
+   "title": "B535's trait-scope refusal names an import that does not resolve for a trait in a NESTED PACKAGE module: a trait in `pkg::geo::shapes` is steered to `import pkg::shapes::Area;` — `import_path_of` spells the module's leaf (solver-47 fixed the std half from std's export index; the pkg half remains)",
+   "kind": "diagnostics (wrong steer; XS–S)",
+   "discussion": "editor-47 (Order 47); sweeps/order47/editor-47/finds/b515_nested_trait_path/; `Analyzer::import_path_of` in analyzer.rs; B515/B535",
+   "status": "OPEN — filed 2026-10-05 (editor-47's find, Order 47)",
+   "area": "Type system & the type solver",
+   "body": "Repro (`vilan check src/main.vl` in the find's package): `src/geo/shapes.vl` declares `trait Area` and `impl i32 with Area`; `src/helper.vl` imports it; the entry calls `3.area()` and is refused with `Import it (\\`import pkg::shapes::Area;\\`)`, a statement that does not resolve. `import_path_of` finds the declaring module and formats `{root}::{module.name}::{name}` with the module's LEAF name. solver-47 now spells a STD trait from std's export index (`std::reactive::delta::SequenceCell` — `src/main2.vl` in the repro, which said `pkg::delta::SequenceCell` before), so only the package half stands. editor-47's B560 fix builds every loaded module's full path (root scopes, then `module_children_scopes`) inside `import_steer_inner`; `import_path_of` could read the same walk. The editor's quick fix does not copy the statement (it resolves the trait through the add-import scan, E267), pinned as `trait_import_tests::a_nested_package_trait_is_imported_from_where_it_is_declared`, but `vilan check` still prints the wrong path. Sizing XS; analyzer.rs."
+  },
+  {
+   "id": "B562",
+   "section": "B",
+   "title": "a method called on a SCALAR view is refused — `n.abs()` with `n: &i32`, `s.len()` with `s: &str` (a parameter or a closure's) say \"a view can't be read as a value here; write `*`\" — while the same call on an aggregate view (`p.get()`, `xs.len()`) projects the place, as transparent-references R4 says every `e.method(args)` does",
+   "kind": "semantics question / false refusal (S)",
+   "discussion": "editor-47 (Order 47); sweeps/order47/editor-47/finds/scalar_view_receiver/; proposal/transparent-references.md R4 vs R6; met pinning E263 (a closure literal rewritten to `\\|s: &str\\|` stops compiling at its own body)",
+   "status": "OPEN — filed 2026-10-05 (editor-47's find, Order 47)",
+   "area": "Type system & the type solver",
+   "body": "Repro: `fun f(p: &P, n: &i32, xs: &List<i32>): i32 { p.get() + xs.len().as_i32() + n.abs() }` refuses `n.abs()` only; `fun f(s: &str): usize { s.len() }` and `|s: &str| s.len()` are refused the same way. R4 reads `e.method(args)` for any `e: &[mut] U` as auto-deref to the referent place; R6's uniform `*` is about a view used as a plain VALUE. A by-value `self` receiver on a scalar view is in between: the scalar view is a `(base, key)` pair at runtime (view-invalidation.md §5's 'scalar views don't auto-deref in argument position'), so treating the receiver as an argument is consistent with that representation and not with R4's wording. Either the paper's R4 says 'aggregate' and the refusal is the rule (then the message could name `(*n).abs()`, and the editor's E263 parameter fix could say a body may need it), or the receiver auto-derefs. An owner question first; the fix is small either way. Sizing S."
+  },
+  {
+   "id": "E273",
+   "section": "E",
+   "title": "a named FUNCTION handed where a closure type takes its parameter in the other mode — `apply(count)` with `fun count(s: str): i32` and `apply(f: \\|&str\\| i32)` — gets the generic \"Expected \\|&str\\| i32, but got fn count(str): i32 instead.\", not B495's mode steer (\"this closure takes `str` by value where its type takes a view `&str` … `\\|c\\| f(*c)`\") that a closure literal or a `let`-bound closure gets for the same mismatch",
+   "kind": "diagnostics (S)",
+   "discussion": "editor-47 (Order 47); sweeps/order47/editor-47/finds/fn_item_mode_mismatch.vl; B495; E263",
+   "status": "OPEN — filed 2026-10-05 (editor-47's find, Order 47)",
+   "area": "LSP & tooling",
+   "body": "`closure_mode_mismatch_message` matches only `Type::Closure` on both sides; a function item's type is not one, so the steer (and E263's adapter fix, which keys on it) never reaches the case where the adapter is the ONLY fix — a declared function cannot be rewritten at the call. Rec: read a function item's signature as its closure type for the comparison (its parameters' conventions are its modes). Repro: finds/fn_item_mode_mismatch.vl. Sizing S; analyzer (the message) + nothing in the editor."
+  },
+  {
+   "id": "B563",
+   "section": "B",
+   "title": "trait conformance does not compare a callback parameter's `context` clause: `impl Bag with Plain { fun watch(own self, observer: \\|i32\\| void) .. }` is accepted where `Plain` declares `observer: (\\|i32\\| void) context tracking`, and an impl that ADDS a clause the trait does not declare is accepted too",
+   "kind": "semantics (conformance hole; S–M)",
+   "discussion": "editor-47 (Order 47); sweeps/order47/editor-47/finds/impl_member_drops_context_clause.vl; met fixing E262 (B309 made the clause part of the closure TYPE)",
+   "status": "OPEN — filed 2026-10-05 (editor-47's find, Order 47)",
+   "area": "Type system & the type solver",
+   "body": "Repro: finds/impl_member_drops_context_clause.vl checks clean. E262's premise said conformance refuses the clause-less line when copied; it does not, for a program's own trait (std's not probed). editor-47 moved `resolve_context_clauses` ahead of conformance (E262), so both sides' types now carry their clauses at the check, and the impl is still accepted: the member-signature comparison ignores the closure type's third slot. Since B309 the clause is part of the type, so a call through a `Plain` bound injects contexts the impl's body does not declare it receives (or the reverse). Rec: compare the clause as part of the parameter type in the conformance check (a mismatch steers to the trait's spelling, which E262's steer now prints), then count what in std/corpus/kolt it refuses before any flip. Sizing S–M; analyzer (solver's)."
+  },
+  {
+   "id": "N?5",
+   "section": "N",
+   "title": "`scripts/lsp-latency.py`'s `shared.vl keystroke` scenario cannot run: its edit inserts a space at offset 2 of `\\t\\tself.uuid.hash()` and its completion anchor is that same text, resolved in the EDITED buffer, so every run stops with \"the completion anchor '\\t\\tself.uuid.hash()' is not in src/shared.vl\"",
+   "kind": "harness bug (XS)",
+   "discussion": "editor-47 (Order 47), met taking E121's rows; N145 (perf-47's re-anchoring, 7bf10f45)",
+   "status": "OPEN — filed 2026-10-05 (editor-47's find, Order 47)",
+   "area": "Performance & benchmarks",
+   "body": "The keystroke-path requests are asked before the edit is undone, against the current text, and N145 re-anchored the edit and the completion on overlapping text. `anchor_problems` checks the anchors against the UNEDITED tree, so the pre-flight passes and the run dies mid-scenario. editor-47 measured E121's rows with a scratch copy whose completion anchor is `(\"self.uuid.hash()\", len(\"self.\"))`, which survives the edit (the one-line diff is in the editor-47 report). Rec: that anchor, and make `anchor_problems` also check hover/completion/references anchors against the text after the scenario's edit. Sizing XS; the seal's E121 rows need it."
+  }
+ ]
+}

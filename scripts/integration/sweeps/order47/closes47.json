@@ -1,0 +1,354 @@
+{
+ "date": "2026-10-06",
+ "order": "Order 47",
+ "closes": [
+  {
+   "id": "F90",
+   "lane": "native-47",
+   "commit": "8141e53c",
+   "text": "a compound write at a subscript through a `Shared` view no longer aborts: a subscript is a link of F62's scoped-borrow spine, each index settled first, both assignment paths through one `finish_assignment`; pinned on both backends"
+  },
+  {
+   "id": "F89",
+   "lane": "native-47",
+   "commit": "4049b166",
+   "text": "a pattern's subject that is a subscript or tuple slot is copied like a binding or field (`subject_is_a_place` at match, `if is`, `&&`, `?`); the three std bind-before-match workarounds removed"
+  },
+  {
+   "id": "F85",
+   "lane": "native-47",
+   "commit": "8d4d9c8f",
+   "text": "a closure argument builds at the call's position: `argument_position` rebuilds the whole parameter type under the call's substitution; a block-bodied closure remains B552"
+  },
+  {
+   "id": "F86",
+   "lane": "native-47",
+   "commit": "6bc31b5e",
+   "text": "a variant constructor as a receiver: the receiver half was F85's; the `nest(self): Maybe<Maybe<T>>` case was `nominal_entries` resolving arguments at the head only, now `deeply_resolved`"
+  },
+  {
+   "id": "F88",
+   "lane": "native-47",
+   "commit": "e06e2e0a",
+   "text": "a deref of a block's view reads the value: F81's tails-are-the-copies rule covers a block (`yields_through_value_tails`)"
+  },
+  {
+   "id": "F50",
+   "lane": "native-47",
+   "commit": "aea487f7",
+   "text": "the native copy census gains a `capture_copies` column (9 of 37 rows non-zero) and the leak census a by-design captured-cycle row; spec 6.9 states the native limit; closure-captures.md (papers-47) confirms it"
+  },
+  {
+   "id": "K26",
+   "lane": "docs-47",
+   "commit": "1d35c5b3",
+   "text": "the book half: 13 pages' UI snippets and the five UI examples in element syntax, a 'Markup or chain' style note, two false claims corrected, the DOM test stub's `textContent` reads descendants; the site half landed in Order 46; the `vilan init` templates are K30"
+  },
+  {
+   "id": "L16",
+   "lane": "docs-47",
+   "commit": "163449ca",
+   "text": "std::markdown's 19 strict-parse refusals are ledger rows (two with slots), proven by rewording two; wording unchanged"
+  },
+  {
+   "id": "N140",
+   "lane": "docs-47",
+   "commit": "f4bed6ae",
+   "text": "the row was a duplicate of 570 (B407), restored by a rebase fold; deleted, and `the_index_is_well_formed` refuses a numbered row after a NEW row"
+  },
+  {
+   "id": "N143",
+   "lane": "docs-47",
+   "commit": "f8a0b35a",
+   "text": "the std manifest's census comment carries recipes and no figures (every figure was stale: 1,149 declarations, 70 files, 34 bare-marker modules today)"
+  },
+  {
+   "id": "B533",
+   "lane": "solver-47",
+   "commit": "e5ba36ef",
+   "text": "unranked providers that disagree bind nothing (`PatternProviders::Ambiguous`); the expectation or a written argument decides; a call nothing decides is refused naming both instantiations (breaking; estate 0)"
+  },
+  {
+   "id": "B539",
+   "lane": "solver-47",
+   "commit": "9511465a",
+   "text": "a trait annotation resolved to `Unknown`; the initializer is typed toward the annotation through the value's one impl (`direction_through_trait_annotation`)"
+  },
+  {
+   "id": "B540",
+   "lane": "solver-47",
+   "commit": "26259d97",
+   "text": "the binding grounded to `Maybe<hole>` and the reassignment bound nothing; the reassignment fills the hole and a method call on a `mut` binding with a hole waits for its pending reassignments; closes B530"
+  },
+  {
+   "id": "B541",
+   "lane": "solver-47",
+   "commit": "a2fa7a2c",
+   "text": "the underdetermined mapped-argument refusal names the written text (`underdetermined_mapped_argument`); one NEW ledger row"
+  },
+  {
+   "id": "B542",
+   "lane": "solver-47",
+   "commit": "ed6a260c",
+   "text": "B403's bare `Type::f()`-means-`Self` gives way only where an argument decides the parameter and `Self` would refuse it; std's `unzip` is back in its impl"
+  },
+  {
+   "id": "B543",
+   "lane": "solver-47",
+   "commit": "5c5933b3",
+   "text": "a mapped type whose source is itself mapped composes (`substitute_type`'s Mapped arm); on JS `entries()` over a family with no concrete layout emitted `[ ]` and silently ran zero times, now built over the receiver"
+  },
+  {
+   "id": "B544",
+   "lane": "solver-47",
+   "commit": "9e0d7899",
+   "text": "a whole write inside the guarded block gets B528's steer; a guard's continuation local still steers to `mut`"
+  },
+  {
+   "id": "B537",
+   "lane": "solver-47",
+   "commit": "4c1423ae",
+   "text": "the return check stands down when the body's last statement starts at an unbound `return` B523 steered; one diagnostic per shape (door b)"
+  },
+  {
+   "id": "B547",
+   "lane": "solver-47",
+   "commit": "1d73ff6d",
+   "text": "a macro marker binds an import only on the import fixpoint's reporting pass, after the shadowing re-export bound; the derive's std side imports through `std::reactive::store` (store-47 3e690443)"
+  },
+  {
+   "id": "B438",
+   "lane": "solver-47",
+   "commit": "7200dcd6",
+   "text": "a call whose argument was refused no longer also says 'cannot infer' (`calls_with_refused_arguments`)"
+  },
+  {
+   "id": "B149",
+   "lane": "solver-47",
+   "commit": "7c56b30d",
+   "text": "a call to an `async fun` types as the assimilated payload of its declared return on JS and in the analyzer (`let h: Task<i32> = make()` now refused, estate 0); the native half is F107"
+  },
+  {
+   "id": "B500",
+   "lane": "solver-47",
+   "commit": "69749ec5",
+   "text": "the macro surface's `construct_type_expr` handed a module-qualified type to `[service]` as one opaque name; fixed there, not in the Wire check"
+  },
+  {
+   "id": "B367",
+   "lane": "solver-47",
+   "commit": "c957e5bf",
+   "text": "the refusal is reachable: the four-module reproducer is refused at `c` as visibility.md 3.5 states, and the named fix runs; pinned"
+  },
+  {
+   "id": "B535",
+   "lane": "solver-47",
+   "commit": "dec12a39",
+   "text": "the trait-not-in-scope diagnostic is an error, code `trait-scope/not-imported`, fix data `trait_scope_import`; the quick fix (per call, file-wide, in Add All Missing Imports) is editor-47 1f07fc78"
+  },
+  {
+   "id": "B536",
+   "lane": "solver-47",
+   "commit": "65e79c02",
+   "text": "the attribute/modifier order warning is an error at v0.45.0 (marker census regenerated; three parse tests assert the refusal); the quick fix per head and file-wide is editor-47 aabb1f93"
+  },
+  {
+   "id": "M111",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "impl selection re-proved every blanket chain per site (~870k proofs per kolt check): the arguments-carrying questions memoized by id, `provides_trait` over a per-trait provider index, proofs memoized per Program (exact under B408's cut); kolt check 25.30 G -> 15.49 G (-38.8%), RSS flat, dist byte-identical"
+  },
+  {
+   "id": "M118",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "`trait_args_for(_pattern)` reconciled a `dyn Flow<X>` against every `Flow` implementor through the erasure arm (~11k slots per attempt, re-paid per unannotated closure); an object answers for its own trait (fast path in B533's `trait_args_providers_for_pattern`, zero mismatches over 5,434 tests + kolt); kolt's `find` 45,435 -> 1,872 work units"
+  },
+  {
+   "id": "M119",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "closed by M111: F78's per-stage defaults were paid in the emitter's selection; at tip F78 saves 3.5% and reactive-ui (1,951 M) is below its pre-F78 count"
+  },
+  {
+   "id": "M117",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "answered: the store exhibits patch costs +4.4% at tip (+1.9% std load tax, +2.5% kolt's own code; nothing disproportionate in the derive); the HOLD is released, the patch goes with v0.45.0's kolt patches"
+  },
+  {
+   "id": "M113",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "the per-package macro-expansion table capped at 4,096 entries and re-ran ~3,600 expansions per warm check of a 640-module package; cap 65,536; plain:640 13.11 G -> 11.22 G, doubling 320->640 x2.33 -> x1.99"
+  },
+  {
+   "id": "M112",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "kolt's drift, not the generator's: with M111 the emission-walk shares are 5.0% vs 4.0% and calibrate passes; `calibrate --kolt-tree DIR` runs without git in kolt; the const pass is M125"
+  },
+  {
+   "id": "M114",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "the `ci` class is adopted at 0.5% from the perf job's own counts (14 runs read, four runner CPUs within 0.01%); `ratchet --tolerance`, per-row `tolerance`; re-adopted on the pinned toolchain in M126"
+  },
+  {
+   "id": "M109",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "rule 2 donates a binding's disjoint fields (constructed bindings), a `&mut` loan to a closure binding is call-bounded, native field liveness follows tuple elements; the derive's multi-payload write and a payload lent to a closure no longer copy back (400 -> 200 `__clone`)"
+  },
+  {
+   "id": "M90",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "a read-only `let` of a stable place shares the place on JS under B53's conditions plus a plain type and projection-only reads (510 -> <10 `__clone`); native keeps its copy; `tuple-access.mjs` moved, copy census 587 -> 586"
+  },
+  {
+   "id": "M89",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "vtables deduplicated by slot set on JS (`const $b = $a`); kolt's client 14 -> 10 tables"
+  },
+  {
+   "id": "N145",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "the preflight is re-anchored on `UserId`'s `Hashable` impl; passes on kolt@984a1dfb's shared.vl and today's tree"
+  },
+  {
+   "id": "N146",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "the cut writes names not paths and refuses a home path before staging; `fold-release.sh` reads origin's main, pushes when origin lacks the merge, verifies after every push; the cut runs `ratchet --from <verdict> --release`; `seal --advance` writes the E121 count to the verdict dir, not the tree"
+  },
+  {
+   "id": "M60",
+   "lane": "perf-47",
+   "commit": "558f00b0",
+   "text": "census: one std `get`/`set` pair remains (`optimistic`'s `previous` snapshot, legitimate); nothing to move"
+  },
+  {
+   "id": "M126",
+   "lane": "integrator",
+   "commit": "b4db6445",
+   "text": "the CI perf job resolves through rust-toolchain.toml (c0d52797) and every `ci` ceiling is re-adopted from the first pinned run (37393647965)"
+  },
+  {
+   "id": "E258",
+   "lane": "debug-47",
+   "commit": "afd2b978",
+   "text": "`[track_caller]` (ranked between `must_use` and `rpc`): a post-analysis pass gives each tracking function a hidden trailing `std::debug::Location`; `panic`, `assert`, `unwrap`/`expect`, `List::remove`/`insert` and every `xs[i]` report the caller's site on both backends, release builds included; `std::debug::caller()`"
+  },
+  {
+   "id": "E259",
+   "lane": "debug-47",
+   "commit": "eb5e5d06",
+   "text": "the readable build names an instance after its function (`first`, `first2`; std reads `unwrap`, not `$f`); release keeps short names"
+  },
+  {
+   "id": "N136",
+   "lane": "debug-47",
+   "commit": "e17f41b0",
+   "text": "numeric `print` arguments are wrapped in `String(x)` on JS, so negative zero prints `0` on both backends; `f64-print-negative-zero.vl` joins the default differential; the generic-instance remainder is N149"
+  },
+  {
+   "id": "M115",
+   "lane": "incr-47",
+   "commit": "b92847b0",
+   "text": "confirmed (every keystroke was a base-cache miss storing a cold world) and answered by M110 S1 for served hot sets: a `views.vl` keystroke is one hit, 2 sources walked, 9.03 G from 12.58 G; the refused files are M121"
+  },
+  {
+   "id": "B546",
+   "lane": "store-47",
+   "commit": "de212fec",
+   "text": "`View::autofocus` records which element it took focus from (a host `WeakMap`); a scope that finds focus already inside itself at install follows the record out to pick its restore target; three ui_rows pins"
+  },
+  {
+   "id": "A158",
+   "lane": "store-47",
+   "commit": "0fd7233a",
+   "text": "`List::push_many(items)` over the new `Items<T>` (`List`, `HashSet`, every `Iterator`), both backends; `ListCell::push_many` is ONE splice; arrays follow as A161"
+  },
+  {
+   "id": "E253",
+   "lane": "editor-47",
+   "commit": "303bafa6",
+   "text": "the premise was wrong (the find's program was refused); a method call whose closure argument's body is refused never wired and left no record; `Program::unwired_method_calls` (editor only) and hover/definition read it"
+  },
+  {
+   "id": "E263",
+   "lane": "editor-47",
+   "commit": "9d864bb6",
+   "text": "the closure mode-mismatch quick fix: rewrite the literal's parameter in the type's mode, or adapt a named one-parameter closure (`vilan_ide::closure_mode_fix`)"
+  },
+  {
+   "id": "E264",
+   "lane": "editor-47",
+   "commit": "a1833ab7",
+   "text": "element-head completion filters `parsing::STEERED_ELEMENT_ATTRIBUTES`; `.autofocus()` is offered as the method only"
+  },
+  {
+   "id": "E261",
+   "lane": "editor-47",
+   "commit": "b4ab2a75",
+   "text": "a `match` of two pipe stages that both implement std's `Flow` steers to the `dyn Flow` annotation (`unify_arm_bodies`); one NEW ledger row"
+  },
+  {
+   "id": "E262",
+   "lane": "editor-47",
+   "commit": "1b99ab49",
+   "text": "a program's own context clauses were written into their types only after conformance ran; `resolve_context_clauses` now runs before conformance; the 'declare `fun ..`' steer keeps the clause; conformance ignoring the clause is B563"
+  },
+  {
+   "id": "E265",
+   "lane": "editor-47",
+   "commit": "662842b6",
+   "text": "the printer prints an `if`/`match` bare after an operator and down the left spine of a right operand; the safety net aligns token streams across deletions so a decline names the right line"
+  },
+  {
+   "id": "N141",
+   "lane": "editor-47",
+   "commit": "c9935e82",
+   "text": "`assert_formats` asserts the reprint succeeded; none of the ten identity pins (or any other caller) turned red"
+  },
+  {
+   "id": "E269",
+   "lane": "editor-47",
+   "commit": "65bfa744",
+   "text": "a bare `import std::web;` gets the moved-path refusal and `--fix` writes `import std::web::prelude as web;`; any moved leaf whose new last segment differs is aliased (`rpc::server as rpc_server`); a `self` in the old web brace list is fixed too"
+  },
+  {
+   "id": "E267",
+   "lane": "editor-47",
+   "commit": "d7e1ce96",
+   "text": "the auto-import walk and `import_candidates` descend a package's (and dependencies') nested modules, as they did for std"
+  },
+  {
+   "id": "B560",
+   "lane": "editor-47",
+   "commit": "2e5563ee",
+   "text": "`import_steer_inner` built paths from the module's leaf name; it builds every loaded module's full path and compares hits by it (nested std modules too)"
+  },
+  {
+   "id": "E270",
+   "lane": "editor-47",
+   "commit": "e93b0ec5",
+   "text": "the TextMate rule matches a line-leading `then` with the same right-hand guard; `else` and the hljs theme were already fine"
+  },
+  {
+   "id": "A155",
+   "lane": "papers-47",
+   "commit": "—",
+   "text": "class-writes.md: 405 class writers across kolt, the site and the examples, none doubled; RULED last-wins, never append; the warning's gaps are A159/A160, the error at the next breaking cut is A162"
+  },
+  {
+   "id": "C15",
+   "lane": "papers-47",
+   "commit": "—",
+   "text": "closure-captures.md: boxing costs ~152 instructions + one 40-byte allocation per boxed scalar natively, nothing on JS; the one-non-escaping-closure rule is UNSOUND as a copy; RULED spec 6.9 and R3 stand; F49/F103 before the store runs natively"
+  }
+ ]
+}

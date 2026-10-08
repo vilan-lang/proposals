@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "A159",
+   "section": "A",
+   "kind": "diagnostics (S)",
+   "area": "Reactive core & UI",
+   "title": "A155's class-written-twice warning misses two writers: `.bind_attr(\"class\", ..)` and `.toggle_attr(\"class\", ..)` both write an element's class (the second REMOVES it while its flag is false), so `<div .styled(card) .bind_attr(\"class\", s) />` and `<div .styled(card) .toggle_attr(\"class\", flag) />` lose card's classes with no warning",
+   "discussion": "papers-47 (Order 47); proposal/class-writes.md §2.3 G1, probes a6/a12; repro sweeps/order47/papers-47/finds/a155_bind_attr_class_silent.vl",
+   "body": "`check_class_written_twice` (vilan-core analyzer.rs:53737) takes `class`, `styled`, `bind_class`, `bind_styled` and `attr(\"class\", ..)` as writers (:53770). `bind_attr` and `toggle_attr` with the literal name \"class\" write the same attribute on both ui twins (browser ui.vl AttrBinding :2209-2230, toggle_attr :317-327). SSR of the repro prints `<div class=\"on\"></div>` and `<div class=\"\"></div>`; `vilan check` is silent. Fix: add both names to the writer set under the same `\"class\"` literal test `attr` gets; pins a6/a12 beside A155's five pairs. Sizing S.",
+   "status": "OPEN — filed 2026-10-05 (papers-47's find, Order 47)"
+  },
+  {
+   "id": "A160",
+   "section": "A",
+   "kind": "diagnostics (S)",
+   "area": "Reactive core & UI",
+   "title": "A155's warning tells the author something false when the EARLIER writer is reactive: for `<div class(label) .styled(card) />` (label a Signal) it says \"only the last write stays: `.styled(card)` replaces what `class(label)` wrote\", but in the browser `class(label)`'s binding re-sets the class on every change and the element shows `label` from then on",
+   "discussion": "papers-47 (Order 47); proposal/class-writes.md §2.3 G2, probes a11/a13; repro sweeps/order47/papers-47/finds/a155_reactive_earlier_writer.vl",
+   "body": "Probed at b94cb47f under a DOM stub that records class writes: a11's client writes are [\"lbl\", <card>, \"lbl2\"] -> final \"lbl2\", while SSR rendered card's classes; a13 (`.bind_styled(..)` first, `class(\"x\")` second) is the mirror: [<card>, \"x\", <wide>] -> wide. The winner is whichever writer FIRED last. Fix: when the earlier writer is a binding (a `Source` argument to `attr`/an undotted `class(..)`, or a `bind_*`), the sentence says the two writers take turns and the element shows whichever changed last; same steer (compose into one writer). Pins a11/a13. Sizing S.",
+   "status": "OPEN — filed 2026-10-05 (papers-47's find, Order 47)"
+  },
+  {
+   "id": "B556",
+   "section": "B",
+   "kind": "CLI bug (S)",
+   "area": "LSP & tooling",
+   "title": "a file addressed by a bare relative path from inside its package — `cd src && vilan check main.vl` (or `../main.vl` from deeper) — is compiled as if it belonged to NO package: `owning_package` asks `Path::new(\"main.vl\").parent()` = \"\" and finds no manifest, so the package's prelude, std and source root are ignored",
+   "discussion": "papers-47 (Order 47); repro sweeps/order47/papers-47/finds/relative_entry/ (vilan.toml + src/main.vl); proposal/closure-captures.md §6.3",
+   "body": "Repro: a package with `prelude = \"std::web::prelude\"` and `src/main.vl` using `Signal`. From the package root `vilan check src/main.vl` -> no errors; from `src/`, `vilan check main.vl` -> \"cannot find type 'Signal'; ... set `prelude = \\\"std::web::prelude\\\"` in vilan.toml\" (the edit already made); `vilan check $PWD/main.vl` -> no errors; from `src/deeper/`, `vilan check ../main.vl` fails the same way (find_project_root walks \"..\" then \"\" and stops). kolt's server fails from `src/` with a `[service]` expansion error (\"cannot infer 'T' ... ': Wire'\"); every example package's server/main does too. Same in the installed 0.44.0. vilan-cli main.rs:3826-3832 (`owning_package`); `std_dir` (:5969) already canonicalizes. Fix: absolutize the entry (or map an empty parent to \".\") before the manifest walk; a pin that runs check from inside src/. Sizing S.",
+   "status": "OPEN — filed 2026-10-05 (papers-47's find, Order 47)"
+  },
+  {
+   "id": "F102",
+   "section": "F",
+   "kind": "native RUNTIME abort (S–M)",
+   "area": "Native targets & rendering",
+   "title": "native: a closure that WRITES a captured binding while a `&mut` view of that binding is live aborts — `apply(&mut n, \\|\\| n += 1)` and `c.bump_then(poke)` (a `&mut self` call whose closure argument writes `c.n`) print 11 / 102 on JS and exit 1 natively with \"a cell was read while it is being updated\"; the program declares no `Shared`, the cell is §6.9's capture box",
+   "discussion": "papers-47 (Order 47); proposal/closure-captures.md §6.1, probes c5/c9; repro sweeps/order47/papers-47/finds/native_view_beside_capturing_closure.vl; F39 (the `Shared` twin, DECIDED: refuse at compile time)",
+   "body": "`n` is boxed (R3) because a closure writes it; the `&mut n` argument (or the `&mut self` receiver) holds the cell's `borrow_mut` for the call and the closure's write reaches the same cell -> vilan-rt's REENTRANT abort. JS answers the in-progress value. It is the aliasing rule 4 (§6.4) exists to refuse: a `&mut` view live while another path writes its place. Rec (closure-captures.md Q3): refuse at compile time, as F39 decided for explicit cells — a write to a captured binding inside a closure that is passed to (or called during) a call that holds a `&mut` view of the same binding. Pins c5/c9 on both backends. Sizing S–M (analyzer, rule 4's walk).",
+   "status": "OPEN — filed 2026-10-05 (papers-47's find, Order 47)"
+  },
+  {
+   "id": "F103",
+   "section": "F",
+   "kind": "perf (native) (S)",
+   "area": "Native targets & rendering",
+   "title": "native: F49's sibling — a FIELD read on a BOXED binding copies the WHOLE value first: `log.lines.len()` emits `log.get().lines.len()`, cloning every list in `log`; in std it is `write_at`'s `woken.get().feeds` / `.slots`, six whole-`StoreWoken` copies per `Store` write",
+   "discussion": "papers-47 (Order 47); proposal/closure-captures.md §6.2, §3.2; repro sweeps/order47/papers-47/finds/native_boxed_field_read_copies.vl; F49 (the `&self`-call form)",
+   "body": "`Captured::get` (= `Shared::get`) returns a clone of T; a field read through a boxed binding takes it and reads one field. Probe s1 (20,000 store writes: ~4,150 Ir and 15 allocations per write) carries `(woken.get().feeds).clone()` twice and `woken.get().slots` once per write in `write_at` (store_core.vl:552-575). Fix with F49: read a field through `x.borrow().field` (and `&*x.borrow()` for `&self`), so the copy is of the field the read owes, not of the whole value. Pin: the store probe's copy count; ride it with F49 before A153's server half runs natively. Sizing S.",
+   "status": "OPEN — filed 2026-10-05 (papers-47's find, Order 47)"
+  }
+ ]
+}

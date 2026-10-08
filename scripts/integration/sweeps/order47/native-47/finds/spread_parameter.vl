@@ -1,0 +1,14 @@
+// native: a spread parameter (`...items: (i32, i32, i32)`) is refused by name; it
+// is a call convention over a tuple parameter. Corpus: spread-parameters.vl,
+// tuple-spread.vl. JS prints 2.
+import std::io::print;
+
+fun middle(...items: (i32, i32, i32)): i32 {
+	items.1
+}
+
+fun main() {
+	print(middle(1, 2, 3));
+}
+
+main();

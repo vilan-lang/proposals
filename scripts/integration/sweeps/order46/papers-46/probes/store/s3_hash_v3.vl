@@ -1,0 +1,27 @@
+// A153 probe s3: does the contract hash see a Wire struct's FIELDS? v1 vs v2
+// differ only in `Message` (v2 adds `edited: bool`). Prints both services' hash.
+import std::io::print;
+import std::reactive::{ Signal, SignalCell };
+
+[derive(Wire)]
+struct Message {
+	content: str,
+	id: u53,
+}
+
+[service(SvcClient)]
+struct Svc {
+	last: SignalCell<Option<Message>>,
+}
+
+impl Svc {
+	[rpc]
+	fun message(self, id: u53): SignalCell<Option<Message>> {
+		self.last
+	}
+}
+
+fun main() {
+	let svc = Svc { last = Signal::new(None) };
+	print(i"v3 contract_hash={svc.contract_hash()}");
+}

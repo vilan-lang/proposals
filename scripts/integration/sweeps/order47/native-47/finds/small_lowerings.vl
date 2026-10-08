@@ -1,0 +1,20 @@
+// native: three small lowerings are refused by name, each the first wall of its
+// corpus program — a triple-quoted string (multiline-string.vl), the repeat literal
+// `[value; n]` (fixed-arrays.vl; its message also doubles a backtick: "the expression
+// form `a `[value; n]` literal`"), and std's `f64::is_finite` host binding
+// (`Number.isFinite`, math.vl). Each line below is refused alone when the ones above
+// it are removed.
+import std::io::print;
+
+fun main() {
+	let text = """
+		two
+		lines
+		""";
+	print(text);
+	let zeros: [i32; 3] = [0; 3];
+	print(zeros.len());
+	print(1.5f.is_finite());
+}
+
+main();

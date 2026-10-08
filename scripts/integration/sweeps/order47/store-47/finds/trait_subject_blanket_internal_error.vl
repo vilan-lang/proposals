@@ -1,0 +1,30 @@
+// A blanket written with a TRAIT as its subject — `impl Iterator<type T> with
+// Pour<T>` ("every implementor of Iterator") — compiles, and a call of its member
+// on a concrete iterator is an INTERNAL error at emission: "a call resolved to
+// `Iterator`'s requirement `next`, which has no body ... please report this
+// program". The same blanket written with a type binder,
+// `impl type I: Iterator<type T> with Pour<T>`, builds and runs on both
+// backends. std's own `impl Iterator<type T> with Iterable<T>` is this shape.
+// Expected: 4.
+import std::io::print;
+import std::iterator::Iterator;
+
+trait Pour<T> {
+	fun pour_into(own self, target: &mut List<T>);
+}
+
+impl Iterator<type T> with Pour<T> {
+	fun pour_into(own self, target: &mut List<T>) {
+		for item in self {
+			target.push(item);
+		}
+	}
+}
+
+fun main() {
+	mut xs = [1, 2];
+	[5, 6].iter().map(|x| x * 10).pour_into(&mut xs);
+	print(xs.len());
+}
+
+main();

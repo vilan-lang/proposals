@@ -1,0 +1,15 @@
+// A153 probe s4b: `at(key)` on a map field's handle does not exist on 0.43.0.
+import std::hash_map::HashMap;
+import std::io::print;
+import std::store::{ Storable, Store };
+
+[derive(Storable)]
+struct Global {
+	messages: HashMap<u53, str>,
+}
+
+fun main() {
+	let global = Store::new(Global { messages = HashMap::new() });
+	let one = global.messages().at(7);
+	print(i"{one.get()}");
+}

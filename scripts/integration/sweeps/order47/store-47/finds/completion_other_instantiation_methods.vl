@@ -1,0 +1,28 @@
+// Member completion after `store.` on a `Store<App>` offers `city` and `path` —
+// methods of the derive's `impl Store<Address>`, an inherent impl at ANOTHER type
+// argument — beside `App`'s own projections. Accepting one is refused
+// ("Store<App> has no method 'city'"). `nominal_member_completions` lists every
+// impl on the struct by its id, not by the receiver's arguments.
+// Completion at the `¦` (vilan-ide's completion tests reproduce it directly).
+import std::reactive::{ Signal, Source };
+import std::reactive::store::{ Storable, Store };
+
+[derive(Storable)]
+struct Address {
+	city: str,
+	path: str,
+}
+
+[derive(Storable)]
+struct App {
+	name: str,
+	address: Address,
+}
+
+fun main() {
+	let store = Store::new(App { name = "a", address = Address { city = "c", path = "p" } });
+	let _x = store.name;
+	// type here: store.¦  — offered: name, address, ..., city, path
+}
+
+main();

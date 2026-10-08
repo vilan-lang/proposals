@@ -1,0 +1,24 @@
+// A blanket `impl type T with Leaf` does not reach a FUNCTION ITEM bound
+// without an annotation: `let f = nothing; f.leaf()` is refused "cannot call
+// method 'leaf' on fn nothing()", while `let f: || void = nothing;` (B508's pin)
+// compiles. Expected: "leaf".
+import std::io::print;
+
+trait Leaf {
+	fun leaf(&self): str;
+}
+
+impl type T with Leaf {
+	fun leaf(&self): str {
+		"leaf"
+	}
+}
+
+fun nothing() {}
+
+fun main() {
+	let f = nothing;
+	print(f.leaf());
+}
+
+main();

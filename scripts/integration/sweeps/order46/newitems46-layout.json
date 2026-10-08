@@ -1,0 +1,84 @@
+{
+ "items": [
+  {
+   "id": "B548",
+   "section": "B",
+   "kind": "bug (platform colouring; spurious refusal) (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-04 (layout-46's find, Order 46)",
+   "discussion": "layout-46 (Order 46); sweeps/order46/REPORT-layout-46.md; repro sweeps/order46/layout-46/finds/fenced_twin (node entry; `vilan check .`); blocks F28's first half for `std::web::router`",
+   "title": "a file declaring `[platform(\"browser\")] mod self;` that IMPORTS a platform-twin module (`std::web::ui`) is refused in a node build even when nothing reaches it from the entry: the import binds the PROCESS twin, and the fence walk reports that twin's functions (\"`view` requires the `process` layer of `std` and cannot run on `browser` … reachable from `card`, which its declaration fences\")",
+   "body": "Repro: a node entry that imports `pkg::widget::card`, where `widget.vl` is `[platform(\"browser\")] mod self;` + `import std::web::ui::{ View, view };` + `export fun card(): View { view(\"div\") }`. `vilan check` on next: one error inside std's process `ui.vl`. One program has one platform, so a twin import resolves to the build platform's side, and the fence walk then checks a browser-fenced body against the OTHER twin. With a layer the same module (std's `router`, which imports `ui`) was loaded for typing and never fence-walked, so the layer gave zero errors; fenced it gives six on a bare `import std::web::router::location_url;` — the first of the two reasons layout-46 stopped F28. Rec: the fence walk skips a fenced body whose declaration this build's platform does not admit (it is dead in this build by its own declaration, and reachability from the entry already reports a real call into it), or reports only from entry-reachable fenced bodies. Pin: `module_resolution::f28_an_off_platform_call_into_a_single_platform_module_is_one_error_at_the_call` over a fenced tree."
+  },
+  {
+   "id": "B549",
+   "section": "B",
+   "kind": "bug (std; resolution error inside std) (S)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-10-04 (layout-46's find, Order 46)",
+   "discussion": "layout-46 (Order 46); sweeps/order46/REPORT-layout-46.md; repro sweeps/order46/layout-46/finds/document_browser",
+   "title": "importing `std::web::document` in a browser build fails INSIDE std — \"cannot find 'escape_attribute' in the imported path\" (and `escape_text`): `document.vl` imports them from `pkg::web::ui`, and only the PROCESS twin declares them",
+   "body": "Pre-existing (the same on next before A154, as `std::document`, and under F28's fence). `import std::web::document::check_shell; fun main() {}` with `target = \"browser\"` reports four resolution errors attributed to std's `document.vl` instead of nothing (the import is elidable) or one platform refusal at a reaching call. Rec: `document.vl` takes the two escapers from a base module (they are pure string functions), or the twin parity gate lists them as process-only and the import moves behind the process layer's own surface. Pin: a browser build importing `std::web::document` without reaching it checks clean."
+  },
+  {
+   "id": "E266",
+   "section": "E",
+   "kind": "editor (platform inference) (S) — before F28",
+   "area": "Editor & tooling",
+   "status": "OPEN — filed 2026-10-04 (layout-46's find, Order 46)",
+   "discussion": "layout-46 (Order 46); sweeps/order46/REPORT-layout-46.md; `infer_platform` in crates/vilan-core/src/lib.rs",
+   "title": "`infer_platform` reads browser evidence only off std's LAYER directories: a module that declares `[platform(\"browser\")] mod self;` (std's, after F28, or a dependency library's) is not evidence, so a file importing only it is analysed under the default node platform",
+   "body": "The second reason layout-46 stopped F28: with std's four browser modules fenced in the base root, a file importing only `std::web::dom` analysed as `node` (\"no project sets its platform and nothing in it is browser-only\") where the layer gave `browser` (\"it imports `std::web::dom`, which only the browser layer serves\"). Rec: a module whose file leads with a browser-only declaration is browser evidence exactly as a browser-layer-only module is (read through the parse cache, as `declares` already does). Pin: `module_resolution::f28_a_file_importing_only_a_single_platform_module_is_analyzed_as_before` over a fenced tree."
+  },
+  {
+   "id": "E267",
+   "section": "E",
+   "kind": "editor (completion) (S)",
+   "area": "Editor & tooling",
+   "status": "OPEN — filed 2026-10-04 (layout-46's find, Order 46)",
+   "discussion": "layout-46 (Order 46); sweeps/order46/REPORT-layout-46.md; `AutoImportOrder::build` in crates/vilan-ide/src/completion.rs",
+   "title": "the auto-import completion table walks a package's TOP-LEVEL modules only: a name declared in a nested module (A65's `pkg::lib::ui::widget`) is never offered for auto-import",
+   "body": "layout-46 made the walk descend std's namespaces (std's modules moved under `std::web::` and friends, and the table would otherwise have lost every one) and deliberately left `pkg`'s nested modules out, to change nothing else. The add-import QUICK FIX has the same top-level limit for `pkg` (`import_candidates` lists nested modules for std only). Rec: walk `pkg` the same way. Pins: a nested pkg module's name offered once, at its full path."
+  },
+  {
+   "id": "E268",
+   "section": "E",
+   "kind": "editor (quick fix) (XS)",
+   "area": "Editor & tooling",
+   "status": "OPEN — filed 2026-10-04 (layout-46's find, Order 46)",
+   "discussion": "layout-46 (Order 46); sweeps/order46/REPORT-layout-46.md",
+   "title": "the A154 moved-path fix on `std::web::{ Signal, dom::create_element }` rewrites `web` to `web::prelude`, which breaks the sibling `dom::create_element` in the same brace list",
+   "body": "The refusal for the old web-prelude path anchors at `web` (the segment that names it), and the fix replaces that segment; a brace list under `web` that mixes a prelude name with a real child module is the one shape where that edit is wrong for the siblings. Rec: in that shape, move the prelude names into their own `prelude::{ .. }` branch instead (`std::web::{ prelude::Signal, dom::create_element }`), or offer no edit. Rare: the old path never had children."
+  },
+  {
+   "id": "B550",
+   "section": "B",
+   "kind": "bug (module resolution; prelude) — FIXED by layout-46",
+   "area": "Language & compiler",
+   "status": "CLOSED — filed and fixed 2026-10-04 (layout-46, Order 46)",
+   "discussion": "layout-46 (Order 46); sweeps/order46/REPORT-layout-46.md; commit 0b09e865",
+   "title": "a `prelude` that names a module in a module DIRECTORY (`pkg::preludes::app`, and std's own `std::web::prelude` after A154) was never loaded — the seed took exactly two segments — nor resolved — `prelude_module_scope` did not descend a module's children — so the package silently got no ambient names",
+   "body": "Fixed with A154 (the web prelude moved to `std::web::prelude`, which is how it showed: every web example lost `view`/`Signal`). Pinned by every web-prelude test on the tree."
+  },
+  {
+   "id": "B551",
+   "section": "B",
+   "kind": "bug (formatter) — FIXED by layout-46",
+   "area": "Editor & tooling",
+   "status": "CLOSED — filed and fixed 2026-10-04 (layout-46, Order 46)",
+   "discussion": "layout-46 (Order 46); sweeps/order46/REPORT-layout-46.md; commit 102a193a",
+   "title": "`vilan fmt` declined every file that leads with `[platform(..)] mod self;` and carries `export *;`: E181's marker slot counted from the top of the file and put `export *;` above `mod self;`",
+   "body": "Fixed; pinned by `formatter::tests::a_file_platform_declaration_stays_first_above_the_marker` (three shapes)."
+  },
+  {
+   "id": "N144",
+   "section": "N",
+   "kind": "gate (std contract) — FIXED by layout-46",
+   "area": "Language & compiler",
+   "status": "CLOSED — filed and fixed 2026-10-04 (layout-46, Order 46)",
+   "discussion": "layout-46 (Order 46); sweeps/order46/REPORT-layout-46.md; commit 8b8781ae",
+   "title": "`check_library_contract` walked a root's TOP-LEVEL modules only, so a module nested in a layer (A65) was never checked — after A154 that was every layered std module, and `vilan check` on std still said \"platform contract OK\"",
+   "body": "Fixed (walks `modules_under_root`); pinned by `module_resolution::a154_a_module_nested_in_a_layer_is_held_to_the_contract`."
+  }
+ ]
+}

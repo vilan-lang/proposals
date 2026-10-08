@@ -1,0 +1,91 @@
+vilan 0.43.0 (fe092e8d1)
+== i1/before.vl
+i1/before.vl: no errors
+== i1/after.vl
+Error: Expected i32, but got str instead.
+   ╭─[ i1/after.vl:2:27 ]
+   │
+ 2 │ fun main() { let x: i32 = make(); print(x); }
+   │                           ───┬──  
+   │                              ╰──── Expected i32, but got str instead.
+───╯
+== i2/before.vl
+i2/before.vl: no errors
+== i2/after.vl
+Error: context `flavor` is read here, but this code can be reached without an enclosing `run`
+    ╭─[ i2/after.vl:5:19 ]
+    │
+  5 │ fun leaf(): i32 { flavor.get() }
+    │                   ──────┬─────  
+    │                         ╰─────── context `flavor` is read here, but this code can be reached without an enclosing `run`
+  6 │ fun middle(): i32 { leaf() + 1 }
+    │                     ───┬──  
+    │                        ╰──── the context requirement flows through this call
+  7 │ fun top(): i32 { middle() + 1 }
+    │                  ────┬───  
+    │                      ╰───── the context requirement flows through this call
+    │ 
+ 10 │     print(top());
+    │           ──┬──  
+    │             ╰──── the context requirement flows through this call
+== i4/before.vl
+i4/before.vl: no errors
+== i4/after.vl
+Error: const evaluation failed in `size`: index out of bounds: the length is 0 but the index is 3
+   ╭─[ i4/after.vl:2:32 ]
+   │
+ 1 │ fun size(): i32 { let list: List<i32> = []; list[3] }
+   │     ──┬─  
+   │       ╰─── `size` is declared here
+ 2 │ fun main() { let table = const size() * 2; print(table); }
+   │                                ─────┬────  
+   │                                     ╰────── const evaluation failed in `size`: index out of bounds: the length is 0 but the index is 3
+───╯
+== i6/before.vl
+i6/before.vl: no errors
+== i6/after.vl
+i6/after.vl: no errors
+== i7/before.vl
+i7/before.vl: no errors
+== i7/after.vl
+i7/after.vl: no errors
+== i7/after2.vl
+Error: Expected i32, but got str instead.
+   ╭─[ i7/after2.vl:3:19 ]
+   │
+ 3 │ fun show(): i32 { items[0] + 1 }
+   │                   ──────┬─────  
+   │                         ╰─────── Expected i32, but got str instead.
+───╯
+== i6 emitted (async + hidden context param reach the callers)
+1:function leaf() {
+4:function middle() {
+1:function __sleep(ms, signal) {
+15:async function sleep(ms, $c) {
+16:	await (__sleep(ms, ambient_signal($c)));
+18:function ambient_signal($d) {
+29:async function leaf($b) {
+30:	await (sleep(1, $b));
+33:async function middle($a) {
+34:	return await (leaf($a)) + 1;
+37:	console.log(await (middle([ 1 ])));
+== i3 (impl in a module the user never imports)
+-- without main's import of impls:
+Error: Foo has no method 'greet'
+   ╭─[ ./src/user.vl:2:57 ]
+   │
+ 2 │ export fun use_it(): str { let foo = Foo { n = 1 }; foo.greet() }
+   │                                                         ──┬──  
+   │                                                           ╰──── Foo has no method 'greet'
+───╯
+== i5 (platform colour: body edit of label, error lands in args_count)
+-- after:
+Error: `args` requires the `process` layer of `std` and cannot run on `browser`
+  reachable from the entry: main → label → args_count → args (std::process)
+   ╭─[ ./src/shared.vl:3:34 ]
+   │
+ 3 │ export fun args_count(): usize { process::args().len() }
+   │                                  ───────┬───────  
+   │                                         ╰───────── `args` requires the `process` layer of `std` and cannot run on `browser`
+  reachable from the entry: main → label → args_count → args (std::process)
+───╯

@@ -1,0 +1,17 @@
+// A155's warning says the LATER writer stays: "`.styled(card)` replaces what
+// `class(label)` wrote". With a REACTIVE earlier writer that is only true until
+// the signal moves: the browser re-runs `class(label)`'s binding on every change
+// and the element shows `label`'s value from then on (client class writes:
+// ["lbl", <card>, "lbl2"]), while the server rendered card's classes. The same
+// with `.bind_styled(..)` first and `class("x")` second.
+import std::web::ui::{ View, view, mount_root };
+import std::web::style::Style;
+import std::reactive::Signal;
+
+let card = const css { padding("4px"); };
+
+fun main() {
+	let label = Signal::new("lbl");
+	let _owner = mount_root("app", || <div class(label) .styled(card) />);
+	label.set("lbl2");
+}

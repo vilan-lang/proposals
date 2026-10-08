@@ -1,0 +1,15 @@
+// native: a function over a MAPPED TUPLE parameter (`values: (U in T: U)`) is refused by
+// name ("a value of type `a mapped tuple`") — natively a mapped tuple has no type to
+// monomorphise at. Corpus: side-effect-let.vl:27. JS prints 2.
+import std::io::print;
+
+fun widths<T: (2..)>(values: (U in T: U)): i32 {
+	let _mapped = (value in values => 1);
+	2
+}
+
+fun main() {
+	print(widths((1, "a")));
+}
+
+main();

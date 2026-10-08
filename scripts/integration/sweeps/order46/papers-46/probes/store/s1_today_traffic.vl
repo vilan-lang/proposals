@@ -1,0 +1,321 @@
+// A153 probe s1: TODAY's wire traffic on kolt's shapes (vilan 0.43.0).
+//
+// A kolt-shaped service (store.vl's GlobalStore and its [rpc] surface, minus the
+// database) behind an in-process connection whose two legs are COUNTED: every
+// rpc request and reply (the `r:` lane over a socket) and every reactive frame
+// (the `d:` lane). Bytes are the JSON codec's envelope text plus the socket's
+// lane prefix (`d:` = 2 bytes; `r:<id>:` per rpc frame), so the figures are
+// what a WebSocket would carry, minus the WebSocket's own framing.
+//
+// Scenarios: (A) open a channel with 50 messages by two authors, leasing what
+// kolt's route + channel view lease; (B) rename the channel; (C) edit one
+// message.
+import std::compare::PartialEq;
+import std::hash::Hashable;
+import std::hash_map::HashMap;
+import std::io::print;
+import std::json::json_codec;
+import std::memo::Memo;
+import std::reactive::{ HashMapCell, HashMapEntry, MemoCell, Signal, SignalCell, Subscription };
+import std::rpc::{ DuplexEnd, LocalTransport, ReactiveClient, Transport, duplex_pair, local_rpc, register_session };
+import std::shared::Shared;
+import std::task::Task;
+import std::time::sleep;
+import std::wire::Frame;
+
+[derive(Wire)]
+struct UserId {
+	uuid: str,
+}
+
+impl UserId with PartialEq {
+	fun eq(self, peer: Self): bool {
+		self.uuid == peer.uuid
+	}
+}
+
+impl UserId with Hashable {
+	fun hash(self) {
+		self.uuid.hash()
+	}
+}
+
+[derive(Wire)]
+struct User {
+	id: UserId,
+	username: str,
+}
+
+impl User with PartialEq {
+	fun eq(self, peer: Self): bool {
+		self.id == peer.id
+	}
+}
+
+[derive(Wire)]
+struct Channel {
+	id: u53,
+}
+
+impl Channel with PartialEq {
+	fun eq(self, peer: Channel): bool {
+		self.id == peer.id
+	}
+}
+
+[derive(Wire)]
+struct Message {
+	id: u53,
+	author: UserId,
+	content: str,
+}
+
+impl Message with PartialEq {
+	fun eq(self, peer: Message): bool {
+		self.id == peer.id
+	}
+}
+
+struct ChannelRecord {
+	id: u53,
+	name: SignalCell<str>,
+	messages: SignalCell<List<u53>>,
+}
+
+struct Global {
+	channels: HashMapCell<u53, ChannelRecord>,
+	messages: HashMapCell<u53, Message>,
+	users: Memo<UserId, SignalCell<Option<User>>>,
+	channel_views: Memo<u53, MemoCell<Option<Channel>>>,
+}
+
+[service(KoltLikeClient)]
+struct KoltLike {
+	global: Global,
+}
+
+impl KoltLike {
+	[rpc]
+	fun get_user(self, user_id: UserId): SignalCell<Option<User>> {
+		self.global.users.get_or_insert(user_id, || Signal::new(Some(User { id = user_id, username = user_id.uuid })))
+	}
+
+	[rpc]
+	fun get_channel(self, channel: u53): MemoCell<Option<Channel>> {
+		let channels = self.global.channels;
+		self.global.channel_views.get_or_insert(channel, || channels
+			.at(channel)
+			.derive(|record| record.map(|held| Channel { id = held.id }))
+			.distinct()
+			.memo_global())
+	}
+
+	[rpc]
+	fun get_channel_name(self, channel: u53): Option<SignalCell<str>> {
+		self.global.channels.get(channel).map(|channel| channel.name)
+	}
+
+	[rpc]
+	fun set_channel_name(self, channel: u53, name: str): bool {
+		if self.global.channels.get(channel) is Some(let channel) {
+			channel.name.set(name);
+			true
+		} else {
+			false
+		}
+	}
+
+	[rpc]
+	fun edit_message(self, message_id: u53, content: str): bool {
+		if self.global.messages.get(message_id) is Some(let held) {
+			self.global.messages.insert(message_id, Message { id = held.id, author = held.author, content });
+			true
+		} else {
+			false
+		}
+	}
+
+	[rpc]
+	fun get_message(self, message_id: u53): HashMapEntry<u53, Message> {
+		self.global.messages.at(message_id)
+	}
+
+	[rpc]
+	fun get_messages(self, channel: u53): Option<SignalCell<List<u53>>> {
+		self.global.channels.get(channel).map(|channel| channel.messages)
+	}
+}
+
+// --- the counters ------------------------------------------------------------
+
+struct Tally {
+	frames: Shared<i32>,
+	bytes: Shared<i32>,
+}
+
+fun tally(): Tally {
+	Tally { frames = Shared::new(0), bytes = Shared::new(0) }
+}
+
+fun frame_len(frame: Frame): i32 {
+	match frame {
+		Frame::Text(let body) => body.len().as_i32(),
+		Frame::Binary(let bytes) => bytes.len().as_i32(),
+	}
+}
+
+fun show(frame: Frame): str {
+	match frame {
+		Frame::Text(let body) => body,
+		Frame::Binary(_) => "<binary>",
+	}
+}
+
+fun count(t: Tally, frame: Frame, prefix: i32) {
+	t.frames.write() += 1;
+	t.bytes.write() += frame_len(frame) + prefix;
+}
+
+let up_rpc = tally();
+let down_rpc = tally();
+let up_live = tally();
+let down_live = tally();
+let call_ids = Shared::new(0);
+let trace = Shared::new(false);
+
+struct Counting {
+	inner: LocalTransport,
+}
+
+impl Counting with Transport {
+	fun call(self, request: Frame): Task<Result<Frame, str>> {
+		let inner = self.inner;
+		async {
+			call_ids.write() += 1;
+			// `r:<id>:` on each direction over a socket
+			let prefix = 3 + i"{call_ids.read()}".len().as_i32();
+			count(up_rpc, request, prefix);
+			if trace.read() {
+				print(i"  up   rpc  {show(request)}");
+			}
+			let reply = await inner.call(request);
+			match reply {
+				Ok(let frame) => {
+					count(down_rpc, frame, prefix);
+					if trace.read() {
+						print(i"  down rpc  {show(frame)}");
+					}
+				},
+				Err(_) => {},
+			}
+			reply
+		}
+	}
+}
+
+fun snapshot(): (i32, i32, i32, i32, i32, i32, i32, i32) {
+	(up_rpc.frames.read(), up_rpc.bytes.read(), down_rpc.frames.read(), down_rpc.bytes.read(), up_live.frames.read(), up_live.bytes.read(), down_live.frames.read(), down_live.bytes.read())
+}
+
+fun report(label: str, before: (i32, i32, i32, i32, i32, i32, i32, i32)) {
+	let (a, b, c, d, e, f, g, h) = before;
+	let (a2, b2, c2, d2, e2, f2, g2, h2) = snapshot();
+	let rpc_frames = (a2 - a) + (c2 - c);
+	let rpc_bytes = (b2 - b) + (d2 - d);
+	let live_frames = (e2 - e) + (g2 - g);
+	let live_bytes = (f2 - f) + (h2 - h);
+	print(i"{label}: rpc {rpc_frames} frames / {rpc_bytes} B (up {a2 - a}/{b2 - b}, down {c2 - c}/{d2 - d}); live {live_frames} frames / {live_bytes} B (up {e2 - e}/{f2 - f}, down {g2 - g}/{h2 - h}); TOTAL {rpc_frames + live_frames} frames / {rpc_bytes + live_bytes} B");
+}
+
+fun main() {
+	let global = Global {
+		channels = HashMapCell::new(),
+		messages = HashMapCell::new(),
+		users = Memo::new(),
+		channel_views = Memo::new(),
+	};
+	// one channel, 50 messages, two authors
+	mut ids: List<u53> = [];
+	mut n: u53 = 0;
+	for n < 50 {
+		let author = if n % 2 == 0 { UserId { uuid = "alice" } } else { UserId { uuid = "bob" } };
+		global.messages.insert(n, Message { id = n, author, content = i"message number {n} says hello" });
+		ids.push(n);
+		n += 1;
+	}
+	global.channels.insert(0, ChannelRecord { id = 0, name = Signal::new("general"), messages = Signal::new(ids) });
+	let service = KoltLike { global };
+
+	let (client_end, relay_c) = duplex_pair();
+	let (relay_s, server_end) = duplex_pair();
+	relay_c.on_frame(|frame| {
+		count(up_live, frame, 2);
+		if trace.read() {
+			print(i"  up   live {show(frame)}");
+		}
+		relay_s.send(frame);
+	});
+	relay_s.on_frame(|frame| {
+		count(down_live, frame, 2);
+		if trace.read() {
+			print(i"  down live {show(frame)}");
+		}
+		relay_c.send(frame);
+	});
+	register_session(7, server_end, json_codec());
+	let transport = Counting { inner = local_rpc(service.dispatcher().into_protocol(json_codec()).for_connection(7)) };
+	let reactive = ReactiveClient::new(client_end, json_codec());
+	let client = KoltLikeClient { transport, codec = json_codec(), reactive };
+
+	trace.write() = true;
+	print("-- (A0) one message row, traced");
+	let t0 = snapshot();
+	mut held: List<Subscription> = [];
+	held.push(client.get_message(0).sub(|_m| {}));
+	sleep(5);
+	report("A0 one message", t0);
+	trace.write() = false;
+
+	print("-- (A) open channel 0: get_channel, get_channel_name, get_messages, 50 x get_message, 2 x get_user");
+	let t1 = snapshot();
+	held.push(client.get_channel(0).sub(|_c| {}));
+	held.push(client.get_channel_name(0).sub(|_c| {}));
+	held.push(client.get_messages(0).sub(|_c| {}));
+	mut m: u53 = 1;
+	for m < 50 {
+		held.push(client.get_message(m).sub(|_c| {}));
+		m += 1;
+	}
+	held.push(client.get_user(UserId { uuid = "alice" }).sub(|_c| {}));
+	held.push(client.get_user(UserId { uuid = "bob" }).sub(|_c| {}));
+	sleep(20);
+	report("A  open (49 more rows + channel + name + list + 2 users)", t1);
+	let (a, b, c, d, e, f, g, h) = t0;
+	report("A+A0 open channel, 50 messages", t0);
+
+	trace.write() = true;
+	print("-- (B) rename channel 0");
+	let t2 = snapshot();
+	let _renamed = client.set_channel_name(0, "general-renamed");
+	sleep(5);
+	report("B  rename", t2);
+
+	print("-- (C) edit message 7");
+	let t3 = snapshot();
+	let _edited = client.edit_message(7, "message number 7 says goodbye");
+	sleep(5);
+	report("C  edit one message", t3);
+	print("-- (D) write the SAME name again (a cell never compares, R7)");
+	let t4 = snapshot();
+	let name_runs = Shared::new(0);
+	held.push(client.get_channel_name(0).sub(|_n| {
+		name_runs.write() += 1;
+	}));
+	name_runs.write() = 0;
+	let _same = client.set_channel_name(0, "general-renamed");
+	sleep(5);
+	report("D  same-value write", t4);
+	print(i"D  client observer runs on the same-value write: {name_runs.read()}");
+	trace.write() = false;
+	print(i"held {held.len()} leases");
+}

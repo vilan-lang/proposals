@@ -1,0 +1,111 @@
+diff --git a/src/model.vl b/src/model.vl
+index 6de7204..582f146 100644
+--- a/src/model.vl
++++ b/src/model.vl
+@@ -24,9 +24,9 @@
+ // as "nothing yet" (`None`, or `Pending`), and a reconnect re-runs the switch
+ // over the new client, whose stubs mint fresh mirrors.
+ import std::context::Context;
+-import std::reactive::{ Flow, MemoCell, Source, combine };
+-import std::rpc::{ RemoteSource, RpcError, SocketTransport, Status };
+-import std::transient::TransientState;
++import std::reactive::{ Flow, MemoCell, Source };
++import std::rpc::{ RpcError, SocketTransport };
++import std::transient::{ TransientSource, TransientState };
+ import pkg::shared::{ Account, Channel, Message, User, UserId };
+ import pkg::store::KoltClient;
+ 
+@@ -36,35 +36,6 @@ fun get_client(): MemoCell<Option<KoltClient<SocketTransport>>> context client_c
+ 	client_context.get()
+ }
+ 
+-// A mirror's state as a LEASED pipe. `mirror.state()` only REPORTS (std's
+-// documented contract: it leases nothing, so an unwatched mirror stays
+-// `Pending` forever), and `mirror.latest()` leases but keeps only the value.
+-// This is `latest()`'s own shape - the mirror as a source (its lease) combined
+-// with what the last mint said - re-read as the whole state, `Absent` and
+-// `Failed` included.
+-fun transient_of<T>(mirror: RemoteSource<T>): dyn Flow<TransientState<T, RpcError>> {
+-	let leased: dyn Source<Option<T>> = mirror;
+-	let told: dyn Source<Status> = mirror.status();
+-	let state: dyn Flow<TransientState<T, RpcError>> = combine((leased, told))
+-		.derive(|_both| mirror.transient_state());
+-	state
+-}
+-
+-// `TransientState::map`: the same state over `transform(value)`, the stale
+-// value of a `Refreshing` or a `Failed` included.
+-fun map_state<T, U>(
+-	state: TransientState<T, RpcError>,
+-	transform: |T| U,
+-): TransientState<U, RpcError> {
+-	match state {
+-		TransientState::Pending => TransientState::Pending,
+-		TransientState::Ready(let v) => TransientState::Ready(transform(v)),
+-		TransientState::Refreshing(let v) => TransientState::Refreshing(transform(v)),
+-		TransientState::Failed(let e, let v) => TransientState::Failed(e, v.map(transform)),
+-		TransientState::Absent => TransientState::Absent,
+-	}
+-}
+-
+ impl Account {
+ 	fun user(): MemoCell<Option<User>> {
+ 		get_client().and_then(|client| client.get_account_user().or(None)).memo()
+@@ -101,20 +72,18 @@ impl Channel {
+ 	// re-mint failed.
+ 	fun find(channel_id: u53): MemoCell<TransientState<Channel, RpcError>> {
+ 		get_client()
+-			// FIXME: Explicit generic binding needed here (even though it seems solvable; B480).
+-			.switch<TransientState<Channel, RpcError>>(|client| {
++			.switch(|client| {
+ 				let state: dyn Flow<TransientState<Channel, RpcError>> = match client {
+ 					None => Source::constant(TransientState::Pending),
+-					Some(let client) => transient_of(client.get_channel(channel_id))
+-						.derive(|x| match x {
+-							TransientState::Pending => TransientState::Pending,
+-							TransientState::Ready(Some(let v)) => TransientState::Ready(v),
+-							TransientState::Ready(None) => TransientState::Absent,
+-							TransientState::Refreshing(Some(let v)) => TransientState::Refreshing(v),
+-							TransientState::Refreshing(None) => TransientState::Pending,
+-							TransientState::Failed(let e, let v) => TransientState::Failed(e, v.flatten()),
+-							TransientState::Absent => TransientState::Absent,
+-						}),
++					// The handle answers `Option<Channel>`: a `None` is an id the
++					// server does not know, which is `Absent`.
++					Some(let client) => client
++						.get_channel(channel_id)
++						.states()
++						.derive(|state| state.and_then(|found| match found {
++							Some(let channel) => TransientState::Ready(channel),
++							None => TransientState::Absent,
++						})),
+ 				};
+ 				state
+ 			})
+@@ -139,7 +108,7 @@ impl Channel {
+ 	fun messages(self): MemoCell<TransientState<List<u53>, RpcError>> {
+ 		let id = self.id;
+ 		get_client()
+-			.switch_some(|client| transient_of(client.get_messages(id)))
++			.switch_some(|client| client.get_messages(id).states())
+ 			.derive(|x| x.unwrap_or(TransientState::Pending))
+ 			.memo()
+ 	}
+@@ -157,7 +126,7 @@ impl Channel {
+ 	// the first frame; the server's list after, live.
+ 	fun get_channel_ids(): MemoCell<TransientState<List<u53>, RpcError>> {
+ 		get_client()
+-			.switch_some(|client| transient_of(client.get_channels()))
++			.switch_some(|client| client.get_channels().states())
+ 			.derive(|x| x.unwrap_or(TransientState::Pending))
+ 			.memo()
+ 	}
+@@ -165,7 +134,7 @@ impl Channel {
+ 	// The channels themselves, each a `find` of its id, in the list's state.
+ 	fun get_channels(): MemoCell<TransientState<List<MemoCell<TransientState<Channel, RpcError>>>, RpcError>> {
+ 		Channel::get_channel_ids()
+-			.derive(|state| map_state(state, |ids| ids.map(|channel_id| Channel::find(channel_id))))
++			.derive(|state| state.map(|ids| ids.map(|channel_id| Channel::find(channel_id))))
+ 			.memo()
+ 	}
+ }

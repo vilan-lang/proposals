@@ -1,0 +1,350 @@
+// A153 probe s2: the PROJECTED bytes of the mirrored-store wire (§3 of the
+// paper), written by TODAY's JSON codec (vilan 0.43.0). Nothing here is a
+// protocol that exists: each frame is built with the real `Serializer` in the
+// shape the paper proposes, so its length is what the codec would put on the
+// wire. Socket lane prefix `d:` (2 B) added to every reactive frame; an rpc
+// frame adds `r:<id>:` (4 B for a one-digit id).
+//
+// Paths: a list of steps; a field step is the field's declaration index, a key
+// step is the key described at its own type. Global { channels 0, messages 1,
+// users 2 }; ChannelRecord { id 0, name 1, messages 2 }; Message { id 0, author
+// 1, content 2 }.
+//
+// Arms: (S) mirrored store, one frame per Subscribe and per seed; (S+) the same
+// with the client's Subscribes and the server's seeds COALESCED per turn; (N)
+// the snapshot as the unit (a Channel snapshot carrying name + ids, re-sent on
+// every change), for the rename row.
+import std::io::print;
+import std::json::json_codec;
+import std::wire::{ Codec, Frame, Serializer, Wire };
+
+[derive(Wire)]
+struct UserId {
+	uuid: str,
+}
+
+[derive(Wire)]
+struct Message {
+	id: u53,
+	author: UserId,
+	content: str,
+}
+
+[derive(Wire)]
+struct ChannelRecord {
+	id: u53,
+	name: str,
+	messages: List<u53>,
+}
+
+[derive(Wire)]
+struct User {
+	id: UserId,
+	username: str,
+}
+
+fun frame_len(frame: Frame): i32 {
+	match frame {
+		Frame::Text(let body) => body.len().as_i32(),
+		Frame::Binary(let bytes) => bytes.len().as_i32(),
+	}
+}
+
+fun text(frame: Frame): str {
+	match frame {
+		Frame::Text(let body) => body,
+		Frame::Binary(_) => "<binary>",
+	}
+}
+
+fun message(n: u53): Message {
+	let author = if n % 2 == 0 { UserId { uuid = "alice" } } else { UserId { uuid = "bob" } };
+	Message { id = n, author, content = i"message number {n} says hello" }
+}
+
+fun ids(): List<u53> {
+	mut out: List<u53> = [];
+	mut n: u53 = 0;
+	for n < 50 {
+		out.push(n);
+		n += 1;
+	}
+	out
+}
+
+fun record(): ChannelRecord {
+	ChannelRecord { id = 0, name = "general", messages = ids() }
+}
+
+// One step list: `steps` are closures that describe each step.
+fun describe_path(serializer: Serializer, steps: List<|Serializer| void>) {
+	(serializer.begin_list)(steps.len().as_i32());
+	for step in steps {
+		step(serializer);
+	}
+	(serializer.end_list)();
+}
+
+fun field(index: i32): |Serializer| void {
+	|s: Serializer| (s.i32_value)(index)
+}
+
+fun key_u53(key: u53): |Serializer| void {
+	|mut s: Serializer| key.describe(&mut s)
+}
+
+fun key_user(uuid: str): |Serializer| void {
+	|mut s: Serializer| UserId { uuid }.describe(&mut s)
+}
+
+// `{"Subscribe":[channel,[path, ..]]}` — one frame carrying `paths`.
+fun subscribe(codec: Codec, channel: i32, paths: List<List<|Serializer| void>>): Frame {
+	let (serializer, finish) = (codec.writer)();
+	(serializer.begin_variant)("Subscribe", 2);
+	(serializer.i32_value)(channel);
+	(serializer.begin_list)(paths.len().as_i32());
+	for path in paths {
+		describe_path(serializer, path);
+	}
+	(serializer.end_list)();
+	(serializer.end_variant)();
+	finish()
+}
+
+// One store op: `{"<kind>":[path, value]}`.
+struct Op {
+	kind: str,
+	path: List<|Serializer| void>,
+	value: |Serializer| void,
+}
+
+// `{"Patch":[channel,[op, ..]]}`.
+fun patch(codec: Codec, channel: i32, ops: List<Op>): Frame {
+	let (serializer, finish) = (codec.writer)();
+	(serializer.begin_variant)("Patch", 2);
+	(serializer.i32_value)(channel);
+	(serializer.begin_list)(ops.len().as_i32());
+	for op in ops {
+		(serializer.begin_variant)(op.kind, 2);
+		describe_path(serializer, op.path);
+		(op.value)(serializer);
+		(serializer.end_variant)();
+	}
+	(serializer.end_list)();
+	(serializer.end_variant)();
+	finish()
+}
+
+fun seed_message(n: u53): Op {
+	let value = message(n);
+	Op { kind = "Seed", path = [field(1), key_u53(n)], value = |mut s: Serializer| value.describe(&mut s) }
+}
+
+fun seed_user(uuid: str): Op {
+	let value = User { id = UserId { uuid }, username = uuid };
+	Op { kind = "Seed", path = [field(2), key_user(uuid)], value = |mut s: Serializer| value.describe(&mut s) }
+}
+
+// The rpc that hands out the root: request, then a reply carrying the channel
+// and the root's seed (every field of Global is a keyed boundary, so the seed
+// is three empty key sets — §3.3).
+fun rpc_global(codec: Codec): (Frame, Frame) {
+	let (rs, rf) = (codec.writer)();
+	(rs.begin_struct)(2);
+	(rs.field)("method");
+	(rs.str_value)("global");
+	(rs.field)("args");
+	(rs.begin_list)(0);
+	(rs.end_list)();
+	(rs.end_struct)();
+	let request = rf();
+	let (ps, pf) = (codec.writer)();
+	(ps.begin_variant)("Success", 1);
+	(ps.begin_list)(2);
+	(ps.i32_value)(0);
+	(ps.begin_list)(0);
+	(ps.end_list)();
+	(ps.end_list)();
+	(ps.end_variant)();
+	(request, pf())
+}
+
+// --- the SLOT-ADDRESSED shape (§3.2, the paper's recommendation) -----------
+// up:   {"Subscribe":[channel,[[slot,path], ..]]}  (the client names the slot)
+// down: {"Patch":[channel,[{"Seed":[slot,value]}, {"Set":[slot,relpath,value]}, ..]]}
+fun subscribe_slots(codec: Codec, channel: i32, slots: List<(i32, List<|Serializer| void>)>): Frame {
+	let (serializer, finish) = (codec.writer)();
+	(serializer.begin_variant)("Subscribe", 2);
+	(serializer.i32_value)(channel);
+	(serializer.begin_list)(slots.len().as_i32());
+	for entry in slots {
+		let (slot, path) = entry;
+		(serializer.begin_list)(2);
+		(serializer.i32_value)(slot);
+		describe_path(serializer, path);
+		(serializer.end_list)();
+	}
+	(serializer.end_list)();
+	(serializer.end_variant)();
+	finish()
+}
+
+struct SlotOp {
+	kind: str,
+	slot: i32,
+	rel: Option<List<|Serializer| void>>,
+	value: |Serializer| void,
+}
+
+fun patch_slots(codec: Codec, channel: i32, ops: List<SlotOp>): Frame {
+	let (serializer, finish) = (codec.writer)();
+	(serializer.begin_variant)("Patch", 2);
+	(serializer.i32_value)(channel);
+	(serializer.begin_list)(ops.len().as_i32());
+	for op in ops {
+		match op.rel {
+			Some(let rel) => {
+				(serializer.begin_variant)(op.kind, 3);
+				(serializer.i32_value)(op.slot);
+				describe_path(serializer, rel);
+			},
+			None => {
+				(serializer.begin_variant)(op.kind, 2);
+				(serializer.i32_value)(op.slot);
+			},
+		}
+		(op.value)(serializer);
+		(serializer.end_variant)();
+	}
+	(serializer.end_list)();
+	(serializer.end_variant)();
+	finish()
+}
+
+fun slot_seed_message(slot: i32, n: u53): SlotOp {
+	let value = message(n);
+	SlotOp { kind = "Seed", slot, rel = None, value = |mut s: Serializer| value.describe(&mut s) }
+}
+
+fun slot_seed_user(slot: i32, uuid: str): SlotOp {
+	let value = User { id = UserId { uuid }, username = uuid };
+	SlotOp { kind = "Seed", slot, rel = None, value = |mut s: Serializer| value.describe(&mut s) }
+}
+
+struct Count {
+	frames: i32,
+	bytes: i32,
+}
+
+fun add(c: Count, frame: Frame, prefix: i32): Count {
+	Count { frames = c.frames + 1, bytes = c.bytes + frame_len(frame) + prefix }
+}
+
+fun main() {
+	let codec = json_codec();
+
+	// --- (S) open channel 0, one frame per Subscribe and per seed -------------
+	mut s = Count { frames = 0, bytes = 0 };
+	let (req, rep) = rpc_global(codec);
+	print(i"rpc global: {text(req)} | {text(rep)}");
+	s = add(s, req, 4);
+	s = add(s, rep, 4);
+	let rpc_only = s;
+	// the channel's record
+	let rec = record();
+	let sub_channel = subscribe(codec, 0, [[field(0), key_u53(0)]]);
+	let seed_channel = patch(codec, 0, [Op { kind = "Seed", path = [field(0), key_u53(0)], value = |mut sz: Serializer| rec.describe(&mut sz) }]);
+	print(i"sub channel: {text(sub_channel)}");
+	print(i"seed channel: {frame_len(seed_channel)} B");
+	s = add(s, sub_channel, 2);
+	s = add(s, seed_channel, 2);
+	mut n: u53 = 0;
+	for n < 50 {
+		s = add(s, subscribe(codec, 0, [[field(1), key_u53(n)]]), 2);
+		s = add(s, patch(codec, 0, [seed_message(n)]), 2);
+		n += 1;
+	}
+	print(i"one message seed: {text(patch(codec, 0, [seed_message(7)]))}");
+	for who in ["alice", "bob"] {
+		s = add(s, subscribe(codec, 0, [[field(2), key_user(who)]]), 2);
+		s = add(s, patch(codec, 0, [seed_user(who)]), 2);
+	}
+	print(i"S  open, per-path frames: {s.frames} frames / {s.bytes} B (of which the once-per-session rpc: {rpc_only.frames} / {rpc_only.bytes} B)");
+
+	// --- (S+) the same, coalesced per turn: 3 turns (record; rows; authors) ---
+	mut c = rpc_only;
+	c = add(c, sub_channel, 2);
+	c = add(c, seed_channel, 2);
+	mut row_paths: List<List<|Serializer| void>> = [];
+	mut row_seeds: List<Op> = [];
+	n = 0;
+	for n < 50 {
+		row_paths.push([field(1), key_u53(n)]);
+		row_seeds.push(seed_message(n));
+		n += 1;
+	}
+	c = add(c, subscribe(codec, 0, row_paths), 2);
+	c = add(c, patch(codec, 0, row_seeds), 2);
+	c = add(c, subscribe(codec, 0, [[field(2), key_user("alice")], [field(2), key_user("bob")]]), 2);
+	c = add(c, patch(codec, 0, [seed_user("alice"), seed_user("bob")]), 2);
+	print(i"S+ open, coalesced per turn: {c.frames} frames / {c.bytes} B");
+
+	// --- (Z) slot-addressed: open, per-slot frames, then coalesced -------------
+	mut z = rpc_only;
+	let zsub = subscribe_slots(codec, 0, [(0, [field(0), key_u53(0)])]);
+	let zseed = patch_slots(codec, 0, [SlotOp { kind = "Seed", slot = 0, rel = None, value = |mut sz: Serializer| rec.describe(&mut sz) }]);
+	print(i"Z sub channel: {text(zsub)}");
+	z = add(z, zsub, 2);
+	z = add(z, zseed, 2);
+	mut zrows: List<(i32, List<|Serializer| void>)> = [];
+	mut zseeds: List<SlotOp> = [];
+	n = 0;
+	for n < 50 {
+		let slot = 1 + n.as_i32();
+		z = add(z, subscribe_slots(codec, 0, [(slot, [field(1), key_u53(n)])]), 2);
+		z = add(z, patch_slots(codec, 0, [slot_seed_message(slot, n)]), 2);
+		zrows.push((slot, [field(1), key_u53(n)]));
+		zseeds.push(slot_seed_message(slot, n));
+		n += 1;
+	}
+	print(i"Z one message seed: {text(patch_slots(codec, 0, [slot_seed_message(8, 7)]))}");
+	z = add(z, subscribe_slots(codec, 0, [(51, [field(2), key_user("alice")])]), 2);
+	z = add(z, patch_slots(codec, 0, [slot_seed_user(51, "alice")]), 2);
+	z = add(z, subscribe_slots(codec, 0, [(52, [field(2), key_user("bob")])]), 2);
+	z = add(z, patch_slots(codec, 0, [slot_seed_user(52, "bob")]), 2);
+	print(i"Z  open, slot-addressed, per-slot frames: {z.frames} frames / {z.bytes} B");
+	mut zc = rpc_only;
+	zc = add(zc, zsub, 2);
+	zc = add(zc, zseed, 2);
+	zc = add(zc, subscribe_slots(codec, 0, zrows), 2);
+	zc = add(zc, patch_slots(codec, 0, zseeds), 2);
+	zc = add(zc, subscribe_slots(codec, 0, [(51, [field(2), key_user("alice")]), (52, [field(2), key_user("bob")])]), 2);
+	zc = add(zc, patch_slots(codec, 0, [slot_seed_user(51, "alice"), slot_seed_user(52, "bob")]), 2);
+	print(i"Z+ open, slot-addressed, coalesced per turn: {zc.frames} frames / {zc.bytes} B");
+	let zname = "general-renamed";
+	let zrename = patch_slots(codec, 0, [SlotOp { kind = "Set", slot = 0, rel = Some([field(1)]), value = |mut sz: Serializer| zname.describe(&mut sz) }]);
+	print(i"Z  rename push: {text(zrename)} = {frame_len(zrename) + 2} B");
+	let zedited = "message number 7 says goodbye";
+	let zedit = patch_slots(codec, 0, [SlotOp { kind = "Set", slot = 8, rel = Some([field(2)]), value = |mut sz: Serializer| zedited.describe(&mut sz) }]);
+	print(i"Z  edit push: {text(zedit)} = {frame_len(zedit) + 2} B");
+
+	// --- (B) rename: the patch the server pushes ------------------------------
+	let renamed = "general-renamed";
+	let rename = patch(codec, 0, [Op { kind = "Set", path = [field(0), key_u53(0), field(1)], value = |mut sz: Serializer| renamed.describe(&mut sz) }]);
+	print(i"S  rename push: {text(rename)} = {frame_len(rename) + 2} B");
+	// the snapshot-as-unit arm: the whole record again
+	let renamed_record = ChannelRecord { id = 0, name = renamed, messages = ids() };
+	let (us, uf) = (codec.writer)();
+	(us.begin_variant)("Update", 2);
+	(us.i32_value)(1);
+	mut usink = us;
+	renamed_record.describe(&mut usink);
+	(us.end_variant)();
+	let snapshot_update = uf();
+	print(i"N  rename push (snapshot is the unit): {frame_len(snapshot_update) + 2} B");
+
+	// --- (C) edit one message: only `content` moves ---------------------------
+	let edited = "message number 7 says goodbye";
+	let edit = patch(codec, 0, [Op { kind = "Set", path = [field(1), key_u53(7), field(2)], value = |mut sz: Serializer| edited.describe(&mut sz) }]);
+	print(i"S  edit push: {text(edit)} = {frame_len(edit) + 2} B");
+}

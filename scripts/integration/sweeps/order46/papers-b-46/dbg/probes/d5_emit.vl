@@ -1,0 +1,17 @@
+struct Point { x: i32, y: i32 }
+trait Area { fun area(self): i32; }
+impl Point with Area { fun area(self): i32 { self.x * self.y } }
+fun total<T: Area>(items: List<T>): i32 {
+	mut sum = 0;
+	for item in items {
+		let part = item.area();
+		sum = sum + part;
+	}
+	sum
+}
+fun main() {
+	let points = [Point { x = 1, y = 2 }, Point { x = 3, y = 4 }];
+	let shadow = 1;
+	let shadow = shadow + 1;
+	print(total(points) + shadow);
+}

@@ -1,0 +1,27 @@
+// native: an `Option` whose payload is a VIEW, read anywhere but as a `match` subject
+// (`at(1).unwrap_or(&0)`), is refused by name: F21's remainder. Corpus: arena.vl
+// (`arena.get(a).unwrap_or(-1)`). transparent-references.vl:35 is the other F21
+// remainder (`let c: &mut i32 = b;`, a view binding aliasing a view binding). JS prints 5.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+struct Arena {
+	values: List<i32>,
+}
+
+impl Arena {
+	fun at(&self, index: usize): Option<&i32> {
+		if index < self.values.len() {
+			Some(&self.values[index])
+		} else {
+			None
+		}
+	}
+}
+
+fun main() {
+	let arena = Arena { values = [4, 5] };
+	print(arena.at(1).unwrap_or(&0));
+}
+
+main();

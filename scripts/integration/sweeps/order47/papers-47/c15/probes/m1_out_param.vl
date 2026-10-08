@@ -1,0 +1,20 @@
+// C15 microbenchmark: a binding written by ONE non-escaping closure and read
+// after the call (the store's `lend(|place| { out = .. })` shape, R2a).
+fun with_value(seed: i32, f: |i32| void) {
+	f(seed * 3);
+}
+
+fun main() {
+	mut total = 0;
+	mut k = 0;
+	for k < 200000 {
+		let seed = k % 7;
+		mut out = 0;
+		with_value(seed, |v| {
+			out = v + 1;
+		});
+		total += out;
+		k += 1;
+	}
+	print(total);
+}

@@ -1,0 +1,28 @@
+// F49's sibling: a FIELD read on a boxed binding copies the WHOLE value first.
+// `log` is captured and written by the closure, so it is boxed natively; the
+// read `log.lines.len()` after the call emits `(log.get().lines).len()`-shaped
+// code: `get()` clones the struct, both lists included, to read one field.
+// (In std the same shape is `write_at`'s `woken.get().feeds` - four whole
+// `StoreWoken` copies and two more for `.slots` per store write.)
+struct Log {
+	lines: List<str>,
+	big: List<i32>,
+}
+
+fun with_line(f: |str| void) {
+	f("hello");
+}
+
+fun main() {
+	mut log = Log { lines = [], big = [] };
+	mut k = 0;
+	for k < 1000 {
+		log.big.push(k);
+		k += 1;
+	}
+	with_line(|line| {
+		log.lines.push(line);
+	});
+	print(log.lines.len());
+	print(log.big.len());
+}

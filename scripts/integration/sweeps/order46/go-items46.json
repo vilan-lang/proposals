@@ -1,0 +1,140 @@
+{
+ "drafted": "2026-10-03 off vilan next @fe092e8d (the v0.43.0 fold; main = next); NOT GO; asks RULED as recommended 2026-10-03; awaiting GO",
+ "cycle": 64,
+ "ledger_next_id": 611,
+ "tracker_open": 159,
+ "unreleased_entries": 0,
+ "asked_at_go": {
+  "R-a": "E247 status bar menu as described (version text; quick pick: info rows, toggle rows, action rows; work counts not ms) — rec build",
+  "R-b": "A151: std writes data-autofocus, focus_initial reads it and still honours native [autofocus] — rec yes",
+  "R-c": "A150: (a) state() leases, or (b) state() stays passive and std gains states() + TransientState map/zip/and_then — rec (b)",
+  "R-d": "A153 mirrored Store is a paper this order — rec paper",
+  "R-e": "remove deprecated Map/Set and the MapCell/SetCell alias family — rec remove both",
+  "R-f": "cut v0.44.0 at the seal — rec yes",
+  "R-g": "B515: (a) fix now with steer + quick fix, or (b) warn one release then refuse — rec (b) if more than a handful of sites, else (a); the lane counts first",
+  "R-h": "B520 scope: return, fn, function, -> T, func, def; others on evidence — rec the six",
+  "R-i": "E236 stays a seal-time report until M105 S8 holds one seal — rec report",
+  "R-j": "site-46 pushes a branch; the owner merges — rec branch",
+  "R-k": "carried: M60, A87/A111, A131, B183's concrete arm, store S5, maps S4/S5, on-disk world cache, parallel-analysis paper, B521, B509's build, F1/F15/F17 — rec carry"
+ },
+ "lanes": {
+  "solver-a-46": "B511 + B514 FIRST, B441, B512, B498, B510, B515 (R-g; count first), B439, B502, B455 (impl Box with One)",
+  "native-46": "F83 FIRST, F66, F82, F70, F67, F69, F77, F48, F51, F78, F68 + B503, E243",
+  "perf-46": "M108 + M107 FIRST, M105 S2–S8, M106 first slice, M100, N137",
+  "editor-46": "M104 FIRST, M101, E245, E249, E250, E251, E246, E247 (R-a), E248, B520's quick fixes, E214; LAST to merge",
+  "syntax-46": "B520 (R-h), B486, B487, B493, B494, B485's remaining ruled steps, K26's grammar half + K24, N138",
+  "solver-b-46": "wave 2, rebased on solver-a-46 + syntax-46: opaque-returns build + B489 B490 B491, B499, B501, B513, B516, B440, B442, B447, B508, B518, B497",
+  "reactive-46": "wave 2, rebased on solver-b-46: A152, A150 (R-c), A151 (R-b), R-e removals, B480 re-check in kolt's shape, M60 if time; ADDED: B525 + B526 (mirrored-store S0), Iterator in the base prelude, CollPipe/SetPipe in the web prelude (B535), A155's warning",
+  "store-46": "wave 2, rebased on reactive-46: A149 S3, S6 (kolt patch), S4 if solver-b-46 merged",
+  "site-46": "wave 2, website repo, branch only (R-j): K26, K14, K15",
+  "papers-46": "A153 (R-d), B495, B509; proposals only",
+  "layout-46": "added 2026-10-03 (A154 RULED, all four recs): std namespaces (web/reactive/js/rpc::server), hard break + steer, F28's first half (thirteen single-platform modules to `[platform(..)] mod self;`; the ui twins stay layered until F27 R5); starts after store-46 merges",
+  "syntax-b-46": "B536, B485 S3, B524, E256, B523, E252, K28",
+  "papers-b-46": "incremental-analysis.md (M110), debugging.md (E257)",
+  "solver-c-46": "after solver-b-46 merges: B495 build (closure parameter modes; B527, F69's remainder), then B509 payload views (B528, M109)"
+ },
+ "waves": {
+  "1": [
+   "solver-a-46",
+   "native-46",
+   "perf-46",
+   "editor-46",
+   "syntax-46"
+  ],
+  "2": [
+   "solver-b-46",
+   "reactive-46",
+   "store-46",
+   "site-46",
+   "layout-46 (late)"
+  ],
+  "beside": [
+   "papers-46"
+  ],
+  "cap": 5
+ },
+ "merge_order": [
+  "solver-a-46",
+  "native-46",
+  "syntax-46",
+  "perf-46",
+  "solver-b-46",
+  "reactive-46",
+  "store-46",
+  "layout-46",
+  "editor-46"
+ ],
+ "mechanics_added": [
+  "five lanes at once; CARGO_BUILD_JOBS=6, nextest -j 6, one cargo at a time",
+  "logs under target/<lane>-scratch/",
+  "a lane adding a .vl fixture runs ci-local.sh vilan-fmt",
+  "resolve a gate's crate from the tree",
+  "a clock/debounce/path pin says how it holds on Windows",
+  "kolt is read-only; patches under sweeps/order46/<lane>/",
+  "pass work reports instructions before and after on kolt",
+  "the integrator watches CI on next after every merge",
+  "CHANGELOG folds move entries by marker and head",
+  "the seal's perf leg runs at load <= 2"
+ ],
+ "owed_from_the_cut": [
+  "delete release/0.42 branch + worktree (owner)"
+ ],
+ "kolt_owed_at_word": [
+  "commit the maps patch (store.vl) and the message row (channel.vl), uncommitted since 2026-10-03",
+  "A120's §9.7.10 rewrite + A127's header token (still owed)"
+ ],
+ "filed_at_draft": [
+  "E249",
+  "E250",
+  "A153",
+  "E251"
+ ],
+ "after_the_seal": "the cut (R-f), the fold, toolchain both locations + the vsix, the website re-checked",
+ "order47_queue": [
+  "A153's ruling and build",
+  "store S4/S5 as store-46 leaves them",
+  "M106's diagnostic slice",
+  "the on-disk world cache; the parallel-analysis paper",
+  "M60, A87/A111, A131",
+  "B521",
+  "B509's ruling",
+  "mirrored Store S1–S5 (after A149 S3)",
+  "M110's first slice per the paper's ruling",
+  "E257 (debugging) per its ruling",
+  "B515's flip + B536's flip to errors in v0.45.0",
+  "K26's book half, E254"
+ ],
+ "rulings": {
+  "2026-10-03": "the owner: 'go with all recs' — R-a through R-k as recommended (R-c door (b); R-g decided by solver-a-46's count)",
+  "2026-10-03b": "A154 RULED (all four recs); F28's first half joins it",
+  "2026-10-03c": "canonical attribute+modifier order (B536; warning now, error v0.45.0), B485 S3 yes, A155 rec, K29 break, M104 hybrid iff Find References whole-entry, E256, E254 later, E246 block order, Iterator in base prelude + pipe sealers in web prelude, A156, F68 stands until dbg, B525 into reactive-46, the three papers (A153 Q1–15, B495 Q1–5, B509 Q1–7) as recommended, site deployed, kolt B515 patch applied"
+ },
+ "go": "2026-10-03 — the owner: 'Go on the order' — every ask as recommended; E251 revised to merge into the `self` form; wave 1 launched (solver-a-46, native-46, perf-46, editor-46, syntax-46)",
+ "order47_theme": "the owner, 2026-10-03: stick with PERFORMANCE, BUG FIXES and QUALITY-OF-LIFE (same theme as Order 46); new features wait",
+ "sealed": {
+  "tip": "9fab0ff5",
+  "date": "2026-10-04",
+  "ci": "green on 9fab0ff5 and on the release commit 1a937ac4 (37248663677)",
+  "seals": 2
+ },
+ "sweep": {
+  "date": "2026-10-04",
+  "closed": 91,
+  "filed": 94,
+  "tracker_open_after": 148
+ },
+ "release": {
+  "version": "v0.44.0",
+  "tag": "1a937ac4",
+  "release_run": 37252287752,
+  "folded": "e5e15ca7",
+  "date": "2026-10-05",
+  "toolchain": "vilan 0.44.0 (e5e15ca7b) both locations + vsix",
+  "perf_override": "one editor row (importers open, CPU to the edited file's diagnostics x4-4.7); approved by the owner",
+  "bumps": [
+   "reactive-ui 1.07",
+   "todo 1.02",
+   "walkthrough 1.03"
+  ]
+ }
+}

@@ -1,0 +1,18 @@
+// A155's check counts `.class`, `.styled`, `.bind_class`, `.bind_styled` and
+// `.attr("class", ..)`, but not `.bind_attr("class", ..)` or
+// `.toggle_attr("class", ..)`: both write the class attribute (the second
+// REMOVES it), and neither warns. SSR prints `<div class="on"></div>` and
+// `<div class=""></div>`; card's classes are gone, silently.
+import std::web::ui::{ View, view, render };
+import std::web::style::Style;
+import std::reactive::Signal;
+
+let card = const css { padding("4px"); };
+
+fun main() {
+	let flag = Signal::new(true);
+	let a = <div .styled(card) .bind_attr("class", flag.derive(|on| if on { "on" } else { "off" })) />;
+	let b = <div .styled(card) .toggle_attr("class", flag) />;
+	print(render(a));
+	print(render(b));
+}

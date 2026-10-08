@@ -1,0 +1,74 @@
+{
+ "items": [
+  {
+   "id": "M123",
+   "section": "M",
+   "kind": "PERFORMANCE (HIGH) — the analyzer's bound audit",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-05 (perf-47's find, Order 47)",
+   "discussion": "perf-47 (Order 47); M111 (the same disease on the emission side, fixed there); M19 T1 (the satisfaction memo keyed on resolved Type)",
+   "title": "`check_generic_bound_satisfaction` is ~10.6% of kolt's `vilan check` at perf-47's tip (1.66 G of 15.64 G, callgrind, profiling build, kolt working tree, sequential): ~2 M instructions per computed check — the analyzer's bound audit re-proves blanket chains per question, M111's disease on the analyzer side",
+   "body": "Measured on a scratch copy of kolt's working tree (v0.44.0-migrated) at perf-47's tip (after M111, whose memo took the emission walk's selection from 9.6 G to under 0.1 G): `analyze_over_world` → `check_generic_bound_satisfaction` 1.66 G inclusive, `satisfies_trait_bound` 1.40 G, for ~860 computed checks (`VILAN_COUNTERS` bound-checks=530+330 over the two legs). M19's memo keys on the resolved `Type` (one level), and each miss walks `satisfies_trait_bound` → impl scan → nested bound proofs with no inner memo. It is also the largest single line of M117's store-adoption cost (+102 M of the patch's +392 M). Rec: the shape M111 used — memoize the inner proofs per (type id, trait, arguments) with the cycle-cut rule (store YES always, NO only when no cut reached below the question) — owned by the solver lane (analyzer.rs checks). Sizing M."
+  },
+  {
+   "id": "M124",
+   "section": "M",
+   "kind": "PERFORMANCE (MEDIUM) — a trait object's provider question",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-05 (perf-47's find, Order 47)",
+   "discussion": "perf-47 (Order 47); M118 (fixed the object's OWN trait); collections::a142_s4_filter_map_and_any_over_transients (the answer that depends on the echo)",
+   "title": "A `.derive` on a `dyn Source<X>` still costs ~4.4k type slots per attempt (8.6k before M118): asked which arguments the object provides `Flow` at (a trait that is not the object's own), `trait_args_candidates` reconciles the object against every `Flow` implementor through the erasure arm, and one answer in the suite DEPENDS on such a nominal echo",
+   "body": "M118 answers an object's own trait from the object. For a blanket-provided trait (`impl type S: Source<type T> with Flow<T>` over a `dyn Source<X>`) the scan still runs, and every nominal `Flow` implementor that also implements `Source` reconciles with the object through the erasure arm (`type_implements_trait_at` over every provider, minting each instantiation). Filtering nominal subjects out for a `dyn` receiver (they can never be the impl selected for an object) brings the probe to 153 slots — but changes one answer: in `a142_s4_filter_map_and_any_over_transients` a `dyn` receiver's provided arguments came out `bool` from a nominal echo and `T` (unground) from the blanket alone. Probe: `upstream(): dyn Source<St<Option<i32>>>` then `upstream().derive(|x: St<Option<i32>>| 1)`, `--explain-cost`. A solver question first (what an object provides a blanket trait at), then the filter. Sizing S–M."
+  },
+  {
+   "id": "M125",
+   "section": "M",
+   "kind": "tooling (calibration; S)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-05 (perf-47's find, Order 47)",
+   "discussion": "perf-47 (Order 47); M112 (closed by M111: the emission walk now calibrates)",
+   "title": "The generated app's const-pass share is 9.2 points off kolt's (3.0% vs 12.2% of thread CPU, `perf_gate.py calibrate --kolt-tree` at perf-47's tip), one point inside the calibration threshold: the generator writes no `const style::style()…` chains and no const lookups",
+   "body": "With M111 fixed, kolt's emission walk fell to 5.0% against the generator's 4.0%, and the nearest phase is now the const pass (kolt: `const-interp` 408 ms of 457 ms, fuel max 248,917 — the `.styled(const style::style()…)` chains in its views and the search dictionary's const lookups). The next std or kolt growth there tips calibration red. Rec: add `.styled(const …)` chains to the generator's view bodies (seeded), and re-take genapp:46's ceilings at the seal that lands it. Sizing S."
+  },
+  {
+   "id": "M126",
+   "section": "M",
+   "kind": "tooling (CI perf ceilings; S)",
+   "area": "Release engineering & beta",
+   "status": "OPEN — filed 2026-10-05 (perf-47's find, Order 47)",
+   "discussion": "perf-47 (Order 47); M114 (the ci rows adopted)",
+   "title": "CI's `perf` job builds with `RUSTUP_TOOLCHAIN: stable`, so the `ci` class's ceilings (adopted by M114 at 0.5%) move whenever GitHub's stable rustc does — a new stable that changes codegen by more than half a percent turns CI red on a tree nobody edited",
+   "body": "The reference class is measured on one-codegen-unit release builds of the PINNED toolchain's equivalent; the CI job's comment says the suite legs track stable on purpose, and the perf job copied that. Counts are a property of the binary, so a toolchain change is a counted change. Doors: (a) pin the perf job to rust-toolchain.toml's channel (bumped deliberately, with a ratchet in the same commit), (b) keep stable and treat a red after a stable release as a `[[bump]]`. Rec (a). Sizing S."
+  },
+  {
+   "id": "N147",
+   "section": "N",
+   "kind": "hygiene (diagnostics; S)",
+   "area": "Hygiene & rot",
+   "status": "OPEN — filed 2026-10-05 (perf-47's find, Order 47)",
+   "discussion": "perf-47 (Order 47); macros::split_toolchain_refusal",
+   "title": "`VILAN_STD` pointing at a copy of std with no `macro_std` beside it gives `'Instant' does not implement trait 'PartialOrd': missing 'eq'` (and the same for `Duration` and every derived `Ord`) instead of the split-toolchain refusal the compiler already has",
+   "body": "Repro: `cp -r vilan/std /tmp/x/std`; a file `import std::time::Instant; fun main() { print(Instant::now() < Instant::now()); }`; `VILAN_STD=/tmp/x/std vilan check t.vl`. `macros::split_toolchain_refusal` words exactly this mistake (\"the `macro_std` package was not found beside `std` … a `std` moved away from its toolchain is half a toolchain\"), but on this path the derives silently produce nothing and the conformance errors are what the user sees, pointing into std's `compare.vl`. Copying `macro_std` beside the copy fixes it. Sizing S."
+  },
+  {
+   "id": "N148",
+   "section": "N",
+   "kind": "tooling (S)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-05 (perf-47's find, Order 47)",
+   "discussion": "perf-47 (Order 47)",
+   "title": "`perf_gate.py measure --subject plain:640` measures nothing and exits 0: the subject filter only knows the budgets' subjects, so an unknown subject (a plain size, a typo) is silently dropped",
+   "body": "`all_subjects(data)` lists the budgets' subjects plus the growth row's two plain sizes, and `measure_all` skips every subject not in it that `--subject` names. M113's 640-module row had to be measured with a hand-written driver. Rec: measure any `kind:argument` subject `subject_dir` accepts, and refuse an unparseable one by name. Sizing XS."
+  },
+  {
+   "id": "B555",
+   "section": "B",
+   "kind": "diagnostics (S)",
+   "area": "Language & type system",
+   "status": "OPEN — filed 2026-10-05 (perf-47's find, Order 47)",
+   "discussion": "perf-47 (Order 47); A154 (std::null moved to std::js::null)",
+   "title": "`import std::js::null;` is refused with the generic import-path parse error: the module's name is a keyword, so the one std module that cannot be imported by its own name gets no steer",
+   "body": "Met while measuring M120 (every std module imported unused, one by one). `import std::js::null::{ .. };` is the working spelling. The refusal (\"an `import`/`use` path is `::`-separated NAMES …\") does not say that `null` is a keyword here or name the brace form. Rec: steer to `std::js::null::{ … }` at that token. Sizing XS."
+  }
+ ]
+}
