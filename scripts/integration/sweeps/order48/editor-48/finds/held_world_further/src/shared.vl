@@ -1,0 +1,7 @@
+// Open src/client.vl, let it settle, THEN open this file: it is served from the
+// held client world (serve_from_held_world) and nothing analyzes the SERVER
+// world, so the node leg's verdict on this file (E113) is not shown until the next
+// edit. Opened the other way round (this file first), the open sweep analyzes it.
+export fun value(): i32 {
+	1
+}

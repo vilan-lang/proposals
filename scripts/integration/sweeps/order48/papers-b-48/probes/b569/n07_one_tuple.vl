@@ -1,0 +1,9 @@
+import std::io::print;
+
+// B569 n07: `(5)` is a group; `(5,)` today.
+fun main() {
+	let a = (5);
+	let b: i32 = a;
+	let c = (5,);
+	print(b);
+}

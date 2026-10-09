@@ -1,0 +1,40 @@
+// debugging.md S2's two missing prerequisites (debug-48): what `dbg_stack()`
+// at the marked line must know, and what neither scan records today.
+//
+// - `guard` is MOVED before the site. The resource move scan (`MoveFlow` in
+//   `check_resource_moves`) knows it while scanning and reports a later READ
+//   as R1 ("use of `guard` after it was moved"), but records no per-site
+//   state for an expansion to read.
+// - `first` is a match-capture VIEW into `rows` whose last use is behind the
+//   site, and `rows` was pushed to since (B509 Q3: a capture view leaves the
+//   live set at its last use, so the push is accepted). The invalidation scan
+//   (`check_invalidation`) would report a READ of `first` at the site as
+//   rule 4, and records no per-site state either.
+//
+// A `dbg_stack()` at the site has to print `<moved at 29:10>` and
+// `<view, invalidated by push at 34:4>` WITHOUT reading either, so its
+// expansion must be told both verdicts before it mints its reads. Today
+// uncommenting a plain read of either binding at the site is refused.
+[resource]
+struct Guard {
+	id: i32,
+}
+
+fun consume(own guard: Guard) {
+	print(guard.id);
+}
+
+fun main() {
+	let guard = Guard { id = 1 };
+	consume(guard);
+	mut rows = [Some(1), Some(2)];
+	match &rows[0] {
+		Some(let first) => {
+			print(*first);
+			rows.push(None);
+			print(rows.len());
+			// dbg_stack();   <- the site: lists `guard`, `rows`, `first`
+		},
+		None => {},
+	}
+}

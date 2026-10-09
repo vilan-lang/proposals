@@ -1,0 +1,7 @@
+import std::io::print;
+
+// B571 a01: `as` is not an expression operator today.
+fun main() {
+	let a = 1 as f64;
+	print(a);
+}

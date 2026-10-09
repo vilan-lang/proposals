@@ -1,0 +1,12 @@
+import std::io::print;
+import std::reactive::{Source, SignalCell};
+
+// B570 u02: what an inferred pipe-stage return renders as (the mismatch prints it).
+fun doubled(cell: SignalCell<i32>) {
+	cell.derive(|v| v * 2).distinct().derive(|v| i"{v}")
+}
+
+fun main() {
+	let cell = SignalCell::new(1);
+	let shown: i32 = doubled(cell);
+}

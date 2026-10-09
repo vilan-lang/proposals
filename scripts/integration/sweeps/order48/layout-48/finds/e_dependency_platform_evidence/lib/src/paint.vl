@@ -1,0 +1,8 @@
+[platform("browser")] mod self;
+
+import std::web::ui::{ Region, Row };
+
+export fun anchor_of(region: Region): i32 {
+	let _ = region;
+	1
+}

@@ -1,0 +1,6 @@
+import pkg::paint::anchor_of;
+import std::web::ui::Region;
+
+export fun measure(region: Region): i32 {
+	anchor_of(region)
+}

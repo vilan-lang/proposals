@@ -1,0 +1,46 @@
+ASSIGN.closure-body	vilan/test/shared-compound-write.vl:30	prev=|| next=;	fired.write() += 1
+ASSIGN.closure-body	vilan/test/shared-compound-write.vl:44	prev=| next=)	runs.write() += 1
+ASSIGN.closure-body	vilan/test/shared-compound-write.vl:45	prev=| next=)	runs.write() += 10
+ASSIGN.closure-body	vilan/test/shared-compound-write.vl:57	prev=|| next=;	captured *= 2
+AS	vilan/test/module-dirs.vl:4	prev=widget next=widgets	mport pkg::nested::ui::widget as widgets; import pkg::nested
+ASSIGN.closure-body	crates/vilan-cli/tests/native/for_mut_element_loans.vl:30	prev=| next=)	n += 10
+ASSIGN.closure-body	crates/vilan-cli/tests/native/for_mut_element_loans.vl:33	prev=| next=)	name = *name + "!"
+ASSIGN.closure-body	crates/vilan-cli/tests/native/for_mut_element_loans.vl:36	prev=| next=)	counter.hits += 1
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_entry_writes.vl:20	prev==> next=,	out = out + i"put({key},{opt(was)},{now}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_entry_writes.vl:21	prev==> next=,	out = out + i"delete({key},{gone}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_entry_writes.vl:22	prev==> next=,	out = out + i"reset({map.len()}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_keys_pipe.vl:33	prev==> next=,	out = out + i"splice({at},{nums(removed)},{nums(inserted)}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_keys_pipe.vl:34	prev==> next=,	out = out + i"set({at},{was},{now}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_keys_pipe.vl:35	prev==> next=,	out = out + i"reset({nums(items)}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_keys_pipe.vl:36	prev==> next=,	out = out + i"move({from},{count},{to}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_keys_pipe.vl:46	prev==> next=,	out = out + i"add({value}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_keys_pipe.vl:47	prev==> next=,	out = out + i"remove({value}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/map_keys_pipe.vl:48	prev==> next=,	out = out + i"reset({set.len()}) "
+ASSIGN.closure-body	crates/vilan-cli/tests/native/map_keys_pipe.vl:68	prev=| next=)	d_wakes += 1
+ASSIGN.closure-body	crates/vilan-cli/tests/native/map_operator_walk.vl:59	prev=| next=)	held += 1
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/list_push_many.vl:14	prev==> next=,	out = out + i"splice({at},-{removed.len()},+{inserted.len()}) "
+ASSIGN.match-arm-or-comprehension-body	crates/vilan-cli/tests/native/list_push_many.vl:15	prev==> next=,	out = out + "other "
+ASSIGN.closure-body	crates/vilan-cli/tests/native/map_walk.vl:73	prev=| next=)	held += 1
+TOTAL	files=242 parse_fail=0
+TOTAL	as-token	1
+TOTAL	assign.closure-body	10
+TOTAL	assign.match-arm-or-comprehension-body	12
+TOTAL	assign.statement	437
+TOTAL	fun.exported.omitted-void-tail	8
+TOTAL	fun.exported.written	21
+TOTAL	fun.method.omitted-value-tail	10
+TOTAL	fun.method.omitted-void-tail	28
+TOTAL	fun.method.written	161
+TOTAL	fun.private.omitted-value-tail	42
+TOTAL	fun.private.omitted-void-tail	258
+TOTAL	fun.private.written	264
+TOTAL	let-destructure	37
+TOTAL	modlet.exported.written	1
+TOTAL	modlet.private.inferred	18
+TOTAL	modlet.private.written	31
+TOTAL	tuple-index-access	121
+TOTAL	tuple.arity1	7
+TOTAL	tuple.arity11	1
+TOTAL	tuple.arity2	173
+TOTAL	tuple.arity3	13
+TOTAL	tuple.arity7	1

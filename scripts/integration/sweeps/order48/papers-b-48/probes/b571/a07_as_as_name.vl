@@ -1,0 +1,11 @@
+import std::io::print;
+
+// B571 a07: is `as` usable as a binding or function name today?
+fun as(v: i32): i32 {
+	v
+}
+
+fun main() {
+	let as = 5;
+	print(as);
+}

@@ -1,0 +1,7 @@
+import std::io::print;
+
+// B571 a04: is whitespace before `<` significant in a TYPE position today?
+fun main() {
+	let xs: List <i32> = [1, 2];
+	print(xs.len());
+}

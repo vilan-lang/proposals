@@ -1,0 +1,11 @@
+import std::debug::Debug;
+
+[derive(Debug)]
+struct Fixed {
+	cells: [i32; 2],
+	run: |i32| i32,
+}
+
+fun main() {
+	print(Fixed { cells = [1, 2], run = |x| x }.debug());
+}

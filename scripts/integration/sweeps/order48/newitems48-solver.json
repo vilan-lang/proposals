@@ -1,0 +1,74 @@
+{
+ "items": [
+  {
+   "id": "F117",
+   "section": "F",
+   "kind": "bug (native refusal; S–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-08 (solver-48's find, Order 48)",
+   "title": "natively, a member of a blanket whose subject is a PARAMETERIZED bare trait (`impl Iterator<type T> with Again<T>`) that returns `Self` is refused \"the `rust` backend does not emit a value of type `a trait object` yet\" at the member — the native instance types `Self` as the bare trait, not the receiver",
+   "discussion": "solver-48 (Order 48), building B567; repro sweeps/order48/solver-48/finds/bare_trait_impl_self_return_native.vl",
+   "body": "B567 made the call's return type read the bare-trait subject as the implicit binder the call bound to the receiver (`bare_trait_subject_as_binder`), so `[5, 6].iter().map(..).again().to_list()` types and runs on JS (and std's own `it.iter()` through `impl Iterator<type T> with Iterable<T>`). The native emitter builds the member's signature from the declared `Self`, a `Type::Trait` slot structurally equal to the subject, and refuses it as an object. The binder spelling (`impl type I: Iterator<type T> with Again<T>`) runs on both. Rec: the native instance substitutes a `Self`-typed position of a bare-trait impl member by the receiver it is instantiated for (the subject's own slot is already bound to it by `bind_subject_and_bounds`). Sizing S–M; native."
+  },
+  {
+   "id": "F118",
+   "section": "F",
+   "kind": "bug (native refusal; S–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-08 (solver-48's find, Order 48)",
+   "title": "natively, std's tuple-family blankets (B443: `compare`'s position-by-position `eq`, `hash`'s canonical hash, `debug`'s rendering) are refused at the `TupleKeys` intrinsic (\"does not emit the intrinsic `TupleKeys` yet\"), so tuple `==`, a tuple map key and `(..).debug()` build on JS only",
+   "discussion": "solver-48 (Order 48), landing B443; repro sweeps/order48/solver-48/finds/tuple_blankets_refused_natively.vl",
+   "body": "The blankets walk the tuple with `self.keys()` and `self.get(key)` (A122's `Tuple` surface). Before B443 the analyzer refused tuple `==` on both backends, so nothing regressed; the native refusal is honest (a `does not emit` refusal, not a rustc failure). Rec: emit `TupleKeys`/`TupleGet` natively (the arity is known per instance, so the walk unrolls), or give the three traits native tuple impls (Rust's tuples already derive `PartialEq`/`Hash`). Sizing S–M; native."
+  },
+  {
+   "id": "F119",
+   "section": "F",
+   "kind": "bug (native refusal; S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-08 (solver-48's find, Order 48)",
+   "title": "natively, a blanket method called on an unannotated FUNCTION ITEM (`let f = nothing; f.leaf()`, B565) is refused \"the `rust` backend does not emit a value of type `a function value` yet\" at the blanket's member — the instance is minted at the item's own type",
+   "discussion": "solver-48 (Order 48), building B565; repro sweeps/order48/solver-48/finds/blanket_at_function_item_native.vl",
+   "body": "B565 routed a `Type::Function` receiver through the impl-member route, so the call resolves and runs on JS. Natively the blanket's `T` binds the function item's type, which the backend cannot emit as a value; the annotated binding (`let f: || void = nothing;`, B508's pin) runs on both because the binding is the closure type. Rec: coerce a function-item receiver to its closure type (`function_closure_type`) where a blanket binds it, in the analyzer's recorded substitution, so both emitters instantiate at the closure type; or teach the native emitter a function item value. Sizing S; native (or solver for the coercion)."
+  },
+  {
+   "id": "F120",
+   "section": "F",
+   "kind": "bug (native backend defect; S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-09 (solver-48's find, Order 48)",
+   "title": "natively, an `async` block whose body is itself an `async` block (`async { async { \"s\" } }`) is not assimilated: rustc refuses the emitted Rust (E0308) where the analyzer and JS type and run it as one `Task<str>`",
+   "discussion": "solver-48 (Order 48), re-checking B559 after native-48's F107; repro sweeps/order48/solver-48/finds/nested_async_block_native.vl",
+   "body": "`assimilated_task_payload` normalizes a handle the solver FORMS, so `async { async { .. } }` is `Task<str>`; on JS the host's promise adoption makes the runtime agree. The native lowering of the outer block hands back the inner block's handle as its value, one `Task` layer deeper than the type. Pre-existing (the plain `fun deeper(): Task<str> { async { async { \"s\" } } }` fails the same way at base b5d098ee); B559's written `Task<Task<str>>` now reaches it too. Rec: the native async-block lowering awaits a body whose type is itself a handle (the layers `assimilated_task_payload` strips), as F107 made a written-async call await its declared handle. Sizing S; native."
+  },
+  {
+   "id": "B587",
+   "section": "B",
+   "kind": "bug (silent no-op + native backend defect; S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-08 (solver-48's find, Order 48)",
+   "title": "under `match &mut pair` with a TUPLE subject, a `let` capture is a copy: a write to it is refused with the old \"declare it `mut`\" steer (B528's trap), and following it — `(mut a, let b) => a += 10` — compiles on JS and the write does not land; natively rustc refuses the emitted Rust",
+   "discussion": "solver-48 (Order 48), probing B545; repro sweeps/order48/solver-48/finds/tuple_subject_view_capture_is_a_copy.vl",
+   "body": "payload-views.md's door A binds `let` captures as views under a view subject for VARIANT payloads, and B545's view half extends it to a payload's tuple pattern; a top-level tuple pattern under `match &mut <tuple place>` is neither, so it keeps B528's trap: the refusal steers to `mut`, `mut a` binds a copy, and JS prints 1 where 11 was written. Natively the emitted match over `&mut pair` with a by-value binding is refused by rustc (a backend defect: `cargo build` refused the emitted Rust). Rec: the same rule one level up — a one-slot leaf of a tuple pattern under a view subject is a view into its slot (the `(tuple, offset)` pair on JS, Rust's binding modes natively), `mut` on it refused as B509 Q4 refuses a payload's, a sub-tuple leaf refused with the whole-tuple steer. Sizing S–M; solver (+ the JS pattern lowering, which B545's half already reaches)."
+  },
+  {
+   "id": "B588",
+   "section": "B",
+   "kind": "design (language question; S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-08 (solver-48's find, Order 48)",
+   "title": "a value whose type is a parameter bounded `(2..: PartialEq)` is not itself `PartialEq` — `values == other` is refused \"`==` on `T` needs `T: PartialEq` … `T` is unbounded\" — although std now provides `impl type T: (2..: PartialEq) with PartialEq` and every instantiation of the parameter meets that blanket's subject bound",
+   "discussion": "solver-48 (Order 48), landing B443 (solver-47's note on B557); repro sweeps/order48/solver-48/finds/abstract_tuple_bound_not_partial_eq.vl",
+   "body": "B173 (RULED) makes an abstract value's DECLARED bounds the only answer, never an impl: a blanket could be outranked by a more specific impl at instantiation. A tuple bound's CONTAINMENT in a blanket's subject bound (`(2..: PartialEq)` inside `(2..: PartialEq)`) is a proof about every instantiation, which is the case B173's reasoning does not cover — but `impl (i32, i32) with PartialEq` written by a user would still outrank the blanket at that instance. A ruling first: does a tuple bound's containment count as declared (then `tuple_bound_violations`' containment test answers the bound check for the abstract value, and the dispatch stays per instance)? Sizing S once ruled; solver."
+  },
+  {
+   "id": "B589",
+   "section": "B",
+   "kind": "inference (S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-08 (solver-48's find, Order 48)",
+   "title": "a numeric LITERAL at a generic parameter that a later closure argument's ANNOTATION fixes takes `i32` first: `fold(0, \\|acc: usize, n: usize\\| acc + n)` (`fold<B>(init: B, fn: \\|B, T\\| B)`) is refused \"Expected \\|i32, usize\\| i32, but got \\|usize, usize\\| usize\"",
+   "discussion": "solver-48 (Order 48), probing; repro sweeps/order48/solver-48/finds/literal_accumulator_ignores_annotated_closure.vl",
+   "body": "B389 lets a literal take the call's numeric EXPECTATION before its default; the closure's written parameter types are evidence of the same kind, one argument over, and the two-phase binding (non-closure arguments first, B90) commits the literal's `i32` before the annotated closure is read. Base e75bc57c and the solver-48 tip alike; `fold(0.as_usize(), ..)` runs. Rec: a closure argument whose parameters are all ANNOTATED is typed in the first phase (it needs nothing from the call), so its written types bind `B` before the literal defaults. Sizing S–M; solver."
+  }
+ ]
+}

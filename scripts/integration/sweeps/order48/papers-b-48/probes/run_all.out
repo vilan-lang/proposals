@@ -1,0 +1,283 @@
+vilan 0.45.0 (e75bc57c3)
+=================== b569/n01_assign_in_parens.vl
+[check: refused]
+Error: Expected i32, but got void instead.
+   ╭─[ n01_assign_in_parens.vl:9:19 ]
+   │
+ 9 │     let shown: i32 = y;
+   │                      ┬  
+   │                      ╰── Expected i32, but got void instead.
+───╯
+=================== b569/n02_assign_as_argument.vl
+[check: refused]
+Error: Expected i32, but got (void, i32) instead.
+    ╭─[ n02_assign_as_argument.vl:13:19 ]
+    │
+ 13 │     let shown: i32 = pair;
+    │                      ──┬─  
+    │                        ╰─── Expected i32, but got (void, i32) instead.
+────╯
+=================== b569/n03_labelled_type.vl
+[check: refused]
+Error: cannot find 'p' in this scope
+   ╭─[ n03_labelled_type.vl:6:8 ]
+   │
+ 6 │     print(p.0);
+   │           ┬  
+   │           ╰── cannot find 'p' in this scope
+───╯
+Error: found ':' expected ',' or ')' in type annotation
+   ╭─[ n03_labelled_type.vl:5:11 ]
+   │
+ 5 │     let p: (x: f64, y: f64) = (5, 7);
+   │              ┬  
+   │              ╰── found ':' expected ',' or ')' in type annotation
+───╯
+=================== b569/n04_labelled_literal.vl
+[check: refused]
+Error: cannot find 'x' in this scope
+   ╭─[ n04_labelled_literal.vl:6:11 ]
+   │
+ 6 │     let p = (x = 5, y = 7);
+   │              ┬  
+   │              ╰── cannot find 'x' in this scope
+───╯
+Error: cannot find 'y' in this scope
+   ╭─[ n04_labelled_literal.vl:6:18 ]
+   │
+ 6 │     let p = (x = 5, y = 7);
+   │                     ┬  
+   │                     ╰── cannot find 'y' in this scope
+───╯
+=================== b569/n05_closure_param_names.vl
+[check: clean]
+n05_closure_param_names.vl: no errors
+[run]
+2
+=================== b569/n06b_tuple_dbg.vl
+[check: clean]
+n06b_tuple_dbg.vl: no errors
+[run]
+[n06b_tuple_dbg.vl:6:2] p = (5.0, "a")
+=================== b569/n06_tuple_debug_json.vl
+[check: refused]
+Error: (f64, f64) has no method 'to_json'
+   ╭─[ n06_tuple_debug_json.vl:9:10 ]
+   │
+ 9 │     print(p.to_json());
+   │             ───┬───  
+   │                ╰───── (f64, f64) has no method 'to_json'
+───╯
+=================== b569/n07_one_tuple.vl
+[check: refused]
+Error: type of variable 'c' could not be resolved
+   ╭─[ n07_one_tuple.vl:7:2 ]
+   │
+ 7 │     let c = (5,);
+   │     ──────┬─────  
+   │           ╰─────── type of variable 'c' could not be resolved
+───╯
+Error: found ')' expected an expression
+   ╭─[ n07_one_tuple.vl:7:13 ]
+   │
+ 7 │     let c = (5,);
+   │                ┬  
+   │                ╰── found ')' expected an expression
+───╯
+=================== b569/n08_destructure_swap.vl
+[check: clean]
+n08_destructure_swap.vl: no errors
+[run]
+3
+21
+=================== b569/n09_tuple_family_keys.vl
+[check: clean]
+n09_tuple_family_keys.vl: no errors
+[run]
+3
+=================== b569/n10_spread_concrete_tuple.vl
+[check: clean]
+n10_spread_concrete_tuple.vl: no errors
+[run]
+12
+=================== b569/n11_spread_called_with_a_tuple.vl
+[check: refused]
+Error: Expected (f64, f64), but got ((i32, i32)) instead.
+    ╭─[ n11_spread_called_with_a_tuple.vl:11:13 ]
+    │
+ 11 │     print(draw((3, 4)));
+    │                ───┬──  
+    │                   ╰──── Expected (f64, f64), but got ((i32, i32)) instead.
+────╯
+=================== b571/a01_as_expression.vl
+[check: refused]
+Error: cannot find 'a' in this scope
+   ╭─[ a01_as_expression.vl:6:8 ]
+   │
+ 6 │     print(a);
+   │           ┬  
+   │           ╰── cannot find 'a' in this scope
+───╯
+Error: expected `;` to end this statement
+   ╭─[ a01_as_expression.vl:5:10 ]
+   │
+ 5 │     let a = 1 as f64;
+   │             ┬  
+   │             ╰── expected `;` to end this statement
+───╯
+=================== b571/a02b_empty_list_used.vl
+[check: clean]
+a02b_empty_list_used.vl: no errors
+[run]
+0
+=================== b571/a02_empty_list_cannot_infer.vl
+[check: clean]
+a02_empty_list_cannot_infer.vl: no errors
+[run]
+built
+=================== b571/a03b_generic_call_cannot_infer.vl
+[check: refused]
+Error: cannot infer 'T' for this call: nothing it is passed binds it, and its result is typed by it. Write the type — on the binding the result lands in (`let value: … = …`), or as the call's type argument (`make<…>(…)`)
+   ╭─[ a03b_generic_call_cannot_infer.vl:9:11 ]
+   │
+ 4 │ fun make<T>(): List<T> {
+   │          ┬  
+   │          ╰── the bound is declared here
+   │ 
+ 9 │     let xs = make();
+   │              ───┬──  
+   │                 ╰──── cannot infer 'T' for this call: nothing it is passed binds it, and its result is typed by it. Write the type — on the binding the result lands in (`let value: … = …`), or as the call's type argument (`make<…>(…)`)
+───╯
+=================== b571/a03_none_cannot_infer.vl
+[check: clean]
+a03_none_cannot_infer.vl: no errors
+[run]
+built
+=================== b571/a04_generic_spacing_type.vl
+[check: clean]
+a04_generic_spacing_type.vl: no errors
+[run]
+2
+=================== b571/a05_generic_spacing_expr.vl
+[check: clean]
+a05_generic_spacing_expr.vl: no errors
+[run]
+0
+=================== b571/a06_generic_tight_expr.vl
+[check: clean]
+a06_generic_tight_expr.vl: no errors
+[run]
+0
+1
+=================== b571/a07_as_as_name.vl
+[check: clean]
+a07_as_as_name.vl: no errors
+[run]
+5
+=================== b571/a08_e261_annotated_let.vl
+[check: clean]
+a08_e261_annotated_let.vl: no errors
+[run]
+built
+=================== b571/a09_e261_unannotated.vl
+[check: refused]
+Error: match legs have mismatched types: expected Constant<i32>, but got Derive<SignalCell<i32>, i32, i32> instead. Both are pipe stages, and two stages of different types meet only as one erased flow: annotate where the value lands, `let state: dyn Flow<T> = ..` (or the function's return), with `T` the value they carry, and each erases to it
+    ╭─[ a09_e261_unannotated.vl:10:12 ]
+    │
+ 10 │        false => cell.derive(|v| v * 10),
+    │                 ───────────┬───────────  
+    │                            ╰───────────── match legs have mismatched types: expected Constant<i32>, but got Derive<SignalCell<i32>, i32, i32> instead. Both are pipe stages, and two stages of different types meet only as one erased flow: annotate where the value lands, `let state: dyn Flow<T> = ..` (or the function's return), with `T` the value they carry, and each erases to it
+────╯
+=================== b571/a10_let_annotation_directs.vl
+[check: clean]
+a10_let_annotation_directs.vl: no errors
+[run]
+5
+0
+true
+=================== b571/a11_numeric_mismatch.vl
+[check: refused]
+Error: Expected f64, but got i32 instead. There are no implicit numeric conversions; convert with `.as_f64()`
+   ╭─[ a11_numeric_mismatch.vl:7:15 ]
+   │
+ 7 │     let x: f64 = n;
+   │                  ┬  
+   │                  ╰── Expected f64, but got i32 instead. There are no implicit numeric conversions; convert with `.as_f64()`
+───╯
+=================== b571/a12_block_like_continuation.vl
+[check: refused]
+Error: a `match`, `if`, `for` or `{` form is COMPLETE at its closing brace, so the operator or `.` after it does not continue it — in statement position it begins a new statement instead: parenthesize the block-like form — `(match x { .. }) + 1`, `(match x { .. }).to_str()` — to use its value as an operand. (The rule is what lets a line beginning `-x` or `*p` mean subtraction or a dereference by where it sits.)
+   ╭─[ a12_block_like_continuation.vl:8:3 ]
+   │
+ 8 │     }.max(0);
+   │      ┬  
+   │      ╰── a `match`, `if`, `for` or `{` form is COMPLETE at its closing brace, so the operator or `.` after it does not continue it — in statement position it begins a new statement instead: parenthesize the block-like form — `(match x { .. }) + 1`, `(match x { .. }).to_str()` — to use its value as an operand. (The rule is what lets a line beginning `-x` or `*p` mean subtraction or a dereference by where it sits.)
+───╯
+=================== b571/a13_spaced_generic_census_control.vl
+[check: clean]
+a13_spaced_generic_census_control.vl: no errors
+[run]
+true
+true
+=================== b571/a14_spaced_generic_call.vl
+[check: refused]
+Error: cannot call this as a function: it is i32
+    ╭─[ a14_spaced_generic_call.vl:15:10 ]
+    │
+ 15 │     let z = a < b > (c);
+    │             ┬  
+    │             ╰── cannot call this as a function: it is i32
+────╯
+=================== b571/a15_comparison_read_as_generic_call.vl
+[check: refused]
+Error: `bool` has no ordering: `>` models `PartialOrd`, which `bool` does not implement; compare with `==`/`!=`
+    ╭─[ a15_comparison_read_as_generic_call.vl:10:16 ]
+    │
+ 10 │     let control = (a < b) > (c);
+    │                   ──────┬──────  
+    │                         ╰──────── `bool` has no ordering: `>` models `PartialOrd`, which `bool` does not implement; compare with `==`/`!=`
+────╯
+Error: cannot call this as a function: it is i32
+    ╭─[ a15_comparison_read_as_generic_call.vl:12:10 ]
+    │
+ 12 │     let z = a < b > (c);
+    │             ┬  
+    │             ╰── cannot call this as a function: it is i32
+────╯
+=================== b571/a16_bare_trait_let.vl
+[check: refused]
+Error: Expected i32, but got Derive<SignalCell<i32>, i32, i32> instead.
+   ╭─[ a16_bare_trait_let.vl:9:19 ]
+   │
+ 9 │     let shown: i32 = doubled;
+   │                      ───┬───  
+   │                         ╰───── Expected i32, but got Derive<SignalCell<i32>, i32, i32> instead.
+───╯
+=================== b570/u01_return_inferred_from_use.vl
+[check: refused]
+Error: Expected f64, but got i32 instead. There are no implicit numeric conversions; convert with `.as_f64()`
+   ╭─[ u01_return_inferred_from_use.vl:9:15 ]
+   │
+ 9 │     let x: f64 = five();
+   │                  ───┬──  
+   │                     ╰──── Expected f64, but got i32 instead. There are no implicit numeric conversions; convert with `.as_f64()`
+───╯
+=================== b570/u02_return_stage_type.vl
+[check: refused]
+Error: Expected i32, but got Derive<Distinct<Derive<SignalCell<i32>, i32, i32>, i32>, i32, str> instead.
+    ╭─[ u02_return_stage_type.vl:11:19 ]
+    │
+ 11 │     let shown: i32 = doubled(cell);
+    │                      ──────┬──────  
+    │                            ╰──────── Expected i32, but got Derive<Distinct<Derive<SignalCell<i32>, i32, i32>, i32>, i32, str> instead.
+────╯
+=================== b570/u03_module_binding_inferred.vl
+[check: clean]
+u03_module_binding_inferred.vl: no errors
+[run]
+1
+=================== b570/u04_auto_name.vl
+[check: clean]
+u04_auto_name.vl: no errors
+[run]
+built

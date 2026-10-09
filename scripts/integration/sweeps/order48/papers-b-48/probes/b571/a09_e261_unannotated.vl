@@ -1,0 +1,13 @@
+import std::io::print;
+import std::reactive::{Source, SignalCell, Flow};
+
+// B571 a09: E261 without the annotation: the steer.
+fun main() {
+	let cell = SignalCell::new(2);
+	let pick = true;
+	let state = match pick {
+		true => Source::constant(1),
+		false => cell.derive(|v| v * 10),
+	};
+	print("built");
+}

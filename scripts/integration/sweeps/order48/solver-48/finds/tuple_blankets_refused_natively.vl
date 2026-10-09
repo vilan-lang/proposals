@@ -1,0 +1,19 @@
+// FIND (solver-48, landing B443): std's tuple-family blankets (`compare`'s
+// position-by-position `eq`, `hash`'s canonical hash, `debug`'s rendering)
+// walk the tuple with `keys()`/`get(key)`, and the native backend refuses
+// "does not emit the intrinsic `TupleKeys` yet", so tuple `==`, a tuple map
+// key and `(..).debug()` build on JS only. Expected on both: true, 7, (1, "a").
+import std::io::print;
+import std::debug::Debug;
+import std::hash_map::HashMap;
+import std::option::Option;
+
+fun main() {
+	print((1, "a") == (1, "a"));
+	mut counts: HashMap<(i32, str), i32> = HashMap::new();
+	counts.insert((1, "a"), 7);
+	print(counts.get((1, "a")).unwrap_or(0));
+	print((1, "a").debug());
+}
+
+main();

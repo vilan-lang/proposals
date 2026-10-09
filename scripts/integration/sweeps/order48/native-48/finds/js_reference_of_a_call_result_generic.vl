@@ -1,0 +1,11 @@
+import std::display::Display;
+import std::io::print;
+
+fun shown<T: Display>(value: &T): str {
+	i"<{value}>"
+}
+
+fun main() {
+	let xs = [1, 2];
+	print(shown(&xs.len()));
+}

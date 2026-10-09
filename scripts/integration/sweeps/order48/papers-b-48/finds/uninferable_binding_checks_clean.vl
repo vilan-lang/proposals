@@ -1,0 +1,13 @@
+import std::io::print;
+
+// papers-b-48 find B?1: a binding whose type nothing determines checks clean.
+// `vilan check` and the JS build accept both; natively the first is refused at
+// EMISSION ("does not emit a value of type `an unresolved type` yet — this is
+// F1's slice S1b ..."), and the second is emitted as `let o_NNNN = None;`
+// with no type, which rustc cannot infer (E0282).
+fun main() {
+	let xs = [];
+	print(xs.len());
+	let o = None;
+	print("built");
+}

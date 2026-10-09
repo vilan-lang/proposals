@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B575",
+   "section": "B",
+   "kind": "diagnostics lost on reuse (S) — analyzer, M19's record seam",
+   "area": "Editor & language server",
+   "status": "OPEN — filed 2026-10-08 (papers-a-48's find, Order 48; met building the analyzer pass map)",
+   "discussion": "papers-a-48 (Order 48); sweeps/order48/papers-a-48/finds/suspend_reuse, suspend_reuse_hot, lspprobe.py; analyzer-pass-map.md §5.4",
+   "title": "the editor DROPS a module's E3 view-across-suspension errors (B119's implicit half) on every reusing analysis: `check_invalidation` (a Class A check) enrolls the pending suspension checks only for bodies it does not skip, `check_view_suspensions` (a post pass) decides only what was enrolled, and M19's record replays the Class A check's own diagnostics but neither the enrolment nor the post pass's verdicts — so `vilan check` refuses the program while the LSP shows the module clean after the first keystroke in the entry (and flickers on S1 hot-set hits)",
+   "body": "Repro (`finds/suspend_reuse`): `m.vl` declares `async fun tick(): i32 { 1 }` and `export fun stash(viewed: &mut Point, other: &Point) { let beat = tick(); viewed.x = beat + other.y; }`; `main.vl` calls `stash`. `vilan check .` -> two errors at m.vl:5 (\"an async function cannot take '&mut' parameters ...\", and '&'). Drive vilan-lsp (`python3 lspprobe.py <vilan-lsp> suspend_reuse src/main.vl`): after didOpen m.vl publishes both errors (cold analysis, `reused 0/25`); after ONE keystroke in main.vl (a comment line) m.vl publishes [] (`reused 25/25`, base hit), and it stays [] after the keystroke is undone — identical text, different answer. Under S1 (`finds/suspend_reuse_hot`, edit the leaf `v.vl` with main.vl open): the errors show on the hot-set MISS and vanish on the next keystroke's hit (`reused 25/26`), so they flicker. Mechanism: `check_invalidation` (analyzer.rs ~28525) and `check_closure_view_capture_ban` (~28761) filter bodies by `reusable_entity` and write `view_suspension_checks` from what is left; `check_view_suspensions` (~77391, called from `post_analysis_passes`) consumes that table after `async_infer`; `ModuleTables` (~70808) carries no suspension rows and the post pass runs after `take_reuse_record`, so neither the rows nor the verdicts are ever recorded. The edit-replay differential is green because no classes-leg module and no corpus program carries this diagnostic. Fix (S): enroll the pending crossings/signatures/captures for EVERY body (only the check's own diagnostics are reusable; the post pass is re-derived per analysis because the async set is whole-program), or record the enrolment rows in `ModuleTables`; pin it with an edit-replay class (a prefix module whose diagnostic a post pass decides) and an LSP test. The general invariant (pass map §5.4): a Class A check may skip a reused body only if every table it writes for a later pass is recorded or recomputed. Sizing S."
+  },
+  {
+   "id": "B576",
+   "section": "B",
+   "kind": "diagnostics (XS fix, S with the cache rule) — analyzer, same root as B573",
+   "area": "Compiler",
+   "status": "OPEN — filed 2026-10-08 (papers-a-48's find, Order 48)",
+   "discussion": "papers-a-48 (Order 48); sweeps/order48/papers-a-48/finds/p1_note, p1_note_entry; B573; analyzer-pass-map.md §5.5",
+   "title": "B573's other readers: every diagnostic the PRE-ENTRY `resolve_world` produces for a MODULE renders the analyzer's DEFAULT platform — a browser package's module calling `View::render` is told \"`View` here is std's browser twin — this file is analyzed under node\" (the same call in the entry says \"under browser\"); `platform_reason` and `prelude_repair` are read there before `analyze_over_world` assigns them too",
+   "body": "Repro (`finds/p1_note`, `target = \"browser\"`): `m.vl`: `import std::web::ui::{ View, view }; export fun show(): str { let v: View = view(\"div\"); v.render() }`; the entry calls `show()`. `vilan check .` -> \"View has no method 'render'\" with the note \"... this file is analyzed under node\". `finds/p1_note_entry` (the same function in the entry) -> \"... analyzed under browser\". Cause: `analyze_inner` runs the module walk and the pre-entry `resolve_world` on an `Analyzer::new()` whose `platform` is `Platform::default()` (node); `analyze_over_world` assigns `platform`, `platform_reason` and `prelude_repair` afterwards (analyzer.rs ~75598-75604). Readers before the assignment: `select_platform_twins` (B573, the miscompile), `overlaid_std_type_note` (~31148, this find), the fenced-out steer in `scope_miss_steer` (~54176, names the wrong platform), and `web_prelude_steer` (~54215, reads `prelude_repair`). B573's one-line fix (`analyzer.platform = platform` right after `Analyzer::new()`) also fixes this note, and is cache-safe because `platform` is in `BaseCacheKey`. `platform_reason` and `prelude_repair` are deliberately NOT in the key (\"it changes what one diagnostic says\"), so assigning them early would bake one front end's wording into a stored world another front end is served: the rule is that a stored world's diagnostics may not render an unkeyed workspace fact — render those lazily at publish, or key them. Fix with B573 (incr-48's driver) and pin the module note on a browser package. Sizing XS (platform) / S (the two unkeyed facts)."
+  },
+  {
+   "id": "N153",
+   "section": "N",
+   "kind": "tooling (XS) — the phase instrument",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-08 (papers-a-48's find, Order 48)",
+   "discussion": "papers-a-48 (Order 48); analyzer-pass-map.md §2",
+   "title": "`VILAN_PHASE_TIMING`'s `resolve_world` split mislabels three stages: the `contexts` bucket times `build_lookup_admission` (B401), the `locals` bucket times the assignment drain, and the context clauses and the first-part locals are timed inside `conformance` and `binder-bounds`",
+   "body": "Read at next @e75bc57c, analyzer.rs `resolve_world` (~59275-61781): the `binder-bounds` mark (~59533) closes over binder-bound inheritance, the desugar-minted std items (B270) AND the first part of the bare-name locals; the `locals` mark (~59558) closes over the assignment drain (`wire_prepped_assignment`) only; after the `types` mark, `resolve_context_clauses()` runs and the trait-impl conformance loop follows, and only then is `conformance` pushed; after `divergence+guards` the only call is `build_lookup_admission()`, and the next mark is named `contexts`. On kolt's client leg the buckets read binder-bounds 14.6 ms, locals 0.6, conformance 3.2, contexts 2.3, so nothing large was misattributed, but each label sends a reader to the wrong function (N43's lesson: name a bucket after what it times). Rename `contexts` to `admission` and `locals` to `assignments`, and give the context clauses and the first-part locals marks of their own. Sizing XS."
+  },
+  {
+   "id": "M127",
+   "section": "M",
+   "kind": "design residue (S) — M110 S3's scope",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-08 (papers-a-48's find, Order 48)",
+   "discussion": "papers-a-48 (Order 48); analyzer-pass-map.md §3.4, §6; incremental-analysis.md §3.2 item 3",
+   "title": "M110 S3's seeded-fixpoint list (contexts, async, platform) misses the two analyze-time effect fixpoints, `infer_borrows` and `infer_bumps` (the sixth and seventh inferred-effect worklists): monotone call-graph fixpoints over every body, run before the Class A checks because they read the verdicts, 104 ms CPU of kolt's client leg (~3.6% of the check, more than platform colour's 60 ms)",
+   "body": "Measured on next @e75bc57c, release, a scratch copy of kolt, `VILAN_PHASE_TIMING=passes`, median of 5: `infer_bumps` 100.8 ms and `infer_borrows` 3.0 ms on the client leg (16.2 ms on the server leg), against platform-color 59.5, async-infer 135.0, contexts+graph 174.2. Both write `Function.borrows`/`Function.bumps`, which S0's interface fingerprint already includes, and both treat a DISPATCHED callee conservatively (bumping), so a hot-set impl can move a prefix function's verdict only through a call the prefix can name — M121 door (b)'s impl headers. Neither is covered by M19's reuse: `ModuleTables.bumps` records a module's verdicts for T1b's tables, but the fixpoint itself re-runs over the whole world on every analysis. Fold both into S3 as seeded fixpoints (seed: the prefix-only verdicts, computed with hot callees as unknown; iterate from the hot set's functions and their callers). Sizing S (scope note for Order 49)."
+  },
+  {
+   "id": "M128",
+   "section": "M",
+   "kind": "audit (S) — order dependence under a reordered world",
+   "area": "Language & type system",
+   "status": "OPEN — filed 2026-10-08 (papers-a-48's find, Order 48; code-read, no diverging repro built)",
+   "discussion": "papers-a-48 (Order 48); analyzer-pass-map.md §5.6; M121 door (b); M110 S5",
+   "title": "answers chosen by FIRST MATCH over a load-ordered table — `resolve_macro_reference`'s fallback (the first module in load order whose macro namespace has the name), `callable_call_signature` (the first impl in load order that declares `call` and admits the subject), `import_path_of` (B561's function, the first module in load order whose scope declares the entity) — and tables keyed by an impl's POSITION in `implementations` (`for_each_next_providers`): each is deterministic in the canonical world and can change answer in a world that orders modules or impls differently (S1's hot set, M121 door (b)'s pre-walked impl headers)",
+   "body": "Read at next @e75bc57c: `self.modules` and `self.implementations` are an `IndexMap`/`Vec` in insertion order, which is the drain's load order (std first, then the canonical `(tier, index, name)` order, the entry last). Sites that take the first match: analyzer.rs ~47304 (`resolve_macro_reference`, `.modules.values().find_map(.. macro_name_to_id ..)`), ~45923 (`callable_call_signature`, `.implementations.iter().find_map(..)` — it does not rank a blanket against a concrete subject as `rank_member_candidates` does), ~55178 (`import_path_of`), ~61970 (`for_each_next_providers` stores `implementations.iter().position(..)`, an index, as a table value). The ruled tie-breaks (`declaration_order`, B57's least entity id, `rank_member_candidates`) are positional by DESIGN and S5's id windows preserve them; these four are positional by accident. In a hot-set world the hot modules load after the prefix, and M121 door (b) will append the hot set's impl headers to the prefix's `implementations` — so each site must either rank (by a content-defined rule) or be proven unreachable for the reordered part. The edit-replay differential compares the outputs; it has no class that puts two candidates for one of these in different load positions. Ask: replace each first match with the ruled ranking (or the scope chain, for the macro fallback), and add one differential class per site. Sizing S."
+  }
+ ]
+}

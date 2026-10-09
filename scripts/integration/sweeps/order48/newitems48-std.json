@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "A163",
+   "section": "A",
+   "kind": "language design (M–L): impl heads over every array length",
+   "area": "Collections",
+   "status": "OPEN — filed 2026-10-08 (std-48's find, Order 48)",
+   "discussion": "std-48 (Order 48); sweeps/order48/std-48/finds/a161_array_is_not_items.vl; A161; I2; F109; fixed-arrays.md §7",
+   "title": "A161's premise does not hold: std cannot write `[T; n]`'s `Items<T>` impl — an impl subject's array LENGTH is an integer literal (`parse_array_length`), so there is no head that covers every length; the door is a length-erased head (`impl [type T; _] with Items<T>`) or I2's const-generic lengths",
+   "body": "`xs.push_many(a)` over `a: [i32; 3]` is refused \"'[i32; 3]' does not implement trait 'Items<i32>'\", and no std impl can fix it: `Type::Array(element, usize)` carries a literal length, every comparator (`compare_type`, `compare_type_rigid`, impl_select's `elements_agree`) compares lengths by value, and the native backend monomorphizes on types (`write_type_key` writes `Arr[T;3]`, `rust_type` writes `[T; 3]`), so an any-length head would need (1) a length binder or wildcard in impl-subject position, (2) the comparators to admit it, (3) mono to key the instance by the receiver's concrete length and substitute it into `self`'s type, and (4) a rule for what `self.len()` means inside (today `.len()` folds to the literal, fixed-arrays.md §10). That is the narrow half of I2 (blocked on what `const N` means); the narrow door asks only 'every length', never names `N`. Natively F109 (an annotated array literal emits `vec![..]`) blocks any differential first. Also met: B582 (an array impl head's element binder). Rec: rule whether the length-erased head is worth its own slice ahead of I2; until then A161 stays open and `push_many(a.iter())` is not available either (arrays have no `iter()`). Sizing M–L; parser + solver + mono + both emitters."
+  },
+  {
+   "id": "B582",
+   "section": "B",
+   "kind": "solver: impl head (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-08 (std-48's find, Order 48)",
+   "discussion": "std-48 (Order 48); sweeps/order48/std-48/finds/array_impl_element_binder.vl; B177; A161",
+   "title": "an impl head over a fixed array cannot bind its element: `impl [type T; 3] with Count { .. }` is refused \"cannot find type 'T'\" at both `T`s, while `impl [i32; 3] with Count` compiles (B177) and impl selection already binds through an array's element (`bind_subject`'s and `collect_subject_binders`' `Type::Array` arms)",
+   "body": "The subject-binder registration walk that admits `type T` in an impl head (struct arguments, tuples) does not descend into `Node::ArrayType`, so the binder is never declared and every mention of it is unresolved. Selection is ready for it: `impl_select::bind_subject` binds `T = i32` from `[T; n]` against `[i32; n]`. Fix: the registration walk's array arm. Repro: finds/array_impl_element_binder.vl (`vilan run` refuses; with `[i32; 3]` it runs on JS — natively F109 refuses the caller's literal). Sizing S; solver."
+  },
+  {
+   "id": "E285",
+   "section": "E",
+   "kind": "diagnostic (XS)",
+   "area": "Diagnostics & error messages",
+   "status": "OPEN — filed 2026-10-08 (std-48's find, Order 48)",
+   "discussion": "std-48 (Order 48); sweeps/order48/std-48/finds/fragment_in_fragment.vl; A46; E272",
+   "title": "a fragment written directly inside a fragment is refused with the list literal's bare element mismatch — \"Expected View (this literal's element type), but got List<View> instead.\" — with no word that it is a fragment or that nesting goes through a child position (Building UI, Fragments, says so)",
+   "body": "E272 (std-48) steers a fragment that lands where ONE `View` is wanted at a return, a `let`, an argument and a field (`with_fragment_steer`). The list literal's own element check is a fifth site with its own sentence, and a nested fragment reaches it: `<><i>\"a\"</i><><b>\"b\"</b></></>`. Rec: the same marker (a list literal whose span opens with `<`) at the element check, with \"a fragment does not flatten into a fragment: put the inner one in a child position (`<span>…</span>`), or spread its children into the outer one\". Repro: finds/fragment_in_fragment.vl. Sizing XS; the list literal's element check."
+  },
+  {
+   "id": "A164",
+   "section": "A",
+   "kind": "language question (S)",
+   "area": "Language & type system",
+   "status": "OPEN — filed 2026-10-08 (std-48's find, Order 48)",
+   "discussion": "std-48 (Order 48); sweeps/order48/std-48/finds/null_in_type_position.vl; B555",
+   "title": "the type of `null` cannot be written: `let nothing: null = null;` is refused \"found 'null' expected a type in type annotation\", while diagnostics print the type by that name (\"Expected i32, but got null instead.\") and `std::js::null` declares it (`external struct null;`)",
+   "body": "`null` is a keyword token, and the type grammar takes names; the global scope binds the primitive `null` (analyzer's primitive-struct table, `(\"null\", \"js::null\")`) but no source spelling reaches it. Met while closing B555 (the module cannot be imported for the same reason). Question for the owner: is `null`'s type meant to be unwritable (a value only, with `void` the unit type), or should the type grammar take the keyword? If unwritable, the mismatch could say so rather than name a type the author cannot write. Repro: finds/null_in_type_position.vl. Sizing S."
+  },
+  {
+   "id": "A165",
+   "section": "A",
+   "kind": "std question (S)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-10-08 (std-48's find, Order 48)",
+   "discussion": "std-48 (Order 48); sweeps/order48/std-48/finds/option_view_hole.vl; E271; B268",
+   "title": "an `Option<View>` is not a `Slot`, so `<p>\"item\"{badge}</p>` over `badge: Option<View>` is refused (E271's \"a hole in element syntax takes a `View`, a `str`, a `List<View>` or a `Source` of one, and `badge` is `Option<View>`\"); `Some(view)` placing the view and `None` placing nothing would be the static twin of `when`",
+   "body": "The child contract (B268) is `View`, `str`, `List<View>` and a `Source` of each. An optional child is written today as a `match` in the hole, `.show(..)`, or `when(..)` for the reactive case. Whether `impl Option<type V: Slot> with Slot` (both twins) belongs in the contract is the owner's: it is one arm, and `Source<Option<View>>` would follow from the blanket. Repro: finds/option_view_hole.vl. Sizing S; std (both ui twins)."
+  }
+ ]
+}

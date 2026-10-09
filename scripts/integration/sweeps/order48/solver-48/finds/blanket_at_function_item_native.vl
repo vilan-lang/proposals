@@ -1,0 +1,27 @@
+// FIND (solver-48, building B565): natively, a blanket method called on a
+// FUNCTION ITEM bound without an annotation (`let f = nothing; f.leaf()`, which
+// B565 made resolve) is refused "the `rust` backend does not emit a value of
+// type `a function value` yet" at the blanket's member: the instance is
+// minted at the item's own type. JS prints "leaf" twice. The annotated
+// binding (`let f: || void = nothing;`, B508's pin) runs on both.
+import std::io::print;
+
+trait Leaf {
+	fun leaf(&self): str;
+}
+
+impl type T with Leaf {
+	fun leaf(&self): str {
+		"leaf"
+	}
+}
+
+fun nothing() {}
+
+fun main() {
+	let f = nothing;
+	print(f.leaf());
+	print(nothing.leaf());
+}
+
+main();

@@ -1,0 +1,314 @@
+diff --git a/crates/vilan-lsp/src/document.rs b/crates/vilan-lsp/src/document.rs
+index 7658936d..12b6f0e8 100644
+--- a/crates/vilan-lsp/src/document.rs
++++ b/crates/vilan-lsp/src/document.rs
+@@ -2609,7 +2609,15 @@ impl Document {
+             package_reach: None,
+             landed: LandedSnapshot::default(),
+             released: None,
+-            twin_fenced_out: Vec::new(),
++            // E254: a file carrying platform-fenced twins is served from the
++            // world too; the twins this world's platform fences out are
++            // answered by the legs `install_twin_legs` attaches, views of the
++            // further worlds whose platforms admit them.
++            twin_fenced_out: if text.contains("platform(") {
++                twins_fenced_out(text, program.platform)
++            } else {
++                Vec::new()
++            },
+             twin_legs: Vec::new(),
+             focus,
+             world_root: Some(vilan_core::util::canonical_path(world_root)),
+@@ -2622,6 +2630,76 @@ impl Document {
+         Some(document)
+     }
+ 
++    /// E254: the twin leg a FURTHER world gives the file at `path`, whose
++    /// analyzed text is `text` — a view of `further`, the world of the entry
++    /// whose platform admits a twin the primary world fenced out. `None` when
++    /// `further` did not read this text (it describes an older buffer, and the
++    /// leg waits for the world that reads this one) or holds no program.
++    pub fn twin_leg_from(
++        further: &Document,
++        further_root: &Path,
++        path: &Path,
++        text: &str,
++    ) -> Option<TwinLeg> {
++        let platform = further.program.as_ref()?.platform;
++        let document = Document::view_of(further, further_root, path, text, Vec::new())?;
++        Some(TwinLeg {
++            fenced_out: twins_fenced_out(text, platform),
++            document: Box::new(document),
++        })
++    }
++
++    /// E254: whether this document is a world's VIEW of a file carrying
++    /// twins its world fenced out — the documents that take legs from the
++    /// further worlds.
++    #[cfg(test)]
++    pub fn twin_fenced_out_spans(&self) -> &[Span] {
++        &self.twin_fenced_out
++    }
++
++    #[cfg(test)]
++    pub fn twin_leg_count(&self) -> usize {
++        self.twin_legs.len()
++    }
++
++    pub fn wants_twin_legs(&self) -> bool {
++        self.world_root.is_some() && !self.twin_fenced_out.is_empty() && self.holds_program()
++    }
++
++    /// E254: the twins this view's world fenced out, answered by `legs` —
++    /// one per further world that admits one of them, each a view of that
++    /// world ([`Document::twin_leg_from`]). The tokens and hints inside each
++    /// twin are re-merged from the leg that admits it, as an own analysis's
++    /// kept legs are (F27 R3). A leg that admits none of them is dropped.
++    pub fn install_twin_legs(&mut self, legs: Vec<TwinLeg>) {
++        let legs: Vec<TwinLeg> = legs
++            .into_iter()
++            .filter(|leg| {
++                self.twin_fenced_out
++                    .iter()
++                    .any(|twin| !leg.fenced_out.contains(twin))
++            })
++            .collect();
++        if legs.is_empty() && self.twin_legs.is_empty() {
++            return;
++        }
++        self.twin_legs = legs;
++        // The legs were analyzed over this document's analyzed text; the live
++        // one may have moved since, and a leg follows it as the document does.
++        if self.live_edits.as_deref() != Some(&[]) {
++            let live = self.text.clone();
++            for leg in &mut self.twin_legs {
++                leg.document.set_text(&live);
++            }
++        }
++        let mut tokens = self.semantic_tokens();
++        let mut hints = self.landed_hints();
++        self.merge_twin_answers(&mut tokens, &mut hints);
++        self.landed.tokens = tokens;
++        self.landed.hints = hints;
++        self.landed.index_token_lines(&self.analyzed_index);
++    }
++
+     /// One further leg's verdict on this file: analyze it under `platform` and
+     /// publish what that compile says, keeping nothing (E113).
+     ///
+diff --git a/crates/vilan-lsp/src/entry_world_tests.rs b/crates/vilan-lsp/src/entry_world_tests.rs
+index f5d8eb71..d1d80af5 100644
+--- a/crates/vilan-lsp/src/entry_world_tests.rs
++++ b/crates/vilan-lsp/src/entry_world_tests.rs
+@@ -892,3 +892,105 @@ async fn m104_the_switch_both_ways_leaves_no_stale_diagnostics() {
+     at_rest(server).await;
+     assert_eq!(errors(&shown(server, &model)), Vec::<String>::new());
+ }
++
++// --- E254: a file carrying platform-fenced twins is served from the worlds --
++
++const TWIN_MANIFEST: &str = "[package]\nname = \"app\"\ndefault-entry = \"server\"\n\n\
++     [entry.client]\ntarget = \"browser\"\n\n[entry.server]\n";
++const TWIN_CLIENT: &str = "import pkg::place::place;\n\nfun main() {\n\tlet _ = place();\n}\n";
++const TWIN_SERVER: &str = "import pkg::place::place;\n\nfun main() {\n\tlet _ = place();\n}\n";
++/// Both entries reach it; the browser entry (first in build order) serves
++/// it, and the `@process` twin is the one its world fences out.
++const TWIN_PLACE: &str = "[platform(\"browser\")]\n\
++     export fun place(): str {\n\tlet spot = \"browser\";\n\tspot\n}\n\n\
++     [platform(\"@process\")]\n\
++     export fun place(): str {\n\tlet count = 7;\n\ti\"process {count}\"\n}\n";
++
++fn twin_package(tag: &str, place: &str) -> Package {
++    let directory = std::env::temp_dir().join(format!(
++        "vilan-e254-{tag}-{}-{:?}",
++        std::process::id(),
++        std::thread::current().id(),
++    ));
++    let _ = std::fs::remove_dir_all(&directory);
++    std::fs::create_dir_all(directory.join("src")).expect("a scratch package");
++    for (relative, contents) in [
++        ("vilan.toml", TWIN_MANIFEST),
++        ("src/client.vl", TWIN_CLIENT),
++        ("src/server.vl", TWIN_SERVER),
++        ("src/place.vl", place),
++    ] {
++        std::fs::write(directory.join(relative), contents).expect("a source file");
++    }
++    Package { directory }
++}
++
++/// E254: with the browser entry open beside it, the twin file is a VIEW of
++/// the browser world — it kept its own analysis (and its own worlds' cost)
++/// before — and the `@process` twin that world fences out is answered by a
++/// leg from the server world: hover inside it, and the colour and hints.
++#[tokio::test]
++async fn e254_a_twin_file_is_served_from_the_world_that_admits_each_twin() {
++    let package = twin_package("served", TWIN_PLACE);
++    let (service, _socket) = backend();
++    let server = service.inner();
++    open_all(
++        server,
++        &package,
++        &[("place.vl", TWIN_PLACE), ("client.vl", TWIN_CLIENT)],
++    )
++    .await;
++    let place = package.uri("place.vl");
++    let document = server.documents.get(&place).expect("open");
++    assert_eq!(
++        document.world_root(),
++        Some(package.canonical("client.vl").as_path()),
++        "served from the browser entry's world"
++    );
++    assert_eq!(
++        document.further_worlds(),
++        [package.canonical("server.vl")],
++        "the server entry reaches it too"
++    );
++    // The browser twin is the world's own.
++    let spot = TWIN_PLACE.find("spot =").expect("the browser local") + 1;
++    assert!(
++        document
++            .hover(spot)
++            .is_some_and(|hover| hover.contains("let spot: str")),
++        "{:?}",
++        document.hover(spot)
++    );
++    // The process twin is the server world's, through its leg.
++    let count = TWIN_PLACE.find("count =").expect("the process local") + 1;
++    assert_eq!(document.hover(count), None, "the browser world never collected it");
++    let answered = document.answering(count).hover(count).unwrap_or_default();
++    assert!(answered.contains("let count: i32"), "{answered:?}");
++    let count_end = TWIN_PLACE.find("count =").expect("the local") + "count".len();
++    assert!(
++        document
++            .keystroke_hints(false)
++            .iter()
++            .any(|(offset, label)| *offset == count_end && label == ": i32"),
++        "the process twin's binding is hinted from its leg: {:?}",
++        document.keystroke_hints(false)
++    );
++}
++
++/// E254's other half: a twin NO reaching entry's platform admits (a
++/// `deno` twin in a package with a browser and a node server entry) has no
++/// world to be served from, so the file keeps its own analysis and its kept
++/// legs, as before.
++#[tokio::test]
++async fn e254_a_twin_no_entry_admits_keeps_the_files_own_analysis() {
++    let place = TWIN_PLACE.replace("[platform(\"@process\")]", "[platform(\"deno\")]");
++    let package = twin_package("own", &place);
++    let (service, _socket) = backend();
++    let server = service.inner();
++    open_all(server, &package, &[("client.vl", TWIN_CLIENT), ("place.vl", &place)]).await;
++    let document = server
++        .documents
++        .get(&package.uri("place.vl"))
++        .expect("open");
++    assert_eq!(document.world_root(), None, "its own analysis");
++}
+diff --git a/crates/vilan-lsp/src/main.rs b/crates/vilan-lsp/src/main.rs
+index ceb188a1..7b08f8ee 100644
+--- a/crates/vilan-lsp/src/main.rs
++++ b/crates/vilan-lsp/src/main.rs
+@@ -2451,6 +2451,11 @@ async fn land_world(
+             landed.push(uri);
+         }
+     }
++    // E254: the world just landed may be the further world a twin-carrying
++    // view's legs come from — or the primary world, whose fresh views carry
++    // none yet. Before the publish and the retention pass below, while the
++    // world still holds its program.
++    attach_twin_legs(&context.documents, &context.worlds);
+     if landed.is_empty() && root_uri.is_some() {
+         context.analyses.record_dropped();
+         return WorldOutcome {
+@@ -2529,6 +2534,53 @@ async fn land_world(
+     }
+ }
+ 
++/// E254: give every open VIEW of a file carrying platform-fenced twins
++/// (`Document::wants_twin_legs`) a leg from each further world that admits a
++/// twin its own world fenced out — the further entry's open document, or the
++/// world kept for it while the entry is closed. The seam is
++/// `analyze_world`'s, unchanged: the primary world serves the file as a view
++/// (`world::RootResolver::roots` routes a twin file to it now), each further
++/// world is the analysis the dependency sweep already runs for E113's
++/// diagnostics, and this reads both after they land. A leg is built only from
++/// a world that read the view's analyzed text and still holds its program
++/// (`Document::twin_leg_from`); every other leaves the twin unanswered until
++/// that world lands again.
++fn attach_twin_legs(documents: &DashMap<Url, Document>, worlds: &DashMap<PathBuf, WorldEntry>) {
++    let wanting: Vec<(Url, PathBuf, String, Vec<PathBuf>)> = documents
++        .iter()
++        .filter(|document| document.wants_twin_legs())
++        .filter_map(|document| {
++            Some((
++                document.key().clone(),
++                document.entry_path()?.to_path_buf(),
++                document.analyzed_text().to_string(),
++                document.further_worlds().to_vec(),
++            ))
++        })
++        .collect();
++    for (uri, path, text, further) in wanting {
++        let mut legs = Vec::new();
++        for root in &further {
++            let leg = match worlds.get(root) {
++                Some(world) => Document::twin_leg_from(&world.document, root, &path, &text),
++                None => documents
++                    .iter()
++                    .find(|document| {
++                        document.world_root().is_none()
++                            && document.entry_path() == Some(root.as_path())
++                    })
++                    .and_then(|entry| Document::twin_leg_from(&entry, root, &path, &text)),
++            };
++            legs.extend(leg);
++        }
++        if let Some(mut document) = documents.get_mut(&uri)
++            && document.analyzed_text() == text
++        {
++            document.install_twin_legs(legs);
++        }
++    }
++}
++
+ /// M104: serve the open document at `uri` (whose buffer reads `text`) from a
+ /// world another open document already HOLDS, instead of analyzing that
+ /// world's entry again — opening `model.vl` beside the client's open files
+diff --git a/crates/vilan-lsp/src/world.rs b/crates/vilan-lsp/src/world.rs
+index 4f88b373..a5d355b9 100644
+--- a/crates/vilan-lsp/src/world.rs
++++ b/crates/vilan-lsp/src/world.rs
+@@ -107,13 +107,16 @@ impl RootResolver {
+     /// - Otherwise the FIRST entry in build order whose import graph reaches
+     ///   the file serves it, and the first reaching entry of each other
+     ///   platform reports its diagnostics too — E113's legs, one per platform.
+-    /// - A file carrying platform-fenced TWINS keeps its own analysis for now:
+-    ///   its legs are kept whole per platform (F27 R3), and serving each from
+-    ///   a different entry's world is the follow-up this order files, not
+-    ///   builds.
++    /// - A file carrying platform-fenced TWINS is served like any other
++    ///   (E254): its primary entry's world answers it, and each twin that
++    ///   world fences out is answered by the world of the further entry whose
++    ///   platform admits it (`Document::install_twin_legs`). A twin NO
++    ///   reaching entry's platform admits has no world to be served from, and
++    ///   the file keeps its own analysis with its kept legs (F27 R3), as
++    ///   before E254.
+     pub fn roots(&self, file: &Path, text: &str) -> WorldRoots {
+         let file = vilan_core::util::canonical_path(file);
+-        if self.legs.iter().any(|(entry, _)| *entry == file) || has_twins(text) {
++        if self.legs.iter().any(|(entry, _)| *entry == file) {
+             return WorldRoots::default();
+         }
+         let mut roots = WorldRoots::default();
+@@ -131,6 +134,9 @@ impl RootResolver {
+                 Some(_) => roots.further.push(entry.clone()),
+             }
+         }
++        if has_twins(text) && !vilan_core::platform_color::twin_legs(text, &platforms).is_empty() {
++            return WorldRoots::default();
++        }
+         roots
+     }
+ 

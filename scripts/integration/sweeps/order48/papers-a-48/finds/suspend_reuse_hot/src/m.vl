@@ -1,0 +1,8 @@
+export struct Point { x: i32, y: i32 }
+async fun tick(): i32 {
+	1
+}
+export fun stash(viewed: &mut Point, other: &Point) {
+	let beat = tick();
+	viewed.x = beat + other.y;
+}

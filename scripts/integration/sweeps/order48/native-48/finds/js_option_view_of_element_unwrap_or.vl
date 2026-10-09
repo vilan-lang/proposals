@@ -1,0 +1,24 @@
+// JS backend: an `Option<&str>` whose payload views a LIST ELEMENT, handed to
+// `unwrap_or`, answers the view's (base, key) PAIR instead of the element:
+// JS prints `[ [ 'first', 'second' ], 1 ]`, native prints `second`.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+struct Shelf {
+	items: List<str>,
+}
+
+impl Shelf {
+	fun at(&self, index: usize): Option<&str> {
+		if index < self.items.len() {
+			Some(&self.items[index])
+		} else {
+			None
+		}
+	}
+}
+
+fun main() {
+	let shelf = Shelf { items = ["first", "second"] };
+	print(shelf.at(1).unwrap_or("none"));
+}

@@ -1,0 +1,17 @@
+import std::io::print;
+
+// B571 a14: a generic CALL spaced (`pick <f64>(..)`), and `a < b > (c)`:
+// which reading does the expression grammar take today?
+fun pick<T>(a: T, b: T): T {
+	a
+}
+
+fun main() {
+	let y = pick <f64>(1, 2);
+	print(y);
+	let a = 1;
+	let b = 2;
+	let c = 3;
+	let z = a < b > (c);
+	print(z);
+}

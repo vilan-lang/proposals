@@ -1,0 +1,23 @@
+// native: an `is` test (or a `match`) that DESTRUCTURES the view a `borrows`
+// call hands back binds its captures as references natively — `weight` is a
+// `&mut i32` and `cells.len().as_i32() + weight` is rustc E0277 ("cannot add
+// `&mut i32` to `i32`"). A capture is a copy (rule 1); JS prints 5.
+// Corpus: capture-clones.vl:201 (`called_component`), behind its operator wall.
+import std::io::print;
+
+struct Cell {
+	pair: (List<i32>, i32),
+}
+
+impl Cell {
+	fun slot(&mut self): &mut (List<i32>, i32) borrows self {
+		&mut self.pair
+	}
+}
+
+fun main() {
+	mut cell = Cell { pair = ([1, 2], 3) };
+	if cell.slot() is (let cells, let weight) {
+		print(cells.len().as_i32() + weight);
+	}
+}

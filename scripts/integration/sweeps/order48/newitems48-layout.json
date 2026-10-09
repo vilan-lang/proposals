@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B585",
+   "section": "B",
+   "kind": "diagnostics (attribution) (S)",
+   "area": "Compiler",
+   "status": "OPEN — filed 2026-10-09 (layout-48's find, Order 48)",
+   "discussion": "layout-48 (Order 48); sweeps/order48/layout-48/finds/b_resolve_world_attribution/",
+   "title": "a path-resolution refusal `resolve_world` raises inside a MODULE renders against whichever file was walked last (std's `lib.vl`): `T::missing()` on an unconstrained type parameter and `Option::nothing_here()` in `pkg::user` both point into `vilan/std/src/lib.vl:1` / `:2` with std's comment text under the label",
+   "body": "Repro: finds/b_resolve_world_attribution (`vilan check .`). `resolve_world` runs after every walk has closed, and the static-member-access arms (`Type::Generic` 'cannot access … on an unconstrained type parameter', the type arm 'cannot find … in {Type}', and the siblings beside them, about a dozen raw `self.diagnostics.push` sites in that function) push with no attribution, so the diagnostic inherits the last attribution mark (std's root `lib.vl` walks last). layout-48 fixed ONE arm (`Type::Module`: 'cannot find … in module …', B549's last error, which rendered with no location) with `push_anchored(error, id)` and pinned it (`module_resolution::a_qualified_module_member_miss_is_anchored_in_its_own_file`); the rest want the same move. Rec: route every push in `resolve_world`'s path arms through `push_anchored`, one pin per arm. Sizing S; analyzer (resolve_world is on incr-48's side of the map this order, hence filed rather than fixed)."
+  },
+  {
+   "id": "E286",
+   "section": "E",
+   "kind": "editor (platform inference) (S)",
+   "area": "Editor & tooling",
+   "status": "OPEN — filed 2026-10-09 (layout-48's find, Order 48)",
+   "discussion": "layout-48 (Order 48); sweeps/order48/layout-48/finds/e_dependency_platform_evidence/",
+   "title": "E266's other half: `infer_platform` reads only `std::` imports, so a `pkg::` or `<dependency>::` import of a module whose file declares `[platform(\"browser\")] mod self;` (or a dependency library's browser-layer module) is no browser evidence — a `[library]` file importing only its own browser-declared module is analyzed as node",
+   "body": "layout-48 built E266 for std (a std module whose file declares the browser platform alone is evidence, as a browser-layer-only module was). The item's title also named a dependency library's declared module; `infer_platform(root, std)` receives std's spec only and walks `std::` import trees only, so neither a package's own `pkg::` modules nor a dependency's are read. Repro: finds/e_dependency_platform_evidence (open `lib/src/measure.vl`: 'analyzed as: node — default'). Rec: give `infer_platform` the entry package's root and the workspace's dependency specs, and apply the same declaration read (`declares_only_browser`) to `pkg::` and dependency paths. Sizing S."
+  },
+  {
+   "id": "B586",
+   "section": "B",
+   "kind": "CLI bug (file mode) (S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-09 (layout-48's find, Order 48)",
+   "discussion": "layout-48 (Order 48); sweeps/order48/layout-48/finds/b_library_file_mode_pkg_root/",
+   "title": "`vilan check <file>` on a NESTED module of a `[library]` resolves `pkg::` from the file's own directory: `vilan check src/deep/pair.vl` in a library whose `pair.vl` imports `pkg::util::unit` reports \"cannot find 'util' in the imported path\" (and every use after it); the same on 0.45.0, and std's own `vilan check vilan/std/src/web/dom.vl` fails the same way (`pkg::reactive`)",
+   "body": "`file_project` treats a file under a `[library]` manifest as a bare file (`pkg_root_of(entry)` = its parent directory), where a `[package]` file takes the package's declared `root`. The language server already roots a library file at the deepest layer root containing it, else the base root (`vilan-lsp` document.rs, the `[library]` arm). Repro: finds/b_library_file_mode_pkg_root (`vilan check src/deep/pair.vl`). Rec: in `file_project`, a `[library]` owner gives `pkg_root` = the deepest of its layer roots containing the file, else its base root — the editor's rule — still with no platform and no entries. Sizing S. (Found probing B556's file-mode walk.)"
+  }
+ ]
+}

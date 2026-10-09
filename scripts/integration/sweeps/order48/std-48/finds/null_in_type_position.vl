@@ -1,0 +1,10 @@
+import std::io::print;
+
+// The `null` value has a type (diagnostics print it: "Expected i32, but got
+// null instead"), and the type cannot be written: `let x: null = null;` is
+// refused "found 'null' expected a type in type annotation".
+fun main() {
+	let nothing: null = null;
+	let wrong: i32 = null;
+}
+main();

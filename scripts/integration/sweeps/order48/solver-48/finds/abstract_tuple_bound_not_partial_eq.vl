@@ -1,0 +1,21 @@
+// FIND (solver-48, B443's note from solver-47): a value whose type is a
+// parameter bounded `(2..: PartialEq)` is not itself `PartialEq`, although std
+// now provides `impl type T: (2..: PartialEq) with PartialEq` and every
+// instantiation of the parameter meets that blanket's subject bound. Refused
+// "`==` on `T` needs `T: PartialEq` ... `T` is unbounded". B173 (RULED) makes
+// an abstract value's DECLARED bounds the only answer, never an impl, so this
+// is a language question: does a tuple bound's containment in a blanket's
+// subject bound count as declared? Expected (if yes): true, false.
+import std::io::print;
+import std::compare::PartialEq;
+
+fun all_eq<T: (2..: PartialEq)>(values: T, other: T): bool {
+	values == other
+}
+
+fun main() {
+	print(all_eq((1, "a"), (1, "a")));
+	print(all_eq((1, 2, 3), (1, 2, 4)));
+}
+
+main();

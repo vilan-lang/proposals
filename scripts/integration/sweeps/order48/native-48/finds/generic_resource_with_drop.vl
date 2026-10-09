@@ -1,0 +1,21 @@
+// native: F97's remainder — a GENERIC resource with a `Drop` impl, and an ENUM
+// with one, are still refused by name ("the generic type `Guard` with a `Drop`
+// impl", "the enum `Slot` with a `Drop` impl"). JS prints "a", "closing a".
+import std::drop::Drop;
+import std::io::print;
+
+[resource]
+struct Guard<T> {
+	value: T,
+}
+
+impl Guard<type T> with Drop {
+	fun drop(&mut self) {
+		print("closing a");
+	}
+}
+
+fun main() {
+	let guard = Guard { value = "a" };
+	print(guard.value);
+}

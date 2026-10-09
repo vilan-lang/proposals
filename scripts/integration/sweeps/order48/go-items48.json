@@ -1,0 +1,189 @@
+{
+ "order": 48,
+ "base": "e75bc57c (the v0.45.0 fold; next = main)",
+ "drafted": "2026-10-08",
+ "go": "2026-10-08 (the owner: Go)",
+ "asks": {
+  "R-a": "A162 flips at v0.46.0 after A159/A160 - rec yes",
+  "R-b": "B568 breaking at v0.46.0 - rec yes",
+  "R-c": "A153 (mirrored store S1) to Order 49 beside S2/S3 - rec",
+  "R-d": "S2 dbg_stack attempted after E275-E277 if prerequisites met - rec attempt",
+  "R-e": "M123 measure-first in solver-48 - rec yes",
+  "R-f": "the cut: v0.46.0 at the seal - rec yes",
+  "R-g": "native refused list in estate order - rec yes"
+ },
+ "lanes": {
+  "incr-48": [
+   "M121",
+   "B553",
+   "M110",
+   "M122",
+   "B554"
+  ],
+  "solver-48": [
+   "B566",
+   "B567",
+   "B557",
+   "B443",
+   "B562",
+   "B501",
+   "B545",
+   "B558",
+   "B559",
+   "B563",
+   "B564",
+   "B565",
+   "M124",
+   "M123"
+  ],
+  "native-48": [
+   "F49",
+   "F103",
+   "F102",
+   "F107",
+   "F104",
+   "F105",
+   "F106",
+   "F108",
+   "F92",
+   "F99",
+   "F97",
+   "F95",
+   "F100",
+   "F98",
+   "F96",
+   "F101",
+   "F93",
+   "F94"
+  ],
+  "debug-48": [
+   "E275",
+   "E276",
+   "E277",
+   "N149",
+   "E257",
+   "E260"
+  ],
+  "editor-48": [
+   "E279",
+   "E254",
+   "E273",
+   "E274",
+   "B561",
+   "B572",
+   "E121"
+  ],
+  "std-48": [
+   "A159",
+   "A160",
+   "A162",
+   "B568",
+   "A161",
+   "E271",
+   "E272",
+   "K30",
+   "B555"
+  ],
+  "layout-48": [
+   "F28",
+   "E266",
+   "B548",
+   "B549",
+   "B556"
+  ],
+  "suite-48": [
+   "N151",
+   "N150",
+   "N152",
+   "N142",
+   "N147",
+   "N148",
+   "M125"
+  ],
+  "papers-a-48": [
+   "M110"
+  ],
+  "papers-b-48": [
+   "B569",
+   "B570",
+   "B571",
+   "E278"
+  ]
+ },
+ "waves": {
+  "1": [
+   "incr-48",
+   "solver-48",
+   "native-48",
+   "debug-48",
+   "editor-48"
+  ],
+  "2": [
+   "papers-a-48",
+   "std-48",
+   "layout-48",
+   "papers-b-48",
+   "suite-48"
+  ]
+ },
+ "merge_order": [
+  "solver-48",
+  "native-48",
+  "debug-48 (rebased onto solver)",
+  "incr-48 (rebased onto solver)",
+  "editor-48 (rebased onto incr)",
+  "std-48",
+  "layout-48 (rebased onto incr)",
+  "suite-48 (rebased last)"
+ ],
+ "order49": "M110 S2 + S3 ALONE in the analyzer core; A153 S1 beside; then the S5 spike",
+ "asks_ruled": "2026-10-08: R-a..R-g all accepted as recommended by the owner",
+ "rulings_2026_10_09": "every open ruling accepted as recommended: the pass map's nine, the three papers' 28, N156 (CI/seal test profile at opt-level 1), N159 deferred, A163/A161 with I2, layout-48's three, incr-48's three, native-48's two, E275 breaking, S3's five points (Order 49 at the earliest), B576 render-at-publish",
+ "sealed": {
+  "date": "2026-10-09",
+  "tip": "e12a83a4 (seal on 89a2c3e2 + the math/watch bumps)",
+  "ci_run": "37939805286",
+  "perf": {
+   "kolt_instructions": 0.823,
+   "kolt_cpu": 0.907,
+   "kolt_rss": 0.993,
+   "e121_all_green_ms": {
+    "leaf": 250,
+    "shared": 190,
+    "model": 200,
+    "importers_open": 340,
+    "css": 350,
+    "parse_break": 360
+   }
+  },
+  "logs": [
+   "seal-48.log",
+   "perf-e12a83a4.log"
+  ]
+ },
+ "release": {
+  "version": "v0.46.0",
+  "date": "2026-10-09",
+  "release_commit": "1e358814",
+  "tag": "99f58045 (the release commit + the ci re-adoption after the cut reset the ci bumps, N161)",
+  "release_run": "37956882456 green 17/17, 10 assets",
+  "fold": "92c62184 (main = next on origin; verified)",
+  "toolchain": "vilan 0.46.0 (92c621848) both locations + vilan-0.46.0.vsix",
+  "kolt": "no patch needed (checks 0/0 under 0.46.0)",
+  "website": "no patch needed; manifest v0.46.0",
+  "breaking": [
+   "E275",
+   "B563",
+   "B545",
+   "B568",
+   "A162"
+  ]
+ },
+ "sweep": {
+  "closed": 66,
+  "filed": 46,
+  "open": 138,
+  "closes": "closes48.json",
+  "stamps": "stamps48-a..g"
+ }
+}

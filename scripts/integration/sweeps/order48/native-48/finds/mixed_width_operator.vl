@@ -1,0 +1,18 @@
+// analyzer: `-`, `*`, `/` and `%` over two DIFFERENT integer widths — a
+// `usize` and an `i32` — are admitted with no conversion, where `+`, `<` and
+// `==` over the same pair are refused ("`+` adds two values of the same
+// type, but the operands are `usize` and `i32`: there are no implicit
+// conversions"). `vilan check` says "no errors"; JS prints 3, 18, 2 and 0.
+// Natively the operators have no Rust spelling (rustc E0277), and native-48
+// refuses them by name. Corpus: capture-clones.vl:144 (`total + cells.len()
+// * weight`, the `*` admitted and the `+` then seeing two `usize`s).
+import std::io::print;
+
+fun main() {
+	let a: usize = 6;
+	let b: i32 = 3;
+	print(a - b);
+	print(a * b);
+	print(a / b);
+	print(a % b);
+}

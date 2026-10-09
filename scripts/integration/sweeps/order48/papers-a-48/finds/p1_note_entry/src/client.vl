@@ -1,0 +1,11 @@
+import std::web::ui::{ View, view };
+import std::io::print;
+
+fun show(): str {
+	let v: View = view("div");
+	v.render()
+}
+
+fun main() {
+	print(show());
+}

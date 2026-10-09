@@ -1,0 +1,11 @@
+import std::io::print;
+
+// B569 n10: a spread parameter over a CONCRETE tuple type: the call writes
+// the elements flat. This is the door B569's labels open to named arguments.
+fun draw(...at: (f64, f64)): f64 {
+	at.0 * 10 + at.1
+}
+
+fun main() {
+	print(draw(1, 2));
+}

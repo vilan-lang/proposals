@@ -1,0 +1,16 @@
+// FIND (solver-48, probing): a numeric LITERAL at a generic parameter that a
+// later closure argument's ANNOTATION fixes takes `i32` first: `fold<B>(init:
+// B, fn: |B, T| B)` called `fold(0, |acc: usize, n: usize| acc + n)` is refused
+// "Expected |i32, usize| i32, but got |usize, usize| usize". The closure's
+// written parameter types are evidence for `B` (B389 lets a literal take the
+// call's numeric EXPECTATION, not its sibling argument's). Base e75bc57c and
+// the solver-48 tip alike; `fold(0.as_usize(), ..)` runs. Expected: 3.
+import std::io::print;
+
+fun main() {
+	let words = ["a", "bb"];
+	let total = words.iter().map(|w: str| w.len()).fold(0, |acc: usize, n: usize| acc + n);
+	print(total);
+}
+
+main();

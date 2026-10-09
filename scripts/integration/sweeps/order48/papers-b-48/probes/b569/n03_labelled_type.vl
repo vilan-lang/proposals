@@ -1,0 +1,7 @@
+import std::io::print;
+
+// B569 n03: a labelled tuple TYPE does not parse today.
+fun main() {
+	let p: (x: f64, y: f64) = (5, 7);
+	print(p.0);
+}

@@ -1,0 +1,13 @@
+import std::io::print;
+
+// B569 n05: the precedent. A closure TYPE's parameters carry documentation
+// names that are not significant: two types differing only in names are one.
+fun apply(f: |value: i32| i32): i32 {
+	f(1)
+}
+
+fun main() {
+	let g: |other: i32| i32 = |n| n + 1;
+	let h: |swapped: i32| i32 = g;
+	print(apply(h));
+}

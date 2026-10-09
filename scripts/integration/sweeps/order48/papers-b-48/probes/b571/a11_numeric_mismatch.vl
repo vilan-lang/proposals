@@ -1,0 +1,9 @@
+import std::io::print;
+
+// B571 a11: the refusal `n as f64` would share: an annotated `let` of an i32
+// value at f64. What does it say, and does it steer to `.as_f64()`?
+fun main() {
+	let n: i32 = 3;
+	let x: f64 = n;
+	print(x);
+}

@@ -1,0 +1,18 @@
+import std::debug::Debug;
+import std::hash_map::HashMap;
+import std::shared::Shared;
+
+[derive(Debug)]
+struct Registry {
+	names: HashMap<str, i32>,
+	cell: Shared<i32>,
+	big: BigInt,
+}
+
+fun main() {
+	mut names: HashMap<str, i32> = HashMap::new();
+	names.insert("a", 1);
+	let registry = Registry { names = names, cell = Shared::new(1), big = 10n };
+	print(registry.debug());
+	dbg(registry);
+}

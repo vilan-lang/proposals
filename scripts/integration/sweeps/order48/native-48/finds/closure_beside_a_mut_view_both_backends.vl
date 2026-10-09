@@ -1,0 +1,39 @@
+// F102's analyzer half (an owner question): natively, a closure that reaches a
+// captured `mut` binding, handed to a call holding a `&mut` view of it, is now
+// refused by name (native-48). On JS the program runs and prints 11 and 102.
+// Rule 4 (spec §6.4) refuses the root reassignment (`n += 1`) under a live
+// `&mut` but PERMITS a scalar content write (`c.n += 100`), so a both-backends
+// refusal would be a rule change for the second shape. Is the shape the
+// language's refusal, or the native backend's alone?
+import std::io::print;
+
+fun apply(x: &mut i32, f: || void) {
+	f();
+	x += 10;
+}
+
+struct Counter {
+	n: i32,
+}
+
+impl Counter {
+	fun bump_then(&mut self, f: || void) {
+		self.n += 1;
+		f();
+		self.n += 1;
+	}
+}
+
+fun main() {
+	mut n = 0;
+	apply(&mut n, || {
+		n += 1;
+	});
+	print(n);
+	mut c = Counter { n = 0 };
+	let poke = || {
+		c.n += 100;
+	};
+	c.bump_then(poke);
+	print(c.n);
+}

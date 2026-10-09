@@ -1,0 +1,9 @@
+import std::io::print;
+
+// B570 u03: a module binding whose element type is inferred from a later use.
+mut items = [];
+
+fun main() {
+	items.push("a");
+	print(items.len());
+}

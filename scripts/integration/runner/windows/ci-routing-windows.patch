@@ -1,0 +1,33 @@
+diff -ru b/.github/workflows/ci.yml c/.github/workflows/ci.yml
+--- a/.github/workflows/ci.yml	2026-10-09 14:20:51.019423380 -0400
++++ b/.github/workflows/ci.yml	2026-10-09 14:20:51.038751148 -0400
+@@ -154,7 +154,7 @@
+     # suite takes minutes instead of the better part of an hour. Everything
+     # else — a fork's PR, and the windows legs until a windows runner exists —
+     # stays on GitHub's machines.
+-    runs-on: ${{ (matrix.os == 'ubuntu-latest' && needs.changes.outputs.trusted == 'true') && 'vilan-linux' || matrix.os }}
++    runs-on: ${{ needs.changes.outputs.trusted != 'true' && matrix.os || matrix.os == 'ubuntu-latest' && 'vilan-linux' || 'vilan-windows' }}
+     # The suite proves the tree against CURRENT stable, not against the pin in
+     # rust-toolchain.toml — that file is the formatter's pin (backlog N21; the
+     # `fmt` job below is what follows it). Explicit because it would not hold
+diff -ru b/.github/workflows/release.yml c/.github/workflows/release.yml
+--- a/.github/workflows/release.yml	2026-10-09 14:20:51.028112885 -0400
++++ b/.github/workflows/release.yml	2026-10-09 14:20:51.038587379 -0400
+@@ -74,7 +74,7 @@
+           - { os: windows-latest, partition: 2, shards: 4 }
+           - { os: windows-latest, partition: 3, shards: 4 }
+           - { os: windows-latest, partition: 4, shards: 4 }
+-    runs-on: ${{ matrix.os == 'ubuntu-latest' && 'vilan-linux' || matrix.os }}
++    runs-on: ${{ matrix.os == 'ubuntu-latest' && 'vilan-linux' || matrix.os == 'windows-latest' && 'vilan-windows' || matrix.os }}
+     # The suite runs against current stable, exactly as ci.yml's `test` job
+     # declares it: rust-toolchain.toml is the formatter's pin (N21), and it
+     # would otherwise outrank the toolchain dtolnay/rust-toolchain sets.
+@@ -219,7 +219,7 @@
+           - target: aarch64-apple-darwin
+             runner: macos-latest
+           - target: x86_64-pc-windows-msvc
+-            runner: windows-latest
++            runner: vilan-windows
+     runs-on: ${{ matrix.runner }}
+     # Load-bearing, not decoration: each leg's cross target is installed for
+     # the toolchain the ACTION names, and rust-toolchain.toml (the formatter's

@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "N156",
+   "section": "N",
+   "kind": "test infrastructure (ruling, S)",
+   "area": "Hygiene",
+   "status": "OPEN — filed 2026-10-09 (suite-48's find, Order 48)",
+   "discussion": "suite-48 (Order 48); sweeps/order48/suite-48/finds/test-profile-opt-level.sh",
+   "title": "the test profile builds `vilan-core` at opt-level 0, and an analysis there costs ~3.15x its opt-level-1 CPU: an `inference` test is 967 ms at O0 against 307 ms at O1 (41-test sample), so the suite's ~13,000 CPU-s would fall by roughly half; the price is the edit tax, 17-20 s wall (16 CPU-s) per analyzer.rs edit at O0 against 78-87 s (~200 CPU-s) at O1",
+   "body": "N151's measurement: every test process pays a cold std world (nextest's process-per-test), and the per-analysis cost of that world is what opt-level moves. `[profile.dev.package.vilan-core] opt-level = 1` (or the same under `[profile.test]`) is the one lever that reaches all 9,797 tests; it does not change what any test asserts. Measured under load 23-41 on the shared VM: the inference sample's phases fall load+walk 343->128 ms, base 174->45, checks 272->69, post 101->23. A clean O1 build of vilan-core + the inference binary is 2m24s (244 CPU-s). The trade is the owner's: a lane that edits analyzer.rs and runs one targeted pin pays ~60 s more per edit; a full-suite gate saves on the order of an hour of CPU. Rec: try `[profile.test.package.vilan-core] opt-level = 1` for one order and measure both sides (CI's suite legs, a lane's edit loop) before keeping it. Repro/measurement: finds/test-profile-opt-level.sh. Sizing S."
+  },
+  {
+   "id": "N157",
+   "section": "N",
+   "kind": "test infrastructure (design, M)",
+   "area": "Hygiene",
+   "status": "OPEN — filed 2026-10-09 (suite-48's find, Order 48)",
+   "discussion": "suite-48 (Order 48); sweeps/order48/suite-48/finds/std-prefix-per-test-process.md",
+   "title": "N151's door (a) — one std world per test binary, extended per test through S1's `load_hot_modules` — cannot reach a test under nextest: every test is its own process, so an in-process world dies with the test that built it; `inference` runs 1.12 analyses per test (41-test sample) and the std world is 53.5% of each test's CPU",
+   "body": "E30 (suite-speed.md §2) recorded the same limit before nextest was the gate. Where one process runs many analyses the base cache already shares them (the docs gate: 166 of 279 served), and the three differentials' clean legs are cold by design. What would reach the suite: (a) a cross-process std world (blocked by M36 §6.15, leaked-AST-keyed structures), or (b) a fork-server harness that builds std once and forks per test (a nextest target runner could front it), or (c) N156's opt-level. And within a process, a stored prefix shared across programs with DIFFERENT std imports would need a world that does not depend on which std modules the entry seeds (BaseCacheKey's `std_seeds` and the hot set's requests key it today) — an analyzer question for S2's era: does loading an unreferenced std module change any answer (an impl, a prelude name)? Rec: decide between (b) and waiting for M36 when Order 49's S2 lands; nothing to build now. Sizing M."
+  },
+  {
+   "id": "N158",
+   "section": "N",
+   "kind": "test infrastructure (S)",
+   "area": "Hygiene",
+   "status": "OPEN — filed 2026-10-09 (suite-48's find, Order 48)",
+   "discussion": "suite-48 (Order 48)",
+   "title": "`native_differential`'s four longest legs run their programs one after another — `the_default_suite_is_byte_identical_on_both_backends` 184 s wall on 87 CPU-s, `s0_every_panic_path_reports_its_vilan_site_on_both_backends` 168 s on 85, the leak and copy censuses 119 and 78 s — the same serial-loop shape suite-48 parallelized in `style_chain_order`, `examples` and the edit-replay step (N151 door (c))",
+   "body": "Each program is staged and built in its own directory, so a `thread::scope` over the list (results in list order, a worker's panic resumed) keeps every assertion and cuts the wall several-fold; the tests are the native lane's, so suite-48 left them and priority-starts them instead (`.config/nextest.toml`, priority 90). Note the A native test builds its OWN program name rule: concurrent legs must not share a binary name. Sizing S; native."
+  },
+  {
+   "id": "N159",
+   "section": "N",
+   "kind": "test infrastructure (ruling, S)",
+   "area": "Hygiene",
+   "status": "OPEN — filed 2026-10-09 (suite-48's find, Order 48)",
+   "discussion": "suite-48 (Order 48)",
+   "title": "the suite's internally parallel tests ignore nextest's `-j 6`: `replay_differential`, the edit-replay corpus leg and `check_scope_differential`'s corpus legs run 16-way worker pools, the docs gate, corpus and interpreter 8-way, `marker_census` its own pool — on a box shared by five lanes each counts as one slot, so a `-j 6` run can hold 60+ busy threads",
+   "body": "nextest's `threads-required` states what a test really uses, so the scheduler stops oversubscribing; the cost is that a 16-way test then holds all six slots while it runs, which can lengthen a quiet box's wall. Measured nothing here (the box sat at load 23-49 all order). Rec: measure `threads-required = \"num-test-threads\"` on the 16-way tests at a seal (load < 2) before adopting it. Sizing S."
+  },
+  {
+   "id": "N160",
+   "section": "N",
+   "kind": "hygiene (XS)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-09 (suite-48's find, Order 48)",
+   "discussion": "suite-48 (Order 48)",
+   "title": "`parsing.rs:531`'s doc comment on `export`'s admission (B321) still spells a derived export the pre-B485 way — `export [derive(Wire)] struct S { .. }` — after N142 respelled every other one",
+   "body": "The parser rotates `[..] export` into `export [..]` internally (`parsing.rs:4228`), so the comment describes the post-rotation tree accurately, but it reads as source a user could write and B485 S3 refuses that spelling. Rec: `[derive(Wire)] export struct S { .. }` (or say it is the rotated form). Sizing XS."
+  }
+ ]
+}

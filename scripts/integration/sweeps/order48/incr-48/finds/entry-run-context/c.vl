@@ -1,0 +1,3 @@
+import std::context::Context;
+export let flavor = Context::new();
+export fun read_it(): i32 { flavor.get() + 1 }

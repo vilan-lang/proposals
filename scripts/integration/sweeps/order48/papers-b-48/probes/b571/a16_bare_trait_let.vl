@@ -1,0 +1,10 @@
+import std::reactive::{Source, SignalCell, Pipe};
+
+// B571 a16: a bare trait at a `let` (B161): checked against the trait, the
+// binding keeps the concrete type. E278's code action would write this form
+// (`as Pipe<i32>`) for a hinted stage; the mismatch renders what is kept.
+fun main() {
+	let cell = SignalCell::new(2);
+	let doubled: Pipe<i32> = cell.derive(|v| v * 2);
+	let shown: i32 = doubled;
+}

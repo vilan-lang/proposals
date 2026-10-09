@@ -1,0 +1,19 @@
+import std::io::print;
+
+trait Count {
+	fun count(self): i32;
+}
+
+// `[i32; 3]` as the subject compiles (B177); a BINDER for the element does
+// not: "cannot find type 'T'" at both `T`s.
+impl [type T; 3] with Count {
+	fun count(self): i32 {
+		3
+	}
+}
+
+fun main() {
+	let a: [i32; 3] = [1, 2, 3];
+	print(a.count());
+}
+main();

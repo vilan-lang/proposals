@@ -1,0 +1,13 @@
+import std::io::print;
+
+// papers-b-48 find E?1: `a < b > (c)`, spaced, is read as the generic call
+// `a<b>(c)` and refused "cannot call this as a function: it is i32". The
+// comparison reading `(a < b) > c` is ill-typed too (bool has no ordering), so
+// no program is lost; the message names neither reading.
+fun main() {
+	let a = 1;
+	let b = 2;
+	let c = false;
+	let z = a < b > (c);
+	print(z);
+}

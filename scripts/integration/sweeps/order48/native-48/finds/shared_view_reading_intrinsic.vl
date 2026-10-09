@@ -1,0 +1,18 @@
+// native (perf): a READING intrinsic over a field of a `Shared` view still
+// copies the field first — `cell.read().items.len()` emits
+// `(cell).read_with(|view| view.items.clone()).len()`, the whole list cloned
+// to count it. F49 reads a BOXED binding's receiver through a view of its
+// cell for the call; the same view would serve a `Shared` one, with F39's
+// runtime half (an alias through a parameter) as its only hazard, which an
+// intrinsic cannot reach since it runs no user code. Prints 3 on both.
+import std::io::print;
+import std::shared::Shared;
+
+struct Bag {
+	items: List<i32>,
+}
+
+fun main() {
+	let cell = Shared::new(Bag { items = [1, 2, 3] });
+	print(cell.read().items.len());
+}

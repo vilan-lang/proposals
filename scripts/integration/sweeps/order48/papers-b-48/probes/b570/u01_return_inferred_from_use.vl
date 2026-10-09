@@ -1,0 +1,11 @@
+import std::io::print;
+
+// B570 u01: does a caller's use decide an unannotated function's return type?
+fun five() {
+	5
+}
+
+fun main() {
+	let x: f64 = five();
+	print(x);
+}

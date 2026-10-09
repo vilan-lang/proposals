@@ -1,0 +1,14 @@
+import std::io::print;
+import std::reactive::{Source, SignalCell, Flow};
+
+// B571 a08: E261's case. Two pipe stages meet only through `dyn Flow<i32>`,
+// which today needs an annotated `let`.
+fun main() {
+	let cell = SignalCell::new(2);
+	let pick = true;
+	let state: dyn Flow<i32> = match pick {
+		true => Source::constant(1),
+		false => cell.derive(|v| v * 10),
+	};
+	print("built");
+}

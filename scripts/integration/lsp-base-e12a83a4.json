@@ -1,0 +1,1777 @@
+{
+ "header": "vilan-lsp latency \u2014 vilan-lsp 0.45.0 (e75bc57c3) on kolt @a05fcb60 (the server's embedded std); 5 run(s) per edit; loadavg 1.14 5.63 8.34 before, 0.76 4.11 7.50 after; 16 cores",
+ "source": {
+  "kind": "commit",
+  "sha": "a05fcb6096683f7083982084d8ff7f54510650d8"
+ },
+ "open": {
+  "open src/views.vl": {
+   "diagnostics_ms": 298.6944449949078,
+   "diagnostics_cpu_ms": 290.0,
+   "cpu_ms": 290.0,
+   "memory": {
+    "VmHWM": 406864,
+    "VmRSS": 406864
+   }
+  },
+  "open src/shared.vl": {
+   "diagnostics_ms": 377.67236299987417,
+   "diagnostics_cpu_ms": 370.0,
+   "cpu_ms": 370.0,
+   "memory": {
+    "VmHWM": 629840,
+    "VmRSS": 552764
+   }
+  },
+  "open src/model.vl": {
+   "diagnostics_ms": 387.7576820086688,
+   "diagnostics_cpu_ms": 380.0,
+   "cpu_ms": 380.0,
+   "memory": {
+    "VmHWM": 629840,
+    "VmRSS": 478920
+   },
+   "references": [
+    {
+     "cpu_ms": 330.0,
+     "wall_ms": 325.523471008637,
+     "instructions": 3082582545,
+     "locations": 2,
+     "files": 2
+    },
+    {
+     "cpu_ms": 0.0,
+     "wall_ms": 1.269372005481273,
+     "instructions": 847545,
+     "locations": 2,
+     "files": 2
+    }
+   ]
+  },
+  "open src/model.vl (beside 3 open importers)": {
+   "diagnostics_ms": 20.25597300962545,
+   "diagnostics_cpu_ms": 10.0,
+   "cpu_ms": 1110.0,
+   "memory": {
+    "VmHWM": 629840,
+    "VmRSS": 545952
+   }
+  },
+  "open src/styles.vl": {
+   "diagnostics_ms": 560.6099360011285,
+   "diagnostics_cpu_ms": 570.0,
+   "cpu_ms": 570.0,
+   "memory": {
+    "VmHWM": 662460,
+    "VmRSS": 533788
+   }
+  },
+  "open src/channel.vl": {
+   "diagnostics_ms": 543.2459009898594,
+   "diagnostics_cpu_ms": 540.0,
+   "cpu_ms": 540.0,
+   "memory": {
+    "VmHWM": 662460,
+    "VmRSS": 518248
+   }
+  }
+ },
+ "edits": {
+  "leaf keystroke": [
+   {
+    "diagnostics_ms": 481.2486350128893,
+    "diagnostics_cpu_ms": 340.0,
+    "first_publish_ms": 2.025100009632297,
+    "instructions": 2914742559,
+    "analyses": 1,
+    "all_published_ms": 481.4398380112834,
+    "all_published_cpu_ms": 340.0,
+    "files_republished": 5,
+    "cpu_ms": 340.0,
+    "settle_ms": 906.1146300082328,
+    "errors": 5,
+    "keystroke": {
+     "hover": 1.6220319957938045,
+     "completion": 1.0548980062594637,
+     "inlay": 0.48181800229940563,
+     "tokens": 0.49695398774929345
+    },
+    "settled": {
+     "hover": [
+      1.5152,
+      1.534932991489768
+     ],
+     "completion": [
+      0.991234,
+      0.9505159978289157
+     ],
+     "inlay": [
+      0.438352,
+      0.4344869958003983
+     ],
+     "tokens": [
+      0.392141,
+      0.39308400300797075
+     ]
+    },
+    "memory": {
+     "VmHWM": 275968,
+     "VmRSS": 241040
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 493.526367994491,
+    "diagnostics_cpu_ms": 340.0,
+    "first_publish_ms": 1.5930740046314895,
+    "instructions": 2913647530,
+    "analyses": 1,
+    "all_published_ms": 493.7249310023617,
+    "all_published_cpu_ms": 340.0,
+    "files_republished": 5,
+    "cpu_ms": 340.0,
+    "settle_ms": 905.6412210047711,
+    "errors": 5,
+    "keystroke": {
+     "hover": 1.5940349985612556,
+     "completion": 1.061768998624757,
+     "inlay": 0.3824299928965047,
+     "tokens": 0.47349900705739856
+    },
+    "settled": {
+     "hover": [
+      1.58875,
+      1.6184459964279085
+     ],
+     "completion": [
+      1.007376,
+      0.9632639994379133
+     ],
+     "inlay": [
+      0.360641,
+      0.3856650000670925
+     ],
+     "tokens": [
+      0.380489,
+      0.3837529948214069
+     ]
+    },
+    "memory": {
+     "VmHWM": 295720,
+     "VmRSS": 295720
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 462.243572997977,
+    "diagnostics_cpu_ms": 310.0,
+    "first_publish_ms": 1.5902669983915985,
+    "instructions": 2913608869,
+    "analyses": 1,
+    "all_published_ms": 462.5310219998937,
+    "all_published_cpu_ms": 310.0,
+    "files_republished": 5,
+    "cpu_ms": 310.0,
+    "settle_ms": 906.1598460102687,
+    "errors": 5,
+    "keystroke": {
+     "hover": 1.5955580020090565,
+     "completion": 1.5286939888028428,
+     "inlay": 0.37432200042530894,
+     "tokens": 0.4296690021874383
+    },
+    "settled": {
+     "hover": [
+      1.529767,
+      1.5740360104246065
+     ],
+     "completion": [
+      1.235231,
+      1.2070660013705492
+     ],
+     "inlay": [
+      0.384762,
+      0.40260700916405767
+     ],
+     "tokens": [
+      0.407581,
+      0.4358349979156628
+     ]
+    },
+    "memory": {
+     "VmHWM": 299908,
+     "VmRSS": 296880
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 453.847725992091,
+    "diagnostics_cpu_ms": 320.0,
+    "first_publish_ms": 1.575695991050452,
+    "instructions": 2912825474,
+    "analyses": 1,
+    "all_published_ms": 454.02991799346637,
+    "all_published_cpu_ms": 320.0,
+    "files_republished": 5,
+    "cpu_ms": 320.0,
+    "settle_ms": 905.7341809966601,
+    "errors": 5,
+    "keystroke": {
+     "hover": 1.5762059920234606,
+     "completion": 1.1058119998779148,
+     "inlay": 0.5331459979061037,
+     "tokens": 0.42829599988181144
+    },
+    "settled": {
+     "hover": [
+      1.524339,
+      1.5406109887408093
+     ],
+     "completion": [
+      0.993215,
+      0.9765759896254167
+     ],
+     "inlay": [
+      0.574705,
+      0.6187819963088259
+     ],
+     "tokens": [
+      0.4201,
+      0.43559899495448917
+     ]
+    },
+    "memory": {
+     "VmHWM": 300620,
+     "VmRSS": 297368
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 477.1998079959303,
+    "diagnostics_cpu_ms": 340.0,
+    "first_publish_ms": 1.6243799909716472,
+    "instructions": 2910711090,
+    "analyses": 1,
+    "all_published_ms": 477.3942210013047,
+    "all_published_cpu_ms": 340.0,
+    "files_republished": 5,
+    "cpu_ms": 340.0,
+    "settle_ms": 905.786999996053,
+    "errors": 5,
+    "keystroke": {
+     "hover": 1.621940013137646,
+     "completion": 1.1626759951468557,
+     "inlay": 0.4737090057460591,
+     "tokens": 0.4555159976007417
+    },
+    "settled": {
+     "hover": [
+      1.580712,
+      1.6520990029675886
+     ],
+     "completion": [
+      1.018394,
+      0.9990469989133999
+     ],
+     "inlay": [
+      0.330377,
+      0.4251259961165488
+     ],
+     "tokens": [
+      0.392571,
+      0.39571200613863766
+     ]
+    },
+    "memory": {
+     "VmHWM": 300620,
+     "VmRSS": 297376
+    },
+    "companions": 0
+   }
+  ],
+  "leaf keystroke + pause": [
+   {
+    "diagnostics_ms": 487.0519690011861,
+    "diagnostics_cpu_ms": 340.0,
+    "first_publish_ms": 1.7216970009030774,
+    "instructions": 9622031329,
+    "analyses": 3,
+    "all_published_ms": 487.3200860020006,
+    "all_published_cpu_ms": 340.0,
+    "files_republished": 5,
+    "cpu_ms": 1170.0,
+    "settle_ms": 4813.214237001375,
+    "errors": 5,
+    "keystroke": {
+     "hover": 1.7285479989368469,
+     "completion": 1.0339120053686202,
+     "inlay": 0.36228900717105716,
+     "tokens": 0.5944380100117996
+    },
+    "settled": {
+     "hover": [
+      1.404064,
+      1.444027991965413
+     ],
+     "completion": [
+      1.153109,
+      1.101179004763253
+     ],
+     "inlay": [
+      0.346159,
+      0.37333900399971753
+     ],
+     "tokens": [
+      0.383519,
+      0.39704500522930175
+     ]
+    },
+    "memory": {
+     "VmHWM": 548220,
+     "VmRSS": 548220
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 480.1980560005177,
+    "diagnostics_cpu_ms": 320.0,
+    "first_publish_ms": 1.6655150102451444,
+    "instructions": 7777393053,
+    "analyses": 3,
+    "all_published_ms": 480.51895601383876,
+    "all_published_cpu_ms": 320.0,
+    "files_republished": 5,
+    "cpu_ms": 860.0,
+    "settle_ms": 4513.410092011327,
+    "errors": 5,
+    "keystroke": {
+     "hover": 1.5452570078196004,
+     "completion": 1.1465889983810484,
+     "inlay": 0.3940049937227741,
+     "tokens": 0.439248004113324
+    },
+    "settled": {
+     "hover": [
+      1.809201,
+      1.8463320011505857
+     ],
+     "completion": [
+      1.084396,
+      1.141593005741015
+     ],
+     "inlay": [
+      0.499204,
+      0.5027409933973104
+     ],
+     "tokens": [
+      0.462262,
+      0.4537490021903068
+     ]
+    },
+    "memory": {
+     "VmHWM": 622768,
+     "VmRSS": 622768
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 443.7440509937005,
+    "diagnostics_cpu_ms": 290.0,
+    "first_publish_ms": 0.7728589989710599,
+    "instructions": 7777199889,
+    "analyses": 3,
+    "all_published_ms": 443.92579699342605,
+    "all_published_cpu_ms": 290.0,
+    "files_republished": 5,
+    "cpu_ms": 930.0,
+    "settle_ms": 4513.780148001388,
+    "errors": 5,
+    "keystroke": {
+     "hover": 2.0598620030796155,
+     "completion": 1.1475770006654784,
+     "inlay": 0.37052300467621535,
+     "tokens": 0.43202600500080734
+    },
+    "settled": {
+     "hover": [
+      1.61845,
+      1.6595350025454536
+     ],
+     "completion": [
+      1.029997,
+      1.0077579936478287
+     ],
+     "inlay": [
+      0.369728,
+      0.39568998909089714
+     ],
+     "tokens": [
+      0.556715,
+      0.5693810089724138
+     ]
+    },
+    "memory": {
+     "VmHWM": 624368,
+     "VmRSS": 624368
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 443.38140000763815,
+    "diagnostics_cpu_ms": 300.0,
+    "first_publish_ms": 1.8955029954668134,
+    "instructions": 7775306791,
+    "analyses": 3,
+    "all_published_ms": 443.63751300261356,
+    "all_published_cpu_ms": 300.0,
+    "files_republished": 5,
+    "cpu_ms": 810.0,
+    "settle_ms": 4413.199627000722,
+    "errors": 5,
+    "keystroke": {
+     "hover": 1.758176993462257,
+     "completion": 0.9920090087689459,
+     "inlay": 0.3748800081666559,
+     "tokens": 0.4430819972185418
+    },
+    "settled": {
+     "hover": [
+      1.672843,
+      1.7613230011193082
+     ],
+     "completion": [
+      1.049098,
+      1.0384310007793829
+     ],
+     "inlay": [
+      0.356739,
+      0.3824110026471317
+     ],
+     "tokens": [
+      0.40582,
+      0.43572799768298864
+     ]
+    },
+    "memory": {
+     "VmHWM": 629324,
+     "VmRSS": 629324
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 435.5076280044159,
+    "diagnostics_cpu_ms": 280.0,
+    "first_publish_ms": 1.7120020056609064,
+    "instructions": 7775603157,
+    "analyses": 3,
+    "all_published_ms": 435.7571860018652,
+    "all_published_cpu_ms": 280.0,
+    "files_republished": 5,
+    "cpu_ms": 800.0,
+    "settle_ms": 4412.6795070042135,
+    "errors": 5,
+    "keystroke": {
+     "hover": 1.5564899949822575,
+     "completion": 1.0331739904358983,
+     "inlay": 0.3856069961329922,
+     "tokens": 0.4777809954248369
+    },
+    "settled": {
+     "hover": [
+      1.507408,
+      1.5204009978333488
+     ],
+     "completion": [
+      1.005894,
+      0.9889780048979446
+     ],
+     "inlay": [
+      0.361211,
+      0.39576299604959786
+     ],
+     "tokens": [
+      0.412181,
+      0.42494900117162615
+     ]
+    },
+    "memory": {
+     "VmHWM": 630044,
+     "VmRSS": 630044
+    },
+    "companions": 0
+   }
+  ],
+  "shared.vl keystroke": [
+   {
+    "diagnostics_ms": 324.9147250025999,
+    "diagnostics_cpu_ms": 180.0,
+    "first_publish_ms": 324.9147250025999,
+    "instructions": 1471788656,
+    "analyses": 1,
+    "all_published_ms": 324.9147250025999,
+    "all_published_cpu_ms": 180.0,
+    "files_republished": 1,
+    "cpu_ms": 180.0,
+    "settle_ms": 725.8752759953495,
+    "errors": 0,
+    "keystroke": {
+     "hover": 0.8253959967987612,
+     "completion": 0.5102489958517253,
+     "inlay": 0.3416779945837334,
+     "tokens": 0.3890959924319759
+    },
+    "settled": {
+     "hover": [
+      0.880202,
+      0.9090259991353378
+     ],
+     "completion": [
+      0.532974,
+      0.5071439954917878
+     ],
+     "inlay": [
+      0.338058,
+      0.3511690010782331
+     ],
+     "tokens": [
+      0.345149,
+      0.38584099092986435
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 561264
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 321.3488830078859,
+    "diagnostics_cpu_ms": 170.0,
+    "first_publish_ms": 321.3488830078859,
+    "instructions": 1471295973,
+    "analyses": 1,
+    "all_published_ms": 321.3488830078859,
+    "all_published_cpu_ms": 170.0,
+    "files_republished": 1,
+    "cpu_ms": 170.0,
+    "settle_ms": 722.2335749975173,
+    "errors": 0,
+    "keystroke": {
+     "hover": 0.8279309986392036,
+     "completion": 0.5095239903312176,
+     "inlay": 0.48546900507062674,
+     "tokens": 0.3778919926844537
+    },
+    "settled": {
+     "hover": [
+      0.793099,
+      0.8207429928006604
+     ],
+     "completion": [
+      0.552203,
+      0.5061230040155351
+     ],
+     "inlay": [
+      0.487752,
+      0.4724969912786037
+     ],
+     "tokens": [
+      0.40176,
+      0.5666099896188825
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 561860
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 330.4402840003604,
+    "diagnostics_cpu_ms": 180.0,
+    "first_publish_ms": 330.4402840003604,
+    "instructions": 1471132628,
+    "analyses": 1,
+    "all_published_ms": 330.4402840003604,
+    "all_published_cpu_ms": 180.0,
+    "files_republished": 1,
+    "cpu_ms": 180.0,
+    "settle_ms": 731.4790390082635,
+    "errors": 0,
+    "keystroke": {
+     "hover": 0.9466560004511848,
+     "completion": 0.620285005425103,
+     "inlay": 0.4889430128969252,
+     "tokens": 0.43591200665105134
+    },
+    "settled": {
+     "hover": [
+      0.732389,
+      0.7727729971520603
+     ],
+     "completion": [
+      0.517822,
+      0.4721180011983961
+     ],
+     "inlay": [
+      0.387778,
+      0.37878600414842367
+     ],
+     "tokens": [
+      0.346299,
+      0.3909170045517385
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 562616
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 327.5217850023182,
+    "diagnostics_cpu_ms": 170.0,
+    "first_publish_ms": 327.5217850023182,
+    "instructions": 1471063739,
+    "analyses": 1,
+    "all_published_ms": 327.5217850023182,
+    "all_published_cpu_ms": 170.0,
+    "files_republished": 1,
+    "cpu_ms": 180.0,
+    "settle_ms": 828.7394930084702,
+    "errors": 0,
+    "keystroke": {
+     "hover": 0.7562530081486329,
+     "completion": 0.478686997666955,
+     "inlay": 0.35527000727597624,
+     "tokens": 0.3990639961557463
+    },
+    "settled": {
+     "hover": [
+      0.779691,
+      0.8184789912775159
+     ],
+     "completion": [
+      0.728858,
+      0.686491999658756
+     ],
+     "inlay": [
+      0.348419,
+      0.4071570001542568
+     ],
+     "tokens": [
+      0.36361,
+      0.40569699194747955
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 562616
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 339.06420799030457,
+    "diagnostics_cpu_ms": 190.0,
+    "first_publish_ms": 339.06420799030457,
+    "instructions": 1471169644,
+    "analyses": 1,
+    "all_published_ms": 339.06420799030457,
+    "all_published_cpu_ms": 190.0,
+    "files_republished": 1,
+    "cpu_ms": 190.0,
+    "settle_ms": 740.0318989966763,
+    "errors": 0,
+    "keystroke": {
+     "hover": 0.9882659942377359,
+     "completion": 0.5302789941197261,
+     "inlay": 0.5026879953220487,
+     "tokens": 0.435082009062171
+    },
+    "settled": {
+     "hover": [
+      0.742247,
+      0.7791579992044717
+     ],
+     "completion": [
+      0.508813,
+      0.47833799908403307
+     ],
+     "inlay": [
+      0.328449,
+      0.3372810024302453
+     ],
+     "tokens": [
+      0.351999,
+      0.372475988115184
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 562616
+    },
+    "companions": 0
+   }
+  ],
+  "model.vl keystroke": [
+   {
+    "diagnostics_ms": 368.37216099957004,
+    "diagnostics_cpu_ms": 230.0,
+    "first_publish_ms": 1.4450589951593429,
+    "instructions": 1801915854,
+    "analyses": 1,
+    "all_published_ms": 368.37216099957004,
+    "all_published_cpu_ms": 230.0,
+    "files_republished": 1,
+    "cpu_ms": 240.0,
+    "settle_ms": 805.0858459901065,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.253776004887186,
+     "completion": 1.0178170050494373,
+     "inlay": 0.3932269901270047,
+     "tokens": 0.36648300010710955
+    },
+    "settled": {
+     "hover": [
+      1.100647,
+      1.132575998781249
+     ],
+     "completion": [
+      0.983614,
+      0.9853210067376494
+     ],
+     "inlay": [
+      0.367928,
+      0.42695300362538546
+     ],
+     "tokens": [
+      0.451323,
+      0.41480200889054686
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 517612
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 365.8491100068204,
+    "diagnostics_cpu_ms": 220.0,
+    "first_publish_ms": 1.274793001357466,
+    "instructions": 1800936178,
+    "analyses": 1,
+    "all_published_ms": 365.8491100068204,
+    "all_published_cpu_ms": 220.0,
+    "files_republished": 1,
+    "cpu_ms": 220.0,
+    "settle_ms": 804.8390830081189,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.0590089950710535,
+     "completion": 0.9620909986551851,
+     "inlay": 0.49052300164476037,
+     "tokens": 0.3582700010156259
+    },
+    "settled": {
+     "hover": [
+      1.1513,
+      1.191132003441453
+     ],
+     "completion": [
+      0.933645,
+      0.9468829957768321
+     ],
+     "inlay": [
+      0.345209,
+      0.3973310085712001
+     ],
+     "tokens": [
+      0.361069,
+      0.4645930021069944
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 524572
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 367.13835400587413,
+    "diagnostics_cpu_ms": 220.0,
+    "first_publish_ms": 1.3376630085986108,
+    "instructions": 1800655465,
+    "analyses": 1,
+    "all_published_ms": 367.13835400587413,
+    "all_published_cpu_ms": 220.0,
+    "files_republished": 1,
+    "cpu_ms": 220.0,
+    "settle_ms": 804.9656890070764,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.079973008017987,
+     "completion": 0.9517389989923686,
+     "inlay": 0.3997489984612912,
+     "tokens": 0.5473380006151274
+    },
+    "settled": {
+     "hover": [
+      1.097099,
+      1.1298320023342967
+     ],
+     "completion": [
+      0.911512,
+      0.9356399968964979
+     ],
+     "inlay": [
+      0.36596,
+      0.39509599446319044
+     ],
+     "tokens": [
+      0.373519,
+      0.36414100031834096
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 525736
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 365.45637699600775,
+    "diagnostics_cpu_ms": 210.0,
+    "first_publish_ms": 1.3456049928208813,
+    "instructions": 1801034034,
+    "analyses": 1,
+    "all_published_ms": 365.45637699600775,
+    "all_published_cpu_ms": 210.0,
+    "files_republished": 1,
+    "cpu_ms": 210.0,
+    "settle_ms": 804.817843993078,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.084944000467658,
+     "completion": 0.9657899936428294,
+     "inlay": 0.38963399128988385,
+     "tokens": 0.35208099870942533
+    },
+    "settled": {
+     "hover": [
+      1.1653,
+      1.2211260036565363
+     ],
+     "completion": [
+      0.978514,
+      1.0198889940511435
+     ],
+     "inlay": [
+      0.365019,
+      0.4051430005347356
+     ],
+     "tokens": [
+      0.373978,
+      0.35446399124339223
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 527888
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 349.7636810061522,
+    "diagnostics_cpu_ms": 200.0,
+    "first_publish_ms": 1.232449008966796,
+    "instructions": 1801555827,
+    "analyses": 1,
+    "all_published_ms": 349.7636810061522,
+    "all_published_cpu_ms": 200.0,
+    "files_republished": 1,
+    "cpu_ms": 200.0,
+    "settle_ms": 805.014345998643,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.2320890091359615,
+     "completion": 1.125283000874333,
+     "inlay": 0.389887994970195,
+     "tokens": 0.36375600029714406
+    },
+    "settled": {
+     "hover": [
+      1.347845,
+      1.389077995554544
+     ],
+     "completion": [
+      0.899892,
+      0.9262760140700266
+     ],
+     "inlay": [
+      0.583406,
+      0.46452500100713223
+     ],
+     "tokens": [
+      0.386363,
+      0.3554800059646368
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 528160
+    },
+    "companions": 0
+   }
+  ],
+  "model.vl keystroke, importers open": [
+   {
+    "diagnostics_ms": 779.8490929999389,
+    "diagnostics_cpu_ms": 630.0,
+    "first_publish_ms": 779.8490929999389,
+    "instructions": 5256177202,
+    "analyses": 1,
+    "all_published_ms": 779.8490929999389,
+    "all_published_cpu_ms": 630.0,
+    "files_republished": 7,
+    "cpu_ms": 630.0,
+    "settle_ms": 1180.6477270001778,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.345387994660996,
+     "completion": 0.9919000003719702,
+     "inlay": 0.3705349954543635,
+     "tokens": 0.41712800157256424
+    },
+    "settled": {
+     "hover": [
+      1.103549,
+      1.1347419931553304
+     ],
+     "completion": [
+      0.994214,
+      1.040586008457467
+     ],
+     "inlay": [
+      0.430772,
+      0.39261799247469753
+     ],
+     "tokens": [
+      0.36586,
+      0.3400959976715967
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 597424
+    },
+    "companions": 3
+   },
+   {
+    "diagnostics_ms": 754.7366859944304,
+    "diagnostics_cpu_ms": 600.0,
+    "first_publish_ms": 754.7366859944304,
+    "instructions": 5264298745,
+    "analyses": 1,
+    "all_published_ms": 754.7366859944304,
+    "all_published_cpu_ms": 600.0,
+    "files_republished": 7,
+    "cpu_ms": 600.0,
+    "settle_ms": 1155.6961149908602,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.1868909932672977,
+     "completion": 0.9620089986128733,
+     "inlay": 0.4593089979607612,
+     "tokens": 0.4105080006411299
+    },
+    "settled": {
+     "hover": [
+      1.297372,
+      1.3262669963296503
+     ],
+     "completion": [
+      0.911212,
+      2.7451060013845563
+     ],
+     "inlay": [
+      0.360159,
+      0.400855002226308
+     ],
+     "tokens": [
+      0.36875,
+      0.34027700894512236
+     ]
+    },
+    "memory": {
+     "VmHWM": 629840,
+     "VmRSS": 628788
+    },
+    "companions": 3
+   },
+   {
+    "diagnostics_ms": 772.8059570072219,
+    "diagnostics_cpu_ms": 620.0,
+    "first_publish_ms": 772.8059570072219,
+    "instructions": 5276627954,
+    "analyses": 1,
+    "all_published_ms": 772.8059570072219,
+    "all_published_cpu_ms": 620.0,
+    "files_republished": 7,
+    "cpu_ms": 630.0,
+    "settle_ms": 1273.8364640099462,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.3986080011818558,
+     "completion": 0.9861690050456673,
+     "inlay": 0.39095699321478605,
+     "tokens": 0.3698369982885197
+    },
+    "settled": {
+     "hover": [
+      1.401206,
+      1.4026129938429222
+     ],
+     "completion": [
+      1.044488,
+      1.0765320039354265
+     ],
+     "inlay": [
+      0.348998,
+      0.3871509979944676
+     ],
+     "tokens": [
+      0.36601,
+      0.33405900467187166
+     ]
+    },
+    "memory": {
+     "VmHWM": 650956,
+     "VmRSS": 650956
+    },
+    "companions": 3
+   },
+   {
+    "diagnostics_ms": 886.8526269943686,
+    "diagnostics_cpu_ms": 740.0,
+    "first_publish_ms": 886.8526269943686,
+    "instructions": 5269678708,
+    "analyses": 1,
+    "all_published_ms": 886.8526269943686,
+    "all_published_cpu_ms": 740.0,
+    "files_republished": 7,
+    "cpu_ms": 750.0,
+    "settle_ms": 1388.1762499950128,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.40061900310684,
+     "completion": 1.0317599953850731,
+     "inlay": 0.4387280059745535,
+     "tokens": 0.3766200097743422
+    },
+    "settled": {
+     "hover": [
+      1.304173,
+      1.343383002677001
+     ],
+     "completion": [
+      1.342584,
+      1.3802659959765151
+     ],
+     "inlay": [
+      0.358259,
+      0.40513700514566153
+     ],
+     "tokens": [
+      0.36696,
+      0.334568991092965
+     ]
+    },
+    "memory": {
+     "VmHWM": 662404,
+     "VmRSS": 662404
+    },
+    "companions": 3
+   },
+   {
+    "diagnostics_ms": 773.6283319973154,
+    "diagnostics_cpu_ms": 630.0,
+    "first_publish_ms": 773.6283319973154,
+    "instructions": 5275062785,
+    "analyses": 1,
+    "all_published_ms": 773.6283319973154,
+    "all_published_cpu_ms": 630.0,
+    "files_republished": 7,
+    "cpu_ms": 640.0,
+    "settle_ms": 1274.8916010023095,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.4874689950374886,
+     "completion": 1.052780993632041,
+     "inlay": 0.3900230076396838,
+     "tokens": 0.3770119947148487
+    },
+    "settled": {
+     "hover": [
+      1.20161,
+      1.2368439929559827
+     ],
+     "completion": [
+      0.835191,
+      0.8819560025585815
+     ],
+     "inlay": [
+      0.34399,
+      0.38378000317607075
+     ],
+     "tokens": [
+      0.323708,
+      0.30665700614918023
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 654508
+    },
+    "companions": 3
+   }
+  ],
+  "css keystroke": [
+   {
+    "diagnostics_ms": 563.4299209923483,
+    "diagnostics_cpu_ms": 410.0,
+    "first_publish_ms": 563.4299209923483,
+    "instructions": 3878522458,
+    "analyses": 1,
+    "all_published_ms": 564.0216669999063,
+    "all_published_cpu_ms": 410.0,
+    "files_republished": 4,
+    "cpu_ms": 410.0,
+    "settle_ms": 964.5669699966675,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.6249079926637933,
+     "completion": 1.388531003613025,
+     "inlay": 0.3111440018983558,
+     "tokens": 0.36985900078434497
+    },
+    "settled": {
+     "hover": [
+      1.430988,
+      1.4703549968544394
+     ],
+     "completion": [
+      1.056347,
+      1.2310870079090819
+     ],
+     "inlay": [
+      0.383291,
+      0.3567509993445128
+     ],
+     "tokens": [
+      0.36788,
+      0.3523179912008345
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 596244
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 535.9980339999311,
+    "diagnostics_cpu_ms": 390.0,
+    "first_publish_ms": 535.9980339999311,
+    "instructions": 3877307309,
+    "analyses": 1,
+    "all_published_ms": 536.4663549989928,
+    "all_published_cpu_ms": 390.0,
+    "files_republished": 4,
+    "cpu_ms": 390.0,
+    "settle_ms": 937.2333570063347,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.7106680024880916,
+     "completion": 1.325851000729017,
+     "inlay": 0.41539600351825356,
+     "tokens": 0.47879100020509213
+    },
+    "settled": {
+     "hover": [
+      1.508279,
+      1.5256000042427331
+     ],
+     "completion": [
+      1.045526,
+      1.160379993962124
+     ],
+     "inlay": [
+      0.346789,
+      0.3291180037194863
+     ],
+     "tokens": [
+      0.359769,
+      0.34230700111947954
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 624452
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 547.2022439935245,
+    "diagnostics_cpu_ms": 400.0,
+    "first_publish_ms": 547.2022439935245,
+    "instructions": 3876373007,
+    "analyses": 1,
+    "all_published_ms": 547.7048699976876,
+    "all_published_cpu_ms": 400.0,
+    "files_republished": 4,
+    "cpu_ms": 400.0,
+    "settle_ms": 948.5657409968553,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.4816550101386383,
+     "completion": 1.1619210126809776,
+     "inlay": 0.3189839917467907,
+     "tokens": 0.38563000271096826
+    },
+    "settled": {
+     "hover": [
+      1.526259,
+      1.52631699165795
+     ],
+     "completion": [
+      1.133629,
+      1.2617489992408082
+     ],
+     "inlay": [
+      0.341379,
+      0.3156970051350072
+     ],
+     "tokens": [
+      0.360449,
+      0.330288996337913
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 580960
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 547.7237589948345,
+    "diagnostics_cpu_ms": 390.0,
+    "first_publish_ms": 547.7237589948345,
+    "instructions": 3882400670,
+    "analyses": 1,
+    "all_published_ms": 548.2885429955786,
+    "all_published_cpu_ms": 390.0,
+    "files_republished": 4,
+    "cpu_ms": 390.0,
+    "settle_ms": 948.8639449991751,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.5312799951061606,
+     "completion": 1.137357990955934,
+     "inlay": 0.3211250004824251,
+     "tokens": 0.3691489982884377
+    },
+    "settled": {
+     "hover": [
+      1.292475,
+      1.316371010034345
+     ],
+     "completion": [
+      1.074777,
+      1.2096350110368803
+     ],
+     "inlay": [
+      0.347648,
+      0.3263060061726719
+     ],
+     "tokens": [
+      0.456961,
+      0.4215640074107796
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 615452
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 574.1051030054223,
+    "diagnostics_cpu_ms": 420.0,
+    "first_publish_ms": 574.1051030054223,
+    "instructions": 3873615874,
+    "analyses": 1,
+    "all_published_ms": 574.6247229981236,
+    "all_published_cpu_ms": 430.0,
+    "files_republished": 4,
+    "cpu_ms": 430.0,
+    "settle_ms": 975.3516649943776,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.9104259990854189,
+     "completion": 1.1823930108221248,
+     "inlay": 0.3407190088182688,
+     "tokens": 0.389833003282547
+    },
+    "settled": {
+     "hover": [
+      1.538758,
+      1.5614939911756665
+     ],
+     "completion": [
+      1.084078,
+      1.2100029998691753
+     ],
+     "inlay": [
+      0.350348,
+      0.3187870024703443
+     ],
+     "tokens": [
+      0.437821,
+      0.3879629948642105
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 570924
+    },
+    "companions": 0
+   }
+  ],
+  "parse break": [
+   {
+    "diagnostics_ms": 563.8757070119027,
+    "diagnostics_cpu_ms": 430.0,
+    "first_publish_ms": 2.119636003044434,
+    "instructions": 3941637175,
+    "analyses": 1,
+    "all_published_ms": 564.0143790078582,
+    "all_published_cpu_ms": 430.0,
+    "files_republished": 3,
+    "cpu_ms": 430.0,
+    "settle_ms": 1006.0971710045123,
+    "errors": 7,
+    "keystroke": {
+     "hover": 2.125507002347149,
+     "completion": 0.7123909890651703,
+     "inlay": 0.2997760020662099,
+     "tokens": 0.5946309975115582
+    },
+    "settled": {
+     "hover": [
+      1.843474,
+      1.8893619999289513
+     ],
+     "completion": [
+      0.76237,
+      0.7425579970004037
+     ],
+     "inlay": [
+      0.609056,
+      0.5736989987781271
+     ],
+     "tokens": [
+      0.459382,
+      0.5023029953008518
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 550564
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 556.6188869997859,
+    "diagnostics_cpu_ms": 400.0,
+    "first_publish_ms": 0.4672499926527962,
+    "instructions": 3943340797,
+    "analyses": 1,
+    "all_published_ms": 556.9397700019181,
+    "all_published_cpu_ms": 410.0,
+    "files_republished": 3,
+    "cpu_ms": 410.0,
+    "settle_ms": 1005.9099479985889,
+    "errors": 7,
+    "keystroke": {
+     "hover": 1.8577590089989826,
+     "completion": 0.6935090059414506,
+     "inlay": 0.30944199534133077,
+     "tokens": 0.6743779958924279
+    },
+    "settled": {
+     "hover": [
+      1.861616,
+      1.8813060014508665
+     ],
+     "completion": [
+      0.821331,
+      0.7814720011083409
+     ],
+     "inlay": [
+      0.477523,
+      0.4304409958422184
+     ],
+     "tokens": [
+      0.445771,
+      0.48571600927971303
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 568124
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 547.0438609918347,
+    "diagnostics_cpu_ms": 400.0,
+    "first_publish_ms": 1.512383998488076,
+    "instructions": 3939893516,
+    "analyses": 1,
+    "all_published_ms": 547.1789430011995,
+    "all_published_cpu_ms": 400.0,
+    "files_republished": 3,
+    "cpu_ms": 400.0,
+    "settle_ms": 1005.5240069923457,
+    "errors": 7,
+    "keystroke": {
+     "hover": 1.4181750011630356,
+     "completion": 0.5881200049770996,
+     "inlay": 0.32061700767371804,
+     "tokens": 0.5748190014855936
+    },
+    "settled": {
+     "hover": [
+      1.856628,
+      1.904982011183165
+     ],
+     "completion": [
+      0.805571,
+      0.7796030113240704
+     ],
+     "inlay": [
+      0.515691,
+      0.47996600915212184
+     ],
+     "tokens": [
+      0.506413,
+      0.5200089944992214
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 569832
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 567.7607389952755,
+    "diagnostics_cpu_ms": 420.0,
+    "first_publish_ms": 1.342395000392571,
+    "instructions": 3941172253,
+    "analyses": 1,
+    "all_published_ms": 567.9003389959689,
+    "all_published_cpu_ms": 420.0,
+    "files_republished": 3,
+    "cpu_ms": 430.0,
+    "settle_ms": 1004.9093839916168,
+    "errors": 7,
+    "keystroke": {
+     "hover": 1.354405001620762,
+     "completion": 0.5000370001653209,
+     "inlay": 0.34382099693175405,
+     "tokens": 0.5480260006152093
+    },
+    "settled": {
+     "hover": [
+      2.120133,
+      2.1641630009980872
+     ],
+     "completion": [
+      0.874072,
+      0.8467520092381164
+     ],
+     "inlay": [
+      0.699527,
+      0.6732449983246624
+     ],
+     "tokens": [
+      0.463182,
+      0.5007269937777892
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 593064
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 578.9505279972218,
+    "diagnostics_cpu_ms": 440.0,
+    "first_publish_ms": 1.678804008406587,
+    "instructions": 3928408175,
+    "analyses": 1,
+    "all_published_ms": 579.1584230028093,
+    "all_published_cpu_ms": 440.0,
+    "files_republished": 3,
+    "cpu_ms": 440.0,
+    "settle_ms": 1005.6051980063785,
+    "errors": 7,
+    "keystroke": {
+     "hover": 1.5847969916649163,
+     "completion": 0.5662710027536377,
+     "inlay": 0.2930719929281622,
+     "tokens": 0.5476499936776236
+    },
+    "settled": {
+     "hover": [
+      1.789507,
+      1.8256449984619394
+     ],
+     "completion": [
+      0.890984,
+      0.8627089991932735
+     ],
+     "inlay": [
+      0.546525,
+      0.5190240044612437
+     ],
+     "tokens": [
+      0.440642,
+      0.5118879926158115
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 593132
+    },
+    "companions": 0
+   }
+  ],
+  "parse repair": [
+   {
+    "diagnostics_ms": 572.9933270049514,
+    "diagnostics_cpu_ms": 420.0,
+    "first_publish_ms": 1.565837999805808,
+    "instructions": 3953684998,
+    "analyses": 1,
+    "all_published_ms": 573.1359089986654,
+    "all_published_cpu_ms": 420.0,
+    "files_republished": 3,
+    "cpu_ms": 420.0,
+    "settle_ms": 1005.7597760023782,
+    "errors": 6,
+    "keystroke": {
+     "hover": 1.441547996364534,
+     "completion": 0.5629779916489497,
+     "inlay": 0.30359599622897804,
+     "tokens": 0.8580979920225218
+    },
+    "settled": {
+     "hover": [
+      1.960159,
+      2.0058710069861263
+     ],
+     "completion": [
+      0.827933,
+      0.7972280000103638
+     ],
+     "inlay": [
+      0.550253,
+      0.4811810067621991
+     ],
+     "tokens": [
+      0.446732,
+      0.49605200183577836
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 567328
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 556.2662349984748,
+    "diagnostics_cpu_ms": 410.0,
+    "first_publish_ms": 0.44333800906315446,
+    "instructions": 3950206845,
+    "analyses": 1,
+    "all_published_ms": 556.5507889987202,
+    "all_published_cpu_ms": 410.0,
+    "files_republished": 3,
+    "cpu_ms": 420.0,
+    "settle_ms": 1005.3562420071103,
+    "errors": 6,
+    "keystroke": {
+     "hover": 1.4759059995412827,
+     "completion": 0.5209990049479529,
+     "inlay": 0.2970249915961176,
+     "tokens": 0.5405960109783337
+    },
+    "settled": {
+     "hover": [
+      1.95065,
+      2.0224530017003417
+     ],
+     "completion": [
+      0.796469,
+      0.769425998441875
+     ],
+     "inlay": [
+      0.504193,
+      0.460303999716416
+     ],
+     "tokens": [
+      0.436662,
+      0.4864020011154935
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 568612
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 571.8343610060401,
+    "diagnostics_cpu_ms": 420.0,
+    "first_publish_ms": 0.43820199789479375,
+    "instructions": 3944649840,
+    "analyses": 1,
+    "all_published_ms": 571.9738409970887,
+    "all_published_cpu_ms": 420.0,
+    "files_republished": 3,
+    "cpu_ms": 430.0,
+    "settle_ms": 1005.5942379985936,
+    "errors": 6,
+    "keystroke": {
+     "hover": 1.6229400062002242,
+     "completion": 0.5627159989671782,
+     "inlay": 0.5835629999637604,
+     "tokens": 0.5447000003186986
+    },
+    "settled": {
+     "hover": [
+      1.780866,
+      1.7940780089702457
+     ],
+     "completion": [
+      1.005525,
+      0.9142980125034228
+     ],
+     "inlay": [
+      0.596126,
+      0.5694870051229373
+     ],
+     "tokens": [
+      0.435551,
+      0.47578000521752983
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 593060
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 553.0794879887253,
+    "diagnostics_cpu_ms": 400.0,
+    "first_publish_ms": 1.5338979865191504,
+    "instructions": 3952782317,
+    "analyses": 1,
+    "all_published_ms": 553.3072339894716,
+    "all_published_cpu_ms": 400.0,
+    "files_republished": 3,
+    "cpu_ms": 410.0,
+    "settle_ms": 1005.4707849922124,
+    "errors": 6,
+    "keystroke": {
+     "hover": 1.544278988149017,
+     "completion": 0.5823380051879212,
+     "inlay": 0.3314889909233898,
+     "tokens": 0.5582720041275024
+    },
+    "settled": {
+     "hover": [
+      1.808286,
+      1.8577670125523582
+     ],
+     "completion": [
+      1.042307,
+      1.0426270018797368
+     ],
+     "inlay": [
+      0.347399,
+      0.32012299925554544
+     ],
+     "tokens": [
+      0.451862,
+      0.47492500743828714
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 593076
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 562.961360992631,
+    "diagnostics_cpu_ms": 410.0,
+    "first_publish_ms": 1.4430220035137609,
+    "instructions": 3948563229,
+    "analyses": 1,
+    "all_published_ms": 563.0998109991197,
+    "all_published_cpu_ms": 410.0,
+    "files_republished": 3,
+    "cpu_ms": 420.0,
+    "settle_ms": 1005.0369639939163,
+    "errors": 6,
+    "keystroke": {
+     "hover": 1.454502998967655,
+     "completion": 0.5102110008010641,
+     "inlay": 0.3576769959181547,
+     "tokens": 0.5491449992405251
+    },
+    "settled": {
+     "hover": [
+      1.778956,
+      1.8116489954991266
+     ],
+     "completion": [
+      0.812912,
+      0.7920890056993812
+     ],
+     "inlay": [
+      0.34895,
+      0.3160229971399531
+     ],
+     "tokens": [
+      0.438012,
+      0.4884810041403398
+     ]
+    },
+    "memory": {
+     "VmHWM": 662460,
+     "VmRSS": 593160
+    },
+    "companions": 0
+   }
+  ]
+ }
+}

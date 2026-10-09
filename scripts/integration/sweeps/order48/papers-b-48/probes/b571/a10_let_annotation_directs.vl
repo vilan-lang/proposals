@@ -1,0 +1,12 @@
+import std::io::print;
+
+// B571 a10: what an annotated `let` does that `as` would do: a literal takes
+// the annotation's type, an empty list its element type, `None` its argument.
+fun main() {
+	let a: f64 = 5;
+	let xs: List<str> = [];
+	let o: Option<i32> = None;
+	print(a);
+	print(xs.len());
+	print(o.is_none());
+}

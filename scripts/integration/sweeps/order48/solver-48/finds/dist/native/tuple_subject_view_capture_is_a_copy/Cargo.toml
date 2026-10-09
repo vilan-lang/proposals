@@ -1,0 +1,16 @@
+[package]
+name = "tuple_subject_view_capture_is_a_copy"
+version = "0.0.0"
+edition = "2024"
+
+[[bin]]
+name = "tuple_subject_view_capture_is_a_copy"
+path = "src/main.rs"
+
+[dependencies]
+vilan-rt = { path = "/home/reed/.vilan/rt-cache/c26ddbc3eecd1b63/vilan-rt" }
+
+[profile.release]
+panic = "unwind"
+
+[workspace]

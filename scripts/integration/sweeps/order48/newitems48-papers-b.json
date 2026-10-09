@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B580",
+   "section": "B",
+   "title": "a binding whose type nothing determines checks clean: `let xs = []; print(xs.len());` and `let o = None;` pass `vilan check` and run on JS; natively the first is refused at emission (\"does not emit a value of type `an unresolved type` yet — this is F1's slice S1b\") and the second emits `let o_NNNN = None;`, which rustc cannot infer",
+   "kind": "check/build disagreement + diagnostics (S)",
+   "discussion": "papers-b-48 (Order 48) met it while grounding B571's 'or ascribe it' steer: the generic-call twin (`let xs = make();` with `fun make<T>(): List<T>`) IS refused, \"cannot infer 'T' for this call … Write the type — on the binding … or as the call's type argument\", but an empty list literal or a bare `None` that nothing ever grounds is not. F108 is the bounded-generic sibling (an empty literal handed to `push_many`); this one has no generic at all.",
+   "status": "OPEN",
+   "area": "Type system",
+   "body": "Repro: `sweeps/order48/papers-b-48/finds/uninferable_binding_checks_clean.vl` (vilan 0.45.0, e75bc57c3). `vilan check`: no errors; `vilan run`: prints `0`, `built`. `vilan build --backend rust --stdout`: refused at `let xs = [];` with the S1b scope message (which blames the backend for what is a hole in inference), and `let o_9696 = None;` emitted untyped. Proposed: the checker refuses a binding whose type still holds an unbound hole after inference, at the initializer, with the generic-call message's shape: \"cannot infer the element type of this empty list: nothing it is used with states it. Write the type on the binding (`let xs: List<…> = []`)\" — and, once B571 lands, \"or ascribe it: `[] as List<…>`\". Estate to count first (an unused `None` or an empty list read only through `len()`); the corpus and std check clean today, so a refusal could break a program that only ever ran on JS. Sizing S; solver."
+  },
+  {
+   "id": "E284",
+   "section": "E",
+   "title": "`a < b > (c)`, spaced, is read as the generic call `a<b>(c)` and refused \"cannot call this as a function: it is i32\" — the message names neither reading; the comparison chain `(a < b) > c` is ill-typed too",
+   "kind": "diagnostics (S)",
+   "discussion": "papers-b-48 (Order 48), probing B571's whitespace rule: in EXPRESSION position the grammar reads `IDENT < … > (` as a generic call whatever the spacing (`pick <f64>(1, 2)` is a generic call too), where B571's ruled rule for `as` makes a SPACED `<` a comparison. No legal program is lost today (`bool` has no ordering, so the comparison reading never types), so this is only the message. Low priority; it would fall out of extending B571's whitespace rule to expression position (type-ascription.md Q).",
+   "status": "OPEN",
+   "area": "Diagnostics",
+   "body": "Repro: `sweeps/order48/papers-b-48/finds/comparison_read_as_generic_call.vl` (vilan 0.45.0). Refused at `a`: \"cannot call this as a function: it is i32\". Proposed: when a generic-call reading fails because the head is not callable and the `<` was spaced, say \"`a < b > (c)` reads as a generic call `a<b>(c)`; for comparisons, parenthesize: `(a < b) > c` — and `bool` has no ordering\". Or, with type-ascription.md's Q on the whitespace rule's reach: a spaced `<` after a name never opens a generic list in expression position either (the formatter already writes every generic list tight and every comparison spaced; the estate has 0 spaced generic lists). Sizing S; parser + diagnostics."
+  },
+  {
+   "id": "B581",
+   "section": "B",
+   "title": "the spec says a spread call and its tuple call are one call — `log(1, \"hi\") == log((1, \"hi\"))` (types.md §5.9) — but a spread function called by name with ONE tuple collects it into a one-slot pack: `draw((3, 4))` against `fun draw(...at: (f64, f64))` is refused \"Expected (f64, f64), but got ((i32, i32))\"",
+   "kind": "spec/behaviour mismatch (S) — a ruling",
+   "discussion": "papers-b-48 (Order 48), probing the door B569 opens (named arguments through a spread parameter over a labelled tuple): whether `draw((x = 1, y = 2))` and `draw(x = 1, y = 2)` are the same call depends on this. The spec's own next sentence says only a spread function used as a VALUE is called with a tuple, so the comment over `log` reads as the over-claim; either the comment goes or a lone tuple argument whose type is the pack spreads.",
+   "status": "OPEN",
+   "area": "Type system",
+   "body": "Repro: `sweeps/order48/papers-b-48/finds/spread_called_with_one_tuple.vl` (vilan 0.45.0). `draw(1, 2)` runs (12); `draw((3, 4))` is refused as above (the literal's elements did not even take `f64`, because the expected type is the pack's one slot). Doors: (a) correct the spec comment (a direct call always collects; pass a built tuple with `draw(..pair)`); (b) a lone argument whose type is a tuple that fits the pack spreads. Rec: (a) — (b) makes a one-slot pack of a tuple unwritable and the rule depends on a type. named-tuple-fields.md §8 leans on (a). Sizing S; docs (a) or solver (b)."
+  }
+ ]
+}

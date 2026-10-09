@@ -1,0 +1,12 @@
+import std::io::print;
+
+// B569 n08: destructuring and the tuple-of-places assignment (the swap).
+fun main() {
+	let p = (1, 2);
+	let (a, b) = p;
+	mut x = 1;
+	mut y = 2;
+	(x, y) = (y, x);
+	print(a + b);
+	print(x * 10 + y);
+}

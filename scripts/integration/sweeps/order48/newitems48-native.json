@@ -1,0 +1,84 @@
+{
+ "items": [
+  {
+   "id": "B577",
+   "section": "B",
+   "kind": "JS backend miscompile (S–M)",
+   "area": "JavaScript backend",
+   "status": "OPEN — filed 2026-10-08 (native-48's find, Order 48)",
+   "discussion": "native-48 (Order 48); sweeps/order48/native-48/finds/js_option_view_of_element_unwrap_or.vl",
+   "title": "JS backend: an `Option<&str>` whose payload views a LIST ELEMENT, handed to `unwrap_or`, answers the view's (base, key) PAIR instead of the element — `shelf.at(1).unwrap_or(\"none\")` prints `[ [ 'first', 'second' ], 1 ]` on JS and `second` natively",
+   "body": "A shared view of an element (`Some(&self.items[index])`) is a (base, key) pointer pair on JS. A `match` subject reads through it, but a generic consumer monomorphised at the pointee (`unwrap_or(own self, lazy fallback: T): T`) hands the pair back as the `T`. Native-48's F99 half reads the payload out at that position (`.cloned()`); the JS backend needs the same read where an `Option` of a view meets code written against its pointee. Repro: finds/js_option_view_of_element_unwrap_or.vl. Sizing S–M; JS emitter."
+  },
+  {
+   "id": "B578",
+   "section": "B",
+   "kind": "JS backend runtime TypeError (S)",
+   "area": "JavaScript backend",
+   "status": "OPEN — filed 2026-10-08 (native-48's find, Order 48)",
+   "discussion": "native-48 (Order 48); sweeps/order48/native-48/finds/js_reference_of_a_call_result_generic.vl",
+   "title": "JS backend: `&` of a CALL RESULT handed to a generic `&T` parameter — `shown(&xs.len())` with `fun shown<T: Display>(value: &T)` — throws `TypeError: Cannot read properties of undefined` (the callee reads `value[0][value[1]]`, a place pair, off a plain number); natively it prints `<2>`",
+   "body": "The callee lowers a `&T` read as a (base, key) place pair; a temporary has no place, and the call site passes the bare value. Either the call site wraps a temporary as a one-slot pair, or the generic `&T` read accepts a non-pair. Repro: finds/js_reference_of_a_call_result_generic.vl. Sizing S; JS emitter."
+  },
+  {
+   "id": "B579",
+   "section": "B",
+   "kind": "analyzer: missing refusal (S)",
+   "area": "Type checker",
+   "status": "OPEN — filed 2026-10-08 (native-48's find, Order 48)",
+   "discussion": "native-48 (Order 48); sweeps/order48/native-48/finds/mixed_width_operator.vl",
+   "title": "analyzer: `-`, `*`, `/` and `%` over two DIFFERENT integer widths — `usize` and `i32` — are admitted with no conversion, where `+`, `<` and `==` over the same pair are refused (\"there are no implicit conversions\"); capture-clones.vl's `total + cells.len() * weight` compiles on that hole",
+   "body": "`vilan check` answers \"no errors\" for `a - b`, `a * b`, `a / b`, `a % b` with `a: usize`, `b: i32`; JS prints 3 18 2 0. Natively the operators have no Rust spelling (rustc E0277), so native-48 refuses \"an operator over two numeric types\" by name (capture-clones.vl's native wall now). The `+` arm's check is the model; the fix is the analyzer's (estate count first: capture-clones.vl is one site). Repro: finds/mixed_width_operator.vl. Sizing S; analyzer (solver)."
+  },
+  {
+   "id": "F113",
+   "section": "F",
+   "kind": "native rustc refusal (S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-08 (native-48's find, Order 48)",
+   "discussion": "native-48 (Order 48); sweeps/order48/native-48/finds/view_call_destructure_subject.vl",
+   "title": "native: an `is` test (or `match`) that DESTRUCTURES the view a `borrows` call hands back binds its captures as REFERENCES — `if cell.slot() is (let cells, let weight)` makes `weight` a `&mut i32` and `cells.len().as_i32() + weight` is rustc E0277; a capture is a copy (rule 1); JS prints 5",
+   "body": "`subject_is_a_place` answers no for a call, so the subject is not copied, and Rust's default binding modes bind through the returned `&mut (List<i32>, i32)`. The subject wants `(*call).clone()` (F88's block-view rule for a call). capture-clones.vl:201 (`called_component`) is the corpus site, behind B579. Repro: finds/view_call_destructure_subject.vl. Sizing S; native."
+  },
+  {
+   "id": "F114",
+   "section": "F",
+   "kind": "perf (native) (S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-08 (native-48's find, Order 48)",
+   "discussion": "native-48 (Order 48); sweeps/order48/native-48/finds/shared_view_reading_intrinsic.vl",
+   "title": "native (perf): a READING intrinsic over a field of a `Shared` view still copies the field first — `cell.read().items.len()` emits `(cell).read_with(\\|view\\| view.items.clone()).len()`, the whole list cloned to count it",
+   "body": "F49 (native-48) reads a BOXED binding's receiver through a view of its cell for a reading intrinsic (`len`, `get`, `contains`, the `str` readers); the same view would serve a `Shared` view's spine. An intrinsic runs no user code, so F39's runtime half (an alias through a parameter) cannot meet the borrow there. Repro: finds/shared_view_reading_intrinsic.vl (prints 3 on both). Sizing S; native."
+  },
+  {
+   "id": "F115",
+   "section": "F",
+   "kind": "owner question (language vs backend)",
+   "area": "Memory model",
+   "status": "OPEN — filed 2026-10-08 (native-48's find, Order 48)",
+   "discussion": "native-48 (Order 48); sweeps/order48/native-48/finds/closure_beside_a_mut_view_both_backends.vl",
+   "title": "F102's analyzer half: is a closure that reaches a captured binding, handed to a call holding a `&mut` view of it, the LANGUAGE's refusal or the native backend's alone? native-48 refuses it natively (as F39 was answered); JS prints 11 and 102",
+   "body": "Rule 4 (spec §6.4) already refuses the first shape's root reassignment (`n += 1` under `&mut n`) and explicitly PERMITS the second's scalar content write (`c.n += 100` under `&mut self`), so refusing both on both backends changes rule 4 for content writes through a capture. Rec: keep it a native refusal (spec §6.9's native note says so) unless the owner wants the capture form named in rule 4; the analyzer half would be one check beside the loan walk. Repro: finds/closure_beside_a_mut_view_both_backends.vl. Sizing S (analyzer) once ruled."
+  },
+  {
+   "id": "F116",
+   "section": "F",
+   "kind": "native refusal by name (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-08 (native-48's find, Order 48)",
+   "discussion": "native-48 (Order 48); sweeps/order48/native-48/finds/generic_resource_with_drop.vl",
+   "title": "native: F97's remainder — a GENERIC resource with a `Drop` impl (`impl Guard<type T> with Drop`) and an ENUM with one are still refused by name; JS prints `a` then `closing a`",
+   "body": "F97 (native-48) emitted the non-generic struct half: a Rust `Drop` impl calling the `drop` instance, fields reversed, last-use drops at the JS backend's extents. A generic one needs the `drop` instance per instantiation reached from the impl's own binders; an enum needs its body to run before the variant's payloads, which Rust drops in declaration order (vilan: reverse), and a match that moves a payload out of a `Drop` enum is rustc E0509. Repro: finds/generic_resource_with_drop.vl. Sizing M; native."
+  },
+  {
+   "id": "N154",
+   "section": "N",
+   "kind": "maintainability (S)",
+   "area": "Compiler internals",
+   "status": "OPEN — filed 2026-10-08 (native-48's find, Order 48)",
+   "discussion": "native-48 (Order 48); crates/vilan-rust/src/lib.rs `early_drops`/`plan_teardowns`/`resolve_extent`, crates/vilan-core/src/transformer.rs `walk_scope_body`/`teardown_extent`/`widen_over_declarations`",
+   "title": "the teardown EXTENT resolution is written twice — the JS transformer's `walk_scope_body`/`teardown_extent`/`widen_over_declarations`/`resolve_extent` and native-48's copy of them in vilan-rust (F97) — and the two backends print teardowns in one order only while the copies agree",
+   "body": "The resolution is pure over `Program` (`drop_extents`, `declared_binding_extents`, `dropped_bindings`, `drop_glue`), so it belongs beside `liveness::DropExtent` as one function both emitters call (a plan: per statement range, which bindings close after which statement, inner first). native-48 duplicated it rather than move code in vilan-core's transformer (another lane's area this order). Sizing S; refactor, no behaviour change; the F97 pin and resource*.vl are the gate."
+  }
+ ]
+}

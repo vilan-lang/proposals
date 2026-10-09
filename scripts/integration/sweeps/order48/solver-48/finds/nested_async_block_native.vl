@@ -1,0 +1,21 @@
+// FIND (solver-48, re-checking B559 after native-48's F107): natively, an
+// `async` block whose body is itself an `async` block — `async { async { "s"
+// } }` — is not assimilated: rustc refuses the emitted Rust (E0308, a backend
+// defect). The analyzer (and JS, which the host's promise adoption gives for
+// free) types the outer block `Task<str>` (`assimilated_task_payload`). The
+// same body under a written `Task<Task<str>>` (B559) or a plain `fun` returning
+// `Task<str>` fails the same way. JS prints "s". Base b5d098ee and the
+// solver-48 tip alike.
+import std::io::print;
+import std::task::Task;
+
+fun deeper(): Task<str> {
+	async { async { "s" } }
+}
+
+async fun main() {
+	let s: str = await deeper();
+	print(s);
+}
+
+main();

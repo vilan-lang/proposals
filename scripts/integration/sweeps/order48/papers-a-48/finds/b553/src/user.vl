@@ -1,0 +1,5 @@
+import pkg::shapes::{ Foo, Greet };
+export fun use_it(): str {
+	let foo = Foo { n = 1 };
+	foo.greet()
+}

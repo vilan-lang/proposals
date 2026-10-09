@@ -1,0 +1,6 @@
+import std::web::ui::{ View, view };
+
+export fun show(): str {
+	let v: View = view("div");
+	v.render()
+}

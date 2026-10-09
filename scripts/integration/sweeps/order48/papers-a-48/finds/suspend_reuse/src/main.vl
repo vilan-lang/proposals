@@ -1,0 +1,7 @@
+import pkg::m::{ Point, stash };
+
+fun main() {
+	mut point = Point { x = 1, y = 2 };
+	let seen = Point { x = 3, y = 4 };
+	stash(&mut point, &seen);
+}

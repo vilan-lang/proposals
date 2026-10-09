@@ -1,0 +1,13 @@
+import std::io::print;
+
+// B571 a06: the tight generic path head and a turbofish-free generic call.
+fun pick<T>(a: T, b: T): T {
+	a
+}
+
+fun main() {
+	let xs = List<i32>::new();
+	let y = pick<f64>(1, 2);
+	print(xs.len());
+	print(y);
+}

@@ -1,0 +1,11 @@
+import std::io::print;
+import std::web::ui::{ View, render, view };
+
+// An `Option<View>` in a hole is refused (it is not a `Slot`): "a hole in
+// element syntax takes a `View`, a `str`, a `List<View>` or a `Source` of
+// one, and `badge` is `Option<View>`". The author writes a `match` in the
+// hole, or `.show`, or `when` for the reactive case.
+fun main() {
+	let badge: Option<View> = Some(<b>"new"</b>);
+	print(render(<p>"item"{badge}</p>));
+}

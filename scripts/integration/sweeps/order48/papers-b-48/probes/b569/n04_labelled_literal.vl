@@ -1,0 +1,8 @@
+import std::io::print;
+
+// B569 n04: the labelled literal `(x = 5, y = 7)` today: two assignments to
+// undeclared names.
+fun main() {
+	let p = (x = 5, y = 7);
+	print("parsed");
+}

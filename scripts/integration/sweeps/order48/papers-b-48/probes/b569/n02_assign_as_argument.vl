@@ -1,0 +1,14 @@
+import std::io::print;
+
+// B569 n02: an assignment as a call argument and as a tuple entry.
+fun takes(v: void) {
+	print("took void");
+}
+
+fun main() {
+	mut x = 0;
+	takes(x = 5);
+	let pair = (x = 6, 1);
+	print(x);
+	let shown: i32 = pair;
+}

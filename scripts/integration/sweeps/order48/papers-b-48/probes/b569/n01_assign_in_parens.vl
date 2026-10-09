@@ -1,0 +1,10 @@
+import std::io::print;
+
+// B569 n01: assignment is an expression today. `let y = (x = 5);` checks,
+// and `y` is `void`. The mismatch below renders y's type.
+fun main() {
+	mut x = 0;
+	let y = (x = 5);
+	print(x);
+	let shown: i32 = y;
+}

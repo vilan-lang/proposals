@@ -1,0 +1,402 @@
+{
+ "date": "2026-10-09",
+ "order": "Order 48",
+ "closes": [
+  {
+   "id": "E279",
+   "lane": "editor-48",
+   "commit": "3431f67f",
+   "text": "sticky spans: caret requests (hover, definition, references, completion), the outline, quick fixes and a diagnostic's related information follow the buffer's edits before the re-analysis lands (diagnostics, hints and tokens already did); shifted publish 6.6 ms median on kolt; 15 new pins, nine S1 pins rewritten to the ruled contract"
+  },
+  {
+   "id": "E273",
+   "lane": "editor-48",
+   "commit": "18b47bf3",
+   "text": "a named function with the other mode gets B495's steer and the one-parameter adapter fix (`closure_mode_mismatch_message` read `Type::Function` as the closure it coerces to)"
+  },
+  {
+   "id": "E274",
+   "lane": "editor-48",
+   "commit": "e7fe2afb",
+   "text": "member completion keeps only the impls the solver selects for the typed receiver (`impl_select::applying_implementations`), one per name"
+  },
+  {
+   "id": "B561",
+   "lane": "editor-48",
+   "commit": "a88de8a8",
+   "text": "B535's refusal spells a nested package module's full path; B560's walk is the shared `module_import_paths`"
+  },
+  {
+   "id": "B572",
+   "lane": "editor-48",
+   "commit": "523342b0",
+   "text": "std's export index records re-exports and spells each name at its shortest public path (`std::reactive::ListCell`, not `delta`'s); the add-import candidates use the same rule"
+  },
+  {
+   "id": "E254",
+   "lane": "editor-48",
+   "commit": "82c6daa7",
+   "text": "a file holding platform-fenced twins is served from its primary entry's world and each excluded twin from the world whose platform admits it (`RootResolver::roots`, `attach_twin_legs`); landed on B573's driver fix"
+  },
+  {
+   "id": "B573",
+   "lane": "incr-48",
+   "commit": "ca4af8f6",
+   "text": "the platform is set right after `Analyzer::new()` in `analyze_inner`, so module twins (and the hot-set world's) are selected for the build's platform; found by editor-48, pinned in both suites"
+  },
+  {
+   "id": "E276",
+   "lane": "debug-48",
+   "commit": "c7d74ae1",
+   "text": "`dbg(-0.0)` prints `-0.0` on both backends (`__dbg_float`, `vilan_rt::show::float`); std's float `.debug()` agrees; `print` keeps `0`"
+  },
+  {
+   "id": "E277",
+   "lane": "debug-48",
+   "commit": "5a820d3e",
+   "text": "a layout group carries a `fill` flag: a list/array/set of scalars packs entries to 80 columns, aggregates keep one per line, the 100-entry cap stands; identical bytes on both runtimes"
+  },
+  {
+   "id": "E275",
+   "lane": "debug-48",
+   "commit": "5b513ee4",
+   "text": "a WRITTEN `Debug` impl decides how `dbg` prints its type at every position (`printer::written_debug`); the derive spells variants qualified and agrees; `.debug()` stays opt-in; family breaking (std's derived enums print qualified; 22 harness expectations moved)"
+  },
+  {
+   "id": "N149",
+   "lane": "debug-48",
+   "commit": "5e6b907d",
+   "text": "`print` of a generic number instance is wrapped per instance (the emitter reads the argument's type under the instance's substitution, unioned with the static recording); closure parameters typed late too"
+  },
+  {
+   "id": "E260",
+   "lane": "solver-48",
+   "commit": "c8945385",
+   "text": "the tuple case closes with B443's `debug.vl` tuple blanket (debug-48's `s4_debug_covers_a_tuple` un-ignored); lists, options and results since debug-47"
+  },
+  {
+   "id": "F49",
+   "lane": "native-48",
+   "commit": "f25f67d5",
+   "text": "a `&self` call or `&` argument on a boxed binding holds a view of the cell (`Shared::borrow`) instead of cloning the value; the base's silent 5-vs-6 answer is fixed; the evaluation order is spec/memory.md 6.9's native note; store probe -7.9% Ir"
+  },
+  {
+   "id": "F103",
+   "lane": "native-48",
+   "commit": "f25f67d5",
+   "text": "a field, tuple-slot or subscript read on a boxed binding is a link of F62's scoped-borrow spine (22 -> 1 whole copies in the pin)"
+  },
+  {
+   "id": "F102",
+   "lane": "native-48",
+   "commit": "088a7b5d",
+   "text": "a call holding a `&mut` view of a boxed binding while another argument's closure reaches that binding is refused natively by name (literal, let-bound, called-by-name or held closures); the runtime sentence names the shape otherwise; native-only by ruling (F115)"
+  },
+  {
+   "id": "F107",
+   "lane": "native-48",
+   "commit": "e6e63cfe",
+   "text": "each `Task` layer in a written-`async` callee's return is one more await; the call's type reads as the payload everywhere (B149's native half)"
+  },
+  {
+   "id": "F104",
+   "lane": "native-48",
+   "commit": "7da1522a",
+   "text": "a closure whose body diverges writes its return type (rustc had inferred `!`)"
+  },
+  {
+   "id": "F105",
+   "lane": "native-48",
+   "commit": "53508d20",
+   "text": "`variant_payload_types` resolves the whole payload type, not its head (nested elements were minted at `any`)"
+  },
+  {
+   "id": "F106",
+   "lane": "native-48",
+   "commit": "45be71ab",
+   "text": "`settled_value_type` rebuilds the whole recorded type under the call's substitution; every pattern subject reads it (match, is, conjunction, destructure)"
+  },
+  {
+   "id": "F92",
+   "lane": "native-48",
+   "commit": "0797aca6",
+   "text": "a field read off a call names its struct through the call's substitution (`call_value_head`); a trait default's `Self` reads off the receiver; a `?.` binder's type comes from its own entity"
+  },
+  {
+   "id": "F97",
+   "lane": "native-48",
+   "commit": "ecd4413f",
+   "text": "a resource's `drop` is a Rust `Drop` impl; fields needing teardown are declared in reverse order; a binding drops after its last read's statement (the JS transformer's extent logic); generic and enum resources with `Drop` are F116"
+  },
+  {
+   "id": "F95",
+   "lane": "native-48",
+   "commit": "36247783",
+   "text": "a `HashSet` loop walks the table's values in insertion order; `for e in &mut c` calls the recorded `next_mut` on the place"
+  },
+  {
+   "id": "F100",
+   "lane": "native-48",
+   "commit": "d499eb2a",
+   "text": "the triple-quoted string, `[v; n]`, `is_finite`, array `len()`/patterns/literals; the doubled backtick in the refusal fixed"
+  },
+  {
+   "id": "F98",
+   "lane": "native-48",
+   "commit": "f56e1574",
+   "text": "a typed decoder turns a const value in the JS layout into a native struct, tuple, enum or `NativeMap` (Style, HashMap, HashSet); a native build writes the CSS sidecar"
+  },
+  {
+   "id": "F93",
+   "lane": "native-48",
+   "commit": "d1486cd2",
+   "text": "a guarded leg is Rust's guard; a str-backed variant nested in a pattern becomes a guard over a binder; mixed integer widths the analyzer admits are refused by name (B579)"
+  },
+  {
+   "id": "F94",
+   "lane": "native-48",
+   "commit": "be6d307d",
+   "text": "spread parameters, tuple spreads, the empty pack `()` and the one-element tuple type `(T,)`"
+  },
+  {
+   "id": "F101",
+   "lane": "native-48",
+   "commit": "45651869",
+   "text": "a mapped tuple expands to a concrete tuple per instantiation; a tuple comprehension is unrolled per slot under the binder's generics"
+  },
+  {
+   "id": "F96",
+   "lane": "native-48",
+   "commit": "a89c2026",
+   "text": "a user `Lift` goes through the container's own `map`/`and_then` with a synthesized capturing closure, regions nest lazily; a user `Try` becomes `verdict` plus `from_bad`"
+  },
+  {
+   "id": "A159",
+   "lane": "std-48",
+   "commit": "7836df8f",
+   "text": "`.bind_attr(\"class\", ..)` and `.toggle_attr(\"class\", ..)` are class writers under the same literal-\"class\" test `.attr` gets"
+  },
+  {
+   "id": "A160",
+   "lane": "std-48",
+   "commit": "7836df8f",
+   "text": "when the earlier writer is a binding the message says the two writers take turns (`class_value_is_binding` reads the bound `V`)"
+  },
+  {
+   "id": "A162",
+   "lane": "std-48",
+   "commit": "80ae79d4",
+   "text": "a visible double class write is an ERROR at v0.46.0 (family breaking; estate 0 across std, corpus, docs, examples, templates, website, kolt; one test fixture moved to `title`)"
+  },
+  {
+   "id": "B568",
+   "lane": "std-48",
+   "commit": "bfba2955",
+   "text": "a struct literal writing a std-`[internal]` field is refused outside std once per literal (`refuse_internal_field_write` under `labels::internal_field_out_of_reach`); no struct pattern exists, pinned; breaking, estate 0"
+  },
+  {
+   "id": "E271",
+   "lane": "std-48",
+   "commit": "812d7191",
+   "text": "a non-text hole is refused AT the hole with what a hole accepts and the i-string or `.derive` form (`element_hole_refusal`); a hand-written `.child(5)` keeps the bound message"
+  },
+  {
+   "id": "E272",
+   "lane": "std-48",
+   "commit": "812d7191",
+   "text": "a fragment where one `View` is wanted gets the wrap steer at a return, a `let`, an argument and a field (`with_fragment_steer`)"
+  },
+  {
+   "id": "K30",
+   "lane": "std-48",
+   "commit": "92fb01f1",
+   "text": "`vilan init`'s browser and fullstack templates are element syntax; pinned"
+  },
+  {
+   "id": "B555",
+   "lane": "std-48",
+   "commit": "ec034704",
+   "text": "`import std::js::null` (every spelling stops at the keyword) is refused with its reason: the module holds only the `null` value's type, which every program loads"
+  },
+  {
+   "id": "M121",
+   "lane": "incr-48",
+   "commit": "418ac4f2",
+   "text": "door (b) delivered as the REACH RECORD (`ImplReachLog`): the pre-store resolve records every impl question; a hot impl answering one refuses the hot set; an entry impl answering a package question rebuilds in the deferred order; plus the generated-path fix in `load_hot_modules`. Every kolt file is served: theme 14.00 -> 6.91 G, model 13.86 -> 6.84, styles 13.89 -> 6.83, views 10.12 -> 6.56 per clean keystroke; importers-open 14.11 -> 7.14 G. The record's cold-check tax was removed by the reach filter (incr-48b 6d34df79, M129)"
+  },
+  {
+   "id": "B553",
+   "lane": "incr-48",
+   "commit": "418ac4f2",
+   "text": "the impl half: an entry's impl serves every module (three pins red at base); the context half is NOT an order question and is B584 (solver)"
+  },
+  {
+   "id": "M122",
+   "lane": "incr-48",
+   "commit": "121fe6e9",
+   "text": "measured (the const pass is skipped whenever any diagnostic exists, ~440 ms of a clean keystroke's post-passes) and closed by S4's const cache: a clean keystroke now costs what a broken one did"
+  },
+  {
+   "id": "M129",
+   "lane": "incr-48",
+   "commit": "6d34df79",
+   "text": "the reach filter: what the late files' syntax could answer decides what is recorded (own-type impls nothing, a foreign inherent impl its member names, a foreign trait impl or item macro everything); every ci row back within +0.08% of the parent; `reach-questions` counter pinned at 0 for a check with no foreign impl"
+  },
+  {
+   "id": "F28",
+   "lane": "layout-48",
+   "commit": "9b4b201d",
+   "text": "the retry: twelve single-platform std modules moved to the base root under `[platform(..)] mod self;` fences, import paths unchanged; `std::web::ui` stays layered (twin structs are not built); the fence walk's twin stand-in rule; std's and dependencies' fence promises are not re-walked in a consumer's build (-6% on kolt); `vilan check` checks declared modules no leg admits"
+  },
+  {
+   "id": "E266",
+   "lane": "layout-48",
+   "commit": "9b4b201d",
+   "text": "`infer_platform` reads a std module's own `browser` declaration as browser evidence; the package/dependency half is E286"
+  },
+  {
+   "id": "B548",
+   "lane": "layout-48",
+   "commit": "9b4b201d",
+   "text": "RULED mechanism: a module the build excludes loads for its names and reports nothing from inside it (spec 11.3 as written); a call into it is one error at the caller"
+  },
+  {
+   "id": "B549",
+   "lane": "layout-48",
+   "commit": "9b4b201d",
+   "text": "closes with B548; the last error was a `resolve_world` miss drawn against std's lib.vl, now anchored in its own file (the other arms are B585)"
+  },
+  {
+   "id": "B556",
+   "lane": "layout-48",
+   "commit": "7754011a",
+   "text": "`find_project_root` climbs the real directories (through `..`) and keeps the user's spelling; a scratch file outside the working package is no longer claimed by it; `check --fix` uses the same walk"
+  },
+  {
+   "id": "N142",
+   "lane": "suite-48",
+   "commit": "c473c66f",
+   "text": "docs-47's patch applied: the seven analyzer.rs comments use the `[..] export` spelling (parsing.rs:531 is N160)"
+  },
+  {
+   "id": "N150",
+   "lane": "suite-48",
+   "commit": "db131ef9",
+   "text": "the `shared.vl keystroke` scenario's completion anchor no longer sits inside its own edit; `anchor_problems` applies each scenario's edit and refuses an anchor the edit destroys; pinned"
+  },
+  {
+   "id": "N148",
+   "lane": "suite-48",
+   "commit": "e7b65f0c",
+   "text": "`measure --subject` measures exactly what it names and refuses an unparseable subject before measuring"
+  },
+  {
+   "id": "N152",
+   "lane": "suite-48",
+   "commit": "078ffe25",
+   "text": "mawk 1.3.4-20200120 has no regex intervals (`/^-{3,}/` read literally); the cut's rule is `/^---+/`, byte-identical under three awks; the script states its floors and checks Python >= 3.11 before changing anything; two pins"
+  },
+  {
+   "id": "N147",
+   "lane": "suite-48",
+   "commit": "1544217b",
+   "text": "the premise was half wrong: the CLI held plain errors until after the loop, so noted errors printed first; `report_plain` renders each in place, the split-toolchain refusal leads; warnings after errors"
+  },
+  {
+   "id": "N151",
+   "lane": "suite-48",
+   "commit": "7eacd6c3",
+   "text": "MEASURED: inference is 36% of the suite's 13,000 CPU-s and 53.5% of a test's CPU is its std world; door (a) is impossible under nextest's one-process-per-test (N157); built door (b) a priority tier for the longest binaries and door (c) two internally parallel tests; CPU flat, wall ~3,700 -> ~3,000 s unverified under load; the real lever is N156 (ruled: a CI/seal profile at opt-level 1)"
+  },
+  {
+   "id": "M125",
+   "lane": "suite-48",
+   "commit": "7eacd6c3",
+   "text": "re-run with S4 on next: calibrate green (2.2-2.4% vs 8.2-8.9%, 6.5 points off the threshold); the generator is left alone until a seal shows drift again"
+  },
+  {
+   "id": "B566",
+   "lane": "solver-48",
+   "commit": "fcb35d7d",
+   "text": "the JS emitter keyed an inherited default's instance by (default, receiver) and bound only the trait's parameters; defaults bind their own generics positionally and key the instance on them, on both routes; native was already right"
+  },
+  {
+   "id": "B567",
+   "lane": "solver-48",
+   "commit": "b62f9aea",
+   "text": "`for x in self` in a bare-trait impl body takes the impl's own `OnConstraint(subject)` channel; a `Self` return of a parameterized bare-trait impl reads as the implicit binder (std's `it.iter()` was refused); the native half is F117"
+  },
+  {
+   "id": "B557",
+   "lane": "solver-48",
+   "commit": "8dea8123",
+   "text": "a tuple-bounded binder filters admission by shape (`tuple_bound_admits_shape`); the bound proof reads the binder's arity and element bound; `tuple_blanket_excludes` deleted"
+  },
+  {
+   "id": "B443",
+   "lane": "solver-48",
+   "commit": "c8945385",
+   "text": "tuples are `PartialEq`, `Hashable` and `Debug` when their elements are (solver-47's `compare.vl`/`hash.vl` blankets plus a `debug.vl` one); `tuple_member_name` indexed (the scan was +11% at plain:160, now +0.4%); native refuses at `TupleKeys` (F118)"
+  },
+  {
+   "id": "B562",
+   "lane": "solver-48",
+   "commit": "5fd34e11",
+   "text": "a method receiver at a `self` parameter is no longer a view value-read; both emitters already read a scalar view through"
+  },
+  {
+   "id": "B501",
+   "lane": "solver-48",
+   "commit": "0e44d8b9",
+   "text": "an argument call whose binding is foreign-open waits until directed or the fixpoint stalls; the outer call seeds each argument call's expectation (`seed_call_argument_expectations`) on the free, deferred and method paths; the ignored pin un-ignored and extended"
+  },
+  {
+   "id": "B563",
+   "lane": "solver-48",
+   "commit": "b35ead83",
+   "text": "conformance compares closure `context` clauses order-free at every closure position (`context_clauses_agree`); breaking, estate 0"
+  },
+  {
+   "id": "B558",
+   "lane": "solver-48",
+   "commit": "bf5ebd2b",
+   "text": "a bare `Cell::new(..)` in the declaring impl names the rigid binder in its message, and the steered `Cell<str>::new(..)` applies the written instantiation to the rigid binder (`written_rigid_path_bindings`); one NEW ledger row"
+  },
+  {
+   "id": "B559",
+   "lane": "solver-48",
+   "commit": "5bd14db9",
+   "text": "a written `Task<..>` assimilates its payload in the written-type drain; the native half is F120"
+  },
+  {
+   "id": "B564",
+   "lane": "solver-48",
+   "commit": "c7beefa2",
+   "text": "`compare_type`'s value-vs-trait arm admits Closure, Function, Tuple and Array (it admitted Struct/Enum only); the derive can call `store_diff` on closure fields"
+  },
+  {
+   "id": "B565",
+   "lane": "solver-48",
+   "commit": "e0f95323",
+   "text": "a `Type::Function` receiver takes the impl-member route; native refuses (F119)"
+  },
+  {
+   "id": "B545",
+   "lane": "solver-48",
+   "commit": "efa26374",
+   "text": "the view half: a one-slot leaf of a payload's tuple pattern under `match &mut`/`&` is a payload view on both backends; a sub-tuple or generic leaf keeps the whole-tuple steer; breaking (a one-slot leaf read as a value under `&place` needs `*`), estate 0"
+  },
+  {
+   "id": "M124",
+   "lane": "solver-48",
+   "commit": "bcfbbbf4",
+   "text": "the rule (spec/types.md 5.12): `dyn Tr<A>` provides `Tr` at `A`, each supertrait at the threaded arguments, anything else only through a blanket; the probe 4,357 -> 97 slots; no answer moved"
+  },
+  {
+   "id": "M123",
+   "lane": "solver-48",
+   "commit": "8bb76a9b",
+   "text": "measured first: `check_generic_bound_satisfaction` was 1.92 G of 17.56 G (10.95%) on kolt, mostly the provider table; a per-trait provider memo plus a tabling proof memo (a NO stored only when every cycle cut closed) -> 0.62 G of 16.35 G (3.77%); kolt check -11.5%"
+  }
+ ]
+}

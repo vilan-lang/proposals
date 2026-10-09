@@ -1,0 +1,8 @@
+import std::io::print;
+import std::web::style::prelude::auto;
+
+// B570 u04: `auto` is a std function name; a type named `auto` would collide.
+fun main() {
+	let a = auto();
+	print("built");
+}

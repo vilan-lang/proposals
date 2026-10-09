@@ -1,0 +1,12 @@
+import std::io::print;
+
+// B569 n11: the same spread function called with ONE tuple argument: spec
+// types.md §5.9 writes `log(1, "hi") == log((1, "hi"))`; the call collects the
+// tuple into a one-slot pack instead: "Expected (f64, f64), but got ((i32, i32))".
+fun draw(...at: (f64, f64)): f64 {
+	at.0 * 10 + at.1
+}
+
+fun main() {
+	print(draw((3, 4)));
+}

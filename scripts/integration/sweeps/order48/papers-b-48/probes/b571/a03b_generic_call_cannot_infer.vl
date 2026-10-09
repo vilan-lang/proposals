@@ -1,0 +1,11 @@
+import std::io::print;
+
+// B571 a03b: a generic call whose parameter nothing determines.
+fun make<T>(): List<T> {
+	[]
+}
+
+fun main() {
+	let xs = make();
+	print(xs.len());
+}

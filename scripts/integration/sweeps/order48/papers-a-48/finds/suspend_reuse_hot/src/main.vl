@@ -1,0 +1,8 @@
+import pkg::m::{ Point, stash };
+import pkg::v::leaf;
+
+fun main() {
+	mut point = Point { x = leaf(), y = 2 };
+	let seen = Point { x = 3, y = 4 };
+	stash(&mut point, &seen);
+}

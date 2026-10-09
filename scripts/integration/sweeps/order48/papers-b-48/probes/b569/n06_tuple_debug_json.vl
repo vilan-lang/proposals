@@ -1,0 +1,10 @@
+import std::io::print;
+import std::debug::dbg;
+import std::json::Json;
+
+// B569 n06: what a tuple prints as through dbg, and whether it serializes.
+fun main() {
+	let p: (f64, f64) = (5, 7);
+	dbg(p);
+	print(p.to_json());
+}

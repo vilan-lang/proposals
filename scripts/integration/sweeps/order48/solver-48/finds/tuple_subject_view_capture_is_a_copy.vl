@@ -1,0 +1,21 @@
+// FIND (solver-48, probing B545): under `match &mut pair` with a TUPLE subject
+// (not a variant payload), a `let` capture is a copy: a write to it is refused
+// with the old "declare it `mut`" steer (B528's trap), and following it —
+// `(mut a, let b) => a += 10` — compiles on JS and the write does not land
+// (prints 1); natively the emitted Rust is refused by rustc (a backend
+// defect). Payload-views.md door A covers variant payloads only; B545's view
+// half covers a payload's tuple pattern. Expected: 11 (the capture a view,
+// as under a payload), or a refusal of `mut` with the whole-tuple steer.
+import std::io::print;
+
+fun main() {
+	mut pair = (1, 2);
+	match &mut pair {
+		(mut a, let b) => {
+			a += 10;
+		},
+	}
+	print(pair.0);
+}
+
+main();

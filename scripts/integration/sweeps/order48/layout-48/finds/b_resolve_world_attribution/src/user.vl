@@ -1,0 +1,7 @@
+import std::option::Option;
+
+export fun call<T>(value: T): i32 {
+	let _ = T::missing();
+	let _ = Option::nothing_here();
+	1
+}

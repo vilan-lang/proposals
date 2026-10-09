@@ -1,0 +1,13 @@
+import std::io::print;
+
+// B571 a13: a comparison whose left side is a name and right a name, spaced,
+// next to a generic call: the expression grammar's own `<` reading today.
+fun main() {
+	let a = 1;
+	let b = 2;
+	let c = 3;
+	let t = a < b;
+	let u = (a < b, c > b);
+	print(t);
+	print(u.0);
+}

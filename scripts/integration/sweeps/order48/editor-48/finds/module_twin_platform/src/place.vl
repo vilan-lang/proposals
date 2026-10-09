@@ -1,0 +1,14 @@
+// A MODULE's platform-fenced twins are selected under the analyzer's DEFAULT
+// platform: `vilan build` of this browser package emits the @process twin
+// (`return "process"`) into the browser bundle. The same twins in the ENTRY
+// select correctly. Root cause: analyze_inner walks the loaded modules (and calls
+// select_platform_twins) before `analyzer.platform = platform` is assigned.
+[platform("browser")]
+export fun place(): str {
+	"browser"
+}
+
+[platform("@process")]
+export fun place(): str {
+	"process"
+}

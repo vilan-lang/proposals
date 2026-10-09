@@ -1,0 +1,7 @@
+import std::debug::dbg;
+
+// B569 n06b: dbg of a tuple, alone.
+fun main() {
+	let p: (f64, str) = (5, "a");
+	dbg(p);
+}

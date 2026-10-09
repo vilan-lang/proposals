@@ -1,0 +1,2 @@
+import pkg::c::{ flavor, read_it };
+fun main() { flavor.run(5, || { print(read_it()); }); }

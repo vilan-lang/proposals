@@ -1,0 +1,59 @@
+AS	vilan/std/src/rpc.vl:24	prev=Response next=HostResponse	::fetch::{  Header,  Response as HostResponse,  get,  post, 
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/rpc.vl:2719	prev==> next=,	held.holds.write() = held.holds.read() + 1
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/rpc.vl:5966	prev==> next=,	list = current
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/rpc.vl:5981	prev==> next=,	list[at] = value
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/rpc.vl:5997	prev==> next=,	list[at] = value
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/rpc.vl:5998	prev==> next=,	fault = first_fault(fault, "an Update named a key the mirror does not hold")
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/rpc.vl:6009	prev==> next=,	fault = first_fault(fault, "a Remove named a key the mirror does not hold")
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/reactive.vl:3700	prev==> next=,	advancing = false
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/reactive.vl:3723	prev==> next=,	walking = false
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/reactive/delta.vl:3620	prev==> next=,	held.write() = held.read() - 1
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/reactive/delta.vl:3621	prev==> next=,	held.write() = map.len()
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/reactive/delta.vl:3667	prev==> next=,	total.write() = total.read() + value
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/reactive/delta.vl:3671	prev==> next=,	total.write() = total.read() - value
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/reactive/delta.vl:3672	prev==> next=,	total.write() = total_of(zero, rows)
+AS	vilan/std/src/web/style/prelude.vl:95	prev=space next=scale_step	import pkg::web::style::space as scale_step;  scale_step(ste
+AS	vilan/std/src/web/style/prelude.vl:146	prev=var next=custom_property	  import pkg::web::style::var as custom_property;  custom_pr
+AS	vilan/std/src/web/style/prelude.vl:159	prev=piece next=value_piece	import pkg::web::style::piece as value_piece;  value_piece(v
+AS	vilan/std/src/web/style/prelude.vl:167	prev=style next=open_style	import pkg::web::style::style as open_style;  open_style() }
+AS	vilan/std/src/web/style/prelude.vl:187	prev=hover next=hover_condition	import pkg::web::style::hover as hover_condition;  hover_con
+AS	vilan/std/src/web/style/prelude.vl:192	prev=focus next=focus_condition	import pkg::web::style::focus as focus_condition;  focus_con
+AS	vilan/std/src/web/style/prelude.vl:197	prev=active next=active_condition	mport pkg::web::style::active as active_condition;  active_c
+AS	vilan/std/src/web/style/prelude.vl:202	prev=disabled next=disabled_condition	ort pkg::web::style::disabled as disabled_condition;  disabl
+AS	vilan/std/src/web/style/prelude.vl:207	prev=first next=first_condition	import pkg::web::style::first as first_condition;  first_con
+AS	vilan/std/src/web/style/prelude.vl:212	prev=last next=last_condition	 import pkg::web::style::last as last_condition;  last_condi
+AS	vilan/std/src/web/style/prelude.vl:219	prev=pseudo next=pseudo_condition	mport pkg::web::style::pseudo as pseudo_condition;  pseudo_c
+AS	vilan/std/src/web/style/prelude.vl:226	prev=element next=element_condition	port pkg::web::style::element as element_condition;  element
+AS	vilan/std/src/web/style/prelude.vl:233	prev=attribute next=attribute_condition	rt pkg::web::style::attribute as attribute_condition;  attri
+AS	vilan/std/src/web/style/prelude.vl:240	prev=within next=within_condition	mport pkg::web::style::within as within_condition;  within_c
+AS	vilan/std/src/web/style/prelude.vl:246	prev=children next=children_condition	ort pkg::web::style::children as children_condition;  childr
+AS	vilan/std/src/web/style/prelude.vl:252	prev=divide next=divide_condition	mport pkg::web::style::divide as divide_condition;  divide_c
+AS	vilan/std/src/web/style/prelude.vl:258	prev=media next=media_condition	import pkg::web::style::media as media_condition;  media_con
+AS	vilan/std/src/web/style/prelude.vl:263	prev=sm next=sm_condition	{  import pkg::web::style::sm as sm_condition;  sm_condition
+AS	vilan/std/src/web/style/prelude.vl:268	prev=md next=md_condition	{  import pkg::web::style::md as md_condition;  md_condition
+AS	vilan/std/src/web/style/prelude.vl:273	prev=lg next=lg_condition	{  import pkg::web::style::lg as lg_condition;  lg_condition
+AS	vilan/std/src/web/style/prelude.vl:278	prev=xl next=xl_condition	{  import pkg::web::style::xl as xl_condition;  xl_condition
+ASSIGN.match-arm-or-comprehension-body	vilan/std/src/process/web/document.vl:445	prev==> next=,	markup = markup + i"\t\t<link rel=\"stylesheet\" href=\"/{sidecar}\" />\n"
+TOTAL	files=73 parse_fail=0
+TOTAL	as-token	22
+TOTAL	assign.match-arm-or-comprehension-body	14
+TOTAL	assign.statement	1048
+TOTAL	fun.exported.omitted-value-tail	16
+TOTAL	fun.exported.omitted-void-tail	27
+TOTAL	fun.exported.written	258
+TOTAL	fun.method.omitted-value-tail	109
+TOTAL	fun.method.omitted-void-tail	236
+TOTAL	fun.method.written	1386
+TOTAL	fun.private.omitted-value-tail	57
+TOTAL	fun.private.omitted-void-tail	52
+TOTAL	fun.private.written	267
+TOTAL	let-destructure	63
+TOTAL	modlet.exported.inferred	1
+TOTAL	modlet.exported.written	14
+TOTAL	modlet.private.inferred	2
+TOTAL	modlet.private.written	29
+TOTAL	tuple-index-access	87
+TOTAL	tuple.arity1	119
+TOTAL	tuple.arity2	180
+TOTAL	tuple.arity3	2
+TOTAL	tuple.arity4	4

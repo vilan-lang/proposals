@@ -1,0 +1,25 @@
+// FIND (solver-48, building B567): natively, a member of a blanket whose
+// subject is a PARAMETERIZED bare trait (`impl Iterator<type T> with Again<T>`)
+// returning `Self` is refused "the `rust` backend does not emit a value of type
+// `a trait object` yet" at the member's name: the native emitter types the
+// instance's `Self` as the bare trait rather than the receiver. JS prints 2
+// (B567 made the call type as the receiver). The binder spelling
+// (`impl type I: Iterator<type T> with Again<T>`) runs on both.
+import std::io::print;
+import std::iterator::Iterator;
+
+trait Again<T> {
+	fun again(self): Self;
+}
+
+impl Iterator<type T> with Again<T> {
+	fun again(self): Self {
+		self
+	}
+}
+
+fun main() {
+	print([5, 6].iter().map(|x| x * 10).again().to_list().len());
+}
+
+main();

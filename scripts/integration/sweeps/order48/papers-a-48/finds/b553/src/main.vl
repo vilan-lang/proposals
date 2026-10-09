@@ -1,0 +1,11 @@
+import pkg::shapes::{ Foo, Greet };
+import pkg::user::use_it;
+import std::io::print;
+impl Foo with Greet {
+	fun greet(self): str {
+		"hi"
+	}
+}
+fun main() {
+	print(use_it());
+}

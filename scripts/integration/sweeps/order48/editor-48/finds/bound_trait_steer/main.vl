@@ -1,0 +1,11 @@
+// `vilan check main.vl`: the bound names an unimported std trait and is refused
+// "cannot find type 'Storable'" with NO import steer, where the same miss in an
+// annotation (`let x: StoreSome<i32>`) or a path (`Store::new`) gets
+// "; import it first (`import std::reactive::store::...;`)".
+fun keep<T: Storable>(value: T): T {
+	value
+}
+
+fun main() {
+	let s = Store::new(1);
+}

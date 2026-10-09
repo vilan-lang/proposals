@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B573",
+   "section": "B",
+   "title": "MISCOMPILE: a MODULE's platform-fenced twins are selected under the analyzer's DEFAULT platform, not the build's — a `target = \"browser\"` package whose module declares `[platform(\"browser\")]` and `[platform(\"@process\")]` twins ships the `@process` twin in its browser bundle (`return \"process\"`); the same twins in the ENTRY select correctly",
+   "kind": "miscompile (XS fix, S with pins)",
+   "discussion": "editor-48 (Order 48), met building E254; sweeps/order48/editor-48/finds/module_twin_platform/; `analyze_inner` in analyzer.rs (incr-48's driver this order); F27 R3",
+   "status": "OPEN — filed 2026-10-08 (editor-48's find, Order 48)",
+   "area": "Compiler",
+   "body": "Repro: `vilan build` in the find's package (browser target, entry `client.vl` calls `place()` from `src/place.vl`, which declares the two twins) emits `return \"process\";`; swap the twins' order and it still emits the process twin; move the twins into the entry and it emits `\"browser\"`. Two-entry packages (browser client + node server reaching one module) emit the process twin into BOTH bundles. ROOT CAUSE: `analyze_inner` walks the loaded modules — and calls `select_platform_twins` for each (analyzer.rs ~74938, `select_twins(items, text, self.platform)`) — before `analyzer.platform = platform` is assigned (~75715), so every module's twins are read against `Analyzer::new()`'s default platform (a process host). The entry's twins are selected after the assignment, which is why they are right. Verified: one line, `analyzer.platform = platform;` right after `Analyzer::new()` in `analyze_inner`, makes the browser bundle emit the browser twin and the server bundle the process twin (and makes editor-48's E254 pins pass). Not fixed here: `analyze_inner` is the pass driver incr-48 owns this order. Also check `analyze_over_world`/the hot-set world path for the same ordering. Pins owed: a module's twins on both legs through `native_differential`-style build of each entry, and the LSP view of a twin module (E254's held patch carries `e254_a_twin_file_is_served_from_the_world_that_admits_each_twin`). E254 is blocked on this."
+  },
+  {
+   "id": "B574",
+   "section": "B",
+   "title": "a generic BOUND naming an unimported trait gets no import steer — `fun keep<T: Storable>(..)` is refused bare \"cannot find type 'Storable'\", where the same miss in an annotation or a path says \"; import it first (`import std::reactive::store::Storable;`)\"",
+   "kind": "diagnostics (missing steer; XS)",
+   "discussion": "editor-48 (Order 48), met pinning B572; sweeps/order48/editor-48/finds/bound_trait_steer/main.vl; the B4 import steer (`import_steer`)",
+   "status": "OPEN — filed 2026-10-08 (editor-48's find, Order 48)",
+   "area": "Compiler",
+   "body": "`vilan check main.vl` on the find: the bound `T: Storable` is refused \"cannot find type 'Storable'\" with no steer, and the `Store::new(1)` below it gets \"cannot find type 'Store'; import it first (`import std::reactive::store::Store;`)\". The bound's miss is raised outside the type-position site that calls `import_steer` (analyzer.rs ~60401, `format!(\"cannot find type '{}'{}\", name, steer)`), so it never asks. Fix: route the bound's miss through `import_steer` (and the add-import quick fix follows, since it keys on `cannot find`). Sizing XS; analyzer.rs (not editor-48's this order)."
+  },
+  {
+   "id": "E280",
+   "section": "E",
+   "title": "a file OPENED into a world another document already holds is served at once (M104's `serve_from_held_world`) but its FURTHER worlds are never analyzed — a module both a browser and a node entry reach shows only the browser leg's verdict until the next edit, where opened the other way round the open's sweep analyzes the node world",
+   "kind": "LSP correctness (S)",
+   "discussion": "editor-48 (Order 48), met building E254 (the probe's kept-world map stayed empty); sweeps/order48/editor-48/finds/held_world_further/; `did_open` in vilan-lsp main.rs (LSP scheduling, incr-48's this order)",
+   "status": "OPEN — filed 2026-10-08 (editor-48's find, Order 48)",
+   "area": "LSP & tooling",
+   "body": "`did_open`: when `serve_from_held_world` serves the opened file it refreshes and RETURNS, skipping the branch below it that runs `reanalyze_dependents` when a landed document has `further_worlds` — the branch that analyzes a further world that should exist and does not (M104's own comment). So with `client.vl` open and settled, opening `shared.vl` (reached by the client and the server entries) leaves the server world unanalyzed: no node-leg diagnostics on the file (E113) and, with E254's held patch, no twin legs. Opening `shared.vl` first, then `client.vl`, analyzes it. Fix: after a held-world serve, schedule the sweep for the served document's further worlds that no kept world or open entry holds. Observed in an LSP test (`server.worlds` empty, the document's `further_worlds()` = the server entry); not built — LSP scheduling is incr-48's this order."
+  }
+ ]
+}

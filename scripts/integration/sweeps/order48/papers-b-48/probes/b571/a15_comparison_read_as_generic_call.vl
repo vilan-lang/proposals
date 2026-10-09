@@ -1,0 +1,14 @@
+import std::io::print;
+
+// B571 a15: `a < b > (c)` over bools is a legal chain of comparisons
+// (`(a < b) > c`), but the expression grammar reads `a<b>(c)` as a generic
+// call whatever the spacing. The parenthesized control checks.
+fun main() {
+	let a = 1;
+	let b = 2;
+	let c = false;
+	let control = (a < b) > (c);
+	print(control);
+	let z = a < b > (c);
+	print(z);
+}
