@@ -1,0 +1,139 @@
+{
+ "order": 50,
+ "base": "5fe24f86 (the v0.47.0 fold; next = main)",
+ "drafted": "2026-10-10",
+ "go": "2026-10-10 (the owner: 'Draft order 50' then 'Continue'; the asks R-a..R-j proceed on their recommendations)",
+ "asks": [
+  "R-a core-alone + checkpoints C1 (S3) / C2 (S6) / C3 (M134)",
+  "R-b S6's scope; S7 Order 51",
+  "R-c B579 float scope breaking",
+  "R-d B599 fill-from-use",
+  "R-e F122 boxing",
+  "R-f std-prefix paper",
+  "R-g E292's gate (CPU + instructions, true greens only)",
+  "R-h cut v0.48.0",
+  "R-i A153 S5 as a patch",
+  "R-j L24 when registered"
+ ],
+ "models": {
+  "incr-50": "fable",
+  "store-50": "opus",
+  "native-50": "opus",
+  "tools-50": "sonnet",
+  "papers-50": "opus",
+  "solver-50": "opus",
+  "lang-50": "opus",
+  "debug-50": "sonnet"
+ },
+ "lanes": {
+  "incr-50": [
+   "M110",
+   "M127",
+   "M134",
+   "E292"
+  ],
+  "store-50": [
+   "A153",
+   "A168",
+   "A169",
+   "A149"
+  ],
+  "native-50": [
+   "F122",
+   "F123",
+   "F125",
+   "F126",
+   "F127",
+   "F128",
+   "F124"
+  ],
+  "tools-50": [
+   "N164",
+   "N165",
+   "N163",
+   "N162",
+   "B594"
+  ],
+  "papers-50": [
+   "M120",
+   "M36",
+   "N157"
+  ],
+  "solver-50": [
+   "B596",
+   "B599",
+   "B579",
+   "B598",
+   "B600",
+   "B601",
+   "B592",
+   "B593",
+   "B595",
+   "M133",
+   "E287",
+   "E289",
+   "E290"
+  ],
+  "lang-50": [
+   "I2",
+   "A163",
+   "A161",
+   "A166",
+   "D15",
+   "E291",
+   "A170"
+  ],
+  "debug-50": [
+   "E293",
+   "E257",
+   "E283-closed: the array half rides lang-50 S5 (Debug over [T; n])"
+  ]
+ },
+ "waves": {
+  "1": [
+   "incr-50",
+   "store-50",
+   "native-50",
+   "tools-50",
+   "papers-50"
+  ],
+  "2 (at C1)": [
+   "solver-50"
+  ],
+  "2 (at C2)": [
+   "lang-50",
+   "debug-50"
+  ]
+ },
+ "checkpoints": {
+  "C1": "M110 S3 by mutation log (+ M127)",
+  "C2": "S6 windowed ids (R-b)",
+  "C3": "M134's anchors (if time)"
+ },
+ "merge_order": [
+  "tools-50",
+  "papers-50 (proposals)",
+  "native-50",
+  "store-50",
+  "incr-50 C1",
+  "solver-50 (rebased onto C2/C3)",
+  "incr-50 C2",
+  "incr-50 C3",
+  "debug-50",
+  "lang-50 (rebased last)"
+ ],
+ "cut": {
+  "version": "v0.48.0",
+  "breaking_expected": [
+   "B579 float scope"
+  ],
+  "kolt_patch": [
+   "A153 S5 the mirror exhibit (store-50, R-i)"
+  ]
+ },
+ "integrator": [
+  "L24 routing when vilan-windows is online",
+  "the seal's base copy committed inside a scratch clone of kolt",
+  "E293 filed at GO"
+ ]
+}

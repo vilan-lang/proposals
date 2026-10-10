@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "E293",
+   "section": "E",
+   "kind": "debugging (S) \u2014 debugging.md's residue",
+   "area": "LSP & tooling",
+   "status": "OPEN \u2014 filed 2026-10-10 (debug-49's question at the Order 49 sweep, rec accepted; Order 50)",
+   "title": "a BARE closure under `print` still goes to `console.log` on JS and is refused natively (F25's function half), while a closure INSIDE an aggregate prints its written type on both backends since S3 \u2014 `print(\\|x: i32\\| x + 1)` should print `<closure \\|i32\\| i32>` on both",
+   "discussion": "debug-49 (Order 49: S3 `print` of non-scalars; its owner question 3, rec: a follow-up that prints the closure's type on both and retires F25's function half); F25; E257 (the debugging arc)",
+   "body": "S3 routes aggregates through the dbg printer, which already spells a closure field as `<closure |i32| i32>`; a closure as the WHOLE argument is the one shape left on the host path. Door: the analyzer records the argument's closure type for `print` as it does for dbg's per-type printers, and both emitters print the spelling; natively the refusal by name retires. Pins: both backends byte-identical; the host/opaque values keep console.log. Sizing S; debug lane."
+  }
+ ]
+}
