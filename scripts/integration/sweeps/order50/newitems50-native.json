@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "F129",
+   "section": "F",
+   "kind": "miscompile (native; S–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-10 (native-50's find, Order 50)",
+   "discussion": "native-50 (Order 50); sweeps/order50/native-50/finds/shared_view_argument_copied_before_a_writing_argument.vl",
+   "title": "Natively an argument read through a `Shared` view is copied out of the cell when it is evaluated, so a LATER argument that writes the cell is not seen by the callee — `has(cell.read().items, grow(cell))` and `cell.read().probes.contains(mark(cell))` (a user-hashed key) print `false` natively and `true` on JS, silently",
+   "body": "The JS backend evaluates the receiver/argument to a reference, then the later argument writes through the same cell, then the callee reads the written value. Natively the `read_with(|view| view.items.clone())` copy is taken in argument order, before the writing argument runs. F123 fixed the shape for std's keyed lookups over a std-hashed key (the receiver is a view of the cell borrowed AFTER the key is evaluated, as F114's intrinsics); every other call keeps the early copy. Fix: in the call emission, when an argument reads through a `Shared` view (or a boxed binding) and a later argument may run code, settle the later arguments first (they are hoisted already when `borrows_a_cell`) and take the copy last — the order spec §6.9's native note states for views. Expected on both: `true`, `true`. Sizing S–M; vilan-rust's call seam."
+  },
+  {
+   "id": "B604",
+   "section": "B",
+   "kind": "bug (checker; S)",
+   "area": "Type inference",
+   "status": "OPEN — filed 2026-10-10 (native-50's find, Order 50)",
+   "discussion": "native-50 (Order 50); sweeps/order50/native-50/finds/closure_parameter_over_a_map_result_unchecked.vl",
+   "title": "A closure parameter over the result of a `.map` is not checked against its uses — `let words = [\"a\", \"bb\"].map(\\|word\\| word.len()); words.filter(\\|length\\| { let probe: str = length; .. })` checks clean (JS runs it; rustc refuses E0308 natively), while an annotated `let words: List<usize>` refuses the `let` \"Expected str, but got usize\"",
+   "body": "Found while pinning F128: the probe `let probe: str = length` inside `.map(..).filter(|length| ..)` was accepted, so the closure parameter's type is still open when the body is checked and nothing re-checks it once `map`'s `U` settles. The native backend renders the settled `usize` and rustc refuses the program (\"a BACKEND defect\" by the CLI's sentence) — the checker owes the error. Expected on both: `Expected str, but got usize instead.` at the `let`. Sizing S; the solver (re-check of a closure body after its parameter settles, or fill-from-use B599)."
+  }
+ ]
+}

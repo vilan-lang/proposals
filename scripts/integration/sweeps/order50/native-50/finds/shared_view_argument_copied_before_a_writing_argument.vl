@@ -1,0 +1,45 @@
+// native-50 find (Order 50, next @5fe24f86): an argument read through a `Shared`
+// view is COPIED out of the cell when it is evaluated, so a later argument that
+// writes the cell is not seen by the callee natively, while JS (whose receiver is a
+// reference) sees it. JS: true, true. Native: false, false. F123 fixed the shape for
+// std's keyed lookups over a std-hashed key only (a view taken after the arguments).
+import std::hash::Hash;
+import std::hash::Hashable;
+import std::hash_set::HashSet;
+import std::io::print;
+import std::shared::Shared;
+
+struct Probe {
+	tag: i32,
+}
+
+impl Probe with Hashable {
+	fun hash(self): Hash {
+		self.tag.hash()
+	}
+}
+
+struct Bag {
+	probes: HashSet<Probe>,
+	items: List<i32>,
+}
+
+fun mark(cell: Shared<Bag>): Probe {
+	cell.write().probes.insert(Probe { tag = 5 });
+	Probe { tag = 5 }
+}
+
+fun grow(cell: Shared<Bag>): i32 {
+	cell.write().items.push(9);
+	9
+}
+
+fun has(items: List<i32>, value: i32): bool {
+	items.contains(value)
+}
+
+fun main() {
+	let cell = Shared::new(Bag { probes = HashSet::new(), items = [] });
+	print(cell.read().probes.contains(mark(cell)));
+	print(has(cell.read().items, grow(cell)));
+}

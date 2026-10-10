@@ -1,0 +1,14 @@
+// native-50 find (Order 50, next @5fe24f86): a closure parameter over the result of
+// a `.map` is not checked against its uses — `let probe: str = length` where
+// `length: usize` checks clean (`words: List<usize>`), JS prints 0, natively rustc
+// refuses E0308 ("expected `usize`, found `Rc<str>`"). With `let words: List<usize>`
+// annotated, the same `let` is refused "Expected str, but got usize".
+import std::io::print;
+
+fun main() {
+	let words = ["a", "bb"].map(|word| word.len());
+	print(words.filter(|length| {
+		let probe: str = length;
+		probe == "x"
+	}).len());
+}
