@@ -1,0 +1,8 @@
+// F?2: natively, a large fixed array lives on the stack: `[0; 4000000]` (16 MB) is
+// `std::array::from_fn::<_, 4000000, _>(..)` and the program aborts
+// "thread 'main' has overflowed its stack". JS prints 7.
+fun main() {
+	mut big = [0; 4000000];
+	big[3999999] = 7;
+	print(big[3999999]);
+}

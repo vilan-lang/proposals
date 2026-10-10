@@ -1,0 +1,706 @@
+vilan 0.46.0 (92c621848)
+=================== p01_b582_element_binder.vl
+--- js:
+Error: cannot find type 'T'
+   ╭─[ p01_b582_element_binder.vl:5:12 ]
+   │
+ 5 │ impl [type T; 3] with Count {
+   │            ┬  
+   │            ╰── cannot find type 'T'
+───╯
+--- native:
+Error: cannot find type 'T'
+   ╭─[ p01_b582_element_binder.vl:5:12 ]
+   │
+ 5 │ impl [type T; 3] with Count {
+   │            ┬  
+   │            ╰── cannot find type 'T'
+───╯
+=================== p02_concrete_array_impl.vl
+--- js:
+6
+--- native:
+6
+=================== p03_wildcard_length.vl
+--- js:
+Error: found '[' expected a type
+   ╭─[ p03_wildcard_length.vl:5:6 ]
+   │
+ 5 │ impl [i32; _] with Count {
+   │      ┬  
+   │      ╰── found '[' expected a type
+───╯
+--- native:
+Error: found '[' expected a type
+   ╭─[ p03_wildcard_length.vl:5:6 ]
+   │
+ 5 │ impl [i32; _] with Count {
+   │      ┬  
+   │      ╰── found '[' expected a type
+───╯
+=================== p04_named_length_let.vl
+--- js:
+Error: found '[' expected a type in type annotation
+   ╭─[ p04_named_length_let.vl:4:9 ]
+   │
+ 4 │     let a: [u8; SIZE] = [0u8; 4];
+   │            ┬  
+   │            ╰── found '[' expected a type in type annotation
+───╯
+--- native:
+Error: found '[' expected a type in type annotation
+   ╭─[ p04_named_length_let.vl:4:9 ]
+   │
+ 4 │     let a: [u8; SIZE] = [0u8; 4];
+   │            ┬  
+   │            ╰── found '[' expected a type in type annotation
+───╯
+=================== p05_named_length_const_let.vl
+--- js:
+Error: an array length must be a non-negative integer literal (a `const` length is not supported yet)
+   ╭─[ p05_named_length_const_let.vl:4:16 ]
+   │
+ 4 │     let a = [0u8; SIZE];
+   │                   ──┬─  
+   │                     ╰─── an array length must be a non-negative integer literal (a `const` length is not supported yet)
+───╯
+Error: index 0 is out of range for an array of length 0 (valid indices are 0 to 0)
+   ╭─[ p05_named_length_const_let.vl:5:8 ]
+   │
+ 5 │     print(a[0]);
+   │           ──┬─  
+   │             ╰─── index 0 is out of range for an array of length 0 (valid indices are 0 to 0)
+───╯
+--- native:
+Error: an array length must be a non-negative integer literal (a `const` length is not supported yet)
+   ╭─[ p05_named_length_const_let.vl:4:16 ]
+   │
+ 4 │     let a = [0u8; SIZE];
+   │                   ──┬─  
+   │                     ╰─── an array length must be a non-negative integer literal (a `const` length is not supported yet)
+───╯
+Error: index 0 is out of range for an array of length 0 (valid indices are 0 to 0)
+   ╭─[ p05_named_length_const_let.vl:5:8 ]
+   │
+ 5 │     print(a[0]);
+   │           ──┬─  
+   │             ╰─── index 0 is out of range for an array of length 0 (valid indices are 0 to 0)
+───╯
+=================== p06_generic_element_fun.vl
+--- js:
+7
+x
+--- native:
+7
+x
+=================== p07_const_generic.vl
+--- js:
+Error: found '[' expected a type in parameter type
+   ╭─[ p07_const_generic.vl:1:28 ]
+   │
+ 1 │ fun total<const N>(values: [i32; N]): i32 {
+   │                            ┬  
+   │                            ╰── found '[' expected a type in parameter type
+───╯
+Error: expected `;` to end this statement
+   ╭─[ p07_const_generic.vl:1:36 ]
+   │
+ 1 │ fun total<const N>(values: [i32; N]): i32 {
+   │                                    ┬  
+   │                                    ╰── expected `;` to end this statement
+───╯
+--- native:
+Error: found '[' expected a type in parameter type
+   ╭─[ p07_const_generic.vl:1:28 ]
+   │
+ 1 │ fun total<const N>(values: [i32; N]): i32 {
+   │                            ┬  
+   │                            ╰── found '[' expected a type in parameter type
+───╯
+Error: expected `;` to end this statement
+   ╭─[ p07_const_generic.vl:1:36 ]
+   │
+ 1 │ fun total<const N>(values: [i32; N]): i32 {
+   │                                    ┬  
+   │                                    ╰── expected `;` to end this statement
+───╯
+=================== p08_push_many_array.vl
+--- js:
+Error: '[i32; 3]' does not implement trait 'Items<i32>', required by a generic bound of this call
+    ╭─[ p08_push_many_array.vl:6:2 ]
+    │
+  6 │     xs.push_many(a);
+    │     ───────┬───────  
+    │            ╰───────── '[i32; 3]' does not implement trait 'Items<i32>', required by a generic bound of this call
+    │
+    ├─[ /home/reed/.vilan/std-cache/d23e3c2f196ceadd/std/src/list.vl:38:16 ]
+    │
+ 38 │     fun push_many<S: Items<T>>(&mut self, own items: S) {
+    │                   ┬  
+    │                   ╰── the bound is declared here
+────╯
+--- native:
+Error: '[i32; 3]' does not implement trait 'Items<i32>', required by a generic bound of this call
+    ╭─[ p08_push_many_array.vl:6:2 ]
+    │
+  6 │     xs.push_many(a);
+    │     ───────┬───────  
+    │            ╰───────── '[i32; 3]' does not implement trait 'Items<i32>', required by a generic bound of this call
+    │
+    ├─[ /home/reed/.vilan/std-cache/d23e3c2f196ceadd/std/src/list.vl:38:16 ]
+    │
+ 38 │     fun push_many<S: Items<T>>(&mut self, own items: S) {
+    │                   ┬  
+    │                   ╰── the bound is declared here
+────╯
+=================== p09_array_iter.vl
+--- js:
+Error: [i32; 3] has no method 'iter'
+   ╭─[ p09_array_iter.vl:8:13 ]
+   │
+ 8 │     let it = a.iter();
+   │                ──┬─  
+   │                  ╰─── [i32; 3] has no method 'iter'
+───╯
+--- native:
+Error: [i32; 3] has no method 'iter'
+   ╭─[ p09_array_iter.vl:8:13 ]
+   │
+ 8 │     let it = a.iter();
+   │                ──┬─  
+   │                  ╰─── [i32; 3] has no method 'iter'
+───╯
+=================== p10b_len_i32.vl
+--- js:
+3
+--- native:
+3
+=================== p10_len_type.vl
+--- js:
+Error: Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+   ╭─[ p10_len_type.vl:5:17 ]
+   │
+ 5 │     let m: usize = a.len();
+   │                    ───┬───  
+   │                       ╰───── Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+───╯
+--- native:
+Error: Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+   ╭─[ p10_len_type.vl:5:17 ]
+   │
+ 5 │     let m: usize = a.len();
+   │                    ───┬───  
+   │                       ╰───── Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+───╯
+=================== p11b_array_to_list.vl
+--- js:
+Error: Expected List<i32>, but got [i32; 3] instead.
+   ╭─[ p11b_array_to_list.vl:3:22 ]
+   │
+ 3 │     let xs: List<i32> = a;
+   │                         ┬  
+   │                         ╰── Expected List<i32>, but got [i32; 3] instead.
+───╯
+--- native:
+Error: Expected List<i32>, but got [i32; 3] instead.
+   ╭─[ p11b_array_to_list.vl:3:22 ]
+   │
+ 3 │     let xs: List<i32> = a;
+   │                         ┬  
+   │                         ╰── Expected List<i32>, but got [i32; 3] instead.
+───╯
+=================== p11_list_to_array.vl
+--- js:
+Error: Expected [i32; 3], but got List<i32> instead.
+   ╭─[ p11_list_to_array.vl:3:20 ]
+   │
+ 3 │     let a: [i32; 3] = xs;
+   │                       ─┬  
+   │                        ╰── Expected [i32; 3], but got List<i32> instead.
+───╯
+--- native:
+Error: Expected [i32; 3], but got List<i32> instead.
+   ╭─[ p11_list_to_array.vl:3:20 ]
+   │
+ 3 │     let a: [i32; 3] = xs;
+   │                       ─┬  
+   │                        ╰── Expected [i32; 3], but got List<i32> instead.
+───╯
+=================== p12_range_syntax.vl
+--- js:
+Error: expected a field or method name after `.`
+   ╭─[ p12_range_syntax.vl:3:18 ]
+   │
+ 3 │     let middle = a[1..3];
+   │                     ┬  
+   │                     ╰── expected a field or method name after `.`
+───╯
+Error: i32 has no method 'len'
+   ╭─[ p12_range_syntax.vl:4:15 ]
+   │
+ 4 │     print(middle.len());
+   │                  ─┬─  
+   │                   ╰─── i32 has no method 'len'
+───╯
+--- native:
+Error: expected a field or method name after `.`
+   ╭─[ p12_range_syntax.vl:3:18 ]
+   │
+ 3 │     let middle = a[1..3];
+   │                     ┬  
+   │                     ╰── expected a field or method name after `.`
+───╯
+Error: i32 has no method 'len'
+   ╭─[ p12_range_syntax.vl:4:15 ]
+   │
+ 4 │     print(middle.len());
+   │                  ─┬─  
+   │                   ╰─── i32 has no method 'len'
+───╯
+=================== p13_f109_native_literal.vl
+--- js:
+1
+--- native:
+1
+=================== p14_repeat_native.vl
+--- js:
+0
+4
+--- native:
+0
+4
+=================== p15_generic_any_length_param.vl
+--- js:
+3
+4
+--- native:
+3
+4
+=================== p16_b582_nested.vl
+--- js:
+Error: cannot find type 'T'
+   ╭─[ p16_b582_nested.vl:5:19 ]
+   │
+ 5 │ impl Option<[type T; 2]> with Count {
+   │                   ┬  
+   │                   ╰── cannot find type 'T'
+───╯
+--- native:
+Error: cannot find type 'T'
+   ╭─[ p16_b582_nested.vl:5:19 ]
+   │
+ 5 │ impl Option<[type T; 2]> with Count {
+   │                   ┬  
+   │                   ╰── cannot find type 'T'
+───╯
+=================== p17_length_mismatch.vl
+--- js:
+Error: Expected [T; 3], but got [i32; 4] instead.
+   ╭─[ p17_length_mismatch.vl:7:14 ]
+   │
+ 7 │     print(first(b));
+   │                 ┬  
+   │                 ╰── Expected [T; 3], but got [i32; 4] instead.
+───╯
+--- native:
+Error: Expected [T; 3], but got [i32; 4] instead.
+   ╭─[ p17_length_mismatch.vl:7:14 ]
+   │
+ 7 │     print(first(b));
+   │                 ┬  
+   │                 ╰── Expected [T; 3], but got [i32; 4] instead.
+───╯
+=================== p18b_length_fraction.vl
+--- js:
+Error: an array length must be a non-negative integer literal (a `const` length is not supported yet)
+   ╭─[ p18b_length_fraction.vl:2:15 ]
+   │
+ 2 │     let a: [i32; 3.0] = [1, 2, 3];
+   │                  ─┬─  
+   │                   ╰─── an array length must be a non-negative integer literal (a `const` length is not supported yet)
+───╯
+Error: this array literal has 3 elements, but its type is `[_; 0]`
+   ╭─[ p18b_length_fraction.vl:2:22 ]
+   │
+ 2 │     let a: [i32; 3.0] = [1, 2, 3];
+   │                         ────┬────  
+   │                             ╰────── this array literal has 3 elements, but its type is `[_; 0]`
+───╯
+--- native:
+Error: an array length must be a non-negative integer literal (a `const` length is not supported yet)
+   ╭─[ p18b_length_fraction.vl:2:15 ]
+   │
+ 2 │     let a: [i32; 3.0] = [1, 2, 3];
+   │                  ─┬─  
+   │                   ╰─── an array length must be a non-negative integer literal (a `const` length is not supported yet)
+───╯
+Error: this array literal has 3 elements, but its type is `[_; 0]`
+   ╭─[ p18b_length_fraction.vl:2:22 ]
+   │
+ 2 │     let a: [i32; 3.0] = [1, 2, 3];
+   │                         ────┬────  
+   │                             ╰────── this array literal has 3 elements, but its type is `[_; 0]`
+───╯
+=================== p18_length_suffix.vl
+--- js:
+3
+--- native:
+3
+=================== p19_equality.vl
+--- js:
+Error: type '[i32; 3]' does not implement the `PartialEq` operator; add `impl [i32; 3] with PartialEq` providing `eq`
+   ╭─[ p19_equality.vl:4:8 ]
+   │
+ 4 │     print(a == b);
+   │           ───┬──  
+   │              ╰──── type '[i32; 3]' does not implement the `PartialEq` operator; add `impl [i32; 3] with PartialEq` providing `eq`
+───╯
+--- native:
+Error: type '[i32; 3]' does not implement the `PartialEq` operator; add `impl [i32; 3] with PartialEq` providing `eq`
+   ╭─[ p19_equality.vl:4:8 ]
+   │
+ 4 │     print(a == b);
+   │           ───┬──  
+   │              ╰──── type '[i32; 3]' does not implement the `PartialEq` operator; add `impl [i32; 3] with PartialEq` providing `eq`
+───╯
+=================== p20_two_concrete_impls.vl
+--- js:
+3
+6
+--- native:
+3
+6
+=================== p21_generic_mono_two_lengths.vl
+--- js:
+3
+6
+--- native:
+3
+6
+=================== p22_struct_field_and_dbg.vl
+--- js:
+255
+[p22_struct_field_and_dbg.vl:8:2] p.rgba = [255, 0, 0, 255]
+--- native:
+error[E0277]: the trait bound `[u8; 4]: Js` is not satisfied
+  --> src/main.rs:14:30
+   |
+14 |         vilan_rt::js_items(&[&self.rgba as &dyn vilan_rt::Js])
+   |                              ^^^^^^^^^^ the trait `Js` is not implemented for `[u8; 4]`
+   |
+   = help: the following other types implement trait `Js`:
+             &T
+             ()
+             (A, B)
+             (A, B, C)
+             (A, B, C, D)
+             (A, B, C, D, E)
+             (A, B, C, D, E, F)
+             (A,)
+           and 43 others
+   = note: required for the cast from `&[u8; 4]` to `&dyn Js`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `p22_struct_field_and_dbg` (bin "p22_struct_field_and_dbg") due to 1 previous error
+error: `cargo build` refused the emitted Rust. That is a BACKEND defect, not a defect in the vilan program — please report it with the program and `dist/native/*/src/main.rs`.
+=================== p23_list_of_arrays.vl
+--- js:
+3
+--- native:
+3
+=================== p24_type_binder_length_position.vl
+--- js:
+Error: found '[' expected a type
+   ╭─[ p24_type_binder_length_position.vl:5:6 ]
+   │
+ 5 │ impl [i32; type N] with Count {
+   │      ┬  
+   │      ╰── found '[' expected a type
+───╯
+--- native:
+Error: found '[' expected a type
+   ╭─[ p24_type_binder_length_position.vl:5:6 ]
+   │
+ 5 │ impl [i32; type N] with Count {
+   │      ┬  
+   │      ╰── found '[' expected a type
+───╯
+=================== p25_index_oob_literal.vl
+--- js:
+Error: index 3 is out of range for an array of length 3 (valid indices are 0 to 2)
+   ╭─[ p25_index_oob_literal.vl:3:8 ]
+   │
+ 3 │     print(a[3]);
+   │           ──┬─  
+   │             ╰─── index 3 is out of range for an array of length 3 (valid indices are 0 to 2)
+───╯
+--- native:
+Error: index 3 is out of range for an array of length 3 (valid indices are 0 to 2)
+   ╭─[ p25_index_oob_literal.vl:3:8 ]
+   │
+ 3 │     print(a[3]);
+   │           ──┬─  
+   │             ╰─── index 3 is out of range for an array of length 3 (valid indices are 0 to 2)
+───╯
+=================== p26_generic_element_fun_native.vl
+--- js:
+0
+--- native:
+0
+=================== p27_return_array_native.vl
+--- js:
+5
+9
+--- native:
+5
+9
+=================== p28_length_zero.vl
+--- js:
+0
+--- native:
+0
+=================== p29_shadow_len_method.vl
+--- js:
+Error: Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+   ╭─[ p29_shadow_len_method.vl:7:3 ]
+   │
+ 7 │        self.len()
+   │        ─────┬────  
+   │             ╰────── Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+───╯
+--- native:
+Error: Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+   ╭─[ p29_shadow_len_method.vl:7:3 ]
+   │
+ 7 │        self.len()
+   │        ─────┬────  
+   │             ╰────── Expected usize (an index: a position, a length or a count), but got i32 instead. There are no implicit numeric conversions; convert with `.as_usize()`
+───╯
+=================== p30_struct_array_field_native.vl
+--- js:
+255
+--- native:
+error[E0277]: the trait bound `[u8; 4]: Js` is not satisfied
+  --> src/main.rs:14:30
+   |
+14 |         vilan_rt::js_items(&[&self.rgba as &dyn vilan_rt::Js])
+   |                              ^^^^^^^^^^ the trait `Js` is not implemented for `[u8; 4]`
+   |
+   = help: the following other types implement trait `Js`:
+             &T
+             ()
+             (A, B)
+             (A, B, C)
+             (A, B, C, D)
+             (A, B, C, D, E)
+             (A, B, C, D, E, F)
+             (A,)
+           and 43 others
+   = note: required for the cast from `&[u8; 4]` to `&dyn Js`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `p30_struct_array_field_native` (bin "p30_struct_array_field_native") due to 1 previous error
+error: `cargo build` refused the emitted Rust. That is a BACKEND defect, not a defect in the vilan program — please report it with the program and `dist/native/*/src/main.rs`.
+=================== p31_dbg_array_native.vl
+--- js:
+[p31_dbg_array_native.vl:3:2] fixed = [1, 2, 3]
+--- native:
+[p31_dbg_array_native.vl:3:2] fixed = [1, 2, 3]
+=================== p32_len_as_index.vl
+--- js:
+3
+--- native:
+error[E0308]: mismatched types
+  --> src/main.rs:11:62
+   |
+11 |     vilan_rt::print(&((*(a_9876).vilan_at((((a_9876).len() - (1i32))) as usize, vilan_rt::Location("p32_len_as_index.vl:3:8")))));
+   |                                                              ^^^^^^ expected `usize`, found `i32`
+
+error[E0277]: cannot subtract `i32` from `usize`
+  --> src/main.rs:11:60
+   |
+11 |     vilan_rt::print(&((*(a_9876).vilan_at((((a_9876).len() - (1i32))) as usize, vilan_rt::Location("p32_len_as_index.vl:3:8")))));
+   |                                                            ^ no implementation for `usize - i32`
+   |
+   = help: the trait `Sub<i32>` is not implemented for `usize`
+   = help: the following other types implement trait `Sub<Rhs>`:
+             `&usize` implements `Sub<usize>`
+             `&usize` implements `Sub`
+             `usize` implements `Sub<&usize>`
+             `usize` implements `Sub`
+
+Some errors have detailed explanations: E0277, E0308.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `p32_len_as_index` (bin "p32_len_as_index") due to 2 previous errors
+error: `cargo build` refused the emitted Rust. That is a BACKEND defect, not a defect in the vilan program — please report it with the program and `dist/native/*/src/main.rs`.
+=================== p33_len_as_index_list.vl
+--- js:
+3
+--- native:
+3
+=================== p34_derive_eq_array_field.vl
+--- js:
+Error: in code generated by this attribute: type '[u8; 4]' does not implement the `PartialEq` operator; add `impl [u8; 4] with PartialEq` providing `eq`
+   ╭─[ p34_derive_eq_array_field.vl:3:9 ]
+   │
+ 3 │ [derive(PartialEq)]
+   │         ────┬────  
+   │             ╰────── in code generated by this attribute: type '[u8; 4]' does not implement the `PartialEq` operator; add `impl [u8; 4] with PartialEq` providing `eq`
+───╯
+--- native:
+Error: in code generated by this attribute: type '[u8; 4]' does not implement the `PartialEq` operator; add `impl [u8; 4] with PartialEq` providing `eq`
+   ╭─[ p34_derive_eq_array_field.vl:3:9 ]
+   │
+ 3 │ [derive(PartialEq)]
+   │         ────┬────  
+   │             ╰────── in code generated by this attribute: type '[u8; 4]' does not implement the `PartialEq` operator; add `impl [u8; 4] with PartialEq` providing `eq`
+───╯
+=================== p35_array_i32_index.vl
+--- js:
+Error: an index must be a `usize`, and this one is `i32`: a list and an array are POSITIONAL, so `xs[i]` takes the index `xs.get(i)` takes — anything else names no element, and the emitted subscript read `undefined` back instead of failing. There are no implicit numeric conversions; convert with `.as_usize()`
+   ╭─[ p35_array_i32_index.vl:4:10 ]
+   │
+ 4 │     print(a[i]);
+   │             ┬  
+   │             ╰── an index must be a `usize`, and this one is `i32`: a list and an array are POSITIONAL, so `xs[i]` takes the index `xs.get(i)` takes — anything else names no element, and the emitted subscript read `undefined` back instead of failing. There are no implicit numeric conversions; convert with `.as_usize()`
+───╯
+Error: an index must be a `usize`, and this one is `i32`: a list and an array are POSITIONAL, so `xs[i]` takes the index `xs.get(i)` takes — anything else names no element, and the emitted subscript read `undefined` back instead of failing. There are no implicit numeric conversions; convert with `.as_usize()`
+   ╭─[ p35_array_i32_index.vl:6:11 ]
+   │
+ 6 │     print(xs[i]);
+   │              ┬  
+   │              ╰── an index must be a `usize`, and this one is `i32`: a list and an array are POSITIONAL, so `xs[i]` takes the index `xs.get(i)` takes — anything else names no element, and the emitted subscript read `undefined` back instead of failing. There are no implicit numeric conversions; convert with `.as_usize()`
+───╯
+--- native:
+Error: an index must be a `usize`, and this one is `i32`: a list and an array are POSITIONAL, so `xs[i]` takes the index `xs.get(i)` takes — anything else names no element, and the emitted subscript read `undefined` back instead of failing. There are no implicit numeric conversions; convert with `.as_usize()`
+   ╭─[ p35_array_i32_index.vl:4:10 ]
+   │
+ 4 │     print(a[i]);
+   │             ┬  
+   │             ╰── an index must be a `usize`, and this one is `i32`: a list and an array are POSITIONAL, so `xs[i]` takes the index `xs.get(i)` takes — anything else names no element, and the emitted subscript read `undefined` back instead of failing. There are no implicit numeric conversions; convert with `.as_usize()`
+───╯
+Error: an index must be a `usize`, and this one is `i32`: a list and an array are POSITIONAL, so `xs[i]` takes the index `xs.get(i)` takes — anything else names no element, and the emitted subscript read `undefined` back instead of failing. There are no implicit numeric conversions; convert with `.as_usize()`
+   ╭─[ p35_array_i32_index.vl:6:11 ]
+   │
+ 6 │     print(xs[i]);
+   │              ┬  
+   │              ╰── an index must be a `usize`, and this one is `i32`: a list and an array are POSITIONAL, so `xs[i]` takes the index `xs.get(i)` takes — anything else names no element, and the emitted subscript read `undefined` back instead of failing. There are no implicit numeric conversions; convert with `.as_usize()`
+───╯
+=================== p36_array_len_arith.vl
+--- js:
+Error: `+` adds two values of the same type, but the operands are `usize` and `i32`: there are no implicit conversions; suffix the literal or convert with `as_*`
+   ╭─[ p36_array_len_arith.vl:4:8 ]
+   │
+ 4 │     print(xs.len() + a.len());
+   │           ─────────┬────────  
+   │                    ╰────────── `+` adds two values of the same type, but the operands are `usize` and `i32`: there are no implicit conversions; suffix the literal or convert with `as_*`
+───╯
+--- native:
+Error: `+` adds two values of the same type, but the operands are `usize` and `i32`: there are no implicit conversions; suffix the literal or convert with `as_*`
+   ╭─[ p36_array_len_arith.vl:4:8 ]
+   │
+ 4 │     print(xs.len() + a.len());
+   │           ─────────┬────────  
+   │                    ╰────────── `+` adds two values of the same type, but the operands are `usize` and `i32`: there are no implicit conversions; suffix the literal or convert with `as_*`
+───╯
+=================== p37_length_float_suffix.vl
+--- js:
+3
+2
+--- native:
+3
+2
+=================== p38_const_generic_list_only.vl
+--- js:
+Error: unclosed `<` in generic parameters: expected a matching `>`
+   ╭─[ p38_const_generic_list_only.vl:1:10 ]
+   │
+ 1 │ fun total<const N>(values: List<i32>): i32 {
+   │          ────┬────  
+   │              ╰────── unclosed `<` in generic parameters: expected a matching `>`
+───╯
+--- native:
+Error: unclosed `<` in generic parameters: expected a matching `>`
+   ╭─[ p38_const_generic_list_only.vl:1:10 ]
+   │
+ 1 │ fun total<const N>(values: List<i32>): i32 {
+   │          ────┬────  
+   │              ╰────── unclosed `<` in generic parameters: expected a matching `>`
+───╯
+=================== p39_local_named_length.vl
+--- js:
+Error: an array length must be a non-negative integer literal (a `const` length is not supported yet)
+   ╭─[ p39_local_named_length.vl:3:14 ]
+   │
+ 3 │     let a = [0; n];
+   │                 ┬  
+   │                 ╰── an array length must be a non-negative integer literal (a `const` length is not supported yet)
+───╯
+--- native:
+Error: an array length must be a non-negative integer literal (a `const` length is not supported yet)
+   ╭─[ p39_local_named_length.vl:3:14 ]
+   │
+ 3 │     let a = [0; n];
+   │                 ┬  
+   │                 ╰── an array length must be a non-negative integer literal (a `const` length is not supported yet)
+───╯
+=================== p40_big_array_native.vl
+--- js:
+7
+--- native:
+
+thread 'main' has overflowed its stack
+fatal runtime error: stack overflow, aborting
+=================== p41_index_hole.vl
+--- js:
+2
+2
+2
+2
+--- native:
+     Locking 1 package to latest Rust 1.90.0 compatible version
+error[E0308]: mismatched types
+  --> src/main.rs:17:63
+   |
+17 |     vilan_rt::print(&((*(xs_9883).vilan_at((((a_9878).len() - (2i32))) as usize, vilan_rt::Location("p41_index_hole.vl:9:8")))));
+   |                                                               ^^^^^^ expected `usize`, found `i32`
+
+error[E0277]: cannot subtract `i32` from `usize`
+  --> src/main.rs:17:61
+   |
+17 |     vilan_rt::print(&((*(xs_9883).vilan_at((((a_9878).len() - (2i32))) as usize, vilan_rt::Location("p41_index_hole.vl:9:8")))));
+   |                                                             ^ no implementation for `usize - i32`
+   |
+   = help: the trait `Sub<i32>` is not implemented for `usize`
+   = help: the following other types implement trait `Sub<Rhs>`:
+             `&usize` implements `Sub<usize>`
+             `&usize` implements `Sub`
+             `usize` implements `Sub<&usize>`
+             `usize` implements `Sub`
+
+error[E0308]: mismatched types
+  --> src/main.rs:18:62
+   |
+18 |     vilan_rt::print(&((*(a_9878).vilan_at((((a_9878).len() - (2i32))) as usize, vilan_rt::Location("p41_index_hole.vl:10:8")))));
+   |                                                              ^^^^^^ expected `usize`, found `i32`
+
+error[E0277]: cannot subtract `i32` from `usize`
+  --> src/main.rs:18:60
+   |
+18 |     vilan_rt::print(&((*(a_9878).vilan_at((((a_9878).len() - (2i32))) as usize, vilan_rt::Location("p41_index_hole.vl:10:8")))));
+=================== p42_index_hole_call.vl
+--- js:
+file:///tmp/vilan-run-3751861.mjs:3
+	throw __panic("index out of bounds: the length is " + list.length + " but the index is " + index, location);
+	      ^
+
+panicked at p42_index_hole_call.vl:7:8: index out of bounds: the length is 3 but the index is -1
+    at __at (file:///tmp/vilan-run-3751861.mjs:3:8)
+    at file:///tmp/vilan-run-3751861.mjs:16:20
+    at ModuleJob.run (node:internal/modules/esm/module_job:358:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:99:5)
+
+Node.js v24.2.0
+--- native:
+panicked at p42_index_hole_call.vl:7:8: index out of bounds: the length is 3 but the index is 18446744073709551615

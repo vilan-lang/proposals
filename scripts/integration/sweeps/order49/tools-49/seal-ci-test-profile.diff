@@ -1,0 +1,20 @@
+9c9,13
+< cargo nextest run --workspace > "$S/suite-$tip.log" 2>&1; u=$?; grep -E '^\s+Summary' "$S/suite-$tip.log" | tail -1; echo "union exit=$u"
+---
+> # N156 (Order 49): the union, the doc-tests and the whole-set native differential run under Cargo.toml's `ci-test` profile
+> # (vilan-core at opt-level 1, artifacts in target/ci-test/) - what CI's `test` leg selects through scripts/ci-local.sh - which
+> # more than halves the suite's CPU. The edit loop stays on the default profile. VILAN_TEST_PROFILE=dev reruns the old way.
+> P=${VILAN_TEST_PROFILE:-ci-test}
+> cargo nextest run --workspace --cargo-profile "$P" -E 'not binary(deep_nesting)' > "$S/suite-$tip.log" 2>&1; u=$?; grep -E '^\s+Summary' "$S/suite-$tip.log" | tail -1; echo "union exit=$u"
+12c16
+< cargo test -q --doc --workspace > "$S/doctest-$tip.log" 2>&1; d=$?; echo "doc-tests exit=$d"
+---
+> cargo test -q --doc --workspace --profile "$P" > "$S/doctest-$tip.log" 2>&1; d=$?; echo "doc-tests exit=$d"
+15c19
+< VILAN_NATIVE_DIFFERENTIAL=1 cargo nextest run -p vilan-cli --test native_differential > "$S/native-$tip.log" 2>&1; n=$?; echo "native whole-set exit=$n"
+---
+> VILAN_NATIVE_DIFFERENTIAL=1 cargo nextest run -p vilan-cli --test native_differential --cargo-profile "$P" > "$S/native-$tip.log" 2>&1; n=$?; echo "native whole-set exit=$n"
+26a31,33
+> # deep_nesting is left out of the ci-test union above and runs here on the DEFAULT profile (N156): its pins are stack-size claims,
+> # opt-level 0 has the largest frames (the conservative reading of "the walk fits in 2 MiB"), and three of its declared-stack pins go
+> # red at opt-level 1 (the chain's walk fits). The canary env below does not change those three; they run in this same binary.

@@ -1,0 +1,13 @@
+trait Count {
+	fun count(self): i32;
+}
+
+impl [i32; type N] with Count {
+	fun count(self): i32 {
+		0
+	}
+}
+
+fun main() {
+	print(0);
+}

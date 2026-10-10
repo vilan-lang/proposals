@@ -1,0 +1,12 @@
+import std::compare::PartialEq;
+
+[derive(PartialEq)]
+struct Pixel {
+	rgba: [u8; 4],
+}
+
+fun main() {
+	let a = Pixel { rgba = [1u8, 2u8, 3u8, 4u8] };
+	let b = Pixel { rgba = [1u8, 2u8, 3u8, 4u8] };
+	print(a == b);
+}

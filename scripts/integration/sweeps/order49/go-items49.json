@@ -1,0 +1,199 @@
+{
+ "order": 49,
+ "base": "445c9346 (the v0.46.0 fold 92c62184 + L17's two commits; CI run 37973098026 read before GO)",
+ "drafted": "2026-10-09",
+ "go": "2026-10-09 (the owner: 'Go on Order 49'; the asks R-a..R-k proceed on their recommendations)",
+ "asks": [
+  "R-a alone-rule reading + checkpoints",
+  "R-b A149 S3 before A153 S1",
+  "R-c B580 breaking",
+  "R-d B579 breaking",
+  "R-e B581 door (a)",
+  "R-f A165 Option<V: Slot>",
+  "R-g A164 null unwritable",
+  "R-h cut v0.47.0",
+  "R-i spike merge rule",
+  "R-j lang lanes split",
+  "R-k B570 S0 on a kolt copy with .git",
+  "R-l S3 re-planned: C3 = S2 + the stored call graph; S3a/S3b to Order 50 in the mutation-log form (design note in \u00a77.2)"
+ ],
+ "models": {
+  "incr-49": "fable",
+  "spike-49": "fable",
+  "store-49": "opus",
+  "native-49": "opus",
+  "papers-49": "opus",
+  "solver-49": "opus",
+  "lang-a-49": "opus",
+  "lang-b-49": "opus",
+  "debug-49": "opus",
+  "tools-49": "sonnet"
+ },
+ "lanes": {
+  "incr-49": [
+   "M110",
+   "B554",
+   "B575",
+   "B576",
+   "N153",
+   "M128",
+   "M127",
+   "B585",
+   "A167"
+  ],
+  "store-49": [
+   "A149",
+   "A153",
+   "C15",
+   "A165"
+  ],
+  "native-49": [
+   "F113",
+   "F114",
+   "F116",
+   "F117",
+   "F118",
+   "F119",
+   "F120",
+   "F109",
+   "N154",
+   "N158",
+   "F99"
+  ],
+  "tools-49": [
+   "N156",
+   "N161",
+   "N155",
+   "N139",
+   "N160",
+   "E280",
+   "E286",
+   "B586"
+  ],
+  "papers-49": [
+   "I2",
+   "A163",
+   "A161",
+   "B582"
+  ],
+  "solver-49": [
+   "B583",
+   "B588",
+   "B589",
+   "B579",
+   "B580",
+   "B581",
+   "B582",
+   "B587",
+   "F108",
+   "B574",
+   "A164",
+   "E285",
+   "B552",
+   "B585",
+   "B584",
+   "B590",
+   "B591",
+   "B554",
+   "M130",
+   "M131",
+   "M132",
+   "B596"
+  ],
+  "lang-a-49": [
+   "B569"
+  ],
+  "lang-b-49": [
+   "B571",
+   "E278",
+   "B570",
+   "E284"
+  ],
+  "debug-49": [
+   "E257",
+   "E281",
+   "E282",
+   "E283"
+  ],
+  "spike-49": [
+   "M110"
+  ]
+ },
+ "waves": {
+  "1": [
+   "incr-49",
+   "store-49",
+   "native-49",
+   "tools-49",
+   "papers-49"
+  ],
+  "2 (at incr-49's C2)": [
+   "solver-49",
+   "lang-a-49",
+   "lang-b-49",
+   "debug-49"
+  ],
+  "3 (after C3 + wave-2 merges)": [
+   "spike-49"
+  ]
+ },
+ "checkpoints": {
+  "C1": "P0 permutation differential + P1 + P2 merged \u2014 REPORTED 2026-10-09 @835d8195 (REPORT-incr-49-c1.md)",
+  "C2": "S2a + S2b merged (wave 2 launches) \u2014 REPORTED 2026-10-09 @434dcf77 (REPORT-incr-49-c2.md)",
+  "C3": "S2a + S2b + A167 + the stored call graph (R-l); S3 moved to Order 50 \u2014 MERGED 2026-10-10 @77b23af2 (79366e1d: S2b + C3b mirror seed + the hover fix; REPORT-incr-49-c3-fixed.md, REPORT-incr-49.md)"
+ },
+ "merge_order": [
+  "tools-49",
+  "papers-49 (proposals)",
+  "native-49",
+  "store-49",
+  "incr-49 C1",
+  "incr-49 C2",
+  "incr-49 C3",
+  "debug-49 (rebased onto C3)",
+  "solver-49 (rebased onto C3; B584 last)",
+  "lang-a-49 (rebased onto C3)",
+  "lang-b-49 (rebased over lang-a)",
+  "spike-49 (R-i)"
+ ],
+ "cut": {
+  "version": "v0.47.0",
+  "breaking_expected": [
+   "B569 S1",
+   "B579",
+   "B580",
+   "B590",
+   "B591",
+   "E257 S3 (print of aggregates)"
+  ],
+  "kolt_patch": [
+   "B580: src/sidebar.vl:65 annotate SignalCell<Option<Channel>>"
+  ]
+ },
+ "integrator": [
+  "L24 routing when vilan-windows is online",
+  "N161 workaround at the cut until tools-49 lands",
+  "B570 S0 kolt copy with .git for lang-b-49",
+  "A167 patch (store-49/a153-analyzer-admission.patch) handed to incr-49 for C2; un-ignore the stub pin after"
+ ],
+ "papers_49": {
+  "paper": "proposal/array-lengths.md",
+  "filed": [
+   "B590",
+   "B591",
+   "E287",
+   "F121",
+   "F122",
+   "D15"
+  ],
+  "F109": "does not reproduce on 0.46.0 (native-49 confirms)"
+ },
+ "order50": [
+  "M110 S3 in the mutation-log form (analyzer-pass-map.md \u00a77.2), ALONE in the core, sequenced after any dbg/native emitter work",
+  "B596 struct-literal evaluation order (JS declaration order vs native written order)",
+  "B599 fill-from-use for bindings whose uses state the type",
+  "B579 scope: f64 * i32 (estate first)",
+  "M133 the Slot blanket cost memo (B401/M121-safe)",
+  "the use-inferred guard context arm retirement (incr)"
+ ]
+}

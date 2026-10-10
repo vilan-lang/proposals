@@ -1,0 +1,11 @@
+fun make(): [i32; 2] {
+	[5; 2]
+}
+
+fun main() {
+	let m = make();
+	print(m[1]);
+	mut buf = [0; 3];
+	buf[1] = 9;
+	print(buf[1]);
+}

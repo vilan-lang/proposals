@@ -1,0 +1,6 @@
+import std::io::print;
+
+fun main() {
+	let count = ["a", "bb", "ccc"].map(|word| word.len()).filter(|length| *length > 1).len();
+	print(count);
+}

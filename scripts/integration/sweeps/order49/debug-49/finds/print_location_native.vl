@@ -1,0 +1,11 @@
+// debug-49's find: `print` of a `std::debug::Location` (what `caller()`
+// answers) builds on JS (`loc.vl:4:8`) and is handed to rustc natively, which
+// refuses the emitted Rust: E0277 "the trait bound `vilan_rt::Location: Js` is
+// not satisfied" — a backend defect by the CLI's own sentence, where F25 would
+// refuse a host handle by name. `print(caller().text())` works on both.
+import std::debug::caller;
+
+fun main() {
+	print(caller());
+	print(caller().text());
+}

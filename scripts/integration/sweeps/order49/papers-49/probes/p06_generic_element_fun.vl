@@ -1,0 +1,10 @@
+fun first<T>(values: [T; 3]): T {
+	values[0]
+}
+
+fun main() {
+	let a: [i32; 3] = [7, 8, 9];
+	let b: [str; 3] = ["x", "y", "z"];
+	print(first(a));
+	print(first(b));
+}

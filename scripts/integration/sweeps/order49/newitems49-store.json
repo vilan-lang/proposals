@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "A167",
+   "section": "A",
+   "kind": "analyzer: the [rpc] element rule (S)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-10-09 (store-49's find, Order 49)",
+   "discussion": "store-49 (Order 49); sweeps/order49/store-49/finds/rpc_store_return_refused.vl; sweeps/order49/store-49/a153-analyzer-admission.patch; A153; mirrored-store.md §3.1",
+   "title": "A153's compiler half: an `[rpc]` returning `Store<T>` or `StoreSome<P>` is refused \"return type of `[rpc]` method `board` is `Store<Board>`, which is not Wire\" — the analyzer's element rule (`handle_return_element` / `resolved_handle_return_element`) does not read the store's two spellings that `std::rpc`'s `handle_element` now reads, and the loader never loads `std::rpc::mirror`, which the expansion names",
+   "body": "The `[service]` expansion and the analyzer's `[rpc]` Wire rule are a pair that must agree on which written returns are HANDLES (`transport-rpc.md` §9.2): a handle's ELEMENT must be Wire, the handle itself is not. store-49 built the std half of A153 S1/S2 — `std::rpc::mirror`'s repliers, the client replica and the stub that mints a `RemoteStoreSome<T>` — and taught the expansion `Store<T>`/`StoreSome<P>` (`store_handle_kind`), but the analyzer core was incr-49's alone this wave (R-a), so the twin was not edited. Two gaps, one patch beside the repro (176 lines, rustfmt-clean, `git apply --check` clean on next @445c9346 + store-49): (1) the element rule — a written arm `is_store_handle_spelling` (sole argument is the element), the resolved arm `(\"Store\" | \"StoreSome\", [element])`, `Option<Store<..>>` excluded from both `Option` descents (a store's absence is `StoreSome`'s), and macros.rs `handle_spelling`'s two rows for the `http`-service refusal; (2) the LOADER — the expansion imports `std::rpc::mirror`, which nothing loads (a macro's output cannot seed a module), so `service_seeds(nodes)` replaces the five `contains_service` pushes of `rpc` (the load loop, the entry, a dependency's surface, a loaded module, and the world key, which must agree) and adds `rpc::mirror` when the same file reaches `std::reactive::store` — a service that never names a store loads nothing more. Verified by store-49 on a scratch copy built with the patch: the generated-stub program runs green on both backends. Once it lands, un-ignore `reactive_channels::a153_s2_a_generated_store_stub_mints_on_its_first_hold_and_lets_go_with_its_last`. Sizing S; analyzer (two match arms, two helpers, five seed sites) and macros.rs; incr-49's world-key area, so theirs or the integrator's at a checkpoint."
+  },
+  {
+   "id": "B595",
+   "section": "B",
+   "kind": "solver: static calls (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-09 (store-49's find, Order 49)",
+   "discussion": "store-49 (Order 49); sweeps/order49/store-49/finds/static_call_through_blanket.vl; A153",
+   "title": "a static trait method named on a CONCRETE type that only a blanket impl answers does not resolve — `str::tag(1)` over `impl type T: Leaf with Tag` is refused \"cannot infer 'T' for this call; its bound ': Leaf' cannot be checked\" — while the same call through a generic helper (`tag_of<str>(1)` with `fun tag_of<T: Tag>(..) { T::tag(..) }`) resolves to that blanket and runs",
+   "body": "A static call on a concrete type head resolves a derived or direct impl (`Global::store_read_path(..)`, `List<T>::rebuild(..)`) but not a blanket's: the blanket's own binder `T` is never bound to the call's head type, so its bound cannot be checked. The derive's walkers (A153 S1) route every field type's static step through `store_read_path_of<T>` / `store_fresh_of<T>` helpers for exactly this reason. Rec: bind a blanket's subject binder to the call's written head the way method dispatch binds it to the receiver. Sizing S; solver (static-call head resolution)."
+  },
+  {
+   "id": "E289",
+   "section": "E",
+   "kind": "diagnostic (XS)",
+   "area": "Diagnostics & error messages",
+   "status": "OPEN — filed 2026-10-09 (store-49's find, Order 49)",
+   "discussion": "store-49 (Order 49); A165; E271",
+   "title": "E271's hole refusal still lists the child contract without `Option`: \"a hole in element syntax takes a `View`, a `str`, a `List<View>` or a `Source` of one\" — since A165 an `Option` of any child is a child too (and a `Source<Option<View>>`)",
+   "body": "A165 (store-49) added `impl Option<type V: Slot> with Slot` and its reactive twin `impl type S: Flow<Option<View>> with Slot` on both ui twins; the refusal's sentence (analyzer.rs, the E271 site) is in the core, incr-49's this wave, so it was not edited. Rec: \"…a `List<View>`, an `Option` of one, or a `Source` of one\". Sizing XS; the one message (and its ledger row)."
+  },
+  {
+   "id": "A168",
+   "section": "A",
+   "kind": "std (S)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-10-09 (store-49's find, Order 49)",
+   "discussion": "store-49 (Order 49); A153 S3; mirrored-store.md §2.2",
+   "title": "`HashSet<T>` has no `Wire` impl, so a struct with a set field cannot `[derive(Wire)]` and cannot be mirrored — a set's member (`contains(x)`) is one of the paper's demand boundaries (§2.2), and the walkers already answer it (`impl HashSet<type T: Hashable + Wire> with StoreWire`)",
+   "body": "`std::wire` implements `Wire` for `HashMap<K: Hashable + Wire, V: Wire>` (a list of `{key, value}`) and not for `HashSet`. Rec: `impl HashSet<type T: Hashable + Wire> with Wire` as a list of members, beside the map's — A153 S3 (key sets over the wire) needs it. Sizing S; std::wire."
+  },
+  {
+   "id": "A169",
+   "section": "A",
+   "kind": "protocol design (S)",
+   "area": "Reactive core & UI",
+   "status": "OPEN — filed 2026-10-09 (store-49's find, Order 49)",
+   "discussion": "store-49 (Order 49); A153 S2; mirrored-store.md §3.2, §6.2",
+   "title": "a mirrored store's client cannot forget a released slot's READER: a `Patch` already in flight may still name the slot, and an op's value can only be read at its own type (the codec has no skip), so the client keeps every released slot's applier for the life of its channel view",
+   "body": "A153 S2's `MirrorView` moves a slot whose last hold went to `retired`, where its applier reads (and discards) whatever a late frame carries for it; a view closes when its channel's last grant goes, taking them all, but a long session that scrolls through many keyed boundaries grows the list. Doors: (a) the server acknowledges an `Unsubscribe` (a `Gone(slot)` in its next patch, after which the client forgets the reader); (b) a skippable op encoding (a length or a deserializer `skip`); (c) bound the list. Rec: (a) — one op, and it is also what a client needs to tell a revoked boundary from a slow one. Sizing S; std::rpc::mirror both halves."
+  }
+ ]
+}

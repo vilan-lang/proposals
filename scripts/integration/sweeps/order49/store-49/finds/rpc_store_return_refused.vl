@@ -1,0 +1,34 @@
+// A153 S1's last step on the compiler side: an `[rpc]` returning `Store<T>` (or
+// `StoreSome<P>`) is refused "return type of `[rpc]` method `board` is
+// `Store<Board>`, which is not Wire". The `[service]` expansion's handle rule
+// (`std::rpc`'s `handle_element`) and the analyzer's element rule are a pair
+// that must agree (analyzer.rs `handle_return_element` /
+// `resolved_handle_return_element`), and the analyzer's half does not read the
+// store's two spellings. The patch beside this file
+// (`../a153-analyzer-admission.patch`) adds them (and excludes `Option<Store<..>>`,
+// which is StoreSome's to say), plus macros.rs `handle_spelling` for the
+// `http`-service refusal.
+import std::io::print;
+import std::reactive::store::{ Storable, Store };
+import std::wire::Wire;
+
+[derive(Storable, Wire)]
+struct Board {
+	motd: str,
+}
+
+let shared: Store<Board> = Store::new(Board { motd = "hi" });
+
+[service(BoardClient)]
+struct BoardService {}
+
+impl BoardService {
+	[rpc]
+	fun board(self): Store<Board> {
+		shared
+	}
+}
+
+fun main() {
+	print("built");
+}

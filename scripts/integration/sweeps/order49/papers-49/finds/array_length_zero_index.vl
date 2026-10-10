@@ -1,0 +1,5 @@
+// E?1 (d): the literal out-of-range message for an EMPTY array says "valid indices are 0 to 0".
+fun main() {
+	let e: [i32; 0] = [];
+	print(e[0]);
+}

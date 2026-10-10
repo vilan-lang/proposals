@@ -196,12 +196,14 @@ median, base / build; the server leg is about a quarter of it.
 | `imports` | the import fixpoint: retry until a pass binds nothing, then a REPORTING pass | `prepped_imports`, scopes | bindings, `import_targets`, `import_reaches`, aliases, diag | a fixpoint (re-exports chain); B547: a macro MARKER binds only on the reporting pass, so an item re-exported later wins the collision | 0.9 / 0.0 | S1 |
 | `preludes` | `seed_preludes` | `prelude_seeds`, settled imports | scope bindings (yielding to explicit imports) | after every import, before any name resolves (nothing may have memoized a lookup the prelude changes) | 0.1 / 0.0 | S1 |
 | `use-drain` | `use` statements | `prepped_uses` | scope bindings | after preludes | 0.0 / 0.0 | S1 |
-| `binder-bounds` (mislabelled; N?3) | binder-bound inheritance, then desugar-minted std items (B270), then the first part of the bare-name locals | `prepped_binder_inheritance`, `prepped_std_items`, `prepped_locals` | resolved names, constraints | locals a guard clause may publish WAIT (B222) for the divergence stage | 14.6 / 0.0 | S1 |
-| `locals` (mislabelled; N?3) | the assignment drain (`wire_prepped_assignment`); guarded assignments wait like guarded locals | `prepped_assignments` | assignment wiring | after the first-part locals | 0.6 / 0.0 | S1 |
+| `binder-bounds` | binder-bound inheritance (an `impl Wrapper<type T>` walked before its struct's bound) | `prepped_binder_inheritance` | `generic_bounds` links | after every declaration exists | small | S1 |
+| `locals` | the desugar-minted std items (B270), then the first part of the bare-name locals | `prepped_std_items`, `prepped_locals` | resolved names, constraints | locals a guard clause may publish WAIT (B222) for the divergence stage | 14.6 / 0.0 (was timed as `binder-bounds`; N153) | S1 |
+| `assignments` | the assignment drain (`wire_prepped_assignment`); guarded assignments wait like guarded locals | `prepped_assignments` | assignment wiring | after the first-part locals | 0.6 / 0.0 (was `locals`; N153) | S1 |
 | `types` | written type annotations, static accessors, `dyn` annotations, existential grounding, the impl subjects and trait lists of the `implementations` rows the walk pushed (`walk_impl_entity`, `:38989`) | `prepped_type_locals`, `prepped_type_static_accessors`, `prepped_trait_impls`, scopes | type slots, impl subjects (⚠ the rows are in walk order) | before the context clauses and conformance | 27.1 / 0.4 | S1 |
-| `conformance` | `resolve_context_clauses` (B242/E262) then trait-impl conformance | `prepped_trait_impls` | the clause on each type; diag | clauses before conformance (a clause is part of a parameter's type) and before the fixpoint | 3.2 / 0.0 | S1 |
+| `context-clauses` | `resolve_context_clauses` (B242/E262) | context clauses on parameters and members | the clause on each type | after the import fixpoint, before conformance (a clause is part of a parameter's type) and before the fixpoint | (was inside `conformance`; N153) | S1 |
+| `conformance` | trait-impl conformance | `prepped_trait_impls` | diag | after the clauses | 3.2 / 0.0 | S1 |
 | `divergence+guards` | `compute_divergence_leaves`, guard continuations, the waiting locals and assignments | the call subjects resolved so far | `divergence_leaves`, `guard_continuation_captures` | the B222 two-part drain: a name a guard may publish resolves only after this | 4.0 / 4.1 | S1 |
-| `contexts` (mislabelled; N?3) | `build_lookup_admission` (B401) | import rows, selector subjects | `LookupAdmission` | after the import and type drains, before the first lookup; rebuilt per resolve because the entry's statements arrive between the two | 2.3 / 2.3 | S1 |
+| `admission` | `build_lookup_admission` (B401) | import rows, selector subjects | `LookupAdmission` | after the import and type drains, before the first lookup; rebuilt per resolve because the entry's statements arrive between the two | 2.3 / 2.3 (was `contexts`; N153) | S1 |
 | `fixpoint` | `resolve_constraints` + `wake_ready_constraints` + backstops (literal-let expectations, let-bound closures from call sites, one stall pass) | every queued constraint | type slots IN PLACE, resolutions, `generic_dispatch`, `function_calls`, member resolutions, diag | the global inference fixpoint; monotone, dependency-driven; ⚠ a constraint that fails here is REPORTED here, so a module's failed member lookup commits before the entry's impls exist (B553) | **436 / 1.5**; `resolve_constraints` 2.84 G Ir | S1 (prefix); S5–S7 make it per item |
 
 ### 3.3 Stages 6–7: the hot set, the entry and `build()`
@@ -212,7 +214,7 @@ median, base / build; the server leg is about a quarter of it.
 | base-cache store | `base_cache_store` `:75441` | the world | a cloned world in the cache | after the guard | clone (unmeasured, M115) | S1 |
 | `load_hot_modules` | `:71851` | the hot set's files | as the drain + walk, for the hot set only; calls `select_platform_twins` (⚠ B573 again, `:72104`) | after the store, on hit and miss alike | sources-walked 2 on `views.vl` | S1 |
 | `expand_entry_over_world` | `:71726` | the entry, the stored registry | entry expansions; the gensym counter continues from the prefix's | after the store, identically on hit and miss (§6.13) | small | S1 |
-| configuration | `analyze_over_world` `:75598`–`:75604` | the workspace | `platform`, `platform_reason`, `prelude_repair` (and `source_paths`, `reuse_prefix_len`) | ⚠ the first three AFTER stages 3–6 read them (B573, B?2) | — | — |
+| configuration | `analyze_over_world` `:75598`–`:75604` | the workspace | `platform_reason`, `prelude_repair` (and `source_paths`, `reuse_prefix_len`); `platform` is set at construction since B573 | the two unkeyed facts are rendered only at PUBLISH (`render_publish_marks`, where the lists leave the analyzer; B576, Order 49): a diagnostic the pre-entry resolve produces carries a mark, never the fact | — | — |
 | the entry walk | `:75618`–`:75671` | the entry tree, its prelude | as the module walk; `seed_preludes` for the entry scope | after the configuration (so the entry's twins are right) | small | — (always walked) |
 | `build()` = `resolve_world` + `finalize_build` | `:58821`, `:61791` | the entry's and hot set's queues, the settled prefix | as stage 5; then for-in protocol, operator overloading, binder-bound inheritance, unary operands, integer literal ranges, negative unsigned constants, resource erasures, bare payload variants, starved closure parameters, post-solve diagnostics | `finalize_build` reads the settled types; the second resolve sees only what was queued since the first | build 12 / 28; `finalize_build` 0.16 G Ir | — |
 | `types_settled = true` | `:75715` | | the late-write counter arms | every slot write after this is a late write (M108: 0 on kolt) | — | — |
@@ -234,15 +236,17 @@ hot-set world (§4.2).
 | wrapped view captures, mut captures under view subjects, entry `main` parameters | `:75900`–`:75907` | settled types | `wrapped_view_captures`; diag | before the checks that consult them | small | S2 |
 | lazy bindings and arguments | `record_lazy_bindings`, `record_lazy_arguments` | call sites, parameters | `lazy_*` tables | OUTSIDE the Class A window on purpose (lowering input), before rule 3's capture ban and R9 | 1.4 / 7.9; 5.7 | S2 |
 | `classify_dbg_calls` | `:75918` | `dbg` calls | `dbg_statement_calls`, `dbg_argument_types` | before the ownership checks and both emitters | small | S2 |
-| **Class A**: assignment places, readonly mutation, mutable arguments, lazy arguments, mutable references, view bindings, view arguments, view value reads, must-use, deprecated, element attribute shadowing, view escape, **`check_invalidation`**, reseat escape | `:75949`–`:75963` | settled types, bodies | diag; `check_invalidation` writes **`view_suspension_checks`** for a post pass; `check_lazy_arguments` writes `lazy_argument_resource_refusals` (read by R9, which skips the same bodies) | after the effect fixpoints; ⚠ **the window skips a reused body's enrolment in `view_suspension_checks`, and nothing records it: B?1** | client total ≈ 70; served ≈ 25 (the window works) | S1/M19 already |
+| `mark_dbg_stack_modules_unrecordable` (debug-49, Order 49) | `analyzer/dbg_stack.rs` | `dbg_stack_calls` | `reuse_unrecordable` | before the Class A windows: a module holding a `dbg_stack()` call is never recorded, so the two per-site records below (E281, E282) re-derive on every analysis (B575's rule, by recompute) | nil without a `dbg_stack()` call | — |
+| **Class A**: assignment places, readonly mutation, mutable arguments, lazy arguments, mutable references, view bindings, view arguments, view value reads, must-use, deprecated, element attribute shadowing, view escape, **`check_invalidation`**, reseat escape | `:75949`–`:75963` | settled types, bodies | diag; `check_invalidation` writes **`view_suspension_checks`** for a post pass (recorded per module and replayed for a reused body since B575, Order 49); `check_lazy_arguments` writes `lazy_argument_resource_refusals` (read by R9, which skips the same bodies); `check_invalidation` writes **`dbg_stack_invalidated`** (E282, debug-49: the capture views a `dbg_stack()` call may not read) for the expansion, never for a reused body — its module is unrecordable | after the effect fixpoints; the rule (Q6, RULED): a windowed check that writes a table a later pass reads records it or computes it for every body | client total ≈ 70; served ≈ 25 (the window works) | S1/M19 already |
 | Class B/C: Wire, JSON, Hashable, PartialEq boundaries, `[rpc]` signatures, `expose` fields, `[hint]` attributes | `:75966`–`:75974` | settled types, the impl table | diag, `rpc_refused_*`, `expose_refused_*` | after every name resolves and every impl's provided set is closed | small | S2 |
-| **`check_generic_bound_satisfaction`** | `:8004` | every call site's settled instantiation, the impl table, blanket proofs | diag; mints type slots (+1,242 client) | Class C: an entry or hot call can ground a module generic, so it re-runs everywhere; M123 measures its memo this order | **36.0 / 224.6; 203.2**; 1.92 G Ir (10.8%) | **S2's first table** (Q1) |
+| **`check_generic_bound_satisfaction`** | `:8004` | every call site's settled instantiation, the impl table, blanket proofs | diag; mints type slots (+1,242 client; none for a reused module's sites since S2a) | Class A window of its own since M110 S2a (Order 49): a reused module's sites are skipped and their refusals replayed from M19's record, which also carries the module's QUESTIONS (call, constraint, trait); a module one of whose questions a late impl (past the reach log's floor) answers is re-audited instead — the audit asks after the store, so M121's verdict never sees its questions; the three declaration walks stay Class C; runs after the coherence checks it reads | **36.0 / 224.6; 203.2**; 1.92 G Ir (10.8%) — S2a: served sites on `bound-sites-served` | **S2a, built** (Q1) |
 | binding trait / existential / hidden-nominal constraints, opaque returns, written nominal bounds, tuple spreads | `:75978`–`:75985` | binding types, the impl table | diag; slots (+2) | the binding-position twins of the bound audit, same place, same reason | small (written bounds 3.4 / 4.1) | S2 |
+| `check_tuple_literal_labels`, `check_named_arguments` (B569 S2/S4, lang-a-49, Order 49) | after `check_tuple_spreads` | `tuple_literal_label_problems` (written by the tuple rule in inference, the only place a literal's landing type is known; withdrawn when a later inference matches), `named_arguments` (walk), `spread_packs` | diag only | Class C, after every inference; both READ their tables (never take them), so a stored world carries them to the next analysis | nil without a labelled literal or a named argument | — |
 | `check_hmr_transfer_bounds` | `:76008` | `dev::stash`/`take` sites | diag; re-infers through `&mut self` (a mint and a slot write) | deliberately NOT Class A: its mint is read later and a record may not carry a `TypeId` | <1 / 3.9; 3.8 | — (inert unless `web::dev` loads) |
 | R10 `check_container_resource_arguments` (Class A, second window) | `:76034` | containers, generic externs | diag, `reported_container_structures` (recorded: R11's dedup set) | before R11 | 27.6 / 39.4; 6.5; slots +5,695 | S1/M19 already |
-| R12 + moves (Class A, third window) | `:76037`–`:76038` | resource places | diag, `resource_value_places`, `partial_move_roots` (whole-program, not filtered) | R1–R9 before R11 and drop planning | moves 15.4 / 35.2; 20.4; slots +3,728 | S1/M19 already |
-| record store | `take_reuse_record` `:76050`–`:76064` | the windows' derived diagnostics | the checks record | after the last Class A window; ⚠ before every post pass, so no post-pass verdict is ever recorded | small | (M19) |
-| R11 `check_resource_generic_instantiations` (+ drop-sink argument types) | `:76071`–`:76072` | instantiations, R10's set | diag; slots (+321) | Class C | **14.5 / 56.6; 53.0**; 0.47 G Ir | S2 |
+| R12 + moves (Class A, third window) | `:76037`–`:76038` | resource places | diag, `resource_value_places`, `partial_move_roots` (whole-program, not filtered), **`dbg_stack_moves`** (E281, debug-49: the moved bindings at each `dbg_stack()` call; its module unrecordable) | R1–R9 before R11 and drop planning | moves 15.4 / 35.2; 20.4; slots +3,728 | S1/M19 already |
+| record store | `take_reuse_record` `:76050`–`:76064` | the windows' derived diagnostics, and (B575, Order 49) `view_suspension_checks`' enrolment rows per module | the checks record | after the last Class A window; before every post pass, so no post-pass VERDICT is ever recorded — a post pass re-decides the recorded enrolment on every analysis | small | (M19) |
+| R11 `check_resource_generic_instantiations` (+ drop-sink argument types) | `:76071`–`:76072` | instantiations, R10's set | diag; slots (+321); `dbg_stack_moves`' generic half (E281) | Class C | **14.5 / 56.6; 53.0**; 0.47 G Ir | S2 |
 | `plan_resource_drops` | `:76078` | resource classification, scopes | `dropped_bindings`, `overwrite_drops`, `drop_*` | after the move checker | 16.2 / 55.4; 7.9 (T1c's enrolment record) | S2 (already half) |
 | `Drop`/`Callable` impls, trait conformance, exposed unexported types, trait-method scope (B515), class written twice (A155), written autofocus (A157), plain reaches, four duplicate checks, drop glue | `:76082`–`:76132` | the impl table, member sets, import reaches | diag, `drop_methods`, `scoped_reach_checks`, `blanket_residues`, `drop_glue`, `drop_call_edges` | coherence (Class B): the duplicates after conformance and in a fixed order (inherent, block, trait) so a program with several reports them in that order | each < 7 ms | S2 (Class B, global-facts keyed) |
 
@@ -254,6 +258,7 @@ analysis it does not run at all, because it reads the slots the fixpoint fills.
 | pass | site | reads | writes | order | cost (server / client; served) | S-role |
 |---|---|---|---|---|---|---|
 | `Context` and intrinsic tables | `:76160`–`:76465` | impls of std's lang types | the intrinsic map | ⚠ first match over `implementations` (std's, always prefix) | small | S1 |
+| `expand_dbg_stacks` (debug-49, Order 49; debugging.md S2) | `analyzer/dbg_stack.rs` | `dbg_stack_calls`, the scopes, `dbg_stack_moves`, `dbg_stack_invalidated`, view origins | **the tree** (one minted `Expr::Local` argument per binding a `dbg_stack()` call reads; post-settle `Id` mints), `dbg_stack_sites` | after every check and R11 (they judge the program as written), before the last-use dataflow (the reads are uses) | nil without a `dbg_stack()` call | — (re-done per analysis; its module is unrecordable) |
 | `rewrite_view_assignment_targets` | `:76470` | view assignments | **the tree** (bare assignments to a view become write-through) | a TREE REWRITE: every liveness answer below must follow it | small | — (a rewrite: re-done on each clone) |
 | `liveness::LastUse::compute` | `:76476` | the final tree | `last_use` | after the rewrite ("a liveness answer about a tree that no longer exists is worse than none") | 13.6 / 49.8; 18.4 | S2 (T1b already records rows) |
 | drop extents, shared cells, written roots, shared reads, shared place lets, **capture plan** | `:76481`–`:76501` | `last_use`, the tree | `shared_cells`, `shared_read_bindings`, `shared_place_lets`, the capture plan | each after the one before it (B267 → M90 → B53: the capture plan decides which captures own nothing before rule 2) | 19.1 / 65.9; **59.6** (not reduced on a hit) | S2 |
@@ -505,7 +510,17 @@ emission order (declarations sorted by id) and the C1 rule that every
 whole-program check sorts its reports by id. S5's windows preserve all four,
 because windows are laid out in load order.
 
-Four more places are positional by ACCIDENT: `resolve_macro_reference`'s fallback
+A fifth ruled place, found by the permutation differential (Order 49): a
+requirement trace's hops (E78) are ordered by depth and, at one depth, by id —
+the C1 rule inside one diagnostic. The differential reads a trace as the set of
+its hops for that reason; S5's windows must keep the order.
+
+Four more places were positional by ACCIDENT (each replaced by a content-defined
+rule in Order 49, M128 — the ranking for `callable_call_signature`, the scope
+chain for the macro fallback, the block's id for `for_each_next_providers` and
+`declined_default_calls`, a proof of uniqueness for `import_path_of`; and the
+loop's `next` lookup admitted under the looping file, which the first-match
+had hidden): `resolve_macro_reference`'s fallback
 (`:47304`, the first module in load order whose macro namespace has the name),
 `callable_call_signature` (`:45923`, the first impl in load order that declares
 `call` and admits the subject — it does not rank a blanket against a concrete
@@ -592,9 +607,9 @@ by what is left on a served keystroke (§4.2) and by risk:
 | candidate | served ms | inputs beyond the prefix | risk | rec |
 |---|---:|---|---|---|
 | the bound audit at prefix call sites | 203.2 | the impl table (global facts), callee interfaces | Class C: an entry or hot call grounds a module generic, but that dirties the module (T0); mints 1,242 slots | **first** (Q1), keyed through M123's memo |
-| drop extents, shared cells, capture plan | 59.6 | none (bodies); the tree is final | low; ids only (T1b's law) | second |
-| R11 at prefix instantiations | 53.0 | the impl table; R10's set (recorded) | as the bound audit | with the bound audit |
-| the tail's label tables | 46.5 | none (settled types) | lowest: strings by id | **fallback first** if M123 does not confirm |
+| drop extents, shared cells, capture plan | 59.6 | `compute_shared_cells` unions cell identity over EVERY module's bodies (a hot module can clone or store a prefix cell) and the capture plan and shared reads read `collect_written_roots`, which is whole-program (a hot module writes a prefix binding) — measured in Order 49 (incr-49, S2b): not a function of the prefix alone; only the drop extents (per body, after liveness) are | NOT a prefix table as written; a per-module table needs the cell unions split by module with a cross-module seam | HELD (Order 49 finding) |
+| R11 at prefix instantiations | 53.0 | the impl table; R10's set (recorded) | its refusals anchor at the INSTANTIATION with a note into the callee's body (`emit_generic_leak`), so a prefix callee's rows belong to the instantiating module, which may be hot: a per-module record needs the instance keyed by (callee, types) with the note's source carried — found in Order 49 (incr-49) | HELD after the bound audit (S2a built) |
+| the tail's label tables | 46.5 (27.3 for "the remaining tables, labels and records" at Order 49's tip, after S2a) | none (settled types) | lowest: strings by id; MEASURED on kolt (incr-49, `VILAN_COUNTERS` `labels` line): `expr_types` 18,207 rows / 253 KB, declarations 3,183 / 156 KB, member headers 797 / 24 KB, hints 38 per client leg — ~0.5 MB of strings, ~1.5 MB with the maps, 0.2% of the editor's 774 MB RSS at a kolt keystroke | **built** (S2b, Order 49): `ModuleTables::expr_types` / `declaration_labels`, restored through `RestoredTables`, the builders skipping `table_entity` ids; plant `LabelTablesUnrecorded`; measured −0.5% of a served `views.vl` keystroke (4.46 → 4.44 G, 5.30 → 5.27 G world mode) on the same std |
 | resource types | 40.8 | the whole interned type table | not restorable until types are windowed | after S5 |
 | moves, liveness, clone sites | 20.4, 18.4, 17.5 | none | low; T1b already records rows | as they come |
 | the reference index's prefix half | (in lsp-index 55.7) | none | low | editor side |
@@ -636,6 +651,37 @@ What the map says about them:
   is a candidate for a prefix call site only through an impl header the prefix
   can see, which is exactly what M121 door (b) puts in the prefix. S3 depends on
   door (b) landing.
+
+**Order 49's finding on S3a (incr-49, read at next 71d61dde).** "Tables the
+emitters read" (Q2) under-counts the consumers: the rewrite edits the tree
+every later pass reads — `CallGraph::build` (the lowered `run` edges),
+`async_infer`, `platform_color`, `dispatch_refine`, `check_call_site_admission`,
+the const interpreter, `init_order`, the chunk planner — and the emitter surface
+is 279 `argument_ids` + 68 `.parameters` + 48 `Expr::Local` reads in
+`vilan-rust/src/lib.rs` and 19 / 34 / 26 in the JS transformer, most inside the
+debug and native lanes' files. That is an L change across two backends and seven
+passes. Two forms for Order 50:
+
+- **the emitter-table form** (L): four tables — the hidden parameters per
+  function in order, the threaded arguments per call, the `get()` → parameter
+  reads, the lowered `run` calls — consulted by every consumer above; sequenced
+  AFTER the debug and native lanes, never beside them; gated by the native
+  differential and the contexts/`track_caller` corpora byte-identical.
+- **the mutation-log form** (M, recommended): the rewrite's edits recorded per
+  PREFIX function with the ids they mint (a record keyed by the world like S2a's
+  and S2b's: replayed on a hit, recomputed for the hot set, planted red), the
+  emitters and the later passes untouched, the native differential trivially
+  green. S3b's seeds then come from the stored prefix results (the context
+  fixpoint's need set, the async set, the platform colours, `borrows`/`bumps`
+  verdicts) with hot callees as unknowns, iterated from the hot set's nodes and
+  their callers. The one M piece safe alone: the call graph built once per
+  analysis and stored with the prefix, hot nodes added over it (~20–40 ms of a
+  served keystroke; the four cold builds are 0.20 G Ir).
+
+What S3 is worth at Order 49's tip (served `views.vl` keystroke, medians over 42
+served analyses): contexts+graph 97 ms, async 52, platform 13, `infer_bumps`
+19, `infer_borrows` 1.4 — ~183 ms of a ~480 ms analysis; the 361 ms above was
+measured before M123's memo and S4.
 
 ### 7.3 S5: the spike
 

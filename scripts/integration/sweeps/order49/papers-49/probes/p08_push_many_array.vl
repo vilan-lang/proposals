@@ -1,0 +1,8 @@
+import std::iterator::Items;
+
+fun main() {
+	mut xs: List<i32> = [];
+	let a: [i32; 3] = [1, 2, 3];
+	xs.push_many(a);
+	print(xs.len());
+}

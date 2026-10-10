@@ -1,0 +1,15 @@
+// FIND (native-49): a list of function ITEMS (`[double, double]`) types as
+// `List<fn double(i32): i32>`, and calling an element is refused on both
+// backends: "cannot call this as a function: it is fn double(i32): i32". A
+// bound item (`let g = double; g(4)`) and a closure-typed list
+// (`List<|i32| i32>`) both call. Expected: 6.
+import std::io::print;
+
+fun double(value: i32): i32 {
+	value * 2
+}
+
+fun main() {
+	let fs = [double, double];
+	print(fs[1](3));
+}

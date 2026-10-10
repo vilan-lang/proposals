@@ -1,0 +1,19 @@
+trait Shape {
+	fun area(self): i32;
+}
+
+struct Square {
+	side: i32,
+}
+
+impl Square with Shape {
+	fun area(self): i32 {
+		self.side
+	}
+}
+
+fun main() {
+	let shape: dyn Shape = Square { side = 2 };
+	let square: Square = shape;
+	let _ = square;
+}

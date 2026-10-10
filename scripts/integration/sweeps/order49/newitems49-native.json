@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B592",
+   "section": "B",
+   "kind": "bug (analyzer; S)",
+   "area": "Type inference",
+   "status": "OPEN — filed 2026-10-09 (native-49's find, Order 49)",
+   "discussion": "native-49 (Order 49); sweeps/order49/native-49/finds/list_of_fixed_arrays_literal.vl",
+   "title": "A list literal of array literals under `List<[i32; 2]>` is refused on both backends — \"Expected List<[i32; 2]>, but got List<List<i32>>\": the element expectation does not reach the inner literals",
+   "body": "`let listed: List<[i32; 2]> = [[1, 2], [3, 4]];` is refused; the nested `[[i32; 2]; 2]` annotation is accepted, so a fixed-array element type directs an array literal one level down but a `List`'s element type does not. Expected on both: `[ [ 1, 2 ], [ 3, 4 ] ]`. Repro: finds/list_of_fixed_arrays_literal.vl. Sizing S; analyzer (the literal's expected-type seeding)."
+  },
+  {
+   "id": "A166",
+   "section": "A",
+   "kind": "std gap / design (S)",
+   "area": "Standard library",
+   "status": "OPEN — filed 2026-10-09 (native-49's find, Order 49)",
+   "discussion": "native-49 (Order 49); sweeps/order49/native-49/finds/fixed_array_equality.vl",
+   "title": "`==` over two fixed arrays is refused on both backends (\"type '[i32; 3]' does not implement the `PartialEq` operator; add `impl [i32; 3] with PartialEq`\") — std has `List`'s blanket and none for `[T; n]`, and the steer names an impl no program can write for every length",
+   "body": "`let fixed: [i32; 3] = [1, 2, 3]; print(fixed == [1, 2, 3]);` is refused. A `[T; n]` is a value aggregate (destruction.md); a blanket `impl [type T: PartialEq; type N] with PartialEq` (or whatever the array-lengths paper's generic-length spelling rules) would match `List`'s, and the steer should not ask for a per-length impl. Natively Rust's `[T; N]: PartialEq` is structural, so the native half needs the same element dispatch F118's generic operators now take (a written element `eq`). Repro: finds/fixed_array_equality.vl. Sizing S once the array-lengths paper (papers-49) says how a length is generic; std + the steer's wording."
+  },
+  {
+   "id": "B593",
+   "section": "B",
+   "kind": "bug (analyzer; S)",
+   "area": "Type inference",
+   "status": "OPEN — filed 2026-10-09 (native-49's find, Order 49)",
+   "discussion": "native-49 (Order 49); sweeps/order49/native-49/finds/call_a_listed_function_item.vl",
+   "title": "A list of function ITEMS types as `List<fn double(i32): i32>` and calling an element is refused on both backends — \"cannot call this as a function: it is fn double(i32): i32\" — where a bound item (`let g = double; g(4)`) and a closure-typed list both call",
+   "body": "`let fs = [double, double]; print(fs[1](3));` is refused. The element type is the item's own `Type::Function`, and the value-call check admits a closure type and a binding of an item but not an item-typed EXPRESSION. Either the list literal coerces its items to the closure type (`function_closure_type`, the coercion F119 discussed) or the call admits `Type::Function` at any callee. Expected: 6. Repro: finds/call_a_listed_function_item.vl. Sizing S; analyzer."
+  },
+  {
+   "id": "F123",
+   "section": "F",
+   "kind": "perf (native) (S–M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-09 (native-49's find, Order 49)",
+   "discussion": "native-49 (Order 49); sweeps/order49/native-49/finds/shared_view_std_method_copies.vl",
+   "title": "native (perf): a std METHOD over a field of a `Shared` view still copies the field out of the cell — `cell.read().seen.contains(\"x\")` clones the whole set per membership test (F114 covered the intrinsics only)",
+   "body": "F114 reads the reading INTRINSICS (`len`, `get`, the `str` readers) over a `Shared` view's spine through a view of the cell. `HashSet::contains`, `HashMap::get` and `contains_key` are std functions, not intrinsics, and they run the key's `Hash`/`Eq` — user code that could reach the same cell through another handle (F39's runtime half), so a view held across them needs F102's reach analysis (no argument, closure or key type can touch the cell) before it is sound. Repro: finds/shared_view_std_method_copies.vl (prints `true`, `[ 0, 4 ]` on both; the emitted `main` holds `read_with(|view| view.seen.clone())`). Sizing S–M; native."
+  },
+  {
+   "id": "F124",
+   "section": "F",
+   "kind": "native refusal by name (M)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-09 (native-49's find, Order 49)",
+   "discussion": "native-49 (Order 49); sweeps/order49/native-49/F99-aliasing-loans.md",
+   "title": "native: a model of aliasing loans (F99's second half) — group each root's view bindings into a LOAN GROUP; a nested group lowers to Rust reborrows, an interleaved one (transparent-references.vl) promotes its root into a cell with lens-handle views, its compound writes settle the place once, and a `&mut` call over a group member is refused when another argument reaches the root",
+   "body": "The design note sweeps/order49/native-49/F99-aliasing-loans.md (native-49, Order 49). `let c: &mut i32 = b;` with `b`, `c` and the owner interleaving is legal vilan (rule 3 aliases, rule 4 forbids only invalidation) and illegal Rust. §2.1: a group whose members' live intervals NEST is a chain of reborrows (`let c = &mut *b;`), free at run time — the common forwarding shape. §2.2: an interleaved group puts its root in the counted cell a captured `mut` binding already uses and makes each view a handle (cell + path, a new `vilan_rt::Place<T>`); every access a momentary borrow; `same(c) /= 10` settles the handle once (native-48's double evaluation); a `borrows` callee gets a per-instance handle signature; a `&mut` callee runs under `with_mut`, refused at compile time when another argument or a closure (F102's reach) touches the group. §2.3 keeps refused: a group over a borrowed parameter root, across an `await`, into an enum payload. Not S: the interval test needs an ordered access list no record holds, and every view read/write path learns the handle. Estate: transparent-references.vl (the last platform-free program refused for a native gap besides capture-clones' B579). Rec: build §2.1 first, §2.2 as its own slice. Sizing M."
+  }
+ ]
+}

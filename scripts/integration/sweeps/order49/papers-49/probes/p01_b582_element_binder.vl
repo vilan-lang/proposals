@@ -1,0 +1,14 @@
+trait Count {
+	fun count(self): i32;
+}
+
+impl [type T; 3] with Count {
+	fun count(self): i32 {
+		3
+	}
+}
+
+fun main() {
+	let a: [i32; 3] = [1, 2, 3];
+	print(a.count());
+}

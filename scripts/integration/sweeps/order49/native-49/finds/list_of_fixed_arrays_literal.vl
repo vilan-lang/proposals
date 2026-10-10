@@ -1,0 +1,12 @@
+// FIND (native-49): a list literal whose elements are array literals, under a
+// `List<[i32; 2]>` annotation, is refused by the analyzer on both backends:
+// "Expected List<[i32; 2]>, but got List<List<i32>> instead". The element
+// position's expectation (`[i32; 2]`) does not reach the inner literals, which
+// type as `List<i32>`; a nested `[[i32; 2]; 2]` annotation works. Expected on
+// both: [ [ 1, 2 ], [ 3, 4 ] ].
+import std::io::print;
+
+fun main() {
+	let listed: List<[i32; 2]> = [[1, 2], [3, 4]];
+	print(listed);
+}

@@ -1,0 +1,8 @@
+fun first<T>(values: [T; 3]): T {
+	values[0]
+}
+
+fun main() {
+	let b: [i32; 4] = [1, 2, 3, 4];
+	print(first(b));
+}

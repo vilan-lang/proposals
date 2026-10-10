@@ -1,0 +1,12 @@
+// debug-49's find: the native backend renders no `BigInt` as text. Every
+// spelling is refused by name ("does not emit an interpolation of a value with
+// its own `render` yet"); JS prints `12` for each. This is why std's
+// `impl BigInt with Debug` (E283) is JS-only natively.
+import std::display::Display;
+
+fun main() {
+	let big = 12n;
+	print(i"{big}");
+	print("" + big);
+	print(big.to_string());
+}

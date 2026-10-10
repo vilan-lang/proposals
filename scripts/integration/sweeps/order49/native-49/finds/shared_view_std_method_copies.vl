@@ -1,0 +1,26 @@
+// FIND (native-49, after F114): a std METHOD over a field of a `Shared` view
+// still copies the field out of the cell first —
+// `cell.read().seen.contains("x")` emits `contains_N(&(cell).read_with(|view|
+// view.seen.clone()), ..)`, the whole set cloned per membership test. F114
+// reads the INTRINSICS (`len`, `get`, the `str` readers) through a view of
+// the cell; `HashSet::contains` / `HashMap::get` / `contains_key` are std
+// functions that run the key's `Hash`/`Eq`, which could reach the same cell
+// (F39's alias), so a view there needs the F102-style reach analysis. Prints
+// true, [ 0, 4 ] on both.
+import std::hash_map::HashMap;
+import std::hash_set::HashSet;
+import std::io::print;
+import std::shared::Shared;
+
+struct Bag {
+	seen: HashSet<str>,
+	counts: HashMap<str, i32>,
+}
+
+fun main() {
+	let cell = Shared::new(Bag { seen = HashSet::new(), counts = HashMap::new() });
+	cell.write().seen.insert("x");
+	cell.write().counts.insert("k", 4);
+	print(cell.read().seen.contains("x"));
+	print(cell.read().counts.get("k"));
+}

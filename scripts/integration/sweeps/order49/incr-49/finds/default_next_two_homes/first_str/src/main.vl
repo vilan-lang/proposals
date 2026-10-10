@@ -1,0 +1,12 @@
+import pkg::b::Box;
+import pkg::z1;
+import pkg::a9;
+
+fun main() {
+	mut box = Box { n = 1 };
+	for item in box {
+		let copy: i32 = item;
+		print(copy);
+	}
+	print("done");
+}

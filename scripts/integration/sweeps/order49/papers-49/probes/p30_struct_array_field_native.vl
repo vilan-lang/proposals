@@ -1,0 +1,8 @@
+struct Pixel {
+	rgba: [u8; 4],
+}
+
+fun main() {
+	let p = Pixel { rgba = [255u8, 0u8, 0u8, 255u8] };
+	print(p.rgba[0]);
+}

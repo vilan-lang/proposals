@@ -1,0 +1,14 @@
+trait Count {
+	fun count(self): i32;
+}
+
+impl Option<[type T; 2]> with Count {
+	fun count(self): i32 {
+		2
+	}
+}
+
+fun main() {
+	let o: Option<[i32; 2]> = Some([1, 2]);
+	print(o.count());
+}

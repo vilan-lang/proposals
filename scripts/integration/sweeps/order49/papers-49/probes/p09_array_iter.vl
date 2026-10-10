@@ -1,0 +1,9 @@
+fun main() {
+	let a: [i32; 3] = [1, 2, 3];
+	mut xs: List<i32> = [];
+	for v in a {
+		xs.push(v);
+	}
+	print(xs.len());
+	let it = a.iter();
+}

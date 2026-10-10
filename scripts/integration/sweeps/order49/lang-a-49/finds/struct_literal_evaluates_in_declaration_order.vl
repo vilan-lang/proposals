@@ -1,0 +1,23 @@
+// lang-a-49 find (vilan @ next 71d61dde): a struct literal evaluates its field
+// initializers in DECLARATION order on the JS backend, not as written:
+// prints "x", "y", 3 where the literal wrote `y` first. B452 walks the fields as
+// written and spills only when a sibling lowers to statements, then lays them out
+// in declaration order, so two plain calls run in layout order.
+// The native backend evaluates as written ("y", "x", 3), so the two backends
+// DISAGREE: a miscompile-class divergence the native differential has no probe for.
+import std::io::print;
+
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+fun say(label: str, value: i32): i32 {
+    print(label);
+    value
+}
+
+fun main() {
+    let p = Point { y = say("y", 2), x = say("x", 1) };
+    print(p.x + p.y);
+}

@@ -1,0 +1,11 @@
+// lang-a-49 find (vilan @ next 71d61dde, also on this lane's tip): a spread of a tuple
+// LITERAL into a spread parameter (`draw(..(3, 4))`) is refused by the native
+// backend — "does not emit a spread element whose tuple type did not resolve
+// yet" — while JS runs it (34). `draw(..p)` over a binding builds natively.
+import std::io::print;
+fun draw(...at: (f64, f64)): f64 { at.0 * 10 + at.1 }
+fun main() {
+    print(draw(..(3, 4)));
+    let p = (5.0, 6.0);
+    print(draw(..p));
+}

@@ -1,0 +1,25 @@
+== std: 70 .vl files, 0 `[X; n]` sites
+   lengths: {}
+== examples: 40 .vl files, 0 `[X; n]` sites
+   lengths: {}
+== corpus: 148 .vl files, 7 `[X; n]` sites
+   lengths: {'3': 3, '2': 3, '4': 1}
+   fixed-arrays.vl:13: [i32; 3]    | fun total(values: [i32; 3]): i32 {
+   fixed-arrays.vl:21: [i32; 2]    | fun make(): [i32; 2] {
+   fixed-arrays.vl:22: [5; 2]    | [5; 2]
+   fixed-arrays.vl:30: [0; 4]    | let zeros = [0; 4];
+   fixed-arrays.vl:33: [i32; 3]    | mut buf: [i32; 3] = [1, 2, 3];
+   fixed-arrays.vl:46: [Cell { n = 7 }; 3]    | mut cells = [Cell { n = 7 }; 3];
+   fixed-arrays.vl:54: [[i32; 2]; 2]    | let grid: [[i32; 2]; 2] = [[1, 2], [3, 4]];
+== docs: 64 .vl files, 2 `[X; n]` sites
+   lengths: {'4': 1, '3': 1}
+   tour/values-and-types.md:276: [0; 4]    | let buffer = [0; 4];
+   tour/values-and-types.md:277: [u8; 3]    | mut rgb: [u8; 3] = [255u8, 128u8, 0u8];
+== benchmarks: 8 .vl files, 0 `[X; n]` sites
+   lengths: {}
+== macro_std: 3 .vl files, 0 `[X; n]` sites
+   lengths: {}
+== kolt: 31 .vl files, 0 `[X; n]` sites
+   lengths: {}
+== website: 11 .vl files, 0 `[X; n]` sites
+   lengths: {}

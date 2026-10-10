@@ -1,0 +1,13 @@
+// FIND (native-49): `==` over two fixed arrays is refused on both backends —
+// "type '[i32; 3]' does not implement the `PartialEq` operator; add `impl
+// [i32; 3] with PartialEq`" — where `List<T: PartialEq>` has a blanket in
+// std::compare. A `[T; n]` is a value aggregate (destruction.md), and the
+// steer names an impl a program cannot write for every length. Expected:
+// true, false.
+import std::io::print;
+
+fun main() {
+	let fixed: [i32; 3] = [1, 2, 3];
+	print(fixed == [1, 2, 3]);
+	print(fixed == [1, 2, 4]);
+}

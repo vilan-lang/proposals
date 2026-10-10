@@ -1,0 +1,7 @@
+// E?1 (c): a length literal of any suffix is accepted — `3f64` and `2i8` are lengths. Prints 3, 2.
+fun main() {
+	let a: [i32; 3f64] = [1, 2, 3];
+	let b = [0; 2i8];
+	print(a.len());
+	print(b.len());
+}

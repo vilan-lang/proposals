@@ -1,0 +1,64 @@
+{
+ "items": [
+  {
+   "id": "B590",
+   "section": "B",
+   "title": "`[T; n].len()` answers `i32` where every other length in the language answers `usize` (I5 S2 moved std's signatures; `len` on an array is a compiler fold, `Expr::ArrayLen` typed `primitive_struct_type(\"i32\")`, so the census never saw it): `let m: usize = a.len()` and `xs.len() + a.len()` are refused, and `a[a.len() - 1]` checks, runs on JS and is refused by rustc (`usize - i32`)",
+   "kind": "solver: a type (XS; breaking in principle, estate 0 edits)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-09 (papers-49's find, Order 49)",
+   "discussion": "papers-49 (Order 49); sweeps/order49/papers-49/finds/array_len_answers_i32.vl; probes p10, p29, p32, p36; proposal/array-lengths.md §5.5 (S0b); I5; fixed-arrays.md §10",
+   "body": "Repro (`finds/array_len_answers_i32.vl`, vilan 0.46.0): `let a: [i32; 3] = [1, 2, 3]; let m: usize = a.len();` -> \"Expected usize (an index: a position, a length or a count), but got i32 instead\"; `xs.len() + a.len()` -> \"`+` adds two values of the same type, but the operands are `usize` and `i32`\"; `a[a.len() - 1]` checks (B591's hole) and prints 3 on JS, while natively the fold renders Rust's `(a).len() - (1i32)` and rustc refuses E0308/E0277. Inside `impl [i32; 3] with Size { fun size(self): usize { self.len() } }` the same refusal (p29). fixed-arrays.md §10 typed `len()` as `i32` \"matching `List.len()`\"; I5 S2 (v0.41.0) made `List::len()`, `Tuple::len()` and every std length `usize`, and the intercept (analyzer.rs `resolve_method_call`, the `Type::Array` + `len` arm ~52377) and its type (`Expr::ArrayLen(_, _) => self.primitive_struct_type(\"i32\")`, ~44119) were left. Fix: type it `usize` (the native emission is already Rust's `usize` `.len()`; JS reads the literal or `.length`). Estate: 4 `.len()` calls on arrays (3 in the corpus' fixed-arrays.vl, 1 in the tour), all passed to `print`: no edit, no golden; the compiler's own pins asserting `i32` move. Sizing XS; solver-49 can take it beside B582."
+  },
+  {
+   "id": "B591",
+   "section": "B",
+   "title": "the subscript's `usize` check passes an index whose type is not yet known when the subscript resolves and nothing checks it again: `xs[one()]` and `xs[n.max(0)]` (both `i32`) check clean while `let i: i32 = 1; xs[i]` is refused; a negative call index panics \"the index is -1\" on JS and \"the index is 18446744073709551615\" natively",
+   "kind": "solver: a check that runs once (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-09 (papers-49's find, Order 49)",
+   "discussion": "papers-49 (Order 49); sweeps/order49/papers-49/finds/subscript_index_unchecked_call.vl; probes p35, p41, p42; B386; I5 S2",
+   "body": "Repro (`finds/subscript_index_unchecked_call.vl`, vilan 0.46.0): `fun minus_one(): i32 { 0 - 1 }` and `print(xs[n.max(0)]); print(xs[minus_one()]);` over a `List<i32>` -> `vilan check`: no errors. JS: `2`, then \"index out of bounds: the length is 3 but the index is -1\"; natively the emitted `(minus_one()) as usize` wraps and the panic reads \"... the index is 18446744073709551615\" (a differential the corpus does not carry). Cause: `subscript_index_is_an_index` (analyzer.rs ~60016) is lenient about an index that is `Unknown`/`Unresolved` (\"reported by the fixpoint's own leftover sweep\"), but a call's type is often still Unknown when the subscript resolves and then resolves to `i32`, which the leftover sweep does not report (it reports holes, not wrong types). B386's rule (\"`xs[i]` takes a `usize` and nothing else\") is therefore enforced only on indexes typed at resolution time. Fix: defer the subscript while its index is Unknown (the B290 pattern), or re-run the index check after the fixpoint over the subscripts that passed leniently. Expect estate fallout: every `xs[f()]` with an `i32` answer becomes a refusal with `.as_usize()` (count kolt, the website, std, the corpus before landing). Sizing S."
+  },
+  {
+   "id": "E287",
+   "section": "E",
+   "title": "a non-literal array length is answered four poor ways: in TYPE position the parser says \"found '[' expected a type\" (and the binding cascades \"cannot find 'a'\"); in a repeat literal the analyzer's refusal is followed by cascades off the substituted length 0 (\"index 0 is out of range for an array of length 0 (valid indices are 0 to 0)\", \"its type is `[_; 0]`\"); any suffix makes a length (`[i32; 3f64]`, `[0; 2i8]`); and an empty array's out-of-range message says \"valid indices are 0 to 0\"",
+   "kind": "diagnostics (S) — parser + analyzer",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-09 (papers-49's find, Order 49)",
+   "discussion": "papers-49 (Order 49); sweeps/order49/papers-49/finds/array_length_named_in_type.vl, array_length_cascade.vl, array_length_suffix.vl, array_length_zero_index.vl; probes p04, p05, p07, p18, p18b, p37, p39; proposal/array-lengths.md §5.6, S4",
+   "body": "(a) `const let SIZE = 4; let a: [u8; SIZE] = ..;` -> \"found '[' expected a type in type annotation\" plus \"cannot find 'a' in this scope\" at its use: `parse_array_length` (parsing.rs ~7768) takes only a number token inside `parse_array_type`'s `attempt`, so a name fails the whole `[..]` type and the analyzer's sentence \"an array length must be a non-negative integer literal (a `const` length is not supported yet)\" (`array_length_literal`, analyzer.rs ~36910) is reachable only from the repeat literal and a fractional length. (b) `[0u8; SIZE]` -> that sentence, then \"index 0 is out of range for an array of length 0 (valid indices are 0 to 0)\" at `a[0]`; `[i32; 3.0]` -> the sentence, then \"this array literal has 3 elements, but its type is `[_; 0]`\": the refusal substitutes 0 and every later check believes it (use an error length that suppresses the length checks). (c) `array_length_literal` matches `Node::Number(whole, None, _)` and ignores the suffix, so `[i32; 3f64]` and `[0; 2i8]` are lengths 3 and 2 (admit unsuffixed and `usize` only). (d) `let e: [i32; 0] = []; e[0]` -> \"valid indices are 0 to 0\" (say the array is empty). Fix: parse a name in the length position and refuse it in the analyzer with one sentence that names what a length may be (array-lengths.md §6 widens that set in S4); no cascade; the suffix rule; the empty wording. Ledger rows. Sizing S."
+  },
+  {
+   "id": "F121",
+   "section": "F",
+   "title": "natively, a struct with a fixed-array field does not build: the emitted `impl vilan_rt::Js for Pixel` casts `&self.rgba as &dyn vilan_rt::Js` and vilan-rt has no `Js` impl for `[T; N]` (it has `Json`'s) — rustc E0277 \"the trait bound `[u8; 4]: Js` is not satisfied\"; JS prints the field",
+   "kind": "bug (native backend; emitted Rust refused) (XS)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-09 (papers-49's find, Order 49)",
+   "discussion": "papers-49 (Order 49); sweeps/order49/papers-49/finds/native_struct_array_field.vl; probes p22, p30",
+   "body": "Repro (`finds/native_struct_array_field.vl`, vilan 0.46.0, `vilan run --backend rust`): `struct Pixel { rgba: [u8; 4] }`, `let p = Pixel { rgba = [255u8, 0u8, 0u8, 255u8] }; print(p.rgba[0]);` -> JS `255`; natively rustc refuses the struct's emitted `Js` impl (`vilan_rt::js_items(&[&self.rgba as &dyn vilan_rt::Js])`), E0277, before the program prints anything — the impl is emitted for every struct, so any struct with an array field fails, printed or not. `dbg` of a local array works (p31) and `Json for [T; N]` exists (`vilan-rt/src/lib.rs` ~1862). Fix: `impl<T: Js, const N: usize> Js for [T; N]` in vilan-rt (rendered as a list, as `dbg` and node print one), and the same audit for vilan-rt's other per-type traits; pin on the native differential (a struct with an array field, printed whole and by element). Sizing XS; native."
+  },
+  {
+   "id": "F122",
+   "section": "F",
+   "title": "natively, a large fixed array lives on the stack: `mut big = [0; 4000000]` emits `std::array::from_fn::<_, 4000000, _>(..)` and the program aborts \"thread 'main' has overflowed its stack\" where JS prints the element",
+   "kind": "bug (native backend; runtime abort) (S) — a rendering decision",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-09 (papers-49's find, Order 49)",
+   "discussion": "papers-49 (Order 49); sweeps/order49/papers-49/finds/native_big_array_stack.vl; probe p40; proposal/array-lengths.md §8.3, Q12",
+   "body": "Repro (`finds/native_big_array_stack.vl`, vilan 0.46.0): `mut big = [0; 4000000]; big[3999999] = 7; print(big[3999999]);` -> JS `7`; natively \"thread 'main' has overflowed its stack / fatal runtime error: stack overflow, aborting\". `[T; N]` renders as a Rust array (`rust_type`, vilan-rust lib.rs ~2378), which is right for a pixel and wrong for a 16 MB table; value semantics copy it on every binding, so a boxed rendering must keep the copy (`Box<[T; N]>` clones its contents). Rec (array-lengths.md Q12): keep the type, box the STORAGE above a byte threshold fixed in the emitter (element size x N; measure where the default 8 MB main stack and the copies stop being safe), and pin both sides of the threshold on the native differential. Sizing S; native."
+  },
+  {
+   "id": "D15",
+   "section": "D",
+   "title": "`spec/grammar.md` does not state the fixed-array grammar: §3.9's `type` production has no `[T; n]` arm and §3.6's `list` production has no repeat literal `[value; n]` — both shipped 2026-07-16 (fixed-arrays.md)",
+   "kind": "docs (XS)",
+   "area": "Documentation",
+   "status": "OPEN — filed 2026-10-09 (papers-49's find, Order 49)",
+   "discussion": "papers-49 (Order 49); docs/spec/grammar.md §3.6 (`list`, ~645) and §3.9 (`type`, ~889); proposal/array-lengths.md §4, S6",
+   "body": "Read at next @445c9346: `type = \"&\" [\"mut\"] type | (\"type\" IDENT | \"_\") [..] | closure-type | \"dyn\" type-path | type-path | mapped | tuple ;` has no `\"[\" type \";\" NUMBER \"]\"`, and `list = \"[\" [ expression { \",\" expression } [ \",\" ] ] \"]\" ;` has no `\"[\" expression \";\" NUMBER \"]\"` (parsing.rs `parse_array_type` ~7752, `Node::Repeat`). The tour (values-and-types.md ~269) and the `for` paragraph (§3.x, ~592) mention `[T; n]`, so only the grammar is silent. Fix: the two productions, with the note that the length is an integer literal (array-lengths.md S6 rewrites it if the length grammar widens). Sizing XS."
+  }
+ ]
+}

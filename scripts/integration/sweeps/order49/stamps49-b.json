@@ -1,0 +1,7 @@
+{"prefix": "- 2026-10-09 (Order 49, papers-49's report): ", "stamps": {
+"I2": "the array-lengths paper is written (proposal/array-lengths.md): a length as a type-level number (`Type::Array(T, Length)`), `[type T; _]` = `[type T; const N]` with the name declined, `<const N>` a usize length and nothing else, named lengths without the staging fork (a literal, a const parameter, or a name bound immutably to a literal), 13 questions with recs, six slices (S0 = B582 and B590 now in solver-49; S1–S6 after the M110 S5 verdict). Estate: 9 `[T; n]` sites, every length a literal <= 4, 0 non-literal, 0 array impl subjects.",
+"A163": "RULED 'goes with I2': the paper's S2 ships `[type T; _]` and `[type T; const N]` together (the four changes are the same); the narrow door alone is recommended against (Q7). A161 follows in the paper's S5 (std's first wave: Items, PartialEq/Eq, Hashable, Debug, to_list, iter).",
+"A161": "waits on array-lengths.md S2 (the any-length impl head); then the paper's S5 writes `impl [type T; const N] with Items<T>`.",
+"B582": "papers-49: the fix is one arm in `register_subject_binders` (analyzer.rs ~36157: `Node::ArrayType(element, _)` recurses into the element); selection already binds through the element; it unlocks element-generic impls at one literal length each, not A161. solver-49 (wave 2) builds it (array-lengths.md S0).",
+"F109": "papers-49: does NOT reproduce on 0.46.0 (F100 lowers the directed literal to a Rust array; F109's own repro prints 1 on both backends). native-49 confirms and closes."
+}}

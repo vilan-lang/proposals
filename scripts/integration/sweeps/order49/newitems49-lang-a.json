@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B596",
+   "section": "B",
+   "kind": "miscompile (S)",
+   "area": "Code generation",
+   "status": "OPEN — filed 2026-10-09 (lang-a-49's find, Order 49)",
+   "discussion": "lang-a-49 (Order 49); sweeps/order49/lang-a-49/finds/struct_literal_evaluates_in_declaration_order.vl",
+   "title": "A struct literal evaluates its field initializers in DECLARATION order on the JS backend and in WRITTEN order natively — `Point { y = say(\"y\", 2), x = say(\"x\", 1) }` prints x, y on JS and y, x on native",
+   "body": "B452's `walk_siblings_in_order` walks the fields as written and spills an earlier sibling only when a later one lowers to statements; the JS array is then laid out in declaration order, so two plain calls run in layout order. vilan-rust emits a Rust struct literal, which evaluates as written. The two backends disagree on a side-effecting initializer, and the native differential has no probe for it. Fix as B569 S2 did for a tuple literal matched by name (`Program::tuple_literal_layouts`): when the written order is not the layout, bind every unsettled initializer to a `const` in written order, then lay out. Repro: finds/struct_literal_evaluates_in_declaration_order.vl. Sizing S; transformer."
+  },
+  {
+   "id": "B597",
+   "section": "B",
+   "kind": "diagnostics (XS)",
+   "area": "Diagnostics",
+   "status": "OPEN — filed 2026-10-09 (lang-a-49's find, Order 49)",
+   "discussion": "lang-a-49 (Order 49); sweeps/order49/lang-a-49/finds/tuple_quoted_as_underscore.vl",
+   "title": "A tuple-typed `[rpc]` parameter or `[derive(Wire)]` field is refused quoting its type as `_` — \"parameter `message` of `[rpc]` method `echo` is `_`, which is not Wire\"",
+   "body": "`render_type` (analyzer.rs) renders a name, a generic application and a `::` path as written and falls back to `_` for every other form; a tuple (labelled or not), an array and a closure type are the common cases. The refusal is right (tuples have no Wire impl; a user `impl (i32, i32) with Wire` is not consulted by these syntactic checks either), the quote is not. `render_type` also feeds the derive generators' emitted source, so the fix is a separate quoting path for the messages, not a wider `render_type` (lang-a-49 tried the wider one: the Wire derive then emitted `(x: i32, y: i32)` where its generated code needs an expression path, and failed later and worse). Repro: finds/tuple_quoted_as_underscore.vl. Sizing XS."
+  },
+  {
+   "id": "F127",
+   "section": "F",
+   "kind": "native gap (S)",
+   "area": "Native backend",
+   "status": "OPEN — filed 2026-10-09 (lang-a-49's find, Order 49)",
+   "discussion": "lang-a-49 (Order 49); sweeps/order49/lang-a-49/finds/native_spread_of_a_tuple_literal.vl",
+   "title": "A spread of a tuple LITERAL into a spread parameter (`draw(..(3, 4))`) is refused natively — \"does not emit a spread element whose tuple type did not resolve yet\" — while JS runs it",
+   "body": "`draw(..p)` over a binding builds natively; spreading the literal itself does not, labelled or not (B569 S4 met it with `draw(..(x = 3, y = 4))`). The spread operand's own tuple type is not recorded for a literal operand (`tuple_element_types` covers elements, not a spread operand), which `spread_tuple` reads. Repro: finds/native_spread_of_a_tuple_literal.vl. Sizing S; vilan-rust (or the analyzer's record for a spread operand)."
+  }
+ ]
+}

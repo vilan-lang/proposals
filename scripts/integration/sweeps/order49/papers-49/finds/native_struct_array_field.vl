@@ -1,0 +1,11 @@
+// F?1: natively, a struct with a fixed-array field does not build: the emitted
+// `impl vilan_rt::Js for Pixel` casts `&self.rgba as &dyn vilan_rt::Js` and vilan-rt has no
+// `Js` impl for `[T; N]` (it has `Json`'s). rustc E0277. JS prints 255.
+struct Pixel {
+	rgba: [u8; 4],
+}
+
+fun main() {
+	let p = Pixel { rgba = [255u8, 0u8, 0u8, 255u8] };
+	print(p.rgba[0]);
+}

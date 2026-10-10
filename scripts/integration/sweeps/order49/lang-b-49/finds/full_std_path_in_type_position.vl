@@ -1,0 +1,8 @@
+import std::reactive::SignalCell;
+
+// auto-annotations.md §5 tier 3: a type spelled by its full std path does not
+// resolve without an import, so `--fix` cannot fall back to it.
+fun main() {
+	let c: std::reactive::SignalCell<i32> = SignalCell::new(1);
+	let _ = c;
+}

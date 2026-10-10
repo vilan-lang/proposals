@@ -1,0 +1,10 @@
+// B?1: `[T; n].len()` answers `i32`; every other length in the language answers `usize` (I5 S2).
+// vilan check: line 7 refused "Expected usize (an index ...), but got i32"; line 8 refused "`+` ... `usize` and `i32`".
+// Delete lines 7-8: line 9 CHECKS and runs on JS (prints 3), natively rustc refuses `usize - i32` (the fold renders Rust's `.len()`).
+fun main() {
+	let a: [i32; 3] = [1, 2, 3];
+	let xs: List<i32> = [1, 2, 3];
+	let m: usize = a.len();
+	print(xs.len() + a.len());
+	print(a[a.len() - 1]);
+}

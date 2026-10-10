@@ -1,0 +1,14 @@
+// B?2: the subscript's `usize` check passes an index whose type is not yet known when the
+// subscript resolves (a call, a method call), and nothing checks it again.
+// `let i: i32 = 1; xs[i]` is refused; every line below checks clean.
+// JS panics "the index is -1"; natively the `as usize` cast wraps: "the index is 18446744073709551615".
+fun minus_one(): i32 {
+	0 - 1
+}
+
+fun main() {
+	let xs: List<i32> = [1, 2, 3];
+	let n: i32 = 1;
+	print(xs[n.max(0)]);
+	print(xs[minus_one()]);
+}

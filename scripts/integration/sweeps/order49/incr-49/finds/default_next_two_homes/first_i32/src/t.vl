@@ -1,0 +1,7 @@
+import std::option::Option::{ self, None, Some };
+
+export trait Counting<T> {
+	fun next(mut self): Option<T> {
+		None
+	}
+}

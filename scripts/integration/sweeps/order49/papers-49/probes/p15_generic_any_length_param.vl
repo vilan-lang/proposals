@@ -1,0 +1,10 @@
+fun keep<T>(value: T): T {
+	value
+}
+
+fun main() {
+	let a: [i32; 3] = [1, 2, 3];
+	let b: [i32; 4] = [1, 2, 3, 4];
+	print(keep(a)[2]);
+	print(keep(b)[3]);
+}

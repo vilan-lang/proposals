@@ -1,0 +1,20 @@
+// FIND (solver-49, B580's estate): a binding whose hole a call's BARE-TRAIT
+// parameter states is not grounded by it. `take(subject)` names
+// `Signal<Option<str>>`, and `subject.set(Some("x"))` passes an `Option<str>`,
+// yet `subject` stays `SignalCell<Option<unknown>>`: B580 (v0.47.0) refuses it
+// at the initializer. kolt's src/sidebar.vl:65 is this shape.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::reactive::{ Signal, SignalCell };
+
+fun take(subject: Signal<Option<str>>) {
+	print(subject.get().is_some());
+}
+
+fun main() {
+	let subject = Signal::new(None);
+	take(subject);
+	subject.set(Some("x"));
+}
+
+main();

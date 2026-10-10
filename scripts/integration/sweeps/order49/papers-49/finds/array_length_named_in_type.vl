@@ -1,0 +1,10 @@
+// E?1 (a): a named length in TYPE position is refused by the parser with
+// "found '[' expected a type in type annotation" — the analyzer's own sentence
+// ("an array length must be a non-negative integer literal (a `const` length is not supported yet)")
+// is reached only from the repeat literal.
+const let SIZE = 4;
+
+fun main() {
+	let a: [u8; SIZE] = [0u8, 0u8, 0u8, 0u8];
+	print(a[0]);
+}

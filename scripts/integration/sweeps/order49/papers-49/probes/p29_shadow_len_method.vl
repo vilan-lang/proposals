@@ -1,0 +1,14 @@
+trait Size {
+	fun size(self): usize;
+}
+
+impl [i32; 3] with Size {
+	fun size(self): usize {
+		self.len()
+	}
+}
+
+fun main() {
+	let a: [i32; 3] = [1, 2, 3];
+	print(a.size());
+}

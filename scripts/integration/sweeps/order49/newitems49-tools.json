@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B594",
+   "section": "B",
+   "title": "`vilan check <file>` on a `[library]` file resolves no `[library.dependencies]`: `import dep::d;` in a library module reports \"cannot find module 'dep' to import\" while `vilan check <library>` and the editor resolve it",
+   "kind": "CLI bug (file mode) (S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-09 (tools-49's find, Order 49)",
+   "discussion": "tools-49 (Order 49); sweeps/order49/tools-49/finds/b_library_file_dependencies/",
+   "body": "B586 roots a library file at its layer root and makes it a module (OpenFile), but `file_project` still hands it no dependency workspace, where the language server's `[library]` arm resolves it (`resolve_dependencies`). Repro: finds/b_library_file_dependencies (`vilan check lib/src/user.vl`). Rec: resolve the library's dependency workspace in file mode as the `[package]` arm does; not tried because that plumbing (`package_dir`) assumes a `[package]` manifest. Sizing S."
+  },
+  {
+   "id": "N162",
+   "section": "N",
+   "title": "`vilan check <std file>` still reports errors on 11 of std's 70 files after B586: intrinsic `external fun`s with no `[extern]` binding, layer files importing base-layer modules by `pkg::`, and an `[internal]` field read in `store.vl`",
+   "kind": "tooling (file mode) (S-M)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-09 (tools-49's find, Order 49)",
+   "discussion": "tools-49 (Order 49); sweeps/order49/tools-49/finds/e_std_file_mode_check/",
+   "body": "B586 named `vilan check vilan/std/src/web/dom.vl` (\"cannot find 'reactive'\"); that now resolves `pkg::` and reports the next layer of std-as-entry artifacts: (a) `external fun query_selector_all` (dom.vl), `Context::new`, `Shared::new`, `scan`, `range_i32`... names no body - transformer intrinsics the rule does not know when std is the entry; (b) a file in a platform layer (`browser/web/ui.vl`, `process/web/ui.vl`, `web/document.vl`, `web/prelude.vl`, `web/router.vl`) importing a base-layer module by `pkg::` - file mode has one root, the layer's (the deferral the editor records); (c) `reactive/store.vl:726` reads an `[internal]` Store field and B568 treats the entry as outside std. A program importing std is clean. Rec: analyze a file under the toolchain's own std directory as std, or close as \"std is not checked as an entry\" with the doc saying so. Owner's call. Sizing S-M."
+  },
+  {
+   "id": "N163",
+   "section": "N",
+   "title": "`.config/nextest.toml`'s priority tiers (100/90) were ranked at opt-level 0 and should be re-measured under the `ci-test` profile (vilan-core at opt-level 1), where analysis-bound tests shrink ~3x and compute-bound ones do not",
+   "kind": "test infrastructure (XS)",
+   "area": "Hygiene",
+   "status": "OPEN — filed 2026-10-09 (tools-49's find, Order 49)",
+   "discussion": "tools-49 (Order 49); N156's commit message and report",
+   "body": "N156 puts CI, the release gate and the seal on a profile that cuts every analysis ~3.2x; the tiers' durations (edit_replay_differential 293 s wall, docs 212 s, check_scope 100 s, native 119-184 s) were measured at opt-level 0 under load 33-49. The names are a schedule not a gate, so nothing breaks, but the longest-first order may have changed. Re-measure with the N151 per-test CPU runner on the first ci-test CI/seal run. Also read: the first ci-test CI run per cache key is cold (a clean opt-level-1 vilan-core, est. +1.5 min on the shared runners) and the deep_nesting binary adds a dev-profile vilan-core build to shard 1. Sizing XS."
+  },
+  {
+   "id": "E288",
+   "section": "E",
+   "title": "E286's residue: `infer_platform` does not follow a dependency's `lib.vl` surface (a re-export of a browser-declared module)",
+   "kind": "editor (platform inference) (XS)",
+   "area": "Editor & tooling",
+   "status": "OPEN — filed 2026-10-09 (tools-49's find, Order 49)",
+   "discussion": "tools-49 (Order 49); crates/vilan-core/tests/module_resolution.rs e286_* pins",
+   "body": "E286 reads `pkg::<module>` and `<dependency>::<module>` imports against the module FILE's own declaration (and a dependency's browser-only layer). `import widgets::Thing` where `Thing` is re-exported by `widgets`' `lib.vl` from a browser-declared module is not followed. Rec: leave until someone's library hits it; the status line says \"default\" and the author can declare the file's platform. Sizing XS."
+  }
+ ]
+}

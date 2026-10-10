@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B598",
+   "section": "B",
+   "title": "a std trait a USER file never imports still competes at that file's method call: `[1, 2].describe()` with only `pkg::describe::Describe` imported is refused \"'describe' is ambiguous on 'List<i32>': both 'Wire' and 'Describe' provide it\" — B515 would refuse `Wire`'s member in that file anyway",
+   "kind": "semantics (S) — analyzer, method resolution vs B515's reach",
+   "area": "Language & type system",
+   "status": "OPEN — filed 2026-10-09 (solver-49's find, Order 49; met building B583)",
+   "discussion": "B583 (solver-49) made std's lookups keep only the traits std reaches; the same rule for a USER file is B515's reach (the file imports the trait, a name from its module or the block's, the prelude binds one, or the file declares it). Rec: narrow the candidate field by that reach during the fixpoint, never emptying (B401's shape), with `check_trait_method_scope`'s reach factored into one function both read; asked only where two candidates name different traits.",
+   "body": "Repro (`sweeps/order49/solver-49/finds/unreached-trait-makes-user-call-ambiguous/`, `vilan run main.vl` at next @71d61dde): `describe.vl`: `export trait Describe { fun describe(self): str; }` / `export impl List<type T> with Describe { .. }`; `main.vl`: `import std::io::print; import pkg::describe::Describe; fun main() { print([1, 2].describe()); }` -> \"'describe' is ambiguous on 'List<i32>': both 'Wire' and 'Describe' provide it; call 'Wire::describe([1, 2])' or 'Describe::describe([1, 2])' to pick one\" at main.vl:5. main.vl never imports `Wire`, so B515/B535 would refuse `Wire::describe` there; the ambiguity is with a candidate the file cannot call, and its steer offers a spelling that needs an import. Rust's rule (and B515's): only traits in scope are candidates. Sizing S; solver."
+  },
+  {
+   "id": "B599",
+   "section": "B",
+   "title": "a binding whose hole a call's BARE-TRAIT parameter states is not grounded by it: `let subject = Signal::new(None); take(subject)` with `take(subject: Signal<Option<str>>)` keeps `SignalCell<Option<unknown>>`, so B580 (v0.47.0) refuses it — kolt's `src/sidebar.vl:65` is the shape",
+   "kind": "inference (S–M)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-09 (solver-49's find, Order 49; B580's estate)",
+   "discussion": "F108's solver half (solver-49) grounds a LIST literal's slot through the bound its parameter carries (`ground_list_slots_through_bounds`): the bound's arguments known, one impl of the bound's trait admitting the argument, the slot filled from that impl's subject. The same step over a bare-trait parameter (`Signal<Option<str>>` is an implicit generic bounded `Signal<Option<str>>`; `impl SignalCell<type T> with Signal<T>` gives `T = Option<str>`) would fill `None`'s hole — but the fill is restricted to list slots today. Rec: widen the fill to a hole a variant constructor minted (B357's per-parameter `Unknown`), with the same one-impl rule; then kolt's site infers and B580's estate there drops to 0. `subject.set(Some(..))` does not fill it either (no slot unification for `set`).",
+   "body": "Repro: `sweeps/order49/solver-49/finds/hole-stated-by-bare-trait-parameter/main.vl` (solver-49 tip): `vilan check` -> \"cannot infer the type of `subject`: it is `SignalCell<Option<…>>`, and inference cannot settle the `…` from anything the program does with it\" (B580). Before B580 it checked clean and ran on JS with the hole. Sizing S–M; solver."
+  },
+  {
+   "id": "E290",
+   "section": "E",
+   "title": "under a TUPLE view subject (`match &mut pair`, B587) the inherited payload-view refusals still say \"payload\": `(mut a, let b)` reads \"`mut a` would bind a COPY of the payload … views into the payload\", and a sub-tuple leaf's steer \"a view into the payload, and write `pair.0`\"",
+   "kind": "diagnostic wording (XS)",
+   "area": "Diagnostics & error messages",
+   "status": "OPEN — filed 2026-10-09 (solver-49's find, Order 49)",
+   "discussion": "B587 extended payload-views.md's door A to a top-level tuple pattern; the refusals (`capture_write_refusal`, `check_mut_captures_under_view_subjects`) are shared and name a payload. Rec: say \"the tuple\" when the subject's pattern is a tuple pattern (the subject's type is a tuple).",
+   "body": "Repro: `sweeps/order49/solver-49/finds/tuple-view-refusal-says-payload/main.vl`. Sizing XS; diagnostics."
+  },
+  {
+   "id": "B600",
+   "section": "B",
+   "title": "a hole in an EXPRESSION no binding holds checks clean — `Option::None.is_some()` passes `vilan check` and runs on JS, while natively its `is_some` instance is refused \"does not emit a value of an unbound generic type parameter\"; B580 (v0.47.0) refuses the hole only where a `let` holds it",
+   "kind": "check/build disagreement (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-09 (solver-49's find, Order 49)",
+   "discussion": "B580 (R-c) refuses a binding whose type keeps a hole, at its initializer. The same hole in a receiver or an argument that no binding holds is not asked: the call's instance is generic at an unbound parameter. Rec: refuse a call whose recorded substitution keeps a hole at a parameter its instance needs (B424's family: the result typed by an unbound generic), with B580's sentence shape; count the estate first. native_differential's F108 attribution pin now uses exactly this probe (it is refused natively, attributed at the user's call).",
+   "body": "Repro: `sweeps/order49/solver-49/finds/expression-hole-checks-clean/main.vl` — `let present = Option::None.is_some(); print(present);`: `vilan check` clean, JS prints false, `vilan build --backend rust` refused in `is_some`'s body (`option.vl`) at the call. Sizing S; solver."
+  },
+  {
+   "id": "M133",
+   "section": "M",
+   "title": "each std impl of a trait a generic body dispatches through costs every program a post-pass share: A165's `impl type S: Flow<Option<View>> with Slot` adds 3.45M instructions (0.19%) of reactive-ui's check to the post passes alone — `platform_color::reachable_bindings` +3.4M, `async_infer::dispatch_candidates` +2.5M, `platform_color::Traversal::callee_substitution` +2.1M — because every `child<C: Slot>` instance's `content.place(parent)` enumerates every `Slot` impl as a dispatch candidate",
+   "kind": "performance (S–M) — post passes (incr's: async, platform)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-10 (solver-49's find, Order 49; M131's measurement)",
+   "discussion": "M131 (solver-49) measured A165's two Slot arms on reactive-ui (release, instructions:u, std variants via VILAN_STD): both arms + helper 12.05M (0.65%); the Flow<Option<View>> blanket alone 7.36M (0.39%), the Option<V: Slot> arm 1.64M (0.09%), the helper body 2.9M (0.16%). A callgrind diff of the blanket (with vs without) puts ~40% in the post passes above and the rest across the analyzer's impl lookups and bound proofs (impl_member_candidates +2.5M, trait_args_candidates +2.4M, impl_bounds_hold +2.4M, check_generic_bound_satisfaction_sites +1.9M, bind_subject_bound_binders +1.9M). Rec: the post passes ask a dispatch site's candidates once per (trait member, receiver instance) rather than per walk, and narrow a blanket candidate by its bound before enumerating — the async/platform fixpoints are incr-49's.",
+   "body": "Reproduce: `perf_count.py --env VILAN_STD=<std with/without the arm> -- vilan check .` in vilan/examples/reactive-ui (each variant a std copy with macro_std beside it); callgrind with the profiling build gives the split. Sizing S–M; incr (post passes) + solver (bound proofs)."
+  }
+ ]
+}

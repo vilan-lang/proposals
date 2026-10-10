@@ -1,0 +1,8 @@
+// E?1 (b): the refused length is replaced by 0 and cascades:
+// line 6 also reports "index 0 is out of range for an array of length 0 (valid indices are 0 to 0)".
+const let SIZE = 4;
+
+fun main() {
+	let a = [0u8; SIZE];
+	print(a[0]);
+}

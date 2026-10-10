@@ -1,0 +1,36 @@
+// A static trait method named on a CONCRETE type that only a blanket impl
+// answers does not resolve: `str::tag(0)` is refused "cannot infer 'T' for this
+// call; its bound ': Leaf' cannot be checked", while the same call through a
+// generic helper (`tag_of<str>(0)`) resolves to the same blanket and runs.
+// Met by store-49: the Storable derive's walkers call `store_read_path_of<T>`
+// for every field type for exactly this reason.
+import std::io::print;
+
+trait Leaf {
+	fun name(depth: i32): str;
+}
+
+impl type T with Leaf {
+	fun name(depth: i32): str {
+		i"leaf{depth}"
+	}
+}
+
+trait Tag {
+	fun tag(depth: i32): str;
+}
+
+impl type T: Leaf with Tag {
+	fun tag(depth: i32): str {
+		T::name(depth)
+	}
+}
+
+fun tag_of<T: Tag>(depth: i32): str {
+	T::tag(depth)
+}
+
+fun main() {
+	print(tag_of<str>(0)); // leaf0
+	print(str::tag(1)); // refused: cannot infer 'T'
+}

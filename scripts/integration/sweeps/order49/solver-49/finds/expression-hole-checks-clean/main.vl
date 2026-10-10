@@ -1,0 +1,7 @@
+import std::io::print;
+import std::option::Option;
+
+fun main() {
+	let present = Option::None.is_some();
+	print(present);
+}

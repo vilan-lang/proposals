@@ -1,0 +1,11 @@
+--- a/src/sidebar.vl	2026-10-05 14:58:03.055417753 -0400
++++ b/src/sidebar.vl	2026-10-10 04:43:31.696657516 -0400
+@@ -62,7 +62,7 @@
+ fun sidebar_shell(sidebar_width_modal: Overlay, sidebar_menu: Overlay) {
+ 	let prefs = get_prefs();
+ 	let new_channel_modal = create_new_channel_modal();
+-	let channel_item_menu_subject = Signal::new(None);
++	let channel_item_menu_subject: Signal<Option<Channel>> = Signal::new(None);
+ 	let channel_rename_modal = create_channel_rename_modal(channel_item_menu_subject);
+ 	let channel_delete_modal = create_channel_delete_modal(channel_item_menu_subject);
+ 	let channel_item_menu = create_channel_item_menu(channel_rename_modal, channel_delete_modal);

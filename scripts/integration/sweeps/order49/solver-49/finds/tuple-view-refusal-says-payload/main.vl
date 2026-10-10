@@ -1,0 +1,11 @@
+// FIND (solver-49, B587): under a TUPLE view subject the refusals inherited
+// from payload views still say "payload": `(mut a, let b)` reads "`mut a`
+// would bind a COPY of the payload ... whose captures are views into the
+// payload", and a sub-tuple leaf's steer says "a view into the payload, and
+// write `pair.0`". The subject here is a tuple, not a variant's payload.
+fun main() {
+	mut pair = (1, 2);
+	match &mut pair {
+		(mut a, let b) => { a += 10; },
+	}
+}

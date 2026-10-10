@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "F125",
+   "section": "F",
+   "kind": "native gap (S)",
+   "area": "Native backend",
+   "status": "OPEN — filed 2026-10-09 (debug-49's find, Order 49)",
+   "discussion": "debug-49 (Order 49); sweeps/order49/debug-49/finds/bigint_text_native.vl",
+   "title": "The native backend renders no `BigInt` as text — `i\"{big}\"`, `\"\" + big` and `big.to_string()` are each refused by name (\"does not emit an interpolation of a value with its own `render` yet\"); JS prints `12` for each",
+   "body": "So std's `impl BigInt with Debug` (E283, `i\"{self}\"`) is JS-only natively, and `Display for BigInt` is too. `dbg` prints a `BigInt` natively through `vilan_rt::show::integer` (its `Display`), so the runtime has the rendering; the emitter's interpolation and `+` arms do not reach it. Expected on both: `12` three times. Repro: finds/bigint_text_native.vl. Sizing S; vilan-rust's interpolation/concatenation lowering."
+  },
+  {
+   "id": "F126",
+   "section": "F",
+   "kind": "native defect (S)",
+   "area": "Native backend",
+   "status": "OPEN — filed 2026-10-09 (debug-49's find, Order 49)",
+   "discussion": "debug-49 (Order 49); sweeps/order49/debug-49/finds/print_location_native.vl",
+   "title": "`print(caller())` (a `std::debug::Location`) builds on JS and hands rustc Rust it refuses natively — E0277 \"the trait bound `vilan_rt::Location: Js` is not satisfied\", a backend defect by the CLI's own sentence",
+   "body": "Reproduces on next @71d61dde (before debug-49). F25 refuses `print` of a host handle by name; `Location` is a host value the refusal does not list, so the emitted `vilan_rt::print(&(loc))` reaches rustc. Either refuse it by name (F25's sentence) or give `vilan_rt::Location` a `Js` impl printing `file:line:col` (JS prints the text, `String(location)`). `print(caller().text())` works on both. Repro: finds/print_location_native.vl. Sizing S."
+  },
+  {
+   "id": "M132",
+   "section": "M",
+   "kind": "performance (S)",
+   "area": "Performance",
+   "status": "OPEN — filed 2026-10-09 (debug-49's find, Order 49)",
+   "discussion": "debug-49 (Order 49); sweeps/order49/debug-49/finds/dispatch_candidates_scaling.md",
+   "title": "`async_infer::dispatch_candidates` scans every impl of the trait per generic trait call site, with an O(n²) dedup — each generic `.debug()` call std adds costs ~50M instructions (0.8%) on plain:320, superlinear in module count",
+   "body": "Measured building E283 (release, instructions:u): the `HashMap` `Debug` impl's two generic `.debug()` calls cost 6,123M → 6,222M on plain:320 (one call: 6,173M), ~12M on plain:160; callgrind on plain:160 puts the whole delta (+50.4M inclusive) in `dispatch_candidates` under `async_infer::infer`. `trait_method_candidates` walks `program.implementations` per call and `precise.contains` dedups linearly; every `[derive(Debug)]` impl in the program is a candidate for every generic `.debug()`. It is why debug-49 carries ci bumps (x1.004–x1.013) for small std additions. Fix shape: index impls by trait once (or memo per (trait, member)) and dedup with a set. Sizing S."
+  }
+ ]
+}

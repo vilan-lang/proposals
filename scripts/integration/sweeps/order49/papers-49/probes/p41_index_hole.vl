@@ -1,0 +1,13 @@
+fun one(): i32 {
+	1
+}
+
+fun main() {
+	let a: [i32; 3] = [1, 2, 3];
+	let xs: List<i32> = [1, 2, 3];
+	let n: i32 = 1;
+	print(xs[a.len() - 2]);
+	print(a[a.len() - 2]);
+	print(xs[one()]);
+	print(xs[n.max(0)]);
+}

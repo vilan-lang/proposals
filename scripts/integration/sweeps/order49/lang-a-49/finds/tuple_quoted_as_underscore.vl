@@ -1,0 +1,22 @@
+// lang-a-49 find (vilan @ next 71d61dde): a tuple-typed `[rpc]` parameter or
+// `[derive(Wire)]` field is refused quoting the type as `_`:
+//   "parameter `message` of `[rpc]` method `echo` is `_`, which is not Wire"
+// `render_type` (analyzer.rs) renders a name, a generic application and a path
+// and falls back to `_` for everything else; a tuple is the common case. The
+// refusal itself is right (tuples have no Wire impl); the quote is not.
+import std::io::print;
+import std::reactive::{ Signal, SignalCell };
+
+[service(SvcClient)]
+struct Svc {
+	last: SignalCell<i32>,
+}
+
+impl Svc {
+	[rpc]
+	fun echo(self, message: (i32, i32)): i32 { message.0 }
+}
+
+fun main() {
+	print(Svc { last = Signal::new(0) }.contract_hash());
+}
