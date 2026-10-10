@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "M137",
+   "section": "M",
+   "kind": "performance (S–M)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-10 (incr-50's find, Order 50)",
+   "discussion": "incr-50 (Order 50); sweeps/order50/incr-50/finds/context_apply_threaded_arguments/",
+   "title": "`context::apply` mints one reference entity per threaded context argument — 66,189 on kolt's client leg, 26–48 ms of every analysis (39.5 ms of `entity_map` inserts that double the 179k-entry map, 14.3 ms of `argument_ids` pushes) — where one `Expr::Local(parameter)` entity per (node, context) would do",
+   "body": "Measured with CPU probes per section of the context pass (the patch and recipe are in the finds directory): `contexts+graph` is 115 ms on kolt's client leg, of which `apply` is 26–48 — all of it the `thread_calls` loop. The mutation log (M110 S3) replays the cold rows but still applies them to the tree on every analysis, so the cost stays on a served keystroke. Fix: share one reference entity per (node, context) across the node's threaded calls (~6.9k mints instead of 66k). It changes the tree the emitters read (an entity in several argument lists); gate with the native differential and the corpus goldens, and check first that no emitter memoizes by argument entity. Sizing S–M."
+  },
+  {
+   "id": "M138",
+   "section": "M",
+   "kind": "performance (M)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-10 (incr-50's find, Order 50)",
+   "discussion": "incr-50 (Order 50); sweeps/order50/incr-50/finds/async_adaptation_rounds/",
+   "title": "`async_infer::compute_adaptation` runs twice per analysis over every function as an (f, ∅) instance key (4,585 keys, 2 × 11 ms on kolt's client leg) and is the async pass's remaining whole-program cost after M110 S3b seeded the base fixpoint — a seeded form must carry the cold instances, their origins and diagnostics in the record",
+   "body": "The outer loop of `infer` re-runs the base fixpoint and the adaptation until the async set stops growing; on kolt the first adaptation always grows it (an adapted instance is async), so both run twice. S3b seeds the base fixpoint from the record's cold result (hot callees unknown) and derives the initializer refusals before `reachable_bindings` (30 ms) so the walk runs only when a refusal exists; the adaptation stayed whole-program: its result is per instance `(callee, bits)` with origins and diagnostics, and a cold instance reached only through a hot caller's closure bits is minted by that caller. Design: record the cold instances computed over the cold nodes alone, seed `instance_async` from them, and iterate from the hot keys and the dependents of any key whose verdict moved. Sizing M."
+  }
+ ]
+}

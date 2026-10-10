@@ -232,7 +232,7 @@ hot-set world (§4.2).
 | reuse candidates, record lookup, seal ranges, replay | `:75717`–`:75801` | `entry_dirty_sources`, alias census, the checks record | the frozen/world/table ranges, replayed diag | before every check that can add a diagnostic | small | (M19 itself) |
 | `infer_borrows` | `:25725` | bodies, the call graph of resolved calls | `Function.borrows` | "before any check reads it" (readonly-mutation, scalar views); a monotone call-graph fixpoint (the sixth inferred-effect worklist) | <1 / 3.0; 2.5 | **S3** (M?4) |
 | the `bumps` native table | `:75810`–`:75891` | std container impls | `bumps_tabled`, `Function.bumps` | seeds `infer_bumps` | small | S3 seed |
-| `infer_bumps` | `:25971` | bodies, tabled verdicts | `Function.bumps`, `External.bumps` | the seventh worklist: callee → caller, a dispatched callee counts as bumping; before `check_invalidation` (E2 keys off it) | **16.2 / 100.8; 43.6** | **S3** (M?4) |
+| `infer_bumps` | `:25971` | bodies, tabled verdicts | `Function.bumps`, `External.bumps` | the seventh worklist: callee → caller, a dispatched callee counts as bumping; before `check_invalidation` (E2 keys off it). **Order 50 (M127, incr-50): a worklist in fact** — one scan per body, the callees a scan read recorded (`BumpScan::callees`), only a moved verdict's callers rescanned; it was a Jacobi loop rescanning every non-restored body per round. The table-restored functions (T1b) are its seed. | 16.2 / 100.8; 43.6 at Order 48; Order 50: 6 / 30 cold, ~24 served | **built** (M127; worklist + T1b's restore) |
 | wrapped view captures, mut captures under view subjects, entry `main` parameters | `:75900`–`:75907` | settled types | `wrapped_view_captures`; diag | before the checks that consult them | small | S2 |
 | lazy bindings and arguments | `record_lazy_bindings`, `record_lazy_arguments` | call sites, parameters | `lazy_*` tables | OUTSIDE the Class A window on purpose (lowering input), before rule 3's capture ban and R9 | 1.4 / 7.9; 5.7 | S2 |
 | `classify_dbg_calls` | `:75918` | `dbg` calls | `dbg_statement_calls`, `dbg_argument_types` | before the ownership checks and both emitters | small | S2 |
@@ -277,9 +277,9 @@ column is the editor's hot-set keystroke.
 | `build_impl_admission`, scoped exports, unlowered externals, global property externs | `lib.rs:1145`–`:1159` | `only`/selectors, `export(in ..)`, externals | the admission map, diag | first: the context pass's candidate lists and emission read the map | `build_impl_admission` 0.01 G Ir | S2 (global facts) |
 | `labels::check` | `:1163` | labels, `[internal]` uses | warnings | over the finished program | 0.02 G Ir | S2 |
 | `record_declared_platforms` | `:1166` | files' and impls' `[platform(..)]` | `declared_requirements` | before every pass that asks what a function requires | small | S3 (input) |
-| **`context::thread_contexts`** (+ `CallGraph::build`) | `:1181`; `context.rs:62` | every `Context` get/run/new site, the call graph | **the tree**: hidden parameters, threaded arguments, `get()` → local, `run(v, f)` → `f(v)`; `entity_map`, `function_calls`, `generic_dispatch`, `method_call_substitution`, `next_entity_id`; coverage diag | builds its own graph; when it rewrites, the graph is rebuilt after it (kolt rewrites on both legs: four graph builds, 0.20 G Ir); coverage checks are DEFERRED to one warning when the program already has errors (`context.rs:138`) | **26.9 / 174.2; 153.8**; 0.63 G + 0.20 G Ir | **S3**, once the rewrite is a table (Q2) |
+| **`context::thread_contexts`** (+ `CallGraph::build`) | `:1181`; `context.rs:62` | every `Context` get/run/new site, the call graph; **the world's post-pass record** (`PostRecord`, Order 50) | **the tree**: hidden parameters, threaded arguments, `get()` → local, `run(v, f)` → `f(v)`; `entity_map`, `function_calls`, `generic_dispatch`, `method_call_substitution`, `next_entity_id`; coverage diag; **returns the graph of the program as it leaves** (the one analyzed over when nothing was rewritten, the rewritten tree's otherwise) | builds its graph — **Order 50 (M110 S3a, incr-50): the COLD half of both graphs (the stored world's nodes this analysis treats as the prefix) is recorded with the checks record and, on a served keystroke over the same cold set, cloned and extended with the hot set (`CallGraph::restricted`/`extend`, node and region order restored); the graph after the rewrite is served while this analysis's cold rewrite rows — the mutation log, `ContextLog` — equal the record's, its minted entities renumbered from this analysis's base (cold rows are applied first, in the log's order)**; coverage checks are DEFERRED to one warning when the program already has errors (`context.rs:138`); the plan's node owners through one node map, the value-use refusal through one scan (Order 50) | 26.9 / 174.2; 153.8 at Order 48; Order 50 cold-client split: build 14 + analyze 43 + apply 26–48 (66k threaded arguments, M?1) + the second build 29–40 | **S3a built** (the graphs' cold halves + the log); `apply` stays per analysis (M?1) |
 | `track_caller::thread_locations` | `:1186` | `[track_caller]` functions, the graph | **the tree**: a hidden trailing `Location` parameter and argument per call; `next_entity_id` | after the graph (it appends arguments, never calls, so the graph stays true) | 0.004 G Ir | S3 companion: local per call site, re-run on hot nodes |
-| **`async_infer::infer`** | `:1197` | the graph, async externs, `await`s, dispatch candidates | `async_functions`, `async_values`, `awaited_calls`, `adapted_instances`, `suspending_calls` | callee → caller fixpoint; after the context rewrite (a lowered `run(v, f)` is a call to `f`) | **47.5 / 135.0; 112.4**; 0.86 G Ir | **S3** |
+| **`async_infer::infer`** | `:1197` | the graph, async externs, `await`s, dispatch candidates; **the record's cold result** (`PostRecord::async_cold`, Order 50) | `async_functions`, `async_values`, `awaited_calls`, `adapted_instances`, `suspending_calls` | callee → caller fixpoint; after the context rewrite (a lowered `run(v, f)` is a call to `f`). **Order 50 (M110 S3b, incr-50): the base fixpoint is seeded from the record's cold result — the least fixpoint over the cold nodes with every hot callee unknown, read and written only while the record's rewrite log is this analysis's (a stood-down rewrite makes a `run`-lowered prefix function synchronous again); never from the last settled set (the `PostSeedFromSettled` plant)**; the initializer refusals are derived before `reachable_bindings`' walk from `main`, which runs only when one exists (30 ms of the client leg otherwise) | 47.5 / 135.0; 112.4 at Order 48; Order 50 cold-client split: `reachable_bindings` 30, `compute_adaptation` 2 × 11 (M?2), base fixpoint 5–7, divergences 5–9 | **S3b built** for the base fixpoint; the adaptation per analysis (M?2) |
 | `check_view_suspensions` | `:1205` | `view_suspension_checks`, the async set | diag | decides what `check_invalidation` enrolled (B?1) | 0 | — (must see every body's enrolment) |
 | call-site admission, async drops, context drops, lazy argument effects | `:1213`–`:1228` | the admission map, the async set, `context_dependent_functions` | diag | each after the fact it reads is settled | 0.04 G Ir | — |
 | **`platform_color::check`** | `:1230` | the graph, declared requirements, entry `main` | diag | reachability from `main`, per instantiation; the editor also calls `platform_color::requirements` for hover | **18.1 / 59.5; 48.4**; 0.40 G Ir | **S3** (summaries) + a cheap re-walk |
@@ -682,6 +682,39 @@ What S3 is worth at Order 49's tip (served `views.vl` keystroke, medians over 42
 served analyses): contexts+graph 97 ms, async 52, platform 13, `infer_bumps`
 19, `infer_borrows` 1.4 — ~183 ms of a ~480 ms analysis; the 361 ms above was
 measured before M123's memo and S4.
+
+**Order 50's finding on S3 (incr-50, measured at next 5fe24f86 with CPU probes
+per section on kolt's client leg; `sweeps/order50/REPORT-incr-50*.md`).** The
+"fixpoints" are not where the 183 ms go. The iteration itself is small: the
+context pass's `grow`/`settle_strict`/coverage loops are ~1.5 ms in all, the
+async base fixpoint ~5 ms, `infer_borrows` ~2 ms. What `contexts+graph` (115
+ms cold-client) actually holds: `CallGraph::build` 14 + `analyze` 43 (of which
+`refined_edges` 10.5, the landing/carrier scans 10.6, a per-context rescan of
+the entity map for the value-use refusal 6.1, a linear search of
+`graph.nodes()` per needy node 6.4) + `apply` 26–48 (66,189 threaded-argument
+rows on the client leg: 39.5 ms of `entity_map` inserts, 14.3 of argument
+pushes) + the second build after the rewrite 29–40. `async-infer` (69–90):
+`reachable_bindings` 30 (a whole walk from `main`, asked only to drop
+initializer refusals at bindings nothing reaches), `compute_adaptation` 2 × 11
+(4,585 instance keys each round), the base fixpoint 5–7. `infer_bumps` 51–102
+cold / 31–48 served: a Jacobi loop rescanning every non-restored body per
+round. So the mutation-log form was built for what it is good for — the two
+graphs' cold halves are recorded with the world and extended with the hot set
+on a hit, the rewrite's cold rows (the log) keying the post-rewrite graph —
+and the rest of the time was taken by making the passes' own work proportional
+to the program once: `infer_bumps` as a worklist (one scan per body, the
+callees a scan read recorded, only a moved verdict's callers rescanned), one
+node map and one value-use scan in the context pass, `reachable_bindings`
+only when a refusal exists. The async base fixpoint is seeded from the
+record's cold result (hot callees unknown), and that seed is the one the
+`PostSeedFromSettled` plant and the effect-removal classes (§6) hold honest.
+Not seeded, with the reason: `compute_adaptation` (its cold instances and
+their origins/diagnostics would have to ride the record, ~22 ms on the client
+leg), platform colour (a forward walk per instantiation whose refusals carry
+the trail from `main`), and `apply` itself (the 66k threaded arguments are
+materialized on the tree every analysis; one reference entity per
+(node, context) instead of one per call would cut most of it, filed as a
+find). The numbers after the change are in the C1 report.
 
 ### 7.3 S5: the spike
 

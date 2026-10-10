@@ -1,0 +1,106 @@
+--- target/incr-50-scratch/async_infer.rs.orig	2026-10-10 13:51:23.096015034 -0400
++++ target/incr-50-scratch/async_infer.rs.probed	2026-10-10 14:07:36.290081694 -0400
+@@ -37,6 +37,7 @@
+ /// `adapted_instances` and diagnostics, none of which the graph is derived
+ /// from, so its view of the program is bit-for-bit the one it used to build.
+ pub fn infer(program: &mut Program, graph: &CallGraph) {
++    crate::probe::start();
+     let mut async_set: HashSet<Id> = HashSet::default();
+ 
+     // Every value each binding ever holds — its initializer plus every
+@@ -59,6 +60,7 @@
+     // --- Seeds ---
+     // Declared-async functions and externs (an extern is async only by
+     // declaration, having no body to infer from).
++    crate::probe::probe("held-values");
+     for (id, function) in &program.functions {
+         if function.is_async {
+             async_set.insert(*id);
+@@ -89,14 +91,18 @@
+     // which the plain fixpoint must then propagate to ITS callers, which can
+     // in turn create new adapted instances. Both are monotone over
+     // `async_set`, so this terminates.
++    crate::probe::probe("seeds");
+     let adaptation = loop {
+         base_fixpoint(program, graph, &held_values, &mut async_set);
++        crate::probe::probe("base-fixpoint");
+         let before = async_set.len();
+         let adaptation = compute_adaptation(program, graph, &held_values, &mut async_set);
++        crate::probe::probe("adaptation");
+         if async_set.len() == before {
+             break adaptation;
+         }
+     };
++    crate::probe::probe("fixpoint+adaptation");
+     for (error, source) in adaptation.diagnostics {
+         program.push_diagnostic(error, source);
+     }
+@@ -118,6 +124,7 @@
+         .copied()
+         .collect();
+     program.async_values.extend(adopted);
++    crate::probe::probe("adopted");
+     let awaited: Vec<Id> = program
+         .function_calls
+         .iter()
+@@ -142,6 +149,7 @@
+     // cannot await it, is refused. (A PLAIN value-returning parameter now
+     // ADAPTS instead of erroring — the worklist above; void-returning
+     // parameters stay legal as spawn semantics.)
++    crate::probe::probe("awaited");
+     let mut divergences: Vec<(crate::error::Error, SourceId)> = Vec::new();
+     let no_flags: HashMap<Id, bool> = HashMap::default();
+     for function_call in program.function_calls.values() {
+@@ -325,8 +333,10 @@
+     // binding the entry never reaches never runs, so it cannot await —
+     // with no user `main` (a library, a fragment) every binding is checked,
+     // since each runs in some dependent program.
++    crate::probe::probe("divergences");
+     let running_bindings = crate::platform_color::entry_function(program)
+         .map(|entry| crate::platform_color::reachable_bindings(program, graph, entry, &[]));
++    crate::probe::probe("running-bindings");
+     let initializer_adaptive = adaptive_params_of(program);
+     let module_bindings: HashSet<Id> = program.module_level_bindings().into_iter().collect();
+     let mut initializer_refusals: Vec<(crate::error::Error, SourceId)> = Vec::new();
+@@ -499,6 +509,7 @@
+     // Initializer calls are deliberately absent: a module-level initializer
+     // that suspends is refused outright above, and the invalidation scan does
+     // not walk initializers, so there is no site here to answer for.
++    crate::probe::probe("initializer-refusals");
+     let mut suspending_calls: HashSet<Id> = HashSet::default();
+     let mut dispatch_verdicts: HashMap<(bool, Option<TypeId>, &str), bool> = HashMap::default();
+     for node in graph.nodes() {
+@@ -516,10 +527,13 @@
+     }
+     program.suspending_calls = suspending_calls;
+ 
++    crate::probe::probe("suspending-calls");
+     for (error, source) in object_asyncness_refusals(program, &async_set) {
+         program.push_diagnostic(error, source);
+     }
+ 
++    crate::probe::probe("object-refusals");
++    crate::probe::report("async");
+     program.async_functions = async_set;
+ }
+ 
+@@ -1324,7 +1338,10 @@
+     // member is enumerated on every pass — even members already known async
+     // — because enumeration is also DISCOVERY: a call with async closure
+     // arguments mints the callee's adapted instance.
++    crate::probe::probe("adapt:init");
++    let mut adapt_keys = 0usize;
+     while let Some(key) = pending.pop() {
++        adapt_keys += 1;
+         queued.remove(&key);
+         let (root, ref bits) = key;
+         let members = component(root);
+@@ -1432,6 +1449,8 @@
+     // --- Final pass: with every flag stable, collect each instance's
+     // emission decisions and the context-dependent diagnostics.
+     let mut instances: HashMap<InstanceKey, crate::analyzer::AdaptedInstance> = HashMap::default();
++    crate::probe::probe("adapt:keys");
++    if crate::probe::on() { eprintln!("[probe adapt-keys] {adapt_keys}"); }
+     let mut diagnostics: Vec<(crate::error::Error, SourceId)> = Vec::new();
+     let mut reported: HashSet<(Id, Id)> = HashSet::default();
+     // A.4's escape positions, collected once — the same positions the global

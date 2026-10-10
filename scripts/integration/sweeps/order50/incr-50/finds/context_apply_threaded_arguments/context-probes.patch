@@ -1,0 +1,358 @@
+--- target/incr-50-scratch/context.rs.orig	2026-10-10 13:46:12.941713926 -0400
++++ target/incr-50-scratch/context.rs.probed	2026-10-10 14:07:36.286996064 -0400
+@@ -46,6 +46,10 @@
+ /// note, when the read sits in std).
+ const TRACE_CAP: usize = 6;
+ 
++fn probe_start() { crate::probe::start(); }
++fn probe(label: &'static str) { crate::probe::probe(label); }
++fn probe_report() { crate::probe::report("ctx"); }
++
+ /// Entry point: thread every context in `program`, or record diagnostics if any
+ /// context is read where its value can't be supplied.
+ ///
+@@ -74,7 +78,10 @@
+     // B458: likewise `clear`.
+     let clear_fn = program.context_clear_fn_id;
+ 
++    crate::probe::start();
+     let graph = CallGraph::build(program);
++    crate::probe::probe("tc:build");
++    crate::probe::report("tc1");
+     let mut warnings: Vec<(Error, SourceId)> = Vec::new();
+     let outcome = analyze(
+         program,
+@@ -183,8 +190,12 @@
+         // context at all. The graph is still the program's.
+         return Some(graph);
+     }
++    crate::probe::start();
+     drop(graph);
++    crate::probe::probe("tc:drop-graph");
+     apply(program, plan);
++    crate::probe::probe("tc:apply");
++    crate::probe::report("tc2");
+     None
+ }
+ 
+@@ -971,6 +982,7 @@
+     new_fn: Id,
+     warnings: &mut Vec<(Error, SourceId)>,
+ ) -> Result<Plan, Vec<(Error, SourceId)>> {
++    probe_start();
+     let mut errors = Vec::new();
+ 
+     // The entry `main` is special: the transformer inlines its body as the
+@@ -993,6 +1005,7 @@
+         }
+     }
+ 
++    probe("owner_of");
+     // --- Collect get/run/new sites. ---
+     let mut gets: Vec<GetSite> = Vec::new();
+     let mut runs: Vec<RunSite> = Vec::new();
+@@ -1115,6 +1128,7 @@
+         }
+     }
+ 
++    probe("collect-sites");
+     // --- Spawn registration (async-polymorphism.md Part B): every `async`
+     // spawn is a SAFE read of the `std::task` ambient nursery, so a spawn in
+     // a nursery's dynamic extent registers its task. Engaged only when the
+@@ -1192,6 +1206,7 @@
+         ..Default::default()
+     };
+ 
++    probe("spawn+plan-init");
+     // --- Dispatch edges the shared graph deliberately leaves indirect
+     // (backlog B14): a call the analyzer routed through trait dispatch — a
+     // trait method on a concrete receiver (`OnType`, which may land on the
+@@ -1267,6 +1282,7 @@
+         }
+     }
+ 
++    probe("dispatch-sites");
+     // --- Entry points the call graph cannot see (for the coverage check's
+     // dead-code exemption): a function with NO caller edges is either dead —
+     // it cannot run, so it cannot run uncovered — or entered from OUTSIDE the
+@@ -1330,6 +1346,7 @@
+         })
+         .collect();
+ 
++    probe("entry-points");
+     // --- Coverage-only dispatch refinement (element-syntax H8 →
+     // proposal/requirement-polymorphism.md): the union edges above stay for
+     // needs/strict/threading — sound, and the hidden value physically flows
+@@ -1391,6 +1408,7 @@
+         }
+     }
+ 
++    probe("refined-edges");
+     // --- The A2 walk-back's inputs (E74, diagnostics-standard.md §1). ---
+     // A coverage refusal whose offending site sits in library code — std
+     // (`effect`/`map`/`or` all funnel to `get_owner`'s strict read) or a
+@@ -1448,6 +1466,7 @@
+         }
+     };
+ 
++    probe("walkback-inputs");
+     // --- E189: the closures an UNRESOLVED call was handed. ---
+     //
+     // A call the solver never wired is recorded in `function_calls` nowhere, and
+@@ -1479,6 +1498,7 @@
+         })
+         .collect();
+ 
++    probe("unresolved-closures");
+     // --- Injected (`context`-typed) closures — proposal/ambient-owner.md §5,
+     // B309. ---
+     // A clause on a closure TYPE defers that closure's context binding to its
+@@ -1524,6 +1544,7 @@
+             value_contexts.insert(binding_id, clause.to_vec());
+         }
+     }
++    probe("clause-maps");
+     // --- B242: the clauses functions DECLARE. Validated exactly like a
+     // parameter's (a clause names context bindings, nothing else) and admitted
+     // to the per-context loop, since a declared context may have no `get` or
+@@ -2135,6 +2156,7 @@
+         sorted
+     };
+ 
++    probe("landings+carriers");
+     // --- The `run` sites the solver never selected (B229). ---
+     // A `run` whose argument failed to type is never SELECTED, and an
+     // unselected method call is wired nowhere: the collection loop above scans
+@@ -2171,6 +2193,7 @@
+     // body, so both are answered after the loop.
+     let mut inferred_of_function: HashMap<Id, HashSet<Id>> = HashMap::default();
+ 
++    probe("unresolved-runs");
+     // --- Per-context effect inference + coverage. ---
+     for &context in &plan.contexts {
+         // A `run` for this context is written but unresolved (B229): neither
+@@ -2263,6 +2286,7 @@
+                 }
+             }
+         };
++        probe("ctx:seeds");
+         let cleared_calls: HashSet<Id> = injected_calls
+             .get(&context)
+             .into_iter()
+@@ -2324,8 +2348,10 @@
+                 }
+             }
+         };
++        probe("ctx:cleared");
+         grow(&mut needs, &mut worklist);
+ 
++        probe("ctx:grow-needs");
+         // --- Flavor (reactive-turns.md §5.1): STRICT nodes hold the bare
+         // value (a strict `get`, or a call through an injected closure,
+         // reaches them) and keep the coverage fence; the rest of `needs` is
+@@ -2431,6 +2457,7 @@
+         // Classify each needs-context node.
+         let is_function = |id: Id| program.functions.contains_key(&id);
+ 
++        probe("ctx:strict+declared");
+         // --- Coverage (greatest fixpoint): assume every node is covered, then
+         // remove any that can be entered without the value. A `run` closure
+         // always receives the value from `run`, so it is covered even when it
+@@ -2518,6 +2545,7 @@
+             }
+         }
+ 
++        probe("ctx:coverage");
+         // --- B279: why the dead-code exemption above is sound. ---
+         //
+         // Two edge sets meet here and they are not the same set. STRICTNESS
+@@ -2779,6 +2807,7 @@
+ 
+         // Any STRICT get whose owner stayed unbound is read outside every
+         // `run`; a safe read never fences.
++        probe("ctx:walkback-closures");
+         for get in gets
+             .iter()
+             .filter(|get| get.context == context && !get.safe)
+@@ -2874,6 +2903,7 @@
+         // that call). The refusal anchors at what the AUTHOR wrote inside the
+         // literal — the read, or the call that leads to one — and falls back
+         // to the literal itself. ---
++        probe("ctx:get-reports");
+         let mut cleared_offenders: Vec<(&Id, &Carrier)> = cleared_literals
+             .iter()
+             .filter(|(literal, _)| strict.contains(literal))
+@@ -2968,6 +2998,7 @@
+         // the clause and the callee, one hop, and says nothing about what the
+         // callee's body reads, because with a declaration nothing about the
+         // caller depends on that any more.
++        probe("ctx:cleared-offenders");
+         for &function in declared_here {
+             let name = program
+                 .functions
+@@ -3014,6 +3045,7 @@
+ 
+         // A needs-context function used as a value could be called indirectly,
+         // bypassing the threaded parameter — refuse rather than miscompile.
++        probe("ctx:declared-reports");
+         let needs_functions: HashSet<Id> = needs
+             .iter()
+             .copied()
+@@ -3048,6 +3080,7 @@
+         // Functions and `run` closures take their own parameter. Every `run`
+         // closure does, even one not in `needs`, since `run` always passes it
+         // the value (a nested closure may capture it).
++        probe("ctx:value-use-scan");
+         let mut param_nodes: HashSet<Id> = run_closure_ids.clone();
+         // node -> the node whose parameter it reads (itself, or the capture
+         // provider) — the parameter's FLAVOR is the provider's.
+@@ -3164,6 +3197,7 @@
+         // pass the parameter through; a BARE holder supplying a SAFE callee
+         // `Some`-wraps (the covered→safe boundary). Safe→strict cannot occur
+         // (strictness propagated to the caller).
++        probe("ctx:param-nodes");
+         for &node_id in &needs {
+             let Some(&owner) = graph.nodes().iter().find(|node| node.id() == node_id) else {
+                 continue;
+@@ -3194,6 +3228,7 @@
+                 }
+             }
+         }
++        probe("ctx:thread-direct");
+         for (caller, call_id, candidates) in &dispatch_sites {
+             if !needs.contains(caller) {
+                 continue;
+@@ -3280,6 +3315,7 @@
+         }
+     }
+ 
++    probe("ctx:thread-dispatch+rest");
+     // --- B242: the clause against the body, once every context has settled.
+     // The subset rule is an error (a declaration that does not cover its own
+     // body is a lie the callers would be checked against); a clause WIDER than
+@@ -3360,6 +3396,7 @@
+     // boundaries (a covered holder feeding a safe spawn-owning helper)
+     // without any `get_safe` in the program, so every synthesizing thread
+     // form counts, not just the literal `None`s.
++    probe("declared-clause-checks");
+     let any_safe = gets.iter().any(|get| get.safe);
+     let any_synthesized = plan
+         .thread_calls
+@@ -3396,6 +3433,8 @@
+         }
+     }
+ 
++    probe("option-variants");
++    probe_report();
+     if errors.is_empty() {
+         Ok(plan)
+     } else {
+@@ -3405,6 +3444,7 @@
+ 
+ /// Applies a validated plan, mutating the IR in place.
+ fn apply(program: &mut Program, plan: Plan) {
++    crate::probe::probe("apply:start");
+     // B482: the cleared clause positions, for a backend that writes the type.
+     program
+         .cleared_clause_contexts
+@@ -3444,6 +3484,7 @@
+         source.insert((context, node), parameter);
+     }
+ 
++    crate::probe::probe("apply:param-nodes");
+     // A captured closure reuses its provider's parameter.
+     for &(context, closure, provider) in &plan.captures {
+         if let Some(&parameter) = source.get(&(context, provider)) {
+@@ -3451,6 +3492,7 @@
+         }
+     }
+ 
++    crate::probe::probe("apply:captures");
+     // Spawn registration: each spawn reads the ambient nursery from its
+     // owner's in-scope parameter. The transformer passes the value as
+     // `__task`'s third argument (unwrapping the `Option` of a safe holder).
+@@ -3464,6 +3506,7 @@
+         }
+     }
+ 
++    crate::probe::probe("apply:spawns");
+     let empty_span = crate::span::Span { start: 0, end: 0 };
+     // Synthesizes `Some(parameter)`: a fresh call to the `Option::Some`
+     // variant constructor. The transformer lowers a variant-subject call to
+@@ -3495,6 +3538,7 @@
+         call
+     };
+ 
++    crate::probe::probe("apply:wrap-def");
+     // `get()` becomes a read of the in-scope parameter; a safe read of a
+     // BARE holder becomes `Some(parameter)` (the get's own call entity is
+     // rewritten into the wrap, its method records purged like `run`'s).
+@@ -3532,10 +3576,20 @@
+         }
+     }
+ 
++    crate::probe::probe("apply:gets");
+     // Each call to a needs-context function gets the value appended as an
+     // argument — the caller's parameter, `Some`-wrapped at a covered→safe
+     // boundary.
++    if crate::probe::on() {
++        eprintln!(
++            "[probe plan] thread_calls {} gets {} param_nodes {} captures {} runs {} none_gets {} entity_map {} function_calls {}",
++            plan.thread_calls.len(), plan.gets.len(), plan.param_nodes.len(), plan.captures.len(), plan.runs.len(), plan.none_gets.len(), program.entity_map.len(), program.function_calls.len()
++        );
++    }
++    let mut probe_mint = 0.0f64;
++    let mut probe_push = 0.0f64;
+     for &(call_id, context, ref form) in &plan.thread_calls {
++        let probe_t0 = std::time::Instant::now();
+         let argument = match *form {
+             ThreadForm::Param { owner } => {
+                 let Some(&parameter) = source.get(&(context, owner.id())) else {
+@@ -3562,11 +3616,18 @@
+                 reference
+             }
+         };
++        let probe_t1 = std::time::Instant::now();
+         if let Some(call) = program.function_calls.get_mut(&call_id) {
+             call.argument_ids.push(argument);
+         }
++        probe_mint += probe_t1.duration_since(probe_t0).as_secs_f64() * 1000.0;
++        probe_push += probe_t1.elapsed().as_secs_f64() * 1000.0;
++    }
++    if crate::probe::on() {
++        eprintln!("[probe apply-split] mint {probe_mint:.1}ms push {probe_push:.1}ms");
+     }
+ 
++    crate::probe::probe("apply:thread-calls");
+     // Safe reads inside the inlined entry `main` are literal `None`s.
+     for &call_id in &plan.none_gets {
+         let none_variant = plan
+@@ -3577,6 +3638,7 @@
+             .insert(call_id, Expr::Local(none_variant));
+     }
+ 
++    crate::probe::probe("apply:none-gets");
+     // `run(value, body)` becomes `body(value)`: the body closure is the new
+     // call subject, the value its sole argument (binding the closure's hidden
+     // parameter).
+@@ -3599,6 +3661,7 @@
+         program.generic_dispatch.remove(&site.call_id);
+     }
+ 
++    crate::probe::probe("apply:runs");
+     // B458: `clear(body)` becomes `body()` — the body carries no hidden
+     // parameter for the context it clears (it is None-rooted), so it is
+     // called with nothing.
+@@ -3615,10 +3678,12 @@
+         program.generic_dispatch.remove(&call_id);
+     }
+ 
++    crate::probe::probe("apply:clears");
+     // `Context::new()` lowers to an opaque value; its binding is now unused.
+     for &call_id in &plan.news {
+         program.entity_map.insert(call_id, Expr::Null);
+     }
+ 
++    crate::probe::probe("apply:news");
+     program.next_entity_id = next_id;
+ }
