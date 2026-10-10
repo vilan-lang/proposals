@@ -193,6 +193,24 @@
    ],
    "kolt_patch": "sweeps/order50/store-50/kolt-mirror-v0.48.0.patch (apply at the seal)",
    "ci": "38084320109 RED (perf: rpc/todo/walkthrough over 0.5%) -> three ci bumps 8ceb6460, CI watching"
+  },
+  {
+   "lane": "incr-50 C1",
+   "tip": "820c0f72",
+   "merge": "7b0c238f",
+   "date": "2026-10-10",
+   "closed": [
+    "M127"
+   ],
+   "progress": [
+    "M110 S3a+S3b (mutation log)",
+    "E292 re-measured (open)"
+   ],
+   "filed": [
+    "M137",
+    "M138"
+   ],
+   "ci": "watching"
   }
  ],
  "handed_back": [
@@ -225,5 +243,8 @@
    "item": "M120",
    "cause": "store-50 std::rpc growth"
   }
- ]
+ ],
+ "checkpoints_reached": {
+  "C1": "7b0c238f (2026-10-10)"
+ }
 }
