@@ -25,3 +25,4 @@
 - Owner questions from native-50 (recs): (1) keep F122's 1 KiB threshold - yes; (2) F129's fix order - later arguments first, next native order; (3) F124 §2.3 lens handle - wait for a real program; (4) `*` on a plain value - a non-breaking steer, not an error.
 - Caveat the lane reported: §2.1's commit was gated in isolation only on its pins (its gate run picked up the §2.2 edit); the tip is fully gated.
 - CI on 2b3fdf9d RED (run 38079664174, 12/14): the vilan-fmt leg - native-50's F126 fixture `tests/native/location_print.vl` had its imports out of vilan fmt order (`caller` before `Location`); every other job green. Fixed by me on next at 0eed0cde (`vilan fmt` on the file; `fmt --check .` clean). LESSON: the merge gate ran cargo fmt but not vilan fmt - both merge_lane_local scripts now run `cargo run -p vilan-cli -- fmt --check .` after cargo fmt (exit 6 on drift).
+- CI on 0eed0cde GREEN (run 38081216854, 14/14). next = 0eed0cde.
