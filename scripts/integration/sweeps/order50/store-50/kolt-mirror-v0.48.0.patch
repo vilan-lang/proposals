@@ -1,0 +1,744 @@
+--- a/src/shared.vl
++++ b/src/shared.vl
+@@ -38,8 +38,9 @@
+ 
+ // NEVER include sensitive account data here. This is a client-side viewable
+ // struct of a user presence. No password, hash, email, or numerical user id
+-// should appear.
+-[derive(Wire)]
++// should appear. `Storable` because the store holds it (`Global.users`) and
++// diffs it field by field: a rename reaches the wire as the name alone.
++[derive(Storable, Wire)]
+ struct User {
+ 	id: UserId,
+ 	username: str,
+--- a/src/store.vl
++++ b/src/store.vl
+@@ -18,9 +18,7 @@
+ import std::db::Database;
+ import std::hash_map::HashMap;
+ import std::json::{ FromJson, Json, JsonKind, JsonValue };
+-import std::memo::Memo;
+-import std::reactive::MemoCell;
+-import std::reactive::delta::{ SequenceCell, SetPipe };
++import std::reactive::delta::SequenceCell;
+ import std::reactive::store::{ Storable, Store };
+ import std::rpc::server::{ Connection, Handshake, Reject, Session };
+ import std::shared::Shared;
+@@ -94,49 +92,34 @@
+ 
+ // --- the service ---
+ 
+-// The server's LIVE channel: the wire snapshot (`shared::Channel`) plus the
+-// message list the client reaches as a handle. Not Wire, and never sent -
+-// `get_channel` projects the snapshot out of it. A plain record now: the
+-// store below makes each field a handle (`at(id).some().name()`), so it no
+-// longer carries a cell per field.
+-[derive(Storable)]
++// A channel as the server holds it, and as the client MIRRORS it (vilan's
++// mirrored store, A153): one record, Wire as well as Storable, so the client's
++// replica is the same shape. `messages` is a sequence inside the record - seeded
++// with it, and a push crosses as one `Seq` splice, not the list again.
++[derive(Storable, Wire)]
+ struct ChannelRecord {
+ 	id: u53,
+ 	name: str,
+ 	messages: List<u53>,
+ }
+ 
+-// The mirror: ONE store, loaded once from the already-open database and handed
+-// to EVERY connection's `KoltStore`, so one write is the broadcast. Every later
+-// write goes SQL-first through the methods below.
+-//
+-// Both maps are keyed nodes: `at(id)` is a handle that depends on that id only
+-// - a write to message 7 wakes the readers of message 7 and nobody else - and
+-// a write inside one channel's record (its name, a pushed message id) wakes
+-// that channel's readers only.
+-[derive(Storable)]
++// The mirror: ONE store, loaded once and handed to EVERY connection's
++// `KoltStore`, so one write is the broadcast. Every keyed field is a demand
++// boundary on the wire: a client subscribes `channels().at(id)` or
++// `messages().at(id)` when it watches it, and is seeded with that key's value
++// alone - the root's own seed carries the three maps EMPTY, so connecting never
++// ships the database.
++[derive(Storable, Wire)]
+ struct Global {
+ 	channels: HashMap<u53, ChannelRecord>,
+ 	messages: HashMap<u53, Message>,
++	users: HashMap<UserId, User>,
+ }
+ 
+ struct GlobalStore {
+ 	next_channel_id: Shared<u53>,
+ 	free_message_ids: Shared<List<u53>>,
+ 	global: Store<Global>,
+-	users: Memo<UserId, SignalCell<Option<User>>>,
+-	// The read-only views the handle methods still hand out, built ONCE per
+-	// key and kept for the program. A store handle does not cross the wire yet
+-	// (the mirrored store is A153), so each per-key handle a method returns is
+-	// sealed into the `MemoCell` the client mirrors. The id list is the map's
+-	// key set: `channels().keys()` follows the map per op (a create adds one
+-	// id, a delete removes one, and a write inside a channel's record is no key
+-	// change at all).
+-	channel_ids: Shared<Option<MemoCell<List<u53>>>>,
+-	channel_views: Memo<u53, MemoCell<Option<Channel>>>,
+-	channel_names: Memo<u53, MemoCell<str>>,
+-	channel_messages: Memo<u53, MemoCell<List<u53>>>,
+-	message_views: Memo<u53, MemoCell<Option<Message>>>,
+ }
+ 
+ impl GlobalStore {
+@@ -144,29 +127,37 @@
+ 		GlobalStore {
+ 			next_channel_id = Shared::new(0u53),
+ 			free_message_ids = Shared::new([]),
+-			global = Store::new(Global { channels = HashMap::new(), messages = HashMap::new() }),
+-			users = Memo::new(),
+-			channel_ids = Shared::new(None),
+-			channel_views = Memo::new(),
+-			channel_names = Memo::new(),
+-			channel_messages = Memo::new(),
+-			message_views = Memo::new(),
++			global = Store::new(Global {
++				channels = HashMap::new(),
++				messages = HashMap::new(),
++				users = HashMap::new(),
++			}),
++		}
++	}
++
++	// The user's presence in the store, loaded from the account table the first
++	// time anything needs it (a connection, an author).
++	fun ensure_user(self, user_id: UserId) {
++		let user = self.global.users().at(user_id);
++		user.get().is_none() else ret;
++		if db.prepare("SELECT username FROM account WHERE username = ?").first([user_id.uuid]) is Some(let row) {
++			user.set(Some(User { id = user_id, username = row.text("username") }));
+ 		}
+ 	}
+ }
+ 
+ lazy let global_store = GlobalStore::new();
+ 
+-// `[service(KoltClient)]` generates the typed client; `[expose]` mirrors the
+-// lists to the connected session; each `[rpc]` method is callable remotely.
+-// ONE INSTANCE PER CONNECTION (`Service::factory`, see `store_for`): `user`
+-// is the identity `authorize_connection` established at the handshake, and
+-// the three lists are the module-level cells every instance shares, so a
+-// write through one connection's store is the broadcast to all. The bodies
+-// reach the module-level `db` directly by loan - no injected hooks: a
+-// `Database` is a `resource`, so a struct owning one would be a resource
+-// too, and the generated dispatcher captures the store into its per-`[rpc]`
+-// handler closures (which a resource cannot be).
++// `[service(KoltClient)]` generates the typed client; each `[rpc]` method is
++// callable remotely. ONE INSTANCE PER CONNECTION (`Service::factory`, see
++// `store_for`): `user_id` is the identity `authorize_connection` established at
++// the handshake, and the store is the module-level one every instance shares, so
++// a write through one connection is the broadcast to all.
++//
++// The live surface is ONE method, `global()`: it returns the store itself, and
++// the client mirrors it - every read the views make is a projection of that one
++// mirror (`g.channels().at(id).some().name()`), and only the boundaries a view
++// watches cross the wire. Everything else is a write, authorized as any call is.
+ [service(KoltClient)]
+ struct KoltStore {
+ 	/// Username of this session's user.
+@@ -175,41 +166,33 @@
+ }
+ 
+ impl KoltStore {
++	// The one live surface. Read-only at the client, seeded in the reply.
+ 	[rpc]
+-	fun get_account_user(self): SignalCell<Option<User>> {
+-		self.get_user(self.user_id)
++	fun global(self): Store<Global> {
++		self.global_store.global
+ 	}
+ 
+-	// [rpc]
+-	// fun get_account_joined_channels(self): SignalCell<List<u53>> {
+-	// 	self.global_store.channels.map(|channels| {
+-	// 		channels.get();
+-	// 	});
+-	// }
+-
++	// Who this session is: the client reads its user as `g.users().at(id)`.
+ 	[rpc]
+-	fun get_user(self, user_id: UserId): SignalCell<Option<User>> {
+-		self.global_store.users.get_or_insert(user_id, || Signal::new(db
+-			.prepare("SELECT username FROM account WHERE username = ?")
+-			.first([user_id.uuid])
+-			.map(|x| {
+-				let username = x.text("username");
+-				User { id = user_id, username }
+-			})))
++	fun account(self): UserId {
++		self.user_id
+ 	}
+ 
+ 	[rpc]
+ 	fun create_channel(self, name: str): u53 {
+ 		let id = self.global_store.next_channel_id.read();
+ 		self.global_store.next_channel_id.write() += 1;
+-		self.global_store.global.channels().insert(id, ChannelRecord { id, name, messages = [] });
++		self.global_store.global
++			.channels()
++			.at(id)
++			.set(Some(ChannelRecord { id, name, messages = [] }));
+ 		id
+ 	}
+ 
+ 	[rpc]
+ 	fun delete_channel(self, channel_id: u53): bool {
+ 		let channels = self.global_store.global.channels();
+-		channels.remove(channel_id);
++		channels.at(channel_id).set(None);
+ 		if channels.len() == 0 {
+ 			self.global_store.next_channel_id.write() = 0;
+ 		}
+@@ -217,42 +200,6 @@
+ 	}
+ 
+ 	[rpc]
+-	fun get_channels(self): MemoCell<List<u53>> {
+-		let channels = self.global_store.global.channels();
+-		self.global_store.channel_ids.get_or_insert(|| channels
+-			.keys()
+-			.memo_global()
+-			.derive(|ids| ids.values())
+-			.distinct()
+-			.memo_global())
+-	}
+-
+-	// The snapshot for one id, live: `None` for an id the server does not
+-	// know. The client's `Channel::find` is this call behind a mirror.
+-	[rpc]
+-	fun get_channel(self, channel: u53): MemoCell<Option<Channel>> {
+-		let record = self.global_store.global.channels().at(channel);
+-		self.global_store.channel_views.get_or_insert(channel, || record
+-			.derive(|record| record.map(|held| Channel { id = held.id }))
+-			.distinct()
+-			.memo_global())
+-	}
+-
+-	// The name of one channel, live: a view over that channel's own name, which
+-	// a write to another channel - or to this channel's messages - never runs.
+-	[rpc]
+-	fun get_channel_name(self, channel: u53): Option<MemoCell<str>> {
+-		let record = self.global_store.global.channels().at(channel);
+-		record.get().is_some() else ret None;
+-		Some(self.global_store.channel_names.get_or_insert(channel, || record
+-			.some()
+-			.name()
+-			.derive(|name| name.unwrap_or_default())
+-			.distinct()
+-			.memo_global()))
+-	}
+-
+-	[rpc]
+ 	fun set_channel_name(self, channel: u53, name: str): bool {
+ 		self.global_store.global.channels().at(channel).some().name().patch(name)
+ 	}
+@@ -266,7 +213,8 @@
+ 			.write()
+ 			.pop()
+ 			.unwrap_or(messages.len().as_u53());
+-		messages.insert(id, Message { id, author = self.user_id, content = message });
++		self.global_store.ensure_user(self.user_id);
++		messages.at(id).set(Some(Message { id, author = self.user_id, content = message }));
+ 		record.messages().push(id);
+ 		Ok(id)
+ 	}
+@@ -282,26 +230,6 @@
+ 			}
+ 		}
+ 	}
+-
+-	// The message's own key: a write to another message never reaches it.
+-	[rpc]
+-	fun get_message(self, message_id: u53): MemoCell<Option<Message>> {
+-		let message = self.global_store.global.messages().at(message_id);
+-		self.global_store.message_views.get_or_insert(message_id, || message
+-			.derive(|held| held)
+-			.memo_global())
+-	}
+-
+-	[rpc]
+-	fun get_messages(self, channel: u53): Option<MemoCell<List<u53>>> {
+-		let record = self.global_store.global.channels().at(channel);
+-		record.get().is_some() else ret None;
+-		Some(self.global_store.channel_messages.get_or_insert(channel, || record
+-			.some()
+-			.messages()
+-			.derive(|ids| ids.unwrap_or([]))
+-			.memo_global()))
+-	}
+ }
+ 
+ // The database is module-level: process lifetime, opened once at module load
+@@ -327,7 +255,9 @@
+ // One store per authorized connection: the identity the handshake settled,
+ // over the shared cells.
+ fun store_for(connection: Connection): KoltStore {
+-	KoltStore { user_id = UserId { uuid = connection.session.identity }, global_store }
++	let user_id = UserId { uuid = connection.session.identity };
++	global_store.ensure_user(user_id);
++	KoltStore { user_id, global_store }
+ }
+ 
+ // The handshake gate: the browser offers `token.<session token>` as a
+--- a/src/model.vl
++++ b/src/model.vl
+@@ -1,34 +1,28 @@
+-// The client-side MODEL: the domain types' methods over the flat rpc surface,
++// The client-side MODEL: the domain types' methods over the MIRRORED store,
+ // and the connection they use. DOM-free by construction, so a headless entry
+ // can drive it exactly as a view does.
+ //
+-// The pattern: the wire snapshots live in `shared.vl` (no live fields, so they
+-// stay Wire); the server's live records and the FLAT `[rpc]` surface live in
+-// `store.vl`; the methods here wrap that surface, injecting the key from
+-// `self` - the id, never the snapshot, so the server re-resolves from its own
+-// state. Liveness is on the HANDLE, not in the value: `channel.messages()`
+-// hands back a mirror, `Message::find(id)` another.
++// The pattern (vilan's mirrored store, A153): the server returns its whole
++// `Store<Global>` from ONE `[rpc]` (`store.vl`'s `global()`), and the client
++// MIRRORS it - a read-only replica whose handles are the store's own
++// projections (`g.channels().at(id).some().name()`). A handle subscribes its
++// nearest demand boundary (the root, a map key, a key set) when something
++// watches it, and a field reached through a boundary is seeded with it: no
++// per-field stub, no `transient_of`, no state-mapper. The root is a maybe until
++// its seed lands; a view turns it into a plain handle once, with
++// `when_remote_live`. A reconnect replays the mirror and keeps the replica, so
++// nothing here re-switches on it.
+ //
+-// A handle stub is sync and makes no call (vilan transport-rpc §9.2 as built
+-// in Order 33): it hands back a mirror minted UNLEASED, and the first lease is
+-// what asks the server. The stub is idempotent per ORIGIN (A134, Order 43): a
+-// second call with the same arguments on the same client hands back the same
+-// mirror, so nothing here memoizes handles - every call site asking for the
+-// same id leases the one mirror the client holds, and demand decides the
+-// channel's life. The lease is the caller's: a `.memo()` built inside a view
+-// leases under the view's owner, is released with the view, and re-leases
+-// (re-minting a released mirror from its origin) on the next visit. A mint
+-// that failed retries itself the same way.
+-//
+-// Every method switches on the connection (`get_client()`): no client reads
+-// as "nothing yet" (`None`, or `Pending`), and a reconnect re-runs the switch
+-// over the new client, whose stubs mint fresh mirrors.
++// The stub is idempotent per ORIGIN: every call of `global()` on one client
++// hands back the same mirror, so nothing here memoizes it.
+ import std::context::Context;
+-import std::reactive::transient::{ TransientSource, TransientState };
+-import std::reactive::{ Flow, MemoCell, Source };
++import std::reactive::store::{ RemoteStore, RemoteStoreKeys, RemoteStoreSome };
++import std::reactive::{ MemoCell, Source };
+ import std::rpc::{ RpcError, SocketTransport };
+-import pkg::shared::{ Account, Channel, Message, User, UserId };
+-import pkg::store::KoltClient;
++import pkg::shared::{ Channel, Message, User, UserId };
++import pkg::store::{ ChannelRecord, Global, KoltClient };
++
++export *;
+ 
+ let client_context = Context<MemoCell<Option<KoltClient<SocketTransport>>>>::new();
+ 
+@@ -36,28 +30,15 @@
+ 	client_context.get()
+ }
+ 
+-impl Account {
+-	fun user(): MemoCell<Option<User>> {
+-		get_client().and_then(|client| client.get_account_user().or(None)).memo()
+-	}
+-
+-	fun joined_channels() {}
+-}
+-
+-impl User {
+-	fun find(user_id: UserId): MemoCell<Option<User>> {
+-		get_client().and_then(|client| client.get_user(user_id).or(None)).memo()
+-	}
+-}
+-
+-impl UserId {
+-	fun user(self) {
+-		User::find(self)
+-	}
++// The one mirror, a maybe until the reply's seed lands - `None` with no client
++// (signed out). Read where a view is built: a sign-in rebuilds the views that
++// read it.
++fun global(): Option<RemoteStoreSome<Global>> {
++	get_client().get().map(|client| client.global())
+ }
+ 
+ impl Channel {
+-	// The flat call; the id comes back, the snapshot is found by it.
++	// The flat call; the id comes back, the record is found by it.
+ 	fun create(name: str): Result<u53, RpcError> {
+ 		get_client().get_safe()!.create_channel(name)
+ 	}
+@@ -66,48 +47,32 @@
+ 		get_client().get_safe()!.delete_channel(channel_id)
+ 	}
+ 
+-	// The channel's own mirror, as a state: `Pending` until the first frame,
+-	// `Absent` for an id the server does not know (the server answers `None`
+-	// for it, which is not a channel), `Failed` with the stale snapshot when a
+-	// re-mint failed.
+-	fun find(channel_id: u53): MemoCell<TransientState<Channel, RpcError>> {
+-		get_client()
+-			.switch_some(|client| client.get_channel(channel_id).states())
+-			.derive(|x: Option<TransientState<Option<Channel>, RpcError>>| match x.unwrap_or(TransientState::Pending) {
+-				TransientState::Pending => TransientState::Pending,
+-				TransientState::Ready(Some(let v)) => TransientState::Ready(v),
+-				TransientState::Ready(None) => TransientState::Absent,
+-				TransientState::Refreshing(Some(let v)) => TransientState::Refreshing(v),
+-				TransientState::Refreshing(None) => TransientState::Pending,
+-				TransientState::Failed(let e, let v) => TransientState::Failed(e, v.flatten()),
+-				TransientState::Absent => TransientState::Absent,
+-			})
+-			.memo()
+-	}
+-
+-	// Empty until the first frame, and for an id the server does not know.
+-	fun name(self): MemoCell<str> {
+-		let id = self.id;
+-		get_client()
+-			.and_then(|client| client.get_channel_name(id))
+-			.derive(|x| x.unwrap_or_default())
+-			.memo()
++	// One channel's record: a maybe (a granular thing callable where the channel
++	// may not exist), seeded with the record when its key's boundary is; its
++	// fields are plain inside `when_remote_live`. `states()` tells `Pending` from
++	// `Absent`.
++	fun find(g: RemoteStore<Global>, id: u53): RemoteStoreSome<ChannelRecord> {
++		g.channels().at(id).some()
++	}
++
++	// The channel ids: the map's key set, on its own boundary.
++	fun ids(g: RemoteStore<Global>): RemoteStoreKeys<u53> {
++		g.channels().keys()
++	}
++
++	// The name the mirror holds now, read passively: `""` while the channel's
++	// boundary is not watched (a view that shows the name watches it).
++	fun current_name(self): str {
++		match global() {
++			Some(let g) => g.channels().at(self.id).some().name().get().unwrap_or_default(),
++			None => "",
++		}
+ 	}
+ 
+ 	fun set_name(self, name: str): Result<bool, RpcError> {
+ 		get_client().get_safe()!.set_channel_name(self.id, name)
+ 	}
+ 
+-	// The live message list - a handle, so the snapshot stays Wire. An id the
+-	// server does not know reads as an empty list (the mirror stays `Absent`).
+-	fun messages(self): MemoCell<TransientState<List<u53>, RpcError>> {
+-		let id = self.id;
+-		get_client()
+-			.switch_some(|client| client.get_messages(id).states())
+-			.derive(|x| x.unwrap_or(TransientState::Pending))
+-			.memo()
+-	}
+-
+ 	fun add_message(self, content: str): Result<Result<u53, str>, RpcError> {
+ 		get_client().get_safe()!.add_message(self.id, content)
+ 	}
+@@ -116,28 +81,19 @@
+ 	fun remove_message(self, message_id: u53): Result<void, RpcError> {
+ 		get_client().get_safe()!.remove_message(self.id, message_id)
+ 	}
++}
+ 
+-	// The list of channel ids, as a state: `Pending` with no client and until
+-	// the first frame; the server's list after, live.
+-	fun get_channel_ids(): MemoCell<TransientState<List<u53>, RpcError>> {
+-		get_client()
+-			.switch_some(|client| client.get_channels().states())
+-			.derive(|x| x.unwrap_or(TransientState::Pending))
+-			.memo()
+-	}
+-
+-	// The channels themselves, each a `find` of its id, in the list's state.
+-	fun get_channels(): MemoCell<TransientState<List<MemoCell<TransientState<Channel, RpcError>>>, RpcError>> {
+-		Channel::get_channel_ids()
+-			.derive(|state| state.map(|ids| ids.map(|channel_id| Channel::find(channel_id))))
+-			.memo()
++impl Message {
++	// One message, a boundary of its own.
++	fun find(g: RemoteStore<Global>, id: u53): RemoteStoreSome<Message> {
++		g.messages().at(id).some()
+ 	}
+ }
+ 
+-impl Message {
+-	// `None` until the first frame, and for an id the server does not know.
+-	fun find(id: u53): MemoCell<Option<Message>> {
+-		get_client().and_then(|client| client.get_message(id).or(None)).memo()
++impl User {
++	// One user's presence, a boundary of its own.
++	fun find(g: RemoteStore<Global>, id: UserId): RemoteStoreSome<User> {
++		g.users().at(id).some()
+ 	}
+ }
+ 
+--- a/src/channel.vl
++++ b/src/channel.vl
+@@ -2,7 +2,9 @@
+ // over the flat rpc surface and the memoized handles - is `model.vl`; this
+ // module is the view over it.
+ import std::debug::Debug;
++import std::reactive::store::RemoteStore;
+ import std::reactive::{ DraftState, draft };
++import std::web::remote::when_remote_live;
+ import std::web::router::navigate;
+ import pkg::app_context::{ get_input_system, get_overlays, get_user };
+ import pkg::app_input_system::{ ChannelMenuInputLayerData, MessageMenuInputLayerData };
+@@ -12,6 +14,7 @@
+ import pkg::model;
+ import pkg::routes::{ Route, href };
+ import pkg::shared::{ Channel, Message, User };
++import pkg::store::Global;
+ import pkg::styles::{
+ 	button_style,
+ 	common_input_style,
+@@ -24,29 +27,25 @@
+ 
+ export *;
+ 
+-fun channel_component(channel: Channel) {
++fun channel_component(g: RemoteStore<Global>, channel: Channel) {
+ 	let message_text = Signal::new("");
+-	// The snapshot is fixed for this mount - the route swaps the component when
+-	// the channel's own mirror changes - so the message handle is taken once.
+-	let messages = channel.messages();
+ 	let message_menu_subject: SignalCell<Option<Message>> = Signal::new(None);
+ 	let message_menu = create_message_menu(channel, message_menu_subject);
+ 
+ 	<div .styled(css { padding(rem(8 / 16)); })>
+-		{ui::when_some(messages.derive(|x| x.ready()), |messages| {
+-			ui::each_values(messages, |message_id| {
+-				// The row waits for the message AND its author, and handles their
+-				// absence here, once. The author follows the message's author id;
+-				// `distinct` keeps an edit to the text from re-asking for the user.
+-				let message = Message::find(message_id);
+-				let author = message
+-					.derive(|found| found.map(|current| current.author))
+-					.distinct()
+-					.and_then(|author| author.user());
+-				// `when_all_some` keeps the row across a payload change and hands the
+-				// body one live cell per part, so an edited message or a renamed
+-				// author updates in place instead of rebuilding its row.
+-				ui::when_all_some((message, author), |(message, author)| {
++		{when_remote_live(Channel::find(g, channel.id), |record| {
++			// `record.messages()`: a `RemoteStore<List<u53>>`, seeded with the
++			// record and told each push as one splice.
++			ui::each_values(record.messages(), |message_id| {
++				// The row waits for its MESSAGE (a boundary of its own); inside it
++				// every field is plain, and an edit wakes the one `<span>` that
++				// reads it. The author follows the message's author id, and waits
++				// for the user's own boundary.
++				when_remote_live(Message::find(g, message_id), |message| {
++					let author_name = message
++						.author()
++						.switch(|author| User::find(g, author).username())
++						.derive(|name| name.unwrap_or_default());
+ 					<div
+ 						on:contextmenu(|event| {
+ 							event.prevent_default();
+@@ -58,10 +57,8 @@
+ 							.flex_row();
+ 						})
+ 					>
+-						<span .styled(css { font-weight("600"); })>
+-							{author.derive(|user| user.username)}
+-						</span>
+-						<span>{message.derive(|current| current.content)}</span>
++						<span .styled(css { font-weight("600"); })>{author_name}</span>
++						<span>{message.content()}</span>
+ 					</div>
+ 				})
+ 			})
+@@ -359,7 +356,7 @@
+ 
+ 		channel.effect(|channel: Option<Channel>| {
+ 			channel is Some(let channel) else ret;
+-			channel_name.adopt(channel.name().get());
++			channel_name.adopt(channel.current_name());
+ 		});
+ 
+ 		<form
+--- a/src/views.vl
++++ b/src/views.vl
+@@ -1,8 +1,10 @@
+ import std::compare::{ Ordering, PartialEq };
+ import std::display::{ Display, (impl bool with Display) };
++import std::reactive::transient::{ TransientSource, TransientState };
+ import std::reactive::{ DraftState, FlushPolicy, turn };
+ import std::rpc::{ ConnectionState, RemoteSource, RpcError, SocketTransport };
+ import std::time::{ Duration, Instant };
++import std::web::remote::when_remote_live;
+ import pkg::account::Account;
+ import pkg::app_context::{
+ 	get_app_context,
+@@ -19,6 +21,7 @@
+ import pkg::lib::overlay::{ DismissReason, Overlay };
+ import pkg::login_page;
+ import pkg::lucide;
++import pkg::model;
+ import pkg::prefs::create_prefs_modal;
+ import pkg::routes::{ Route, Shell, WorkspaceRoute, shell_of };
+ import pkg::shared::Channel;
+@@ -175,19 +178,27 @@
+ 	})
+ }
+ 
+-// One channel's page. Keyed on the channel's EXISTENCE in effect: `Channel` is
+-// equal by id, so a rename does not rebuild the component - only the mirror
+-// arriving (`None` -> `Some`) or the channel going away does.
++// One channel's page, over the mirrored store: rebuilt only when the channel's
++// EXISTENCE changes - a rename, a message, an edit never rebuild it. The record
++// is a maybe until its key's seed lands; while it is `Pending` the component
++// waits inside (`when_remote_live`), and only `Absent` is "not found".
+ fun channel_page(id: u53) {
+-	<div
+-		// PRE-EXISTING at kolt 0309177 (not A142's): `Channel::find` answers a
+-		// `Transient<Channel>` and this match reads `Option` arms. `latest()` keeps
+-		// the page through a refresh - the owner's call to make.
+-		.child(swap(Channel::find(id).derive(|found| found.latest()), |found| match found {
+-			Some(let channel) => channel_component(channel),
+-			None => not_found_component(),
+-		}))
+-	/>
++	match model::global() {
++		Some(let root) => <div
++			.child(when_remote_live(root, |g| {
++				let exists = Channel::find(g, id).states().derive(|state| match state {
++					TransientState::Absent => false,
++					_ => true,
++				});
++				swap(exists, |found| if found {
++					channel_component(g, Channel { id })
++				} else {
++					not_found_component()
++				})
++			}))
++		/>,
++		None => not_found_component(),
++	}
+ }
+ 
+ fun not_found_component() {
+--- a/src/sidebar.vl
++++ b/src/sidebar.vl
+@@ -1,9 +1,9 @@
+ import std::compare::{ Ordering, PartialEq };
+ import std::display::{ Display, (impl bool with Display) };
+-import std::reactive::delta::ListCell;
+ import std::reactive::{ DraftState, FlushPolicy, combine, turn };
+ import std::rpc::{ ConnectionState, RemoteSource, RpcError, SocketTransport };
+ import std::time::{ Duration, Instant };
++import std::web::remote::when_remote_live;
+ import std::web::router::{ navigate, plain_left_click };
+ // FIXME: Required for impl methods even though the name 'CssValue' is unused.
+ import std::web::style::CssValue;
+@@ -18,6 +18,7 @@
+ import pkg::lib::interact::{ DragHandler, InteractionHandler };
+ import pkg::lib::overlay::{ DismissReason, Overlay, Pin };
+ import pkg::lucide;
++import pkg::model;
+ import pkg::routes::{ Route, Shell, WorkspaceRoute, href };
+ import pkg::shared::Channel;
+ import pkg::sidebar::{ SidebarTab, sidebar_max_width, sidebar_min_width };
+@@ -73,7 +74,9 @@
+ 	// list is `Channel::get_channels()`.
+ 	// let channels: SignalCell<List<i53>> = get_user().map(|x| x.channels).flatten();
+ 
+-	let channels = Channel::get_channels();
++	// The channel list over the mirrored store: the map's key set, each row's
++	// name on its channel's own boundary. `None` signed out.
++	let root = model::global();
+ 
+ 	<div
+ 		.styled(sidebar_style)
+@@ -87,22 +90,7 @@
+ 				min-height("0");
+ 			})
+ 		>
+-			{ui::when_some(channels.derive(|x| x.ready()), |channels| {
+-				let items = ListCell<Option<Channel>>::of(channels
+-					.get()
+-					.map(|channel| channel.get().ready()));
+-				channels.effect(|channels| {
+-					if items.size() > channels.len() {
+-						items.truncate(channels.len());
+-					}
+-					for (index, channel) in channels.iter().enumerate() {
+-						channel.effect(|channel| {
+-							items.splice(index, 1, [channel.ready()]);
+-						});
+-					}
+-				});
+-				let filtered_items = items.derive(|list| list.filter_map(|x| x)).cell();
+-
++			{root.map(|g| when_remote_live(g, |g| {
+ 				<div
+ 					.styled(css {
+ 						gap(rem(4 / 16));
+@@ -116,9 +104,14 @@
+ 							.flex_col();
+ 						})
+ 					>
+-						{ui::each(filtered_items, |x| x.id, |channel| {
++						{ui::each(Channel::ids(g), |id| id, |id| {
++							let channel = Channel { id };
+ 							let path = href(Route::Channel(channel.id));
+-							let name = channel.name();
++							// Two consumers (the title and the text): sealed once.
++							let name = Channel::find(g, id)
++								.name()
++								.derive(|name| name.unwrap_or_default())
++								.memo();
+ 							// Two consumers (the attribute and the toggle): sealed once.
+ 							let selected = get_route()
+ 								.derive(|route| route == Route::Channel(channel.id))
+@@ -171,7 +164,7 @@
+ 						<span>"Add channel"</span>
+ 					</button>
+ 				</div>
+-			})}
++			}))}
+ 		</div>
+ 		<div
+ 			on:contextmenu(|event| {
+--- a/src/command_palette.vl
++++ b/src/command_palette.vl
+@@ -174,21 +174,10 @@
+ 		});
+ 		let search_text = Signal::new("");
+ 		let search_focused = Signal::new(false);
+-		let items = Channel::get_channel_ids()
+-			.derive(|x| sorted_commands
+-				.iter()
+-				// .chain(x
+-				// 	.iter()
+-				// 	.map(|command_id| {
+-				// 		Channel::find(command_id).map(|x| x.map(|channel| Command {
+-				// 			id = next_command_id(),
+-				// 			document = Document::plain(channel.name().get()),
+-				// 			relevant = || true,
+-				// 			activate = || {},
+-				// 		}))
+-				// 	}))
+-				.to_list())
+-			.cell();
++		// The channels joined the command list through `Channel::get_channel_ids()`
++		// when the model had one (commented out there); over the mirrored store it is
++		// `Channel::ids(g)`, a key set to chain here when the commands want it.
++		let items: SignalCell<List<Command>> = Signal::new(sorted_commands.iter().to_list());
+ 		let commands_searchable: Searchable<Command> = Searchable::documents(items, |x| x.document);
+ 		// An empty query lists every command, one per exclusive group.
+ 		let filtered_commands: SignalCell<List<Hit<Command>>> = search_text
