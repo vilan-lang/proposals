@@ -1,0 +1,429 @@
+fields 415
+Id         264
+map/set    243
+TypeId     88
+'src       69
+SourceId   41
+ref        38
+Span       37
+cell       4
+'static    4
+usize-key  3
+Type       2
+Rc/Arc     2
+AST        2
+assignment_values | IndexMap<Id, Vec<Id>> | map/set,Id
+closures | IndexMap<Id, Closure> | map/set,Id
+diagnostics | Vec<Error> | 
+wire_names | HashSet<&'src str> | map/set,'src,ref
+wire_types_to_check | Vec<WireTypeCheck<'src>> | 'src
+hashable_names | HashSet<&'src str> | map/set,'src,ref
+hashable_types_to_check | Vec<WireTypeCheck<'src>> | 'src
+partialeq_types_to_check | Vec<WireTypeCheck<'src>> | 'src
+json_types_to_check | Vec<WireTypeCheck<'src>> | 'src
+resource_classification | HashMap<TypeId, bool> | map/set,TypeId
+generic_type_applications | Vec<(TypeId, Span, SourceId)> | TypeId,SourceId,Span
+reported_container_structures | HashSet<String> | map/set
+resource_value_places | HashSet<Id> | map/set,Id
+trait_self_markers | HashMap<Id, TypeId> | map/set,TypeId,Id
+partial_move_roots | HashMap<Id, Id> | map/set,Id
+resource_erasures | Vec<(Id, TypeId, TypeId)> | TypeId,Id
+variant_coercions | HashMap<Id, (Id, usize, usize, TypeId)> | map/set,TypeId,Id
+nested_annotation_owners | HashMap<TypeId, NestedAnnotationOwner> | map/set,TypeId
+existential_annotation_holes | HashSet<TypeId> | map/set,TypeId
+binding_existential_constraints | Vec<(Id, TypeId, Span)> | TypeId,Id,Span
+existential_initializers | HashMap<Id, TypeId> | map/set,TypeId,Id
+dropped_bindings | HashSet<Id> | map/set,Id
+drop_extents | HashMap<Id, liveness::DropExtent> | map/set,Id
+resource_temporaries | HashMap<Id, TypeId> | map/set,TypeId,Id
+declared_binding_extents | HashMap<Id, Vec<liveness::DropExtent>> | map/set,Id
+explicit_drop_bindings | HashSet<Id> | map/set,Id
+overwrite_drops | HashMap<Id, TypeId> | map/set,TypeId,Id
+drop_impls_to_check | Vec<(TypeId, Span, Id, Option<Id>)> | TypeId,Id,Span
+callable_impls_to_check | Vec<(TypeId, Span, Id, bool)> | TypeId,Id,Span
+drop_methods | HashMap<Id, Id> | map/set,Id
+drop_glue | HashMap<TypeId, DropGlue> | map/set,TypeId
+drop_owned_types_by_root | HashMap<Id, DropSites> | map/set,Id
+drop_call_edges | HashMap<Id, Vec<DropEdge>> | map/set,Id
+drop_method_checks | Vec<(Id, Span, String)> | Id,Span
+view_suspension_checks | ViewSuspensionChecks<'src> | 'src
+rpc_signatures_to_check | Vec<RpcSignatureCheck<'src>> | 'src
+client_service_subjects | HashSet<&'src str> | map/set,'src,ref
+service_subjects | HashSet<&'src str> | map/set,'src,ref
+rpc_async_mut_self_receivers | Vec<(Id, &'src str)> | 'src,Id,ref
+client_only_service_declarations | HashSet<Id> | map/set,Id
+current_impl_subject_name | Option<&'src str> | 'src,ref
+expose_fields_to_check | Vec<ExposeFieldCheck<'src>> | 'src
+return_type_stack | Vec<ReturnFrame> | 
+return_inference_stack | Vec<(Id, bool)> | Id
+inferred_return_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+closure_held_targets | HashMap<Id, TypeId> | map/set,TypeId,Id
+warnings | Vec<Error> | 
+warning_sources | Vec<SourceId> | SourceId
+entity_id | u32 | 
+enums | IndexMap<Id, Enum<'src>> | map/set,'src,Id
+expr_id_to_expr_map | HashMap<Id, Expr<'src>> | map/set,'src,Id
+expr_id_to_scope_id_map | HashMap<Id, Id> | map/set,Id
+expr_id_to_type_id_map | HashMap<Id, TypeId> | map/set,TypeId,Id
+member_name_spans | HashMap<Id, Span> | map/set,Id,Span
+unwired_method_calls | HashMap<Id, Id> | map/set,Id
+pattern_sites | Vec<hover_labels::PatternSite> | 
+unresolved_method_calls | Vec<(Id, Id, &'src str)> | 'src,Id,ref
+arity_invalid_calls | Vec<(Id, Id)> | Id
+written_call_arguments | Vec<(Id, Id, Vec<Id>)> | Id
+struct_initializer_field_spans | Vec<(SourceId, Span, Id, usize)> | Id,SourceId,Span
+platform | Platform | 
+platform_reason | Option<String> | 
+fenced_out_items | HashSet<(SourceId, Span)> | map/set,SourceId,Span
+fenced_out_names | HashMap<String, String> | map/set
+current_source_id | SourceId | SourceId
+or_operand_end | Option<usize> | 
+condition_polarity | Option<ConditionPolarity> | 
+expression_position_captures | HashMap<Id, (&'src str, std::ops::Range<usize>)> | map/set,'src,Id,ref
+else_visible_captures | Vec<(&'src str, Id, usize)> | 'src,Id,ref
+then_visible_captures | Vec<(&'src str, Id, usize)> | 'src,Id,ref
+diagnostic_source_marks | Vec<(usize, SourceId)> | SourceId
+source_ranges | Vec<SourceRange> | 
+std_sources | HashSet<SourceId> | map/set,SourceId
+frozen_sources | HashSet<SourceId> | map/set,SourceId
+std_layer_sources | HashMap<SourceId, String> | map/set,SourceId
+std_layer_twin_files | HashMap<SourceId, Vec<(String, String, PathBuf, Vec<String>)>> | map/set,SourceId
+lazy_argument_resource_refusals | HashSet<Id> | map/set,Id
+dependency_sources | HashSet<SourceId> | map/set,SourceId
+type_map_writes | u64 | 
+fixpoint_stalled | bool | 
+literal_lets_wait | bool | 
+literal_let_expectations | HashMap<Id, TypeId> | map/set,TypeId,Id
+literal_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+bound_proofs_in_progress | Vec<(TypeId, Id, Vec<TypeId>)> | TypeId,Id
+bound_proof_memo | Option<HashMap<(Type, Id, Vec<Type>), bool>> | map/set,Id,Type
+bound_provider_memo | Option<HashMap<Id, std::sync::Arc<[(TypeId, Option<Vec<TypeId>>)]>>> | map/set,TypeId,Id,Rc/Arc
+bound_proof_cut_floor | usize | 
+bound_questions_derived | HashMap<u32, Vec<(Id, TypeId, Id)>> | map/set,TypeId,Id
+bound_recompute_ranges | Vec<(u32, u32)> | 
+prefix_impl_count | Option<usize> | 
+frozen_ranges | Vec<(u32, u32)> | 
+world_ranges | Vec<(u32, u32)> | 
+reused_sources | Vec<SourceId> | SourceId
+world_table_ranges | Vec<(u32, u32)> | 
+reused_table_sources | Vec<SourceId> | SourceId
+restored_tables | RestoredTables | 
+drop_scan_roots | HashSet<Id> | map/set,Id
+drop_nominals_world_digest | u64 | 
+sorted_source_ranges | Vec<(u32, u32, SourceId)> | SourceId
+source_range_index | std::cell::RefCell<RangeIndex> | cell
+derived_origin_index | std::cell::RefCell<RangeIndex> | cell
+tuple_member_index | std::cell::RefCell<Option<(usize, HashMap<Id, Option<usize>>)>> | map/set,Id,cell
+type_id_sources | Vec<SourceId> | SourceId
+reuse_unrecordable | HashSet<u32> | map/set
+reuse_derived | HashMap<u32, ModuleDiagnostics> | map/set
+entry_dirty_sources | HashSet<SourceId> | map/set,SourceId
+reuse_prefix_len | u32 | 
+import_targets | Vec<(SourceId, Id)> | Id,SourceId
+entry_phase | bool | 
+types_settled | bool | 
+item_costs | HashMap<Option<Id>, crate::counters::WorkCounts> | map/set,Id
+function_by_body_scope | HashMap<Id, Id> | map/set,Id
+function_scopes_indexed | usize | 
+settled_type_index | HashMap<u64, TypeId> | map/set,TypeId
+source_texts | Vec<(SourceId, &'src str)> | 'src,SourceId,ref
+type_references | Vec<(SourceId, Span, Option<Id>, TypeId)> | TypeId,Id,SourceId,Span
+external_functions | IndexMap<Id, ExternalFunction<'src>> | map/set,'src,Id
+constraints | Vec<Constraint<'src>> | 'src
+variable_constraint_index | HashMap<Id, usize> | map/set,Id
+variable_constraint_indexed | usize | 
+deferred | Vec<(Constraint<'src>, Vec<Id>)> | 'src,Id
+current_waiting_on | Option<Vec<Id>> | Id
+rigid_binder_scope | Option<Id> | Id
+inferable_generics | Vec<TypeId> | TypeId
+struct_literal_instantiations | HashMap<Id, (Vec<TypeId>, SubstitutionContext)> | map/set,TypeId,Id
+function_calls | IndexMap<Id, FunctionCall> | map/set,Id
+functions | IndexMap<Id, Function<'src>> | map/set,'src,Id
+generic_constraint_names | HashMap<TypeId, &'src str> | map/set,'src,TypeId,ref
+generic_dispatch | HashMap<Id, GenericDispatch<'src>> | map/set,'src,Id
+generic_bounds | HashMap<TypeId, Vec<TypeId>> | map/set,TypeId
+defaulted_parameter_types | HashSet<TypeId> | map/set,TypeId
+defaulted_parameter_mentions | HashMap<TypeId, TypeId> | map/set,TypeId
+tuple_bounds | HashMap<TypeId, TupleBoundRequirement> | map/set,TypeId
+mapped_binder_sources | HashMap<TypeId, TypeId> | map/set,TypeId
+tuple_walk_binders | HashMap<Id, (TypeId, TypeId)> | map/set,TypeId,Id
+tuple_walk_views | HashMap<Id, TypeId> | map/set,TypeId,Id
+tuple_zip_views | HashMap<Id, Vec<TypeId>> | map/set,TypeId,Id
+tuple_walk_names | HashMap<TypeId, (&'src str, Option<Id>)> | map/set,'src,TypeId,Id,ref
+tuple_map_results | HashMap<Id, TypeId> | map/set,TypeId,Id
+tuple_call_receivers | HashMap<Id, TypeId> | map/set,TypeId,Id
+impl_subject_args | HashMap<Id, TypeId> | map/set,TypeId,Id
+implementations | Vec<Implementation<'src>> | 'src
+implementations_by_member | HashMap<&'src str, Vec<usize>> | map/set,'src,ref
+implementations_by_trait | HashMap<Id, Vec<usize>> | map/set,Id
+provided_trait_rows | HashMap<Id, ImplHeadRows> | map/set,Id
+member_row_index | HashMap<ImplRowKey<'src>, MemberRowIndex> | map/set,'src
+implementation_by_declaration | HashMap<Id, usize> | map/set,Id
+impl_namespaces | Vec<std::sync::Arc<ImplNamespace<'src>>> | 'src,Rc/Arc
+import_impl_restrictions | Vec<ImportImplRestriction> | 
+lookup_admission | Option<LookupAdmission> | 
+lookup_importer | Option<SourceId> | SourceId
+lookup_anchor | Option<Id> | Id
+lookup_asker | Option<Id> | Id
+declined_default_calls | HashMap<Id, (Id, Id, String)> | map/set,Id
+source_paths | Vec<PathBuf> | 
+import_statement_spans | Vec<(SourceId, Span)> | SourceId,Span
+pending_hints | Vec<hint_labels::PendingHint> | 
+hint_attributes | HashMap<Id, hint_labels::HintAttribute> | map/set,Id
+cross_module_collisions | Vec<MemberCollision> | 
+blanket_residues | Vec<BlanketResidue> | 
+scoped_reach_checks | Vec<ScopedReachCheck> | 
+trait_by_declaration | HashMap<Id, Id> | map/set,Id
+module_id_by_name | HashMap<&'src str, Id> | map/set,'src,Id,ref
+packages | Vec<LoadedPackage> | 
+package_of_source | HashMap<SourceId, usize> | map/set,SourceId
+entry_module_package | Option<String> | 
+module_children_scopes | HashMap<Id, Id> | map/set,Id
+namespace_only_modules | HashMap<Id, Vec<String>> | map/set,Id
+modules_bodied_by_a_lib_file | HashSet<Id> | map/set,Id
+prelude_exports | HashMap<Id, Vec<&'src str>> | map/set,'src,Id,ref
+prelude_seeds | Vec<(Id, String, SourceId)> | Id,SourceId
+prelude_entry_bindings | Vec<Id> | Id
+prelude_entry_scope | Option<Id> | Id
+modules | IndexMap<Id, Module<'src>> | map/set,'src,Id
+parameters | IndexMap<Id, Parameter<'src>> | map/set,'src,Id
+primitive_struct_ids | HashMap<&'static str, Id> | map/set,'static,Id,ref
+field_syntax_handles | Vec<Id> | Id
+field_syntax_reads | HashSet<Id> | map/set,Id
+bool_enum_id | Option<Id> | Id
+list_element_slots | HashMap<Id, TypeId> | map/set,TypeId,Id
+slot_fill_sites | HashMap<TypeId, Id> | map/set,TypeId,Id
+lenient_subscript_indexes | Vec<Id> | Id
+pinned_diagnostic_anchors | Vec<(usize, Id)> | Id
+prepped_assignments | Vec<(Id, Id)> | Id
+compound_reread_ids | HashSet<Id> | map/set,Id
+reported_literal_errors | HashSet<Id> | map/set,Id
+binding_annotation_view | HashMap<Id, bool> | map/set,Id
+prepped_imports | PreppedImports<'src> | 'src
+import_aliases | IndexMap<Id, ImportAlias<'src>> | map/set,'src,Id
+import_alias_spans | HashMap<(SourceId, Span), Id> | map/set,Id,SourceId,Span
+macro_item_invocations | HashSet<usize> | map/set,usize-key
+macro_signatures | HashMap<Id, String> | map/set,Id
+pending_macro_references | Vec<(&'src str, Span, Id, SourceId)> | 'src,Id,SourceId,ref,Span
+impl_reach | std::cell::RefCell<ImplReachLog> | cell
+macro_expression_expansions | HashMap<usize, &'static Spanned<Node<'static>>> | map/set,'static,usize-key,ref,Span,AST
+macro_failed_sites | HashSet<usize> | map/set,usize-key
+module_scope_ids | HashSet<Id> | map/set,Id
+prepped_locals | Vec<(Id, &'src str)> | 'src,Id,ref
+prepped_std_items | Vec<(Id, &'src str, &'src str)> | 'src,Id,ref
+css_scope_depth | usize | 
+css_scope_locals | HashSet<Id> | map/set,Id
+untyped_comprehension_binders | HashSet<Id> | map/set,Id
+prepped_for_each | Vec<(Id, Id)> | Id
+for_each_next | HashMap<Id, Id> | map/set,Id
+for_each_next_providers | HashMap<Id, Id> | map/set,Id
+for_each_iterable_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+for_each_views | HashMap<Id, bool> | map/set,Id
+adopted_parameter_modes | HashMap<Id, Mode> | map/set,Id
+open_parameter_links | HashMap<Id, Vec<Id>> | map/set,Id
+wrapped_view_captures | HashMap<Id, (bool, bool)> | map/set,Id
+prepped_binary_ops | Vec<(Id, BinaryOp, Id)> | Id
+binary_context_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+prepped_unary_ops | Vec<(Id, char, Id)> | Id
+prepped_conditions | Vec<(Id, &'static str)> | 'static,Id,ref
+std_module_files | Vec<(String, PathBuf)> | 
+std_export_index | Option<HashMap<String, String>> | map/set
+std_deprecated_alias_index | Option<HashMap<String, (String, String)>> | map/set
+web_prelude_index | Option<HashSet<String>> | map/set
+entry_prelude_path | Option<String> | 
+prelude_repair | PreludeRepair | 
+std_trait_method_index | Option<HashMap<(String, String), (String, String)>> | map/set
+derived_origins | Vec<(std::ops::Range<u32>, Span, SourceId)> | SourceId,Span
+derived_type_origins | Vec<(std::ops::Range<u32>, Span, SourceId)> | SourceId,Span
+closure_parameter_fill_sites | HashMap<TypeId, Span> | map/set,TypeId,Span
+prepped_binder_inheritance | Vec<(TypeId, &'src str, usize, Id)> | 'src,TypeId,Id,ref
+binary_op_dispatch | HashMap<Id, Id> | map/set,Id
+concat_render_dispatch | HashMap<Id, (TypeId, Id)> | map/set,TypeId,Id
+bitwise_u32 | HashSet<Id> | map/set,Id
+bitwise_generic_lhs | HashMap<Id, TypeId> | map/set,TypeId,Id
+integer_division | HashSet<Id> | map/set,Id
+division_generic_lhs | HashMap<Id, TypeId> | map/set,TypeId,Id
+prepped_number_literals | Vec<Id> | Id
+negated_number_literals | HashMap<Id, Id> | map/set,Id
+parameter_contexts | HashMap<Id, Vec<Id>> | map/set,Id
+prepped_type_context_clauses | Vec<(TypeId, Vec<(&'src str, Span)>, Id, SourceId, Option<Id>)> | 'src,TypeId,Id,SourceId,ref,Span
+prepped_function_context_clauses | Vec<(Id, Vec<(&'src str, Span)>, Id, SourceId)> | 'src,Id,SourceId,ref,Span
+declared_function_contexts | HashMap<Id, Vec<Id>> | map/set,Id
+function_context_clause_spans | HashMap<Id, Span> | map/set,Id,Span
+function_signature_end_spans | HashMap<Id, Span> | map/set,Id,Span
+walking_member_body | bool | 
+walking_trait_impl_body | bool | 
+return_annotation_owners | HashMap<TypeId, (Id, bool)> | map/set,TypeId,Id
+opaque_returns | HashMap<Id, (Id, Vec<TypeId>, Span)> | map/set,TypeId,Id,Span
+opaque_return_tails | HashMap<Id, Id> | map/set,Id
+async_values | HashSet<Id> | map/set,Id
+sync_values | HashSet<Id> | map/set,Id
+async_fields | HashSet<(Id, usize)> | map/set,Id
+async_returning | HashSet<Id> | map/set,Id
+return_sites | Vec<(Id, Id)> | Id
+method_call_substitution | HashMap<Id, SubstitutionContext> | map/set,Id
+supertrait_self_at_call | HashMap<Id, SupertraitSelf> | map/set,Id
+expected_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+dyn_method_calls | HashMap<Id, &'src str> | map/set,'src,Id,ref
+dyn_dispatched_members | HashSet<(Id, &'src str)> | map/set,'src,Id,ref
+dyn_object_traits | HashSet<Id> | map/set,Id
+dyn_refusals_reported | HashSet<Id> | map/set,Id
+callable_coercions | HashMap<Id, (usize, TypeId)> | map/set,TypeId,Id
+dyn_coercions | HashMap<Id, (TypeId, Id, Vec<TypeId>)> | map/set,TypeId,Id
+dyn_tuple_coercions | HashMap<Id, Vec<Option<(TypeId, Id, Vec<TypeId>)>>> | map/set,TypeId,Id
+parameter_erasures | Vec<(Id, TypeId, TypeId)> | TypeId,Id
+prepped_static_accessors | Vec<(Id, TypeId, &'src str)> | 'src,TypeId,Id,ref
+static_subject_bindings | HashMap<Id, SubstitutionContext> | map/set,Id
+static_subject_self_bindings | HashMap<Id, SubstitutionContext> | map/set,Id
+bare_static_path_subjects | HashSet<Id> | map/set,Id
+impl_head_type_ids | HashSet<TypeId> | map/set,TypeId
+impl_body_subjects | HashMap<Id, TypeId> | map/set,TypeId,Id
+trait_qualified_calls | HashMap<Id, (Id, &'src str)> | map/set,'src,Id,ref
+own_generic_call_bindings | HashMap<Id, Vec<TypeId>> | map/set,TypeId,Id
+spread_packs | HashMap<Id, Vec<Id>> | map/set,Id
+bound_argument_grounding_depth | u32 | 
+lazy_argument_thunks | IndexMap<Id, &'src str> | map/set,'src,Id,ref
+lazy_argument_forwards | HashSet<Id> | map/set,Id
+lazy_cells | HashSet<Id> | map/set,Id
+lazy_eager_parameters | HashSet<Id> | map/set,Id
+item_labels | HashMap<Id, Labels<'src>> | map/set,'src,Id
+module_platforms | HashMap<SourceId, Vec<Spanned<&'src str>>> | map/set,'src,SourceId,ref,Span,AST
+lazy_binding_declarations | Vec<Id> | Id
+lazy_local_bindings | Vec<Id> | Id
+lazy_binding_initializers | IndexMap<Id, &'src str> | map/set,'src,Id,ref
+lazy_thunk_effects | IndexMap<Id, ThunkEffects> | map/set,Id
+spread_elements | HashSet<Id> | map/set,Id
+spread_spans | HashMap<Id, Span> | map/set,Id,Span
+bound_dispatch_traits | HashMap<Id, (Id, Vec<TypeId>)> | map/set,TypeId,Id
+prepped_trait_impls | Vec<TraitImplCheck<'src>> | 'src
+trait_impl_sites | Vec<TraitImplSite> | 
+conformance_signature_checks | Vec<ConformanceSignatureCheck> | 
+prepped_type_locals | Vec<(TypeId, &'src str, Id, Span, Vec<TypeId>, SourceId)> | 'src,TypeId,Id,SourceId,ref,Span
+prepped_dyn_annotations | Vec<PreppedDyn> | 
+dyn_annotation_spans | HashMap<TypeId, (SourceId, Span)> | map/set,TypeId,SourceId,Span
+declared_generic_parameters | HashMap<Id, Vec<DeclaredGenericParameter<'src>>> | map/set,'src,Id
+written_type_spellings | Vec<(TypeId, &'src str)> | 'src,TypeId,ref
+prepped_uses | PreppedUses<'src> | 'src
+prepped_type_static_accessors | Vec<PreppedTypePath<'src>> | 'src
+reference_count | HashMap<Id, u32> | map/set,Id
+last_use | liveness::LastUse | 
+shared_cells | SharedCells | 
+shared_read_bindings | HashSet<Id> | map/set,Id
+elided_shared_reads | HashSet<Id> | map/set,Id
+donated_projections | HashSet<Id> | map/set,Id
+shared_place_lets | HashSet<Id> | map/set,Id
+shared_place_inits | HashSet<Id> | map/set,Id
+resolved_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+tuple_element_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+entry_labels | HashMap<Id, &'src str> | map/set,'src,Id,ref
+tuple_literal_layouts | HashMap<Id, (Vec<usize>, TupleLabels)> | map/set,Id
+tuple_literal_label_problems | HashMap<Id, String> | map/set,Id
+named_arguments | Vec<(Id, Span)> | Id,Span
+tuple_index_paths | HashMap<Id, (TypeId, Vec<usize>)> | map/set,TypeId,Id
+scope_id | u32 | 
+scopes | IndexMap<Id, Scope<'src>> | map/set,'src,Id
+span_map | HashMap<Id, &'src Span> | map/set,'src,Id,ref,Span
+struct_initializer_to_def | HashMap<Id, Id>, // initializer_id -> struct definition id | map/set,Id
+structs | IndexMap<Id, Struct<'src>> | map/set,'src,Id
+traits | IndexMap<Id, Trait<'src>> | map/set,'src,Id
+type_id_to_type_map | TypeTable | 
+type_id | u32 | 
+variables | IndexMap<Id, Variable<'src>> | map/set,'src,Id
+walking_trait_body | bool | 
+trait_body_scopes | HashSet<Id> | map/set,Id
+generated_expansion_scopes | HashMap<Id, Id> | map/set,Id
+trait_position_type_ids | HashSet<TypeId> | map/set,TypeId
+bound_position_type_ids | HashSet<TypeId> | map/set,TypeId
+path_head_type_ids | HashSet<TypeId> | map/set,TypeId
+binding_annotation_type_ids | HashMap<TypeId, Id> | map/set,TypeId,Id
+binding_trait_constraints | Vec<BindingTraitConstraint> | 
+binding_trait_annotations | HashMap<Id, (Id, Vec<TypeId>)> | map/set,TypeId,Id
+reassignments_pending | HashSet<Id> | map/set,Id
+binding_hidden_nominal_constraints | Vec<(Id, Id, Vec<TypeId>, Span)> | TypeId,Id,Span
+ascriptions | HashMap<Id, AscriptionSite<'src>> | map/set,'src,Id
+chain_stages | Vec<ChainStage> | 
+auto_annotations | Vec<AutoAnnotation<'src>> | 'src
+auto_written | HashMap<Id, TypeId> | map/set,TypeId,Id
+auto_inferred | HashMap<Id, TypeId> | map/set,TypeId,Id
+auto_fill_points | Vec<(Id, (Span, usize))> | Id,Span
+spaced_generic_calls | HashMap<Id, (Span, Span, Span)> | map/set,Id,Span
+annotated_landings | HashSet<Id> | map/set,Id
+written_nominal_bound_sites | WrittenNominalBoundSites | 
+refused_annotation_slots | HashMap<TypeId, (SourceId, Span)> | map/set,TypeId,SourceId,Span
+refused_annotation_traits | HashMap<Id, (SourceId, Span)> | map/set,Id,SourceId,Span
+expose_refused_field_slots | HashSet<TypeId> | map/set,TypeId
+entry_cycle_refused_imports | Vec<(SourceId, String)> | SourceId
+expose_refused_elements | HashSet<String> | map/set
+expose_refused_key_bounds | HashSet<String> | map/set
+rpc_opaque_return_origins | HashSet<(SourceId, Span)> | map/set,SourceId,Span
+rpc_refused_wire_types | HashSet<String> | map/set
+rpc_refused_key_types | HashSet<String> | map/set
+stood_down_refusals | HashSet<(SourceId, Span)> | map/set,SourceId,Span
+parameter_annotation_type_ids | HashMap<TypeId, (Id, Id)> | map/set,TypeId,Id
+field_annotation_type_ids | HashMap<TypeId, (Id, Id)> | map/set,TypeId,Id
+impl_subject_annotation_type_ids | HashMap<TypeId, (Id, Id)> | map/set,TypeId,Id
+hidden_generic_parameters | HashMap<Id, Vec<TypeId>> | map/set,TypeId,Id
+attributed_declarations | HashSet<Id> | map/set,Id
+transparent_declarations | HashMap<Id, Id> | map/set,Id
+hidden_annotation_types | HashMap<TypeId, Type> | map/set,TypeId,Type
+implicit_generic_scopes | HashMap<TypeId, Id> | map/set,TypeId,Id
+anonymous_binder_parameters | HashMap<(SourceId, Span), TypeId> | map/set,TypeId,SourceId,Span
+anonymous_binder_scopes | HashMap<TypeId, Id> | map/set,TypeId,Id
+caller_fn_id | Option<Id> | Id
+dbg_fn_id | Option<Id> | Id
+dbg_calls | IndexMap<Id, (Id, usize)> | map/set,Id
+dbg_statement_calls | HashSet<Id> | map/set,Id
+dbg_argument_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+number_print_arguments | HashSet<Id> | map/set,Id
+print_argument_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+dbg_stack_fn_id | Option<Id> | Id
+dbg_stack_calls | IndexMap<Id, Id> | map/set,Id
+dbg_stack_moves | HashMap<Id, Vec<(Id, DbgStackMove)>> | map/set,Id
+dbg_stack_invalidated | HashMap<Id, Vec<DbgStackInvalidation>> | map/set,Id
+dbg_stack_sites | HashMap<Id, DbgStackSite> | map/set,Id
+panic_fn_id | Option<Id> | Id
+call_subjects | Vec<(Id, Id)> | Id
+call_subject_ids | HashSet<Id> | map/set,Id
+divergence_leaves | DivergenceLeaves | 
+guard_continuations | Vec<GuardContinuation<'src>> | 'src
+guard_continuation_captures | HashMap<Id, usize> | map/set,Id
+unbound_return_starts | HashSet<(Option<SourceId>, usize)> | map/set,SourceId
+calls_with_refused_arguments | HashSet<Id> | map/set,Id
+source_trait_id | Option<Id> | Id
+wire_trait_id | Option<Id> | Id
+hashable_trait_id | Option<Id> | Id
+print_fn_id | Option<Id> | Id
+asset_channel_fns | Vec<(Id, &'static str)> | 'static,Id,ref
+const_exprs | Vec<Id> | Id
+const_let_initializers | HashSet<Id> | map/set,Id
+const_functions | HashSet<Id> | map/set,Id
+walk_depth | usize | 
+walk_depth_refused | bool | 
+return_depth_refused | bool | 
+option_enum_id | Option<Id> | Id
+result_enum_id | Option<Id> | Id
+try_trait_id | Option<Id> | Id
+lift_trait_id | Option<Id> | Id
+tuple_trait_id | Option<Id> | Id
+tuple_key_struct_id | Option<Id> | Id
+callable_trait_id | Option<Id> | Id
+hmr_stash_fn_id | Option<Id> | Id
+hmr_take_fn_id | Option<Id> | Id
+drop_trait_id | Option<Id> | Id
+drop_fn_id | Option<Id> | Id
+drop_sink_value_types | HashMap<Id, TypeId> | map/set,TypeId,Id
+lift_binder_stack | Vec<Id> | Id
+lift_region_frames | Vec<Vec<Id>> | Id
+try_dispatch | HashMap<Id, TryDispatch> | map/set,Id
+lift_dispatch | HashMap<Id, LiftDispatch> | map/set,Id
+promise_struct_id | Option<Id> | Id
+task_struct_id | Option<Id> | Id
+bumps_tabled | HashSet<Id> | map/set,Id
+exported_entities | HashMap<Id, Id> | map/set,Id
+export_all_modules | HashSet<Id> | map/set,Id
+export_scopes | HashMap<Id, Vec<&'src str>> | map/set,'src,Id,ref
+curated_modules | HashSet<Id> | map/set,Id
+exposed_private_types | Vec<(SourceId, Span, Id)> | Id,SourceId,Span
+import_reaches | Vec<ImportReach<'src>> | 'src
+reach_marked_spans | HashSet<(SourceId, Span)> | map/set,SourceId,Span
+deprecated_import_leaves | Vec<DeprecatedImportLeaf<'src>> | 'src

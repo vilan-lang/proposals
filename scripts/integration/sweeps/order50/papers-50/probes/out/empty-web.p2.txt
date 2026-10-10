@@ -1,0 +1,19 @@
+[vilan phase] resolve_world imports 0.2ms/0.2cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 0.0ms/0.0cpu locals 4.0ms/4.0cpu assignments 0.1ms/0.1cpu types 2.2ms/2.2cpu context-clauses 0.0ms/0.0cpu conformance 1.0ms/1.0cpu divergence+guards 0.3ms/0.3cpu admission 0.0ms/0.0cpu fixpoint 28.6ms/28.6cpu
+[vilan phase] resolve_world imports 0.0ms/0.0cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 0.0ms/0.0cpu locals 0.0ms/0.0cpu assignments 0.0ms/0.0cpu types 0.1ms/0.1cpu context-clauses 0.0ms/0.0cpu conformance 0.0ms/0.0cpu divergence+guards 0.2ms/0.2cpu admission 0.0ms/0.0cpu fixpoint 0.0ms/0.0cpu
+[vilan pass] 6.3cpu rss=49MB slots+0 analyzer.infer_bumps()
+[vilan pass] 1.2cpu rss=50MB slots+170 analyzer.check_generic_bound_satisfaction()
+[vilan pass] 6.5cpu rss=50MB slots+3307 analyzer.check_container_resource_arguments()
+[vilan pass] 3.3cpu rss=50MB slots+2176 analyzer.check_resource_moves()
+[vilan pass] 4.5cpu rss=50MB slots+27 analyzer.check_resource_generic_instantiations()
+[vilan pass] 3.7cpu rss=50MB slots+54 analyzer.plan_resource_drops()
+[vilan pass] 4.6cpu rss=50MB slots+0 liveness::LastUse::compute
+[vilan pass] 5.1cpu rss=50MB slots+0 the drop extents, shared cells and capture plan
+[vilan pass] 4.9cpu rss=50MB slots+303 analyzer.compute_resource_types()
+[vilan pass] 2.5cpu rss=50MB slots+0 analyzer.compute_clone_sites()
+[vilan pass] 7.1cpu rss=51MB slots+0 the remaining tables, labels and records
+[vilan phase] load+walk 61.3ms/61.3cpu base 36.4ms/36.4cpu build 3.3ms/3.3cpu checks 57.0ms/57.0cpu
+[vilan phase] macro-worlds 0 load+walk 0.0ms/0.0cpu base 0.0ms/0.0cpu build 0.0ms/0.0cpu checks 0.0ms/0.0cpu post-passes 0.0ms/0.0cpu
+[vilan phase] reused 0/41 entry-dirty 0 alias-reaching 0 tables 0
+[vilan phase] post-passes 14.8ms/14.8cpu contexts+graph 8.1ms/8.1cpu async-infer 3.2ms/3.2cpu view-suspensions 0.0ms/0.0cpu async-drops 0.0ms/0.0cpu context-drops 0.0ms/0.0cpu platform-color 0.0ms/0.0cpu const-pass 1.9ms/1.9cpu const-lower 0.0ms/0.0cpu const-interp 0.0ms/0.0cpu const-fuel-max 0 init-order 0.0ms/0.0cpu dispatch-refine 1.5ms/1.5cpu
+[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0
+[vilan phase] emission-walk 0.4ms/0.4cpu program-drop 3.5ms/3.5cpu

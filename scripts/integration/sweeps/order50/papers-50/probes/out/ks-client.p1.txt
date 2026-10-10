@@ -1,0 +1,23 @@
+[vilan phase] resolve_world imports 0.4ms/0.4cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 0.0ms/0.0cpu locals 3.1ms/3.1cpu assignments 0.1ms/0.1cpu types 3.3ms/3.3cpu context-clauses 0.0ms/0.0cpu conformance 1.2ms/1.2cpu divergence+guards 0.4ms/0.4cpu admission 0.0ms/0.0cpu fixpoint 64.2ms/64.2cpu
+[vilan phase] resolve_world imports 0.0ms/0.0cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 0.0ms/0.0cpu locals 0.0ms/0.0cpu assignments 0.0ms/0.0cpu types 0.2ms/0.2cpu context-clauses 0.0ms/0.0cpu conformance 0.0ms/0.0cpu divergence+guards 0.6ms/0.6cpu admission 0.0ms/0.0cpu fixpoint 0.0ms/0.0cpu
+[vilan pass] 10.8cpu rss=74MB slots+0 analyzer.infer_bumps()
+[vilan pass] 1.3cpu rss=74MB slots+0 analyzer.check_view_escape()
+[vilan pass] 1.5cpu rss=74MB slots+0 analyzer.check_invalidation()
+[vilan pass] 2.3cpu rss=74MB slots+264 analyzer.check_generic_bound_satisfaction()
+[vilan pass] 1.4cpu rss=74MB slots+71 analyzer.check_written_nominal_bounds()
+[vilan pass] 11.7cpu rss=74MB slots+4840 analyzer.check_container_resource_arguments()
+[vilan pass] 6.2cpu rss=75MB slots+3394 analyzer.check_resource_moves()
+[vilan pass] 9.2cpu rss=75MB slots+39 analyzer.check_resource_generic_instantiations()
+[vilan pass] 7.6cpu rss=75MB slots+78 analyzer.plan_resource_drops()
+[vilan pass] 8.7cpu rss=75MB slots+0 liveness::LastUse::compute
+[vilan pass] 13.4cpu rss=75MB slots+0 the drop extents, shared cells and capture plan
+[vilan pass] 9.3cpu rss=76MB slots+516 analyzer.compute_resource_types()
+[vilan pass] 8.9cpu rss=76MB slots+0 analyzer.compute_clone_sites()
+[vilan pass] 2.7cpu rss=76MB slots+0 analyzer.compute_return_clone_sites()
+[vilan pass] 20.9cpu rss=78MB slots+4 the remaining tables, labels and records
+[vilan phase] load+walk 109.3ms/109.3cpu base 72.9ms/72.8cpu build 6.8ms/6.8cpu checks 124.6ms/124.6cpu
+[vilan phase] macro-worlds 0 load+walk 0.0ms/0.0cpu base 0.0ms/0.0cpu build 0.0ms/0.0cpu checks 0.0ms/0.0cpu post-passes 0.0ms/0.0cpu
+[vilan phase] reused 0/60 entry-dirty 0 alias-reaching 0 tables 0
+[vilan phase] post-passes 34.5ms/34.5cpu contexts+graph 17.7ms/17.7cpu async-infer 8.4ms/8.4cpu view-suspensions 0.0ms/0.0cpu async-drops 0.0ms/0.0cpu context-drops 0.0ms/0.0cpu platform-color 0.1ms/0.1cpu const-pass 3.9ms/3.9cpu const-lower 0.0ms/0.0cpu const-interp 0.0ms/0.0cpu const-fuel-max 0 init-order 0.1ms/0.1cpu dispatch-refine 2.7ms/2.7cpu
+[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0
+[vilan phase] emission-walk 0.8ms/0.8cpu program-drop 6.9ms/6.9cpu

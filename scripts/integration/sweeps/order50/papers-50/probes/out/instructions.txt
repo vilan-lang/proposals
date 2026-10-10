@@ -1,0 +1,25 @@
+# papers-50, 2026-10-10. vilan 0.47.0 (5fe24f868), installed release binary.
+# scripts/perf_count.py (instructions:u, perf_event_open, inherit). Three runs each; spread < 0.01%.
+# "kolt" = a cp -r copy of the owner's working tree carrying src/lucide + src/search-dict.
+vilan --version                                   0.000618 G
+parse-error program (node, base prelude)          0.2396 G   (std is analyzed anyway)
+empty-node   (node, base prelude, fun main(){})   0.2415 G   peak RSS 23.6 MB
+empty-web    (browser, std::web::prelude)         1.3705 G   peak RSS 53.9 MB
+empty-web-node (node, std::web::prelude)          1.2379 G
+kolt-std-client (kolt client's 60 std modules, no package code)  2.3601 G  peak RSS 81.3 MB
+kolt-std-server (kolt server's 55 std modules, no package code)  2.2236 G  peak RSS 76.5 MB
+kolt src/client.vl                               11.0911 G  peak RSS 275 MB
+kolt src/server.vl                                3.3851 G  peak RSS 145.6 MB
+
+# In-memory base-cache HIT (vilan check --watch; the entry touched n times; the hit = run(n=1) - run(n=0)).
+subject            cold (n=0)    n=1          hit (2nd analysis)
+empty-web          1.3968 G      2.0436 G     0.6468 G   (n=2: 2.6902 G, so 0.6466 G again)
+empty-node         0.2501 G      0.3493 G     0.0993 G
+kolt-std-client    2.4010 G      3.5270 G     1.1260 G
+kolt-std-server    2.2611 G      3.3211 G     1.0600 G
+kolt client.vl    11.1461 G     15.9595 G     4.8134 G
+kolt server.vl     3.5466 G      5.2445 G     1.6979 G
+
+# Stored world resident (VILAN_COUNTERS heap at `world` -> `world-stored`, i.e. the clone the base cache keeps)
+empty-node 5.6 MB (8,992 type slots)   empty-web 20.9 MB (58,722)   kolt-std-client 35.5 MB (97,141)
+kolt-std-server 34.2 MB (92,392)       kolt client 74.3 MB (208,299)  kolt server 37.2 MB (104,010)

@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B603",
+   "section": "B",
+   "kind": "determinism (S) — the canonical load order; the std prefix's P0",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-10 (papers-50's find, Order 50; std-prefix.md §1.4, §4.1)",
+   "title": "the canonical drain is not a function of the reachable set: a std module first asked for by a PACKAGE module loads after that module, so a redundant `import std::path;` in the entry (std::path already reachable through `pkg::a`) moves `pkg::a`'s function after std's in the emitted module — and on kolt's client std's 55,693 entity ids fall in nine runs cut by package ids",
+   "discussion": "papers-50 (std-prefix.md, P0); WO-1b (`load_order_key`, `analyzer.rs:77550`; the drain's min-heap `:78871` is canonical only among the modules known so far); B553/B554 (order-dependent answers); M110 S6 (windows laid out in load order)",
+   "body": "WO-1b's comment says the drain makes the load order 'a function only of WHICH modules are reachable'. It is a min-heap over the modules KNOWN so far: a std module requested by a package module is discovered when that module loads, so it loads (and its module node, SourceId and walk ids are minted) after it. Repro: `sweeps/order50/papers-50/finds/load_order_by_import_site/run.sh` (a package module imports `std::path::{basename}`; adding the redundant `import std::path;` to the entry reorders `dist/main.mjs`; the program still prints `y.txt`). On kolt's server leg, `import std::db;` in the entry reorders 18 lines of the emitted module; on the client, 5,632 std ids (`rpc::server`, `http`, `fs`, `path`, `ws`, `build`, `db`, ...) are minted after 81k package ids. No behaviour moves (the permutation differential holds the answers); the emitted bytes do, and a std world's ids depend on the package around it, which is what blocks a persisted std prefix. Door (std-prefix.md §4.1): finish discovery, then mint module nodes, SourceIds and the walk in `load_order_key` order over the whole reachable set (std, dependencies, package). Cost: one reorder of emitted declarations for multi-module programs; the corpus and native goldens regenerate once (reorder-only diff). Sequence after M110 S6's C2. Pins: the repro byte-identical with and without the redundant import; the permutation differential. Sizing S."
+  },
+  {
+   "id": "E294",
+   "section": "E",
+   "kind": "editor latency (S) — E292's pause row; the base cache's budget",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-10 (papers-50's find, Order 50; std-prefix.md §1.3, P2)",
+   "title": "the LSP's pause analyses evict each other's worlds under M67's 192 MiB budget: on kolt's 'leaf keystroke + pause' row the server ENTRY's world is rebuilt cold (std included, `reused 0/57`) on 4 of 6 pauses and the client entry's on 4 of 6; with `VILAN_BASE_CACHE_BUDGET_MIB=4096` 1 and 2 — the row 14.54 → 10.76 G instructions, CPU to idle 2,870 → 2,030 ms (x0.71), VmHWM +9%",
+   "discussion": "papers-50 (std-prefix.md §1.3); E292 (door (c), the server leg); M120 (the x1.17 at the v0.47.0 seal); M67 (live entries are exempt; the pause's union analyses are not live); M24/M50 (the budget's currency)",
+   "body": "Measured with the installed vilan-lsp 0.47.0 on a lucide-carrying kolt copy, five runs: `sweeps/order50/papers-50/finds/pause_worlds_evict/run.sh <kolt-copy> <scratch>` (numbers in `measured-2026-10-10.txt`, the two `lsp3-*.out` tables). After the pause the server runs one union analysis per declared entry beside the keystroke's own (a hit on `views.vl`'s world). Only `views.vl` is open, so neither entry world is LIVE (M67's exemption, `analyzer.rs:75284`) and LRU eviction takes them in turn: each store of one evicts the other, and the next pause rebuilds it from nothing — two thirds of the server leg is std (std-prefix.md §1.1), which is how std's growth shows on this row. Doors: (a) size M67's budget to the session's entry worlds (kolt: views 74 MB, client entry 74 MB, server 37 MB resident by the clone's heap), or (b) declare live every entry a retained document's world is served from, or (c) std-prefix.md P1/P2's pinned std-only prefix, which turns every remaining miss into a package-only rebuild. Not measured: whether the v0.46.0 base binary evicted the same way (the seal's x1.17 ratio). Gate: lsp-latency's seven rows, CPU and instructions; the pause row's server-world misses at most 1 in 6; RSS within the 3% rule. Sizing S."
+  },
+  {
+   "id": "G28",
+   "section": "G",
+   "kind": "tooling (S) — cache invalidation",
+   "area": "Macros & const",
+   "status": "OPEN — filed 2026-10-10 (papers-50's find, Order 50; std-prefix.md §6 item 2)",
+   "title": "the macro-expansion table's stamp is `toolchain <version>` plus macro_std's hash, not the build: every dev build between two releases reads the previous build's expansions from `dist/.cache/macro-expansions` and `~/.vilan/check-cache`, so a change to the macro engine or the const interpreter is served stale output until `vilan cache clean`",
+   "discussion": "papers-50 (std-prefix.md §6, Q5); M33 (the on-disk expansion table, `macros.rs` `disk_stamp`); N92/N137 (the check-cache root); `build_stamp.rs` (VILAN_BUILD_SHA lives in the cli/lsp crates and goes stale on a -dirty tree)",
+   "body": "`disk_stamp` (`macros.rs:1362`) writes `vilan-macro-expansions 1`, `toolchain <CARGO_PKG_VERSION>`, `macro_std <hash>`; the entry key (`expansion_key`) covers the macro's definition set, the item text and the arguments, 'sound because the interpreter is deterministic by construction' — deterministic within one build, not across two builds of one version. Repro: `sweeps/order50/papers-50/finds/expansion_table_stamp/run.sh` prints the header (`toolchain 0.47.0`, no sha). Consequence: a lane or contributor who changes the interpreter or the expansion engine and re-checks a package with derives (kolt) gets the old expansions; release builds are safe (the version moves). Door: stamp the analyzer's build identity — a hash of vilan-core's sources from a build script (std-prefix.md Q5's identity, which the persisted std prefix needs too). Pin: two stamps from two builds differ. Sizing S."
+  },
+  {
+   "id": "M135",
+   "section": "M",
+   "kind": "performance (S) — the cold check",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-10 (papers-50's find, Order 50; std-prefix.md §9)",
+   "title": "S4's const cache is content-keyed and id-free (`const_cache.rs`: 'the program IS the key … whatever their entity ids') but lives in process memory only: every cold `vilan check` of kolt's client re-evaluates the same 112 missed const sites (`const-hits=56 const-misses=112` on every run; the const pass 173–251 ms CPU, const-interp 140–212)",
+   "discussion": "papers-50 (std-prefix.md §9, the cheapest cold-check door on kolt's client); M110 S4 (the const cache); incremental-analysis.md §7 ('the records persist from day one'); M33 (the precedent on-disk table)",
+   "body": "Repro: `sweeps/order50/papers-50/finds/const_cache_in_memory/run.sh <kolt-copy>` — two cold checks in a row both report `const-misses=112` and both pay the const pass. The cached value (`SiteRun`: the `ConstValue`, emitted assets, scheduled lines, fuel) and its transcript of project reads are plain data and carry no `TypeId`, so the file needs no world: a table beside M33's (`dist/.cache/`, the check-cache root for `vilan check`), the same corrupt-is-a-miss and temp+rename rules, the transcript replayed against this run's reader exactly as the in-memory hit does today, stamped with the analyzer's build identity (G28). Expected: kolt's client cold check loses most of its const pass (about a tenth of the leg's CPU). Gate: a second cold check reports const hits for every site the first evaluated; the corpus byte-identical; `ci-local.sh perf`. Sizing S; independent of the std prefix."
+  }
+ ]
+}

@@ -1,0 +1,34 @@
+[vilan phase] resolve_world imports 0.9ms/0.9cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 0.0ms/0.0cpu locals 8.9ms/8.9cpu assignments 0.3ms/0.3cpu types 14.9ms/14.9cpu context-clauses 0.2ms/0.2cpu conformance 1.5ms/1.5cpu divergence+guards 2.1ms/2.1cpu admission 1.1ms/1.1cpu fixpoint 222.9ms/222.8cpu
+[vilan phase] resolve_world imports 0.0ms/0.0cpu preludes 0.0ms/0.0cpu use-drain 0.0ms/0.0cpu binder-bounds 0.0ms/0.0cpu locals 0.0ms/0.0cpu assignments 0.0ms/0.0cpu types 0.4ms/0.4cpu context-clauses 0.0ms/0.0cpu conformance 0.0ms/0.0cpu divergence+guards 3.2ms/3.2cpu admission 2.0ms/2.0cpu fixpoint 1.0ms/1.0cpu
+[vilan pass] 1.6cpu rss=216MB slots+0 analyzer.infer_borrows()
+[vilan pass] 43.7cpu rss=216MB slots+0 analyzer.infer_bumps()
+[vilan pass] 3.4cpu rss=216MB slots+0 analyzer.record_lazy_arguments()
+[vilan pass] 3.9cpu rss=216MB slots+0 analyzer.check_mutable_arguments()
+[vilan pass] 4.6cpu rss=216MB slots+0 analyzer.check_view_arguments()
+[vilan pass] 7.6cpu rss=216MB slots+0 analyzer.check_view_value_reads()
+[vilan pass] 2.1cpu rss=216MB slots+0 analyzer.check_deprecated()
+[vilan pass] 5.2cpu rss=216MB slots+0 analyzer.check_view_escape()
+[vilan pass] 8.9cpu rss=216MB slots+0 analyzer.check_invalidation()
+[vilan pass] 39.6cpu rss=217MB slots+1082 analyzer.check_generic_bound_satisfaction()
+[vilan pass] 2.3cpu rss=217MB slots+7 analyzer.check_written_nominal_bounds()
+[vilan pass] 1.5cpu rss=217MB slots+0 analyzer.check_hmr_transfer_bounds()
+[vilan pass] 22.2cpu rss=218MB slots+6226 analyzer.check_container_resource_arguments()
+[vilan pass] 6.1cpu rss=218MB slots+0 analyzer.check_resource_any_coercion()
+[vilan pass] 17.1cpu rss=219MB slots+3963 analyzer.check_resource_moves()
+[vilan pass] 40.0cpu rss=219MB slots+340 analyzer.check_resource_generic_instantiations()
+[vilan pass] 37.4cpu rss=219MB slots+130 analyzer.plan_resource_drops()
+[vilan pass] 1.5cpu rss=219MB slots+0 analyzer.check_trait_method_scope(global_scope_id)
+[vilan pass] 3.6cpu rss=219MB slots+0 analyzer.check_class_written_twice()
+[vilan pass] 28.7cpu rss=220MB slots+0 liveness::LastUse::compute
+[vilan pass] 45.4cpu rss=220MB slots+0 the drop extents, shared cells and capture plan
+[vilan pass] 25.7cpu rss=224MB slots+6722 analyzer.compute_resource_types()
+[vilan pass] 34.4cpu rss=224MB slots+0 analyzer.compute_clone_sites()
+[vilan pass] 2.8cpu rss=224MB slots+0 analyzer.compute_return_clone_sites()
+[vilan pass] 27.2cpu rss=226MB slots+49 the remaining tables, labels and records
+[vilan phase] load+walk 236.9ms/236.8cpu base 252.9ms/252.9cpu build 17.5ms/17.5cpu checks 426.5ms/426.5cpu
+[vilan phase] macro-worlds 0 load+walk 0.0ms/0.0cpu base 0.0ms/0.0cpu build 0.0ms/0.0cpu checks 0.0ms/0.0cpu post-passes 0.0ms/0.0cpu
+[vilan phase] reused 0/88 entry-dirty 0 alias-reaching 0 tables 0
+[vilan phase] post-passes 396.2ms/393.9cpu contexts+graph 111.7ms/111.7cpu async-infer 69.0ms/69.0cpu view-suspensions 0.0ms/0.0cpu async-drops 0.0ms/0.0cpu context-drops 0.0ms/0.0cpu platform-color 24.1ms/24.1cpu const-pass 175.4ms/173.1cpu const-lower 10.6ms/10.6cpu const-interp 141.4ms/139.2cpu const-fuel-max 262933 init-order 0.5ms/0.5cpu dispatch-refine 15.9ms/15.9cpu
+[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0
+[vilan phase] emission-walk 99.4ms/99.4cpu program-drop 22.5ms/22.5cpu
+src/client.vl: no errors

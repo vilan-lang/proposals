@@ -1,0 +1,5 @@
+import std::path::{basename};
+
+export fun name_of(p: str): str {
+	basename(p)
+}
