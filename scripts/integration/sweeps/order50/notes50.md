@@ -42,3 +42,4 @@
 - Stamps stamps50-f.json (M110, M127, E292) applied; M137/M138 filed; pass map §3.4/§3.6/§7.2 committed (41c1047). The lane's worktree STAYS (it proceeds to C2 from 7b0c238f; the spike skeleton cherry-picked from spike-49 @c761e214).
 - Owner questions from incr-50 C1 (recs): (1) the stale-log plant as a census pin, not a differential red - accept, the guard stays; (2) the cold check's +0.4% gated off unseeded analyses - no action; (3) E292 stays open; C2 as planned, M134 at C3 if time.
 - WAVE 2 BEGINS: solver-50 launched (Opus 5.5) off 7b0c238f in .claude/worktrees/solver-50 (brief: sweeps/order50/solver-50-prompt.md). Lanes live: incr-50, solver-50.
+- CI on 7b0c238f GREEN (run 38087779669, 14/14; the perf leg green with the three bumps). next = 7b0c238f = C1.
