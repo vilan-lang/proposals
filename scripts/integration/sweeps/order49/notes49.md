@@ -81,3 +81,4 @@
 - 2026-10-10 website fix: harness PASS locally (6 files; keywords 257 checks); committed + pushed to vilan-lang/website main (the deploy); deploy watched. The vilan toolchain install (install-dev.sh) still running.
 - 2026-10-10 TOOLCHAIN refreshed from the folded tree: vilan 0.47.0 (5fe24f868) in ~/.vilan/bin and ~/.cargo/bin, vilan-lsp 0.47.0, vilan-0.47.0.vsix installed. Chronicle FOLDED entry written. ORDER 49 COMPLETE pending the website re-deploy's verdict.
 - 2026-10-10 website deploy on 0fa15ab (run 38063641199): SUCCESS - vilan-lang.org serves v0.47.0's playground. ORDER 49 COMPLETE.
+- 2026-10-10 vilan-lang.org/playground/manifest.json: compiler v0.47.0 (versions v0.47.0..v0.42.1) - the fold's step 9 verified after the re-deploy. ORDER 49 CLOSED.
