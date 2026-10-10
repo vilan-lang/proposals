@@ -19,5 +19,5 @@ lsp_json=(--lsp-json "$S/lsp-base-$tip.json" "$S/lsp-tip-$tip.json")
 adv=(); [ -n "${VILAN_PERF_ADVANCE:-}" ] && adv=(--advance)
 python3 scripts/perf_gate.py seal --class reference --tip "$W/target/release/vilan" --tip-std "$W/vilan/std" \
     --base "${VILAN_PERF_BASE:-$HOME/.vilan/bin/vilan}" --kolt "$kolt" --commit "$commit" "${tip_kolt[@]}" --runs 5 \
-    --sha "$(git rev-parse HEAD)" "${lsp_json[@]}" "${adv[@]}" > "$S/perf-$tip.log" 2>&1; pf=$?
+    --sha "$(git rev-parse HEAD)" "${lsp_json[@]}" "${adv[@]}" ${VILAN_PERF_THRESHOLD:+--threshold "$VILAN_PERF_THRESHOLD"} > "$S/perf-$tip.log" 2>&1; pf=$?
 [ $pb -ne 0 ] && pf=$pb; grep -E "T3 kolt|T2 VERDICT|PERF VERDICT|REFUSED|OWNER|RED|different sources|wrote" "$S/perf-$tip.log"; echo "perf exit=$pf"

@@ -194,14 +194,80 @@
   "B599 fill-from-use for bindings whose uses state the type",
   "B579 scope: f64 * i32 (estate first)",
   "M133 the Slot blanket cost memo (B401/M121-safe)",
-  "the use-inferred guard context arm retirement (incr)"
+  "the use-inferred guard context arm retirement (incr)",
+  "E292 the true E121 rows (first editor item)",
+  "M110 S6 per spike-49 (demand-sized type windows; two new differential classes); S7 after M134",
+  "array-lengths.md S1-S6 after S6",
+  "A153 S2 remainder + S3 + S5 kolt exhibit",
+  "N164 the burst pin",
+  "N165 structural pin",
+  "L24 when vilan-windows is online"
  ],
  "wave2_merged": "2026-10-10: debug-49 b04e912a, lang-a-49 82e5114e, solver-49 b61f00bd, lang-b-49 95bf20a9 (next = 95bf20a9 = every code lane)",
  "sweep": {
   "closed": 55,
-  "filed": 38,
-  "open": 124,
+  "filed": 41,
+  "open": 127,
   "closes": "closes49.json",
   "stamps": "stamps49-a..o"
+ },
+ "rulings_2026_10_10": {
+  "E121": "state reset to 0 green seals (non-blocking); E292 = the true rows, Order 50 first editor item",
+  "pause_row": "x1.17 accepted for v0.47.0 at a x1.20 seal threshold; number on M120",
+  "spike": "S5 not landing; S6/S7 per spike-49 for Order 50; its three Qs as recommended",
+  "lane_questions": "every lane question of the order proceeds on its recommendation"
+ },
+ "sealed": {
+  "date": "2026-10-10",
+  "tip": "83385995 (the TypeTable fix merge over the lucide harness fix da5a09ea over lang-b-49 95bf20a9)",
+  "ci_run": "38057143333",
+  "perf": {
+   "verdict": "green at --threshold 1.20 (ruled)",
+   "kolt_instructions": 0.988,
+   "kolt_cpu": 0.989,
+   "kolt_rss": 0.995,
+   "lsp_ratios": {
+    "leaf": 0.866,
+    "leaf_pause": 1.04,
+    "shared": 0.909,
+    "model": 0.955,
+    "importers_open": 0.958,
+    "css": 0.987,
+    "parse_break": 0.977
+   },
+   "e121_true_ms": {
+    "leaf": 570,
+    "shared": 200,
+    "model": 210,
+    "importers_open": 750,
+    "css": 810,
+    "parse_break": 760
+   },
+   "ci_rows": "x0.91..x0.98 of the v0.46.0 ceilings"
+  },
+  "logs": [
+   "seal-49.log",
+   "perf-83385995.log (leg 5)",
+   "perf-legs 1-4: perf-95bf20a9.log (x2), perf-da5a09ea.log, perf-83385995.log (leg 4 overwritten)"
+  ]
+ },
+ "release": {
+  "version": "v0.47.0",
+  "date": "2026-10-10",
+  "release_commit": "a7e40b1e",
+  "tag": "a7e40b1e (= the release commit; ci bumps absorbed by the cut via gh, N161 fixed)",
+  "release_run": "38061218562 green 21/21, 10 assets",
+  "breaking": [
+   "B569 S1",
+   "B579",
+   "B580",
+   "B590",
+   "B591",
+   "E257 S3"
+  ],
+  "kolt": "one line (B580, sidebar.vl:65) applied uncommitted: sweeps/order49/kolt-b580-v0.47.0.patch",
+  "website": "deploy red on the keyword table -> website commit 0fa15ab (auto + as painted and probed; keywords.js regenerated; bundle rebuilt; harness 6/6 locally); re-deployed",
+  "fold": "5fe24f86 (main = next on origin; verified)",
+  "toolchain": "vilan 0.47.0 (5fe24f868) both locations + vilan-lsp + vilan-0.47.0.vsix"
  }
 }
