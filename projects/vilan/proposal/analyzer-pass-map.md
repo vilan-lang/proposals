@@ -180,7 +180,7 @@ also read.
 | entry-cycle refusals | `:74671`–`:74741` | declared entries, every package module's `pkg::` imports | diag, `entry_cycle_refused_imports` | after the drain, before the walk | small | — |
 | prelude exports + seeds | `:74743`–`:74813` | each loaded tree's importables, each origin's prelude | `prelude_exports`, `prelude_seeds` | before the walk; consumed by `seed_preludes` in stage 5 | small | S1 |
 | **twin selection** | `:74821` → `select_platform_twins` `:48150` | the module's `[platform(..)]` items, **`self.platform`** | `fenced_out_names`, the fenced-out item set | ⚠ **reads `platform` before `:75598` assigns it** (B573: every module's twins chosen for node) | small | S1 |
-| **the module walk** | `:74816`–`:74880` → `walk_expr_nodes` `:36361` | each module tree in load order | entities, scopes, spans, `source_ranges`, type slots (minted), `implementations` (one row per impl block, pushed in walk order), every `prepped_*` queue, `pending_macro_references`, `macro_name_to_id` | ⚠ ids and walk-minted type ids follow load order, and that order is SEMANTIC in four places (§5.6); the walk itself does no name resolution (no scope lookup in any `walk_*` body except `Self` in the local type scope): names are queued for stage 5 | `walk_expr_nodes` 0.11 G Ir | S1 (S5 windows its ids) |
+| **the module walk** | `:74816`–`:74880` → `walk_module_items` → `walk_expr_nodes` `:36361` | each module tree in load order | entities, scopes, spans, `source_ranges`, type slots (minted), `implementations` (one row per impl block, pushed in walk order), every `prepped_*` queue, `pending_macro_references`, `macro_name_to_id`; **the id windows** (`analyzer/id_windows.rs`, Order 50): one per top-level item in every lane, laid out in load order | ⚠ ids and walk-minted type ids follow load order, and that order is SEMANTIC in four places (§5.6); the walk itself does no name resolution (no scope lookup in any `walk_*` body except `Self` in the local type scope): names are queued for stage 5. **M110 S6 (incr-50, Order 50): on an EDITOR analysis (seeded, or reading aids; `VILAN_ID_WINDOWS` forces a mode for the CLI legs) every walk mint lands in its item's window and every anchored later mint is relocated into its anchor's — entity and scope windows ×1.5 of the walk, TYPE windows ×1.5 of the item's recorded demand (×4 of the walk the first time — the brief's ×8 cost the editor's retention pin 4.9 MB per released document against its 4.2 bound; a process-wide table keyed by source path + item ordinal), overflow spills to the tail and is counted; `type_id_sources` is run-length; the stored world's windows are inherited on a hit and the hot set's laid out after them** | `walk_expr_nodes` 0.11 G Ir; the windows: +0.4–1.6 % of a served keystroke's instructions, nothing on a cold check (off) | **S6 built**; S7 (per-item records) next |
 | generated walks | `walk_generated_expansion` `:24365` | `generated_by_source` | as the walk | after each file's own walk | (in the walk) | S1 |
 | std and dependency `lib.vl` | `:74845`–`:74880` | std's root `lib.vl`, each dependency's | as the walk | after the modules (std's root walks last of std, by design) | small | S1 |
 | lang items | `:74883`–`:75298` | std module scopes by name (`io`, `option`, `operators`, `drop`, `tuple`, `web::dev`, …) | `panic_fn_id`, `option_enum_id`, `try_trait_id`, `primitive_struct_ids`, `promise_struct_id`, … (about forty) | after the std walk, before stage 5; std is always in the prefix, so never invalidated by a package edit | small | S1 |
@@ -197,9 +197,9 @@ median, base / build; the server leg is about a quarter of it.
 | `preludes` | `seed_preludes` | `prelude_seeds`, settled imports | scope bindings (yielding to explicit imports) | after every import, before any name resolves (nothing may have memoized a lookup the prelude changes) | 0.1 / 0.0 | S1 |
 | `use-drain` | `use` statements | `prepped_uses` | scope bindings | after preludes | 0.0 / 0.0 | S1 |
 | `binder-bounds` | binder-bound inheritance (an `impl Wrapper<type T>` walked before its struct's bound) | `prepped_binder_inheritance` | `generic_bounds` links | after every declaration exists | small | S1 |
-| `locals` | the desugar-minted std items (B270), then the first part of the bare-name locals | `prepped_std_items`, `prepped_locals` | resolved names, constraints | locals a guard clause may publish WAIT (B222) for the divergence stage | 14.6 / 0.0 (was timed as `binder-bounds`; N153) | S1 |
+| `locals` | the desugar-minted std items (B270), then the first part of the bare-name locals | `prepped_std_items`, `prepped_locals` | resolved names, constraints | locals a guard clause may publish WAIT (B222) for the divergence stage. S6: each row's mints are anchored to the row's item (`set_drain_anchor`); a row that grounds another item's use-inferred binding is counted (`writes_drain_other`), the cross-item edge S7 carries | 14.6 / 0.0 (was timed as `binder-bounds`; N153) | S1 |
 | `assignments` | the assignment drain (`wire_prepped_assignment`); guarded assignments wait like guarded locals | `prepped_assignments` | assignment wiring | after the first-part locals | 0.6 / 0.0 (was `locals`; N153) | S1 |
-| `types` | written type annotations, static accessors, `dyn` annotations, existential grounding, the impl subjects and trait lists of the `implementations` rows the walk pushed (`walk_impl_entity`, `:38989`) | `prepped_type_locals`, `prepped_type_static_accessors`, `prepped_trait_impls`, scopes | type slots, impl subjects (⚠ the rows are in walk order) | before the context clauses and conformance | 27.1 / 0.4 | S1 |
+| `types` | written type annotations, static accessors, `dyn` annotations, existential grounding, the impl subjects and trait lists of the `implementations` rows the walk pushed (`walk_impl_entity`, `:38989`) | `prepped_type_locals`, `prepped_type_static_accessors`, `prepped_trait_impls`, scopes | type slots, impl subjects (⚠ the rows are in walk order) | before the context clauses and conformance. S6: each annotation's and accessor's mints are anchored by the slot's window, each conformance check's by the impl block's scope | 27.1 / 0.4 | S1 |
 | `context-clauses` | `resolve_context_clauses` (B242/E262) | context clauses on parameters and members | the clause on each type | after the import fixpoint, before conformance (a clause is part of a parameter's type) and before the fixpoint | (was inside `conformance`; N153) | S1 |
 | `conformance` | trait-impl conformance | `prepped_trait_impls` | diag | after the clauses | 3.2 / 0.0 | S1 |
 | `divergence+guards` | `compute_divergence_leaves`, guard continuations, the waiting locals and assignments | the call subjects resolved so far | `divergence_leaves`, `guard_continuation_captures` | the B222 two-part drain: a name a guard may publish resolves only after this | 4.0 / 4.1 | S1 |
@@ -716,7 +716,39 @@ materialized on the tree every analysis; one reference entity per
 (node, context) instead of one per call would cut most of it, filed as a
 find). The numbers after the change are in the C1 report.
 
-### 7.3 S5: the spike
+### 7.3 S5: the spike — and S6 as built (Order 50)
+
+The spike's six legs are byte-identical under `all` (Order 49), and S6 landed
+the layout on next (incr-50, Order 50): windows on for editor analyses only
+(the Mechanics' editor-only rule — a cold check with the windows on read +0.9 %
+instructions and +3.1 % peak RSS on kolt, the ×8 first-time type padding
+counted by every pass that iterates the type table), demand-sized type
+windows (a process-wide table keyed by source path and item ordinal; ×1.5 of
+the previous demand, ×4 of the walk the first time — ×8 as the brief wrote it
+padded a stored world past the LSP's retention pin, 4.9 MB per released
+document against 4.2, for the same overflowing items), run-length
+`type_id_sources`, the prepped drains anchored (std items, locals,
+assignments, annotations by slot, static accessors, impls by scope), the
+stored world's windows inherited on a hit. On kolt's served `views.vl`
+keystroke (`VILAN_COUNTERS`, world mode): 2,247 windows, entities 59,408 walk
++ 4,784 relocated / 0 spilled, types 20,866 walk + 67,659 relocated / 14,826
+spilled (109 windows overflow: the prefix's generated `lucide_lookup`-class
+items sized ×8 at the world build — the demand table sizes them at the next
+build), scopes 8,647 walk, `relocated_outside_anchor` 0 in every lane,
+expression→type containment own 3,760 / foreign 1,532 (29 %); the served
+keystroke lays out 43 windows and inherits 4,578. **A finding the brief's
+standing pin did not foresee:** `writes_other` (a constraint of item A
+rewriting a slot minted for item B) is NOT an invariant of the language — a
+push into another module's use-inferred binding (`bag.push` from `a_spoil`,
+S1's third hazard, the classes package) is exactly such a write. It IS 0 on
+kolt's served keystrokes (the spike's datum holds; what read 71 there before
+the split is the DRAINS' own cross-item grounding, `writes_drain_other`),
+pinned at 0 on the leaf package, reported on the classes leg, and it is the
+cross-item edge S7's per-item records must carry — the `entry_dirty_sources`
+of M19 at item grain. `relocated_outside_anchor == 0` is the pin that holds
+everywhere. Cost: a cold check is unchanged (the windows are off there); the
+editor pays +0.4 % instructions on a served keystroke and +2 % on a
+whole-file re-walk.
 
 The map gives the spike its assertions (Q3): every walk-minted id inside its
 item's window; the four ruled positional answers and the §5.6 sites unchanged;
