@@ -1,7 +1,7 @@
 {
  "items": [
   {
-   "id": "E901",
+   "id": "E291",
    "section": "E",
    "title": "The expression-position whitespace rule: a spaced `<` after a name never opens a generic list (`a < b > (c)` reads as two comparisons, `List <i32>::new()` refused with the tight spelling) — B571 Q3's separable half, RULED \"later, as its own item\"",
    "kind": "language (parser) (S)",
@@ -11,7 +11,7 @@
    "body": "B571 S1 built the whitespace rule for ASCRIBED types only (RULED). In expression position a spaced `<` after a name still opens a generic list when one parses (`List <i32>::new()`, the paper's a05; `a < b > (c)` as the generic call `a<b>(c)`, a15). E284 (built beside this) gives that last reading a message naming both readings. The rule here would remove the reading: one rule for the language, the formatter already writes every generic list tight and every comparison spaced, the estate has 0 spaced generic lists (§5.2). Needs a census of unformatted sources first, then the parser change in `parse_chain_head`'s generic-head and `parse_member_call`'s fused-call generics, the spaced-list refusal reused (`ParseErrorReason::SpacedAscribedGenerics`, generalized), and E284's message retired. Sizing S."
   },
   {
-   "id": "F901",
+   "id": "F128",
    "section": "F",
    "title": "Natively, `.filter(\\|length\\| *length > 1)` over a `List<usize>` dereferences the by-value closure parameter (`(*length) > 1usize`): rustc refuses E0614, JS prints the count",
    "kind": "native backend bug (S)",
@@ -21,7 +21,7 @@
    "body": "`[\"a\", \"bb\", \"ccc\"].map(|word| word.len()).filter(|length| *length > 1).len()` builds on JS (prints 2) and is refused by rustc natively: the closure parameter is emitted `move |mut length: usize|` while the body keeps the source's `*length`. `filter`'s predicate takes `&T` (a view of a scalar element), the native emitter passes the element by value, and the explicit dereference survives. Either the parameter is emitted as `&usize` or the `*` on a scalar view read is dropped (transparent references R4). Found while pinning B571's native rows (the probe uses `length > 1` instead). Sizing S."
   },
   {
-   "id": "B901",
+   "id": "B601",
    "section": "B",
    "title": "A `dyn` value at an annotated `let` of its concrete type is refused TWICE with the same narrowing message (`let square: Square = shape;`)",
    "kind": "diagnostics duplicate (XS)",
@@ -31,7 +31,7 @@
    "body": "`let shape: dyn Shape = Square { side = 2 }; let square: Square = shape;` reports \"Expected Square, but got dyn Shape instead: an object does not narrow back to the type it erased ...\" twice at one span (B5: one diagnostic per mistake). An ascription `shape as Square` inherits it (B571 S2's downcast refusal is that message). Likely the readiness probe and the directed ask both report. Sizing XS."
   },
   {
-   "id": "A901",
+   "id": "A170",
    "section": "A",
    "title": "`auto-annotations.md` §5's third naming tier (`std::reactive::Derive`, the full path) cannot be written: a type path in vilan resolves only through an IMPORTED module name, so `--fix` declines where the paper expected it to qualify — should type position admit absolute `std::`/`pkg::` paths?",
    "kind": "language design question (S)",

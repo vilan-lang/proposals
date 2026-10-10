@@ -1,0 +1,44 @@
+[
+ {
+  "scenario": "leaf keystroke",
+  "metric": "diagnostics_cpu_ms",
+  "target_ms": 500,
+  "green_seals": 2,
+  "blocking": true
+ },
+ {
+  "scenario": "shared.vl keystroke",
+  "metric": "diagnostics_cpu_ms",
+  "target_ms": 500,
+  "green_seals": 1,
+  "blocking": false
+ },
+ {
+  "scenario": "model.vl keystroke",
+  "metric": "diagnostics_cpu_ms",
+  "target_ms": 500,
+  "green_seals": 2,
+  "blocking": true
+ },
+ {
+  "scenario": "model.vl keystroke, importers open",
+  "metric": "cpu_ms",
+  "target_ms": 500,
+  "green_seals": 1,
+  "blocking": false
+ },
+ {
+  "scenario": "css keystroke",
+  "metric": "diagnostics_cpu_ms",
+  "target_ms": 500,
+  "green_seals": 2,
+  "blocking": true
+ },
+ {
+  "scenario": "parse break",
+  "metric": "diagnostics_cpu_ms",
+  "target_ms": 500,
+  "green_seals": 2,
+  "blocking": true
+ }
+]

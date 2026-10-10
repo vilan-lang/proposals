@@ -1,0 +1,336 @@
+{
+ "date": "2026-10-10",
+ "order": "Order 49",
+ "closes": [
+  {
+   "id": "F113",
+   "lane": "native-49",
+   "commit": "e17bea5c",
+   "text": "a pattern over the view a `borrows` call returns copies the pointee first (`copy_a_pattern_subject`: `is`, `match`, the `?` lift, a destructuring `let`); pinned on both backends"
+  },
+  {
+   "id": "F114",
+   "lane": "native-49",
+   "commit": "d90eba95",
+   "text": "a reading intrinsic over a `Shared` view's field reads through the view (`cell_view_place` accepts the spine); std METHODS over such a field still copy -> F123"
+  },
+  {
+   "id": "F116",
+   "lane": "native-49",
+   "commit": "61c20239",
+   "text": "a generic resource with `Drop` calls the instance its type arguments bind; an enum with `Drop` gets a Rust Drop impl; a consuming by-value match holds the value in ManuallyDrop and reads captures out (R6)"
+  },
+  {
+   "id": "F117",
+   "lane": "native-49",
+   "commit": "9335aed5",
+   "text": "a bare-trait impl member reads `Self` as the receiver it was instantiated for"
+  },
+  {
+   "id": "F118",
+   "lane": "native-49",
+   "commit": "60dfbe03",
+   "text": "`TupleLen`/`TupleKeys`/`TupleEntries`/`TupleGet` emitted against the instance's concrete tuple (`vilan_rt::TupleKey`, `tuple_get`); a `for` over a tuple unrolled per position; zip/unzip identical natively"
+  },
+  {
+   "id": "F119",
+   "lane": "native-49",
+   "commit": "0c53912c",
+   "text": "a function item's type renders as its closure type keyed per item; a call through a binding of an item uses the item's conventions (native door; the analyzer untouched)"
+  },
+  {
+   "id": "F120",
+   "lane": "native-49",
+   "commit": "ecbfa6e7",
+   "text": "an `async` block's body is awaited once per `Task` layer its value carries"
+  },
+  {
+   "id": "F109",
+   "lane": "native-49",
+   "commit": "36787f7f",
+   "text": "did not reproduce on 0.46.0 (F100 lowers the directed literal to a Rust array); the real wall was F121, fixed beside it"
+  },
+  {
+   "id": "F121",
+   "lane": "native-49",
+   "commit": "36787f7f",
+   "text": "`Js for [T; N]` in vilan-rt: a fixed array prints and a struct holding one builds natively"
+  },
+  {
+   "id": "N154",
+   "lane": "native-49",
+   "commit": "4306c552",
+   "text": "one teardown-extent resolution (`vilan_core::teardown`: statement_teardown, region_end, drops_nontrivially) both emitters call; vilan-rust's copy deleted; corpus byte-identical"
+  },
+  {
+   "id": "N158",
+   "lane": "native-49",
+   "commit": "9e113501",
+   "text": "`native_differential`'s long legs run under thread::scope with per-worker target dirs and own program names: default suite 144 -> 36 s, panic paths 116 -> 33, leak census 106 -> 24, copy census 44 -> 17 inside the full run"
+  },
+  {
+   "id": "F99",
+   "lane": "native-49",
+   "commit": "92429f5a",
+   "text": "both halves accounted for: the Option<&T> read landed in Order 48; the aliasing-views half is designed (loan groups: nesting -> reborrows, interleaving -> the cell + lens handles) and carried by F124"
+  },
+  {
+   "id": "N156",
+   "lane": "tools-49",
+   "commit": "66e076ee",
+   "text": "`[profile.ci-test]` (dev + vilan-core at opt-level 1) selected by scripts/ci-local.sh test/doctest and seal.sh; deep_nesting excluded from it and run once on dev (the Windows stack canary); inference 3.2x less CPU; ci.yml's cache key names the profile (28f9ea20)"
+  },
+  {
+   "id": "N161",
+   "lane": "tools-49",
+   "commit": "8a8a5ff5",
+   "text": "`ratchet --release` resets only the bumps of classes the verdict measured; a ci bump is absorbed from the green run's perf-measured artifact through gh (`--ci-run-of`), else KEPT and said; five release_scripts pins"
+  },
+  {
+   "id": "N155",
+   "lane": "tools-49",
+   "commit": "d534bf6e",
+   "text": "std's `sleep`/`Timer::after` clamp a negative delay at 0 and the debounce loop clamps its remaining time; stderr pinned empty; four corpus goldens runtime-identical"
+  },
+  {
+   "id": "N139",
+   "lane": "tools-49",
+   "commit": "071864b8",
+   "text": "audited, not widened: the 50 ms windows carry only 'fired before the marker' (timer ordering, not margin-bound); the margin-bound claims keep >= 10x; the reasoning written into the pins"
+  },
+  {
+   "id": "N160",
+   "lane": "tools-49",
+   "commit": "df52bab1",
+   "text": "the parser's doc comment spells the derived export the post-B485 way"
+  },
+  {
+   "id": "E280",
+   "lane": "tools-49",
+   "commit": "b00faeb5",
+   "text": "`did_open` sweeps the further worlds no kept world and no open entry holds after `serve_from_held_world`; pinned (exactly one analysis)"
+  },
+  {
+   "id": "E286",
+   "lane": "tools-49",
+   "commit": "712d55a6",
+   "text": "`infer_platform` takes the package root and the workspace: `declares_only_browser` applies to `pkg::` and dependency imports and a dependency's browser-only layer (user files parse into an owned dropped tree); a dependency lib.vl's re-exports -> E288"
+  },
+  {
+   "id": "B586",
+   "lane": "tools-49",
+   "commit": "7041d5d4",
+   "text": "`file_project` roots a `[library]` file at the deepest layer root containing it and treats it as a module (no `main` asked); `[library.dependencies]` in file mode -> B594"
+  },
+  {
+   "id": "B575",
+   "lane": "incr-49",
+   "commit": "5e328169",
+   "text": "the suspension enrolment rows are recorded per source with the module's Class A output and replayed; `check_invalidation`/`check_closure_view_capture_ban` extend the table; pinned by the ERD's post-pass class (red before: a reusing analysis dropped both E3 errors and emitted)"
+  },
+  {
+   "id": "B576",
+   "lane": "incr-49",
+   "commit": "00975760",
+   "text": "`platform_reason`/`prelude_repair` are publish marks rendered right before the Program is built, never into a stored world; a base-cache hit under another workspace renders the serving call's reason"
+  },
+  {
+   "id": "N153",
+   "lane": "incr-49",
+   "commit": "10664efa",
+   "text": "the `resolve_world` phase marks name what they time (binder-bounds, locals, assignments, context-clauses, admission)"
+  },
+  {
+   "id": "M128",
+   "lane": "incr-49",
+   "commit": "835d8195",
+   "text": "the four first-match sites answer by content: `callable_call_signature` ranked, `resolve_macro_reference`'s fallback walks the referencing scope then std, `for_each_next_providers`/`declined_default_calls` store impl ids and the loop's `next` lookup runs under the admission context, `import_path_of` proved not positional; one permutation class per site"
+  },
+  {
+   "id": "A167",
+   "lane": "incr-49",
+   "commit": "a0267dc6",
+   "text": "store-49's analyzer admission applied under incr-49's review (the element rule reads the store's spellings; `service_seeds` loads std::rpc::mirror) and narrowed in C3b (32af01c7) to services whose surface RETURNS Store/StoreSome; the stub pin un-ignored"
+  },
+  {
+   "id": "L17",
+   "lane": "integrator",
+   "commit": "445c9346",
+   "text": "release.yml's gate runs ci.yml's shards through scripts/ci-local.sh (ubuntu 2 on vilan-linux, windows 4; doc-tests on partition 1); the roster pin accepts the script form"
+  },
+  {
+   "id": "A165",
+   "lane": "store-49",
+   "commit": "73e9373d",
+   "text": "`impl Option<type V: Slot> with Slot` in both ui twins plus its own `impl type S: Flow<Option<View>> with Slot` (a Region on the browser; the process twin reads once); guide + browser docs; parity and ssr differential green"
+  },
+  {
+   "id": "E281",
+   "lane": "debug-49",
+   "commit": "e3fcd171",
+   "text": "at a `dbg_stack()` call the move scan records every moved resource binding (all paths with the span, or some paths) in `Program::dbg_stack_moves`; R11 adds the generic half; a dbg_stack module is unrecordable for reuse"
+  },
+  {
+   "id": "E282",
+   "lane": "debug-49",
+   "commit": "e3fcd171",
+   "text": "the invalidation scan keeps a dead-view state and records each capture view past its last use that a rule-4 event reached (arms and loops followed) in `Program::dbg_stack_invalidated`"
+  },
+  {
+   "id": "E283",
+   "lane": "debug-49",
+   "commit": "69d6c67d",
+   "text": "std Debug impls for HashMap/HashSet (insertion order), Shared (`<cycle>`), SignalCell (untracked), BigInt (JS; native text -> F125); the derive prints closure fields by type and literal-length array fields element by element; `T: Debug` over `[T; n]` rides array-lengths S2"
+  },
+  {
+   "id": "B569",
+   "lane": "lang-a-49",
+   "commit": "574df2d4",
+   "text": "named tuple fields S1-S4: the assignment-position rule (breaking, estate 0/1,765), labels in `Type::Tuple` carried never compared, by-name literals (evaluated as written) and the reordered-label refusal with two quick fixes, `p.x`, by-name patterns, labels in dbg, named arguments through spread parameters; erased at mono and in the contract hash"
+  },
+  {
+   "id": "B571",
+   "lane": "lang-b-49",
+   "commit": "05197dd8",
+   "text": "type ascription S1-S4: `value as T` a constraint never a cast, the adjacency rule for ascribed generic lists, `as` after a block-like brace, value-only, the refusals and `check --fix`, the formatter, the book and spec; the tables editor-only (69909408)"
+  },
+  {
+   "id": "E278",
+   "lane": "lang-b-49",
+   "commit": "05cf4b2b",
+   "text": "per-stage inlay hints spelled `as ~Pipe<T>` with the 'Ascribe this stage' code action and the 'Ascribe every stage' source action; served on a reused module; the quadratic chain-head scan replaced by a map"
+  },
+  {
+   "id": "B570",
+   "lane": "lang-b-49",
+   "commit": "91de7d5e",
+   "text": "`auto` annotations S0-S4: a signature callers read and the body ignores, stale refused with `--fix`, a bare `auto` warns, names qualified, `value as auto T`, the editor's on-save setting and inlay, the `[check] auto` opt-in; S0 on kolt's history: 9/30 pairs would move a line"
+  },
+  {
+   "id": "E284",
+   "lane": "lang-b-49",
+   "commit": "5048e4f5",
+   "text": "a spaced `a < b > (c)` names both readings and the parenthesized comparison; the expression-position whitespace rule -> E291"
+  },
+  {
+   "id": "B583",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "names.md \u00a74.6: std's files reach every std trait and no package trait, so a package trait's impl is never a candidate at a call inside std (`retain_std_reach`); the user-file case -> B598"
+  },
+  {
+   "id": "B588",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "a tuple bound contained in a tuple blanket's subject bound counts as a declared bound (`tuple_blanket_trait_ids`); dispatch per instance"
+  },
+  {
+   "id": "B589",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "a fully annotated closure's parameter types are read before literals (after typed values and bound-derived generics)"
+  },
+  {
+   "id": "B554",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "an element-slot conflict between two files lands on the declaration with both types sorted and a trace hop per use; the slot settles on `any`; the permutation differential's pin un-ignored"
+  },
+  {
+   "id": "M130",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "inherited-default candidates keyed by home (two homes differ only on concrete differing arguments); ambiguity reported at the loop and the call"
+  },
+  {
+   "id": "B579",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "`-`/`*`/`/`/`%` over two integer types are refused with `+`'s sentence and quick fix (breaking; estate: capture-clones.vl, now identical natively)"
+  },
+  {
+   "id": "B580",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "a user `let` whose type keeps a hole is refused at its initializer (breaking; estate: kolt's sidebar.vl:65, patched); `Holder<str>::Empty`'s per-parameter hole fixed with it; fill-from-use -> B599"
+  },
+  {
+   "id": "B581",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "door (a): types.md \u00a75.9 corrected (a direct spread call collects; a built tuple is passed with `..pair`); the behaviour pinned"
+  },
+  {
+   "id": "B590",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "`[T; n].len()` is `usize` (breaking; estate 0)"
+  },
+  {
+   "id": "B582",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "the `Node::ArrayType` arm in `register_subject_binders` admits a type binder in an array impl head"
+  },
+  {
+   "id": "B591",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "an untyped index is recorded and re-checked at the end of each fixpoint; a negative call index refused as i32 (breaking; estate: compound-index.vl)"
+  },
+  {
+   "id": "B587",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "a top-level tuple pattern under a view subject binds views (payload-views door A); both backends agree (miscompile); the 'payload' wording -> E290"
+  },
+  {
+   "id": "F108",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "the solver half: an empty list literal's slot is filled from the parameter's bound (`push_many([])`); the native half landed in Order 48"
+  },
+  {
+   "id": "B574",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "std's import index read the derive macro and the trait `Storable` as two homes and dropped the name; macros index in their own namespace, so the bound's miss gets its steer"
+  },
+  {
+   "id": "A164",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "`null`'s type stays unwritable; the mismatch says 'the `null` value'"
+  },
+  {
+   "id": "E285",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "the list literal's element check carries E272's fragment marker"
+  },
+  {
+   "id": "B585",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "the six static-path arms in `resolve_world` push anchored diagnostics"
+  },
+  {
+   "id": "B584",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "a call on a Context whose value slot is open binds the impl's parameter to the slot (`bind_open_context_slot`), so an entry's `run` grounds a module's context; b553's module-context pin un-ignored"
+  },
+  {
+   "id": "M132",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "`async_infer` dispatch candidates memoized per (trait, member) and unions dedup with a set: every ci row 0.5-9% cheaper (rpc x0.939, todo x0.940, plain:320 x0.911)"
+  },
+  {
+   "id": "M131",
+   "lane": "solver-49",
+   "commit": "b61f00bd",
+   "text": "measured: A165's two Slot arms cost 12.05M Ir on reactive-ui (the Flow<Option<View>> blanket 7.36M), 10.9M after M132; the fix (a memo keyed against B401 admission and M121's reach record) is M133"
+  }
+ ]
+}
