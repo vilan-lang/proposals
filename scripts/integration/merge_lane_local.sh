@@ -37,5 +37,7 @@ echo "== gate: release_scripts"; cargo nextest run -p vilan-cli --test release_s
 # The split emission is a byte golden over std + reachability; two lanes moved it together in Order 29 and no lane gate saw it.
 echo "== gate: split"; cargo nextest run -p vilan-cli --test split || exit 6
 cargo fmt --all --check || { echo "fmt drift — run cargo fmt --all and amend"; exit 6; }
+# The vilan-fmt leg (Order 50: native-50's F126 fixture had its imports out of order; CI went red after a green merge gate).
+cargo run --quiet -p vilan-cli -- fmt --check . || { echo "vilan fmt drift — run cargo run -p vilan-cli -- fmt . and amend"; exit 6; }
 git push -q origin next || { echo "PUSH FAILED (agent locked?) — merged locally at $(git rev-parse --short=8 HEAD); push when unlocked"; exit 7; }
 echo "pushed $(git rev-parse --short=8 HEAD)"
