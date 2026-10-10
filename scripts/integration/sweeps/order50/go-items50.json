@@ -192,7 +192,7 @@
     "M136"
    ],
    "kolt_patch": "sweeps/order50/store-50/kolt-mirror-v0.48.0.patch (apply at the seal)",
-   "ci": "watching"
+   "ci": "38084320109 RED (perf: rpc/todo/walkthrough over 0.5%) -> three ci bumps 8ceb6460, CI watching"
   }
  ],
  "handed_back": [
@@ -211,6 +211,19 @@
     "M36",
     "N157"
    ]
+  }
+ ],
+ "bumps": [
+  {
+   "commit": "8ceb6460",
+   "rows": {
+    "example:rpc": 1.012,
+    "example:todo": 1.01,
+    "example:walkthrough": 1.01
+   },
+   "class": "ci",
+   "item": "M120",
+   "cause": "store-50 std::rpc growth"
   }
  ]
 }
