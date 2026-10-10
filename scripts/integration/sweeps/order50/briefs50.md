@@ -6,12 +6,12 @@ Drafted 2026-10-10 from `go-items49.json`'s `order50`, the owner's rulings of 20
 
 - **R-a. The core-alone rule, as in Order 49.** incr-50 is the ONLY lane in the analyzer core in wave 1; it hands back at checkpoints (C1 = S3 by mutation log, C2 = S6's windowed ids, C3 = M134's anchors if time). solver-50 and debug-50 launch at C1 and rebase onto C2/C3; lang-50 (the array-lengths slices, which change `Type::Array`) launches at C2. Rec: yes.
 - **R-b. S6's scope this order:** windows for all three id lanes laid out by the walk, TYPE windows sized from the item's previous demand (×1.5; first analysis ×8 + spill; an overflowing re-walked item re-laid out at the end), the run-length `type_id_sources`, anchors for the resolve's prepped drains, the two new differential classes (`frozen_entity` over a relocated resolve-time entity in a std item; a B217 re-anchor through a generated-expansion window), the "body edit re-walks one module" pin, `writes_other == 0` and `relocated_outside_anchor == 0` as standing counter pins. S7 (per-item records, the edited item's diagnostics first) is Order 51's unless M134's anchors land at C3. Rec: yes.
-- **R-c. B579's float scope:** `f64 * i32` (a float and an integer) refused like the integer pairs, breaking at v0.48.0 after the estate is counted. Rec: yes.
+- **R-c. B602, B579's float scope:** `f64 * i32` (a float and an integer) refused like the integer pairs, breaking at v0.48.0 after the estate is counted. Rec: yes.
 - **R-d. B599, fill-from-use:** a binding's hole filled from the argument and receiver channels (kolt's B580 annotation becomes unnecessary; not breaking). Rec: yes.
 - **R-e. F122:** large fixed arrays boxed natively per array-lengths.md Q12 (keep `[T; N]`, box past a size). Rec: yes.
 - **R-f. The std-prefix paper** (M120 door (b), M36 §6.15, N157, E292 door (c)): a deterministic, persisted std prefix so a cold check, every test process and kolt's server leg stop re-analyzing std — what S6's windows give it, what blocks it, sizes. Rec: yes, papers-50.
 - **R-g. E292's gate:** the seal's seven LSP rows report CPU ms AND instructions; the e121 state advances only on a true green on a quiet box with a lucide-carrying copy; the mandate stays 500 ms CPU. Rec: yes.
-- **R-h. The cut:** v0.48.0 at the seal (breaking: B579's float scope; everything else additive). Rec: yes.
+- **R-h. The cut:** v0.48.0 at the seal (breaking: B602, B579's float scope; everything else additive). Rec: yes.
 - **R-i. A153 S5, the kolt exhibit:** store-50 builds it as a PATCH on a scratch copy of kolt (verified under the tip); the owner applies and commits. Rec: yes.
 - **R-j. L24:** the Windows runner's routing lands when the owner registers the runner (standing).
 
@@ -69,7 +69,7 @@ To `proposals/projects/vilan/proposal/std-prefix.md`: a deterministic, PERSISTED
 ## Lane solver-50 (wave 2, at C1; Opus 5.5): B596 (miscompile) FIRST; B599 (R-d); B579's float scope (R-c); B598, B600, B601, B592, B593, B595; M133; E287, E289, E290
 
 1. **B596** (a struct literal evaluates its fields in WRITTEN order on JS as natively — the transformer spills to temporaries as lang-a-49 did for by-name tuple literals; family miscompile; both backends pinned).
-2. **B599** (fill-from-use: the argument and receiver channels carry a use's type back into a binding's hole; kolt's sidebar annotation becomes optional — estate counted; not breaking), **B579's float scope** (R-c; breaking; the estate on kolt's copy, the website's `src`, the examples, std's corpus).
+2. **B599** (fill-from-use: the argument and receiver channels carry a use's type back into a binding's hole; kolt's sidebar annotation becomes optional — estate counted; not breaking), **B602** (R-c, B579's float scope; breaking; the estate on kolt's copy, the website's `src`, the examples, std's corpus).
 3. **B598** (a std trait a user file never imports competes at its call: the import-surface rule), **B600** (an expression hole no binding holds refused), **B601** (the double narrowing message), **B592** (a list literal of array literals under `List<[i32; 2]>`), **B593** (a list of function items callable), **B595** (a static trait method on a concrete type that only a blanket answers).
 4. **M133** (the hole's `Slot` question answered once per hole type, keyed against B401 admission and M121's reach record; `ci-local.sh perf` says what it bought; no bump).
 5. **E287**, **E289**, **E290** (diagnostics).
