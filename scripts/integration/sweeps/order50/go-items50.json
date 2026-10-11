@@ -243,6 +243,37 @@
    ],
    "ci": "38098956002 GREEN 14/14",
    "note": "worktree stays; E283 array half waits for lang-50 S2"
+  },
+  {
+   "lane": "solver-50",
+   "tip": "98ef881d",
+   "merge": "940ce8ec",
+   "date": "2026-10-10",
+   "closed": [
+    "B596",
+    "B599",
+    "B602 (breaking)",
+    "B598",
+    "B600",
+    "B601",
+    "B592",
+    "B593",
+    "B595",
+    "E289",
+    "E290"
+   ],
+   "progress": [
+    "E287 halves c+d (a+b to lang-50)",
+    "M133 measured, not built -> Order 51"
+   ],
+   "filed": [
+    "B607",
+    "B608",
+    "E295",
+    "N167"
+   ],
+   "ci": "watching",
+   "kolt_patch": "sweeps/order50/solver-50/kolt-b599-optional-annotation.patch (optional)"
   }
  ],
  "handed_back": [
