@@ -1,0 +1,20 @@
+tip=68f25eb1 loadavg=0.33 0.86 3.33
+     Summary [ 428.897s] 10271 tests run: 10271 passed, 31 skipped
+union exit=0
+doc-tests exit=0
+native whole-set exit=0
+clippy exit=0
+windows exit=0
+audit exit=0
+fmt exit=0
+vilan-fmt exit=0
+wasm exit=0
+canary@1.5MiB exit=100
+perf leg starts at loadavg=1.43 5.80 7.22
+  T3 kolt @e01e59a8: CPU x0.987  RSS x1.012  instructions x0.952  (load max 1.0)
+  T3 peak RSS, a fresh process per run, median of 5: base 259.7 MB [259 259 259 259 260]; tip 262.8 MB [262 262 262 262 265]
+wrote /home/reed/.vilan/perf-verdicts/perf-68f25eb1631b2c0b02fdf7c6639261b848baa93e.json
+PERF VERDICT: green
+perf exit=0
+changelog parity 44 / 44
+verdict: union=0 doctests=0 native=0 clippy=0 windows=0 audit=0 fmt=0 vilan-fmt=0 wasm=0 canary=100 perf=0
