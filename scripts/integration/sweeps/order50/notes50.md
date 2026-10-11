@@ -50,3 +50,4 @@
 - Stamps stamps50-g.json (M110 S6, E292) applied; M139 filed; pass map §3.1/§3.2/§7.3 committed (aca74c5). The lane's worktree STAYS (C3 = M134 from f99dc28e; it renames tests/id_windows_spike.rs there).
 - Owner questions from incr-50 C2 (recs, accepted provisionally): (1) x4 first-analysis type windows; (2) writes_other pinned where it holds, counted everywhere, S7's records carry the edge; (3) windows off on a cold check (a paged type table lifts it); (4) rename id_windows_spike.rs at C3.
 - WAVE 2 COMPLETE IN FLIGHT: lang-50 (Opus; brief lang-50-prompt.md) and debug-50 (Sonnet; brief debug-50-prompt.md) launched off f99dc28e; solver-50 told to rebase onto f99dc28e at its next commit boundary. Lanes live: incr-50 (C3), solver-50, lang-50, debug-50 (four of five).
+- CI on f99dc28e GREEN (run 38096238872, 14/14). next = f99dc28e = C2.
