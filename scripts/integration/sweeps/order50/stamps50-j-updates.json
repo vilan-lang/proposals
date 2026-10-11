@@ -1,0 +1,12 @@
+{
+ "prefix": "- ",
+ "stamps": {
+  "E291": "2026-10-10 (lang-50, Order 50): the census, numbers only (sweeps/order50/lang-50/census/e291.py + e291.out; regex over source with strings and comments blanked, every hit printed). A SPACED `<` after a name that closes to a `>` followed by `(` or `::`: std 0 (72 files), corpus 0 (148), book fences 0 (64 pages), examples 0 (40), benchmarks 0 (8), macro_std 0 (3), native test programs 0 (117), kolt 0 (32, a copy with src/lucide + src/search-dict), website 0 (21), playground 0 (6), the compiler's Rust tests' raw-string programs 2 (451 files) \u2014 both in `inference/ascription.rs`'s E284 pins, which exercise the rule itself (`a < b > (c)` and `pick <f64>(1, 2)`). Tight heads of the same shape: 1,679 (std 415, Rust tests 950, book 151, native 86, corpus 44, kolt 30, other 3). The estate writes no spaced generic list outside the two pins that test the reading; removing the reading moves those two pins and nothing else.",
+  "A170": "2026-10-10 (lang-50, Order 50): stays declined as briefed; nothing built.",
+  "E287": "2026-10-10 (lang-50, Order 50): halves (a) and (b) DONE in array-lengths S1/S4 (branch lang-50, the S4 commit): a name in the length position parses (S2's grammar) and resolves as a named length or is refused with one sentence naming what a length may be; a refused length types as unresolved instead of a stand-in 0, so the `[_; 0]` and \"valid indices are 0 to 0\" cascades are gone; row 20 re-keyed. With solver-50's (c) and (d) the item can close.",
+  "D15": "2026-10-10 (lang-50, Order 50): DONE in array-lengths S6 \u2014 spec/grammar.md \u00a73.9 type + array-length, \u00a73.6 list's repeat literal, \u00a73.3 const N / generic-arg; types \u00a75.1 and \u00a75.6.",
+  "A161": "2026-10-10 (lang-50, Order 50): DONE in array-lengths S5 (`impl [type T; _] with Items<T>` in list.vl); pin inference::std_surface::a161_push_many_takes_a_fixed_array_of_any_length + the native differential.",
+  "A163": "2026-10-10 (lang-50, Order 50): DONE in array-lengths S2 (`[type T; _]` and `[type T; const N]` impl heads).",
+  "A166": "2026-10-10 (lang-50, Order 50): DONE in array-lengths S5 (`impl [type T: PartialEq; const N] with PartialEq`; a derived struct with an array field derives). `Eq` left out \u2014 see B609 (structural subtrait through an element sub-bound)."
+ }
+}

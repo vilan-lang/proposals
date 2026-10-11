@@ -1,0 +1,11 @@
+// Natively the inner literals of a nested array literal passed where the
+// callee's parameter is generic over its own binders emit as `Vec`s: `grid ==
+// [[1, 2], [3, 4]]` lowers to the std `eq` of `impl [type T: PartialEq; const
+// N]`, whose `b: [T; N]` is the argument's expected type, unsubstituted; rustc
+// refuses "expected `[i32; 2]`, found `Vec<i32>`". JS prints `true`.
+import std::io::print;
+
+fun main() {
+	let grid: [[i32; 2]; 2] = [[1, 2], [3, 4]];
+	print(grid == [[1, 2], [3, 4]]);
+}

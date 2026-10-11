@@ -1,6 +1,7 @@
 # Array lengths — `[type T; _]`, `<const N>`, and the names a length may be (I2 with A163)
 
-> Status: **DRAFT 2026-10-09 — for the owner's ruling.** Written by lane papers-49 of
+> Status: **BUILT 2026-10-10 (Order 50, lane lang-50): S1–S6, S4 included — see §16.** Drafted
+> 2026-10-09 for the owner's ruling (recommendations accepted at Order 50's GO). Written by lane papers-49 of
 > Order 49 against `vilan 0.46.0 (92c621848)`, the compiler of `origin/next` @445c9346 (the
 > v0.46.0 fold + L17, a release-tooling change), read in the worktree
 > `vilan/.claude/worktrees/integration`. Nothing in the vilan tree changed. Every claim about
@@ -516,3 +517,36 @@ waits for nothing in this paper.
 | S6 | **Book and spec**: grammar §3.9 and §3.6's `list` production (D?1), types §5.x (lengths, `const N`), the tour's arrays paragraph | S | S2–S4 | — |
 
 Native F?1 and F?2 are independent of every slice (native lane).
+
+## 16. Order 50's build (lane lang-50) — what was built, and where the paper was wrong
+
+Branch `lang-50` off next @f99dc28e: S1 (R2), S2, S3, a fix the S3 doors met, S5, S6 and S4.
+
+- **R2 as written.** `Type::Array(TypeId, TypeId)`, `Type::Length(usize)`; `TypeTable::array_length`
+  is the one number reader; printers and both key writers recurse into the length; substitution
+  hands a `Type::Length` back unchanged (no re-mint), so S1 was byte-identical on every leg.
+- **The comparators** read the length as a type argument (`impl_subject_matches`,
+  `same_impl_type_shape`, `same_type_structure`, `bound_argument_agrees`, `compare_type_rigid`,
+  `reconcile_type`, impl_select's `subject_shape_matches` / `instantiation_agrees` / `bind_subject` /
+  `collect_subject_binders`, `mono::collect_type_generics`), so §5.4's specificity needed no rule.
+- **Grammar deviation (small):** `const N` parses as a new `Node::LengthBinder` (in the length position
+  and at a `const` parameter's argument position, `impl Ring<type T, const N>`); `_` stays the
+  `TypeBinder` it is in the element position, its kind taken from the position. A type binder at a
+  `const` position is refused with the spelling.
+- **§5.3, a literal index in a length-generic body:** read as "the compile-time range check cannot
+  run" — the index is admitted and keeps its runtime check on both backends (natively the read is
+  `vilan_at`, so rustc's `unconditional_panic` never sees a literal). Asked of the owner (Q).
+- **§3's contract-hash pin is not writable:** no contract can hold an array today (arrays are not
+  Wire; an `[rpc]` parameter of array type is refused, and the refusal names the type `_` — filed).
+  The renderer writes the resolved number, as §3 says.
+- **S5 ships without `Eq`:** `impl [type T: Eq; _] with Eq {}` is refused because a subtrait impl over
+  a structural subject cannot reach its supertrait's impl through an element's sub-bound — tuples
+  share it on v0.47.0 (filed). `PartialEq`, `Hashable`, `Debug`, `Items`, `to_list`, `iter` shipped,
+  each beside `List`'s impl of the same trait (compare.vl, hash.vl, debug.vl, list.vl).
+- **A fix the directed-literal door needed:** a directed literal at an OPEN element answered with the
+  constraint's own `T` (natively an unbound generic, pre-existing on v0.47.0); it now types by its
+  items, as it takes its own count at an open length.
+- **§5.3's `const` rule caught a silent wrong value while building:** `const N + 1` folded `N` to `0`
+  before the refusal existed.
+- **S4 as §6 says**, `let` and `const let`, imports included; E?1's four answers fixed (suffix rule,
+  no cascades, the refusal names what a length may be, the empty array's message).

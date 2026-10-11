@@ -1,0 +1,17 @@
+import std::io::print;
+import std::display::Display;
+trait Shown {
+    fun shown(self): str;
+}
+trait Loud with Shown {}
+trait Louder with Display {}
+impl (type A: Display, type B: Display) with Shown {
+    fun shown(self): str {
+        "pair"
+    }
+}
+impl (type A: Louder, type B: Louder) with Loud {}
+fun main() {
+    print("ok");
+}
+
