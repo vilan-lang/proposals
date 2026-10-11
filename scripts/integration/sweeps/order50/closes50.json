@@ -1,0 +1,222 @@
+{
+ "date": "2026-10-11",
+ "order": "Order 50",
+ "closes": [
+  {
+   "id": "N164",
+   "lane": "tools-50",
+   "commit": "84b7d5eb",
+   "text": "the M26 burst pin paced by the server's own `started` counter (door (a)); the 20 ms debounce margin was the mechanism; eight runs at load 23-30 all 8/1/7"
+  },
+  {
+   "id": "N165",
+   "lane": "tools-50",
+   "commit": "150063b9",
+   "text": "lsp-latency.py `--vilan` + the clean-copy refusal; `refuse_unchecked_sources` on every seal; scripts/rss-probe.py; T3 RSS = the median of fresh runs; seal.sh folds perf-leg.sh in (VILAN_PERF_KOLT_DIR/THRESHOLD/SEAL_PERF_ONLY)"
+  },
+  {
+   "id": "N163",
+   "lane": "tools-50",
+   "commit": "17456942",
+   "text": "the nextest tiers re-measured under ci-test (edit_replay 293 -> 97 s, docs 212 -> 29 s; permutation_differential tiered)"
+  },
+  {
+   "id": "N162",
+   "lane": "tools-50",
+   "commit": "cccc52fa",
+   "text": "closed with the doc note, as ruled (12 of 71 std files; none of the three causes is file_project's)"
+  },
+  {
+   "id": "B594",
+   "lane": "tools-50",
+   "commit": "4d692760",
+   "text": "`vilan check <file>` on a [library] file resolves [library.dependencies] (file_project hands the unit its package_dir)"
+  },
+  {
+   "id": "F126",
+   "lane": "native-50",
+   "commit": "2614c183",
+   "text": "print of a std::debug::Location renders its text at the top level on both backends"
+  },
+  {
+   "id": "F128",
+   "lane": "native-50",
+   "commit": "d7d1b2f0",
+   "text": "`*` over a binding the native backend holds as a value reads the value"
+  },
+  {
+   "id": "F127",
+   "lane": "native-50",
+   "commit": "49cb53e9",
+   "text": "a spread of a tuple literal is its parts, each at its slot's type, evaluated once in order"
+  },
+  {
+   "id": "F125",
+   "lane": "native-50",
+   "commit": "f76a5e10",
+   "text": "MISCOMPILE fixed: a BigInt as text writes its digits natively (`vilan_rt::bigint_text`); `144n` was printed for `144`"
+  },
+  {
+   "id": "F123",
+   "lane": "native-50",
+   "commit": "de2a340b",
+   "text": "MISCOMPILE fixed: std's keyed lookups over a Shared view's field read through the cell with the borrow taken after the arguments (user key types keep the copy); the general early copy -> F129"
+  },
+  {
+   "id": "F122",
+   "lane": "native-50",
+   "commit": "9025b5e6",
+   "text": "a fixed array past 1 KiB lives on the heap natively (`vilan_rt::HeapArray<T, N>`); threshold measured against node's recursion depth"
+  },
+  {
+   "id": "F124",
+   "lane": "native-50",
+   "commit": "9610e079",
+   "text": "the aliasing-loans model: \u00a72.1 nested groups reborrow, \u00a72.2 interleaved groups share one cell; transparent-references.vl flipped (triple 130/128/2/0); \u00a72.3's lens handle waits for a real program"
+  },
+  {
+   "id": "A153",
+   "lane": "store-50",
+   "commit": "dd9951eb",
+   "text": "S2's remainder (states/when_remote_live/when_all_some; a Patch lands in one turn), S3 collections (splices, key sets, each over keys), S4 reconnect (replay once, one Subscribe, seeds land over the replica), S5 the kolt exhibit as sweeps/order50/store-50/kolt-mirror-v0.48.0.patch (229 frames/10,110 B -> 13/6,228 B on the open); states() not built natively -> B605/B606"
+  },
+  {
+   "id": "A168",
+   "lane": "store-50",
+   "commit": "10961087",
+   "text": "HashSet<T: Hashable + Wire> is Wire (std::hash_set); a remote set's member is a boundary; the parked-boundary fix"
+  },
+  {
+   "id": "A169",
+   "lane": "store-50",
+   "commit": "dd9951eb",
+   "text": "door (a): the server acknowledges an Unsubscribe with Gone(slot) and the client forgets the reader (`mirror_retired_census`)"
+  },
+  {
+   "id": "A149",
+   "lane": "store-50",
+   "commit": "dd9951eb",
+   "text": "S6 rides the kolt exhibit patch; S5 (compiler-generated nodes) NOT built - no measured need (kolt's own declarations get cheaper; the +7% inferences is std's mirror module, M136)"
+  },
+  {
+   "id": "M127",
+   "lane": "incr-50",
+   "commit": "7bdde3ab",
+   "text": "`infer_bumps` as a worklist, the context pass's node map + one value-use scan, `reachable_bindings` only on an initializer refusal; every ci row down"
+  },
+  {
+   "id": "M134",
+   "lane": "incr-50",
+   "commit": "f2fb45ff",
+   "text": "one anchor per body/site/call/impl/slot in every post-settle pass; both check macros clear the anchor; kolt checks-phase unanchored type mints 11,877 -> 13 / 18,818 -> 22 (all windowless-slot classifications, counted), entities -> 0/0, `unasked` 0; pin on the invariant"
+  },
+  {
+   "id": "B596",
+   "lane": "solver-50",
+   "commit": "271d929c",
+   "text": "MISCOMPILE fixed: a struct literal runs its fields in written order on JS as natively"
+  },
+  {
+   "id": "B599",
+   "lane": "solver-50",
+   "commit": "9b47340a",
+   "text": "fill-from-use: an argument fills its own holes, a method call its receiver's, holes keep one identity (the real bug: substitution re-minted holes per ask); kolt's sidebar.vl:65 annotation optional"
+  },
+  {
+   "id": "B602",
+   "lane": "solver-50",
+   "commit": "1d00ec2c",
+   "text": "BREAKING at v0.48.0: `-`/`*`/`/`/`%` over a float and a typed integer, and f64 vs f32, refused like `+`; estate 0 outside vilan/benchmarks (5 sites fixed); the bitwise gap -> B607"
+  },
+  {
+   "id": "B598",
+   "lane": "solver-50",
+   "commit": "94ff0cb2",
+   "text": "a trait the calling file does not reach is no candidate at its method call (the import-surface rule); the static twin -> B608"
+  },
+  {
+   "id": "B600",
+   "lane": "solver-50",
+   "commit": "6fc7911a",
+   "text": "an expression hole no binding holds is refused at the call (two ledger rows; native-only failures before; estate 0)"
+  },
+  {
+   "id": "B601",
+   "lane": "solver-50",
+   "commit": "77e08903",
+   "text": "the dyn narrowing is reported once (a reference's typing re-typed its binding under the same constraint)"
+  },
+  {
+   "id": "B592",
+   "lane": "solver-50",
+   "commit": "219c5d40",
+   "text": "`List<[T; n]>` directs the inner array literals"
+  },
+  {
+   "id": "B593",
+   "lane": "solver-50",
+   "commit": "a43c3625",
+   "text": "function items in a list literal take their closure type"
+  },
+  {
+   "id": "B595",
+   "lane": "solver-50",
+   "commit": "622a3b45",
+   "text": "a blanket's static on a concrete head binds the blanket's T"
+  },
+  {
+   "id": "E289",
+   "lane": "solver-50",
+   "commit": "49e02691",
+   "text": "the element-hole message names Option"
+  },
+  {
+   "id": "E290",
+   "lane": "solver-50",
+   "commit": "b6af11e2",
+   "text": "tuple view refusals say 'the tuple's slot'"
+  },
+  {
+   "id": "E287",
+   "lane": "solver-50 + lang-50",
+   "commit": "98ef881d + 47bec1c5",
+   "text": "halves (c)+(d) by solver-50; (a) a name in the length position and (b) the substituted length (the `const N + 1` -> 0 fold refused) by lang-50's S4"
+  },
+  {
+   "id": "A163",
+   "lane": "lang-50",
+   "commit": "e7116057",
+   "text": "impl heads `[type T; _]` and `[type T; const N]` (array-lengths S2)"
+  },
+  {
+   "id": "A161",
+   "lane": "lang-50",
+   "commit": "b06bab6b",
+   "text": "`Items` over `[T; n]` in std (S5), with Hashable, Debug, to_list, iter"
+  },
+  {
+   "id": "A166",
+   "lane": "lang-50",
+   "commit": "b06bab6b",
+   "text": "`PartialEq` over `[T; n]` in std; `Eq` is one line once B609 lands (a subtrait impl over a structural subject cannot reach its supertrait through an element sub-bound)"
+  },
+  {
+   "id": "D15",
+   "lane": "lang-50",
+   "commit": "474b84d9",
+   "text": "the book and the spec state the fixed array: grammar \u00a73.9/\u00a73.6/\u00a73.3, the impl paragraph; array-lengths.md \u00a716 is the build record"
+  },
+  {
+   "id": "A170",
+   "lane": "lang-50",
+   "commit": "-",
+   "text": "DECLINED, as ruled; E291's census read 0 spaced generic lists across the estate (1,679 tight heads)"
+  },
+  {
+   "id": "E293",
+   "lane": "debug-50",
+   "commit": "5f7e61d7",
+   "text": "print of a bare closure writes `<closure |i32| i32>` on both backends (one predicate in printer.rs); a named function prints `<closure fun name>`"
+  }
+ ]
+}
