@@ -115,3 +115,4 @@
 - Canary bisect (canary-bisect.txt): green through 7b0c238f (C1); RED from f99dc28e (C2 = M110 S6, the id windows) on. Filed N169 (incr-50's ground, Order 51 with S7; did not hold the cut - the cut gates CI + the perf verdict; the owner may rule otherwise). Bisect worktree reaped.
 - Order 50 SWEEP: closes50.json applied (36 closed). Chronicle SEALED entry written.
 - CUT v0.48.0 (2026-10-11): `cut-release.sh 0.48.0` applied clean (31 entries ordered: 1 breaking B602, 3 miscompiles, 14 fixes, 13 features; the eight ci bumps absorbed; nine reference rows lowered; E121 counts advanced); release commit 74097062 on next, tag v0.48.0 = 74097062 pushed -> release.yml running; CI on next @74097062 running. Fold after both are green.
+- v0.48.0 PUBLISHED: release run 38116959004 GREEN 21/21 through the sha; CI on next @74097062 GREEN (38116957865). Folding + installing the toolchain.
