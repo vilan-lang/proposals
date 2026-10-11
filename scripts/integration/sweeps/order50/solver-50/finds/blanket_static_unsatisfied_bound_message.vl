@@ -1,0 +1,19 @@
+// FIND (solver-50): a blanket's static named on a head the blanket's bound
+// does not admit says only "cannot find 'tag' in i32"; the head lacks `Leaf`,
+// which `impl type T: Leaf with Tag` requires — the sentence could say so
+// (as the method path's bound-filtered candidates could).
+trait Leaf {}
+
+trait Tag {
+	fun tag(value: i32): str;
+}
+
+impl type T: Leaf with Tag {
+	fun tag(value: i32): str {
+		"tag"
+	}
+}
+
+fun main() {
+	let _t = i32::tag(1);
+}

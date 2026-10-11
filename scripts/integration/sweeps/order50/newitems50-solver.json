@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B607",
+   "section": "B",
+   "kind": "analyzer: missing refusal (S)",
+   "area": "Type system & the type solver",
+   "status": "OPEN — filed 2026-10-10 (solver-50's find, Order 50)",
+   "discussion": "solver-50 (Order 50); sweeps/order50/solver-50/finds/bitwise_mixed_operands_check_clean.vl",
+   "title": "`&`, `\\|`, `^` over two DIFFERENT integer types (`i32 & usize`), and any bitwise operator over a float (`f64 & f64`, `f64 & i32`), check clean — B579/B602 refuse only `-`, `*`, `/`, `%`; JS coerces silently, the native build refuses",
+   "body": "`vilan check` clean; `vilan run` prints JS's coercions (an f64 truncated to int32); `--backend rust` refuses \"does not emit an operator over two numeric types (`i32` and `usize`)\" (and rustc has no `BitAnd` for `f64`). The B579 arm (finalize_build's binary-operator check) is the model: refuse a mixed integer pair under `&`/`\\|`/`^` (shifts are legal across integer types in Rust, so leave `<<`/`>>`/`>>>` mixed), and a float operand under any bitwise operator with a sentence of its own. Likely BREAKING (count the estate). Sizing S; solver."
+  },
+  {
+   "id": "B608",
+   "section": "B",
+   "kind": "semantics (S)",
+   "area": "Language & type system",
+   "status": "OPEN — filed 2026-10-10 (solver-50's find, Order 50)",
+   "discussion": "solver-50 (Order 50); sweeps/order50/solver-50/finds/static-path-names-unreached-trait/ (`vilan check main.vl`)",
+   "title": "B598's static twin: `List::describe([1, 2])` in a file importing only `pkg::describe::Describe` is refused \"'describe' is not an inherent member of 'List': 'Wire' and 'Describe' provide it; call 'Wire::describe(..)' or 'Describe::describe(..)'\" — the steer names std's `Wire`, which the file does not reach",
+   "body": "B598 narrows a METHOD call's trait candidates to the traits the calling file reaches (B515's rule); the static path (`Type::member`, the static-accessor arm of resolve_world that ranks `method_member_candidates`) does not, so its refusal names an unreachable trait. Apply `candidates_reached_at` there too (it is a refusal either way — a trait method is not an inherent static — but the steer should name only `Describe::describe(..)`). Sizing S; solver."
+  },
+  {
+   "id": "E295",
+   "section": "E",
+   "kind": "diagnostic (XS)",
+   "area": "Diagnostics & error messages",
+   "status": "OPEN — filed 2026-10-10 (solver-50's find, Order 50)",
+   "discussion": "solver-50 (Order 50); sweeps/order50/solver-50/finds/blanket_static_unsatisfied_bound_message.vl",
+   "title": "a blanket's static named on a head its bound does not admit (`i32::tag(1)` over `impl type T: Leaf with Tag`) says only \"cannot find 'tag' in i32\" — it could say `i32` is not `Leaf`, which the blanket providing `tag` requires",
+   "body": "After B595 the satisfied head resolves (`str::tag(1)`); the unsatisfied one falls to the generic not-found sentence because the candidate scan drops the blanket by its bound. Name the blanket and the missing bound (\"`tag` is provided by `impl type T: Leaf with Tag`, and `i32` does not implement `Leaf`\"). Sizing XS; solver."
+  },
+  {
+   "id": "N167",
+   "section": "N",
+   "kind": "test coverage (XS)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-10 (solver-50's find, Order 50)",
+   "discussion": "solver-50 (Order 50); crates/vilan-cli/tests/native_differential.rs `a_refusal_inside_another_files_body_names_where_to_look` (rewritten by B600)",
+   "title": "the native emitter's in-body anchor note (\"The construct is in `is_some`'s body (`option.vl`), which this call instantiates\", vilan-rust lib.rs) has no reachable std probe after B600: the probe it used (`Option::None.is_some()`) is refused at `vilan check` now, as F108's `push_many([])` was before it",
+   "body": "B600 refuses an open instance at the check, so the F108 pin now asserts the check's refusal at the user's call; the in-body note is unpinned. Either find another construct the native backend refuses inside a std body that the checker admits (each such construct is itself a check/build disagreement worth filing), or pin the note at the emitter level with a synthetic program. Sizing XS; native."
+  }
+ ]
+}

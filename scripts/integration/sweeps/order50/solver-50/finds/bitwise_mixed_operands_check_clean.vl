@@ -1,0 +1,16 @@
+// FIND (solver-50): `&`, `|`, `^` over two DIFFERENT integer types, and any
+// bitwise operator over a float, check clean (B579/B602 cover `-*/%` only).
+// JS truncates/coerces silently; the native build refuses ("the `rust`
+// backend does not emit an operator over two numeric types (`i32` and
+// `usize`)") or rustc refuses (no `BitAnd` for f64).
+import std::io::print;
+
+fun main() {
+	let a: f64 = 1.5;
+	let b: i32 = 2;
+	let c: usize = 3;
+	print(b & c);
+	print(b | c);
+	print(a & a);
+	print(a & b);
+}

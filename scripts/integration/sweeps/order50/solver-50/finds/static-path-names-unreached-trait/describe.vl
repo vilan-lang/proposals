@@ -1,0 +1,9 @@
+export trait Describe {
+	fun describe(self): str;
+}
+
+export impl List<type T> with Describe {
+	fun describe(self): str {
+		"mine"
+	}
+}
