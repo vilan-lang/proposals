@@ -388,7 +388,10 @@
   "started": "2026-10-11",
   "base_kolt": "scratchpad/seal-50/kolt-base @e01e59a8",
   "mode": "same-source; ADVANCE=1; threshold default 1.10",
-  "log": "sweeps/order50/seal-68f25eb1.out"
+  "log": "sweeps/order50/seal-68f25eb1.out",
+  "verdict": "union/doctests/native/clippy/windows/audit/fmt/vilan-fmt/wasm GREEN; perf GREEN (T3 kolt CPU x0.987 RSS x1.012 instructions x0.952; ci rows x0.93-x0.996; growth x1.929; LSP rows CPU x0.98-x1.07, instructions all DOWN); canary@1.5MiB RED (a_thirty_level_chain fits 1664 KiB, not 1536; 2 MiB green; bisecting)",
+  "perf_verdict": "~/.vilan/perf-verdicts/perf-68f25eb1631b2c0b02fdf7c6639261b848baa93e.json (copy in sweeps)",
+  "e121_after": "shared + model green_seals 2 -> blocking; leaf 550 / importers 660 / css 750 / parse break 760 ms red (reporting)"
  },
  "order51": {
   "core": [
