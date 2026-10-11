@@ -1,0 +1,19 @@
+// Natively an array literal inside a TUPLE whose slot is a fixed array is
+// emitted as `vec![..]` (a List) where the tuple's type says `[i32; 3]`, in a
+// struct literal's field and in a let whose tuple is then used by a call:
+// rustc refuses "expected `[i32; 3]`, found `Vec<i32>`". JS is fine.
+// `vilan run --backend rust` on this file.
+struct H {
+	pair: ([i32; 3], bool),
+}
+
+fun count(t: ([i32; 2], bool)): bool {
+	t.1
+}
+
+fun main() {
+	let h = H { pair = ([5, 6, 7], true) };
+	print(h.pair.1);
+	let t: ([i32; 2], bool) = ([1, 2], false);
+	print(count(t));
+}

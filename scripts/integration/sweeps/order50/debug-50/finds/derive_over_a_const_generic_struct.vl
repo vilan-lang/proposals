@@ -1,0 +1,9 @@
+[derive(PartialEq)]
+struct Buf<T, const N> {
+	items: [T; N],
+}
+
+fun main() {
+	let a = Buf { items = [1, 2, 3] };
+	print(a == Buf { items = [1, 2, 3] });
+}

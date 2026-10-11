@@ -1,0 +1,5 @@
+{"prefix": "- 2026-10-11 (Order 50, debug-50's final hand-back; merged to next): ",
+ "stamps": {
+  "E257": "S5 stays MEASURED, NOT BUILT at Order 50's close (debug-50): the numbers and the design notes are in E257's earlier stamp and sweeps/order50/debug-50/e257-s5-measurement-spike.patch; rec level 2 marks, maps in the debug preset only, user sources only in sourcesContent. A candidate for Order 51 after the owner rules on the three questions.",
+  "F131": "Related: debug-50 found two more positions where a native array literal is emitted as `vec![..]` against a `[T; n]` expectation (a tuple slot of a struct-literal field / a let used by a call; a variant payload inside a list literal passed to print) - filed as F132 with repros; rustc refuses (not wrong output). The two items are one fix family (the emitter's expected-type propagation into literals)."
+ }}

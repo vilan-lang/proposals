@@ -1,0 +1,15 @@
+// Natively `print([Frame::Empty, Frame::Bytes([0, 0, 0, 1])])` emits the payload literal as `vec![..]` where
+// the variant says `[u8; 4]`: rustc refuses "expected `[u8; 4]`, found `Vec<u8>`". The same
+// payload outside a list literal is fine; JS is fine. `vilan run --backend rust` on this file.
+// Natively `[Frame::Empty, Frame::Bytes([0, 0, 0, 1])]` emits the payload
+// literal as `vec![..]` where the variant says `[u8; 4]`: rustc refuses
+// "expected `[u8; 4]`, found `Vec<u8>`". `Frame::Bytes([1, 2, 3, 4])` alone is
+// fine; JS is fine. `vilan run --backend rust` on this file.
+enum Frame {
+	Bytes([u8; 4]),
+	Empty,
+}
+
+fun main() {
+	print([Frame::Empty, Frame::Bytes([0, 0, 0, 1])]);
+}
