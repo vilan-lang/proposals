@@ -389,5 +389,49 @@
   "base_kolt": "scratchpad/seal-50/kolt-base @e01e59a8",
   "mode": "same-source; ADVANCE=1; threshold default 1.10",
   "log": "sweeps/order50/seal-68f25eb1.out"
+ },
+ "order51": {
+  "core": [
+   "M110 S7 (per-item records over the windows; the cross-item edge M139; unasked == 0 and relocated_outside_anchor == 0 standing; compute_resource_types whole-table walk)",
+   "M137 (context::apply 66k mints)",
+   "M138 (compute_adaptation seed)",
+   "B603 (std-first canonical order = the std prefix P0)",
+   "std-prefix.md P1-P5 (M120/M36/N157/E292 door (c))",
+   "E294 (the LSP budget / pinned prefix)",
+   "M135 (const cache on disk)",
+   "G28 (the expansion table stamp = the build identity)"
+  ],
+  "solver": [
+   "M133 split (impl_bounds_hold memo + platform_color narrowing)",
+   "B607 (bitwise float/mixed refusal, BREAKING, after the estate count)",
+   "B608",
+   "B609 (structural subtrait through an element sub-bound; then Eq for arrays/tuples one line)",
+   "E295",
+   "B611 (is_const on macro_std GenericParameter: derive over <const N>)",
+   "B604",
+   "B605/B606 (native dyn gaps)"
+  ],
+  "native": [
+   "F129 (the general early cell copy: evaluate later arguments first)",
+   "F131 + F132 (array literals as vec![] against [T; n])",
+   "F133",
+   "F124 \u00a72.3 only on a real program",
+   "N167"
+  ],
+  "debug": [
+   "E257 S5 (level 2 marks, debug preset, user sources only) after the owner rules",
+   "F130 (Task print keyed on the vilan type)"
+  ],
+  "tooling": [
+   "N166 (the seal RSS threshold 1.05)",
+   "N168 (the installed toolchain reading a checkout std)",
+   "E296 ([rpc] array parameter refused twice)",
+   "L24 when the Windows runner is registered"
+  ],
+  "store": [
+   "arrays Wire only on a need (lang-50 Q2)",
+   "key sets Put/Delete only on a need",
+   "M136 absorbed by the std prefix"
+  ]
  }
 }
