@@ -1,0 +1,8 @@
+{"prefix": "- 2026-10-11 (Order 50, lang-50 merged to next): ",
+ "stamps": {
+  "A163": "DONE (lang-50, S2: impl heads `[type T; _]` and `[type T; const N]`; on next via the lang-50 merge). Full suite 10,269/10,269 on the rebased tip 8f37597e; native sweep 258/258.",
+  "A161": "DONE (lang-50, S5: `Items` over `[T; n]` in std, with PartialEq (A166), Hashable, Debug, to_list, iter; `Eq` BLOCKED by B609). Five ci [[bump]] rows (math 1.01, watch 1.009, browser/reactive-ui/ssr 1.005; instructions:u estimates, re-taken at the seal); kolt cold-check RSS +2.3% (270 vs 264 MB - the new std impls load in every program; watch at the seal).",
+  "A166": "DONE (lang-50, S5: `impl [type T: PartialEq; _] with PartialEq`); `Eq` waits on B609 (a subtrait impl over a structural subject cannot reach its supertrait through an element sub-bound; one line once fixed).",
+  "D15": "DONE (lang-50, S6: the book and the spec carry the array grammar, impl heads, `<const N>` and named lengths; array-lengths.md §16 is the build record).",
+  "E287": "Halves (a) and (b) DONE (lang-50, S4 commit): a name in the length position resolves as a named length, and a substituted length is never folded to 0 (the live bug `const N + 1` -> 0 is refused). With solver-50's (c)+(d) the item is COMPLETE."
+ }}
