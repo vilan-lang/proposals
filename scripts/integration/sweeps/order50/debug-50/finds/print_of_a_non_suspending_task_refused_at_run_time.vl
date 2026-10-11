@@ -1,0 +1,10 @@
+import std::io::print;
+
+async fun work(): i32 {
+	7
+}
+
+async fun main() {
+	let task = async work();
+	print(task);
+}

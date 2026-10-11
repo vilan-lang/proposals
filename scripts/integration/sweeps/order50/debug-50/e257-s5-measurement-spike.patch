@@ -1,0 +1,148 @@
+diff --git a/crates/vilan-core/src/transformer.rs b/crates/vilan-core/src/transformer.rs
+index 6589bae5..821bca2d 100644
+--- a/crates/vilan-core/src/transformer.rs
++++ b/crates/vilan-core/src/transformer.rs
+@@ -3257,7 +3257,11 @@ impl<'src> Transformer<'src> {
+         } else {
+             format!("{}\n{}", prelude, body)
+         };
+-        Ok(format!("{}{}", output, line_break))
++        let output = format!("{}{}", output, line_break);
++        if formatter.marks > 0 {
++            return Ok(spike_strip_marks(output));
++        }
++        Ok(output)
+     }
+ 
+     fn transform_entry_ast(self) -> Result<JsProgram<'src>, Error> {
+@@ -12982,6 +12986,8 @@ struct Formatter {
+     space: &'static str,
+     array_surround: &'static str,
+     // object_surround: &'static str,
++    // SPIKE (E257 S5 measurement): 0 off, 1 statements, 2 + calls/closures/functions, 3 every node.
++    marks: u8,
+ }
+ 
+ impl Formatter {
+@@ -12994,6 +13000,10 @@ impl Formatter {
+             indentation: if indent { "\t" } else { "" },
+             space: if spaces { " " } else { "" },
+             array_surround: if spaces { " " } else { "" },
++            marks: std::env::var("VILAN_SPIKE_MARKS")
++                .ok()
++                .and_then(|v| v.parse().ok())
++                .unwrap_or(0),
+         }
+     }
+ 
+@@ -13029,7 +13039,10 @@ impl Formatter {
+     fn sequence(&self, list: &[js::Node], terminator: &'static str, level: usize) -> String {
+         let indent = self.indentation.repeat(level);
+         list.iter()
+-            .map(|node| format!("{}{}", indent, self.node(node, terminator, level)))
++            .map(|node| {
++                let mark = if self.marks >= 1 { "\u{E000}" } else { "" };
++                format!("{}{}{}", indent, mark, self.node(node, terminator, level))
++            })
+             .collect::<Vec<_>>()
+             .join(self.line_break)
+     }
+@@ -13117,6 +13130,21 @@ impl Formatter {
+     /// — and passes `level` down to its sub-expressions, so a block nested inside
+     /// an expression indents to its true depth.
+     fn node(&self, node: &js::Node, terminator: &'static str, level: usize) -> String {
++        let marked = match self.marks {
++            2 => matches!(
++                node,
++                js::Node::Call(..) | js::Node::Closure(_) | js::Node::Function(_)
++            ),
++            3 => !matches!(node, js::Node::Local(_)) || true,
++            _ => false,
++        };
++        if marked {
++            return format!("\u{E000}{}", self.node_inner(node, terminator, level));
++        }
++        self.node_inner(node, terminator, level)
++    }
++
++    fn node_inner(&self, node: &js::Node, terminator: &'static str, level: usize) -> String {
+         match node {
+             js::Node::Void => format!("undefined{}", terminator),
+             js::Node::Null => format!("null{}", terminator),
+@@ -13957,6 +13985,76 @@ impl<'src> ConstWorld<'src> {
+ 
+ mod dbg;
+ 
++/// SPIKE (E257 S5 measurement): strips the marker characters, computing a
++/// generated line:col per marker and the size of the v3 `mappings` string a
++/// writer would emit (VLQ, four fields per segment, source deltas faked small).
++fn spike_strip_marks(output: String) -> String {
++    const B64: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
++    fn vlq(out: &mut String, value: i64) {
++        let mut v = if value < 0 { ((-value) << 1) | 1 } else { value << 1 };
++        loop {
++            let mut digit = (v & 31) as usize;
++            v >>= 5;
++            if v > 0 {
++                digit |= 32;
++            }
++            out.push(B64[digit] as char);
++            if v == 0 {
++                break;
++            }
++        }
++    }
++    let mut clean = String::with_capacity(output.len());
++    let mut mappings = String::new();
++    let (mut line, mut column) = (0usize, 0usize);
++    let (mut last_line_column, mut last_line) = (0i64, 0usize);
++    let (mut src_line, mut src_col) = (0i64, 0i64);
++    let mut count = 0usize;
++    let mut tick = 7u32;
++    for character in output.chars() {
++        match character {
++            '\u{E000}' => {
++                count += 1;
++                if line != last_line {
++                    for _ in last_line..line {
++                        mappings.push(';');
++                    }
++                    last_line = line;
++                    last_line_column = 0;
++                } else if count > 1 {
++                    mappings.push(',');
++                }
++                vlq(&mut mappings, column as i64 - last_line_column);
++                last_line_column = column as i64;
++                vlq(&mut mappings, 0);
++                tick = tick.wrapping_mul(1103515245).wrapping_add(12345);
++                let dl = ((tick >> 16) % 4) as i64 - 1;
++                let dc = ((tick >> 20) % 24) as i64 - 8;
++                src_line += dl;
++                src_col += dc;
++                vlq(&mut mappings, dl);
++                vlq(&mut mappings, dc);
++            }
++            '\n' => {
++                line += 1;
++                column = 0;
++                clean.push(character);
++            }
++            _ => {
++                column += 1;
++                clean.push(character);
++            }
++        }
++    }
++    let _ = (src_line, src_col);
++    eprintln!(
++        "SPIKE marks={count} output_bytes={} mappings_bytes={}",
++        clean.len(),
++        mappings.len()
++    );
++    clean
++}
++
+ pub mod js {
+     use crate::node::BinaryOp;
+     use std::borrow::Cow;
