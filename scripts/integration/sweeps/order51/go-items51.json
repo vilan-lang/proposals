@@ -5,7 +5,7 @@
  "go": null,
  "theme": "the incremental order, part four: per-item records (S7), the std prefix P0/P1, the solver's residue, E257 S5 built, the JS/macro fix lane",
  "asks": [
-  "R-a core-alone + checkpoints C1 (N169 + E294 budget + S7) / C2 (P0 B603) / C3 (P1 or M133 incr half, M137, M138)",
+  "R-a core-alone, the core lane SPLIT by complexity: incr-51a (Opus) C0 / incr-51b (Fable, S7 only) C1 / incr-51c (Opus) C2-C3",
   "R-b S7's scope (M139 edge; standing pins)",
   "R-c std-prefix P0 + P1 this order; P2-P5 Order 52",
   "R-d E294's budget half first",
@@ -19,19 +19,38 @@
   "R-l L24 when registered"
  ],
  "lanes": {
-  "incr-51": {
-   "model": "fable",
+  "incr-51a": {
+   "model": "opus",
    "wave": 1,
    "items": [
     "N169",
-    "E294 (budget half)",
+    "E294 (budget half)"
+   ],
+   "checkpoint": "C0"
+  },
+  "incr-51b": {
+   "model": "fable",
+   "wave": "at C0",
+   "items": [
     "M110 S7",
+    "E292 (measured)"
+   ],
+   "checkpoint": "C1",
+   "note": "the ONLY Fable lane; ends at C1"
+  },
+  "incr-51c": {
+   "model": "opus",
+   "wave": "at C1",
+   "items": [
     "B603 (P0)",
     "std-prefix P1 (if time)",
-    "M133 (incr half, if time)",
+    "M133 (incr half)",
     "M137",
-    "M138",
-    "E292 (measured)"
+    "M138"
+   ],
+   "checkpoints": [
+    "C2",
+    "C3"
    ]
   },
   "native-51": {
@@ -103,18 +122,20 @@
   }
  },
  "checkpoints": {
-  "C1": "N169 + E294 budget + M110 S7",
-  "C2": "std-prefix P0 (B603)",
-  "C3": "P1, else M133's incr half / M137 / M138"
+  "C0": "N169 + E294 budget (incr-51a)",
+  "C1": "M110 S7 (incr-51b, Fable)",
+  "C2": "std-prefix P0 (incr-51c)",
+  "C3": "P1, else M133's incr half / M137 / M138 (incr-51c)"
  },
  "merge_order": [
+  "incr-51a C0",
   "tools-51",
   "fix-51",
   "native-51",
   "debug-51",
-  "incr-51 C1",
-  "incr-51 C2",
-  "incr-51 C3",
+  "incr-51b C1",
+  "incr-51c C2",
+  "incr-51c C3",
   "solver-51 (rebased onto C2/C3, last)"
  ],
  "cut": {
@@ -141,5 +162,12 @@
   "arrays Wire / key-set Put-Delete (on a need)",
   "F124 \u00a72.3 (on a real program)",
   "A149 S5 (on a measured need)"
- ]
+ ],
+ "budget": {
+  "rule": "the owner 2026-10-12: Fable only for the top 1-2 highest-complexity items; the last two orders' Fable meter outran the all-models meter (~91% vs ~63%)",
+  "fable_lanes": [
+   "incr-51b (S7)"
+  ],
+  "integrator": "Fable (this session); its mechanical legs delegated to Sonnet/Haiku subagents where a brief suffices"
+ }
 }
