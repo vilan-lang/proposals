@@ -1,7 +1,7 @@
 {
  "items": [
   {
-   "id": "F?1",
+   "id": "F134",
    "section": "F",
    "kind": "bug (native; S)",
    "area": "Native targets & rendering",
@@ -11,7 +11,7 @@
    "body": "F21 carries the payload view through a `match` subject as a reference, and the literal test compares the reference's `&Rc<str>` against `&str`. The JS side (B577, fix-51) tests a literal leg against the value read out of the kept subject while the capturing leg keeps the view. Natively the literal comparison needs one more deref (`**__literal0 == *\"first\"`, rustc's own suggestion) when the subject carries a payload view. Expected on both: `lit`, `second`, `none`, `only literal`. Sizing S; vilan-rust's pattern emission. native-51's."
   },
   {
-   "id": "B?1",
+   "id": "B612",
    "section": "B",
    "kind": "diagnostics (checker; S)",
    "area": "Diagnostics",
@@ -21,7 +21,7 @@
    "body": "The analyzer's derive field check (ledger rows 2 and 3) prints the field's resolved type, and a `Dyn` type renders as `_` there. G25 (fix-51) refuses `[derive(Wire)]`/`[derive(Json)]` over a `dyn` member above the generators, naming the member and its written type; the check still runs afterwards and reports the same field again. Fix: render `dyn Trait<..>` in the check (the type printer's `Dyn` arm), and skip the field check for a derive the expansion already refused (or let the refusal stand alone, B161's one-report rule). Sizing S; analyzer.rs."
   },
   {
-   "id": "B?2",
+   "id": "B613",
    "section": "B",
    "kind": "diagnostics (macros; S)",
    "area": "Macros & const",
@@ -31,7 +31,7 @@
    "body": "The B21 sentence assumes every std derive's module loads with every program; that holds for compare/default/debug/json/hash (the analyzer's always-loaded set) and not for `reactive/store.vl` (A142 S7's Storable), which loads only by an import. Fixed in fix-51: `IMPORTED_STD_DERIVES` names the derives whose module an import loads, and the refusal writes the import line (`import std::reactive::store::Storable;`). Pin: `a_storable_derive_without_its_import_steers_to_the_import`. Ledger row NEW."
   },
   {
-   "id": "G?1",
+   "id": "G29",
    "section": "G",
    "kind": "question (macros; S)",
    "area": "Macros & const",
@@ -41,7 +41,7 @@
    "body": "G27 (fix-51) registers a mod's macros under the mod-qualified name and resolves them from the innermost enclosing mod out; a sibling mod and the file's top level do not see them (pinned). Macro imports resolve only `std::`/`pkg::`/dependency module paths by leaf (`macros::scope_for`), and an inline mod is not a module path there. Decide: (a) an inline mod's exported macros are importable (`import self::tables::tabled` or whatever reaches an inline mod's member) and `scope_for` learns the path; (b) refuse `export` on a `macro fun` inside an inline mod with a steer; (c) leave it. Rec (b) now, (a) when inline-mod imports are specified. Sizing S."
   },
   {
-   "id": "N?1",
+   "id": "N170",
    "section": "N",
    "kind": "tidy (native; XS)",
    "area": "Native targets & rendering",

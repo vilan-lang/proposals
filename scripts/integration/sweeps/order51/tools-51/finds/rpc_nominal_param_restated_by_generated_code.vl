@@ -1,0 +1,25 @@
+// tools-51 find: E296 stood the attribute's generated-code diagnostics down for a tuple/array/closure/view [rpc] type only; a nominal non-Wire parameter (method a) still gets "Password has no method 'describe'" at the [service] attribute beside the signature refusal. Run inside a package.
+import std::io::print;
+import std::reactive::{ Signal, SignalCell };
+
+struct Password { text: str }
+
+[service(SvcClient)]
+struct Svc {
+	last: SignalCell<i32>,
+}
+
+impl Svc {
+	[rpc]
+	fun a(self, p: Password): i32 { 1 }
+	[rpc]
+	fun b(self, p: |i32| i32): i32 { 1 }
+	[rpc]
+	fun c(self, p: List<[u8; 2]>): i32 { 1 }
+	[rpc]
+	fun d(self, p: &i32): (i32, str) { (1, "") }
+}
+
+fun main() {
+	print(Svc { last = Signal::new(0) }.contract_hash());
+}

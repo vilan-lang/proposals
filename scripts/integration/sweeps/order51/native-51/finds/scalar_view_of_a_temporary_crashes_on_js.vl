@@ -1,0 +1,16 @@
+// native-51 find (Order 51, next @ca407da0): a `&` of a call's scalar result handed to a
+// `&i32` parameter checks clean and crashes on JS (TypeError: the view pair is read off a
+// plain number: `value[0][value[1]]`); natively it prints 8.
+import std::io::print;
+
+fun seven(): i32 {
+	7
+}
+
+fun read(value: &i32): i32 {
+	*value + 1
+}
+
+fun main() {
+	print(read(&seven()));
+}

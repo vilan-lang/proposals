@@ -1,0 +1,17 @@
+// native-51 find (Order 51, next @ca407da0): the type of `async e` depends on whether
+// `std::task` is in the program. Without it, `async work()` is `Promise<i32>` (both
+// annotations below check clean - this file with `Promise`, and the same file with
+// `import std::task::Task;` and `Task<i32>`); with it, `Task<i32>`. Hover, an
+// annotation and the native backend's host-handle rules all see two types for one
+// expression (F130 refuses `print` of either by name).
+import std::io::print;
+
+async fun work(): i32 {
+	7
+}
+
+fun main() {
+	let task = async work();
+	let again: Promise<i32> = task;
+	print(1);
+}

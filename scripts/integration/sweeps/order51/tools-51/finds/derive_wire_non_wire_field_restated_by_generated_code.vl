@@ -1,0 +1,13 @@
+// tools-51 find (vilan @ tools-51): a [derive(Wire)] struct with a tuple, array or closure field is refused ONCE by the boundary check (now quoting the type, B597) and again by the generated code at the attribute: "(i32, i32) has no method 'describe'", "[u8; 4] has no method 'describe'", "this expression cannot be used as a type ..." (the closure field is emitted bare). `vilan check` this file from inside a package (a vilan.toml beside it).
+import std::io::print;
+
+[derive(Wire)]
+struct Pair {
+	both: (i32, i32),
+	rgba: [u8; 4],
+	f: |i32| i32,
+}
+
+fun main() {
+	print("x");
+}

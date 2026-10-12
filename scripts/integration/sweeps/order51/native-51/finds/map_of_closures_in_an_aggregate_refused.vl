@@ -1,0 +1,16 @@
+// native-51 find (Order 51, next @ca407da0): an aggregate holding a MAP of closures -
+// a handler table - is refused natively by name ("a closure held inside
+// `vilan_rt::Map<..., (Str, Rc<dyn Fn(i32) -> i32>)>` (in `HashMap`), which has no
+// reference equality - `Option`, `List` and a fixed array of one do"); JS prints 1.
+import std::hash_map::HashMap;
+import std::io::print;
+
+struct Table {
+	handlers: HashMap<str, |i32| i32>,
+}
+
+fun main() {
+	mut table = Table { handlers = HashMap::new() };
+	table.handlers.insert("inc", |x: i32| x + 1);
+	print(table.handlers.len());
+}

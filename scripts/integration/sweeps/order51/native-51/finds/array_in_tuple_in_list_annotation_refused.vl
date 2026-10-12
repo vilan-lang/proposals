@@ -1,0 +1,12 @@
+// native-51 find (Order 51, next @ca407da0): a list literal whose element is a tuple
+// holding an array literal is refused by the checker against its annotation -
+// "Expected List<([i32; 2], bool)>, but got List<(List<i32>, bool)> instead." - while
+// the same tuple under `let t: ([i32; 2], bool) = ([1, 2], true)` checks clean and a
+// list of bare arrays (`let xs: List<[i32; 2]> = [[1, 2]]`) does too: the expectation
+// is not threaded list -> tuple -> array literal.
+import std::io::print;
+
+fun main() {
+	let pairs: List<([i32; 2], bool)> = [([1, 2], true)];
+	print(pairs);
+}

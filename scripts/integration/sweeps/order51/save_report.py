@@ -16,7 +16,7 @@ for line in open(J):
 txt=max((v for v in rep.values() if isinstance(v,str)),key=len)
 open(f'{here}/REPORT-{lane}.md','w').write(txt.rstrip()+'\n'); print('report',len(txt))
 if maps:
-    p=f'{here}/newitems51-{lane.replace("-51","")}.json'; s=open(p).read()
+    p=f'{here}/newitems51-{lane}.json'; s=open(p).read()
     m=dict(x.split('=') for x in maps)
     for k in sorted(m,key=len,reverse=True): s=s.replace(k,m[k])
     open(p,'w').write(s)

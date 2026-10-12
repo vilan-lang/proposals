@@ -1,0 +1,14 @@
+// tools-51 find: the same duplication for a NOMINAL non-Wire field: "Password has no method 'describe'", "cannot find 'rebuild' in Password" at the derive attribute, beside the boundary refusal. Run inside a package.
+import std::io::print;
+
+struct Password { text: str }
+
+[derive(Wire)]
+struct Holder {
+	secret: Password,
+	opt: Option<(i32, i32)>,
+}
+
+fun main() {
+	print("x");
+}
