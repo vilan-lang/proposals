@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "N?1",
+   "section": "N",
+   "kind": "tooling (editor schema + completion; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-12 (debug-51's find, Order 51)",
+   "discussion": "debug-51 (Order 51); sweeps/order51/debug-51/finds/build_dbg_key_refused_by_the_editor_schema.toml",
+   "title": "`[build] dbg = \"keep\" \\| \"strip\"` (debugging.md Q4, shipped in S1) is missing from the editor schema and the language server's manifest completion — the schema's `[build]` table is `additionalProperties: false`, so VS Code flags a valid `dbg = \"strip\"` as an unknown key, and completion never offers it",
+   "body": "`editors/vscode/schemas/vilan-toml.schema.json` lists `[build]`'s keys as debug-names, hook, indent, infer-const, preset, readable-names, run, spaces (and `source-maps` from E257 S5) with `additionalProperties: false`; `crates/vilan-lsp/src/manifest_completion.rs`'s `TABLES` matches it, so `schema_and_listing_agree` passes while both omit the key `Manifest::build_options` reads (`manifest.rs`, `Build::dbg`). Fix: a `dbg` key with the enum `keep`/`strip` in both (the completion's `ValueSet` for an enum string, as `preset` has), and a pin that every `Build` field the deserializer reads is in the listing (the sync test compares the listing to the schema, not either to the struct). Sizing S."
+  },
+  {
+   "id": "N?2",
+   "section": "N",
+   "kind": "tooling (S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-12 (debug-51's find, Order 51)",
+   "discussion": "debug-51 (Order 51); sweeps/order51/debug-51/finds/vilan_test_stack_names_the_temp_script.vl",
+   "title": "`vilan test`'s failing test prints a stack in the temp script's lines (`vilan-test-<pid>.mjs:18:2`) where `vilan run` of the same code now prints `.vl` lines — E257 S5 hands `run` the source map and `--enable-source-maps`, `test` writes none",
+   "body": "`run_test` (`vilan-cli/src/main.rs`) compiles with `source_maps = false` and runs `node <temp>.mjs` with no flags, so a failed `assert` reports `at check (file:///tmp/vilan-test-1477831.mjs:18:2)`. Fix: the map path `vilan run` takes (`write_run_script_with_map` + `node_flags`), so the failure reads `at check (…/main_test.vl:7:5)`; std's `assert` frame then names std's file and is ignore-listed. Cost: one map per test file (+0.3% of its build). Sizing S."
+  }
+ ]
+}

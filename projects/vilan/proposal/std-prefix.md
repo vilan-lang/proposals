@@ -157,6 +157,15 @@ also what tipped the worlds over the budget between v0.46.0 and v0.47.0 (the sea
 the base binary under the same two budgets — not run here. Find E294; the budget is P2's first
 half.
 
+**The budget half landed (Order 51, incr-51a).** M67's budget is sized by the session's entry
+worlds: the server declares every declared entry of every package with an open document, and the
+cache adds the worlds it holds for them to the flat budget (never their victim). On the v0.48.0
+base the row reproduced at 14.25 G (server world 4 misses / 2 hits); with the sizing 10.55 G, server
+world 1 miss in 6, client entry 2 — the 4096 MiB probe's figures, with the flat budget still binding
+everything else. VmHWM on the row: median 1,002 MB against the base's 995. The resident cost is the
+entry worlds themselves (~140 MB on kolt, read off M67's walk sweep). What remains for P2 is the
+pinned prefix.
+
 ### 1.4 What std mints, and in what order
 
 From `--debug` dumps (`ranges.py`, `progcensus.py`; `out/`):

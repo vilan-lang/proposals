@@ -1,0 +1,12 @@
+// `vilan test` of this file: the failure's stack names the temp script
+// (`vilan-test-<pid>.mjs:LINE`) where `vilan run` of the same code now names
+// `main.vl:LINE` (E257 S5 hands `run` the map; `test` writes none).
+import std::io::assert;
+
+fun check(value: i32) {
+    assert(value > 10, "too small");
+}
+
+fun main() {
+    check(3);
+}

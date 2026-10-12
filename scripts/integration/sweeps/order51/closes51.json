@@ -23,6 +23,14 @@
   {
    "id": "B613",
    "note": "fix-51 (Order 51): [derive(Storable)] without its import now steers to the import line (was 'a compiler load-ordering bug'); commit 102b5f90; filed and fixed in the same hand-back"
+  },
+  {
+   "id": "N169",
+   "note": "incr-51a (Order 51): the walk's per-level debug frame 28,208 B -> 8,288 B (walk_expr_node_inner's 23 arms moved to #[inline(never)] methods; the depth refusal cold); the canary fits from ~900 KiB (was 1,552); `[vilan walk-frame] per-level=<N>B` under VILAN_COUNTERS; the premise was wrong twice: the windows are not on the recursion path and the bisect does not hold (56975c4b^ fails at 1536 too; the frame regrew ~1.8 KB per level one arm at a time since Order 44); commit c49ae5ee; N171 filed for the 636 KB baseline"
+  },
+  {
+   "id": "E294",
+   "note": "incr-51a (Order 51): the budget half - M67's budget sized by the session's entry worlds (the server declares every entry of every package with an open document; those worlds are never victims): the pause row 14.25 -> 10.55 G (x0.74), server world misses 1 in 6 (was 4); VmHWM +0.7%; commit 2642fae8. The pinned-prefix half is the std prefix's P2 (Order 52) - this item CLOSES on the budget half, P2 carries the rest under std-prefix.md \u00a713"
   }
  ]
 }

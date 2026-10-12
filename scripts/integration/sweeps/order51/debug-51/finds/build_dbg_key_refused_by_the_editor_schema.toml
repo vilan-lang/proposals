@@ -1,0 +1,9 @@
+# Open in VS Code with the vilan extension: the schema (additionalProperties: false
+# under [build]) flags `dbg` as an unknown key, and the language server's
+# completion never offers it, though `vilan build` reads it (debugging.md Q4).
+[package]
+name = "probe"
+
+[build]
+preset = "release"
+dbg = "strip"
