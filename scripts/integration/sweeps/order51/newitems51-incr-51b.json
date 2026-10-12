@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "M142",
+   "section": "M",
+   "kind": "performance (editor; M–L) — S7b, the next slice of M110",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-12 (incr-51b's find, Order 51)",
+   "discussion": "incr-51b (Order 51); sweeps/order51/incr-51b/finds/served-keystroke-pass-split.md; analyzer-pass-map.md §7.3 (the S7 paragraph)",
+   "title": "A served keystroke's checks phase is whole-program ITERATION, not the edited file's checks — S7's per-item records serve 39 of 46 items on kolt's views.vl keystroke and the phase reads 262 ms against the base's 255–277, because every Class A/D pass sweeps the program's 150k entities and skips a reused one with a binary search each, and the costliest group (49 ms) is the six whole-program table passes S2b HELD — the passes must walk the LIVE ranges, and the held passes need records",
+   "body": "Measured on the C0 tree + S7 (release, kolt world mode, `VILAN_PHASE_TIMING=passes`, both binaries): the drop extents / shared cells / capture plan 49 ms (`collect_written_roots`, `compute_shared_cells`, `compute_shared_read_bindings`, `compute_shared_place_lets`, `compute_capture_clone_sites`, `plan_last_use_drop_extents` — every expression of the program), R11 47 (Class C by construction), `compute_resource_types` 17–21 (every slot; S7's per-window anchor saved ~3), the bound audit 16 (22,650 of 23,042 sites served — the walk to skip them), tables/labels/records 14–16, `infer_bumps` 14, `LastUse::compute` 11 (the completeness net over every expression), `compute_clone_sites` 11, stage hints 11, `check_resource_moves` 10, plans 6, `check_view_escape` 6, `plan_resource_drops` 5. The hot items' own work is a sliver of each. The door: (1) `live_entity_ids()` — the complement of frozen ∪ reused-module ∪ served-item ranges in id space (with the windows on it is the post-store entities minus the served windows, plus the dirty prefix modules), handed to every pass whose loop is `for (id, expr) in expr_id_to_expr_map { if reusable_entity(id) { continue } .. }` (liveness's net, clone sites, moves, view escape, the lazy/mutable checks, the bound audit's site walk over `method_call_substitution`); a cold check keeps its order-insensitivity (the loops iterate a hash map today; the goldens and the ERD are the gate). (2) Records for the HELD whole-program table passes: their outputs are `Id` sets (shared cells, shared reads, place lets, capture sites, drop extents) keyed by ids the item minted, so a per-item record restores them as the class D rows are; their input is the written-roots set, whose per-item slice the dirty closure already bounds. (3) R11 stays whole-program unless its dedup state (`instantiated_signature_reported_parameters`) is recorded per item as R10's structure keys were. Expected on the served keystroke: the checks phase from ~262 ms to the live share (the edited item's bodies) plus R11 and the resource table walk — the figure E292's 500 ms needs. Sizing M–L; the analyzer core, alone."
+  },
+  {
+   "id": "E297",
+   "section": "E",
+   "kind": "design question (editor latency; S) — the owner's hope (2) of M110",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-12 (incr-51b, Order 51)",
+   "discussion": "incr-51b (Order 51); briefs51.md incr-51b ('the edited item's diagnostics published first')",
+   "title": "'The edited item's diagnostics published first' has no honest reading inside one analysis: the language server publishes a document's diagnostics once, when the world lands (`land_world`), and lsp-latency.py's 'to diagnostics' is the LAST publishDiagnostics — the only earlier publish possible is a PRELIMINARY one after the Class A window, which would drop and re-add the item's Class B/C/post-pass diagnostics (a flicker) unless diagnostics carried their class",
+   "body": "With S7 the edited item's Class A diagnostics are known ~150–200 ms before the analysis ends (the Class B/C whole-program passes and the post passes follow the window). A mid-analysis hook could publish the previous (sticky, E279) set with the edited item's range replaced by its fresh Class A output, then the final set. The harness would not show it (it times the last publish). The flicker: a post-pass diagnostic inside the edited item (an async or platform refusal, a bound refusal) vanishes at the preliminary publish and returns at the final one, unless the analyzer tags each diagnostic with the pass class that produced it and the preliminary publish replaces only Class A rows in the item's range. Recommendation: do not build the preliminary publish; read 'published first' as 'the fixed error clears when the (now shorter) analysis lands', and rule it closed with M110 S7, or queue the class-tagged form after S7b when the analysis is short enough that the two publishes are ~100 ms apart."
+  },
+  {
+   "id": "M143",
+   "section": "M",
+   "kind": "performance (editor; S)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-12 (incr-51b, Order 51)",
+   "discussion": "incr-51b (Order 51); sweeps/order51/incr-51b/finds/served-keystroke-pass-split.md",
+   "title": "The bound audit costs 16 ms on a served keystroke with 22,650 of its 23,042 sites served from records — the cost is the walk over `method_call_substitution` to skip them (a hash-map iteration plus a binary search per site), not the 392 sites it audits",
+   "body": "`check_generic_bound_satisfaction_sites` iterates every recorded call site of the program on every analysis and asks `reusable_entity` per site before collecting the ones to audit. With the id windows on, the live sites are the ones inside live windows: index `method_call_substitution`'s keys by window once (or keep a per-window site list filled by the resolve) and walk only the live windows' sites. Part of M142's live-range door; filed on its own because it is S and the audit's counters already measure it (`bound-sites-served` / `bound-sites-checked`)."
+  }
+ ]
+}

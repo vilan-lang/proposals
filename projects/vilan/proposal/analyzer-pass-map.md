@@ -180,7 +180,7 @@ also read.
 | entry-cycle refusals | `:74671`–`:74741` | declared entries, every package module's `pkg::` imports | diag, `entry_cycle_refused_imports` | after the drain, before the walk | small | — |
 | prelude exports + seeds | `:74743`–`:74813` | each loaded tree's importables, each origin's prelude | `prelude_exports`, `prelude_seeds` | before the walk; consumed by `seed_preludes` in stage 5 | small | S1 |
 | **twin selection** | `:74821` → `select_platform_twins` `:48150` | the module's `[platform(..)]` items, **`self.platform`** | `fenced_out_names`, the fenced-out item set | ⚠ **reads `platform` before `:75598` assigns it** (B573: every module's twins chosen for node) | small | S1 |
-| **the module walk** | `:74816`–`:74880` → `walk_module_items` → `walk_expr_nodes` `:36361` | each module tree in load order | entities, scopes, spans, `source_ranges`, type slots (minted), `implementations` (one row per impl block, pushed in walk order), every `prepped_*` queue, `pending_macro_references`, `macro_name_to_id`; **the id windows** (`analyzer/id_windows.rs`, Order 50): one per top-level item in every lane, laid out in load order | ⚠ ids and walk-minted type ids follow load order, and that order is SEMANTIC in four places (§5.6); the walk itself does no name resolution (no scope lookup in any `walk_*` body except `Self` in the local type scope): names are queued for stage 5. **M110 S6 (incr-50, Order 50): on an EDITOR analysis (seeded, or reading aids; `VILAN_ID_WINDOWS` forces a mode for the CLI legs) every walk mint lands in its item's window and every anchored later mint is relocated into its anchor's — entity and scope windows ×1.5 of the walk, TYPE windows ×1.5 of the item's recorded demand (×4 of the walk the first time — the brief's ×8 cost the editor's retention pin 4.9 MB per released document against its 4.2 bound; a process-wide table keyed by source path + item ordinal), overflow spills to the tail and is counted; `type_id_sources` is run-length; the stored world's windows are inherited on a hit and the hot set's laid out after them** | `walk_expr_nodes` 0.11 G Ir; the windows: +0.4–1.6 % of a served keystroke's instructions, nothing on a cold check (off) | **S6 built**; S7 (per-item records) next |
+| **the module walk** | `:74816`–`:74880` → `walk_module_items` → `walk_expr_nodes` `:36361` | each module tree in load order | entities, scopes, spans, `source_ranges`, type slots (minted), `implementations` (one row per impl block, pushed in walk order), every `prepped_*` queue, `pending_macro_references`, `macro_name_to_id`; **the id windows** (`analyzer/id_windows.rs`, Order 50): one per top-level item in every lane, laid out in load order | ⚠ ids and walk-minted type ids follow load order, and that order is SEMANTIC in four places (§5.6); the walk itself does no name resolution (no scope lookup in any `walk_*` body except `Self` in the local type scope): names are queued for stage 5. **M110 S6 (incr-50, Order 50): on an EDITOR analysis (seeded, or reading aids; `VILAN_ID_WINDOWS` forces a mode for the CLI legs) every walk mint lands in its item's window and every anchored later mint is relocated into its anchor's — entity and scope windows ×1.5 of the walk, TYPE windows ×1.5 of the item's recorded demand (×4 of the walk the first time — the brief's ×8 cost the editor's retention pin 4.9 MB per released document against its 4.2 bound; a process-wide table keyed by source path + item ordinal), overflow spills to the tail and is counted; `type_id_sources` is run-length; the stored world's windows are inherited on a hit and the hot set's laid out after them** | `walk_expr_nodes` 0.11 G Ir; the windows: +0.4–1.6 % of a served keystroke's instructions, nothing on a cold check (off) | **S6 built**; **S7 built** (Order 51, incr-51b: per-item records over the windows, `analyzer/item_records.rs` — §7.3) |
 | generated walks | `walk_generated_expansion` `:24365` | `generated_by_source` | as the walk | after each file's own walk | (in the walk) | S1 |
 | std and dependency `lib.vl` | `:74845`–`:74880` | std's root `lib.vl`, each dependency's | as the walk | after the modules (std's root walks last of std, by design) | small | S1 |
 | lang items | `:74883`–`:75298` | std module scopes by name (`io`, `option`, `operators`, `drop`, `tuple`, `web::dev`, …) | `panic_fn_id`, `option_enum_id`, `try_trait_id`, `primitive_struct_ids`, `promise_struct_id`, … (about forty) | after the std walk, before stage 5; std is always in the prefix, so never invalidated by a package edit | small | S1 |
@@ -789,6 +789,79 @@ AND the 15,998 post-settle mints of §4.1 (those are minted by checks, not by
 the solver, and have no anchor item today); the permutation differential green
 (B554 excepted until it closes); the corpus differential byte-identical with
 windows forced on.
+
+**M110 S7 (Order 51, incr-51b): per-item records over the windows —
+built, and what the measurement says.** Every top-level item of a re-walked
+file (the hot set's and the entry's) now has a record beside M19's
+per-source ones (`analyzer/item_records.rs`, `WorldChecks::per_item`): its
+Class A diagnostics and warnings (byte offsets re-based to where the item
+now sits), its class D rows and S2b label rows (`Id`s re-based to the
+window's new start), its R10 structure keys and B575 enrolments — keyed by
+the item's source path and ordinal (the demand table's key), validated by
+the item's text region (from the previous item's end), its walk's mints,
+and a FINGERPRINT of the SHAPE of the resolve's results for it
+(`item_signature`: every entity its references bound to and the PLACE of
+every slot its expressions were typed with — its offset in the item's own
+window, another window's key and offset, a prefix tail slot's id — never a
+type's content: a type reaches an item only along the reference edges the
+signature records, so the closure over those edges answers whether what a
+slot holds moved) — the "resolve's results recorded per item", as a
+validator rather than as restored slots (the fixpoint is 20 ms served;
+restoring slots would carry `TypeId`s across analyses; a first cut that
+hashed the CONTENT of every slot an item reached cost +0.7–2.9 % of a
+session keystroke on kolt, a whole-hot-set sweep, and was replaced). A
+record is served only on a hit, and only when every item it reads from is
+clean, transitively, and every item that WROTE into its slots is clean —
+M139's edge, read off the slot-write census (`IdWindows::cross_writes`,
+now kept on every editor analysis; a tail write carries its writer, an
+anchorless write dirties its target; an alias-reaching prefix source is
+dirty). Served items join `reusable_entity`, `table_entity` and
+`label_row_restored`; R10's written tier skips a served site by span; the
+bound audit stays MODULE grain (a re-walked file's sites stay live: the
+question names the callee's constraint slot, and the hot set's impls are
+the late impls its guard asks of); `plan_resource_drops` and R11 stay live
+(`TypeId`-keyed tables). Filed by a complete seeded analysis, on a miss and
+on a hit alike (the miss files the very world the hits inherit); never on a
+cold check. `compute_resource_types` walks the table window by window (one
+anchor per item, C3's Q3). An inherited window that overflowed raises its
+recorded demand (the 1,877 datum, re-sized at the next world build).
+Counters `records-served` / `records-stale` / `records-filed`; the plant
+`ItemRecordUnguarded` (the closure not asked) turns the classes leg red on
+the push into another module's binding; `unasked == 0` and
+`relocated_outside_anchor == 0` hold. The overflow datum across one
+session's world builds (the demand table now raised by the inherited
+windows' spill): 1,919 overflowing stored windows at the first build, 305
+at the second, 4 at the fourth. The records' own cost on kolt's session
+rows (instructions, medians): views ±0.0 %, model +0.4 %, styles +0.8 %,
+theme +1.0 % — the re-filing of the stale items (92 of theme's 247 per
+keystroke) and the replay's clones.
+
+**What it buys on kolt, and why.** On the served `views.vl` keystroke
+(world mode, release) 46 items are filed on the open and 39 served / 7
+stale per keystroke — and the checks phase reads 262–272 ms against the
+base's 255–277: within noise. The hot items' own Class A and class D work
+was never where the tail is. The served keystroke's checks phase, per pass
+(`VILAN_PHASE_TIMING=passes`, both binaries agree): the drop extents, shared
+cells and capture plan 49 ms (six whole-program table passes S2b HELD —
+`collect_written_roots`, `compute_shared_cells` and the capture plan walk
+every expression of the program), R11 `check_resource_generic_instantiations`
+47 (Class C, per instantiation, whole-program), `compute_resource_types`
+17–21 (every slot of the table; the per-window anchor saved ~3), the bound
+audit 16 (22,650 of 23,042 sites served from records — the 16 ms is the
+walk over the sites to skip them), the tables/labels/records 14–16,
+`infer_bumps` 14, `liveness::LastUse::compute` 11 (its completeness net
+walks every expression), `compute_clone_sites` 11, the stage hints 11,
+`check_resource_moves` 10, the plans 6, `check_view_escape` 6,
+`plan_resource_drops` 5. Every one of these is a sweep over the WHOLE
+program's entities (150k on the client leg) that skips a reused one with a
+binary search per entity, or a whole-program pass by construction. The
+door (S7b, filed): give the passes the LIVE ranges — the post-store
+entities minus the served windows, plus the dirty prefix modules — to walk
+instead of the program (`live_entity_ids()`), and records for the HELD
+whole-program table passes (their outputs are `Id` sets, recordable per
+item; their inputs are the written-roots set, which the dirty closure
+already bounds); R11 keeps its per-instantiation walk unless its dedup
+state is recorded as R10's was. The E292 rows: see the Order 51 record.
 
 ## 8. The seams this order
 
