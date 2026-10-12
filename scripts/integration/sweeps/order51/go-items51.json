@@ -245,9 +245,20 @@
     "E257 S5b"
    ],
    "fold": "one transformer.rs conflict (fix-51's payload read vs the call mark): mark first, then the read"
+  },
+  {
+   "lane": "incr-51b",
+   "sha": "5e17cb59",
+   "date": "2026-10-12",
+   "items": [
+    "M110 S7"
+   ],
+   "checkpoint": "C1",
+   "result": "records serve; the checks phase does not move - S7b = M142 (Order 52)"
   }
  ],
  "checkpoints_reached": {
-  "C0": "765c931d (2026-10-12)"
+  "C0": "765c931d (2026-10-12)",
+  "C1": "5e17cb59 (2026-10-12)"
  }
 }
