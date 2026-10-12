@@ -59,6 +59,50 @@
   {
    "id": "B597",
    "note": "tools-51 (Order 51): [rpc] parameters and derive fields quote tuples (labelled too), arrays, closures, views and async/sync/dyn, nested, never `_`; commit 55fd7799; the nominal restatements B614"
+  },
+  {
+   "id": "F129",
+   "note": "native-51 (Order 51; R-h): the cell copy is taken AFTER the later arguments where the copied type aliases on JS (struct/List/map/set/array/dyn), JS takes no copy at the call and a later argument runs code; scalars/str/enums/tuples/own keep the early read; both repros print true on both backends; commit 8a438612. RESIDUE F135: a later argument that REPLACES the copied place whole now diverges (JS keeps the old object) - the language rule (\u00a76.7 'read() copies' vs JS aliasing) is the owner's ruling, Order 52"
+  },
+  {
+   "id": "F132",
+   "note": "native-51 (Order 51): a tuple literal handed its WHOLE type to every element and print's argument had no expected type; each element gets its slot's type; commit a6f38100; B616 filed for the checker's refusal of List<([i32; 2], bool)>"
+  },
+  {
+   "id": "F131",
+   "note": "native-51 (Order 51): operator dispatch and bound-dispatched calls positioned arguments under the caller's binding instead of the instance's; commit 3e92425c"
+  },
+  {
+   "id": "F133",
+   "note": "native-51 (Order 51): ReferenceEq for [T; N] and HeapArray<T, N> in vilan-rt; an enum payload holding Option<closure> (a rustc refusal on base) fixed with it; commit 48b90602; F136 filed for maps of closures"
+  },
+  {
+   "id": "B605",
+   "note": "native-51 (Order 51): three causes - is_grounded counted a Dyn closed whatever its arguments; the object call read the receiver's recorded type, not the call's settled one; an argument erased into dyn Source<Option<P>> built its table at the callee's P; commit 52e4af61"
+  },
+  {
+   "id": "B606",
+   "note": "native-51 (Order 51): hidden context parameters matched by the context they thread (the arity mismatch ran both ways: attach_observer fewer, the Source blanket's start more); a missing safe-flavour context gets None (JS's undefined) as a stopgap, a strict one still refused; A153's states() is native now; commit 5432eeb1; B617 filed for the context pass's union"
+  },
+  {
+   "id": "F91",
+   "note": "native-51 (Order 51): an is-capture left of && in an if condition emits a Rust let-chain (if conditions only; value positions keep the match); commit 569b000e"
+  },
+  {
+   "id": "F130",
+   "note": "native-51 (Order 51): a never-suspending task is typed Promise<i32> when std::task is absent - refused at compile time by its vilan type now (Task or Promise); commit 2696ff5d; B618 filed for the inconsistent typing"
+  },
+  {
+   "id": "N167",
+   "note": "native-51 (Order 51): std::fs::copy_dir is the reachable std probe (its body reaches a host binding the native backend does not emit); red with the anchor disabled; commit cab9faa4"
+  },
+  {
+   "id": "F134",
+   "note": "native-51 (Order 51): a literal leg over a view subject matches natively; commit 1c0c00d0; the pin checks native output directly (a compare once B577 and this are on one tree - done at the merge)"
+  },
+  {
+   "id": "N170",
+   "note": "native-51 (Order 51): vilan-rust's type_of looks a call up by its function id; commit 589bd4ee; output unchanged everywhere"
   }
  ]
 }

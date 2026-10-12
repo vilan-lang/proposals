@@ -1,7 +1,7 @@
 {
  "items": [
   {
-   "id": "F?1",
+   "id": "F135",
    "section": "F",
    "kind": "miscompile (native; design question)",
    "area": "Native targets & rendering",
@@ -11,7 +11,7 @@
    "body": "F129 (R-h) takes a copy out of a cell AFTER the later arguments, which is JS's answer for an in-place write (push, insert) and the opposite of it for a replacement: JS's argument is a reference to the object the field held at evaluation, so a later assignment of the field detaches it, while the native copy taken last reads the new field. The base (early copy) answered the replacement right and the in-place write wrong; no order of a single copy answers both. The same holds for spec §6.9's views of a captured binding (`w.measured(w.add(..))` with `add` re-binding `w`): the view is taken after, JS reads the old object. Spec §6.7 says `read()` copies, which is the base's answer for both shapes — so the alternative fix is on the JS side (the analyzer copies a `Shared::read()` spine argument when a later sibling argument reaches an in-place write of the cell, as B457 does for a callee). Pinned ignored: `f129_a_later_argument_that_replaces_the_copied_place_answers_the_same_on_both_backends`. Owner question in native-51's report."
   },
   {
-   "id": "B?1",
+   "id": "B615",
    "section": "B",
    "kind": "miscompile (JS; S)",
    "area": "JS backend",
@@ -21,7 +21,7 @@
    "body": "The JS transformer lowers a scalar view as a `(base, key)` pair and a `&` of a temporary scalar hands the number itself. Either the `&` of a temporary scalar builds a one-slot holder (`[[7], 0]`), or the checker refuses a view of a temporary scalar. Met writing F129's probe (`lent(&d.read().items, &grow(d))` with `grow` returning `i32`). Sizing S; the transformer (fix-51's) or the checker."
   },
   {
-   "id": "B?2",
+   "id": "B616",
    "section": "B",
    "kind": "bug (checker; S)",
    "area": "Type inference",
@@ -31,7 +31,7 @@
    "body": "The expectation is not threaded list -> tuple -> array literal: the inner literal defaults to a `List`. Met beside F132 (the native half of the same positions). Sizing S; the solver."
   },
   {
-   "id": "B?3",
+   "id": "B617",
    "section": "B",
    "kind": "bug (context pass; S–M)",
    "area": "Contexts & ambient values",
@@ -41,7 +41,7 @@
    "body": "Found building B606. The two are SAFE contexts, so `undefined` reads as \"no ambient value\" and the native table now hands `None` (B606), the same answer; a STRICT context read this way would be `undefined` on JS and is refused natively by name. The fix is the declaration's hidden parameters taking the blanket impl's into the union (or the dyn call threading per the selected impl). Reached by a mirrored store's handle as a `dyn Source` (store-50's B606 repro). Sizing S–M; `context.rs`."
   },
   {
-   "id": "F?2",
+   "id": "F136",
    "section": "F",
    "kind": "native gap (S)",
    "area": "Native targets & rendering",
@@ -51,7 +51,7 @@
    "body": "F133 admitted a fixed array of closures; a map is the next shape (`vilan_rt::Map<Hash, (Str, Rc<dyn Fn>)>`). `vilan_rt::ReferenceEq` needs an impl for the map and for its `(key, value)` entry tuple, whose key compares by value — the impls are written out per shape, not blanketed over `T: PartialEq` (they would overlap). The equality is unobservable from vilan (closures are not `PartialEq`), so a table that refuses no shape it could build is the goal. Sizing S; vilan-rt + vilan-rust."
   },
   {
-   "id": "B?4",
+   "id": "B618",
    "section": "B",
    "kind": "bug (checker; S)",
    "area": "Type inference",
