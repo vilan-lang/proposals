@@ -1,0 +1,28 @@
+{
+ "closes": [
+  {
+   "id": "B577",
+   "note": "fix-51 (Order 51): JS reads a wrapped scalar view's payload out wherever the option is consumed (unwrap_or, map, is_some, a let, an is capture, a ! lift, a list of options, an Option<&str> parameter); the premise was narrower than the bug (every value consumer, scalar fields, Option<&mut T>, literal match legs); commit b868dca0; both backends pinned"
+  },
+  {
+   "id": "B578",
+   "note": "fix-51 (Order 51): & of a call result (and of a value if/match/block) gets its own one-slot cell where the pointee is a scalar; a call returning a view is re-borrowed as itself; not specific to generic &T (a concrete &usize threw too); commits af7569fb + c98db578"
+  },
+  {
+   "id": "G25",
+   "note": "fix-51 (Order 51): the trait-object vtable is a keyed emission in the const world, so const evaluation dispatches through dyn; a dyn const RESULT and Json/Wire derives over a dyn member are refused by name (dyn_member_derive_refusal beside B117's); spec/const.md \u00a79.4 + std/encoding.md; commit 8a38a905"
+  },
+  {
+   "id": "G26",
+   "note": "fix-51 (Order 51): the const interpreter answers indexOf/lastIndexOf in UTF-16 units (-1 absent; empty needle at 0 and at the length); a census pin evaluates every str method std declares at expansion time against its runtime answer; commit 8d43b8a1"
+  },
+  {
+   "id": "G27",
+   "note": "fix-51 (Order 51): a macro fun inside an inline mod is registered under its mod-qualified name, looked up innermost-outward; a name defined in two mods of one file is refused by name; spec \u00a710.1; commit 980ac416; G29 filed for export inside a mod"
+  },
+  {
+   "id": "B613",
+   "note": "fix-51 (Order 51): [derive(Storable)] without its import now steers to the import line (was 'a compiler load-ordering bug'); commit 102b5f90; filed and fixed in the same hand-back"
+  }
+ ]
+}
