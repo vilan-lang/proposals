@@ -426,6 +426,53 @@ in `release` only when `[build] source-maps = true`. `vilan run` passes
 Together with S0's thrown `Error`s, an uncaught panic then prints a vilan
 stack.
 
+**As built (Order 51, debug-51; E257 S5).** The owner ruled debug-50's three
+answers: level 2 marks, maps on in the `debug` preset only (Q9), and
+`sourcesContent` for the user's files only, std named by its path in the std
+cache. What landed, and where it departs from the text above:
+
+- **Marks, not a position-tracking writer.** The transformer leaves marks in
+  the JS tree — `js::Node::Mark(id)` before each statement and body tail (a
+  leaf in its statement list, never its last item), `js::Node::At(id, call)`
+  around each lowered call of an `Expr::Call`, and an `origin` on
+  `js::Function` (beside `js::Closure`'s G24 one) for function and closure
+  heads. The string printer writes U+FDD0 (a Unicode noncharacter) at each
+  and records the entity in textual order; `source_map::strip_marks` removes
+  the characters in one pass and computes the v3 VLQ `mappings`. The original
+  side reads the program's spans as S0's `site_location` does: a call at its
+  callee's name, a function head at its name (with its source name in
+  `names`), a derive's generated code at its attribute (`derived_origin`).
+- **Only the map's own entry marks** (`transform_with_source_map`): `transform`,
+  `diagnose` (so `vilan check`), the const world and the macro interpreter
+  build the tree they always did. With marks, the JavaScript is the plain
+  build's bytes — pinned over the whole corpus — plus the
+  `//# sourceMappingURL=` line the CLI appends; every corpus golden moved by
+  that one line.
+- **Files.** `<script>.map` beside each script a build writes (a lone
+  package's `main.mjs.map`, a workspace's `dist/<leg>.<ext>.map`), the user's
+  sources spelled relative to the map; `vilan run`'s temp script gets one with
+  absolute `file://` sources and node runs with `--enable-source-maps`. A
+  map takes its script's whole name plus `.map`, so a browser leg's is
+  `app.js.map` beside `app.js`.
+- **Switches.** `[build] source-maps` (default `true` under `debug`, `false`
+  under `release`), `vilan build --source-maps`, and `vilan run --inspect`
+  force it on; a build without a map removes a stale one.
+- **`ignoreList`** lists std. The runtime helpers (`__at`, `__panic`, …) have
+  no source and so no mapping: their frames still name the script.
+- **`vilan run --inspect[-brk][=[host:]port]`** landed with S5 (it is a flag
+  pass-through once the map exists), refused under `--watch` and
+  `--backend rust`. A scripted inspector session (`--inspect-brk`, one
+  breakpoint placed on a `.vl` line through the map, read back through node's
+  own `module.SourceMap`, one evaluation in the paused frame) is S6's gate,
+  met here.
+- **Cost** (instructions, against the same build of the base):
+  `vilan build` of `examples/reactive-ui` +0.27% with its map (+4.9 M of
+  1.80 G; +0.03% with `source-maps = false`), `vilan check` within ±0.06% on
+  every perf subject. debug-50's spike faked the original positions; the real
+  ones are most of the cost — a line number needs the source's text swept up
+  to the mark, and a small browser app reaches 600 KB of std (swept eight bytes
+  at a time; `js::Function.origin` is packed so the tree is no wider).
+
 ### 5.2 `vilan run --inspect`, and VS Code (S6)
 
 ```text
@@ -642,8 +689,8 @@ Written to `sweeps/order46/newitems46-papers-b.json`.
 | S2 | `dbg_stack()` | S–M | pins: shadowing, moved, maybe-moved, views (valid and invalidated), captures, cells inside an effect (subscribes to nothing), pipes | the scope table, the move and view checkers, the capture plan |
 | S3 | `print` adopts the printer for non-scalars (P2); `inspect.rs` retires; F68 closes | M | corpus goldens regenerated and reviewed; native differential | S1 |
 | S4 | `Debug` through the printer: every type debuggable, written impls override, the derive redundant (find 3) | S | pins for d3/d4's cases | S1 |
-| S5 | source maps: a position-tracking writer, v3 maps with `names`, `sourcesContent` and `ignoreList`, generated code mapped to its attribute; `--enable-source-maps` in `vilan run`; instance naming (find 2) | M–L | a map-decoding pin per construct (function, closure, mono instance, derive, std frame); an uncaught panic's stack names `.vl` lines | the transformer, `chunks.rs` |
-| S6 | `vilan run --inspect[-brk]`; a `vilan` debug type in the extension resolving to VS Code's JavaScript debugger; a "Debug" code lens | S | an extension test for the resolved configuration; a scripted inspector session that hits a `.vl` breakpoint | S5 |
+| S5 | **BUILT (Order 51, debug-51; §5.1 "As built").** v3 maps from level 2 marks (statements and tails, calls, closures, function heads with `names`), `sourcesContent` for user files, std by its cache path in `ignoreList`, a derive at its attribute; `<script>.map` + `sourceMappingURL` in the `debug` preset, `[build] source-maps` / `--source-maps` elsewhere; `--enable-source-maps` in `vilan run`; `vilan run --inspect[-brk]` (S6's CLI half). A watch round writes a server leg's map as `vilan build` does. Not built: maps for an HMR-instrumented browser bundle, a `split = true` leg's chunks and a lone package's `run --watch` script; locals' `names` under `release` (find 2's instance names are covered by the function heads) | M–L | met: every corpus program byte-identical with and without a map; a decoder round trip and every segment inside its source's text; a pin per construct (function head, statement and tail, call, closure, both instances of a generic, derive, std frame); an uncaught panic's stack names `.vl` lines | the transformer, `source_map.rs` |
+| S6 | `vilan run --inspect[-brk]` (**landed with S5**); next: a `vilan` debug type in the extension resolving to VS Code's JavaScript debugger (`outFiles` the build's scripts, `skipFiles` the std cache, a pre-launch `vilan build`); a "Debug" code lens; maps for the HMR browser bundle (the shim shifts its lines — prefix the mappings by the shim's line count) and the lone package's `run --watch` script and through a split leg's chunks (each chunk printed apart, so stripped apart); `--inspect` under `--watch` (a restart re-opens the inspector; VS Code's auto-attach follows it); a synthetic, ignore-listed source for the runtime helpers so their frames step through | S | met at S5: a scripted inspector session that hits a `.vl` breakpoint (`vilan-cli` `tests/source_maps.rs`); still owed: an extension test for the resolved configuration | S5 |
 | S7 | D1: the `.vdbg.json` sidecar and `vilan-dap`, values by static type | L | scripted DAP sessions comparing panes against `dbg` output | S1's layouts, S5 |
 | S8 | reactive trace (`trace(true)`), cell and set locations via `[track_caller]`, async stack tagging (probe node first) | M | a pin per wake path; trace lines compared | S0 |
 | S9 | native: `.debug_line` remapping to `.vl`, lldb/gdb formatters from the sidecar | L | a scripted lldb session | S7 |
