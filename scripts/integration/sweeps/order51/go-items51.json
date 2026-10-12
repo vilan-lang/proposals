@@ -1,0 +1,145 @@
+{
+ "order": 51,
+ "base": "ca407da0 (the v0.48.0 fold; next = main)",
+ "drafted": "2026-10-12",
+ "go": null,
+ "theme": "the incremental order, part four: per-item records (S7), the std prefix P0/P1, the solver's residue, E257 S5 built, the JS/macro fix lane",
+ "asks": [
+  "R-a core-alone + checkpoints C1 (N169 + E294 budget + S7) / C2 (P0 B603) / C3 (P1 or M133 incr half, M137, M138)",
+  "R-b S7's scope (M139 edge; standing pins)",
+  "R-c std-prefix P0 + P1 this order; P2-P5 Order 52",
+  "R-d E294's budget half first",
+  "R-e B607 breaking at v0.49.0 (shifts legal)",
+  "R-f M133 split (solver memo / incr narrowing)",
+  "R-g E257 S5 built on debug-50's three answers",
+  "R-h F129 later-arguments-first",
+  "R-i seal gates: RSS 1.05 (N166) + the 1.5 MiB canary holds the cut",
+  "R-j cut v0.49.0",
+  "R-k fix-51 lane (B577/B578, G25/G26/G27)",
+  "R-l L24 when registered"
+ ],
+ "lanes": {
+  "incr-51": {
+   "model": "fable",
+   "wave": 1,
+   "items": [
+    "N169",
+    "E294 (budget half)",
+    "M110 S7",
+    "B603 (P0)",
+    "std-prefix P1 (if time)",
+    "M133 (incr half, if time)",
+    "M137",
+    "M138",
+    "E292 (measured)"
+   ]
+  },
+  "native-51": {
+   "model": "opus",
+   "wave": 1,
+   "items": [
+    "F129",
+    "F132",
+    "F131",
+    "F133",
+    "B605",
+    "B606",
+    "F91",
+    "F130",
+    "N167"
+   ]
+  },
+  "fix-51": {
+   "model": "opus",
+   "wave": 1,
+   "items": [
+    "B577",
+    "B578",
+    "G25",
+    "G26",
+    "G27",
+    "B552 (transformer half, if any)"
+   ]
+  },
+  "tools-51": {
+   "model": "sonnet",
+   "wave": 1,
+   "items": [
+    "N166",
+    "N168",
+    "G28",
+    "N159",
+    "M135 (if S)",
+    "E296",
+    "B597",
+    "K29",
+    "L24 (when registered)"
+   ]
+  },
+  "debug-51": {
+   "model": "opus",
+   "wave": 1,
+   "items": [
+    "E257 S5a (marks + map)",
+    "E257 S5b (--inspect)",
+    "debugging.md updated"
+   ]
+  },
+  "solver-51": {
+   "model": "opus",
+   "wave": 2,
+   "at": "C1",
+   "items": [
+    "B607 (BREAKING; estate first)",
+    "M133 (solver memo)",
+    "B609 (+ Eq lines)",
+    "B611",
+    "B604",
+    "B552",
+    "B608",
+    "E295",
+    "E291 (if the census allows)"
+   ]
+  }
+ },
+ "checkpoints": {
+  "C1": "N169 + E294 budget + M110 S7",
+  "C2": "std-prefix P0 (B603)",
+  "C3": "P1, else M133's incr half / M137 / M138"
+ },
+ "merge_order": [
+  "tools-51",
+  "fix-51",
+  "native-51",
+  "debug-51",
+  "incr-51 C1",
+  "incr-51 C2",
+  "incr-51 C3",
+  "solver-51 (rebased onto C2/C3, last)"
+ ],
+ "cut": {
+  "version": "v0.49.0",
+  "breaking_expected": [
+   "B607"
+  ],
+  "kolt_patch": [
+   "B607's migration if kolt's estate is not 0"
+  ],
+  "gates_added": [
+   "RSS 1.05 (N166)",
+   "canary@1536 holds the cut"
+  ]
+ },
+ "integrator": [
+  "L24 routing when vilan-windows is online",
+  "the seal's base copy = the owner's tree at the fold with both Order 50 patches",
+  "K29's website patch pushed by the integrator"
+ ],
+ "deferred_to_52": [
+  "std-prefix P2-P5 (E294's pinned-prefix half, the serializer, the key + vilan cache, N157)",
+  "M136 (absorbed by the prefix)",
+  "arrays Wire / key-set Put-Delete (on a need)",
+  "F124 \u00a72.3 (on a real program)",
+  "A149 S5 (on a measured need)"
+ ]
+}
