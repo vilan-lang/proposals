@@ -1,0 +1,16 @@
+// The `[derive(Wire)]` (and `[derive(Hashable)]`) field check renders a `dyn`
+// field's type as `_`: "field `source` of `[derive(Wire)]` type `Holder` is
+// `_`, which is not Wire". With G25 the derive is refused above the
+// generators, and this second diagnostic still follows it.
+import std::wire::Wire;
+
+trait Src {
+	fun get(&self): i32;
+}
+
+[derive(Wire)]
+struct Holder {
+	source: dyn Src,
+}
+
+fun main() {}

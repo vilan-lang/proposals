@@ -1,0 +1,36 @@
+// Native: a literal leg (`Some("first") =>`) of a `match` whose subject is a call
+// handing back `Option<&str>` emits Rust that rustc refuses: E0277,
+// `PartialEq<str>` is not implemented for `Rc<str>` (`&*__literal0 == "first"`).
+// JS prints `lit` / `second` / `none` / `only literal` (B577 in fix-51).
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+struct Shelf {
+	items: List<str>,
+}
+
+impl Shelf {
+	fun at(&self, index: usize): Option<&str> {
+		if index < self.items.len() {
+			Some(&self.items[index])
+		} else {
+			None
+		}
+	}
+}
+
+fun main() {
+	let shelf = Shelf { items = ["first", "second"] };
+	for index in [0usize, 1, 2] {
+		let said = match shelf.at(index) {
+			Some("first") => "lit",
+			Some(let name) => *name,
+			None => "none",
+		};
+		print(said);
+	}
+	match shelf.at(0) {
+		Some("first") => print("only literal"),
+		_ => print("other"),
+	}
+}

@@ -1,0 +1,25 @@
+// G27 (fix-51) puts a `mod`'s `macro fun` in scope inside that `mod`. There is
+// no spelling that reaches it from OUTSIDE the mod: `import tables::tabled;`
+// reads "cannot find module 'tables' to import", and `[tables::tabled]` is no
+// attribute form. Question: should an `export macro fun` in an inline mod be
+// importable (and how is an inline mod's member imported at all)?
+import std::io::print;
+
+mod tables {
+	export macro fun tabled(item: Item): Source {
+		import macro_std::source;
+		import macro_std::meta::{ Item, Source };
+		source("fun table_name(): str { \"tabled\" }")
+	}
+}
+
+import tables::tabled;
+
+[tabled]
+struct Row {
+	id: i32,
+}
+
+fun main() {
+	print(table_name());
+}

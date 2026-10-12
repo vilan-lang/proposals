@@ -1,0 +1,13 @@
+// FIXED in fix-51 (the Storable steer commit): `[derive(Storable)]` without
+// `import std::reactive::store::Storable;` read "a compiler load-ordering bug
+// (B21's class); please report how this module is reached".
+import std::io::print;
+
+[derive(Storable)]
+struct Row {
+	id: i32,
+}
+
+fun main() {
+	print(Row { id = 1 }.id);
+}
