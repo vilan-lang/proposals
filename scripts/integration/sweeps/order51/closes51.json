@@ -31,6 +31,34 @@
   {
    "id": "E294",
    "note": "incr-51a (Order 51): the budget half - M67's budget sized by the session's entry worlds (the server declares every entry of every package with an open document; those worlds are never victims): the pause row 14.25 -> 10.55 G (x0.74), server world misses 1 in 6 (was 4); VmHWM +0.7%; commit 2642fae8. The pinned-prefix half is the std prefix's P2 (Order 52) - this item CLOSES on the budget half, P2 carries the rest under std-prefix.md \u00a713"
+  },
+  {
+   "id": "N166",
+   "note": "tools-51 (Order 51): perf_gate.py seal --rss-threshold (VILAN_PERF_RSS_THRESHOLD, default 1.05) judges the T3 kolt row's peak RSS apart from the CPU/instructions threshold; the verdict and report carry rss_threshold; planted red pinned; commit 4b050131"
+  },
+  {
+   "id": "N168",
+   "note": "tools-51 (Order 51): the ancestor walk for vilan/std/vilan.toml removed from vilan-cli's std_dir and vilan-lsp's discover_std_dir - a binary reads $VILAN_STD or its own embedded std only (dev builds too; std authors in an editor set vilan.stdPath; README + AGENTS.md updated); the premise's debug-only read did not exist - one walk caused both effects; pins: a poisoned stand-in checkout beside the binary compiles clean; commits 59732718 + cbcb1cb2"
+  },
+  {
+   "id": "G28",
+   "note": "tools-51 (Order 51): vilan-core/build.rs hashes src/** + Cargo.toml into vilan_core::BUILD_ID; the macro-expansion header carries a build line and a table from another build misses; vilan cache clean unchanged; the std prefix's key reads the same constant; commit 6a72354c"
+  },
+  {
+   "id": "N159",
+   "note": "tools-51 (Order 51): tests/test_pool/mod.rs caps every internally parallel test's pool under nextest (VILAN_TEST_POOL=n wins; 2 under NEXTEST; else the asked width); the interpreter had no pool (premise wrong), corpus.rs's WORKERS=4 is a deliberate property; a scan pin refuses a new uncapped chunked pool; edit-replay leg peak threads 32 -> 6, CPU 8m58 -> 5m40; whole-suite CPU unchanged; commit 37ae2f6e"
+  },
+  {
+   "id": "M135",
+   "note": "tools-51 (Order 51): the const cache on disk (<package cache dir>/.cache/const-sites beside the macro table; format + toolchain + BUILD_ID stamped; temp+rename; corrupt is a miss; const-let closure snapshots not persisted): kolt client const pass 258 -> 47 ms CPU (18%, not the <=10% asked: the remaining ~32 ms is not evaluation - M141); RSS +0.4%; commit 821fb7e2"
+  },
+  {
+   "id": "E296",
+   "note": "tools-51 (Order 51): an [rpc] parameter of array/tuple/closure/view type is refused ONCE naming its type (render_type_quoted; the [service] restatement stands down through B490's rpc_opaque_return_origins); commit 55fd7799"
+  },
+  {
+   "id": "B597",
+   "note": "tools-51 (Order 51): [rpc] parameters and derive fields quote tuples (labelled too), arrays, closures, views and async/sync/dyn, nested, never `_`; commit 55fd7799; the nominal restatements B614"
   }
  ]
 }

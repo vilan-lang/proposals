@@ -8,6 +8,7 @@
 #   VILAN_PERF_KOLT_COMMIT  the commit in that copy the base is archived at (the seal refuses a base that does not check clean
 #                           under the BASE compiler, and says why - read the base LSP rows' `errors` column anyway).
 #   VILAN_PERF_THRESHOLD    the ratio past which a row is RED (perf_gate.py --threshold; its default is 1.10).
+#   VILAN_PERF_RSS_THRESHOLD  the ratio past which the T3 kolt row's PEAK RSS is red (N166; perf_gate.py reads it itself; default 1.05).
 #   VILAN_PERF_TIP_KOLT     the tip's own prepared (migrated) kolt, a plain directory, across a breaking release.
 #   VILAN_PERF_BASE / VILAN_PERF_LSP_BASE   the base `vilan` / `vilan-lsp` (default: the installed toolchain).
 #   VILAN_PERF_ADVANCE=1    on the order's FINAL seal only.
