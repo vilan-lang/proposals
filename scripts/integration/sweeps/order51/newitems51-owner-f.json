@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "E307",
+   "section": "E",
+   "kind": "editor (hover; XS)",
+   "area": "Editor",
+   "status": "OPEN \u2014 filed 2026-10-12 (the owner's ask, mid-Order 51)",
+   "title": "a STRUCT INITIALIZER's field key hovers with the struct it belongs to - `on_toggle_sidebar = \\|\\| { \u2026 }` inside `activate(AppInputLayerData { on_search = \u2026, on_toggle_sidebar = \u2026, })` (kolt views.vl:79) answers `on_toggle_sidebar: \\|\u2026\\| void` and the field's `///` today (E204) and says nothing about WHICH struct's field it is; the owner wants the owning type in the tooltip - `struct AppInputLayerData` on its own line above the field line, E238's header shape, in the same fence",
+   "discussion": "the owner's ask (2026-10-12/13): \"struct initializer fields to show the struct type they belong to in their tooltip. See views.vl:79\"; E204 (a field's own declaration and an initializer key hover as `x: i32` + the field's `///` - `Document::field_declaration_hover` / `field_at_offset` over `field_spans`, the `(struct, index)` pair both positions share); E238 (ruled door (b): the member's block `impl Memo<..>` on its own line above the `fun` line inside one fence - `Program::member_header`); E299 (the `mod` line above a function's fence - the same \"where does this live\" shape); E72 (a member READ `foo.bar` hovers as `bar: T` - `member_hover`, the same line without an owner); E237 (the field's type definition as the Preview beneath)",
+   "body": "`field_declaration_hover` prepends the owner's head as the first line of the fence: `struct AppInputLayerData` (with its generic parameters as E238 writes a header: `struct Ring<T, const N>`; an ENUM's struct-variant field writes `enum Shape::Rect`), then the `name: T` line, then the doc and E237's preview as today. Both positions E204 serves get it - the initializer KEY (the ask) and the field's DECLARATION (where the struct is on screen, but the two positions are one function by design and must not drift; consistency over brevity, as E299 ruled for the `mod` line). Rec, in scope: a member READ (`prefs.sidebar_collapsed`, E72's `member_hover`) gets the same owner line - it is the same question asked from the other side. Not the module line (E299's, and the struct's hover carries it once E298/E299 land). Pins: the kolt shape (an initializer key, closure-typed field), a declaration position, a generic struct, a struct-variant field, a member read, an internal field (E213's lead still first). Sizing XS (vilan-lsp document.rs; `member_header`'s neighbour)."
+  }
+ ]
+}
