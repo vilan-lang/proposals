@@ -213,9 +213,30 @@
     "B622",
     "B615 (pins only)"
    ]
+  },
+  {
+   "lane": "fmt-52",
+   "sha": "4d79d9e3",
+   "date": "2026-10-13",
+   "items": [
+    "E314 (hole-only)"
+   ],
+   "estate_moves": "kolt prefs.vl x3 (owner), website page.vl x3 (integrator at the fold)"
   }
  ],
  "checkpoints_reached": {
   "C1": "029d5ab4 (2026-10-13)"
- }
+ },
+ "bumps": [
+  {
+   "commit": "bae290a5",
+   "rows": {
+    "example:math": 1.025,
+    "example:watch": 1.01
+   },
+   "class": "ci",
+   "item": "M120",
+   "cause": "std-52's std growth (B621 Eq impls, B623 array impls) on the smallest examples; CI run 38453647717 red at x1.0182"
+  }
+ ]
 }
