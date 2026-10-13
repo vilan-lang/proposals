@@ -31,3 +31,4 @@
 - CI on 15a12456 (editor-52's merge) GREEN 14/14 after GitHub's 502s cleared.
 - solver-52 REBASED onto 15a12456: tip fb9dc56e (clean; both intents with editor-52's element work carried - the head mark on the member only, element_link reads text; suggestion filed as E322). Gates green (suite 10,601; inference 5,535; native 279/279 both; canary; perf green; RSS -0.5%). Merging (merge-solver-52.log); debug-52 next, then incr-52b.
 - solver-52 MERGED 96487112 (gates: 333 incl. corpus/ledger/native; inference+docs+check_scope 5,563; release_scripts; split; ledger rows 735..736; canary 18/18); pushed; CI watched; worktree reaped. debug-52 told to rebase; incr-52b last.
+- CI on 96487112 (solver-52's merge): success 14/14.
