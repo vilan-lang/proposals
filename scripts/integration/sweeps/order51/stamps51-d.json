@@ -1,0 +1,6 @@
+{
+ "prefix": "- 2026-10-12 (the owner, a second position): ",
+ "stamps": {
+  "E313": "the same split at kolt `prefs.vl:61` - `encode = |x| Some(x.to_string()),` (a closure body in a struct-initializer field, NO markup and NO index on the line): the caret on the `in` of `to_string` answers a different type from the rest of the word. That rules candidates (b) and (c) out as the only cause and adds a sharper one: an entity whose span is minted by a TEXT SEARCH for a two-letter token - the contextual keyword `in` (`for \u2026 in`), or `is`/`as`/`then` - lands on the first `in` in the line, which is inside `to_string`; the span is exactly those two bytes. Repro both positions; print the id, `Expr` kind and span of the entity under the `in`. The sweep pin (no entity span starts inside an identifier token) catches both, and a text-search mint must become a token-position mint. Second pin: this exact shape."
+ }
+}
