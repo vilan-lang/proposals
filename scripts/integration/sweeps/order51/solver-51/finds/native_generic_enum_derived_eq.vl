@@ -1,0 +1,16 @@
+// solver-51 find (native): a generic enum's derived `PartialEq` — the
+// generator's `match (self, other) { .. }` — is refused by the rust backend
+// "does not emit a generic type instantiated at `any` (the site's argument is
+// still open)"; JS prints `true`. A hand-written `match self { .. match other
+// { .. } }` impl builds natively.
+import std::io::print;
+[derive(PartialEq)]
+enum Slots<T> {
+	Full(List<T>),
+	Empty,
+}
+fun main() {
+	let s: Slots<i32> = Slots::Full([3, 4]);
+	let t: Slots<i32> = Slots::Full([3, 4]);
+	print(s == t);
+}

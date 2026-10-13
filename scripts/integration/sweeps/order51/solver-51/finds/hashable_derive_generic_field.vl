@@ -1,0 +1,13 @@
+// solver-51 find: a `[derive(Hashable)]` over a generic struct refuses its
+// generic fields ("is `T`, which is not `Hashable`"), although the derive
+// binds every reached parameter `type T: Hashable` in the impl it writes.
+import std::hash::Hashable;
+[derive(Hashable)]
+struct Holder<T> {
+	item: T,
+}
+[derive(Hashable)]
+struct Bag<T> {
+	items: List<T>,
+}
+fun main() {}

@@ -107,6 +107,42 @@
   {
    "id": "B603",
    "note": "incr-51c (Order 51; std-prefix P0): the drain runs discovery (parse, follow requests, request ancestors) then minting in load_order_key order - std, dependencies, the package - per round; DiscoveredModule replaces load_order_entry; the B603 repro byte-identical with and without the redundant import (kolt server: 18-line diff -> 0); four goldens moved reorder-only (single-file programs move too - std's own pkg:: imports were in ask order, the paper's premise wrong); pin corpus::emitted_js_is_independent_of_which_module_asks_first; commit 56b36ee8; leftovers M144 (std's walk ids still offset by the package's module count - P3's first step) and B619 (a generated-only module mints in the next round; no instance in the estate)"
+  },
+  {
+   "id": "B607",
+   "note": "solver-51 (Order 51; BREAKING at v0.49.0): &, |, ^ over two different integer types refused with B579's sentence; any bitwise operator over a float (shifts included) refused with its own sentence; mixed integer shifts stay legal; spec \u00a75.8; estate 0 in every tree (kolt, website, examples, benchmarks, std, corpus, native tests); commit 9a373b9e"
+  },
+  {
+   "id": "B609",
+   "note": "solver-51 (Order 51): impl_subject_covers + align_subject_binders let a structural subject's supertrait impl be reached through an element's SUB-bound (arrays failed even with const N; a same-trait tuple already worked); std impl [type T: Eq; _] with Eq {} and the tuple line; commit 44d080ff"
+  },
+  {
+   "id": "B611",
+   "note": "solver-51 (Order 51): macro_std GenericParameter.is_const so derives spell const N; the Hashable field check also rejected every array field (fixed); Default/Json/Wire over array fields fail for std's missing array impls (B623); commit fc1bf1c4"
+  },
+  {
+   "id": "B604",
+   "note": "solver-51 (Order 51): wider than .map - any receiver typed after the closure body, reassignments and tuple/list values skipped the check; an annotated let / reassignment / aggregate over an untyped closure parameter now waits then checks; commits 23d168d1 + 3afe9fd7 (the wait scans the value only when its first read left an unknown)"
+  },
+  {
+   "id": "B552",
+   "note": "solver-51 (Order 51): worse than filed - a block-bodied closure recorded NO U at all; a local built from an untyped closure parameter waits, so the callee's U gets its arguments; no transformer arm needed (corpus byte-identical); commits 77338f5a + 68fee114"
+  },
+  {
+   "id": "B608",
+   "note": "solver-51 (Order 51): the static steer names only the traits the file reaches (traits_reached_at); a file importing neither still reaches std's Wire, consistent with B598; commit 33cc536b"
+  },
+  {
+   "id": "E295",
+   "note": "solver-51 (Order 51): the blanket's bound named - '`tag` is provided by `impl type T: Leaf with Tag`, and `i32` does not implement `Leaf`'; commit 89c71229"
+  },
+  {
+   "id": "B616",
+   "note": "solver-51 (Order 51): an array literal inside a list element's tuple, nested list or variant payload elaborates as its annotation's fixed array; both backends; commit ccdcc329"
+  },
+  {
+   "id": "E291",
+   "note": "solver-51 (Order 51; BREAKING at v0.49.0, estate 0 from lang-50's census re-run): in expression position a spaced < after a name is a comparison (a < b > (c) is two comparisons); a spaced list before :: or { refused with the tight spelling; E284 RETIRED (ledger row 705 removed); grammar \u00a73.6; commit 1ed942d1; E309 filed for the cascade"
   }
  ]
 }

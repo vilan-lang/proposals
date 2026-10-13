@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B621",
+   "section": "B",
+   "kind": "std surface (XS each)",
+   "area": "Traits & impls",
+   "status": "OPEN — filed 2026-10-12 (solver-51's find, Order 51)",
+   "discussion": "solver-51 (Order 51); sweeps/order51/solver-51/finds/std_eq_gap.vl",
+   "title": "std's `Eq` covers the numbers, `str`, fixed arrays and tuples (B609) only — `bool`, `List<T: Eq>`, `Option<T: Eq>` and `Result<T: Eq, E: Eq>` are `PartialEq` and not `Eq`, so `fun same<T: Eq>(a: T, b: T)` refuses `true`, `[1, 2]` and `Some(1)` (\"'bool' does not implement trait 'Eq'\")",
+   "body": "Met adding B609's array and tuple lines (`impl [type T: Eq; _] with Eq {}`, `impl type T: (2..: Eq) with Eq {}`): a tuple pin over `(1, \"a\", true)` was refused for its `bool`. Each missing impl is one line beside its `PartialEq` impl (`impl bool with Eq {}`, `impl List<type T: Eq> with Eq {}`, `impl Option<type T: Eq> with Eq {}`, `impl Result<type T: Eq, type E: Eq> with Eq {}`; HashMap/HashSet by their value/element) — B609 makes the generic ones conform through the element bound. Rec: add them in one std commit (no estate risk: additive). Sizing XS; std."
+  },
+  {
+   "id": "B622",
+   "section": "B",
+   "kind": "analyzer: false refusal (S)",
+   "area": "Macros & derives",
+   "status": "OPEN — filed 2026-10-12 (solver-51's find, Order 51)",
+   "discussion": "solver-51 (Order 51); sweeps/order51/solver-51/finds/hashable_derive_generic_field.vl",
+   "title": "`[derive(Hashable)]` over a generic struct refuses its generic fields — `struct Holder<T> { item: T }` is \"field `item` ... is `T`, which is not `Hashable`\" and `struct Bag<T> { items: List<T> }` likewise — although the derive binds every reached parameter `type T: Hashable` in the impl it writes",
+   "body": "`check_hashable_boundary` asks `resolved_type_is_hashable` of the field's declared type, and a declaration's own parameter answers false (the oracle reads nominal names, `List`/`Option` and impls). The generated impl's binder bound makes every reached parameter Hashable, so a parameter (and a `List`/`Option`/array of one) the derive reaches is Hashable under the impl — the check should read the field under the derive's binder bounds (the Wire boundary has the same shape to compare against). B611 made the array arm of the oracle read its element, so `Key<const N> { parts: [i32; N] }` works and `Buf<T, const N> { items: [T; N] }` meets this. Sizing S; solver (the checks)."
+  },
+  {
+   "id": "B623",
+   "section": "B",
+   "kind": "std surface + macro (S–M)",
+   "area": "Macros & derives",
+   "status": "OPEN — filed 2026-10-12 (solver-51's find, Order 51)",
+   "discussion": "solver-51 (Order 51); sweeps/order51/solver-51/finds/array_field_derives.vl",
+   "title": "`[derive(Default)]`, `[derive(Json)]` and `[derive(Wire)]` over a fixed-array field fail inside the generated code — std has no array impl of `Default`, `Json`/`FromJson` or `Wire` (\"[i32; 2] has no method 'to_json'\", \"has no method 'describe'\"), and the Default generator spells the field's type as a path head (`[i32; 2]::default()`: \"this expression cannot be used as a type\")",
+   "body": "array-lengths S5's first wave gave arrays `PartialEq`, `Hashable`, `Debug` and `Items`; `Default` (`[T::default(); N]`), `Json`/`FromJson` (as `List`'s, with the length checked on decode) and `Wire` are the second wave the derives need. The Default generator needs the field type in a callable spelling (`<[i32; 2] as Default>`-free: e.g. a helper `default_of<T: Default>(): T`). Found completing B611 (every derive over a `<const N>` struct now binds `const N`; these fail the same with a literal length). Sizing S–M; std + the derive macros."
+  },
+  {
+   "id": "F137",
+   "section": "F",
+   "kind": "native: refused build (S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-12 (solver-51's find, Order 51)",
+   "discussion": "solver-51 (Order 51); sweeps/order51/solver-51/finds/native_generic_enum_derived_eq.vl",
+   "title": "Natively a GENERIC enum's derived `PartialEq` is refused — `[derive(PartialEq)] enum Slots<T> { Full(List<T>), Empty }` then `s == t` fails \"the rust backend does not emit a generic type instantiated at `any` (the site's argument is still open)\"; JS prints `true`, and a hand-written impl matching `self` then `other` builds natively",
+   "body": "The generator's body is `match (self, other) { (E::V(let s0), E::V(let o0)) => s0 == o0, .., _ => false }`: the scrutinee tuple `(self, other)` inside the generic impl appears to record an element type with an open argument (the recorded tuple type, or the native emitter's reading of it). A non-generic enum (`enum Slots<const N> { Full([i32; N]) }`) builds. Bisect whether the analyzer records `(Slots<T>, Slots<T>)` or `(Slots<any>, ..)` at the scrutinee before assigning: solver if the record is open, native if not. Sizing S."
+  },
+  {
+   "id": "E309",
+   "section": "E",
+   "kind": "diagnostic (XS–S)",
+   "area": "Diagnostics & error messages",
+   "status": "OPEN — filed 2026-10-12 (solver-51's find, Order 51)",
+   "discussion": "solver-51 (Order 51); sweeps/order51/solver-51/finds/spaced_generic_call_steer.vl",
+   "title": "After E291 a spaced `pick <f64>(1, 2)` is two comparisons and is refused three times — `<` models `PartialOrd` and `fn pick` has none, `bool` has no ordering, `f64` is a type, not a value — none saying the spacing is the reason; a steer would name `pick<f64>(1, 2)`",
+   "body": "E291 retired E284's explanation of the old reading; the comparison reading's refusals are true but miss the likely intent when the left operand of a spaced `<` is a generic function (or a type) and the right of the `>` is a parenthesized list. Rec: one refusal at the `<`, \"a spaced `<` is a comparison; for the generic call write `pick<f64>(..)`\", demoting the two cascades. Sizing XS–S; diagnostics."
+  }
+ ]
+}

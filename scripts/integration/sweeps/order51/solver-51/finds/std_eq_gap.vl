@@ -1,0 +1,12 @@
+// solver-51 find: std's `Eq` covers the numbers, `str`, arrays and tuples only;
+// `bool`, `List<T: Eq>`, `Option<T: Eq>` and `Result<T: Eq, E: Eq>` are
+// `PartialEq` and not `Eq`, so a `T: Eq` refuses them.
+import std::compare::Eq;
+fun same<T: Eq>(a: T, b: T): bool {
+	a == b
+}
+fun main() {
+	let _a = same(true, false);
+	let _b = same([1, 2], [1, 2]);
+	let _c = same(Some(1), Some(1));
+}

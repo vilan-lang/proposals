@@ -1,0 +1,11 @@
+// solver-51 find (E291 follow-up): after E291 a spaced `pick <f64>(1, 2)` is
+// two comparisons, and the refusal speaks of `PartialOrd` on a function value
+// and `bool` having no order, and `f64` being a type -- three refusals, none
+// saying the spacing is why;
+// a steer ("write `pick<f64>(..)` for the generic call") would name the fix.
+fun pick<T>(first: T, second: T): T {
+	first
+}
+fun main() {
+	let _p = pick <f64>(1, 2);
+}

@@ -1,0 +1,12 @@
+// solver-51 find: `[derive(Default)]`, `[derive(Json)]` and `[derive(Wire)]`
+// over a fixed-array field fail inside the generated code: std has no array
+// impl of `Default`, `Json`/`FromJson` or `Wire` ("[i32; 2] has no method
+// 'to_json'"), and the Default generator spells `[i32; 2]::default()` ("this
+// expression cannot be used as a type").
+import std::default::Default;
+import std::json::Json;
+[derive(Default, Json)]
+struct Plain {
+	items: [i32; 2],
+}
+fun main() {}
