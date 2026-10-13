@@ -29,3 +29,4 @@
 - CI on 4d79d9e3: the perf job GREEN with the bump rows (the run itself cancelled by the editor-52 push). The self-hosted runner found OFFLINE again (Docker Desktop down on the host) - the standing recovery launched; the ubuntu shards on 15a12456 queue until it is back.
 - Runner back online (Docker Desktop up after 10 s; container started); the 15a12456 shards running.
 - CI on 15a12456 (editor-52's merge) GREEN 14/14 after GitHub's 502s cleared.
+- solver-52 REBASED onto 15a12456: tip fb9dc56e (clean; both intents with editor-52's element work carried - the head mark on the member only, element_link reads text; suggestion filed as E322). Gates green (suite 10,601; inference 5,535; native 279/279 both; canary; perf green; RSS -0.5%). Merging (merge-solver-52.log); debug-52 next, then incr-52b.

@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "E322",
+   "section": "E",
+   "kind": "editor (element links; XS)",
+   "area": "Editor",
+   "status": "OPEN \u2014 filed 2026-10-13 (solver-52's suggestion at its rebase, Order 52; integrator)",
+   "title": "`written_types.rs`'s `element_link` infers a head link from the source TEXT (E303's hint suppression and E305's hover), and the text test gets one shape wrong - a head item whose attribute value is itself an element, `title(<b/>) .f()`; it should read the analyzer's `element_head_links` (B620's `Node::ElementHeadLink` marks, solver-52) instead of inferring from text",
+   "discussion": "solver-52's rebased report (Order 52): 'element_link could check element_head_links instead of inferring a head link from the text'; E303 (RULED hide: element heads mint no stage hints - editor-52's `element_link` in written_types.rs); E305 (the head's event/attribute names hover as the link they lower to); B620 (the analyzer half: the desugar marks each head link's member as Node::ElementHeadLink and records `element_head_links`)",
+   "body": "Replace the text inference in `element_link` with a lookup in `element_head_links` (the member ids B620 records), so a head item whose value holds an element literal is classified by the desugar's own mark, not by scanning the text; the E303 pins stand, plus the new shape `<div title(<b/>) .f() />` (no hint on `.f()`, the inner `<b/>` untouched). Sizing XS (written_types.rs; one pin)."
+  }
+ ]
+}
