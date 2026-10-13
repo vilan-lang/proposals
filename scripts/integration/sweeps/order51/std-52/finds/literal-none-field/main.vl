@@ -1,0 +1,24 @@
+// std-52 find (Order 52, next @697c9517): a generic struct LITERAL whose one
+// field fixes `T` (`items = ["a"]`) and another holds a bare `None` types as
+// `Page<T>` at its use - `shown(words)` is refused "'Page<T>' does not implement
+// trait 'Debug'" (with `Some("b")` it runs). Met writing B622's Wire pin
+// (`encode_json(words)`); `[derive(Json)]`'s `to_json` meets it the same way.
+import std::debug::Debug;
+import std::io::print;
+
+[derive(Debug)]
+struct Page<T> {
+	items: List<T>,
+	first: Option<T>,
+}
+
+fun shown<T: Debug>(value: T): str {
+	value.debug()
+}
+
+fun main() {
+	// `items = ["a"]` fixes T = str; the `None` beside it leaves the literal's
+	// type `Page<T>` at the call, which is then refused for its bound.
+	let words = Page { items = ["a"], first = None };
+	print(shown(words));
+}

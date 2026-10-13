@@ -1,0 +1,35 @@
+// B619's repro: `std::path` is named ONLY by the macro's generated impl, so the
+// module drain discovers it in the round after the macro epilogue and mints it
+// after every first-round module (`std::time` here). Built under 0.49.0, `now`
+// is emitted BEFORE `basename`; add `import std::path::basename;` below and the
+// same program emits `basename` first - the two bundles differ (verified).
+// With the B619 counter, `VILAN_COUNTERS=1 vilan check` prints
+// `late-round-mints=1` at its last checkpoint here and 0 with the import.
+import std::io::print;
+import std::time::now;
+
+macro fun Leafy(item: Item): Source {
+	import macro_std::source;
+	import macro_std::meta::{ Item, Source, StructItem };
+	import macro_std::option::Option::{ self, Some, None };
+
+	let target = match item.as_struct() {
+		Some(let found) => found,
+		None => StructItem { name = "?", fields = [], generics = [] },
+	};
+	source(
+		"impl " + target.name + " {\nfun leaf(self): str {\nimport std::path::basename;\nbasename(\"a/b.txt\")\n}\n}\n",
+	)
+}
+
+[derive(Leafy)]
+struct Widget {
+	size: i32,
+}
+
+fun main() {
+	let _started = now();
+	print(Widget { size = 3 }.leaf());
+}
+
+main();

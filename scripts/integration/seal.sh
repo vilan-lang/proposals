@@ -61,8 +61,10 @@ commit="${VILAN_PERF_KOLT_COMMIT:-984a1dfb}"; kolt="${VILAN_PERF_KOLT_DIR:-$HOME
 # The suite above leaves the load high; the CPU verdict goes red past load 2, so wait for quiet (at most 15 min).
 for _ in $(seq 1 90); do awk '{exit !($1 < 1.5)}' /proc/loadavg && break; sleep 10; done; echo "perf leg starts at loadavg=$(cut -d' ' -f1-3 /proc/loadavg)"
 # The seven E121 scenarios by default; VILAN_PERF_LSP_SCENARIOS="a|b|c" (a `|`-separated subset) overrides it for a seal
-# whose kolt no longer carries a scenario's anchors (Order 51: the mirror exhibit rewrote model.vl and channel.vl, and
-# lsp-latency.py refuses the WHOLE run when any named scenario's anchors are missing - leave those rows out by name).
+# whose kolt no longer carries a scenario's anchors. Since N174 (Order 52) lsp-latency.py SKIPS a scenario whose anchors
+# are missing - by name, the reason in its log, `skipped: [..]` in its JSON - and runs the rest; perf_gate.py seal prints
+# the skipped list beside the LSP rows (the "LSP SKIPPED" lines below) and is RED on a skipped MANDATE row (leaf, css,
+# parse break: `mandate = true` in perf/budgets.toml), a note on an informational one.
 if [ -n "${VILAN_PERF_LSP_SCENARIOS:-}" ]; then
   scen=(); IFS='|' read -r -a _names <<< "$VILAN_PERF_LSP_SCENARIOS"; for _n in "${_names[@]}"; do scen+=(--scenario "$_n"); done
 else
@@ -82,9 +84,9 @@ lsl=0; [ ${#lsp_json[@]} -eq 0 ] && { lsl=1; echo "LSP harness leg REFUSED or fa
 python3 scripts/perf_gate.py seal --class reference --tip "$W/target/release/vilan" --tip-std "$W/vilan/std" \
     --base "${VILAN_PERF_BASE:-$HOME/.vilan/bin/vilan}" --kolt "$kolt" --commit "$commit" "${tip_kolt[@]}" --runs 5 \
     --sha "$(git rev-parse HEAD)" "${lsp_json[@]}" "${adv[@]}" ${VILAN_PERF_THRESHOLD:+--threshold "$VILAN_PERF_THRESHOLD"} > "$S/perf-$tip.log" 2>&1; pf=$?
-[ $lsl -ne 0 ] && pf=1; [ $pb -ne 0 ] && pf=$pb; grep -E "T3 |T2 VERDICT|PERF VERDICT|REFUSED|OWNER|RED|different sources|wrote" "$S/perf-$tip.log"; echo "perf exit=$pf"
+[ $lsl -ne 0 ] && pf=1; [ $pb -ne 0 ] && pf=$pb; grep -E "T3 |T2 VERDICT|PERF VERDICT|REFUSED|OWNER|RED|different sources|wrote|LSP rows|LSP row |LSP SKIPPED" "$S/perf-$tip.log"; echo "perf exit=$pf"
 # A harness leg that refused (its copy did not check clean) says so in its own log, which the grep above does not read:
-for side in base tip; do grep -H -E "does not check clean|cannot find the" "$S/lsp-$side-$tip.log" 2>/dev/null; done
+for side in base tip; do grep -H -E "does not check clean|cannot find the|^SKIPPED " "$S/lsp-$side-$tip.log" 2>/dev/null; done
 python3 - "$W/CHANGELOG.md" <<'PY'
 import sys
 ls = open(sys.argv[1]).read().split("\n")

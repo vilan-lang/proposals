@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B?1",
+   "section": "B",
+   "kind": "miscompile (JS; S)",
+   "area": "JS backend",
+   "status": "OPEN — filed 2026-10-13 (std-52's find, Order 52)",
+   "discussion": "std-52 (Order 52); sweeps/order51/std-52/finds/module-scalar-view/main.vl",
+   "title": "A module-level SCALAR binding read ONLY through a view (`&LIMIT`, `&LOOSE` handed to a `&i32`) is never declared on JS — the bundle emits `read([ LIMIT, 0 ])` with no `const LIMIT = [ 40 ]` and throws `ReferenceError: LIMIT is not defined`; natively it prints 41 and 51",
+   "body": "Met probing B615's residue. The transformer's `Expr::Variable` arm drops a binding whose `reference_count` is below 1, and a `&NAME` of a scalar module binding (a `let` or a `const let`) leaves it there: a by-value read anywhere in the program (`print(LIMIT)`) restores the declaration (`const LIMIT = [ 40 ]`, boxed for the view), an aggregate binding (`&WORDS` of a `List`) is declared, and a LOCAL (`let x = 5; read(&x)`) is declared. So the `&` of a module scalar is most likely resolved without counting the reference (the emitter's `&` arm emits the right pair; not traced to the resolving site). Silent until run: `vilan check` is clean. Rec: count the reference where the view of a module binding resolves (analyzer core); pin both backends with a `let`, a `const let`, one read inside a closure. Sizing S; the analyzer core."
+  },
+  {
+   "id": "B?2",
+   "section": "B",
+   "kind": "internal error (JS; S)",
+   "area": "Type inference",
+   "status": "OPEN — filed 2026-10-13 (std-52's find, Order 52)",
+   "discussion": "std-52 (Order 52); sweeps/order51/std-52/finds/unwrap-chain/main.vl",
+   "title": "A static method of a generic inherent impl whose binder only an EXPECTED type fixes, called through a chain — `let held: Holder<i32> = Holder::build().unwrap();` over `impl Holder<type T: Make> { fun build(): Option<Holder<T>> }` — reports \"internal: a call resolved to `Make`'s requirement `make`, which has no body ... please report this program\" on JS; native prints 7",
+   "body": "Met writing B623's pins as `Bag::decode(json).unwrap()` / `Ring::from_json(text).unwrap()` (a derived `FromJson` over a generic struct, every shape of it). The annotation reaches `unwrap`'s result but not the receiver call's `T`, which stays the impl's binder; the JS emitter then meets the trait requirement with no body. Natively the program builds and prints 7, so the two backends disagree on whether the program is complete. Either the binder binds through the chain (the expected type of `unwrap()` is `Holder<i32>`, so its receiver is `Option<Holder<i32>>`) or the call is refused 'never fully determined' on both backends — never an internal error. Annotating the intermediate (`let decoded: Result<Ring<i32, 2>, str> = Ring::from_json(..)`) works today. Sizing S; the solver."
+  },
+  {
+   "id": "B?3",
+   "section": "B",
+   "kind": "false refusal (S)",
+   "area": "Type inference",
+   "status": "OPEN — filed 2026-10-13 (std-52's find, Order 52)",
+   "discussion": "std-52 (Order 52); sweeps/order51/std-52/finds/literal-none-field/main.vl",
+   "title": "A generic struct LITERAL whose one field fixes `T` and another holds a bare `None` types as `Page<T>` at its use — `let words = Page { items = [\"a\"], first = None }; shown(words)` is refused \"'Page<T>' does not implement trait 'Debug'\" (`first = Some(\"b\")` runs; `[derive(Json)]`'s `to_json` meets the same as \"generic parameter 'T' is missing the bound\")",
+   "body": "Met writing B622's Wire pin (`encode_json(words)` on a `[derive(Wire)] struct Page<T> { items: List<T>, first: Option<T> }`). `items = [\"a\"]` alone binds `T = str`; the `None` beside it (an `Option<hole>`) seems to leave the literal's argument slot unresolved, so the binding's type is the declaration's own `Page<T>` at the next bound check. Reproduces on v0.49.0. Rec: the literal's arguments unify across every field before the binding settles (the hole from `None` is filled by `items`' `str`). Sizing S; the solver."
+  },
+  {
+   "id": "A?1",
+   "section": "A",
+   "kind": "language surface (design; S–M)",
+   "area": "Language",
+   "status": "OPEN — filed 2026-10-13 (std-52's find, Order 52)",
+   "discussion": "std-52 (Order 52); sweeps/order51/std-52/finds/array-path-head/main.vl",
+   "title": "A fixed-array type cannot head a path, so an array's associated functions have no spelling at a call site — `[i32; 3]::default()` and `[i32; 2]::from_json(..)` are \"this expression cannot be used as a type\", and `Default::default()` is refused for having no default body",
+   "body": "B623 gave arrays `Default` and `FromJson` and had to add `std::default::default_of<T>()` and `std::json::from_json_value_of<T>(value)` — `T::member()` spelled as a generic call — because neither a derive nor a user can name `[T; N]::default`. The same holds for any associated function of an array (and of a tuple once one has any). Two doors: (a) admit a bracketed or array type as a path head in expression position (`[i32; 3]::default()`), the parser's and the resolver's; (b) a qualified form (`<[i32; 3]>::default()`, Rust's). Rec: (a) — it is the spelling users try first and it reads like `List<i32>::new()`; the helpers stay as generic conveniences or are retired. Owner's call."
+  },
+  {
+   "id": "A?2",
+   "section": "A",
+   "kind": "std surface + intrinsic (S)",
+   "area": "Language",
+   "status": "OPEN — filed 2026-10-13 (std-52's find, Order 52)",
+   "discussion": "std-52 (Order 52); proposal/array-lengths.md §9's table",
+   "title": "`list.to_array(): Option<[T; N]>` (array-lengths.md §9, an intrinsic slated for S3) was never built — std has no way to make a `[T; N]` from a `List<T>`, so B623's `FromJson` for arrays seeds a repeat with the first element and overwrites, with length `0` as its own impl",
+   "body": "The paper's row: `fun to_array<const N>(self)` on `List`, an intrinsic (JS `xs.length === N ? Some(xs.slice()) : None`; Rust `<[T; N]>::try_from(v).ok()`), fallible so `Option` (Q9). No compiler or std file defines it on next @697c9517. B623's decoder works without it (`[first; N]` then index writes, `impl [type T: FromJson; 0]` for the empty array — the specificity §5.4 gives) and would collapse to `elements.to_array()` with it. Rec: build it (both emitters, a native intrinsic in vilan-rust) in the next std/native order; then fold the length-0 impl away. Sizing S."
+  }
+ ]
+}

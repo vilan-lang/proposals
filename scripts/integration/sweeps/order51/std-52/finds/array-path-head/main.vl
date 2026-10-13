@@ -1,0 +1,16 @@
+// std-52 find (Order 52, next @697c9517 + B623): a fixed-array TYPE cannot head
+// a path, so an array's associated functions have no spelling at a call site:
+// `[i32; 3]::default()` and `[i32; 2]::from_json(..)` are "this expression
+// cannot be used as a type", and `Default::default()` is refused for having no
+// default body. B623 added `default_of<T>()` and `from_json_value_of<T>(..)` as
+// the workaround the derives use.
+import std::default::Default;
+import std::io::print;
+import std::json::FromJson;
+
+fun main() {
+	let zeros: [i32; 3] = [i32; 3]::default();
+	print(zeros.len());
+	let pair: Result<[i32; 2], str> = [i32; 2]::from_json("[1,2]");
+	print(pair.is_ok());
+}

@@ -1,0 +1,34 @@
+// std-52 find (Order 52, next @697c9517): a static method of a generic inherent
+// impl whose binder only an EXPECTED type fixes, called through a chain
+// (`Holder::build().unwrap()` into a `Holder<i32>` annotation): JS reports
+// "internal: a call resolved to `Make`'s requirement `make`, which has no body
+// ... please report this program"; native prints 7. Met as
+// `Bag::decode(..).unwrap()` beside `List<T>::from_json_value`.
+import std::io::print;
+
+trait Make {
+	fun make(): Self;
+}
+
+impl i32 with Make {
+	fun make(): i32 {
+		7
+	}
+}
+
+struct Holder<T> {
+	value: T,
+}
+
+impl Holder<type T: Make> {
+	fun build(): Option<Holder<T>> {
+		Some(Holder { value = T::make() })
+	}
+}
+
+fun main() {
+	// The annotation fixes T = i32 through `unwrap`'s return; without it the
+	// program should be refused "never fully determined", never crash.
+	let held: Holder<i32> = Holder::build().unwrap();
+	print(held.value);
+}

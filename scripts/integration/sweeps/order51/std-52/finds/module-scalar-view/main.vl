@@ -1,0 +1,19 @@
+// std-52 find (Order 52, next @697c9517): a module-level SCALAR binding read
+// ONLY through a view (`&LIMIT`, `&LOOSE`) is never declared on JS - the
+// bundle emits `read([ LIMIT, 0 ])` with no `const LIMIT = [ 40 ]` and throws
+// `ReferenceError: LIMIT is not defined`; natively it prints 41 and 51. A
+// by-value read anywhere (`print(LIMIT)`) restores the declaration, and an
+// aggregate (`&WORDS` of a List) is unaffected.
+import std::io::print;
+
+const let LIMIT = 40;
+let LOOSE = 50;
+
+fun read(value: &i32): i32 {
+	*value + 1
+}
+
+fun main() {
+	print(read(&LIMIT));
+	print(read(&LOOSE));
+}

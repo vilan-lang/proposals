@@ -1,0 +1,16 @@
+import std::io::print;
+import std::shared::Shared;
+
+struct Bag {
+	items: List<i32>,
+	rows: List<List<i32>>,
+	count: i32,
+}
+
+fun main() {
+	let cell = Shared::new(Bag { items = [], rows = [[]], count = 0 });
+	cell.read().items.push(9);
+	cell.read().rows[0].push(9);
+	print(cell.read().items.len());
+	print(cell.read().rows[0].len());
+}

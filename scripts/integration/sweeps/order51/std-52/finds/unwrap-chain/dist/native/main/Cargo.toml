@@ -1,0 +1,16 @@
+[package]
+name = "main"
+version = "0.0.0"
+edition = "2024"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[dependencies]
+vilan-rt = { path = "/home/reed/.vilan/rt-cache/e634a64af5550745/vilan-rt" }
+
+[profile.release]
+panic = "unwind"
+
+[workspace]

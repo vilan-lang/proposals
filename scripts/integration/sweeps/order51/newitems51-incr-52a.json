@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "M?1",
+   "section": "M",
+   "kind": "performance (editor; M)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-13 (incr-52a's find, Order 52)",
+   "discussion": "incr-52a (Order 52); the per-pass table in the lane report",
+   "title": "After S7b the served keystroke's checks phase still pays `check_resource_moves` and `plan_resource_drops` their whole-program helper sets — `collect_resource_bindings` (every binding classified), `collect_resource_value_places` (every place), `collect_partial_move_roots`, `collect_loaned_pattern_captures`, `compute_return_value_crossings`, `collect_is_refinements`, `collect_place_overwrites` — because the drop plan is computed for every enrolled body (served included: its tables carry `TypeId`s) and the move scan of a live body reads the whole-program sets",
+   "body": "The sets are `Id`-keyed and could be class D rows in the shape `held_tables.rs` gives the six held passes (contributions per region, a fold, decisions over every candidate), with one validator the held rows do not need: `partial_move_roots` asks `type_contains_drop` against the Drop-IMPLEMENTING nominal set, which an impl in the entry can move — a digest of that set filed with the record (as `drop_nominals_world` is for the enrolment) would gate the restore. `IsRefinement` is `Id` + two bools and records as-is. Sizing M; the analyzer core."
+  },
+  {
+   "id": "E?1",
+   "section": "E",
+   "kind": "design question (editor; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-13 (incr-52a's find, Order 52)",
+   "discussion": "incr-52a (Order 52)",
+   "title": "The editor's analysis computes every emitter-only table — the drop plan (`TypeId`s per body), the clone decisions, the resource types — on every keystroke although the language server never emits; the edit-replay differential's JS leg is the only consumer of them on the served path",
+   "body": "S7b restores or walks these at item grain where the rows are `Id`s, but the drop plan cannot be recorded (M19 T1c's reason) and is re-planned for every enrolled body on every served keystroke. A `Workspace` flag that lets a seeded analysis skip the emitter-only tail would remove that cost outright — and would blind the differential's JS leg for the served shape, which is why it is a question and not a slice: either the leg keeps a non-skipping mode of its own (the clean-same-shape observation already exists), or the tables stay. Rec: ask; if yes, a small slice after S7b with the differential's JS leg kept on a non-skipping switch."
+  },
+  {
+   "id": "M?2",
+   "section": "M",
+   "kind": "performance (editor; S)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-13 (incr-52a's find, Order 52)",
+   "discussion": "incr-52a (Order 52)",
+   "title": "`record_lazy_arguments`, `check_hmr_transfer_bounds` (deliberately live: it mints) and `check_written_nominal_bounds` still sweep every call of the program on a served keystroke — the lazy tables are lowering inputs for every body, so they need rows, not a window",
+   "body": "The lazy argument/binding tables are `Id` sets keyed by call sites and parameters the module minted: class D rows in `ModuleTables`, restored for a reused module or served item and computed over the live ranges for the rest, the shape `held_tables.rs` uses. `check_written_nominal_bounds` is Class C (a binding-position twin of the bound audit) and would follow M143's module lane. Sizing S."
+  }
+ ]
+}
