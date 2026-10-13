@@ -60,7 +60,14 @@ commit="${VILAN_PERF_KOLT_COMMIT:-984a1dfb}"; kolt="${VILAN_PERF_KOLT_DIR:-$HOME
 [ -d "$kolt" ] || { echo "VILAN_PERF_KOLT_DIR=$kolt is not a directory"; pb=1; }
 # The suite above leaves the load high; the CPU verdict goes red past load 2, so wait for quiet (at most 15 min).
 for _ in $(seq 1 90); do awk '{exit !($1 < 1.5)}' /proc/loadavg && break; sleep 10; done; echo "perf leg starts at loadavg=$(cut -d' ' -f1-3 /proc/loadavg)"
-scen=(--scenario "leaf keystroke" --scenario "leaf keystroke + pause" --scenario "shared.vl keystroke" --scenario "model.vl keystroke" --scenario "model.vl keystroke, importers open" --scenario "css keystroke" --scenario "parse break")
+# The seven E121 scenarios by default; VILAN_PERF_LSP_SCENARIOS="a|b|c" (a `|`-separated subset) overrides it for a seal
+# whose kolt no longer carries a scenario's anchors (Order 51: the mirror exhibit rewrote model.vl and channel.vl, and
+# lsp-latency.py refuses the WHOLE run when any named scenario's anchors are missing - leave those rows out by name).
+if [ -n "${VILAN_PERF_LSP_SCENARIOS:-}" ]; then
+  scen=(); IFS='|' read -r -a _names <<< "$VILAN_PERF_LSP_SCENARIOS"; for _n in "${_names[@]}"; do scen+=(--scenario "$_n"); done
+else
+  scen=(--scenario "leaf keystroke" --scenario "leaf keystroke + pause" --scenario "shared.vl keystroke" --scenario "model.vl keystroke" --scenario "model.vl keystroke, importers open" --scenario "css keystroke" --scenario "parse break")
+fi
 tip_kolt=(); tip_src=(--kolt "$kolt" --commit "$commit")
 if [ -n "${VILAN_PERF_TIP_KOLT:-}" ]; then tip_kolt=(--tip-kolt "$VILAN_PERF_TIP_KOLT"); tip_src=(--source "$VILAN_PERF_TIP_KOLT"); fi
 lsp_json=()

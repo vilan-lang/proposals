@@ -1,0 +1,22 @@
+tip=070653d2 loadavg=0.03 0.01 0.02
+     Summary [ 618.828s] 10518 tests run: 10518 passed (5 slow), 32 skipped
+union exit=0
+doc-tests exit=0
+native whole-set exit=0
+clippy exit=0
+windows exit=0
+audit exit=0
+fmt exit=0
+vilan-fmt exit=0
+wasm exit=0
+canary@1.5MiB exit=0
+perf leg starts at loadavg=1.30 6.61 9.69
+LSP harness leg REFUSED or failed (no LSP rows): see /home/reed/code/vilan-lang/proposals/scripts/integration/lsp-base-070653d2.log and lsp-tip-070653d2.log
+  T3 kolt @dee494ab: CPU x0.939  RSS x0.992  instructions x0.878  (load max 1.2)
+  T3 thresholds: CPU and instructions 1.10, peak RSS 1.05 (VILAN_PERF_RSS_THRESHOLD / --rss-threshold)
+  T3 peak RSS, a fresh process per run, median of 5: base 347.7 MB [346 347 347 347 348]; tip 345.0 MB [344 344 344 347 355]
+wrote /home/reed/.vilan/perf-verdicts/perf-070653d22fe52146741cf87b14384a90876743bb.json
+PERF VERDICT: green
+perf exit=1
+changelog parity 41 / 41
+verdict: union=0 doctests=0 native=0 clippy=0 windows=0 audit=0 fmt=0 vilan-fmt=0 wasm=0 canary=0 perf=1

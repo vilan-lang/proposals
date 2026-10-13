@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "N174",
+   "section": "N",
+   "kind": "tooling (the LSP latency harness; S)",
+   "area": "Hygiene & rot",
+   "status": "OPEN \u2014 filed 2026-10-13 (Order 51's seal; integrator)",
+   "title": "two of lsp-latency.py's seven E121 scenarios no longer land on the owner's kolt - 'model.vl keystroke' (its references anchor `fun messages(self)` left src/model.vl) and 'parse break' (its edit/hover/completion anchors `let messages = channel.messages();` left src/channel.vl) since the mirrored-store exhibit rewrote both files (A153 S5, kolt @dee494ab) - and the harness REFUSES THE WHOLE RUN when any named scenario's anchors are missing, so Order 51's seal measured no LSP rows until the two were left out by name; the scenarios want re-anchoring on today's kolt, and the seal a per-scenario skip rather than a whole-leg refusal",
+   "discussion": "the Order 51 seal on 070653d2 (seal-070653d2.out: 'LSP harness leg REFUSED or failed (no LSP rows)'; lsp-base-070653d2.log: the four missing anchors); N165 (the harness's clean-copy refusal - the right rule for a copy that does not CHECK; this is a scenario whose TEXT moved); N145's class (a scenario's anchors as a maintenance surface); every Order 51 lane measured six rows with `--scenario` lists for the same reason (incr-51a/b/c reports); seal.sh's new `VILAN_PERF_LSP_SCENARIOS` override (Order 51, the integrator's patch - a stopgap); E292 (the rows the mandate reads: leaf, css and PARSE BREAK among them - the parse-break row is one of the three red rows and is now unmeasured)",
+   "body": "(1) Re-anchor the two scenarios on the owner's kolt as it is: 'model.vl keystroke' on a method of today's model.vl (the mirrored `Global`'s reader, e.g. `fun motd(self)`), 'parse break' / 'parse repair' on a statement in today's channel.vl (a `let` over a `g.channels()` boundary), keeping each row's SHAPE (a keystroke in a widely imported file; a parse break and its repair in a leaf) so the E121 series stays comparable, and say in the report which rows moved and by how much on the same compiler (a re-anchored row is a NEW series: note it in perf/report's E121 table). (2) The harness: a scenario whose anchors are missing is SKIPPED by name with its reason in the log and the JSON (`skipped: [..]`), the others run; the seal reads the skipped list and prints it beside the rows (a skipped MANDATE row - leaf, css, parse break - is RED for the seal, a skipped informational row is a note); `VILAN_PERF_LSP_SCENARIOS` stays as the explicit form. (3) E292's stamp names the rows measured. Pins: a scenario with a missing anchor is skipped and named, the run proceeds; the seal's red on a skipped mandate row. Sizing S (scripts/lsp-latency.py, seal.sh, perf_gate.py's e121 rows)."
+  }
+ ]
+}
