@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "B633",
+   "section": "B",
+   "kind": "derive surface (Wire; S)",
+   "area": "Language",
+   "status": "OPEN \u2014 filed 2026-10-13 (std-52's Q3, Order 52; integrator)",
+   "title": "`[derive(Wire)]` over a GENERIC struct refuses a field whose type reaches a type parameter (`struct Page<T> { items: List<T> }`) - C7's guard refuses parameter-typed Wire fields on purpose, and B622's Hashable fix withdrew its Wire half on that pin; relax the guard so a reached parameter is admitted under the derive's own binders, and judge a generic derived type by its ARGUMENTS in `resolved_type_is_wire` the same day",
+   "discussion": "std-52's report (Order 52): the Wire half of B622 was built, hit `borrows::a_wire_type_with_a_parameter_typed_field_is_rejected` (C7's guard) and was withdrawn; the lane's Q3 recommends the relaxation in a later order with `resolved_type_is_wire` changed the same day (B194's type-parameter binding makes it sound); B622 (the Hashable twin, landed: `hashable_member_under_binders`); C7; B194; A108 (Wire receivers)",
+   "body": "The same shape as B622's landed half: the Wire boundary reads each field under the derived impl's own type parameters (a `T: Wire` bound on the derive), and a generic derived type used as a field is judged through the impl table by its arguments, not by name. C7's pin becomes the positive case (a parameter-typed field IS Wire when the parameter is bound Wire) plus its negative twin (an unbounded parameter still refused, naming the bound to add). Estate: count the derives over generic structs in kolt, the website, the examples and std's corpus (expected a handful, all currently refused or written by hand). The Wire generator's three `{type}::rebuild` sites need B623's path-head treatment for an array field (A171). Sizing S (analyzer.rs's Wire boundary + the generator; pins in borrows.rs and generics.rs)."
+  },
+  {
+   "id": "B634",
+   "section": "B",
+   "kind": "analyzer precision (B457's write summaries; S\u2013M)",
+   "area": "Language",
+   "status": "OPEN \u2014 filed 2026-10-13 (native-52's Q3, Order 52; integrator)",
+   "title": "B457's write summaries are COARSE: any call through a closure VALUE counts as 'may write any cell that is written somewhere', so F135's read() copy (and B457's own) fires for every read() argument beside a closure call - std's hot paths stayed clean only after the derive-span fix; a closure LITERAL's write summary (what its body writes) should stand in for 'any write' where the callee is a known literal",
+   "discussion": "native-52's report (Order 52, Q3): 'B457's write summaries are coarse\u2026 Rec: keep it conservative for now, and file a precision item'; F135 (the read() copy where a later argument can write the cell - B457's policy extended; slice 2 scoped the derive expansions so a derived hash is not a writer of every cell); B457 (the copy policy); M87/A54 (the std perf pins that went red under the coarse summary)",
+   "body": "Where the callee of a later argument is a closure LITERAL (or a let-bound closure whose body is in reach), its write summary is the body's own in-place writes (B457's per-function summary applied to the closure body), not 'any write'; a closure VALUE of unknown origin keeps the conservative answer. Measure: the number of F135/B457 copies on kolt, the website and the corpus before/after (the count is a census line), the emitted JS byte-identical except the copies removed, both differentials green; `ci-local.sh perf` within 0.1%. Pins: a literal that writes the cell (copy kept), a literal that does not (copy dropped), an unknown closure value (copy kept), a let-bound literal. Sizing S\u2013M (analyzer.rs's clone-site summaries)."
+  }
+ ]
+}
