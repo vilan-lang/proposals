@@ -372,5 +372,30 @@
    "B607/E291 shipped breaking at v0.49.0 (confirm at the cut)"
   ]
  },
- "sealed": "070653d2 (2026-10-13)"
+ "sealed": "070653d2 (2026-10-13)",
+ "release": {
+  "version": "0.49.0",
+  "cut": "c9279eed",
+  "tag": "v0.49.0 = c9279eed",
+  "breaking": [
+   "E291",
+   "B607"
+  ],
+  "entries": 41,
+  "families": {
+   "breaking": 2,
+   "miscompile": 3,
+   "fix": 17,
+   "feature": 2,
+   "performance": 6,
+   "diagnostics": 6,
+   "tooling": 5
+  },
+  "bumps_absorbed": 0,
+  "status": "release.yml running"
+ },
+ "sweep": {
+  "closed": 36,
+  "filed_this_order": 42
+ }
 }
