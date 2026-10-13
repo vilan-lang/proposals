@@ -281,6 +281,18 @@
    "class": "ci",
    "item": "M120",
    "cause": "std-52's std growth (B621 Eq impls, B623 array impls) on the smallest examples; CI run 38453647717 red at x1.0182"
+  },
+  {
+   "commit": "006391fa (lane)",
+   "rows": {
+    "example:todo": 1.01
+   },
+   "classes": [
+    "ci",
+    "reference"
+   ],
+   "item": "B618",
+   "cause": "todo spawns without importing std::task and now loads task.vl (x1.0077)"
   }
  ],
  "order53": {
