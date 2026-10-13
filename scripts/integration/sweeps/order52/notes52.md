@@ -28,3 +28,4 @@
 - editor-52 MERGED 15a12456 (gates: 29; edit_replay/check_scope/id_windows 50; vilan-lsp 1,127; release_scripts; split; canary 18/18); pushed; CI watched; worktree reaped. solver-52 told to rebase; then debug-52, then incr-52b.
 - CI on 4d79d9e3: the perf job GREEN with the bump rows (the run itself cancelled by the editor-52 push). The self-hosted runner found OFFLINE again (Docker Desktop down on the host) - the standing recovery launched; the ubuntu shards on 15a12456 queue until it is back.
 - Runner back online (Docker Desktop up after 10 s; container started); the 15a12456 shards running.
+- CI on 15a12456 (editor-52's merge) GREEN 14/14 after GitHub's 502s cleared.
