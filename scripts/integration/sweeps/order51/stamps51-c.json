@@ -1,0 +1,6 @@
+{
+ "prefix": "- 2026-10-12 (the owner, the reference): ",
+ "stamps": {
+  "E306": "the position is kolt `views.vl:218:32` - the `Hidden` of `.overflow(style::Overflow::Hidden))` inside a `const style::style()\u2026` chain in an element head: an enum VARIANT in VALUE position (a path expression used as an argument), not a `let` binding. So the ask covers that shape too: a variant used as a value hovers with the variant line (`Overflow::Hidden`, as E241 spells a pattern) AND the enum's chunk (`enum Overflow { Visible, Hidden, Scroll, \u2026 }`), the way a struct constructor hovers with its declaration. Today the path goes `entity_at` -> `type_declaration_target` -> `compose_hover` with the enum's declaration label, or falls to the bare `hover_label` - the repro says which, and whether the `const` chain changes the answer (a const-evaluated argument may resolve to no entity at the variant's span). First pin: this exact position on the kolt copy."
+ }
+}
