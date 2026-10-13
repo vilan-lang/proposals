@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "E306",
+   "section": "E",
+   "kind": "editor (hover; XS\u2013S)",
+   "area": "Editor",
+   "status": "OPEN \u2014 filed 2026-10-12 (the owner's ask, mid-Order 51; a repro to take on a kolt copy - the pinned shapes already answer)",
+   "title": "a binding whose type is an ENUM hovers with a chunk of the enum - its variants under the instantiation's arguments - the way a struct-typed binding hovers with its fields (E237); the owner sees no such chunk on enum-typed bindings in kolt, while E237's pins (`let shape = Shape::Circle(..)` -> `enum Shape { Circle(f64), Rect(f64, f64), Empty }`, `let opt = Some(1)` -> `enum Option<i32> { Some(i32), None }`) are green - so some binding SHAPES miss the table, and the item is to find and close them",
+   "discussion": "the owner's ask (2026-10-12/13): \"show a chunk of the enum when the type of a binding is an enum like what we do for bindings of structs\"; E237 (ruled: the definition block under a `name: Type` line - `definition_paragraph` in vilan-lsp document.rs, `TypeDefinitions` / `Analyzer::type_definitions` in vilan-core analyzer/hover_labels.rs ~681: the `Type::Enum` arm at ~86 answers unless the enum is `bool` or has no variants; the table is built over `expr_type_ids` POSITIONS plus struct fields' type ids - the id set the hover then looks up by `variable.type_id` / `parameter.type_id` / the member's `expr_type_ids`); E246 (the Preview block); E300 (the match arm hover - the capture's binding line); E301 (the inlay hint's tooltip reuses the binding's hover, so it inherits the fix)",
+   "body": "Take the repro on a kolt copy (lucide carried) and say which enum-typed bindings answer with no chunk. Candidates, each a pin: a `let` whose enum type comes from a CALL (`let state = x.states().latest()` - a `TransientState`), from a FIELD read, from a parameter (`fun f(reason: DismissReason)` - the parameter path), a match/`is` CAPTURE (`Some(let root)` - the destructured binder's type is the element-type path, maybe absent from the table's positions), a `mut`, an enum reached through a TYPE ALIAS, an enum from a DEPENDENCY or std (`Ordering`), an enum with STRUCT variants (`Rect { w: f64, h: f64 }` - the member rendering), an enum of more than twelve variants (E237's cap - the chunk should still show, capped), and a binding typed `Option<E>` (the chunk is `Option`'s - fine - but hovering the VARIANT name should be E300's). Likely cause: `type_definitions` builds its table from the positions it is handed, and the binding's `type_id` for these shapes is a different (equal, un-interned) id or one the position set never visited; the fix is to answer by TYPE (intern-equal) rather than by position, or to add the binding type ids to the positions. Sizing XS\u2013S (hover_labels.rs + document.rs pins)."
+  }
+ ]
+}
