@@ -301,6 +301,18 @@ differential holds the answers. The native backend's names carry ids (`vilan-rus
 and JS sorts functions by id (`transformer.rs:107`), so the corpus and native goldens regenerate
 once (the reorder is the whole diff).
 
+**As built (P0, incr-51c, Order 51, `56b36ee8`).** The drain runs two phases per round: discovery
+(resolve, parse, follow the module's requests AND its ancestor modules) until nothing new is asked
+for, then minting in `load_order_key` order; M107's heap became one sort per round. Two premises
+above were wrong in detail: (1) single-file programs DO move when std's own `pkg::` imports discover
+a module that sorts before its asker (`std::time` → `std::task`: the corpus's `adapt`,
+`await-postfix` and `time` goldens, reorder-only); (2) std-first fixes std's module NODES and walk
+ORDER, but std's walk ids still follow every module node of the program (all modules register
+before any walk), so §3's "a function of the std module set alone" holds up to an offset by the
+non-std module count (find M?1 in `newitems51-incr-51c.json`; P1 is unaffected, P3 must relocate or
+mint the package's nodes after std's walk). A module only GENERATED code reaches still mints in the
+next round (B?1; no instance on the estate).
+
 ### 4.2 Std resolves alone (Q3)
 
 Today the pre-entry `resolve_world` resolves std and the package modules in one fixpoint, so a

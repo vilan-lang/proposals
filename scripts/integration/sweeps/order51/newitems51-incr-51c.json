@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": "M144",
+      "section": "M",
+      "area": "Type system & the type solver",
+      "kind": "performance prerequisite (S) - the std prefix's id layout (P3)",
+      "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
+      "title": "After B603's std-first order std's MODULE NODES mint first, but std's WALK ids still follow every module node of the program (the drain registers std, dependency and package modules before any walk; dependency namespaces and `lib.vl` SourceIds precede std's), so a std item's entity id moves with the package's module count - `basename` is Id(7994) in a single-file program and Id(7996) beside two sibling modules, same std set",
+      "body": "std-prefix.md §3 says that with std-first (§4.1) 'S6's table for std is a function of the std module set alone'. Measured on incr-51c's P0 (56b36ee8): it is a function of the std set PLUS an offset = the non-std module nodes (and the dependency namespaces minted before std). P1 (the in-process std-only world, hot = every package module) is unaffected: its world holds no package node. P3 (the persisted prefix) needs either a relocation of std's entity/scope lanes by that offset on load (the §3 fixup list does not name it), or the drain minting non-std module nodes after std's walk (std never names a package module, so std can walk before the package registers; macro expansion is already done by then). Rec: the second, as P3's first step. Repro: `sweeps/order51/incr-51c/finds/std_ids_offset_by_package_modules/run.sh`.",
+      "discussion": "incr-51c (Order 51); sweeps/order51/incr-51c/finds/std_ids_offset_by_package_modules/"
+    },
+    {
+      "id": "B619",
+      "section": "B",
+      "area": "Type system & the type solver",
+      "kind": "determinism (XS) - no instance on the estate",
+      "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
+      "title": "B603's residue: a module that only macro-GENERATED code reaches is discovered in the drain's next round and mints after every module of the first round, so a redundant written import of it would still reorder the output",
+      "body": "P0's drain is canonical per ROUND: the macro registry is built once from the first round (by design: definitions must be reachable without expansion), and a generated `std::`/`pkg::` reference that names a module no written import reaches loads in round two. Probed with a temporary counter on 56b36ee8: zero late-round modules on kolt's two legs, the eleven examples and all 298 corpus files (the std derives' generated references all land in the always-loaded core or in a module the macro's host already imports). A full fix defers SourceId attribution of the registry's and the expansion's diagnostics until the last round; not worth it until an instance exists. Rec: keep as a known residue; a std-prefix P3 key check (closure computed from WRITTEN imports) would refuse a prefix whose world grew in round two.",
+      "discussion": "incr-51c (Order 51)"
+    }
+  ]
+}

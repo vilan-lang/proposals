@@ -103,6 +103,10 @@
   {
    "id": "N170",
    "note": "native-51 (Order 51): vilan-rust's type_of looks a call up by its function id; commit 589bd4ee; output unchanged everywhere"
+  },
+  {
+   "id": "B603",
+   "note": "incr-51c (Order 51; std-prefix P0): the drain runs discovery (parse, follow requests, request ancestors) then minting in load_order_key order - std, dependencies, the package - per round; DiscoveredModule replaces load_order_entry; the B603 repro byte-identical with and without the redundant import (kolt server: 18-line diff -> 0); four goldens moved reorder-only (single-file programs move too - std's own pkg:: imports were in ask order, the paper's premise wrong); pin corpus::emitted_js_is_independent_of_which_module_asks_first; commit 56b36ee8; leftovers M144 (std's walk ids still offset by the package's module count - P3's first step) and B619 (a generated-only module mints in the next round; no instance in the estate)"
   }
  ]
 }
