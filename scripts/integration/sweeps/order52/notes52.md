@@ -32,3 +32,4 @@
 - solver-52 REBASED onto 15a12456: tip fb9dc56e (clean; both intents with editor-52's element work carried - the head mark on the member only, element_link reads text; suggestion filed as E322). Gates green (suite 10,601; inference 5,535; native 279/279 both; canary; perf green; RSS -0.5%). Merging (merge-solver-52.log); debug-52 next, then incr-52b.
 - solver-52 MERGED 96487112 (gates: 333 incl. corpus/ledger/native; inference+docs+check_scope 5,563; release_scripts; split; ledger rows 735..736; canary 18/18); pushed; CI watched; worktree reaped. debug-52 told to rebase; incr-52b last.
 - CI on 96487112 (solver-52's merge): success 14/14.
+- debug-52 REBASED onto 96487112: tip c6c19da7 (CHANGELOG ordering only; package.json and transformer.rs clean). Gates green (suite 10,609; native 279/279 both; source_maps 158 + 8; split/hmr/watch/extension; perf green; RSS +0.03%; extension 40/40). Merging (merge-debug-52.log); incr-52b last.
