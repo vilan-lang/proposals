@@ -1,54 +1,34 @@
 {
-  "items": [
-    {
-      "id": "M144",
-      "section": "M",
-      "area": "Type system & the type solver",
-      "kind": "performance prerequisite (S) - the std prefix's id layout (P3)",
-      "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
-      "title": "After B603's std-first order std's MODULE NODES mint first, but std's WALK ids still follow every module node of the program (the drain registers std, dependency and package modules before any walk; dependency namespaces and `lib.vl` SourceIds precede std's), so a std item's entity id moves with the package's module count - `basename` is Id(7994) in a single-file program and Id(7996) beside two sibling modules, same std set",
-      "body": "std-prefix.md §3 says that with std-first (§4.1) 'S6's table for std is a function of the std module set alone'. Measured on incr-51c's P0 (56b36ee8): it is a function of the std set PLUS an offset = the non-std module nodes (and the dependency namespaces minted before std). P1 (the in-process std-only world, hot = every package module) is unaffected: its world holds no package node. P3 (the persisted prefix) needs either a relocation of std's entity/scope lanes by that offset on load (the §3 fixup list does not name it), or the drain minting non-std module nodes after std's walk (std never names a package module, so std can walk before the package registers; macro expansion is already done by then). Rec: the second, as P3's first step. Repro: `sweeps/order51/incr-51c/finds/std_ids_offset_by_package_modules/run.sh`.",
-      "discussion": "incr-51c (Order 51); sweeps/order51/incr-51c/finds/std_ids_offset_by_package_modules/"
-    },
-    {
-      "id": "B619",
-      "section": "B",
-      "area": "Type system & the type solver",
-      "kind": "determinism (XS) - no instance on the estate",
-      "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
-      "title": "B603's residue: a module that only macro-GENERATED code reaches is discovered in the drain's next round and mints after every module of the first round, so a redundant written import of it would still reorder the output",
-      "body": "P0's drain is canonical per ROUND: the macro registry is built once from the first round (by design: definitions must be reachable without expansion), and a generated `std::`/`pkg::` reference that names a module no written import reaches loads in round two. Probed with a temporary counter on 56b36ee8: zero late-round modules on kolt's two legs, the eleven examples and all 298 corpus files (the std derives' generated references all land in the always-loaded core or in a module the macro's host already imports). A full fix defers SourceId attribution of the registry's and the expansion's diagnostics until the last round; not worth it until an instance exists. Rec: keep as a known residue; a std-prefix P3 key check (closure computed from WRITTEN imports) would refuse a prefix whose world grew in round two.",
-      "discussion": "incr-51c (Order 51)"
-    },
-    {
-      "id": "B?2",
-      "section": "B",
-      "area": "Type system & the type solver",
-      "kind": "bug (incremental; S-M) - S7's dirty closure under the std prefix",
-      "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
-      "title": "Over the std-only prefix (P1, every package module re-walked) M110 S7 serves an UNEDITED module's item record after an EDITED module pushed a different type into its use-inferred binding - the classes package's `bag` read `List<i32>` against the clean `List<any>` after `a_spoil.vl`'s `bag.push(2)` became `bag.push(\"two\")`",
-      "body": "Found building P1: with the prefix forced on and item records enabled, the edit-replay differential's 'a push into another module's binding, from the module loaded first' step diverged on bag.vl's label (incremental `List<i32>`, clean `List<any>`); with item records off it agrees (102 analyses, 92 prefix hits, 0 divergences). S1 never meets the shape: its third guard refuses every hot set that imports a prefix module's use-inferred binding, so the owner is never an unedited hot item beside an edited pusher. P1 ships with `enable_item_records` off for a std-prefix world. Likely door: the M139 edge (`id_windows.cross_writes`, `writes_drain_other`) is not recorded for the pusher when the write happens during the package's resolve over the prefix, or is recorded against a window the record's deps do not name. Rec: S7b (Order 52) pins the step with records ON over the prefix and fixes the edge; P2 needs it before the LSP serves S1 misses over the prefix with records.",
-      "discussion": "incr-51c (Order 51); repro: VILAN_STD_PREFIX=on + item records forced on, edit_replay_differential every_edit_class_answers_what_a_clean_analysis_answers_over_the_std_prefix"
-    },
-    {
-      "id": "M?2",
-      "section": "M",
-      "area": "Type system & the type solver",
-      "kind": "performance (S) - the std prefix's refusal rate",
-      "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
-      "title": "§4.2's guard refuses the std prefix for kolt's client on `impl-reached member get`: kolt's `impl ProxySignal<type T> with Signal<T>` declares `get`, std's reactive code looks `get` up on an UNKNOWN receiver during its own resolve, and `Type::Unknown` admits every subject - yet with the guard planted off a minimal package holding only that impl answers exactly as the clean analysis does",
-      "body": "Measured on P1 (6938bbca): kolt's client is the one estate leg the prefix refuses (corpus 0, examples 0 bar `dependencies`/`defines-a-macro`, kolt's server served). `ReachFilter::of` already reasons that an impl whose subject is a struct the late files themselves declare is out of every stored module's reach (std cannot name `ProxySignal`), but the verdict (`impl_reach`) admits such an impl for any `Type::Unknown` receiver. Rec: find the std site asking `get` of an unknown receiver and decide whether a package-declared subject can ever change its answer (a unique-member fallback, an ambiguity deferral); if not, exclude late impls on late-declared subjects from Unknown-receiver questions in the verdict - S1 inherits the same narrowing. Repro: edit_replay_differential's PREFIX_PROXY fixture.",
-      "discussion": "incr-51c (Order 51)"
-    },
-    {
-      "id": "Q?1",
-      "section": "M",
-      "area": "Type system & the type solver",
-      "kind": "question (owner) - the std prefix's scope",
-      "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
-      "title": "std-prefix.md does not say how a program with DEPENDENCIES or a PACKAGE PRELUDE takes the prefix; P1 refuses both (`dependencies`, `package-prelude`) - the order's tier rule (std, dependencies, package) suggests a dependency tier above std's prefix",
-      "body": "P1 refuses rather than improvising: a dependency's modules would load into the 'std-only' world (or would have to be hot, which changes their resolve order against the canonical world's), and a package prelude makes every module's ambient scope read a package module (S1's own refusal). The examples' `fullstack` is the estate's one dependency program. Rec: dependencies hot like the package for P2 (they resolve with the package over std's answers - measure with the differentials), the package prelude refused until a case asks.",
-      "discussion": "incr-51c (Order 51)"
-    }
-  ]
+ "items": [
+  {
+   "id": "B624",
+   "section": "B",
+   "area": "Type system & the type solver",
+   "kind": "bug (incremental; S-M) - S7's dirty closure under the std prefix",
+   "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
+   "title": "Over the std-only prefix (P1, every package module re-walked) M110 S7 serves an UNEDITED module's item record after an EDITED module pushed a different type into its use-inferred binding - the classes package's `bag` read `List<i32>` against the clean `List<any>` after `a_spoil.vl`'s `bag.push(2)` became `bag.push(\"two\")`",
+   "body": "Found building P1: with the prefix forced on and item records enabled, the edit-replay differential's 'a push into another module's binding, from the module loaded first' step diverged on bag.vl's label (incremental `List<i32>`, clean `List<any>`); with item records off it agrees (102 analyses, 92 prefix hits, 0 divergences). S1 never meets the shape: its third guard refuses every hot set that imports a prefix module's use-inferred binding, so the owner is never an unedited hot item beside an edited pusher. P1 ships with `enable_item_records` off for a std-prefix world. Likely door: the M139 edge (`id_windows.cross_writes`, `writes_drain_other`) is not recorded for the pusher when the write happens during the package's resolve over the prefix, or is recorded against a window the record's deps do not name. Rec: S7b (Order 52) pins the step with records ON over the prefix and fixes the edge; P2 needs it before the LSP serves S1 misses over the prefix with records.",
+   "discussion": "incr-51c (Order 51); repro: VILAN_STD_PREFIX=on + item records forced on, edit_replay_differential every_edit_class_answers_what_a_clean_analysis_answers_over_the_std_prefix"
+  },
+  {
+   "id": "M145",
+   "section": "M",
+   "area": "Type system & the type solver",
+   "kind": "performance (S) - the std prefix's refusal rate",
+   "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
+   "title": "\u00a74.2's guard refuses the std prefix for kolt's client on `impl-reached member get`: kolt's `impl ProxySignal<type T> with Signal<T>` declares `get`, std's reactive code looks `get` up on an UNKNOWN receiver during its own resolve, and `Type::Unknown` admits every subject - yet with the guard planted off a minimal package holding only that impl answers exactly as the clean analysis does",
+   "body": "Measured on P1 (6938bbca): kolt's client is the one estate leg the prefix refuses (corpus 0, examples 0 bar `dependencies`/`defines-a-macro`, kolt's server served). `ReachFilter::of` already reasons that an impl whose subject is a struct the late files themselves declare is out of every stored module's reach (std cannot name `ProxySignal`), but the verdict (`impl_reach`) admits such an impl for any `Type::Unknown` receiver. Rec: find the std site asking `get` of an unknown receiver and decide whether a package-declared subject can ever change its answer (a unique-member fallback, an ambiguity deferral); if not, exclude late impls on late-declared subjects from Unknown-receiver questions in the verdict - S1 inherits the same narrowing. Repro: edit_replay_differential's PREFIX_PROXY fixture.",
+   "discussion": "incr-51c (Order 51)"
+  },
+  {
+   "id": "M146",
+   "section": "M",
+   "area": "Type system & the type solver",
+   "kind": "question (owner) - the std prefix's scope",
+   "status": "OPEN - filed 2026-10-12 (incr-51c's find, Order 51)",
+   "title": "std-prefix.md does not say how a program with DEPENDENCIES or a PACKAGE PRELUDE takes the prefix; P1 refuses both (`dependencies`, `package-prelude`) - the order's tier rule (std, dependencies, package) suggests a dependency tier above std's prefix",
+   "body": "P1 refuses rather than improvising: a dependency's modules would load into the 'std-only' world (or would have to be hot, which changes their resolve order against the canonical world's), and a package prelude makes every module's ambient scope read a package module (S1's own refusal). The examples' `fullstack` is the estate's one dependency program. Rec: dependencies hot like the package for P2 (they resolve with the package over std's answers - measure with the differentials), the package prelude refused until a case asks.",
+   "discussion": "incr-51c (Order 51)"
+  }
+ ]
 }

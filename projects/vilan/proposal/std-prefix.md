@@ -327,6 +327,26 @@ answer one refuses the prefix and the analysis is built canonically, cold (M121'
 for an entry impl reached by a module). P1 measures how often that fires on the corpus, kolt and
 the examples; the rule can harden from guard to language once it has held a release.
 
+**As built (P1, incr-51c, Order 51, `6938bbca`).** `VILAN_STD_PREFIX=on` (off by default; P2
+adopts it). S1's hot-set shape with every package module hot, as §4.4 says, plus one step §4.2
+implies and S1 does not take: after the package walks over the served prefix it RESOLVES
+(`resolve_package_over_prefix`) before the entry walks, so the order is the canonical two-phase
+one with std's half done first — S1's hot modules resolve with the entry in `build()`. The guard
+runs after that resolve (a package impl's subject must have resolved for the reach test to read
+it). Answers to questions this section leaves open, decided conservatively and filed: a program
+with DEPENDENCIES refuses the prefix (`dependencies`; the paper's "std (sorted), dependencies,
+package" tier has no prefix of its own yet); a PACKAGE PRELUDE refuses (`package-prelude`, S1's
+rule); a reference to `pkg::<entry>` refuses (`reaches-the-entry`: the drain would mint the alias
+into the prefix); a refusal is remembered per PACKAGE (the prefix key plus the package's paths),
+and falls back to S1's hot set when the front end named one, else the canonical world. S7's item
+records stay off over the prefix (their dirty closure misses an edited module's push into an
+unedited module's use-inferred binding there; find B?2). Measured: corpus 137 of 145 files over
+the prefix (8 uncacheable), 0 refusals; examples 8 served, `fullstack` refused (dependencies),
+`todo` refused (defines-a-macro); kolt's server served, kolt's client refused (`impl-reached`,
+member `get`: kolt's `impl ProxySignal<T> with Signal<T>` against std's `get` lookups on an
+unknown receiver — conservative: with the guard planted off the minimal fixture answers alike;
+find M?2).
+
 ### 4.3 The key: the std module set (Q4)
 
 The prefix is keyed by the std CLOSURE, not by the entry's seeds: (entry seeds ∪ every package
