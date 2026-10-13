@@ -37,6 +37,36 @@
    "lane": "std-52",
    "commit": "37005906",
    "text": "already fixed on the base by B578 (filed against ca407da0); 19 more shapes probed identical on both backends and pinned (the pin fails with B578's call arm disabled); pins only - no CHANGELOG entry (pins-only closes are tracker-only)"
+  },
+  {
+   "id": "F135",
+   "lane": "native-52",
+   "commit": "1092eaf2 + 757c784a",
+   "text": "RULED door (1): read() copies where it is evaluated on BOTH backends - the analyzer copies a read() argument (a bare read, a field/slot/element of one, a receiver, a &-operand) when a later argument of the same call can write that cell in place, whatever the callee; native's copy-last (F129) reverted for Shared reads; spec \u00a76.7's rule paragraph; estate 0 (kolt, website, examples byte-identical) -> fix; slice 2 scoped B457's span test to one derive expansion (every derive shared DERIVED_SOURCE and looked like a writer of every cell - M87/A54's perf pins went red otherwise). The BINDING half (\u00a76.9, a captured mut binding rebound by a later argument) is F138"
+  },
+  {
+   "id": "F136",
+   "lane": "native-52",
+   "commit": "5e82daa6",
+   "text": "ReferenceEq for Map<K, V> (order-insensitive, as std's HashMap equality) and its (key, value) entry; the refusal lists the new shapes"
+  },
+  {
+   "id": "F137",
+   "lane": "native-52",
+   "commit": "04a2bb2b",
+   "text": "native, not the solver: the analyzer records nothing for a tuple literal, so the emitter types a tuple-literal scrutinee from its elements (tuple_literal_type)"
+  },
+  {
+   "id": "F139",
+   "lane": "native-52",
+   "commit": "f58b1c60",
+   "text": "native-52's own find, fixed in the hand-back: natively a scalar & view of a captured binding waits for the later arguments (miscompile)"
+  },
+  {
+   "id": "F140",
+   "lane": "native-52",
+   "commit": "d2771ee4",
+   "text": "native-52's own find, fixed in the hand-back: on JS a &mut self call on a read's field (cell.read().items.push(9)) no longer writes the cell (miscompile)"
   }
  ]
 }
