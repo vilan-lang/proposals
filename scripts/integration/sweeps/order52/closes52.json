@@ -67,6 +67,102 @@
    "lane": "native-52",
    "commit": "d2771ee4",
    "text": "native-52's own find, fixed in the hand-back: on JS a &mut self call on a read's field (cell.read().items.push(9)) no longer writes the cell (miscompile)"
+  },
+  {
+   "id": "E313",
+   "lane": "editor-52",
+   "commit": "b661b48d",
+   "text": "the cause was NOT a span minted inside a word: the hover rows (E241 patterns, E240 names, E237 definitions, E206 call labels) were rendered for the ENTRY file only, and a module served as a view of its entry's world (M104) read the entry's rows at its own byte offsets - channel.vl's `cut` picked up a None pattern written in client.vl at the same bytes; a module view reads its own rows now; kolt sweeps kolt_no_hover_splits_a_word / kolt_no_hover_span_starts_inside_a_word green"
+  },
+  {
+   "id": "E305",
+   "lane": "editor-52",
+   "commit": "adc044d7",
+   "text": "the same cause (the head answered RpcError::Unauthorized from the entry's rows); the desugar's spans were fine - only the event and attribute names needed work: they are minted string literals, and hover as the link they lower to"
+  },
+  {
+   "id": "E303",
+   "lane": "editor-52",
+   "commit": "eff097ed",
+   "text": "RULED hide: element heads mint no stage hints; the doubled hint was the element's own last link and the parent's .child(..) link both ending at />"
+  },
+  {
+   "id": "E311",
+   "lane": "editor-52",
+   "commit": "6d0f252c",
+   "text": "the server gap had nothing to do with css: Type::f() went unpainted everywhere because the call's entity spans the whole path and lost to the type token where they overlap; a function reached through a path paints as Function; the TextMate gap was real (a nested `)` closed the css argument list early) and is fixed"
+  },
+  {
+   "id": "E299",
+   "lane": "editor-52",
+   "commit": "3d5e7988",
+   "text": "a `mod` line on every function hover (an entry reads mod pkg::client; only a file outside any package reads mod pkg)"
+  },
+  {
+   "id": "E298",
+   "lane": "editor-52",
+   "commit": "ada5cb4c",
+   "text": "a module segment hovers as its module"
+  },
+  {
+   "id": "E307",
+   "lane": "editor-52",
+   "commit": "be7f5f38 + d3237033",
+   "text": "a field hover names its owning struct (no struct-variant enums exist in vilan, so that case does not)"
+  },
+  {
+   "id": "E304",
+   "lane": "editor-52",
+   "commit": "83ffb2e4",
+   "text": "a label always states its return type (: void / the inferred type, from inferred_return_types); the conformance steer's suggested declaration carries it too"
+  },
+  {
+   "id": "E308",
+   "lane": "editor-52",
+   "commit": "908e2039",
+   "text": "pins only: the second line already existed in a file's OWN analysis - the empty own-substitution was not the problem (the E313 cause was)"
+  },
+  {
+   "id": "E310",
+   "lane": "editor-52",
+   "commit": "c0a7037e + 623ff568",
+   "text": "a trait in a parameter type hovers with its head, doc, members and the implementors in reach (implementors_in_reach over trait_reach_by_file; computed for the editor only); the [hint]-host note not built (file on a need)"
+  },
+  {
+   "id": "E312",
+   "lane": "editor-52",
+   "commit": "8ca5865c",
+   "text": "a derive answers with the impls it writes; a two-facet import leaf; a refused derive leads with the refusal"
+  },
+  {
+   "id": "E306",
+   "lane": "editor-52",
+   "commit": "19a5fdde",
+   "text": "a variant in value position hovers with its enum chunk; the binding half was the E313 cause (the kolt sweep reads 57/57 enum bindings with their chunk)"
+  },
+  {
+   "id": "E300",
+   "lane": "editor-52",
+   "commit": "2de37a46",
+   "text": "the match arm fence: match on T / the variant / the captures as declarations (an `is` test reads the same)"
+  },
+  {
+   "id": "E301",
+   "lane": "editor-52",
+   "commit": "9f184a6b",
+   "text": "the inlay hint's tooltip is the binding's hover and the type name clicks to its definition, via inlayHint/resolve (a client without resolve sees the plain tooltip)"
+  },
+  {
+   "id": "E302",
+   "lane": "editor-52",
+   "commit": "eb2b5ed6 + b2394a8d",
+   "text": "vilan.inlayHints.chains = every | changes (default every); the book's settings appendix updated"
+  },
+  {
+   "id": "N172",
+   "lane": "editor-52",
+   "commit": "4ec00da4",
+   "text": "[build] dbg in the editor schema and the manifest completion"
   }
  ]
 }

@@ -1,7 +1,7 @@
 {
  "items": [
   {
-   "id": "E?1",
+   "id": "E315",
    "section": "E",
    "kind": "editor (semantic tokens; S)",
    "area": "Editor",
@@ -11,7 +11,7 @@
    "body": "The analyzer records a type-reference row (`Program::type_references`) for a type that HEADS a value path (`Theme::stroke1()` -> `Theme`) but not for one reached through a module first (`style::Length::px`): the module segment paints Namespace (its `Expr::Module` entity), the leaf paints Function since E311's `path_leaf`, and the type between them is in no table, so neither hover-by-span nor tokens see it. Fix at the path resolution: record the middle segment's (source, span, definition) row as the head's is. Pins: `style::Length::px(4)`, `style::Overflow::Hidden`, a three-module path, the hover on the segment (the struct's declaration)."
   },
   {
-   "id": "M?1",
+   "id": "M148",
    "section": "M",
    "kind": "performance (editor; incremental; S-M)",
    "area": "Editor",
@@ -21,7 +21,7 @@
    "body": "E313 made the four hover tables per-file (a module served as a view of its entry's world read the entry's rows at its own offsets). They are rendered in `analyze_over_world`'s tail for every non-std file under the reading aids except the declared `generated` root (kolt's lucide module held 17,601 of the world's 23,042 generic call sites). Debug-build pass split on the kolt client world: the call-label loop 3.3 -> 15.4 ms, the three hover tables 8.4 -> 16.2 ms (release is a fraction; E292's served row is incr-52a's measure). The rows are a pure function of the settled types, exactly like S2b's label rows: recording them per module (`ModuleTables`) and skipping `label_row_restored` modules at the tail would pay the hot set only. Owner of the record plumbing: the incremental lane. Pins to add with it: the reuse pin (an unseeded session), the view-row pins of E313 green on a served keystroke."
   },
   {
-   "id": "E?2",
+   "id": "E316",
    "section": "E",
    "kind": "editor (hover; XS)",
    "area": "Editor",
@@ -31,7 +31,7 @@
    "body": "An implicit generic (`x: Signal<str>`) renders by its constraint NAME (B261's bare rendering), which is the trait's name without its arguments; the declaration label prints that. The parameter's own hover (E237's block) and E310's trait hover carry the arguments. Fix in the signature label writer: an implicit generic's position prints its bound (`Signal<str>`), not the binder name. Pins: a one-argument trait parameter, two parameters of one trait at different arguments, a bound written `<S: Signal<str>>` (unchanged: `S`)."
   },
   {
-   "id": "E?3",
+   "id": "E317",
    "section": "E",
    "kind": "editor (hover; XS)",
    "area": "Editor",
