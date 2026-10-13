@@ -266,6 +266,19 @@
    "items": [
     "E257 S6a-S6d"
    ]
+  },
+  {
+   "lane": "incr-52b",
+   "sha": "57677552",
+   "date": "2026-10-13",
+   "items": [
+    "B624",
+    "std-prefix P2 (layering)",
+    "B631",
+    "M145",
+    "B618",
+    "P2 follow-up"
+   ]
   }
  ],
  "checkpoints_reached": {
@@ -346,5 +359,13 @@
    "layering on by default in the server (confirm from the seal's cold-open rows)",
    "the owner's F5 check result"
   ]
+ },
+ "seal_tip": "57677552",
+ "seal": {
+  "tip": "57677552",
+  "base_kolt": "scratchpad/seal-52/kolt-base @dee494ab",
+  "mode": "same-source; ADVANCE=1; CPU 1.10; RSS 1.05; seven rows (N174)",
+  "script": "sweeps/order52/seal-52.sh",
+  "started": "after CI green on 57677552 and the runner checked"
  }
 }
