@@ -1,0 +1,6 @@
+{
+ "prefix": "- 2026-10-12 (the owner, clarifying): ",
+ "stamps": {
+  "B620": "the rule is about the HEAD only. `<div />.f()` - a method called on the finished element, outside the tag - is FINE whatever `f` returns (it is an ordinary call on a `View` value); `<div .f() />` - `f` written as a head item inside the opening tag - is the rejected case when `f` does not return `View`. The diagnostic's steer follows: \"call it on the element instead: `<div />.f()`\" (not only \"on a binding\"); completion inside the head hides it, completion after `<div />.` offers everything as today. Pins: `<div />.len()` admitted, `<div .len() />` refused, the same method both ways."
+ }
+}
