@@ -308,5 +308,61 @@
   "script": "sweeps/order51/seal-51.sh",
   "log": "sweeps/order51/seal-070653d2.out",
   "started": "after CI green on 070653d2 (chained)"
+ },
+ "order52": {
+  "core (one lane at a time; Fable only for S7b if the owner agrees)": [
+   "M142 = S7b (live ranges for every whole-program Class A/D pass + records for the six held table passes) - THE E292 door, first",
+   "B624 (S7 records under a prefix world) then std-prefix P2 (the LSP layers the prefix UNDER S1; dependencies hot; preludes still refused - M146) + E294 pinned-prefix half",
+   "M145 (the prefix guard narrowed after finding the std get site)",
+   "M133 incr half (platform_color dispatch walk by the bound head)",
+   "M137 (context::apply 66k mints)",
+   "M138 (compute_adaptation seeded)",
+   "B618 (async e always Task<T>: std::task always loaded - measured cold)",
+   "N171 (the 636 KB analysis baseline frame; after S7b)",
+   "M144 then P3 (the serializer; the round-trip differential) if P2 lands early",
+   "M140 (M67 figure re-measured at P2)"
+  ],
+  "editor (the owner's review of 2026-10-12/13 - a dedicated lane)": [
+   "E313 (the hover splits a word: a span minted inside an identifier - likely a text-search mint) FIRST, with the sweep pin",
+   "E305 (wrong tooltip on a head's on:/.styled) + E303 (the head's chain hints hidden - RULED) + E311 (a function in a css block painted wrong) - the markup span family",
+   "E298 (module segment hover) + E299 (the fun tooltip's mod line) + E307 (the initializer field's owner line) + E304 (`: void`) - the where-does-this-live family",
+   "E308 (a generic impl member's call substitutes the impl's T) + E310 (a trait in type position: implementors in reach) + E312 (the macro/derive tooltip) + E306 (an enum-typed binding's chunk; a variant in value position) + E300 (the match arm hover)",
+   "E301 (the inlay hint tooltip highlighted + clickable) + E302 (chain hints: changes-only, opt-in)",
+   "B620 editor half (head completion hides non-View methods; E213's 3-char rule)",
+   "N172 ([build] dbg in the schema)",
+   "E314 (fmt: a long call in a hole) - the formatter half, same lane or fmt-52"
+  ],
+  "solver / std": [
+   "B620 analyzer half (an element head admits only View-returning methods; the diagnostic; estate count)",
+   "B621 (std Eq for bool/List/Option/Result - four lines)",
+   "B622 (Hashable derive over generic fields)",
+   "B623 (array-lengths' second std wave: Default/Json/FromJson/Wire for [T; N] + the Default generator)",
+   "E309 (a single steer at a spaced < with a generic left side)",
+   "B615 (JS: read(&seven()) to a &i32 parameter TypeError - fix-51's class)",
+   "B617 (the context pass's hidden-context union misses the blanket's start; B606's None stopgap)"
+  ],
+  "native": [
+   "F135 - AFTER the owner rules F129's semantics (\u00a76.7 read() copies vs JS aliasing)",
+   "F136 (maps of closures: reference equality)",
+   "F137 (a generic enum's derived PartialEq refused natively)",
+   "F124 \u00a72.3 on a real program"
+  ],
+  "debug": [
+   "E257 S6 (the extension's debug type + code lens, HMR bundle maps, --inspect under --watch, an ignore-listed helpers source; the ~256 KB sourcesContent cap)",
+   "N173 (vilan test writes a map)",
+   "F130's B618 half"
+  ],
+  "tooling": [
+   "L24 when the Windows runner is registered",
+   "M141 (the warm const pass's ~32 ms non-evaluation remainder)",
+   "B619 (a generated-only module mints in the next round - P3's key check)",
+   "N165-class: the lsp-latency harness's model.vl / parse-break scenarios re-anchored on today's kolt (two of seven rows refused all order)"
+  ],
+  "rulings to ask at GO": [
+   "F129's semantics (native-51 decision 1)",
+   "S7b on Fable or Opus (the budget rule)",
+   "E300/E310's hover shapes (recs written)",
+   "B607/E291 shipped breaking at v0.49.0 (confirm at the cut)"
+  ]
  }
 }
