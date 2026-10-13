@@ -205,6 +205,36 @@
    "lane": "editor-52",
    "commit": "a5d70c75",
    "text": "memory::limit_arenas() calls mallopt(M_ARENA_MAX, 1) first thing in vilan-lsp's main on glibc targets (an environment MALLOC_ARENA_MAX is left to glibc): peak VmHWM over the seven rows 1006 -> 716-732 MB, the leaf row 652 -> 514-533 MB; instructions unchanged; keystroke columns under 5 ms; one weak signal (idle completion/inlay CPU on css 2.5-3.3 vs 1.6-1.8 ms at load 8-16) for the seal's quiet re-take"
+  },
+  {
+   "id": "B624",
+   "lane": "incr-52b",
+   "commit": "0d612b20",
+   "text": "the census did run over the prefix's re-walk; the cause was a list literal's element slot (and a List::new() hole) minted lazily in the window of whichever constraint asked FIRST (the pusher), so bag's type named a slot in another item's window and no edge carried the edit back; the slot is minted in its owner's window (IdWindows::anchor_at_owner, element_slot_of); item records on for prefix worlds again; also found: std's lib.vl and dependency surfaces registered a source without its path key (every later source keyed by the next file's path) - fixed with a debug assert (B632)"
+  },
+  {
+   "id": "M145",
+   "lane": "incr-52b",
+   "commit": "9c55f347",
+   "text": "the premise was wrong - the receiver was std's own generic T, rigid in the lookup but re-read by the guard's verdict as a hole any impl declaring get could fill; each logged question records its rigid-binder scope and the verdict re-asks under it (Asked::scopes, reach_admits); a second refusal exposed kolt's impl Scale with Callable - the closure/Callable miscompile (B631, fixed in e3ca0a48: an impl on a struct/enum head no longer admits a closure receiver through the call operator's coercion); kolt's client is SERVED over the prefix (dist byte-identical on/off)"
+  },
+  {
+   "id": "B618",
+   "lane": "incr-52b",
+   "commit": "e8e35ce9",
+   "text": "always-loading task.vl costs the empty program 15%, so an async expression SEEDS std::task the way an element seeds std::web::ui (collect_std_item_modules): the empty program +0.01%, a program that spawns without importing std::task pays ~36M once; async e is always Task<T>; the spec's execution chapter states it; estate 0 -> fix"
+  },
+  {
+   "id": "B631",
+   "lane": "incr-52b",
+   "commit": "e3ca0a48",
+   "text": "incr-52b's own find, fixed in the hand-back: twice.call(5f) on a closure compiled to Scale's call and printed NaN - impl_subject_admits used the call operator's coercion when matching an impl subject; 14 lines in inference, pinned in callable.rs, estate 0 (miscompile)"
+  },
+  {
+   "id": "B632",
+   "lane": "incr-52b",
+   "commit": "0d612b20",
+   "text": "incr-52b's own find, fixed in the hand-back: std's lib.vl and dependency surfaces registered a source without its path key; each source registers its own, with a debug assert"
   }
  ]
 }

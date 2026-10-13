@@ -585,3 +585,20 @@ id that another process wrote, and each is listed with how it stays right:
 | P4 | The key and housekeeping: vilan-core's build hash, the std content hash, the closure index, `VILAN_WORLD_CACHE`, `vilan cache prune/clean/warm`, the byte bound; G28's stamp | S | P3 | the cold-check rows (empty web, kolt both legs) in instructions; a rebuilt vilan-core misses; an edited std misses |
 | P5 | N157: the suite points `VILAN_WORLD_CACHE` at `target/`; suite CPU measured against suite-48's 13,002 CPU-s | S | P4 | full suite green; inference CPU per test reported |
 | — | M135 (the const cache on disk) | S | none | kolt client cold const pass ≤ 10% of today's |
+
+**As built (P2, incr-52b, Order 52).** LAYERING, as incr-51c's Q1 recommended and R-c ruled: the
+server keeps S1's hot sets, and a world it must BUILD (an S1 or canonical base-cache miss) takes std
+from the std-only prefix, walks and resolves the world's own package modules over it under §4.2's
+guard, and is stored under its OWN key where the miss stored it; S1's hot set then walks over it.
+Hits are untouched. The declared entries PIN their prefixes (E294's pinned half: sized into the
+budget, never its victim). `VILAN_STD_PREFIX=off|layered|on`; the server defaults to layered, the
+CLI to off. Premises that were wrong in detail: (1) B624's door was not the census — the census ran
+over the package re-walk — but WHERE a lazily minted element slot lived (the first asker's window,
+not the owner's); (2) a std-only world (no package module, no hot set) must not be layered: it IS
+std, and the canonical path stores and hits it with its checks replayed, where the layered build
+replayed nothing (kolt's `shared.vl` row 1.33 -> 2.13 G until excluded); (3) M145's "unknown
+receiver" was a RIGID generic (`T` of a std declaration) and, once that was narrowed, a closure
+receiver admitted by a `Callable` struct through the call operator's coercion — a miscompile of its
+own. Dependencies (M146) are still refused: the hot load lacks the drain's dependency machinery; the
+recommended door is a dependency tier in the prefix (find Q?1 in `newitems52-incr-52b.json`).
+Measured rows: incr-52b's report.
