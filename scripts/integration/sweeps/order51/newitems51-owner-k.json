@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "E313",
+   "section": "E",
+   "kind": "editor (hover; bug; S)",
+   "area": "Editor",
+   "status": "OPEN \u2014 filed 2026-10-12 (the owner's ask, mid-Order 51; repro on a kolt copy)",
+   "title": "the hover SPLITS a word - in `{get_input_system().message_menu_layer.bindings[0].shortcut.to_string()}` (kolt channel.vl:134, a hole in an element body) the caret on `short` answers the member read `shortcut: Shortcut` and the caret on `cut` (column 64 onward) answers a DIFFERENT type; an entity span begins INSIDE the identifier, five bytes in, and wins `entity_at`'s innermost-containing-span test for the word's tail",
+   "discussion": "the owner's ask (2026-10-12/13): \"the `cut` segment of `shortcut` showing the wrong type at channel.vl:134:64. The rest of the word is correct\"; `Document::entity_at` -> `vilan_ide::analysis::entity_at(&entity_spans, offset)` (the innermost entry-file entity whose span contains the offset); E72 (a member read hovers as `name: T` - `member_hover`); E279 (sticky spans after an edit - rule out first: the same answer on a fresh open); element-syntax S5 (a `{ \u2026 }` hole in an element body is ordinary vilan, its spans in analyzed coordinates - document.rs ~1491 `collect_markup_spans`); the index expression `bindings[0]` (its lowering to an indexing call and the span that call is given); E311/E305 (two other markup-adjacent span bugs filed this order - one cause may serve three)",
+   "body": "Repro on a kolt copy (lucide carried), fresh open (no edits): hover at every column of `shortcut` and print `entity_at`'s id and span at each; name the entity whose span starts at `cut` (its `Expr` kind and span) and the type it answers. Candidates: (a) the method CALL `.to_string()`'s entity span minted from the wrong start (the receiver's end minus the method name's length, or the call's span taken as `name_span.start - 5`); (b) the index expression `[0]`'s lowering shifting the spans minted after it on the line by the width difference between the written `[0]` and its desugar; (c) the markup hole's offset mapping (the `{`/`}` of a hole and the desugar's inserted text) drifting by five bytes on a line with many leading tabs. Expected: every column of an identifier answers the same entity; no entity span starts inside an identifier's token (an invariant worth a sweep pin over kolt's analyzed spans: for every entity span start, the byte before it is not an identifier byte - the same sweep the semantic-token invariant runs). Pins: the kolt shape (a member read after an index in a markup hole), the same chain outside markup, the same chain without the index, the sweep invariant. Sizing S (the span mint at the cause; vilan-lsp pins)."
+  }
+ ]
+}
