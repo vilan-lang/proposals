@@ -13,3 +13,4 @@
 - CI on 029d5ab4 (C1): success 14/14.
 - native-52 REBASED onto C1: tip 896c9621 (CHANGELOG only conflicted; the F135 loop inside the live-range compute_clone_sites via the lazy calls_index; the derive-span scoping in all four walks; spans_a_cell_hazard not scoped - not needed). Gates green (suite 10,542; native 275/275 both; vilan-lsp 1,103; canary; perf green; RSS -0.2%). Merging (merge-native-52.log); std-52 next.
 - native-52 MERGED f40e2b47 (gates: 304 incl. native_differential; edit_replay + check_scope 40; release_scripts; split; canary 18/18); pushed; CI watched; worktree reaped. std-52 told to rebase (B615's entry dropped). Then editor-52.
+- CI on f40e2b47: success 14/14.
