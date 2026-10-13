@@ -1,0 +1,21 @@
+import std::io::print;
+
+struct Holder<T> {
+	value: T,
+}
+
+impl Holder<type T> {
+	fun make<U>(self, u: U): U {
+		u
+	}
+}
+
+fun main() {
+	let h = Holder { value = 1 };
+	let y = h.make <str>("a");
+	let a = 1;
+	let b = 2;
+	let c = 3;
+	let z = a < b > (c);
+	print(i"{y}");
+}

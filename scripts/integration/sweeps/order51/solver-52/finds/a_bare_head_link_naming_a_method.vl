@@ -1,0 +1,6 @@
+import std::io::print;
+import std::web::ui::{ View, render };
+
+fun main() {
+	print(render(<input .autofocus />));
+}
