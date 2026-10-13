@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "E298",
+   "section": "E",
+   "kind": "editor (hover; S\u2013M)",
+   "area": "Editor",
+   "status": "OPEN \u2014 filed 2026-10-12 (the owner's ask, mid-Order 51)",
+   "title": "hover on a MODULE SEGMENT \u2014 `pkg`, `lib`, `overlay` in `import pkg::lib::overlay::{ DismissReason, Overlay };` and `model` in `match model::global() {` \u2014 answers for the module under the caret: its path as a `mod` line, its `///` doc, what it exports and where it lives; today a module with a body hovers as the bare `module overlay` the type label produces, a restatement of the word (E152 fixed only the bodiless namespace, with `namespace ui` + \"Holds `a`, `b`.\")",
+   "discussion": "the owner's ask (2026-10-12/13): `import pkg::lib::overlay::{ DismissReason, Overlay };` with `pkg`, `lib` and `overlay` each marked \"here\", and `match model::global() {` with `model` marked; E152 (a pure namespace hovers with what it holds); B264 (an `as` alias hovers with its target's signature); A65 (go-to-definition on a nested path's module segment lands in that module - the resolution the hover can reuse); `Document::hover` -> `namespace_hover` / `type_reference_at` in vilan-lsp's document.rs; E299 (the function tooltip's `mod` line - the same path spelling, written once)",
+   "body": "Each segment of a module path answers for ITS module, in one fenced `vilan` block plus the usual paragraphs: the signature line `mod pkg::lib::overlay` (the full path from the package root, the spelling E299 shares), then the module's `///` doc as the Doc block, then a Preview line of its public surface (\"Exports `Overlay`, `DismissReason`, `show`, \u2026\" - the names an `import` of it could take, capped at a dozen with \"and N more\"), then its file as a relative path (`src/lib/overlay.vl`, or the directory for a `mod.vl`/directory module), and the platform block where the module is platform-gated. The package root segment (`pkg`) answers with the package: `mod pkg` + its name and version from `vilan.toml` + the top-level modules it holds; `std` and `std::web` likewise (std's doc comment where it has one). A bodiless namespace keeps E152's \"Holds \u2026\" line as its Preview. A segment in VALUE position (`model::global()`'s `model`) and in an `import` answer the same. Where the segment does not resolve (a typo), no hover (the diagnostic already says). Door: A65's definition target gives the module id; `program.modules` gives name, path and children; the export surface is the module's visibility table (B318) - no new analysis. Pins: each of the four marked positions in the ask, the package root, a std segment, a bodiless namespace unchanged, a platform-gated module, a value-position path. Sizing S\u2013M (vilan-lsp document.rs; a `mod` line helper shared with E299)."
+  },
+  {
+   "id": "E299",
+   "section": "E",
+   "kind": "editor (hover; S)",
+   "area": "Editor",
+   "status": "OPEN \u2014 filed 2026-10-12 (the owner's ask, mid-Order 51)",
+   "title": "the function tooltip carries a MODULE HINT above its signature \u2014 `mod x::y::z` on its own line, then E238's `impl T` / `trait T` header where the function is a member, then the `fun f(): void` line, all in one fence \u2014 so a hover says WHERE the function lives, not only what it is; today the fence opens with the member header or the `fun` line and the module is nowhere in the tooltip",
+   "discussion": "the owner's ask (2026-10-12/13), spelled as\n```\nmod x::y::z\nimpl T\nfun f(): void\n```\n; E238 (ruled door (b): the member's block on its own line above the `fun` line, inside the same fence - `Program::member_header`); E206 (the generic call site's second, substituted line); E213 (the hover leads with the reason); `Document::compose_declaration_hover`; E298 (the module segment hover - the same `mod` path spelling)",
+   "body": "`compose_declaration_hover` prepends `mod <path>` - the DECLARING module's full path from the package root (`mod pkg::lib::overlay`; `mod std::web::dom` for a std function; `mod pkg` for the root module) - as the first line of the fence, above the member header (E238) and the `fun` line, for every function hover: a free function, a method, a trait requirement, a blanket member, a generic call site's two-line form (the `mod` line once, on top). The same module as the document still shows its line (the owner's spelling; consistency over brevity - a reader hovering in a 3,000-line file does not know which module they are in either). Written once as a helper the E298 module hover shares, so the two never drift. Out of scope (file separately on a need): the `mod` line on type, const and variable hovers. Pins: a free function in a nested module, a method (three lines), a trait requirement, a std function, a root-module function, the E206 two-line site, the sticky-span and keystroke hover rows unchanged in cost. Sizing S (vilan-lsp document.rs; `Program::member_header`'s neighbour)."
+  }
+ ]
+}
