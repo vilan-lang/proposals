@@ -175,6 +175,24 @@
    "lane": "incr-52a",
    "commit": "0ca1e265",
    "text": "the bound audit walks only live windows' sites (the module lane); the premise was wrong: the walk was not the cost - the 392 live sites' own audits are (20-30 ms before and after)"
+  },
+  {
+   "id": "B620",
+   "lane": "solver-52 + editor-52",
+   "commit": "2ae15d7e + 6ef61d58 (analyzer) / fb96f28b (editor)",
+   "text": "an element head admits only methods that hand the element back: the desugar marks each head link's member (Node::ElementHeadLink), resolve_method_call's Found arm refuses a method whose return type is not the receiver's (a trait default's Self and an open generic admitted) at the method's name with the steer `<div />.len()`; a refused link becomes Expr::Error (no cascade); <div />.f() admitted; slice 2 keeps the head's nesting depth equal to its chain (a 450-link head pinned both ways); spec \u00a73.6; ledger NEW; estate 0 -> fix (the new refusal named in the v0.50.0 notes); the editor half: a non-View method offered in a head only to three typed characters (E213's rule)"
+  },
+  {
+   "id": "E309",
+   "lane": "solver-52",
+   "commit": "99d9da3e",
+   "text": "the parser cannot decide it alone (whether the name is generic is known after resolution): the walk notes the `L <M>(args)` shape and holds the operands' refusals; after solving, a generic function/struct/enum left side gets ONE steer naming the spacing, else the held refusals are pushed; a generic TYPE's steer still lands on 'a type, not a value' (a later steer to ::new); spec \u00a73.6; E319 filed for the method-call shape"
+  },
+  {
+   "id": "B617",
+   "lane": "solver-52",
+   "commit": "20ff28f9",
+   "text": "native only (JS already threaded the value): the object-table slot is typed by the trait's body-less declaration, which had no hidden parameters, so B606's stand-in passed None; dispatch_refine's object_slot_declaration_unions (every impl member of the declaring trait, blankets included; trait_member_candidates shared) and context.rs's candidate union (a declaration whose union holds a needy member joins needs/strict); vilan-rust's object_slot_arguments: the None stand-in kept for trait defaults only, a missed context on a body-less declaration refuses; native probe dyn_slot_blanket_context.vl"
   }
  ]
 }
