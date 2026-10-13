@@ -193,6 +193,12 @@
    "lane": "solver-52",
    "commit": "20ff28f9",
    "text": "native only (JS already threaded the value): the object-table slot is typed by the trait's body-less declaration, which had no hidden parameters, so B606's stand-in passed None; dispatch_refine's object_slot_declaration_unions (every impl member of the declaring trait, blankets included; trait_member_candidates shared) and context.rs's candidate union (a declaration whose union holds a needy member joins needs/strict); vilan-rust's object_slot_arguments: the None stand-in kept for trait defaults only, a missed context on a body-less declaration refuses; native probe dyn_slot_blanket_context.vl"
+  },
+  {
+   "id": "E314",
+   "lane": "fmt-52",
+   "commit": "cbab680d",
+   "text": "inside an element-body hole a long call breaks its arguments one per line (trailing comma, `)` at the hole's indent), a list's tuples one per line siblings alike (no trailing comma - the grammar has none), an element literal whole, and the chain link on its own line one level under the hole's indent; the css operand kept; the premise was wrong - a call OUTSIDE markup never broke its arguments (R5 last-argument layout only), so the layout is new code gated to holes (ungated it moves 1,813 lines in 60 files - E321, the owner's call); estate: exactly six holes move (kolt prefs.vl x3 - the owner's; website page.vl x3 - the integrator applies at the fold); 9 pins"
   }
  ]
 }

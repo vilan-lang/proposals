@@ -1,0 +1,9 @@
+// fmt-52 find: outside markup a call never breaks its arguments (formatter.rs's print_call_arguments:
+// "R5 - an EARLIER argument that is the over-budget cause leaves the line long"). The same call in a
+// markup hole now breaks one argument per line (E314); here it stays on one 190-column line.
+fun demo() {
+	let picked = select_component("sidebar_collapsed", ListCell::of([(1, false), (2, true), (3, true)]), get_prefs().sidebar_collapsed.commit_signal());
+	for command in state_group(next_command_id, "text-selection", const search_dict::expand("UI: Toggle full text selection"), const search_dict::expand("UI: Enable full text selection"), prefs.text_selection_enabled) {
+		commands.push(command);
+	}
+}
