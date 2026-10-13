@@ -1,0 +1,31 @@
+tip=57677552 loadavg=0.03 0.84 2.88
+     Summary [ 467.809s] 10617 tests run: 10617 passed (1 slow), 38 skipped
+union exit=0
+doc-tests exit=0
+native whole-set exit=0
+clippy exit=0
+windows exit=101
+audit exit=0
+fmt exit=0
+vilan-fmt exit=0
+wasm exit=0
+canary@1.5MiB exit=0
+perf leg starts at loadavg=1.18 3.33 5.16
+  RED  example:math                  253,310,696 / ceiling      250,556,961 (x1.0110, limit x1.0100)
+  T3 kolt @dee494ab: CPU x0.981  RSS x0.998  instructions x0.937  (load max 1.0)
+  T3 thresholds: CPU and instructions 1.10, peak RSS 1.05 (VILAN_PERF_RSS_THRESHOLD / --rss-threshold)
+  T3 peak RSS, a fresh process per run, median of 5: base 347.8 MB [335 339 347 347 350]; tip 347.2 MB [341 347 347 347 348]
+  LSP rows measured (8): leaf keystroke, leaf keystroke + pause, shared.vl keystroke, model.vl keystroke, model.vl keystroke, importers open, css keystroke, parse break, parse repair
+  LSP row leaf keystroke: CPU to diagnostics base 640 ms, tip 500 ms (x0.78)
+  LSP row leaf keystroke + pause: CPU to diagnostics base 1480 ms, tip 1270 ms (x0.86)
+  LSP row shared.vl keystroke: CPU to diagnostics base 210 ms, tip 180 ms (x0.86)
+  LSP row model.vl keystroke: CPU to diagnostics base 210 ms, tip 180 ms (x0.86)
+  LSP row model.vl keystroke, importers open: CPU to diagnostics base 680 ms, tip 620 ms (x0.91)
+  LSP row css keystroke: CPU to diagnostics base 840 ms, tip 750 ms (x0.89)
+  LSP row parse break: CPU to diagnostics base 830 ms, tip 750 ms (x0.90)
+  LSP row parse repair: CPU to diagnostics base 860 ms, tip 790 ms (x0.92)
+wrote /home/reed/.vilan/perf-verdicts/perf-57677552dbec571de059148921a96426e4dbcac7.json
+PERF VERDICT: RED — example:math x1.0110 of its ceiling (instructions:u, class reference)
+perf exit=1
+changelog parity 45 / 45
+verdict: union=0 doctests=0 native=0 clippy=0 windows=101 audit=0 fmt=0 vilan-fmt=0 wasm=0 canary=0 perf=1

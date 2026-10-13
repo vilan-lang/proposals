@@ -1,0 +1,398 @@
+{
+ "sha": "57677552dbec571de059148921a96426e4dbcac7",
+ "date": "2026-10-13",
+ "verdict": "red",
+ "red": [
+  "example:math x1.0110 of its ceiling (instructions:u, class reference)"
+ ],
+ "load": 0.96,
+ "class": "reference",
+ "counter": "instructions:u",
+ "t2": {
+  "results": {
+   "example:math": {
+    "counter": "instructions:u",
+    "instructions": 253310696,
+    "peak_rss_kb": 30212,
+    "cpu_s": 0.039,
+    "exit": 0,
+    "subject": "example:math"
+   },
+   "example:watch": {
+    "counter": "instructions:u",
+    "instructions": 315888062,
+    "peak_rss_kb": 31656,
+    "cpu_s": 0.052,
+    "exit": 0,
+    "subject": "example:watch"
+   },
+   "example:browser": {
+    "counter": "instructions:u",
+    "instructions": 1357579727,
+    "peak_rss_kb": 76708,
+    "cpu_s": 0.188,
+    "exit": 0,
+    "subject": "example:browser"
+   },
+   "example:fullstack": {
+    "counter": "instructions:u",
+    "instructions": 2828539537,
+    "peak_rss_kb": 70500,
+    "cpu_s": 0.353,
+    "exit": 0,
+    "subject": "example:fullstack"
+   },
+   "example:router": {
+    "counter": "instructions:u",
+    "instructions": 1520796229,
+    "peak_rss_kb": 77720,
+    "cpu_s": 0.2,
+    "exit": 0,
+    "subject": "example:router"
+   },
+   "example:reactive-ui": {
+    "counter": "instructions:u",
+    "instructions": 1626350872,
+    "peak_rss_kb": 78180,
+    "cpu_s": 0.207,
+    "exit": 0,
+    "subject": "example:reactive-ui"
+   },
+   "example:ssr": {
+    "counter": "instructions:u",
+    "instructions": 3393773288,
+    "peak_rss_kb": 74516,
+    "cpu_s": 0.407,
+    "exit": 0,
+    "subject": "example:ssr"
+   },
+   "example:canvas": {
+    "counter": "instructions:u",
+    "instructions": 1365839246,
+    "peak_rss_kb": 77368,
+    "cpu_s": 0.182,
+    "exit": 0,
+    "subject": "example:canvas"
+   },
+   "example:rpc": {
+    "counter": "instructions:u",
+    "instructions": 1740227377,
+    "peak_rss_kb": 80724,
+    "cpu_s": 0.231,
+    "exit": 0,
+    "subject": "example:rpc"
+   },
+   "example:todo": {
+    "counter": "instructions:u",
+    "instructions": 4242284747,
+    "peak_rss_kb": 82744,
+    "cpu_s": 0.5,
+    "exit": 0,
+    "subject": "example:todo"
+   },
+   "example:walkthrough": {
+    "counter": "instructions:u",
+    "instructions": 4315361845,
+    "peak_rss_kb": 91944,
+    "cpu_s": 0.515,
+    "exit": 0,
+    "subject": "example:walkthrough"
+   },
+   "genapp:46": {
+    "counter": "instructions:u",
+    "instructions": 7677305693,
+    "peak_rss_kb": 208388,
+    "cpu_s": 0.941,
+    "exit": 0,
+    "subject": "genapp:46"
+   },
+   "plain:160": {
+    "counter": "instructions:u",
+    "instructions": 2854594969,
+    "peak_rss_kb": 128808,
+    "cpu_s": 0.399,
+    "exit": 0,
+    "subject": "plain:160"
+   },
+   "plain:320": {
+    "counter": "instructions:u",
+    "instructions": 5507015276,
+    "peak_rss_kb": 237172,
+    "cpu_s": 0.844,
+    "exit": 0,
+    "subject": "plain:320"
+   }
+  },
+  "judged": [
+   "  RED  example:math                  253,310,696 / ceiling      250,556,961 (x1.0110, limit x1.0100)",
+   "  ok   example:watch                 315,888,062 / ceiling      316,493,354 (x0.9981, limit x1.0100)",
+   "  ok   example:browser             1,357,579,727 / ceiling    1,371,583,124 (x0.9898, limit x1.0100)",
+   "  ok   example:fullstack           2,828,539,537 / ceiling    2,921,719,082 (x0.9681, limit x1.0100)",
+   "  ok   example:router              1,520,796,229 / ceiling    1,532,276,405 (x0.9925, limit x1.0100)",
+   "  ok   example:reactive-ui         1,626,350,872 / ceiling    1,660,268,336 (x0.9796, limit x1.0100)",
+   "  ok   example:ssr                 3,393,773,288 / ceiling    3,448,815,594 (x0.9840, limit x1.0100)",
+   "  ok   example:canvas              1,365,839,246 / ceiling    1,378,211,823 (x0.9910, limit x1.0100)",
+   "  ok   example:rpc                 1,740,227,377 / ceiling    1,766,105,821 (x0.9853, limit x1.0100)",
+   "  ok   example:todo                4,242,284,747 / ceiling    4,377,861,323 (x0.9690, limit x1.0201)",
+   "  ok   example:walkthrough         4,315,361,845 / ceiling    4,475,305,348 (x0.9643, limit x1.0100)",
+   "  ok   genapp:46                   7,677,305,693 / ceiling    7,759,098,337 (x0.9895, limit x1.0100)",
+   "  ok   growth plain 160 -> 320 modules: x1.929 (at most x2.3, Q11/M107)"
+  ]
+ },
+ "t3": {
+  "kolt": "dee494ab",
+  "sources": {
+   "base": "kolt@dee494ab",
+   "tip": "kolt@dee494ab"
+  },
+  "different_sources": false,
+  "counter": "instructions:u",
+  "load_max": 0.96,
+  "runs": 5,
+  "base": {
+   "cpu_s": 1.877,
+   "peak_rss_kb": 356136,
+   "peak_rss_runs_kb": [
+    343768,
+    347252,
+    356136,
+    356340,
+    358688
+   ],
+   "instructions": 15113486618,
+   "exit": 0
+  },
+  "tip": {
+   "cpu_s": 1.842,
+   "peak_rss_kb": 355532,
+   "peak_rss_runs_kb": [
+    349580,
+    355440,
+    355532,
+    355884,
+    357200
+   ],
+   "instructions": 14167223167,
+   "exit": 0
+  },
+  "ratio": {
+   "cpu_s": 0.9813532232285562,
+   "peak_rss_kb": 0.9983040186894894,
+   "instructions": 0.9373894671086015
+  },
+  "threshold": 1.1,
+  "rss_threshold": 1.05,
+  "red": [],
+  "notes": []
+ },
+ "lsp": [
+  {
+   "scenario": "leaf keystroke",
+   "base_ms": 640.0,
+   "tip_ms": 500.0,
+   "ratio": 0.78125
+  },
+  {
+   "scenario": "leaf keystroke + pause",
+   "base_ms": 1480.0,
+   "tip_ms": 1270.0,
+   "ratio": 0.8581081081081081
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "base_ms": 210.0,
+   "tip_ms": 180.0,
+   "ratio": 0.8571428571428571
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "base_ms": 210.0,
+   "tip_ms": 180.0,
+   "ratio": 0.8571428571428571
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "base_ms": 680.0,
+   "tip_ms": 620.0,
+   "ratio": 0.9117647058823529
+  },
+  {
+   "scenario": "css keystroke",
+   "base_ms": 840.0,
+   "tip_ms": 750.0,
+   "ratio": 0.8928571428571429
+  },
+  {
+   "scenario": "parse break",
+   "base_ms": 830.0,
+   "tip_ms": 750.0,
+   "ratio": 0.9036144578313253
+  },
+  {
+   "scenario": "parse repair",
+   "base_ms": 860.0,
+   "tip_ms": 790.0,
+   "ratio": 0.9186046511627907
+  }
+ ],
+ "lsp_notes": [],
+ "lsp_measured": [
+  "leaf keystroke",
+  "leaf keystroke + pause",
+  "shared.vl keystroke",
+  "model.vl keystroke",
+  "model.vl keystroke, importers open",
+  "css keystroke",
+  "parse break",
+  "parse repair"
+ ],
+ "lsp_skipped": [],
+ "e121": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 500.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 0
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 180.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 3
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 180.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 2,
+   "series": "Order 52 (N174): the keystroke edit is unchanged; the Find References probe moved from `fun messages(self)` (gone from model.vl) to `fun global()`, the mirrored store reader, so that probe starts a new series."
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "median_ms": 630.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 750.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0
+  },
+  {
+   "scenario": "parse break",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 750.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0,
+   "series": "Order 52 (N174): re-anchored from `let messages = channel.messages();` (gone with the mirrored-store exhibit, kolt@dee494ab) to `channel_name.adopt(channel.current_name());` in the same channel.vl - a statement over a `g.channels()` boundary; the break and its repair are the same shape, the figures start a new series."
+  }
+ ],
+ "bumps": [
+  {
+   "subject": "example:math",
+   "class": "ci",
+   "ratio": 1.025,
+   "reason": "std-52's std growth, M120's class: B621's six marker `Eq` impls (bool, List, Option, Result, HashSet, HashMap) and B623's array `Default`/`Json`/`FromJson` impls with the `default_of`/`from_json_value_of` helpers live in std modules every program loads, and the smallest example pays them whole; x1.0182 callgrind on CI run 38453647717 against the v0.49.0 ceiling (the lane's ci-local.sh perf has no ceilings in its local class). Re-taken at the Order 52 seal.",
+   "item": "M120"
+  },
+  {
+   "subject": "example:watch",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "the same std growth on the second-smallest example: x1.0044 of its ceiling on CI run 38453647717 against the 0.5% ci tolerance - one more std line would red it. Re-taken at the Order 52 seal.",
+   "item": "M120"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "B618: an `async` now seeds `std::task` (the home of `async e`'s `Task<T>`), and todo spawns without importing it, so it loads `task.vl` and what it imports once: x1.0077 instructions on the lane's box against next @dcfdcba1 (4,209.9 M -> 4,242.3 M); every other row within 0.08 %. Re-taken at the Order 52 seal.",
+   "item": "B618"
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "B618's std::task seed, as the ci row above (x1.0077 on the lane's box).",
+   "item": "B618"
+  }
+ ],
+ "bumps_for_the_owner": [],
+ "genapp_phases_cpu_ms": {
+  "load+walk": 313.79999999999995,
+  "base": 232.89999999999998,
+  "build": 12.4,
+  "checks": 324.6,
+  "contexts+graph": 91.0,
+  "async-infer": 19.200000000000003,
+  "view-suspensions": 0.0,
+  "async-drops": 0.0,
+  "context-drops": 0.0,
+  "platform-color": 22.8,
+  "const-pass": 27.7,
+  "init-order": 0.1,
+  "emission-walk": 43.2,
+  "program-drop": 17.0
+ },
+ "e121_after": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 1,
+   "blocking": false,
+   "mandate": true
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 4,
+   "blocking": true
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 3,
+   "blocking": true,
+   "series": "Order 52 (N174): the keystroke edit is unchanged; the Find References probe moved from `fun messages(self)` (gone from model.vl) to `fun global()`, the mirrored store reader, so that probe starts a new series."
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false,
+   "mandate": true
+  },
+  {
+   "scenario": "parse break",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false,
+   "mandate": true,
+   "series": "Order 52 (N174): re-anchored from `let messages = channel.messages();` (gone with the mirrored-store exhibit, kolt@dee494ab) to `channel_name.adopt(channel.current_name());` in the same channel.vl - a statement over a `g.channels()` boundary; the break and its repair are the same shape, the figures start a new series."
+  }
+ ]
+}
