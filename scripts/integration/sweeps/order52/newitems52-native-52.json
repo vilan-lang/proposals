@@ -6,7 +6,7 @@
    "kind": "miscompile (JS vs native; design question)",
    "area": "Native targets & rendering",
    "status": "OPEN — filed 2026-10-13 (native-52's find, Order 52)",
-   "discussion": "native-52 (Order 52); sweeps/order51/native-52/finds/f1_captured_binding_rebound_by_a_later_argument.vl",
+   "discussion": "native-52 (Order 52); sweeps/order52/native-52/finds/f1_captured_binding_rebound_by_a_later_argument.vl",
    "title": "F135's binding half (spec §6.9, outside R-a's `read()`): `words.measured(swap())`, `swap` RE-BINDING a captured `mut` binding whole, prints the new binding natively (3: the view of the binding's cell is taken after the other arguments, as §6.9's native note orders it) and the old object on JS (1: the receiver is the object the binding held when it was evaluated)",
    "body": "R-a ruled `read()` (§6.7); the captured-binding half of F135's repro is §6.9's VIEW, which native-52 left as F129 built it (the in-place write `words.measured(more())` prints 2 on both, as §6.9 says). The rebind is the residue: one copy order cannot answer JS's object identity for both an in-place write and a rebind. The §6.9-consistent fix is on JS: an argument (a `&`/`&self` view, or a by-value place) rooted at a captured `mut` binding is evaluated AFTER the call's later arguments when they run code — the transformer hoists them into consts first (`walk_siblings_in_order`'s spill), which changes nothing but the order a pure binding read sits in. It needs a capture table on the JS side (which bindings are `mut` and captured by a closure; the native emitter builds its own, `boxed`). Same shape for a by-value place: `has(log.items, rep())` with `rep` assigning `log.items` whole (native late copy sees it, JS does not). Pinned ignored: `f135_a_later_argument_that_rebinds_a_viewed_captured_binding_answers_the_same_on_both_backends` (its reason leads with F135; retarget to this id). Sizing S-M; transformer + an analyzer capture table."
   },
@@ -16,7 +16,7 @@
    "kind": "miscompile (native) — FIXED in native-52 (commit f58b1c60)",
    "area": "Native targets & rendering",
    "status": "FIXED — native-52, Order 52 (close at the merge)",
-   "discussion": "native-52 (Order 52); sweeps/order51/native-52/finds/f2_scalar_view_of_a_captured_binding.vl",
+   "discussion": "native-52 (Order 52); sweeps/order52/native-52/finds/f2_scalar_view_of_a_captured_binding.vl",
    "title": "Natively a `&` of a captured `mut` binding's SCALAR place (a number, `bool`, `str`; a field or the binding itself) beside a later argument that writes the binding read the value where it stood — `count_of(&log.count, bump())` printed 0 against JS's 1",
    "body": "Spec §6.9's native note takes the view after the other arguments; a natively `Copy` scalar takes no view and its copy was taken in argument order, while JS's `(base, key)` pair reads late. F129's deferral now covers the types JS views as a pair (SCALAR_PRIMITIVE_NAMES, `bool`); `Option`, tuples and enums (JS hands the value it held) stay. Pin `a_scalar_view_of_a_captured_binding_is_taken_after_the_later_arguments_on_both_backends`."
   },
@@ -26,7 +26,7 @@
    "kind": "miscompile (JS) — FIXED in native-52 (commit d2771ee4)",
    "area": "JS backend",
    "status": "FIXED — native-52, Order 52 (close at the merge)",
-   "discussion": "native-52 (Order 52); sweeps/order51/native-52/finds/f3_mut_self_call_on_a_reads_field.vl",
+   "discussion": "native-52 (Order 52); sweeps/order52/native-52/finds/f3_mut_self_call_on_a_reads_field.vl",
    "title": "A `&mut self` call on a FIELD of a `Shared::read()` wrote the cell on JS — `cell.read().items.push(9)`, `cell.read().rows[0].push(9)` grew the cell's lists (1), natively a copy (0)",
    "body": "B274 copied only a bare `cell.read()` receiver; the spine is the same read. The B274 arm in `compute_clone_sites` now asks `shared_read_spine_cell`. Estate 0. Pin `borrows::a_mut_self_call_on_a_reads_field_does_not_write_the_cell`. Its neighbour, an ASSIGNMENT through a read, is F?4."
   },
@@ -36,7 +36,7 @@
    "kind": "miscompile (JS vs native; checker)",
    "area": "JS backend",
    "status": "OPEN — filed 2026-10-13 (native-52's find, Order 52)",
-   "discussion": "native-52 (Order 52); sweeps/order51/native-52/finds/f4_assignment_through_a_read.vl",
+   "discussion": "native-52 (Order 52); sweeps/order52/native-52/finds/f4_assignment_through_a_read.vl",
    "title": "An ASSIGNMENT through a `Shared::read()` checks clean and diverges — `cell.read().count = 3` and `cell.read().items[0] = 7` write the cell on JS (prints 3, 7) and a lost copy natively (prints 0, 1)",
    "body": "Spec §6.7: `read()` copies, so the native answer is the rule's; but an assignment into a temporary copy is never what the program meant (the classic trap std's cells page names for `push`). Rec: the checker refuses an assignment whose target's spine roots at a `read()` — \"`cell.read()` is a copy, so this assignment is lost; write through `cell.write()`: `cell.write().count = 3`\" — a `diagnostics` item with a ledger row; estate count first (expected 0). Area: the checks (the analyzer core), not native. Sizing S."
   }

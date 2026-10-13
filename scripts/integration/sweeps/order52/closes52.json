@@ -13,6 +13,30 @@
    "lane": "tools-52",
    "commit": "ba583735",
    "text": "vilan test builds the source map and runs node with --enable-source-maps; a failing test's stack names .vl lines (pin red before)"
+  },
+  {
+   "id": "B621",
+   "lane": "std-52",
+   "commit": "feb03f5b",
+   "text": "marker Eq impls beside each PartialEq, bounded by what the type holds: bool, List<T: Eq>, Option<T: Eq>, Result<T: Eq, E: Eq>, HashSet<T: Hashable + Eq>, HashMap<K: Hashable + Eq, V: Eq>; std/traits.md"
+  },
+  {
+   "id": "B623",
+   "lane": "std-52",
+   "commit": "10b45647",
+   "text": "arrays gain Default (impl [type T: Default; const N]), Json and FromJson (the length checked: 'expected an array of 2 elements, found 1'; length 0 its own impl); std::default::default_of<T>() and std::json::from_json_value_of<T>(value) because an array type cannot start a path (A171); macro_std TypeExpr::is_path_head; the Default/Json generators use the helpers only for a member whose type cannot start a path (derives over ordinary types emit what they did); NO Wire impl (the owner's 'on a need' holds; A172's to_array first)"
+  },
+  {
+   "id": "B622",
+   "lane": "std-52",
+   "commit": "fe519fd7",
+   "text": "[derive(Hashable)] over a generic struct reads each field under the derived impl's own type parameters (hashable_member_under_binders); a generic derived type used as a field is judged through the impl table, not by name (Holder<|| i32> hashed two closures to one key before); the Wire half WITHDRAWN - C7's guard refuses parameter-typed Wire fields on purpose (a later relaxation, the lane's Q3)"
+  },
+  {
+   "id": "B615",
+   "lane": "std-52",
+   "commit": "37005906",
+   "text": "already fixed on the base by B578 (filed against ca407da0); 19 more shapes probed identical on both backends and pinned (the pin fails with B578's call arm disabled); pins only - no CHANGELOG entry (pins-only closes are tracker-only)"
   }
  ]
 }
