@@ -28,3 +28,4 @@
 - CUT v0.49.0 (2026-10-13): cut-release.sh 0.49.0 clean (41 entries ordered; E121's counts advanced; no bump this order); release commit c9279eed on next, tag v0.49.0 = c9279eed pushed -> release.yml running; CI on next @c9279eed running. Fold after both are green.
 - v0.49.0 PUBLISHED: release run 38351355823 GREEN 21/21; CI on next @c9279eed GREEN (38351353767). Folding + installing the toolchain.
 - FOLDED: fold-release.sh v0.49.0 clean; main = next = 697c9517 on origin; tag v0.49.0 = c9279eed. Toolchain vilan 0.49.0 (697c95179) in BOTH locations + vilan-lsp + vilan-0.49.0.vsix installed. Website: keywords regenerated under 0.49.0 + harness + the fold's deploy watched; manifest checked after.
+- Website: keywords identical under 0.49.0; harness PASS; the fold's deploy 38354611512 GREEN; manifest v0.49.0; site 200. kolt clean under 0.49.0. ORDER 51 COMPLETE.
