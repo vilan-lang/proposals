@@ -163,6 +163,18 @@
    "lane": "editor-52",
    "commit": "4ec00da4",
    "text": "[build] dbg in the editor schema and the manifest completion"
+  },
+  {
+   "id": "M142",
+   "lane": "incr-52a",
+   "commit": "0ca1e265",
+   "text": "S7b: live_ranges.rs (the complement of the reused ranges sealed once per analysis in four lanes - Class A, table, module, held; a walk under 20% live, a sweep otherwise, the shape asked before the range) routed through 20+ Class A passes, the bound audit's module lane (M143), R11 (seed-call rows + lazy sets - a propagated instantiation reports in the callee's body, so R11 cannot join a window), compute_resource_types over the complement of the restored type runs; held_tables.rs (the six held passes as per-region CONTRIBUTION rows folded per analysis - their inputs cross items through module-level mut roots and struct-field cell unions, so output rows could never serve); the S7 signature hashed relative to the item (absolute spans left later items stale). Served keystroke: checks 264-367 -> 214-227 ms; instructions leaf 4.29 -> 3.42 G (-20%), pause -19%, world -18%, shared -19%, importers -15%, css -7.5%; cold rows under the base (plain growth rows +0.6%, no ceiling); RSS +0.1%. Plant LiveRangeWalksServed pinned non-vacuous. E292 open: the seal's quiet run decides (leaf ~465 by ratio, css ~730)"
+  },
+  {
+   "id": "M143",
+   "lane": "incr-52a",
+   "commit": "0ca1e265",
+   "text": "the bound audit walks only live windows' sites (the module lane); the premise was wrong: the walk was not the cost - the 392 live sites' own audits are (20-30 ms before and after)"
   }
  ]
 }

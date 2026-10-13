@@ -863,6 +863,46 @@ item; their inputs are the written-roots set, which the dirty closure
 already bounds); R11 keeps its per-instantiation walk unless its dedup
 state is recorded as R10's was. The E292 rows: see the Order 51 record.
 
+**M110 S7b (Order 52, incr-52a): the checks phase at item grain, as
+built.** The LIVE ranges exist (`analyzer/live_ranges.rs`): the complement
+of each predicate's reused ranges over the id space, sealed beside them in
+`seal_reuse_ranges` in three lanes (Class A: frozen ∪ reused ∪ served;
+table: `table_ranges`; module: frozen ∪ reused — the bound audit's grain,
+M143) plus a fourth for the held passes; `LiveEntries` walks the live ids
+with a lookup each when the live set is under half the table and sweeps the
+table with the predicate otherwise, so a cold check keeps its path. Every
+Class A sweep iterates it (A155/A157 moved into the window from the Class B
+block to do so); the last-use net walks the table lane, with a
+`foreign_reads` row per region so a restored region's cross-file read of a
+live binding still marks it opaque; `compute_resource_types` restores a
+reused module's resource slots from its record (`TypeId`s of the stored
+prefix — the same on every hit, §2.1 — the one place a record carries one)
+and classifies the rest; the stage hints and the externals' `bumps` are
+rows; the view bindings and origins are computed once per analysis. Two
+premises of the door above were wrong on the ground: (a) R11 cannot join a
+Class A window — a propagated instantiation reports in the CALLEE's body,
+another module's — so it keeps its per-instantiation walk and asks a reused
+module's or served item's calls only where they SEEDED an instantiation
+last time (`r11_seed_calls` rows, walked in `function_calls`' order), its
+five whole-program sets built at the first instantiation; (b) the held
+passes' inputs are NOT bounded by the dirty closure — a module-level `mut`
+binding (legal: `mut counter = 1;` at module level, written from any
+function) is a written root written from other items, and the `Shared`
+cells union slots across items through struct fields and `Unknown` — so
+their OUTPUT rows cannot be served; `analyzer/held_tables.rs` records
+each region's CONTRIBUTIONS instead (written roots, cell facts, seam roots,
+candidate `let`s and captures, hand-ons; `held_recorded` false when a row
+would name another re-walked window) and folds them, the decisions running
+over every candidate on every analysis. The B457 calls index and the
+statement sequences are built on first ask. A fourth finding, from the
+plant's vacuity: the signature hashed every written type reference's
+ABSOLUTE span, so an edit earlier in a file left every later annotated
+item stale on every keystroke — now relative to the item's region. The
+measured table: the Order 52 lane report. What remains live by
+construction: the drop plan (`TypeId`s per body) and the move scan's
+whole-program sets (M?1 of the lane's finds), the lazy tables, the HMR
+transfer bounds.
+
 ## 8. The seams this order
 
 | seam | incr-48 (world, base cache, drivers, const pass, LSP scheduling) | solver-48 (inference, checks, `impl_select`, mono) | others |
