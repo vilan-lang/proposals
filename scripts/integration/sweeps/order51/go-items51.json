@@ -307,7 +307,14 @@
   "mode": "same-source; ADVANCE=1; CPU threshold 1.10; RSS 1.05 (N166)",
   "script": "sweeps/order51/seal-51.sh",
   "log": "sweeps/order51/seal-070653d2.out",
-  "started": "after CI green on 070653d2 (chained)"
+  "started": "after CI green on 070653d2 (chained)",
+  "verdict": "every leg GREEN incl. canary@1536 (seal-070653d2.out); the LSP leg refused on two moved scenarios (N174) -> the perf leg re-run alone with five rows (seal-070653d2-perf2.out): PERF VERDICT GREEN; T3 kolt @dee494ab CPU x0.948, instructions x0.879 (15.11 -> 13.28 G), peak RSS x0.991 (threshold 1.05); ci rows x0.982-x0.998; growth x1.930; LSP: leaf 600->580, pause 1880->1430, shared 200->200, importers 680->690, css 790->790",
+  "perf_verdict": "perf-verdict-070653d2.json (copy)",
+  "lsp_rows_measured": 5,
+  "unmeasured": [
+   "model.vl keystroke",
+   "parse break (a mandate row)"
+  ]
  },
  "order52": {
   "core (one lane at a time; Fable only for S7b if the owner agrees)": [
@@ -364,5 +371,6 @@
    "E300/E310's hover shapes (recs written)",
    "B607/E291 shipped breaking at v0.49.0 (confirm at the cut)"
   ]
- }
+ },
+ "sealed": "070653d2 (2026-10-13)"
 }

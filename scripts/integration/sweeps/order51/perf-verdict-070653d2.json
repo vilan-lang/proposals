@@ -1,0 +1,323 @@
+{
+ "sha": "070653d22fe52146741cf87b14384a90876743bb",
+ "date": "2026-10-13",
+ "verdict": "green",
+ "red": [],
+ "load": 0.69,
+ "class": "reference",
+ "counter": "instructions:u",
+ "t2": {
+  "results": {
+   "example:math": {
+    "counter": "instructions:u",
+    "instructions": 248297097,
+    "peak_rss_kb": 29640,
+    "cpu_s": 0.036,
+    "exit": 0,
+    "subject": "example:math"
+   },
+   "example:watch": {
+    "counter": "instructions:u",
+    "instructions": 313744712,
+    "peak_rss_kb": 30712,
+    "cpu_s": 0.044,
+    "exit": 0,
+    "subject": "example:watch"
+   },
+   "example:browser": {
+    "counter": "instructions:u",
+    "instructions": 1367227221,
+    "peak_rss_kb": 76016,
+    "cpu_s": 0.179,
+    "exit": 0,
+    "subject": "example:browser"
+   },
+   "example:fullstack": {
+    "counter": "instructions:u",
+    "instructions": 2868667667,
+    "peak_rss_kb": 69796,
+    "cpu_s": 0.345,
+    "exit": 0,
+    "subject": "example:fullstack"
+   },
+   "example:router": {
+    "counter": "instructions:u",
+    "instructions": 1529551859,
+    "peak_rss_kb": 76684,
+    "cpu_s": 0.192,
+    "exit": 0,
+    "subject": "example:router"
+   },
+   "example:reactive-ui": {
+    "counter": "instructions:u",
+    "instructions": 1641505275,
+    "peak_rss_kb": 77472,
+    "cpu_s": 0.205,
+    "exit": 0,
+    "subject": "example:reactive-ui"
+   },
+   "example:ssr": {
+    "counter": "instructions:u",
+    "instructions": 3442824206,
+    "peak_rss_kb": 73988,
+    "cpu_s": 0.412,
+    "exit": 0,
+    "subject": "example:ssr"
+   },
+   "example:canvas": {
+    "counter": "instructions:u",
+    "instructions": 1374920947,
+    "peak_rss_kb": 76216,
+    "cpu_s": 0.184,
+    "exit": 0,
+    "subject": "example:canvas"
+   },
+   "example:rpc": {
+    "counter": "instructions:u",
+    "instructions": 1762687423,
+    "peak_rss_kb": 79736,
+    "cpu_s": 0.214,
+    "exit": 0,
+    "subject": "example:rpc"
+   },
+   "example:todo": {
+    "counter": "instructions:u",
+    "instructions": 4303095758,
+    "peak_rss_kb": 81784,
+    "cpu_s": 0.483,
+    "exit": 0,
+    "subject": "example:todo"
+   },
+   "example:walkthrough": {
+    "counter": "instructions:u",
+    "instructions": 4425443881,
+    "peak_rss_kb": 91124,
+    "cpu_s": 0.506,
+    "exit": 0,
+    "subject": "example:walkthrough"
+   },
+   "genapp:46": {
+    "counter": "instructions:u",
+    "instructions": 7663855657,
+    "peak_rss_kb": 205656,
+    "cpu_s": 0.941,
+    "exit": 0,
+    "subject": "genapp:46"
+   },
+   "plain:160": {
+    "counter": "instructions:u",
+    "instructions": 2825635904,
+    "peak_rss_kb": 127364,
+    "cpu_s": 0.379,
+    "exit": 0,
+    "subject": "plain:160"
+   },
+   "plain:320": {
+    "counter": "instructions:u",
+    "instructions": 5452498036,
+    "peak_rss_kb": 235968,
+    "cpu_s": 0.802,
+    "exit": 0,
+    "subject": "plain:320"
+   }
+  },
+  "judged": [
+   "  ok   example:math                  248,297,097 / ceiling      250,556,961 (x0.9910, limit x1.0100)",
+   "  ok   example:watch                 313,744,712 / ceiling      316,493,354 (x0.9913, limit x1.0100)",
+   "  ok   example:browser             1,367,227,221 / ceiling    1,371,583,124 (x0.9968, limit x1.0100)",
+   "  ok   example:fullstack           2,868,667,667 / ceiling    2,921,719,082 (x0.9818, limit x1.0100)",
+   "  ok   example:router              1,529,551,859 / ceiling    1,532,276,405 (x0.9982, limit x1.0100)",
+   "  ok   example:reactive-ui         1,641,505,275 / ceiling    1,660,268,336 (x0.9887, limit x1.0100)",
+   "  ok   example:ssr                 3,442,824,206 / ceiling    3,448,815,594 (x0.9983, limit x1.0100)",
+   "  ok   example:canvas              1,374,920,947 / ceiling    1,378,211,823 (x0.9976, limit x1.0100)",
+   "  ok   example:rpc                 1,762,687,423 / ceiling    1,766,105,821 (x0.9981, limit x1.0100)",
+   "  ok   example:todo                4,303,095,758 / ceiling    4,377,861,323 (x0.9829, limit x1.0100)",
+   "  ok   example:walkthrough         4,425,443,881 / ceiling    4,475,305,348 (x0.9889, limit x1.0100)",
+   "  ok   genapp:46                   7,663,855,657 / ceiling    7,759,098,337 (x0.9877, limit x1.0100)",
+   "  ok   growth plain 160 -> 320 modules: x1.930 (at most x2.3, Q11/M107)"
+  ]
+ },
+ "t3": {
+  "kolt": "dee494ab",
+  "sources": {
+   "base": "kolt@dee494ab",
+   "tip": "kolt@dee494ab"
+  },
+  "different_sources": false,
+  "counter": "instructions:u",
+  "load_max": 0.69,
+  "runs": 5,
+  "base": {
+   "cpu_s": 1.802,
+   "peak_rss_kb": 355612,
+   "peak_rss_runs_kb": [
+    345300,
+    355548,
+    355612,
+    356492,
+    356764
+   ],
+   "instructions": 15108127407,
+   "exit": 0
+  },
+  "tip": {
+   "cpu_s": 1.709,
+   "peak_rss_kb": 352492,
+   "peak_rss_runs_kb": [
+    347260,
+    352256,
+    352492,
+    354324,
+    358600
+   ],
+   "instructions": 13275248639,
+   "exit": 0
+  },
+  "ratio": {
+   "cpu_s": 0.9483906770255273,
+   "peak_rss_kb": 0.9912263928101414,
+   "instructions": 0.878682597874388
+  },
+  "threshold": 1.1,
+  "rss_threshold": 1.05,
+  "red": [],
+  "notes": []
+ },
+ "lsp": [
+  {
+   "scenario": "leaf keystroke",
+   "base_ms": 600.0,
+   "tip_ms": 580.0,
+   "ratio": 0.9666666666666667
+  },
+  {
+   "scenario": "leaf keystroke + pause",
+   "base_ms": 1880.0,
+   "tip_ms": 1430.0,
+   "ratio": 0.7606382978723404
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "base_ms": 200.0,
+   "tip_ms": 200.0,
+   "ratio": 1.0
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "base_ms": 680.0,
+   "tip_ms": 690.0,
+   "ratio": 1.0147058823529411
+  },
+  {
+   "scenario": "css keystroke",
+   "base_ms": 790.0,
+   "tip_ms": 790.0,
+   "ratio": 1.0
+  }
+ ],
+ "lsp_notes": [],
+ "e121": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 580.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 200.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 2
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "state": "absent"
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "median_ms": 700.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 790.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0
+  },
+  {
+   "scenario": "parse break",
+   "state": "absent"
+  }
+ ],
+ "bumps": [],
+ "bumps_for_the_owner": [],
+ "genapp_phases_cpu_ms": {
+  "load+walk": 196.4,
+  "base": 225.6,
+  "build": 11.8,
+  "checks": 325.59999999999997,
+  "contexts+graph": 80.9,
+  "async-infer": 18.9,
+  "view-suspensions": 0.0,
+  "async-drops": 0.0,
+  "context-drops": 0.0,
+  "platform-color": 20.6,
+  "const-pass": 19.3,
+  "init-order": 0.2,
+  "emission-walk": 38.900000000000006,
+  "program-drop": 16.6
+ },
+ "e121_after": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 3,
+   "blocking": true
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 2,
+   "blocking": true
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false
+  },
+  {
+   "scenario": "parse break",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false
+  }
+ ]
+}
