@@ -34,3 +34,4 @@
 - CI on 96487112 (solver-52's merge): success 14/14.
 - debug-52 REBASED onto 96487112: tip c6c19da7 (CHANGELOG ordering only; package.json and transformer.rs clean). Gates green (suite 10,609; native 279/279 both; source_maps 158 + 8; split/hmr/watch/extension; perf green; RSS +0.03%; extension 40/40). Merging (merge-debug-52.log); incr-52b last.
 - debug-52 MERGED dcfdcba1 (gates: 81 incl. source_maps/hmr/watch/extension; core source_maps 158; release_scripts; split; canary 18/18); pushed; CI watched; worktree reaped. incr-52b told to rebase (the LAST lane) and re-take the seven rows on the merged tree.
+- CI on dcfdcba1 (debug-52's merge): success 14/14.
