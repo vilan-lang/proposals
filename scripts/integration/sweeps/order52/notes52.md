@@ -11,3 +11,4 @@
 - C1 = incr-52a S7b MERGED 029d5ab4 (gates: 29; the five core differential binaries 59; vilan-lsp 1,103; release_scripts; split; canary 18/18); pushed; CI watched; the Fable worktree reaped. native-52 told to rebase (first of the three held lanes); incr-52b + solver-52 launching from C1.
 - Wave 2 launched from C1: incr-52b (Opus) + solver-52 (Opus). Held lanes rebasing in order: native-52 (now), then std-52, then editor-52.
 - CI on 029d5ab4 (C1): success 14/14.
+- native-52 REBASED onto C1: tip 896c9621 (CHANGELOG only conflicted; the F135 loop inside the live-range compute_clone_sites via the lazy calls_index; the derive-span scoping in all four walks; spans_a_cell_hazard not scoped - not needed). Gates green (suite 10,542; native 275/275 both; vilan-lsp 1,103; canary; perf green; RSS -0.2%). Merging (merge-native-52.log); std-52 next.

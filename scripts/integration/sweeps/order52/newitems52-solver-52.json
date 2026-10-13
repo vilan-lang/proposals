@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": "E?1",
+      "section": "E",
+      "kind": "diagnostic (XS-S)",
+      "area": "Diagnostics & error messages",
+      "status": "OPEN — filed 2026-10-13 (solver-52's find, Order 52)",
+      "discussion": "solver-52 (Order 52); sweeps/order51/solver-52/finds/e309_residue_a_spaced_generic_method_call.vl",
+      "title": "E309's residue: a spaced generic METHOD call — `h.make <str>(\"a\")` over `fun make<U>(self, u: U): U` — still gets the comparison's cascade (\"struct 'Holder' has no field 'make'\", \"`bool` has no ordering\", \"`str` is a type, not a value\"), none naming the spacing",
+      "body": "E309 steers the spaced call when its name is a generic FUNCTION or a generic TYPE (a name or path resolved at the accessor); the member form reads `h.make` as a field access, which fails before anything knows `make` is a generic method of `Holder`. The same seam fits: `note_spaced_generic_call` admitting a `MemberAccessor(_, Accessor)` left side, the field refusal held like the type-in-value-position one, and the decision asking whether the receiver's type has a generic method of that name. Sizing XS-S; the analyzer."
+    },
+    {
+      "id": "E?2",
+      "section": "E",
+      "kind": "diagnostic (S)",
+      "area": "Diagnostics & error messages",
+      "status": "OPEN — filed 2026-10-13 (solver-52's find, Order 52)",
+      "discussion": "solver-52 (Order 52); sweeps/order51/solver-52/finds/a_method_named_without_parens_reads_as_a_missing_field.vl, a_bare_head_link_naming_a_method.vl",
+      "title": "A METHOD named without its call parentheses is refused as a missing FIELD — `p.norm` over `impl Point { fun norm(self): i32 }` says \"struct 'Point' has no field 'norm'\", and `<input .autofocus />` (an element head's bare link) says \"struct 'View' has no field 'autofocus'\" with E119's twin note claiming the browser twin declares it (both twins declare the METHOD); neither says `.norm()` / `.autofocus()`",
+      "body": "The field refusal does not ask whether a method of that name exists. A steer — \"`norm` is a method of `Point`: call it, `p.norm()`\" — and E119's twin note asked about FIELDS only when the miss is a field the other twin has (it fires today because the browser twin's `autofocus` member is found by name, whatever kind it is). In an element head the bare form is likely the commonest way to meet it (`<input .autofocus />` beside `<input autofocus />`). Sizing S; the analyzer's field-accessor refusal."
+    }
+  ]
+}
