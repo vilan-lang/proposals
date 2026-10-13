@@ -141,7 +141,8 @@
  "cut": {
   "version": "v0.49.0",
   "breaking_expected": [
-   "B607"
+   "B607",
+   "E291"
   ],
   "kolt_patch": [
    "B607's migration if kolt's estate is not 0"
@@ -264,6 +265,24 @@
     "B603"
    ],
    "checkpoint": "C2"
+  },
+  {
+   "lane": "solver-51",
+   "sha": "a0b697a0",
+   "date": "2026-10-13",
+   "items": [
+    "B607 (BREAKING)",
+    "M133 (solver half)",
+    "B609",
+    "B611",
+    "B604",
+    "B552",
+    "B608",
+    "E295",
+    "B616",
+    "E291 (BREAKING; E284 retired)"
+   ],
+   "ledger_rows": "732..734 (+ row 705 removed)"
   }
  ],
  "checkpoints_reached": {
