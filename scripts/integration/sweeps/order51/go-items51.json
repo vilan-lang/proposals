@@ -283,11 +283,30 @@
     "E291 (BREAKING; E284 retired)"
    ],
    "ledger_rows": "732..734 (+ row 705 removed)"
+  },
+  {
+   "lane": "incr-51c (P1)",
+   "sha": "070653d2",
+   "date": "2026-10-13",
+   "items": [
+    "std-prefix P1 (opt-in)"
+   ],
+   "checkpoint": "C3"
   }
  ],
  "checkpoints_reached": {
   "C0": "765c931d (2026-10-12)",
   "C1": "5e17cb59 (2026-10-12)",
-  "C2": "9947ec5f (2026-10-12)"
+  "C2": "9947ec5f (2026-10-12)",
+  "C3": "070653d2 (2026-10-13)"
+ },
+ "seal_tip": "070653d2",
+ "seal": {
+  "tip": "070653d2",
+  "base_kolt": "scratchpad/seal-51/kolt-base @dee494ab (the owner's commit)",
+  "mode": "same-source; ADVANCE=1; CPU threshold 1.10; RSS 1.05 (N166)",
+  "script": "sweeps/order51/seal-51.sh",
+  "log": "sweeps/order51/seal-070653d2.out",
+  "started": "after CI green on 070653d2 (chained)"
  }
 }
