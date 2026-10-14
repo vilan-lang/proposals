@@ -1,0 +1,85 @@
+diff --git a/src/prefs.vl b/src/prefs.vl
+--- a/src/prefs.vl
++++ b/src/prefs.vl
+@@ -229,14 +229,19 @@
+ 					})
+ 				>
+ 					<div .styled(css { .ghost(); })>"Full text selection"</div>
+-					{select_component("text_selection_enabled", ListCell::of([
+-						(<span>"Disabled"</span>, false),
+-						(<span>"Enabled"</span>, true),
+-					]), get_prefs().text_selection_enabled.commit_signal()).styled(const button_style(Theme::primary_a()) + css {
+-						appearance("none");
+-						width(size(32));
+-						.paint_ink1();
+-					})}
++					{select_component(
++						"text_selection_enabled",
++						ListCell::of([
++							(<span>"Disabled"</span>, false),
++							(<span>"Enabled"</span>, true),
++						]),
++						get_prefs().text_selection_enabled.commit_signal(),
++					)
++						.styled(const button_style(Theme::primary_a()) + css {
++							appearance("none");
++							width(size(32));
++							.paint_ink1();
++						})}
+ 				</div>
+ 				<div
+ 					.styled(css {
+@@ -247,13 +252,19 @@
+ 					})
+ 				>
+ 					<div .styled(css { .ghost(); })>"Native context menu"</div>
+-					{select_component("context_menu_enabled", ListCell::of([(<span>"Disabled"</span>, false), (<span>
+-						"Enabled"
+-					</span>, true)]), get_prefs().context_menu_enabled.commit_signal()).styled(const button_style(Theme::primary_a()) + css {
+-						appearance("none");
+-						width(size(32));
+-						.paint_ink1();
+-					})}
++					{select_component(
++						"context_menu_enabled",
++						ListCell::of([
++							(<span>"Disabled"</span>, false),
++							(<span>"Enabled"</span>, true),
++						]),
++						get_prefs().context_menu_enabled.commit_signal(),
++					)
++						.styled(const button_style(Theme::primary_a()) + css {
++							appearance("none");
++							width(size(32));
++							.paint_ink1();
++						})}
+ 				</div>
+ 				<p
+ 					.styled(css {
+@@ -273,13 +284,19 @@
+ 					})
+ 				>
+ 					<div .styled(css { .ghost(); })>"Sidebar visibility"</div>
+-					{select_component("sidebar_collapsed", ListCell::of([(<span>"Shown"</span>, false), (<span>
+-						"Hidden"
+-					</span>, true)]), get_prefs().sidebar_collapsed.commit_signal()).styled(const button_style(Theme::primary_a()) + css {
+-						appearance("none");
+-						width(size(32));
+-						.paint_ink1();
+-					})}
++					{select_component(
++						"sidebar_collapsed",
++						ListCell::of([
++							(<span>"Shown"</span>, false),
++							(<span>"Hidden"</span>, true),
++						]),
++						get_prefs().sidebar_collapsed.commit_signal(),
++					)
++						.styled(const button_style(Theme::primary_a()) + css {
++							appearance("none");
++							width(size(32));
++							.paint_ink1();
++						})}
+ 				</div>
+ 			</div>
+ 		</div>
