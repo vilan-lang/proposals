@@ -362,10 +362,18 @@
  },
  "seal_tip": "57677552",
  "seal": {
-  "tip": "57677552",
+  "tip": "99b6013e",
   "base_kolt": "scratchpad/seal-52/kolt-base @dee494ab",
   "mode": "same-source; ADVANCE=1; CPU 1.10; RSS 1.05; seven rows (N174)",
   "script": "sweeps/order52/seal-52.sh",
-  "started": "after CI green on 57677552 and the runner checked"
- }
+  "started": "after CI green on 57677552 and the runner checked",
+  "verdict": "first pass on 57677552: every leg green but windows (N176 const dead on Windows) and perf (math x1.011 reference); fixed in 99b6013e (CI 14/14; ci-local windows green); the perf leg re-run alone: PERF VERDICT GREEN - T3 kolt @dee494ab CPU x0.975, instructions x0.938, peak RSS x1.003 (threshold 1.05); ALL SEVEN LSP rows (N174) improved: leaf 550 -> 470 ms (x0.85, UNDER THE 500 ms MANDATE), pause 1450 -> 1190, shared 210 -> 170, model 210 -> 190, importers 670 -> 600, css 810 -> 750, parse break 790 -> 740, parse repair 810 -> 760",
+  "perf_verdict": "perf-verdict-99b6013e.json (copy)",
+  "bumps": [
+   "example:math ci 1.025 + example:watch ci 1.01 (M120, std-52)",
+   "example:math reference 1.02 (M120)",
+   "example:todo ci + reference 1.01 (B618)"
+  ]
+ },
+ "sealed": "99b6013e (2026-10-13; the seal tip 57677552 + the N176 cfg fix and math's reference bump row)"
 }
