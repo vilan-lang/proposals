@@ -1,0 +1,36 @@
+server pid 2199327: /home/reed/code/vilan-lang/vilan/.claude/worktrees/incr-53a/target/incr-53a-scratch/bin-tip/vilan-lsp
+  leaf keystroke ...
+  leaf keystroke + pause ...
+  leaf keystroke, world mode ...
+  shared.vl keystroke ...
+  model.vl keystroke ...
+  model.vl keystroke, importers open ...
+  css keystroke ...
+  parse break ...
+vilan-lsp latency — vilan-lsp 0.50.0 (1256a9dbf) on the prepared tree /home/reed/code/vilan-lang/vilan/.claude/worktrees/incr-53a/target/incr-53a-scratch/kolt-src (std discovered at /home/reed/code/vilan-lang/vilan/.claude/worktrees/incr-53a/vilan/std (an ancestor checkout)); 3 run(s) per edit; loadavg 20.04 17.10 15.90 before, 16.28 16.46 15.82 after; 16 cores
+
+| edit | CPU to diagnostics ms | CPU to idle ms | instructions:u to idle (G) | analyses | wall to diagnostics ms | errors | keystroke wall ms (hover / completion / inlay / tokens) | idle CPU ms (hover / completion / inlay / tokens) | VmHWM MB |
+|---|---:|---:|---:|---:|---:|---:|---|---|---:|
+| open src/views.vl | 3170 | 3170 | | | 3178 | | | | 553 |
+| open src/views.vl (beside 1 open importers) | 90 | 90 | | | 85 | | | | 791 |
+| open src/shared.vl | 840 | 840 | | | 853 | | | | 791 |
+| open src/model.vl | 790 | 790 | | | 790 | | | | 791 |
+| open src/model.vl (beside 3 open importers) | 80 | 80 | | | 117 | | | | 791 |
+| open src/styles.vl | 2850 | 2850 | | | 2873 | | | | 802 |
+| open src/channel.vl | 2930 | 2930 | | | 3179 | | | | 802 |
+| leaf keystroke | 830 | 830 | 3.27 | 1 | 996 | 0 | 4.1 / 1.6 / 0.7 / 0.6 | 4.20 / 2.08 / 0.87 / 0.72 | 527 |
+| leaf keystroke + pause | 3080 | 3080 | 8.10 | 3 | 3408 | 0 | 4.8 / 2.2 / 1.0 / 0.7 | 5.62 / 2.35 / 0.93 / 0.63 | 788 |
+| leaf keystroke, world mode | 950 | 950 | 3.63 | 1 | 1105 | 0 | 4.6 / 1.9 / 0.7 / 0.7 | 5.04 / 2.28 / 0.92 / 0.57 | 791 |
+| shared.vl keystroke | 320 | 340 | 1.23 | 1 | 488 | 0 | 1.3 / 0.8 / 0.4 / 0.5 | 1.04 / 0.92 / 0.36 / 0.41 | 791 |
+| model.vl keystroke | 370 | 370 | 1.21 | 1 | 523 | 0 | 1.6 / 1.2 / 0.4 / 0.4 | 1.55 / 1.59 / 0.39 / 0.39 | 791 |
+| model.vl keystroke, importers open | 1480 | 1530 | 4.45 | 1 | 1666 | 0 | 3.7 / 1.6 / 0.4 / 0.5 | 4.76 / 1.39 / 0.44 / 0.27 | 802 |
+| css keystroke | 1800 | 1800 | 5.46 | 1 | 1959 | 0 | 7.2 / 8.5 / 1.2 / 0.7 | 5.23 / 4.42 / 1.65 / 0.52 | 802 |
+| parse break | 1580 | 1580 | 5.45 | 1 | 1732 | 1 | 4.5 / 6.2 / 1.0 / 1.0 | 5.12 / 3.09 / 1.04 / 0.60 | 802 |
+| parse repair | 1600 | 1600 | 5.57 | 1 | 1748 | 0 | 5.8 / 2.6 / 1.3 / 0.9 | 4.64 / 2.14 / 0.91 / 0.72 | 802 |
+| open src/model.vl: Find References (first) | 820 | | 3.18 | | 817 | 4 locations in 3 files | | | |
+| open src/model.vl: Find References (warm) | 10 | | 0.00 | | 13 | 4 locations in 3 files | | | |
+| leaf keystroke, world mode: every open file | 950 | | | | 1105 | 2 files | | | |
+| model.vl keystroke, importers open: every open file | 1510 | | | | 1712 | 4 files | | | |
+
+Medians over the runs. E121's targets: <10 ms on the keystroke path, <500 ms to errors.
+CPU is the whole server process (every thread) from the edit to the analysis's publish for the file, and to idle; instructions are user-space, every thread, edit to idle; wall includes the debounce and the machine's load. Keystroke requests are asked before the analysis lands; idle requests after it. A pause row rests until the server has been quiet for its pause; every other row resumes after 0.4 s.
