@@ -1,0 +1,462 @@
+diff --git a/crates/vilan-core/src/analyzer.rs b/crates/vilan-core/src/analyzer.rs
+index bec22248..05ca4561 100644
+--- a/crates/vilan-core/src/analyzer.rs
++++ b/crates/vilan-core/src/analyzer.rs
+@@ -4832,6 +4832,12 @@ pub struct Analyzer<'src> {
+     // text moves with the edit. `u32::MAX` until an analysis sets it, which
+     // keeps a world built before the field existed answering as it did.
+     reuse_prefix_len: u32,
++    // E318: whether THIS analysis skips the emitter-only tail
++    // (`Workspace::skip_emitter_tables`), set when the world is unpacked —
++    // a base-cache world's analyzer carries the storing analysis's answer.
++    // Read by the record seams: a slice filed without the emitter rows is
++    // served only to an analysis that skips them too.
++    skip_emitter_tables: bool,
+     // M76: every (importing file, resolved target) pair an import or `use`
+     // statement bound in this program. The input to the ALIAS-REACH closure an
+     // entry-shaped world's checks-reuse record needs — see
+@@ -7975,6 +7981,7 @@ impl<'src> Analyzer<'src> {
+             reuse_unrecordable: HashSet::default(),
+             entry_dirty_sources: HashSet::default(),
+             reuse_prefix_len: u32::MAX,
++            skip_emitter_tables: false,
+             import_targets: Vec::new(),
+             entry_phase: false,
+             types_settled: false,
+@@ -52580,13 +52587,17 @@ impl<'src> Analyzer<'src> {
+         if reusable.is_empty() || full_scan_checks_forced() || !world_table_reuse_enabled() {
+             return;
+         }
++        // E318: a slice filed without the emitter rows serves only an
++        // analysis that skips them too; an emitting one re-derives it.
+         let with_tables: HashSet<SourceId> = reusable
+             .iter()
+             .copied()
+             .filter(|source| {
+-                records
+-                    .get(&source.0)
+-                    .is_some_and(|record| record.tables.is_some())
++                records.get(&source.0).is_some_and(|record| {
++                    record.tables.as_ref().is_some_and(|tables| {
++                        self.skip_emitter_tables || tables.emitter_recorded
++                    })
++                })
+             })
+             .collect();
+         if with_tables.is_empty() {
+@@ -73335,6 +73346,7 @@ struct ResourceOwnership {
+ /// separately: copying is decided by the capture's own type (an aggregate
+ /// copies, a resource never does), reading by whether the subject's storage
+ /// can be mutated in place under the temp that aliases it.
++#[derive(Default)]
+ pub struct CapturePlan {
+     /// The captures that copy, keyed by how the copy is decided.
+     pub sites: HashMap<Id, CopyDecision>,
+@@ -78027,6 +78039,30 @@ pub struct Workspace {
+     /// language server beside `reading_aids`; a front-end fact out of the
+     /// base cache key for the same reason.
+     pub generated_root: Option<PathBuf>,
++    /// E318 (RULED 2026-10-15): whether this analysis skips the EMITTER-ONLY
++    /// tail of `analyze_over_world` — the last-use dataflow and the drop
++    /// extents it places, the held passes (the shared cells, the shared reads
++    /// and place `let`s, the capture plan), `compute_resource_types`, the
++    /// clone decisions and the return/view/boxing plans: tables the JS and
++    /// native emitters read and nothing else does (no diagnostic, no post
++    /// pass, no editor table). Only the language server sets it — it never
++    /// emits, and the tables were the largest share of a served keystroke's
++    /// extraction tail. The `Program` it answers carries
++    /// [`crate::analyzer::Program::emitter_tables_skipped`], and the JS
++    /// emitter refuses such a program outright (the native one is not linked
++    /// into the server at all).
++    ///
++    /// NOT the drop plan (`plan_resource_drops`), which the ruling named
++    /// beside them: its C11 conditional-temporary refusal is a diagnostic and
++    /// its per-root drop types become the §8 call-graph edges
++    /// (`drop_call_edges`) platform coloring and the post passes walk, so it
++    /// runs either way.
++    ///
++    /// Out of the base cache key (a stored world serves both kinds of
++    /// caller). The checks records ARE affected: a slice filed by a skipping
++    /// analysis carries no emitter rows ([`ModuleTables::emitter_recorded`]
++    /// false), and an analysis that emits restores nothing from it.
++    pub skip_emitter_tables: bool,
+ }
+ 
+ /// Whether the analysis is looking at a program its package declares, or at a
+@@ -79313,6 +79349,14 @@ struct ModuleTables {
+     /// analysis with reading aids computes them); a record written by any
+     /// other analysis carries none, and the stages are hinted live.
+     hints_recorded: bool,
++    /// E318: whether the EMITTER rows above were filed — the last-use rows,
++    /// the clone and return-clone decisions, the scalar views, the resource
++    /// slots and the held contributions, which an analysis that skips the
++    /// emitter-only tail (`Workspace::skip_emitter_tables`) never computes.
++    /// A slice without them is restored only by an analysis that skips them
++    /// too; an emitting analysis re-derives the module's tables whole (and
++    /// re-files them), and does not serve an item whose record lacks them.
++    emitter_recorded: bool,
+ }
+ 
+ impl ModuleTables {
+@@ -85182,6 +85226,122 @@ fn external_intrinsic_declaration(
+     .then_some(id)
+ }
+ 
++/// E318: what [`Analyzer::emitter_plans`] settles — the emitter-only tables
++/// of the extraction tail, each empty when the analysis skipped them.
++#[derive(Default)]
++struct EmitterPlans {
++    held_live: held_tables::HeldRows,
++    resource_types: HashSet<TypeId>,
++    clone_sites: HashMap<Id, CopyDecision>,
++    return_clone_sites: HashMap<Id, CopyDecision>,
++    return_view_reads: HashSet<Id>,
++    parameter_entry_clones: HashSet<Id>,
++    capture_plan: CapturePlan,
++    receiver_views: HashSet<Id>,
++    fixed_view_refs: HashSet<Id>,
++    transient_view_payloads: HashMap<Id, Vec<Id>>,
++    payload_view_captures: HashMap<Id, bool>,
++    boxed_locals: HashSet<Id>,
++    generic_referenced_roots: HashSet<Id>,
++    primitive_views: HashSet<Id>,
++    scalar_view_refs: HashSet<Id>,
++    scalar_view_calls: HashSet<Id>,
++    hmr_bindings: HashMap<Id, HmrBinding>,
++}
++
++impl<'src> Analyzer<'src> {
++
++    /// E318: the EMITTER-ONLY tail of `analyze_over_world` — the last-use
++    /// dataflow and every plan that reads it (the drop extents, the held
++    /// passes, the clone decisions, the resource types, the return, view and
++    /// boxing plans, the HMR classification). Every output is read by the
++    /// emitters and by nothing else: no diagnostic, no post pass and no editor
++    /// table depends on one, which is what lets a front end that never emits
++    /// skip the call (`Workspace::skip_emitter_tables`).
++    fn emitter_plans(&mut self, global_scope_id: Id) -> EmitterPlans {
++    self.clear_view_memos();
++    self.last_use = liveness::LastUse::compute(self);
++    crate::phase_pass_mark("liveness::LastUse::compute");
++    // S3 (`lifetimes.md` §6): the same answers, asked for DISPOSAL — where each
++    // enrolled binding's teardown `finally` closes. Must follow the dataflow;
++    // `plan_resource_drops` (which bindings drop) ran long before it.
++    self.plan_last_use_drop_extents();
++    crate::phase_pass_mark("analyzer.plan_last_use_drop_extents()");
++    // M110 S7b: the five held passes below read whole-program inputs — the
++    // written roots, the `Shared` cells, the value seams, their candidates
++    // — folded from the live regions' contributions (one walk) and the
++    // restored regions' rows (`held_tables.rs`); each decision below is then
++    // taken over every candidate, so no output row is ever served.
++    let held_live = self.collect_held_rows();
++    crate::phase_pass_mark("analyzer.collect_held_rows()");
++    let mut held = self.fold_held(&held_live);
++    // B267: the cell-aware half of rule 2, which needs the dataflow above and
++    // feeds every elision below — a binding it admits copies nothing at its
++    // read and may donate nothing at its own.
++    self.shared_cells = std::mem::take(&mut held.cells);
++    crate::phase_pass_mark("the held fold");
++    // M96/B457: every call of the program indexed by span, on first ask —
++    // the call-through tests of the shared reads and the clone sites.
++    let calls_index: std::cell::OnceCell<LexicalCandidates> = std::cell::OnceCell::new();
++    (self.shared_read_bindings, self.elided_shared_reads) =
++        self.compute_shared_read_bindings(&held, &calls_index);
++    crate::phase_pass_mark("analyzer.compute_shared_read_bindings()");
++    // M90: before the capture plan, whose move elision must refuse to move out
++    // of a shared `let` exactly as rule 2 below does.
++    (self.shared_place_lets, self.shared_place_inits) =
++        self.compute_shared_place_lets(&held);
++    crate::phase_pass_mark("analyzer.compute_shared_place_lets()");
++    // B53: the capture pass runs FIRST — its share elision decides which
++    // captures own nothing, and rule 2's move elision (inside
++    // `compute_clone_sites`) must refuse to move out of those.
++    let capture_plan = self.compute_capture_clone_sites(&held);
++    crate::phase_pass_mark("analyzer.compute_capture_clone_sites()");
++    let resource_types = self.compute_resource_types();
++    crate::phase_pass_mark("analyzer.compute_resource_types()");
++    let clone_sites = self.compute_clone_sites(&capture_plan.shared, &calls_index);
++    crate::phase_pass_mark("analyzer.compute_clone_sites()");
++    let (return_clone_sites, return_view_reads) = self.compute_return_clone_sites();
++    crate::phase_pass_mark("analyzer.compute_return_clone_sites()");
++    let parameter_entry_clones = self.compute_parameter_entry_clones();
++    let receiver_views = self.compute_receiver_views();
++    let fixed_view_refs = self.compute_fixed_view_refs();
++    let transient_view_payloads = self.compute_transient_view_payloads();
++    let payload_view_captures: HashMap<Id, bool> =
++        self.payload_view_capture_modes().into_iter().collect();
++    let (boxed_locals, generic_referenced_roots) = self.compute_boxed_locals(&receiver_views);
++    let primitive_views = self.compute_primitive_views();
++    let scalar_view_refs = self.compute_scalar_view_refs();
++    let scalar_view_calls = self.compute_scalar_view_calls();
++
++    // The HMR transfer classification (`hmr.md` §4), computed while the analyzer
++    // still holds the type tables and the resource classifier. Computed for every
++    // emitting analysis (a cheap type-level pass over the entry's module-level
++    // bindings); the transformer
++    // consults it only under `BuildOptions.hmr`, so non-HMR output is unaffected.
++    let hmr_bindings = self.compute_hmr_bindings(global_scope_id);
++    crate::phase_pass_mark("the view, clone and hmr plans");
++        EmitterPlans {
++            held_live,
++            resource_types,
++            clone_sites,
++            return_clone_sites,
++            return_view_reads,
++            parameter_entry_clones,
++            capture_plan,
++            receiver_views,
++            fixed_view_refs,
++            transient_view_payloads,
++            payload_view_captures,
++            boxed_locals,
++            generic_referenced_roots,
++            primitive_views,
++            scalar_view_refs,
++            scalar_view_calls,
++            hmr_bindings,
++        }
++    }
++}
++
+ /// The entry tail: walks the entry over a resolved [`World`], builds,
+ /// checks, and extracts the `Program`. Byte-identical to the former tail
+ /// of `analyze` — the destructure below restores its locals.
+@@ -85255,6 +85415,8 @@ fn analyze_over_world<'src>(
+         sources.len()
+     );
+     analyzer.prelude_repair = workspace.prelude_repair;
++    // E318: before the record seams below ask it.
++    analyzer.skip_emitter_tables = workspace.skip_emitter_tables;
+     if !crate::macros::in_macro_world() {
+         SERVED_FROM_BASE_CACHE.with(|served| served.set(from_base_cache));
+     }
+@@ -86215,73 +86377,36 @@ fn analyze_over_world<'src>(
+     // answer about a tree that no longer exists is worse than none. Every
+     // elision below reads it.
+     crate::phase_pass_mark("the tables before the last-use dataflow");
+-    analyzer.clear_view_memos();
+-    analyzer.last_use = liveness::LastUse::compute(&analyzer);
+-    crate::phase_pass_mark("liveness::LastUse::compute");
+-    // S3 (`lifetimes.md` §6): the same answers, asked for DISPOSAL — where each
+-    // enrolled binding's teardown `finally` closes. Must follow the dataflow;
+-    // `plan_resource_drops` (which bindings drop) ran long before it.
+-    analyzer.plan_last_use_drop_extents();
+-    crate::phase_pass_mark("analyzer.plan_last_use_drop_extents()");
+-    // M110 S7b: the five held passes below read whole-program inputs — the
+-    // written roots, the `Shared` cells, the value seams, their candidates
+-    // — folded from the live regions' contributions (one walk) and the
+-    // restored regions' rows (`held_tables.rs`); each decision below is then
+-    // taken over every candidate, so no output row is ever served.
+-    let held_live = analyzer.collect_held_rows();
+-    crate::phase_pass_mark("analyzer.collect_held_rows()");
+-    let mut held = analyzer.fold_held(&held_live);
+-    // B267: the cell-aware half of rule 2, which needs the dataflow above and
+-    // feeds every elision below — a binding it admits copies nothing at its
+-    // read and may donate nothing at its own.
+-    analyzer.shared_cells = std::mem::take(&mut held.cells);
+-    crate::phase_pass_mark("the held fold");
+-    // M96/B457: every call of the program indexed by span, on first ask —
+-    // the call-through tests of the shared reads and the clone sites.
+-    let calls_index: std::cell::OnceCell<LexicalCandidates> = std::cell::OnceCell::new();
+-    (analyzer.shared_read_bindings, analyzer.elided_shared_reads) =
+-        analyzer.compute_shared_read_bindings(&held, &calls_index);
+-    crate::phase_pass_mark("analyzer.compute_shared_read_bindings()");
+-    // M90: before the capture plan, whose move elision must refuse to move out
+-    // of a shared `let` exactly as rule 2 below does.
+-    (analyzer.shared_place_lets, analyzer.shared_place_inits) =
+-        analyzer.compute_shared_place_lets(&held);
+-    crate::phase_pass_mark("analyzer.compute_shared_place_lets()");
+-    // B53: the capture pass runs FIRST — its share elision decides which
+-    // captures own nothing, and rule 2's move elision (inside
+-    // `compute_clone_sites`) must refuse to move out of those.
+-    let capture_plan = analyzer.compute_capture_clone_sites(&held);
+-    crate::phase_pass_mark("analyzer.compute_capture_clone_sites()");
+-    let resource_types = analyzer.compute_resource_types();
+-    crate::phase_pass_mark("analyzer.compute_resource_types()");
+-    let clone_sites = analyzer.compute_clone_sites(&capture_plan.shared, &calls_index);
+-    crate::phase_pass_mark("analyzer.compute_clone_sites()");
+-    let (return_clone_sites, return_view_reads) = analyzer.compute_return_clone_sites();
+-    crate::phase_pass_mark("analyzer.compute_return_clone_sites()");
+-    let parameter_entry_clones = analyzer.compute_parameter_entry_clones();
+-    let receiver_views = analyzer.compute_receiver_views();
+-    let fixed_view_refs = analyzer.compute_fixed_view_refs();
+-    let transient_view_payloads = analyzer.compute_transient_view_payloads();
+-    let payload_view_captures: HashMap<Id, bool> =
+-        analyzer.payload_view_capture_modes().into_iter().collect();
+-    let (boxed_locals, generic_referenced_roots) = analyzer.compute_boxed_locals(&receiver_views);
+-    let primitive_views = analyzer.compute_primitive_views();
+-    let scalar_view_refs = analyzer.compute_scalar_view_refs();
+-    let scalar_view_calls = analyzer.compute_scalar_view_calls();
+-
+-    // M19 T1b: record what this analysis DERIVED for the class D tables, for
+-    // the analysis that will restore it (`per-module-analysis-reuse.md` §3.3).
+-    //
+-    // The exclusions are T1's, for T1's reasons: a module this analysis
+-    // RESTORED was not re-derived, and a module the entry DIRTIED was derived
+-    // against a slot the buffer moved. A cancelled analysis never reaches this
+-    // line at all — the tail above returns `None` first.
+-    // The HMR transfer classification (`hmr.md` §4), computed while the analyzer
+-    // still holds the type tables and the resource classifier. Always computed (a
+-    // cheap type-level pass over the entry's module-level bindings); the transformer
+-    // consults it only under `BuildOptions.hmr`, so non-HMR output is unaffected.
+-    let hmr_bindings = analyzer.compute_hmr_bindings(global_scope_id);
+-    crate::phase_pass_mark("the view, clone and hmr plans");
++    // E318: the emitter-only tail — every table below is read by the JS and
++    // native emitters and by nothing else — skipped outright when the front
++    // end never emits (`Workspace::skip_emitter_tables`, the language server).
++    let skip_emitter = workspace.skip_emitter_tables;
++    let EmitterPlans {
++        held_live,
++        resource_types,
++        clone_sites,
++        return_clone_sites,
++        return_view_reads,
++        parameter_entry_clones,
++        capture_plan,
++        receiver_views,
++        fixed_view_refs,
++        transient_view_payloads,
++        payload_view_captures,
++        boxed_locals,
++        generic_referenced_roots,
++        primitive_views,
++        scalar_view_refs,
++        scalar_view_calls,
++        hmr_bindings,
++    } = if skip_emitter {
++        if !crate::macros::in_macro_world() {
++            crate::incremental::update_census(|census| census.emitter_tables_skipped = true);
++        }
++        EmitterPlans::default()
++    } else {
++        analyzer.emitter_plans(global_scope_id)
++    };
+ 
+     // E227: the abbreviated inlay-hint labels, where they differ — asked
+     // BEFORE the label loop below, which borrows the analyzer immutably, since
+@@ -86559,6 +86684,13 @@ fn analyze_over_world<'src>(
+     let (member_owners, member_headers) = analyzer.member_headers();
+     crate::phase_pass_mark("analyzer.member_headers()");
+ 
++    // M19 T1b: record what this analysis DERIVED for the class D tables, for
++    // the analysis that will restore it (`per-module-analysis-reuse.md` §3.3).
++    //
++    // The exclusions are T1's, for T1's reasons: a module this analysis
++    // RESTORED was not re-derived, and a module the entry DIRTIED was derived
++    // against a slot the buffer moved. A cancelled analysis never reaches this
++    // line at all — the tail above returns `None` first.
+     if let Some(key) = &checks_key
+         && !entry_is_module
+         && world_table_reuse_enabled()
+@@ -86734,7 +86866,10 @@ fn analyze_over_world<'src>(
+             // M110 S7b: the stage hints only a reading-aids analysis's; a
+             // module's held rows name nothing outside the stored world.
+             slice.hints_recorded = workspace.reading_aids;
+-            slice.held_recorded = true;
++            // E318: a skipping analysis computed no emitter rows, held
++            // contributions included.
++            slice.held_recorded = !skip_emitter;
++            slice.emitter_recorded = !skip_emitter;
+         }
+         checked_cache_store_tables(key, &source_hashes[..prefix_len], tables);
+         // M110 S7: the item records of the re-walked files, with their
+@@ -86743,8 +86878,13 @@ fn analyze_over_world<'src>(
+         // a truncated item on every later hit).
+         if items_enabled && !crate::cancel::cancelled() {
+             let digest = analyzer.drop_nominals_world_digest;
+-            let (items, purge) =
+-                analyzer.take_item_records(item_tables, digest, seeded, workspace.reading_aids);
++            let (items, purge) = analyzer.take_item_records(
++                item_tables,
++                digest,
++                seeded,
++                workspace.reading_aids,
++                !skip_emitter,
++            );
+             item_records::checked_cache_store_items(
+                 key,
+                 &source_hashes[..prefix_len],
+diff --git a/crates/vilan-core/src/analyzer/item_records.rs b/crates/vilan-core/src/analyzer/item_records.rs
+index 83f02300..4d504233 100644
+--- a/crates/vilan-core/src/analyzer/item_records.rs
++++ b/crates/vilan-core/src/analyzer/item_records.rs
+@@ -727,6 +727,18 @@ impl<'src> Analyzer<'src> {
+             }
+             deps.sort_unstable();
+             deps.dedup();
++            // E318: a record filed by an analysis that skipped the emitter
++            // rows is served only to one that skips them too — an item is
++            // served whole or not at all, so an emitting analysis re-derives
++            // it (and files it again with its rows).
++            let record = record.filter(|record| {
++                self.skip_emitter_tables
++                    || record
++                        .module
++                        .tables
++                        .as_ref()
++                        .is_none_or(|tables| tables.emitter_recorded)
++            });
+             if let Some(record) = record {
+                 let text_matches = record.text_hash == text_hash && record.walk == item.walk;
+                 let resolve_matches =
+@@ -1112,6 +1124,7 @@ impl<'src> Analyzer<'src> {
+         drop_nominals_world: u64,
+         labels_recorded: bool,
+         hints_recorded: bool,
++        emitter_recorded: bool,
+     ) -> (Vec<(ItemKey, ItemRecord)>, Vec<ItemKey>) {
+         let mut filed = Vec::new();
+         let mut purge = Vec::new();
+@@ -1168,10 +1181,12 @@ impl<'src> Analyzer<'src> {
+             slice.drop_nominals_world = drop_nominals_world;
+             slice.labels_recorded = labels_recorded;
+             slice.hints_recorded = hints_recorded;
++            slice.emitter_recorded = emitter_recorded;
+             // The held rows ride only when every id they carry is the item's
+             // own or the prefix's; otherwise the item stays live for the
+             // held passes (`held_tables.rs`) and keeps the rest of its record.
+-            slice.held_recorded = slice.held.fits(&|id: Id| {
++            slice.held_recorded = emitter_recorded
++                && slice.held.fits(&|id: Id| {
+                 (id.0 >= item.entities.start && id.0 < item.entities.end) || id.0 < prefix_end
+             });
+             if !slice.held_recorded {
+diff --git a/crates/vilan-core/src/incremental.rs b/crates/vilan-core/src/incremental.rs
+index 041905fe..1eac94e6 100644
+--- a/crates/vilan-core/src/incremental.rs
++++ b/crates/vilan-core/src/incremental.rs
+@@ -448,6 +448,9 @@ pub struct Census {
+     /// whole-program pass walks in place of the table.
+     pub live_ranges: u64,
+     pub live_entities: u64,
++    /// E318: whether this analysis skipped the emitter-only tail
++    /// (`Workspace::skip_emitter_tables`).
++    pub emitter_tables_skipped: bool,
+     /// std-prefix P1: whether this analysis's world was built over (or as) the
+     /// std-only prefix, the prefix worlds the base cache SERVED it, and the
+     /// times the prefix was REFUSED (the canonical analysis built instead),
+@@ -496,6 +499,7 @@ thread_local! {
+             item_records_filed: 0,
+             live_ranges: 0,
+             live_entities: 0,
++            emitter_tables_skipped: false,
+             prefix_world: false,
+             prefix_layered: false,
+             prefix_hits: 0,
+@@ -862,7 +866,7 @@ pub fn report(program: &Program) {
+              seeded-passes={} post-records-filed={} windows-laid-out={} windows-inherited={} \
+              windows-overflowed={} window-writes-other={} window-outside-anchor={} \
+              records-served={} records-stale={} records-filed={} live-ranges={} \
+-             live-entities={} prefix-world={} prefix-layered={} prefix-hits={} \
++             live-entities={} emitter-tables-skipped={} prefix-world={} prefix-layered={} prefix-hits={} \
+              prefix-refusals={}",
+             census.base_hits,
+             census.base_misses,
+@@ -890,6 +894,7 @@ pub fn report(program: &Program) {
+             census.item_records_filed,
+             census.live_ranges,
+             census.live_entities,
++            u8::from(census.emitter_tables_skipped),
+             u8::from(census.prefix_world),
+             u8::from(census.prefix_layered),
+             census.prefix_hits,

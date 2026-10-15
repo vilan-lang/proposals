@@ -1,0 +1,23 @@
+// debug-53's find: a type with a WRITTEN `Debug` impl prints through it under
+// `dbg` (E275), but vilan-dap's Variables pane prints its structure - the
+// sidecar's layout is structural and names no function the adapter could call.
+// Break on the `print` line under the `vilan` debug type: the pane shows
+// `secret: Secret = Secret { code = 42 }`, `dbg(secret)` printed `<redacted>`.
+import std::debug::Debug;
+import std::io::print;
+
+struct Secret {
+	code: i32,
+}
+
+impl Secret with Debug {
+	fun debug(self): str {
+		"<redacted>"
+	}
+}
+
+fun main() {
+	let secret = Secret { code = 42 };
+	dbg(secret);
+	print(secret.code);
+}

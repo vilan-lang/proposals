@@ -1,0 +1,24 @@
+// debug-53's find: a `dyn` binding in a program that never calls `dbg` has no
+// `show` slot in its tables (S1b: the slot exists only when a program prints),
+// so vilan-dap's pane can only write `dyn Area(<?>)` for it. Break on the
+// `print` line under the `vilan` debug type.
+import std::io::print;
+
+trait Area {
+	fun area(self): i32;
+}
+
+struct Square {
+	side: i32,
+}
+
+impl Square with Area {
+	fun area(self): i32 {
+		self.side * self.side
+	}
+}
+
+fun main() {
+	let shape: dyn Area = Square { side = 2 };
+	print(shape.area());
+}

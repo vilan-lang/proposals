@@ -1,0 +1,18 @@
+// A?1 (std-53): an expected type does not reach a call's own generic through a
+// method on the call's result. Each `let` below is refused "cannot infer" on
+// v0.50.0 and on std-53's tip; writing the argument (`make<i32>()`,
+// `xs.to_array<2>()`) compiles.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+fun make<T>(): Option<T> {
+	None
+}
+
+fun main() {
+	let x: i32 = make().unwrap_or(3);
+	print(x);
+	let xs = [1, 2];
+	let array: [i32; 2] = xs.to_array().unwrap();
+	print(array[1]);
+}

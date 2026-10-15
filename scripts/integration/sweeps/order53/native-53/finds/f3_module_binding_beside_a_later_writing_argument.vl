@@ -1,0 +1,36 @@
+import std::io::print;
+
+mut global: List<i32> = [];
+
+fun reset(): i32 {
+	global = [9];
+	9
+}
+
+fun grow(): i32 {
+	global.push(9);
+	9
+}
+
+fun has(items: List<i32>, value: i32): bool {
+	items.contains(value)
+}
+
+fun lent(items: &List<i32>, value: i32): bool {
+	items.contains(value)
+}
+
+fun main() {
+	print(has(global, reset()));
+	global = [];
+	print(has(global, grow()));
+	global = [];
+	print(lent(&global, reset()));
+	global = [];
+	print(lent(&global, grow()));
+	global = [];
+	print(global.contains(reset()));
+	global = [];
+	global.push(reset());
+	print(global.len());
+}

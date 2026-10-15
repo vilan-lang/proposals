@@ -1,0 +1,22 @@
+// B?1 (std-53): the "cannot infer" refusal's steer spells a METHOD call as a
+// free call - "as the call's argument (`to_array<4>(…)`)" - where the written
+// form is `numbers.to_array<4>()`; the type-parameter twin reads
+// "`get<…>(…)`" for `bag.get<…>()`.
+import std::io::print;
+
+struct Bag {
+	count: i32,
+}
+
+impl Bag {
+	fun get<T>(self): Option<T> {
+		None
+	}
+}
+
+fun main() {
+	let numbers = [1, 2];
+	let array = numbers.to_array();
+	let value = Bag { count = 1 }.get();
+	print(array.is_some());
+}

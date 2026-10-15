@@ -1,0 +1,38 @@
+// native-53 find F?2: a `&mut` receiver (`log.items.push`, a user `&mut self`)
+// over a binding NO closure captures, beside a later argument that RE-BINDS the
+// receiver's root (`log = fresh()`). The checker accepts it; JS pushes into the
+// object `log` held when the receiver was evaluated (prints 0, the new `log` is
+// empty), and the native backend's emission is refused by rustc (E0506:
+// "cannot assign to `log` because it is borrowed") - a backend defect message.
+// Spec §6.4 (rule 4: no invalidating mutation under a live view) reads this as
+// a reassignment of the view's root while the view is live.
+import std::io::print;
+
+struct Log {
+	items: List<i32>,
+	count: i32,
+}
+
+impl Log {
+	fun bump(&mut self, by: i32) {
+		self.count += by;
+	}
+}
+
+fun fresh(): Log {
+	Log { items = [], count = 0 }
+}
+
+fun main() {
+	mut log = fresh();
+	log.items.push({
+		log = fresh();
+		9
+	});
+	print(log.items.len());
+	log.bump({
+		log = fresh();
+		9
+	});
+	print(log.count);
+}

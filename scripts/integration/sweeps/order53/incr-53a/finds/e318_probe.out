@@ -1,0 +1,23 @@
+   Compiling vilan-core v0.50.0 (/home/reed/code/vilan-lang/vilan/.claude/worktrees/incr-53a/crates/vilan-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.58s
+     Running tests/e318_probe.rs (target/debug/deps/e318_probe-e2a7bc6392524db5)
+
+running 1 test
+emitting: errors=[] consts=["Number(2.0)"]
+skipping: errors=[] consts=["Number(3.0)"]
+
+thread 'probe' (145756) panicked at crates/vilan-core/tests/e318_probe.rs:34:5:
+assertion `left == right` failed
+  left: "errors=[] consts=[\"Number(2.0)\"]"
+ right: "errors=[] consts=[\"Number(3.0)\"]"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test probe ... FAILED
+
+failures:
+
+failures:
+    probe
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+error: test failed, to rerun pass `-p vilan-core --test e318_probe`
