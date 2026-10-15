@@ -19,6 +19,16 @@
    "discussion": "native-53 (Order 53); sweeps/order53/native-53/finds/f2_mut_receiver_root_rebound_by_a_later_argument.vl",
    "title": "A `&mut` receiver over a binding no closure captures, beside a later argument that RE-BINDS the receiver's root (`log.items.push({ log = fresh(); 9 })`, `log.bump({ log = fresh(); 9 })`), checks clean; JS writes the object `log` held when the receiver was evaluated (prints 0) and the native emission is refused by rustc (E0506, reported as a BACKEND defect)",
    "body": "Spec §6.4 (rule 4: no invalidating mutation under a live view) reads the argument as a reassignment of the `&mut` view's root while the view is live — the view is taken where the receiver stands. The captured-binding twin is F138's (both backends now take the view after the later arguments and write the new binding). Rec: a checker refusal at the rebind (`log` is re-bound while `log.items` is lent `&mut` to this call — settle the value first: `let item = { log = fresh(); 9 }; log.items.push(item)`), estate counted first (expected 0); the alternative — reading an uncaptured binding's `&mut` place after the later arguments too — would make §6.9's order a rule of every binding, not of captured ones."
+  },
+  {
+   "id": "F?3",
+   "section": "F",
+   "kind": "miscompile (JS vs native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN — filed 2026-10-15 (native-53's find, Order 53)",
+   "discussion": "native-53 (Order 53); sweeps/order53/native-53/finds/f3_module_binding_beside_a_later_writing_argument.vl",
+   "title": "A module-level `mut` binding handed to a call beside a later argument that writes it answers differently: `has(global, grow())` (`grow` pushing into `global`) prints `true` on JS and `false` natively; `lent(&global, grow())` the same; `global.push(reset())` (`reset` re-binding `global`) leaves 1 item on JS and 2 natively",
+   "body": "F129/F138's order is §6.9's, for CAPTURED bindings; a module-level `mut` binding is a place every function shares, and neither backend orders its arguments by that. Natively a by-value or `&` argument over it is copied out of its thread-local cell where it stands (so an in-place write by a later argument is missed, where the JS argument is the binding's object), and a `&mut` receiver over it borrows the cell after the hoisted by-value arguments (so a re-binding is seen, where JS writes the old object). Rec: the same rule as F138 for a module-level `mut` binding — read late on both when a later argument runs code (any call can reach the binding) — the estate counted first; the native half is `defers_its_cell_copy`'s `cell_spine` admitting a module root, the JS half `argument_order.rs`'s `is_captured` answering true for one."
   }
  ]
 }
