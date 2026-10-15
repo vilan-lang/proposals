@@ -571,11 +571,109 @@ above:
 - **D3. Stay at S6.** JS-shaped values, vilan sources and names. It costs
   nothing more.
 
-**Rec: D3 now, D1 next.** D1 is the only door that also serves native, and it
+**Rec: D3 now, D1 next** (D1 built in Order 53; see "As built" below). D1 is the only door that also serves native, and it
 leaves the runtime alone. The source-map *scopes* proposal in TC39-TG4
 (original scopes and bindings carried in the map) is converging on part of
 D1's sidecar. If browsers ship it, the sidecar's scope half becomes the
 standard field, and only the type layouts stay vilan's own.
+
+**As built (Order 53, debug-53; E257 S7, door D1).** The owner ruled D1 for
+Order 53 once S6's F5 check came back green. What landed, and where it
+departs from the text above:
+
+- **The sidecar.** `<script>.vdbg.json` beside `<script>.map`, written
+  wherever the map is and under the same switches (the `debug` preset,
+  `[build] source-maps`, `--source-maps`; `vilan run`'s temp script and a
+  watch round's script too, removed with them; a build without a map removes
+  a stale one). The map's own JSON is unchanged. It rides on the map
+  (`SourceMap::debug`), recorded by the same walk (`transformer/debug_info.rs`;
+  `crate::debug_info` holds the format) and only on the map's entry, so a
+  check and a map-less build pay nothing. It READS the walk and never emits:
+  the script is the same bytes with and without it.
+- **Frames, keyed as a JavaScript frame finds them.** One record per emitted
+  user function (std and a derive's generated code have none): `js`, the
+  emitted name (an instance of a generic is its own function, `doubled` and
+  `doubled2`), and `at`, the head's original place in the map's coordinates
+  (a `sources` index, line, UTF-16 column — the function's name, a closure's
+  bars, exactly where the head's segment points). `main`'s body runs at the
+  script's top level (B214), so its record is `kind: main` and matches the
+  module frame, its locals the module scope's `const`s. A closure is a frame
+  of its own; a closure scope's variables resolve through the record of the
+  function that owns them ("Captured from scaled").
+- **Bindings.** Parameters, then every local the function's scopes declare
+  (not a nested closure's), in declaration order: vilan name, the JS name the
+  scope rename settled on (readable or release), the type's index, and how the
+  binding holds its value — `value`, `boxed` (`[value]`, a local a view was
+  taken of), `pair` (a scalar view's `(base, key)`), `lazy` (a thunk). `view`
+  marks a `&` parameter or a view binding (`view i32` in the pane). Two
+  instances whose bodies print the same share one function (M16); the
+  survivor's record keeps a type only where both agree (`first<T>`'s `items`
+  has none; its `count: usize` keeps its type).
+- **Types.** Each grounded type once, keyed as `printer_for` keys a printer,
+  with the layout `printer::shape_of` gives it and the JS reading facts the
+  generated printer bakes in (a tuple slot's width, a list's fill, a cell's
+  and a map's field). The text is the type as vilan writes it.
+- **vilan-dap is TypeScript in the extension, not a crate** — the owner's
+  three criteria decided it. One install path: it is `editors/vscode/src/dap/`,
+  bundled into the vsix, which stays platform-neutral (a Rust adapter would
+  have to ship per platform inside it, or ride the toolchain). No second
+  runtime: it runs inline in the extension host (`DebugAdapterInlineImplementation`),
+  so the only process is `vilan run`. Byte-comparable panes in a scripted
+  session: it imports nothing from `vscode`, so a DAP client in plain node
+  drives it against a real `vilan` (`src/test/session.test.ts`, run by cargo).
+- **In front of node's inspector, not of VS Code's JavaScript debugger.** The
+  paper's D1 put the adapter between VS Code and node's inspector; the brief
+  read "in front of the JavaScript debugger". The built-in js-debug (1.140 in
+  the probed VS Code) ships no standalone DAP server, and an extension can
+  only observe its traffic (a tracker, synchronous) — not answer its
+  `variables` with values it has to fetch first. So vilan-dap speaks the
+  DevTools protocol itself over the inspector's WebSocket: `vilan run
+  --inspect-brk=127.0.0.1:<free port>`, breakpoints bound through the map at
+  the program's first line (every emitted copy of the line, the line's
+  statement start), std and the runtime blackboxed from the map's
+  `ignoreList`, stepping that passes over unmapped generated code and stays on
+  a line until it changes, exceptions, the call stack in `.vl`, a closure's
+  captures, the Watch pane, hover, the console. js-debug stays one attribute
+  away: `"adapter": "js-debug"` is S6's resolution, unchanged.
+- **Values read in the program, laid out in the adapter.** The walker
+  (`printer.ts`) reads a binding by its layout in ONE `Runtime.callFunctionOn`
+  — the generated printers' reading written once over the table — into the
+  printer's document; the adapter lays it out with `__dbg_flat` and
+  `__dbg_layout` ported line for line. The Variables pane shows the one-line
+  form (what `print` writes, S3), a struct expands by field, a list by
+  element, a map by key; a hover and the console lay a value out as `dbg`
+  does. The Watch pane takes a vilan path (`segment.to`, `rows[0]`, `pair.1`)
+  walked statically through the layouts; anything else is JavaScript. A row
+  the sidecar lacks, or a value its layout does not describe (a `let` not yet
+  reached prints `<not yet initialized>`), shows as JavaScript; compiler
+  temporaries (`$a`) stay out of the Locals scope; the raw module and global
+  scopes stay one click away.
+- **Watch.** `vilan run --watch --inspect-brk`: each round's server waits at
+  its first line until the adapter has attached to it again and bound the
+  breakpoints, so a breakpoint holds in every round (S6's child-process
+  attach could miss a round's start). Ending the session interrupts `vilan
+  run --watch` the way Ctrl-C does, so it removes the round's script, map and
+  sidecar.
+- **Three map gaps S5 left, closed as listed arms** (marks only; the JS is
+  byte-identical, pinned over the corpus): a block expression's statements
+  carried no statement marks (a breakpoint inside a block-bodied closure slid
+  out of it), a closure's `return` pointed at its body's `{` rather than its
+  tail, and a match leg's value had no mark (a breakpoint on an arm slid to
+  the next function).
+- **Not built** (filed): a written `Debug` impl prints by structure in the
+  pane where `dbg` calls it (E275); a `dyn` binding in a program that never
+  prints one reads `dyn Area(<?>)` (its tables carry no `show` slot); async
+  parent frames are requested but not shown (S8 needs them); a breakpoint's
+  condition is JavaScript.
+- **Cost** (instructions, callgrind, release builds of the base and the tip):
+  `vilan build` of `examples/reactive-ui` (the `debug` preset: map and
+  sidecar) +0.21 % (+3.73 M of 1.806 G, warm: about half the sidecar — the
+  scope index over the whole table is most of it — and half the new
+  segments, which reach std's blocks and legs too); `vilan check` +0.02 %
+  (+0.40 M: the new mark sites answering "no marks"; the sidecar exists only
+  on the map's entry); kolt's cold check peak RSS unchanged (278,300 →
+  278,324 KB). The vsix grows by the adapter (~66 KB of
+  bundled JavaScript), no dependency added.
 
 ### 5.4 Native (S9)
 
@@ -747,7 +845,7 @@ Written to `sweeps/order46/newitems46-papers-b.json`.
 | S4 | `Debug` through the printer: every type debuggable, written impls override, the derive redundant (find 3) | S | pins for d3/d4's cases | S1 |
 | S5 | **BUILT (Order 51, debug-51; §5.1 "As built").** v3 maps from level 2 marks (statements and tails, calls, closures, function heads with `names`), `sourcesContent` for user files, std by its cache path in `ignoreList`, a derive at its attribute; `<script>.map` + `sourceMappingURL` in the `debug` preset, `[build] source-maps` / `--source-maps` elsewhere; `--enable-source-maps` in `vilan run`; `vilan run --inspect[-brk]` (S6's CLI half). A watch round writes a server leg's map as `vilan build` does. Not built: maps for an HMR-instrumented browser bundle, a `split = true` leg's chunks and a lone package's `run --watch` script; locals' `names` under `release` (find 2's instance names are covered by the function heads) | M–L | met: every corpus program byte-identical with and without a map; a decoder round trip and every segment inside its source's text; a pin per construct (function head, statement and tail, call, closure, both instances of a generic, derive, std frame); an uncaught panic's stack names `.vl` lines | the transformer, `source_map.rs` |
 | S6 | **BUILT (Order 52, debug-52; §5.2 "As built").** `vilan run --inspect[-brk]` (S5); the extension's `vilan` debug type (resolving to the JavaScript debugger: `vilan run --inspect-brk` attached at its port, or `vilan run --watch` under child-process attach), a "Debug" code lens on `fun main`; maps for the HMR browser bundle (shifted by the shim's lines, named at the dev channel, served there), a split leg's eager bundle and chunks, and the lone package's `run --watch` script; `--inspect` under `--watch` (every round's node child under the inspector, and every watched child under `--enable-source-maps`); the runtime helpers as the synthetic, ignore-listed `vilan:///runtime.js`; the 256 KB `sourcesContent` cap (kolt's client map 978 → 291 KB). Remaining: a built browser leg's map through `serve_build` (std); a live VS Code session over the resolved configuration | S | met: the extension's `npm test` pins the resolved configuration and the lens; `vilan-cli` pins the split maps byte-neutral, the HMR map read back through node's `module.SourceMap` across the shim, the inspector re-opened per watch round with a `.vl` stack; `vilan-core` pins the runtime source and the cap | S5 |
-| S7 | D1: the `.vdbg.json` sidecar and `vilan-dap`, values by static type | L | scripted DAP sessions comparing panes against `dbg` output | S1's layouts, S5 |
+| S7 | **BUILT (Order 53, debug-53; §5.3 "As built").** D1: `<script>.vdbg.json` beside every map (frames keyed by the emitted function's name and the head's mapped place, `main` as the top level; each binding's vilan name, JS name, type and how it holds its value; the printer's layouts per grounded type), written by the map's walk and never changing the script; `vilan-dap`, TypeScript inline in the extension host, speaking node's inspector directly (js-debug offers no DAP endpoint an extension can front; `"adapter": "js-debug"` keeps S6), the Variables, Watch and hover panes printed as `dbg` prints, plain and `--watch --inspect-brk` rounds; three S5 map gaps closed (block statements, closure tails, match-leg values). Remaining (filed): written `Debug` impls in the pane, `dyn` without a show slot, async parent frames (S8) | L | met: `session.test.ts` (cargo's `vscode_extension::e257_s7_…`): the Variables pane against `dbg`'s output for struct, nested struct, enum with payload, list, map, `Option`/`Result`, a cell, a view, a closure, a tuple — plain and watch (two rounds); a function's frame, a closure's and its captures, a shared generic body, Watch paths, stop on entry and stepping, a compile error; `dap.test.ts` the map, the layout, the walker, the sidecar; `vilan-core` the sidecar's frames, types, instances and reads; `vilan-cli` the file beside the map and its removal | S1's layouts, S5, S6 |
 | S8 | reactive trace (`trace(true)`), cell and set locations via `[track_caller]`, async stack tagging (probe node first) | M | a pin per wake path; trace lines compared | S0 |
 | S9 | native: `.debug_line` remapping to `.vl`, lldb/gdb formatters from the sidecar | L | a scripted lldb session | S7 |
 

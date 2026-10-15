@@ -364,7 +364,7 @@ is what the any-length head buys.
 |---|---|---|---|
 | `Items<T>` (A161) | §7's impl | S2 | `push_many(arr)`; p08's refusal goes |
 | `arr.to_list(): List<T>` | `impl [type T; _]` inherent | S2 | explicit; no coercion (p11b stays refused) |
-| `list.to_array(): Option<[T; N]>` | `fun to_array<const N>(self)` on `List`, an intrinsic (JS `xs.length === N ? Some(xs.slice()) : None`; Rust `<[T; N]>::try_from(v).ok()`) | S3 | fallible, so `Option` (Q9); `N` from the expected type or `to_array<3>()` |
+| `list.to_array(): Option<[T; N]>` | `fun to_array<const N>(self)` on `List`, an intrinsic (JS `xs.length === N ? Some(xs.slice()) : None`; Rust `<[T; N]>::try_from(v).ok()`) | S3 | fallible, so `Option` (Q9); `N` from the expected type or `to_array<3>()`. **Built: A172, Order 53** (std-53; JS `__list_to_array`, native `<[_; N]>::try_from(..).ok()`) |
 | `PartialEq`/`Eq`, `Hashable` | `impl [type T: PartialEq; _] with PartialEq` … | S2 | p19/p34's refusal goes; `HashMap<[u8; 4], ..>` keys |
 | `Debug` (E283's array half) | `impl [type T: Debug; _] with Debug` | S2 | `dbg` already prints arrays (p31) |
 | `iter()` | `impl [type T; _]` inherent | S2 | p09; std chooses the iterator type |
