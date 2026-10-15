@@ -1,0 +1,244 @@
+diff -ruN -x lucide -x search-dict pristine/native/array_std_second_wave.vl ungated/native/array_std_second_wave.vl
+--- pristine/native/array_std_second_wave.vl	2026-10-15 17:59:12.332925748 -0400
++++ ungated/native/array_std_second_wave.vl	2026-10-15 18:01:15.315801563 -0400
+@@ -36,9 +36,13 @@
+ 	print(text);
+ 	let back: Result<Grid, str> = Grid::from_json(text);
+ 	print(back.unwrap() == grid);
+-	let short: Result<Grid, str> = Grid::from_json("{\"cells\":[1],\"names\":[\"a\",\"b\",\"c\"],\"rows\":[[],[]],\"none\":[]}");
++	let short: Result<Grid, str> = Grid::from_json(
++		"{\"cells\":[1],\"names\":[\"a\",\"b\",\"c\"],\"rows\":[[],[]],\"none\":[]}",
++	);
+ 	print(short.unwrap_err());
+-	let long: Result<Grid, str> = Grid::from_json("{\"cells\":[1,2],\"names\":[\"a\",\"b\",\"c\"],\"rows\":[[],[]],\"none\":[1]}");
++	let long: Result<Grid, str> = Grid::from_json(
++		"{\"cells\":[1,2],\"names\":[\"a\",\"b\",\"c\"],\"rows\":[[],[]],\"none\":[1]}",
++	);
+ 	print(long.unwrap_err());
+ 	let shape = Shape::Both([1.5], ["x", "y"]);
+ 	print(shape.to_json());
+diff -ruN -x lucide -x search-dict pristine/native/keyed_chat_server.vl ungated/native/keyed_chat_server.vl
+--- pristine/native/keyed_chat_server.vl	2026-10-15 17:59:12.340104757 -0400
++++ ungated/native/keyed_chat_server.vl	2026-10-15 18:01:15.607801507 -0400
+@@ -81,7 +81,9 @@
+ 		.port(0)
+ 		.with_service(Service::new(chat.dispatcher().into_protocol(json_codec())))
+ 		.on_request(|request| Response::builder().code(404).body("nope").build())
+-		.on_start(|server| print(i"vilan-test-port={server.port()} contract={chat.contract_hash()}"))
++		.on_start(
++			|server| print(i"vilan-test-port={server.port()} contract={chat.contract_hash()}"),
++		)
+ 		.build()
+ 		.start();
+ }
+diff -ruN -x lucide -x search-dict pristine/native/map_operator_walk.vl ungated/native/map_operator_walk.vl
+--- pristine/native/map_operator_walk.vl	2026-10-15 17:59:12.340742048 -0400
++++ ungated/native/map_operator_walk.vl	2026-10-15 18:01:15.647801499 -0400
+@@ -42,7 +42,19 @@
+ 		let followed_sum = cell
+ 			.sum_by(|v| flag_for(flags, v).derive(|on| if on { v } else { 0 }))
+ 			.memo();
+-		(values, entries, tens, signed, odd, followed, counted, summed, odd_values, followed_count, followed_sum)
++		(
++			values,
++			entries,
++			tens,
++			signed,
++			odd,
++			followed,
++			counted,
++			summed,
++			odd_values,
++			followed_count,
++			followed_sum
++		)
+ 	});
+ 	let (values, entries, tens, signed, odd, followed, counted, summed, odd_values, followed_count, followed_sum) = outs;
+ 	mut failures = 0;
+diff -ruN -x lucide -x search-dict pristine/native/mapped_tuples.vl ungated/native/mapped_tuples.vl
+--- pristine/native/mapped_tuples.vl	2026-10-15 17:59:12.341083664 -0400
++++ ungated/native/mapped_tuples.vl	2026-10-15 18:01:15.659801496 -0400
+@@ -44,7 +44,9 @@
+ }
+ 
+ fun main() {
+-	let named = labels((Labelled { label = "a", value = 1 }, Labelled { label = "b", value = true }));
++	let named = labels(
++		(Labelled { label = "a", value = 1 }, Labelled { label = "b", value = true }),
++	);
+ 	print(named.0 + named.1);
+ 	let back = echo((7, "seven", false));
+ 	print(i"{back.0} {back.1} {back.2}");
+diff -ruN -x lucide -x search-dict pristine/native/remote_store_as_dyn_source.vl ungated/native/remote_store_as_dyn_source.vl
+--- pristine/native/remote_store_as_dyn_source.vl	2026-10-15 17:59:12.341924909 -0400
++++ ungated/native/remote_store_as_dyn_source.vl	2026-10-15 18:01:15.699801488 -0400
+@@ -38,7 +38,16 @@
+ 	let dispatcher = Dispatcher::new()
+ 		.on("global", |request: RpcRequest| reply_store(request, global));
+ 	let local = local_rpc(dispatcher.into_protocol(codec).for_connection(7));
+-	let g: RemoteStoreSome<Global> = mint_store(client, || call_reading(local, codec, "global", [], |reply: Deserializer| read_store_reply<Global>(reply, false)));
++	let g: RemoteStoreSome<Global> = mint_store(
++		client,
++		|| call_reading(
++			local,
++			codec,
++			"global",
++			[],
++			|reply: Deserializer| read_store_reply<Global>(reply, false),
++		),
++	);
+ 	let page = Owner::new();
+ 	run_with_owner(page, || {
+ 		let motd: dyn Source<Option<str>> = g.motd();
+diff -ruN -x lucide -x search-dict pristine/native/shared_indexed_writes.vl ungated/native/shared_indexed_writes.vl
+--- pristine/native/shared_indexed_writes.vl	2026-10-15 17:59:12.342206694 -0400
++++ ungated/native/shared_indexed_writes.vl	2026-10-15 18:01:15.719801485 -0400
+@@ -71,7 +71,9 @@
+ 	grid.write()[0][1] += 1000;
+ 	let names = Shared::new(["a", "b"]);
+ 	names.write()[1] += "c";
+-	print(i"element: {points.read()[1].x} {tuples.read()[0].1} {grid.read()[0][1]} {names.read()[1]}");
++	print(
++		i"element: {points.read()[1].x} {tuples.read()[0].1} {grid.read()[0][1]} {names.read()[1]}",
++	);
+ 
+ 	print(i"same statement: {grid.write()[1][2]} {grid.read()[0][1]}");
+ 	grid.write()[0] = grid.read()[1];
+diff -ruN -x lucide -x search-dict pristine/native/store_mirror_ack.vl ungated/native/store_mirror_ack.vl
+--- pristine/native/store_mirror_ack.vl	2026-10-15 17:59:12.343858828 -0400
++++ ungated/native/store_mirror_ack.vl	2026-10-15 18:01:15.767801476 -0400
+@@ -60,7 +60,16 @@
+ 	let dispatcher = Dispatcher::new()
+ 		.on("global", |request: RpcRequest| reply_store(request, global));
+ 	let local = local_rpc(dispatcher.into_protocol(codec).for_connection(7));
+-	let g: RemoteStoreSome<Global> = mint_store(client, || call_reading(local, codec, "global", [], |reply: Deserializer| read_store_reply<Global>(reply, false)));
++	let g: RemoteStoreSome<Global> = mint_store(
++		client,
++		|| call_reading(
++			local,
++			codec,
++			"global",
++			[],
++			|reply: Deserializer| read_store_reply<Global>(reply, false),
++		),
++	);
+ 	let page = Owner::new();
+ 	let row = Owner::new();
+ 	run_with_owner(page, || {
+diff -ruN -x lucide -x search-dict pristine/native/store_mirror_client.vl ungated/native/store_mirror_client.vl
+--- pristine/native/store_mirror_client.vl	2026-10-15 17:59:12.343898299 -0400
++++ ungated/native/store_mirror_client.vl	2026-10-15 18:01:15.775801474 -0400
+@@ -76,7 +76,16 @@
+ 		reply_store(request, global)
+ 	});
+ 	let local = local_rpc(dispatcher.into_protocol(codec).for_connection(7));
+-	let g: RemoteStoreSome<Global> = mint_store(client, || call_reading(local, codec, "global", [], |reply: Deserializer| read_store_reply<Global>(reply, false)));
++	let g: RemoteStoreSome<Global> = mint_store(
++		client,
++		|| call_reading(
++			local,
++			codec,
++			"global",
++			[],
++			|reply: Deserializer| read_store_reply<Global>(reply, false),
++		),
++	);
+ 	print(i"unleased: {g.get().is_some()}");
+ 	let page = Owner::new();
+ 	run_with_owner(page, || {
+diff -ruN -x lucide -x search-dict pristine/native/store_mirror_collections.vl ungated/native/store_mirror_collections.vl
+--- pristine/native/store_mirror_collections.vl	2026-10-15 17:59:12.343938480 -0400
++++ ungated/native/store_mirror_collections.vl	2026-10-15 18:01:15.783801473 -0400
+@@ -86,7 +86,16 @@
+ 	let dispatcher = Dispatcher::new()
+ 		.on("global", |request: RpcRequest| reply_store(request, global));
+ 	let local = local_rpc(dispatcher.into_protocol(codec).for_connection(7));
+-	let g: RemoteStoreSome<Global> = mint_store(client, || call_reading(local, codec, "global", [], |reply: Deserializer| read_store_reply<Global>(reply, false)));
++	let g: RemoteStoreSome<Global> = mint_store(
++		client,
++		|| call_reading(
++			local,
++			codec,
++			"global",
++			[],
++			|reply: Deserializer| read_store_reply<Global>(reply, false),
++		),
++	);
+ 	let page = Owner::new();
+ 	run_with_owner(page, || {
+ 		g.rooms().at(0).some().messages().effect(|list| print(i"general {ids(list)}"));
+diff -ruN -x lucide -x search-dict pristine/native/store_mirror_reconnect.vl ungated/native/store_mirror_reconnect.vl
+--- pristine/native/store_mirror_reconnect.vl	2026-10-15 17:59:12.343976171 -0400
++++ ungated/native/store_mirror_reconnect.vl	2026-10-15 18:01:15.787801472 -0400
+@@ -68,7 +68,16 @@
+ 		reply_store(request, global)
+ 	});
+ 	let local = local_rpc(dispatcher.into_protocol(codec).for_connection(7));
+-	let g: RemoteStoreSome<Global> = mint_store(client, || call_reading(local, codec, "global", [], |reply: Deserializer| read_store_reply<Global>(reply, false)));
++	let g: RemoteStoreSome<Global> = mint_store(
++		client,
++		|| call_reading(
++			local,
++			codec,
++			"global",
++			[],
++			|reply: Deserializer| read_store_reply<Global>(reply, false),
++		),
++	);
+ 	let page = Owner::new();
+ 	run_with_owner(page, || {
+ 		g.motd().effect(|motd| print(i"motd {motd.unwrap_or("-")}"));
+diff -ruN -x lucide -x search-dict pristine/native/store_mirror_set.vl ungated/native/store_mirror_set.vl
+--- pristine/native/store_mirror_set.vl	2026-10-15 17:59:12.344058432 -0400
++++ ungated/native/store_mirror_set.vl	2026-10-15 18:01:15.799801470 -0400
+@@ -74,7 +74,16 @@
+ 	let dispatcher = Dispatcher::new()
+ 		.on("global", |request: RpcRequest| reply_store(request, global));
+ 	let local = local_rpc(dispatcher.into_protocol(codec).for_connection(7));
+-	let g: RemoteStoreSome<Global> = mint_store(client, || call_reading(local, codec, "global", [], |reply: Deserializer| read_store_reply<Global>(reply, false)));
++	let g: RemoteStoreSome<Global> = mint_store(
++		client,
++		|| call_reading(
++			local,
++			codec,
++			"global",
++			[],
++			|reply: Deserializer| read_store_reply<Global>(reply, false),
++		),
++	);
+ 	let page = Owner::new();
+ 	let watching = Owner::new();
+ 	run_with_owner(page, || {
+diff -ruN -x lucide -x search-dict pristine/native/store_mirror_turn.vl ungated/native/store_mirror_turn.vl
+--- pristine/native/store_mirror_turn.vl	2026-10-15 17:59:12.344139483 -0400
++++ ungated/native/store_mirror_turn.vl	2026-10-15 18:01:15.807801469 -0400
+@@ -64,7 +64,16 @@
+ 		reply_store(request, global)
+ 	});
+ 	let local = local_rpc(dispatcher.into_protocol(codec).for_connection(7));
+-	let g: RemoteStoreSome<Global> = mint_store(client, || call_reading(local, codec, "global", [], |reply: Deserializer| read_store_reply<Global>(reply, false)));
++	let g: RemoteStoreSome<Global> = mint_store(
++		client,
++		|| call_reading(
++			local,
++			codec,
++			"global",
++			[],
++			|reply: Deserializer| read_store_reply<Global>(reply, false),
++		),
++	);
+ 	let again = Owner::new();
+ 	run_with_owner(again, || {
+ 		g.motd().effect(|motd| print(i"motd {motd.unwrap_or("-")}"));
+diff -ruN -x lucide -x search-dict pristine/native/store_variant.vl ungated/native/store_variant.vl
+--- pristine/native/store_variant.vl	2026-10-15 17:59:12.349603641 -0400
++++ ungated/native/store_variant.vl	2026-10-15 18:01:15.819801465 -0400
+@@ -82,5 +82,7 @@
+ 	let maybe = Store::new(Maybe::Just(1));
+ 	print(i"maybe: {maybe.just().get().unwrap_or(0)} {maybe.just().patch(2)} {maybe.just().get().unwrap_or(0)}");
+ 	maybe.set(Maybe::Nothing);
+-	print(i"nothing: {maybe.just().patch(3)} {maybe.is_nothing().get()} just={maybe.is_just().get()}");
++	print(
++		i"nothing: {maybe.just().patch(3)} {maybe.is_nothing().get()} just={maybe.is_just().get()}",
++	);
+ }

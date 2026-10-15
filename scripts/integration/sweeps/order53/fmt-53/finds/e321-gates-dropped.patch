@@ -1,0 +1,49 @@
+diff --git a/crates/vilan-core/src/formatter.rs b/crates/vilan-core/src/formatter.rs
+index c5aaf893..e8d2bb46 100644
+--- a/crates/vilan-core/src/formatter.rs
++++ b/crates/vilan-core/src/formatter.rs
+@@ -7050,7 +7050,7 @@ impl<'src> Printer<'src> {
+             // E314: a call subject whose own line runs out breaks its arguments
+             // one per line; the links then follow on lines of their own.
+             Node::MemberAccessor(_, _) | Node::Index(_, _)
+-                if self.hole_depth > 0 && Self::has_call_subject(expr) =>
++                if Self::has_call_subject(expr) =>
+             {
+                 if self.subject_needs_split(subject) {
+                     self.split = Split::Tail;
+@@ -8548,7 +8548,7 @@ impl<'src> Printer<'src> {
+         if split != Split::Off
+             && call_links == 1
+             && (Self::breaks_as_a_single_link(expr)
+-                || (self.hole_depth > 0 && Self::has_call_subject(expr)))
++                || (Self::has_call_subject(expr)))
+         {
+             let (subject, spine) = Self::postfix_spine(expr);
+             let start = self.out.len();
+@@ -8556,7 +8556,7 @@ impl<'src> Printer<'src> {
+             // E314: a call subject that is itself cut (over the budget, or an
+             // element in its arguments broken mid-literal) takes the split
+             // chain at once — its arguments break, the link follows below.
+-            let subject_cut = self.hole_depth > 0
++            let subject_cut = true
+                 && Self::has_call_subject(expr)
+                 && self.subject_needs_split(subject);
+             if !subject_cut {
+@@ -8707,7 +8707,7 @@ impl<'src> Printer<'src> {
+                 // descent, the arguments take a line each instead.
+                 if split != Split::Off
+                     && !blocked
+-                    && self.hole_depth > 0
++                    && true
+                     && head.is_none()
+                     && !arguments.0.is_empty()
+                     && (cut.is_some() || self.first_line_over_budget(call_start))
+@@ -9138,7 +9138,7 @@ impl<'src> Printer<'src> {
+                 // splits whole at its own line rather than mid-line.
+                 if forced
+                     || (split != Split::Off
+-                        && self.hole_depth > 0
++                        && true
+                         && elements.len() >= 2
+                         && !self.probing
+                         && self.first_line_over_budget(start))

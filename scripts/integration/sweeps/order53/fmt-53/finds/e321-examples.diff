@@ -1,0 +1,35 @@
+diff -ruN -x lucide -x search-dict pristine/examples/todo/src/store.vl ungated/examples/todo/src/store.vl
+--- pristine/examples/todo/src/store.vl	2026-10-15 17:59:12.309664848 -0400
++++ ungated/examples/todo/src/store.vl	2026-10-15 18:01:15.231801578 -0400
+@@ -125,7 +125,10 @@
+ // is corrupt: the codec's decode is validating.
+ fun load(): List<Todo> {
+ 	if fs::stat(storage).is_some() {
+-		let stored: Result<List<Todo>, str> = decode(json_codec(), Frame::Text(fs::read_file_to_str(storage)));
++		let stored: Result<List<Todo>, str> = decode(
++			json_codec(),
++			Frame::Text(fs::read_file_to_str(storage)),
++		);
+ 		match stored {
+ 			Ok(let list) => list,
+ 			Err(let _reason) => [],
+diff -ruN -x lucide -x search-dict pristine/examples/walkthrough/src/views.vl ungated/examples/walkthrough/src/views.vl
+--- pristine/examples/walkthrough/src/views.vl	2026-10-15 17:59:12.311646981 -0400
++++ ungated/examples/walkthrough/src/views.vl	2026-10-15 18:01:15.263801573 -0400
+@@ -212,8 +212,14 @@
+ 		Some(let note) => (note.title, note.body),
+ 		None => ("", ""),
+ 	};
+-	let title = draft(seed_title, |value: str| commit_outcome(client.retitle_note(token.get(), note_id, value), note_id));
+-	let body = draft(seed_body, |value: str| commit_outcome(client.rewrite_note(token.get(), note_id, value), note_id));
++	let title = draft(
++		seed_title,
++		|value: str| commit_outcome(client.retitle_note(token.get(), note_id, value), note_id),
++	);
++	let body = draft(
++		seed_body,
++		|value: str| commit_outcome(client.rewrite_note(token.get(), note_id, value), note_id),
++	);
+ 
+ 	// Remote edits (another session's typing — or our own echo) fold in.
+ 	entry.effect(|current| {

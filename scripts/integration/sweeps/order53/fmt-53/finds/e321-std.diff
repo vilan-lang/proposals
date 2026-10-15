@@ -1,0 +1,1334 @@
+diff -ruN -x lucide -x search-dict pristine/std/src/browser/web/ui.vl ungated/std/src/browser/web/ui.vl
+--- pristine/std/src/browser/web/ui.vl	2026-10-15 17:59:12.256026322 -0400
++++ ungated/std/src/browser/web/ui.vl	2026-10-15 18:01:13.015802005 -0400
+@@ -1638,7 +1638,13 @@
+ 		let plan = if whole {
+ 			reconcile(row_keys.read(), row_items.read(), list, key, same)
+ 		} else {
+-			reconcile(held_span(row_keys, at, count), held_span(row_items, at, count), list, key, same)
++			reconcile(
++				held_span(row_keys, at, count),
++				held_span(row_items, at, count),
++				list,
++				key,
++				same,
++			)
+ 		};
+ 		// A98: the rows that already stand in their new relative order, and the
+ 		// marker every other row is threaded in before.
+@@ -1939,7 +1945,13 @@
+ 		let plan = if whole {
+ 			reconcile(row_keys.read(), row_items.read(), list, key, same)
+ 		} else {
+-			reconcile(held_span(row_keys, at, count), held_span(row_items, at, count), list, key, same)
++			reconcile(
++				held_span(row_keys, at, count),
++				held_span(row_items, at, count),
++				list,
++				key,
++				same,
++			)
+ 		};
+ 		// A98, exactly as `place_each` reads it: the rows already in their new
+ 		// relative order stay put, and every other row is threaded in before the
+diff -ruN -x lucide -x search-dict pristine/std/src/compare.vl ungated/std/src/compare.vl
+--- pristine/std/src/compare.vl	2026-10-15 17:59:12.260354237 -0400
++++ ungated/std/src/compare.vl	2026-10-15 18:01:13.043802000 -0400
+@@ -277,7 +277,10 @@
+ 		for variant in target.variants {
+ 			let arity = variant.payload.len();
+ 			if arity == 0 {
+-				arms = arms.arm(i"({target.name}::{variant.name}, {target.name}::{variant.name})", "true");
++				arms = arms.arm(
++					i"({target.name}::{variant.name}, {target.name}::{variant.name})",
++					"true",
++				);
+ 			} else {
+ 				mut self_binds: List<str> = [];
+ 				mut other_binds: List<str> = [];
+@@ -291,7 +294,10 @@
+ 				}
+ 				let self_pattern = join(self_binds, ", ");
+ 				let other_pattern = join(other_binds, ", ");
+-				arms = arms.arm(i"({target.name}::{variant.name}({self_pattern}), {target.name}::{variant.name}({other_pattern}))", join(comparisons, " && "));
++				arms = arms.arm(
++					i"({target.name}::{variant.name}({self_pattern}), {target.name}::{variant.name}({other_pattern}))",
++					join(comparisons, " && "),
++				);
+ 			}
+ 		}
+ 		arms = arms.arm("_", "false");
+diff -ruN -x lucide -x search-dict pristine/std/src/db.vl ungated/std/src/db.vl
+--- pristine/std/src/db.vl	2026-10-15 17:59:12.260508629 -0400
++++ ungated/std/src/db.vl	2026-10-15 18:01:13.055801997 -0400
+@@ -255,7 +255,9 @@
+ 		// Sampled per step, inside the transaction: a step that never finishes
+ 		// records when it started applying, which is the more useful of the two
+ 		// readings for a stalled boot's table.
+-		let recorder = self.prepare("INSERT INTO vilan_migrations (name, applied_at_ms) VALUES (?, ?)");
++		let recorder = self.prepare(
++			"INSERT INTO vilan_migrations (name, applied_at_ms) VALUES (?, ?)",
++		);
+ 		match run_guarded(recorder, [step.name, now().millis]) {
+ 			Some(let message) => {
+ 				self.rollback_migration();
+diff -ruN -x lucide -x search-dict pristine/std/src/debug.vl ungated/std/src/debug.vl
+--- pristine/std/src/debug.vl	2026-10-15 17:59:12.260554470 -0400
++++ ungated/std/src/debug.vl	2026-10-15 18:01:13.071801994 -0400
+@@ -183,7 +183,10 @@
+ 		for variant in target.variants {
+ 			let arity = variant.payload.len();
+ 			if arity == 0 {
+-				arms = arms.arm(i"{target.name}::{variant.name}", quote(i"{target.name}::{variant.name}"));
++				arms = arms.arm(
++					i"{target.name}::{variant.name}",
++					quote(i"{target.name}::{variant.name}"),
++				);
+ 			} else {
+ 				mut binds: List<str> = [];
+ 				mut parts: List<str> = [];
+diff -ruN -x lucide -x search-dict pristine/std/src/http.vl ungated/std/src/http.vl
+--- pristine/std/src/http.vl	2026-10-15 17:59:12.260913417 -0400
++++ ungated/std/src/http.vl	2026-10-15 18:01:13.135801982 -0400
+@@ -740,7 +740,10 @@
+ 		let fallback = self.request_handler;
+ 		Server {
+ 			port = self.port,
+-			request_handler = fold_service_requests(self.services, |request| respond_from_build(assets, cache, fallback, request)),
++			request_handler = fold_service_requests(
++				self.services,
++				|request| respond_from_build(assets, cache, fallback, request),
++			),
+ 			on_start = self.on_start,
+ 			on_stop = self.on_stop,
+ 			upgrade_handler = fold_service_upgrades(self.services, self.upgrade_handler),
+diff -ruN -x lucide -x search-dict pristine/std/src/json.vl ungated/std/src/json.vl
+--- pristine/std/src/json.vl	2026-10-15 17:59:12.261771152 -0400
++++ ungated/std/src/json.vl	2026-10-15 18:01:13.215801967 -0400
+@@ -961,7 +961,9 @@
+ 	// reachable wherever the derive is; its variants may not be in scope).
+ 	for field in target.fields {
+ 		let label = quote(field.name);
+-		from_json_value = from_json_value.line(i"if !value.has_field({label}) \{ ret Result::Err(\"missing field {field.name}\") \}");
++		from_json_value = from_json_value.line(
++			i"if !value.has_field({label}) \{ ret Result::Err(\"missing field {field.name}\") \}",
++		);
+ 	}
+ 	mut literal = init_of(target.name);
+ 	for field in target.fields {
+@@ -1011,7 +1013,9 @@
+ 	for field in target.fields {
+ 		let label = quote(field.name);
+ 		rebuild = rebuild.line(i"deserializer.field({label});");
+-		rebuild = rebuild.line(i"let __{field.name} = {field.type_.render()}::rebuild(deserializer);");
++		rebuild = rebuild.line(
++			i"let __{field.name} = {field.type_.render()}::rebuild(deserializer);",
++		);
+ 		literal = literal.field(field.name, i"__{field.name}");
+ 	}
+ 	rebuild = rebuild.line("deserializer.end_struct();").expr(literal.render());
+@@ -1053,7 +1057,9 @@
+ 		let backed_from_json = fun_of("from_json")
+ 			.parameter("text: str")
+ 			.returns(backed_result)
+-			.expr(i"{target.name}::from_json_value(text.try_parse_json().ok_or(\"not valid JSON\")!)");
++			.expr(
++				i"{target.name}::from_json_value(text.try_parse_json().ok_or(\"not valid JSON\")!)",
++			);
+ 		let backed_from_json_value = fun_of("from_json_value")
+ 			.parameter("value: JsonValue")
+ 			.returns(backed_result)
+@@ -1124,10 +1130,16 @@
+ 				index = index + 1;
+ 			}
+ 			let element_list = join(elements, ", ");
+-			from_arms = from_arms.arm(tag, i"Result::Ok({target.name}::{variant.name}({element_list}))");
++			from_arms = from_arms.arm(
++				tag,
++				i"Result::Ok({target.name}::{variant.name}({element_list}))",
++			);
+ 		}
+ 	}
+-	from_arms = from_arms.arm("_", i"Result::Err(\"unknown variant in JSON for enum {target.name}\")");
++	from_arms = from_arms.arm(
++		"_",
++		i"Result::Err(\"unknown variant in JSON for enum {target.name}\")",
++	);
+ 	let result_type = i"Result<{subject}, str>";
+ 	let to_json = fun_of("to_json").parameter("self").returns("str").expr(to_arms.render());
+ 	let from_json = fun_of("from_json")
+@@ -1220,7 +1232,10 @@
+ 			describe_arms = describe_arms.arm_block(i"{target.name}::{variant.name}", statements);
+ 		} else {
+ 			let bind_pattern = join(binds, ", ");
+-			describe_arms = describe_arms.arm_block(i"{target.name}::{variant.name}({bind_pattern})", statements);
++			describe_arms = describe_arms.arm_block(
++				i"{target.name}::{variant.name}({bind_pattern})",
++				statements,
++			);
+ 		}
+ 	}
+ 	mut rebuild_arms = match_of("tag");
+diff -ruN -x lucide -x search-dict pristine/std/src/markdown.vl ungated/std/src/markdown.vl
+--- pristine/std/src/markdown.vl	2026-10-15 17:59:12.261941105 -0400
++++ ungated/std/src/markdown.vl	2026-10-15 18:01:13.295801951 -0400
+@@ -539,7 +539,10 @@
+ 	}
+ 	first == 47
+ 		&& n >= 2
+-		&& ((inner.code_at(1) >= 97 && inner.code_at(1) <= 122) || (inner.code_at(1) >= 65 && inner.code_at(1) <= 90))
++		&& ((inner.code_at(1) >= 97 && inner.code_at(1) <= 122) || (inner.code_at(1) >= 65 && inner.code_at(
++			1,
++		)
++			<= 90))
+ }
+ 
+ // --- the heading-id algorithm (mdBook v0.5.4, pinned — §3) -------------------
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive/delta.vl ungated/std/src/reactive/delta.vl
+--- pristine/std/src/reactive/delta.vl	2026-10-15 17:59:12.268309038 -0400
++++ ungated/std/src/reactive/delta.vl	2026-10-15 18:01:13.703801872 -0400
+@@ -1305,7 +1305,11 @@
+ fun apply_ops<T>(cell: ListCell<T>, ops: List<SeqOp<T>>) {
+ 	for op in ops {
+ 		match op {
+-			SeqOp::Splice(let at, let removed, let inserted) => cell.splice(at, removed.len(), inserted),
++			SeqOp::Splice(let at, let removed, let inserted) => cell.splice(
++				at,
++				removed.len(),
++				inserted,
++			),
+ 			SeqOp::SetAt(let at, let _was, let value) => cell.set_at(at, value),
+ 			SeqOp::Reset(let items) => cell.set(items),
+ 			SeqOp::Move(let from, let count, let to) => cell.move_range(from, count, to),
+@@ -1717,7 +1721,9 @@
+ 							let before = core.values.read()[at];
+ 							let now = (hold.pull)();
+ 							core.values.write()[at] = now;
+-							events.push(ElementEvent::Changed(at, (item, before), (item, now), false));
++							events.push(
++								ElementEvent::Changed(at, (item, before), (item, now), false),
++							);
+ 						}
+ 					},
+ 					None => {},
+@@ -1946,8 +1952,12 @@
+ 			ElementEvent::Changed(let at, let before, let after, let _rerun) => {
+ 				ops.push(SeqOp::SetAt(at, before.1, after.1));
+ 			},
+-			ElementEvent::Reset(let _left, let now) => ops.push(SeqOp::Reset(now.map(|pair| pair.1))),
+-			ElementEvent::Moved(let from, let count, let to) => ops.push(SeqOp::Move(from, count, to)),
++			ElementEvent::Reset(let _left, let now) => ops.push(
++				SeqOp::Reset(now.map(|pair| pair.1)),
++			),
++			ElementEvent::Moved(let from, let count, let to) => ops.push(
++				SeqOp::Move(from, count, to),
++			),
+ 		}
+ 	}
+ 	ops
+@@ -1966,7 +1976,14 @@
+ 		// Each source is started as the `Source` blanket starts one, written out:
+ 		// read with `get`, attached with `on_settle`, nothing to release.
+ 		let core: ElementCore<S, U> = element_core(Owner::new(), |source: S| {
+-			(ElementRun<U>::Live(Instance<U> { pull = || source.get(), attach = |subscriber: Subscriber| source.on_settle(subscriber), release = || {} }), None)
++			(
++				ElementRun<U>::Live(Instance<U> {
++					pull = || source.get(),
++					attach = |subscriber: Subscriber| source.on_settle(subscriber),
++					release = || {},
++				}),
++				None
++			)
+ 		});
+ 		seed(core, (upstream.snapshot)());
+ 		let drain = upstream.drain;
+@@ -2069,7 +2086,13 @@
+ 				out
+ 			},
+ 			attach = core_attach(core, upstream),
+-			drain = || kept_ops(kept, index, resolve(core, drain()), |pair: (T, Option<U>)| pair.1, true),
++			drain = || kept_ops(
++				kept,
++				index,
++				resolve(core, drain()),
++				|pair: (T, Option<U>)| pair.1,
++				true,
++			),
+ 			release = core_release(core, upstream),
+ 		}
+ 	}
+@@ -2433,7 +2456,13 @@
+ 	for item in before {
+ 		old_keys.push(key(item));
+ 	}
+-	let plan = reconcile(old_keys, before, after, |item: T| key(item), |was: T, now: T| was.same_element(now));
++	let plan = reconcile(
++		old_keys,
++		before,
++		after,
++		|item: T| key(item),
++		|was: T, now: T| was.same_element(now),
++	);
+ 	mut ops: List<SeqOp<T>> = [];
+ 	// What stands now, as old indices (`None` for an arrival), with its values.
+ 	mut standing: List<Option<usize>> = [];
+@@ -3072,11 +3101,15 @@
+ 		match op {
+ 			MapOp::Put(let key, let was, let now) => {
+ 				match (face_rank(face, key.hash()), was) {
+-					(Some(let rank), Some(let before)) => produced.push(SeqOp::SetAt(rank, out(key, before), out(key, now))),
++					(Some(let rank), Some(let before)) => produced.push(
++						SeqOp::SetAt(rank, out(key, before), out(key, now)),
++					),
+ 					// A producer that said "new" of a key the face holds: an
+ 					// in-place change whose old element is not known — the new one
+ 					// stands in for it.
+-					(Some(let rank), None) => produced.push(SeqOp::SetAt(rank, out(key, now), out(key, now))),
++					(Some(let rank), None) => produced.push(
++						SeqOp::SetAt(rank, out(key, now), out(key, now)),
++					),
+ 					(None, _) => {
+ 						let rank = face_append(face, key.hash());
+ 						produced.push(SeqOp::Splice(rank, [], [out(key, now)]));
+@@ -3205,7 +3238,14 @@
+ 						// new run is a slot of its own.
+ 						keyed_retire(keyed, row);
+ 						let fresh = keyed_admit(keyed, key, input);
+-						events.push(KeyEvent::Changed(key, (row.input, row.value), (fresh.input, fresh.value), true));
++						events.push(
++							KeyEvent::Changed(
++								key,
++								(row.input, row.value),
++								(fresh.input, fresh.value),
++								true,
++							),
++						);
+ 					},
+ 					None => {
+ 						let fresh = keyed_admit(keyed, key, input);
+@@ -3260,7 +3300,14 @@
+ 										value = now,
+ 										id = row.id,
+ 									});
+-								events.push(KeyEvent::Changed(row.key, (row.input, row.value), (row.input, now), false));
++								events.push(
++									KeyEvent::Changed(
++										row.key,
++										(row.input, row.value),
++										(row.input, now),
++										false,
++									),
++								);
+ 							}
+ 						},
+ 						None => {},
+@@ -3498,11 +3545,15 @@
+ 	mut produced: List<MapOp<K, U>> = [];
+ 	for event in events {
+ 		match event {
+-			KeyEvent::Arrived(let key, let _input, let value) => produced.push(MapOp::Put(key, None, value)),
++			KeyEvent::Arrived(let key, let _input, let value) => produced.push(
++				MapOp::Put(key, None, value),
++			),
+ 			KeyEvent::Changed(let key, let before, let after, let _rerun) => {
+ 				produced.push(MapOp::Put(key, Some(before.1), after.1));
+ 			},
+-			KeyEvent::Left(let key, let _input, let value) => produced.push(MapOp::Delete(key, value)),
++			KeyEvent::Left(let key, let _input, let value) => produced.push(
++				MapOp::Delete(key, value),
++			),
+ 			KeyEvent::Reset(let rows) => {
+ 				mut map: HashMap<K, U> = HashMap::new();
+ 				for row in rows {
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store_core.vl ungated/std/src/reactive/store_core.vl
+--- pristine/std/src/reactive/store_core.vl	2026-10-15 17:59:12.269451332 -0400
++++ ungated/std/src/reactive/store_core.vl	2026-10-15 18:01:13.967801822 -0400
+@@ -799,7 +799,12 @@
+ 			},
+ 			Some(let held) => match other {
+ 				None => store_switch(node, 1, 1, woken),
+-				Some(let written) => held.store_diff(&written, store_kid(node, 1), need || store_has_me(node), woken),
++				Some(let written) => held.store_diff(
++					&written,
++					store_kid(node, 1),
++					need || store_has_me(node),
++					woken,
++				),
+ 			},
+ 		};
+ 		store_wake_me(node, changed, woken);
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/std/src/reactive/store.vl
+--- pristine/std/src/reactive/store.vl	2026-10-15 17:59:12.269245828 -0400
++++ ungated/std/src/reactive/store.vl	2026-10-15 18:01:13.919801831 -0400
+@@ -207,9 +207,8 @@
+ 				}
+ 			}
+ 			for hash in other.table.keys() {
+-				if (fed || !changed)
+-					&& !self.table.contains_key(hash)
+-					&& store_keyed(node, hash).is_none() {
++				if (fed || !changed) && !self.table.contains_key(hash) && store_keyed(node, hash)
++					.is_none() {
+ 					changed = true;
+ 					store_touch(node, StoreTouch::Key(hash), woken);
+ 				}
+@@ -245,17 +244,15 @@
+ 		}
+ 		if fed || (here && !changed) {
+ 			for hash in self.table.keys() {
+-				if (fed || !changed)
+-					&& !other.table.contains_key(hash)
+-					&& store_keyed(node, hash).is_none() {
++				if (fed || !changed) && !other.table.contains_key(hash) && store_keyed(node, hash)
++					.is_none() {
+ 					changed = true;
+ 					store_touch(node, StoreTouch::Key(hash), woken);
+ 				}
+ 			}
+ 			for hash in other.table.keys() {
+-				if (fed || !changed)
+-					&& !self.table.contains_key(hash)
+-					&& store_keyed(node, hash).is_none() {
++				if (fed || !changed) && !self.table.contains_key(hash) && store_keyed(node, hash)
++					.is_none() {
+ 					changed = true;
+ 					store_touch(node, StoreTouch::Key(hash), woken);
+ 				}
+@@ -491,7 +488,11 @@
+ 	mut noted = pending;
+ 	match touch {
+ 		StoreTouch::Key(let hash) => noted.keys.push(hash),
+-		StoreTouch::Span(let at, let removed, let inserted) => noted.spans.push((at, removed, inserted)),
++		StoreTouch::Span(let at, let removed, let inserted) => noted.spans.push((
++			at,
++			removed,
++			inserted
++		)),
+ 		StoreTouch::Whole => {
+ 			noted.whole = true;
+ 		},
+@@ -1489,7 +1490,12 @@
+ 					serializer.begin_list(taking.as_i32());
+ 					mut index: usize = 0;
+ 					for index < taking {
+-						let _described = self[first + index].store_describe_at(path, path.len(), serializer, true);
++						let _described = self[first + index].store_describe_at(
++							path,
++							path.len(),
++							serializer,
++							true,
++						);
+ 						index += 1;
+ 					}
+ 					serializer.end_list();
+@@ -1791,7 +1797,9 @@
+ export impl RemoteStore<HashMap<type K: Hashable + Wire, type V: StoreWire + Storable>> {
+ 	fun at(self, key: K): RemoteStore<Option<V>> {
+ 		let local = self.local.at(key);
+-		let at = self.at.below(MirrorStep::Key(|serializer: &mut Serializer| key.describe(serializer)));
++		let at = self.at.below(
++			MirrorStep::Key(|serializer: &mut Serializer| key.describe(serializer)),
++		);
+ 		RemoteStore {
+ 			local,
+ 			at = MirrorAt {
+@@ -1806,7 +1814,9 @@
+ export impl RemoteStoreSome<HashMap<type K: Hashable + Wire, type V: StoreWire + Storable>> {
+ 	fun at(self, key: K): RemoteStoreSome<Option<V>> {
+ 		let local = self.local.at(key);
+-		let at = self.at.below(MirrorStep::Key(|serializer: &mut Serializer| key.describe(serializer)));
++		let at = self.at.below(
++			MirrorStep::Key(|serializer: &mut Serializer| key.describe(serializer)),
++		);
+ 		// Through a variant the key's handle is a `StoreSome`: its applier writes
+ 		// only while the variant is live, through `patch`.
+ 		RemoteStoreSome {
+@@ -1828,7 +1838,9 @@
+ export impl RemoteStore<HashSet<type T: Hashable + Wire>> {
+ 	fun contains(self, member: T): RemoteStore<bool> {
+ 		let local = self.local.contains(member);
+-		let at = self.at.below(MirrorStep::Key(|serializer: &mut Serializer| member.describe(serializer)));
++		let at = self.at.below(
++			MirrorStep::Key(|serializer: &mut Serializer| member.describe(serializer)),
++		);
+ 		RemoteStore {
+ 			local,
+ 			at = MirrorAt {
+@@ -1848,7 +1860,9 @@
+ 
+ 	fun contains(self, member: T): RemoteStoreSome<bool> {
+ 		let local = self.local.contains(member);
+-		let at = self.at.below(MirrorStep::Key(|serializer: &mut Serializer| member.describe(serializer)));
++		let at = self.at.below(
++			MirrorStep::Key(|serializer: &mut Serializer| member.describe(serializer)),
++		);
+ 		RemoteStoreSome {
+ 			local,
+ 			at = MirrorAt {
+@@ -2271,7 +2285,9 @@
+ 	mut store_impl = impl_of(i"Store<{target.name}{store_bare_binders(target.generics)}>");
+ 	mut some_impl = impl_of(i"StoreSome<{target.name}{store_bare_binders(target.generics)}>");
+ 	mut remote_impl = impl_of(i"RemoteStore<{target.name}{store_bare_binders(target.generics)}>");
+-	mut remote_some_impl = impl_of(i"RemoteStoreSome<{target.name}{store_bare_binders(target.generics)}>");
++	mut remote_some_impl = impl_of(
++		i"RemoteStoreSome<{target.name}{store_bare_binders(target.generics)}>",
++	);
+ 	mut index: usize = 0;
+ 	for field in target.fields {
+ 		let method = if field.reactive_name != "" { field.reactive_name } else { field.name };
+@@ -2288,10 +2304,32 @@
+ 			"store_diff"
+ 		};
+ 		diff = diff.line(i"changed = self.{field.name}.{step}(&other.{field.name}, store_kid(node, {index}), here && !changed, woken) || changed;");
+-		store_impl = store_impl.member(store_projection("Store", subject, method, field.name, index, field.type_));
+-		some_impl = some_impl.member(store_projection("StoreSome", subject, method, field.name, index, field.type_));
+-		remote_impl = remote_impl.member(store_remote_projection("RemoteStore", "Store", subject, method, index, field.type_.render()));
+-		remote_some_impl = remote_some_impl.member(store_remote_projection("RemoteStoreSome", "StoreSome", subject, method, index, field.type_.render()));
++		store_impl = store_impl.member(
++			store_projection("Store", subject, method, field.name, index, field.type_),
++		);
++		some_impl = some_impl.member(
++			store_projection("StoreSome", subject, method, field.name, index, field.type_),
++		);
++		remote_impl = remote_impl.member(
++			store_remote_projection(
++				"RemoteStore",
++				"Store",
++				subject,
++				method,
++				index,
++				field.type_.render(),
++			),
++		);
++		remote_some_impl = remote_some_impl.member(
++			store_remote_projection(
++				"RemoteStoreSome",
++				"StoreSome",
++				subject,
++				method,
++				index,
++				field.type_.render(),
++			),
++		);
+ 		index = index + 1;
+ 	}
+ 	diff = diff.line("store_wake_me(node, changed, woken);").expr("changed");
+@@ -2513,7 +2551,10 @@
+ 	mut body = arms;
+ 	body.push(absent);
+ 	"match path[from] {\n"
+-		+ indent(i"StoreStep::Field(let {binder}) => " + "{\n" + indent(join(body, "\n"), 1) + "\n},", 1)
++		+ indent(
++			i"StoreStep::Field(let {binder}) => " + "{\n" + indent(join(body, "\n"), 1) + "\n},",
++			1,
++		)
+ 		+ "\n"
+ 		+ indent(i"StoreStep::Key(let _hash) => {absent},", 1)
+ 		+ "\n}"
+@@ -2550,7 +2591,9 @@
+ 			steps.push(store_wire_if(i"index == {index}", [
+ 				i"ret self.{field.name}.store_describe_at(path, from + 1, serializer, write);",
+ 			]));
+-			apply_whole.push(i"let _f{index} = self.{field.name}.store_apply_at(path, from, deserializer);");
++			apply_whole.push(
++				i"let _f{index} = self.{field.name}.store_apply_at(path, from, deserializer);",
++			);
+ 			apply_steps.push(store_wire_if(i"index == {index}", [
+ 				i"ret self.{field.name}.store_apply_at(path, from + 1, deserializer);",
+ 			]));
+@@ -2710,7 +2753,9 @@
+ 				payload_reads.push(i"let __p{position}: {type_.render()} = store_wire_closure();");
+ 			} else {
+ 				described.push(i"let _p{position} = p{position}.store_describe_at(path, from, serializer, true);");
+-				payload_reads.push(i"let __p{position} = store_fresh_of<{type_.render()}>(deserializer);");
++				payload_reads.push(
++					i"let __p{position} = store_fresh_of<{type_.render()}>(deserializer);",
++				);
+ 			}
+ 			fresh_parts.push(i"__p{position}");
+ 			position = position + 1;
+@@ -2756,7 +2801,9 @@
+ 					merged.push(i"let m{position}: {type_.render()} = store_wire_closure();");
+ 				} else {
+ 					merged.push(i"mut m{position} = p{position};");
+-					merged.push(i"let _m{position} = m{position}.store_apply_at(path, from, deserializer);");
++					merged.push(
++						i"let _m{position} = m{position}.store_apply_at(path, from, deserializer);",
++					);
+ 				}
+ 				spread.push(i"m{position}");
+ 				position = position + 1;
+@@ -2820,7 +2867,10 @@
+ 					"ret StoreReach::Described;",
+ 				]),
+ 				"match path[from + 1] {\n"
+-					+ indent(i"StoreStep::Field(let {binder}) => " + "{\n" + indent(join(position_arm, "\n"), 1) + "\n},", 1)
++					+ indent(
++						i"StoreStep::Field(let {binder}) => " + "{\n" + indent(join(position_arm, "\n"), 1) + "\n},",
++						1,
++					)
+ 					+ "\n"
+ 					+ indent("StoreStep::Key(let _hash) => StoreReach::Absent,", 1)
+ 					+ "\n}",
+@@ -2863,7 +2913,10 @@
+ 			mut merged_walk = gathered;
+ 			merged_walk.push(store_wire_if("from + 1 == path.len()", listed_in));
+ 			merged_walk.push("ret match path[from + 1] {\n"
+-				+ indent(i"StoreStep::Field(let {apply_binder}) => " + "{\n" + indent(join(apply_position_arm, "\n"), 1) + "\n},", 1)
++				+ indent(
++					i"StoreStep::Field(let {apply_binder}) => " + "{\n" + indent(join(apply_position_arm, "\n"), 1) + "\n},",
++					1,
++				)
+ 				+ "\n"
+ 				+ indent("StoreStep::Key(let _hash) => StoreReach::Absent,", 1)
+ 				+ "\n};");
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive/transient.vl ungated/std/src/reactive/transient.vl
+--- pristine/std/src/reactive/transient.vl	2026-10-15 17:59:12.269586024 -0400
++++ ungated/std/src/reactive/transient.vl	2026-10-15 18:01:13.983801819 -0400
+@@ -110,7 +110,10 @@
+ 			TransientState::Pending => TransientState::Pending,
+ 			TransientState::Ready(let value) => TransientState::Ready(transform(value)),
+ 			TransientState::Refreshing(let value) => TransientState::Refreshing(transform(value)),
+-			TransientState::Failed(let error, let stale) => TransientState::Failed(error, stale.map(transform)),
++			TransientState::Failed(let error, let stale) => TransientState::Failed(
++				error,
++				stale.map(transform),
++			),
+ 			TransientState::Absent => TransientState::Absent,
+ 		}
+ 	}
+@@ -157,11 +160,19 @@
+ 	fun zip<U>(own self, own other: TransientState<U, E>): TransientState<(T, U), E> {
+ 		let stale = self.latest().zip(other.latest());
+ 		match (self, other) {
+-			(TransientState::Failed(let error, let _mine), _) => TransientState::Failed(error, stale),
+-			(_, TransientState::Failed(let error, let _theirs)) => TransientState::Failed(error, stale),
++			(TransientState::Failed(let error, let _mine), _) => TransientState::Failed(
++				error,
++				stale,
++			),
++			(_, TransientState::Failed(let error, let _theirs)) => TransientState::Failed(
++				error,
++				stale,
++			),
+ 			(TransientState::Absent, _) => TransientState::Absent,
+ 			(_, TransientState::Absent) => TransientState::Absent,
+-			(TransientState::Ready(let mine), TransientState::Ready(let theirs)) => TransientState::Ready((mine, theirs)),
++			(TransientState::Ready(let mine), TransientState::Ready(let theirs)) => TransientState::Ready(
++				(mine, theirs),
++			),
+ 			_ => match stale {
+ 				Some(let both) => TransientState::Refreshing(both),
+ 				None => TransientState::Pending,
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive.vl ungated/std/src/reactive.vl
+--- pristine/std/src/reactive.vl	2026-10-15 17:59:12.263688846 -0400
++++ ungated/std/src/reactive.vl	2026-10-15 18:01:14.107801795 -0400
+@@ -2976,7 +2976,9 @@
+ 		let outer_pull = outer.pull;
+ 		// The FIRST selection is made here, at start — the instance's state begins
+ 		// with it, and a consumer's first pull reads it.
+-		let followed: Shared<Instance<U>> = Shared::new(run_tracked(runs, tracker, || select(outer_pull())).start());
++		let followed: Shared<Instance<U>> = Shared::new(
++			run_tracked(runs, tracker, || select(outer_pull())).start(),
++		);
+ 		let followed_handle: Shared<Option<Subscription>> = Shared::new(None);
+ 		Instance<U> {
+ 			pull = || (followed.read().pull)(),
+diff -ruN -x lucide -x search-dict pristine/std/src/rpc/mirror.vl ungated/std/src/rpc/mirror.vl
+--- pristine/std/src/rpc/mirror.vl	2026-10-15 17:59:12.271260854 -0400
++++ ungated/std/src/rpc/mirror.vl	2026-10-15 18:01:14.231801772 -0400
+@@ -708,51 +708,53 @@
+ 			ret;
+ 		}
+ 		let session = self.session;
+-		session.transport.send(encode_patch(session.codec, self.channel, |mut serializer: Serializer| {
+-			serializer.begin_list(ops.len().as_i32());
+-			for op in ops {
+-				match op.kind {
+-					MirrorOpKind::Seed => {
+-						serializer.begin_variant("Seed", 2);
+-						serializer.i32_value(op.slot);
+-						let _seed = (op.describe)(op.at, serializer);
+-						serializer.end_variant();
+-					},
+-					MirrorOpKind::Set => {
+-						serializer.begin_variant("Set", 3);
+-						serializer.i32_value(op.slot);
+-						describe_steps(op.rel, &mut serializer);
+-						let _set = (op.describe)(op.at, serializer);
+-						serializer.end_variant();
+-					},
+-					MirrorOpKind::Gone => {
+-						serializer.begin_variant("Gone", 1);
+-						serializer.i32_value(op.slot);
+-						serializer.end_variant();
+-					},
+-					MirrorOpKind::Seq(let at, let removed) => {
+-						serializer.begin_variant("Seq", 3);
+-						serializer.i32_value(op.slot);
+-						describe_steps(op.rel, &mut serializer);
+-						serializer.begin_variant("Splice", 3);
+-						serializer.i32_value(at.as_i32());
+-						serializer.i32_value(removed.as_i32());
+-						let _inserted = (op.describe)(op.at, serializer);
+-						serializer.end_variant();
+-						serializer.end_variant();
+-					},
+-					MirrorOpKind::Keys => {
+-						serializer.begin_variant("Keys", 2);
+-						serializer.i32_value(op.slot);
+-						serializer.begin_variant("Reset", 1);
+-						let _keys = (op.describe)(op.at, serializer);
+-						serializer.end_variant();
+-						serializer.end_variant();
+-					},
++		session.transport.send(
++			encode_patch(session.codec, self.channel, |mut serializer: Serializer| {
++				serializer.begin_list(ops.len().as_i32());
++				for op in ops {
++					match op.kind {
++						MirrorOpKind::Seed => {
++							serializer.begin_variant("Seed", 2);
++							serializer.i32_value(op.slot);
++							let _seed = (op.describe)(op.at, serializer);
++							serializer.end_variant();
++						},
++						MirrorOpKind::Set => {
++							serializer.begin_variant("Set", 3);
++							serializer.i32_value(op.slot);
++							describe_steps(op.rel, &mut serializer);
++							let _set = (op.describe)(op.at, serializer);
++							serializer.end_variant();
++						},
++						MirrorOpKind::Gone => {
++							serializer.begin_variant("Gone", 1);
++							serializer.i32_value(op.slot);
++							serializer.end_variant();
++						},
++						MirrorOpKind::Seq(let at, let removed) => {
++							serializer.begin_variant("Seq", 3);
++							serializer.i32_value(op.slot);
++							describe_steps(op.rel, &mut serializer);
++							serializer.begin_variant("Splice", 3);
++							serializer.i32_value(at.as_i32());
++							serializer.i32_value(removed.as_i32());
++							let _inserted = (op.describe)(op.at, serializer);
++							serializer.end_variant();
++							serializer.end_variant();
++						},
++						MirrorOpKind::Keys => {
++							serializer.begin_variant("Keys", 2);
++							serializer.i32_value(op.slot);
++							serializer.begin_variant("Reset", 1);
++							let _keys = (op.describe)(op.at, serializer);
++							serializer.end_variant();
++							serializer.end_variant();
++						},
++					}
+ 				}
+-			}
+-			serializer.end_list();
+-		}));
++				serializer.end_list();
++			}),
++		);
+ 	}
+ }
+ 
+@@ -803,7 +805,10 @@
+ 	if held.keys {
+ 		for write in writes {
+ 			let at_or_above = starts_with(held.path, write.path);
+-			let a_key = write.path.len() == held.path.len() + 1 && starts_with(write.path, held.path);
++			let a_key = write.path.len() == held.path.len() + 1 && starts_with(
++				write.path,
++				held.path,
++			);
+ 			if at_or_above || a_key {
+ 				ops.push(seed_or_gone(grant, held));
+ 				ret;
+@@ -1255,7 +1260,10 @@
+ 		for parked in self.parked.read() {
+ 			mut below = false;
+ 			for held in self.slots.read() {
+-				if held.boundary.place.len() > parked.boundary.place.len() && starts_with(held.boundary.place, parked.boundary.place) {
++				if held.boundary.place.len() > parked.boundary.place.len() && starts_with(
++					held.boundary.place,
++					parked.boundary.place,
++				) {
+ 					below = true;
+ 				}
+ 			}
+@@ -1954,7 +1962,11 @@
+ 		},
+ 		None => {
+ 			let retire: Shared<List<|| void>> = Shared::new([]);
+-			let mirror: RemoteStoreSome<T> = minted_store(client, || call(method, describers), retire);
++			let mirror: RemoteStoreSome<T> = minted_store(
++				client,
++				|| call(method, describers),
++				retire,
++			);
+ 			let stamp = retire.identity();
+ 			table.entries.write().insert(key, (stamp, mirror));
+ 			retire.write().push(|| table.forget(key, stamp));
+diff -ruN -x lucide -x search-dict pristine/std/src/rpc/server.vl ungated/std/src/rpc/server.vl
+--- pristine/std/src/rpc/server.vl	2026-10-15 17:59:12.271507999 -0400
++++ ungated/std/src/rpc/server.vl	2026-10-15 18:01:14.287801761 -0400
+@@ -1014,13 +1014,19 @@
+ 				Session::anonymous()
+ 			};
+ 			let answering = protocol.in_session(session);
+-			let (reply, status) = turn(FlushPolicy::AtEnd, || answering.respond_with_status(Frame::Binary(request.bytes())));
++			let (reply, status) = turn(
++				FlushPolicy::AtEnd,
++				|| answering.respond_with_status(Frame::Binary(request.bytes())),
++			);
+ 			envelope_response(reply, status)
+ 		},
+ 		// §9.7.7: as an ENVELOPE now, so a vilan client meeting it reads a typed
+ 		// `Remote(..)` rather than `Decode("unrecognized reply envelope")` about a
+ 		// plain-text sentence.
+-		None => envelope_response(encode_reply(service.codec, RpcOutcome::Failure(RpcError::Remote(FACTORY_REFUSAL))), 501),
++		None => envelope_response(
++			encode_reply(service.codec, RpcOutcome::Failure(RpcError::Remote(FACTORY_REFUSAL))),
++			501,
++		),
+ 	}
+ }
+ 
+@@ -1357,7 +1363,10 @@
+ 							// promised: replies carry their request id and arrive
+ 							// when their handler is done.
+ 							let _running = async {
+-								let reply = turn(FlushPolicy::AtEnd, || protocol.respond(Frame::Text(payload)));
++								let reply = turn(
++									FlushPolicy::AtEnd,
++									|| protocol.respond(Frame::Text(payload)),
++								);
+ 								match reply {
+ 									Frame::Text(let answer) => {
+ 										socket.write_bytes(text_frame(i"r:{id_text}:{answer}"));
+@@ -1398,7 +1407,10 @@
+ 						// Started, not awaited — the text lane's rule, and for the
+ 						// same reason (a chunk is not a queue).
+ 						let _running = async {
+-							let reply = turn(FlushPolicy::AtEnd, || protocol.respond(Frame::Binary(payload)));
++							let reply = turn(
++								FlushPolicy::AtEnd,
++								|| protocol.respond(Frame::Binary(payload)),
++							);
+ 							match reply {
+ 								Frame::Binary(let answer) => {
+ 									socket.write_bytes(binary_frame(tag_rpc_bytes(id, answer)));
+diff -ruN -x lucide -x search-dict pristine/std/src/rpc.vl ungated/std/src/rpc.vl
+--- pristine/std/src/rpc.vl	2026-10-15 17:59:12.269892310 -0400
++++ ungated/std/src/rpc.vl	2026-10-15 18:01:14.695801681 -0400
+@@ -1046,7 +1046,9 @@
+ 	dispatch: |Frame| void,
+ 	serve: |Frame| void,
+ ): Result<(WebSocket, i32), DialFailure> {
+-	mut outcome: Result<(WebSocket, i32), DialFailure> = Err(DialFailure::Unreachable(i"could not reach {url}"));
++	mut outcome: Result<(WebSocket, i32), DialFailure> = Err(
++		DialFailure::Unreachable(i"could not reach {url}"),
++	);
+ 	mut attempt = 0;
+ 	mut delay = 250i53;
+ 	for attempt < 10 {
+@@ -2496,7 +2498,16 @@
+ 		});
+ 		self.sources
+ 			.write()
+-			.push((channel, Capability { start = starter, resolve = None, dynamic = false, identity = 0 - 1, control = None }));
++			.push((
++				channel,
++				Capability {
++					start = starter,
++					resolve = None,
++					dynamic = false,
++					identity = 0 - 1,
++					control = None,
++				}
++			));
+ 		channel
+ 	}
+ 
+@@ -2546,7 +2557,16 @@
+ 				});
+ 				self.sources
+ 					.write()
+-					.push((channel, Capability { start = starter, resolve = None, dynamic = true, identity = cell_identity(source), control = None }));
++					.push((
++						channel,
++						Capability {
++							start = starter,
++							resolve = None,
++							dynamic = true,
++							identity = cell_identity(source),
++							control = None,
++						}
++					));
+ 				channel
+ 			},
+ 		}
+@@ -2575,7 +2595,16 @@
+ 				});
+ 				self.sources
+ 					.write()
+-					.push((channel, Capability { start = starter, resolve = None, dynamic = true, identity, control = None }));
++					.push((
++						channel,
++						Capability {
++							start = starter,
++							resolve = None,
++							dynamic = true,
++							identity,
++							control = None,
++						}
++					));
+ 				channel
+ 			},
+ 		}
+@@ -2617,7 +2646,16 @@
+ 		let control = make(channel);
+ 		self.sources
+ 			.write()
+-			.push((channel, Capability { start, resolve = None, dynamic = true, identity, control = Some(control) }));
++			.push((
++				channel,
++				Capability {
++					start,
++					resolve = None,
++					dynamic = true,
++					identity,
++					control = Some(control),
++				}
++			));
+ 		channel
+ 	}
+ 
+@@ -2690,12 +2728,29 @@
+ 			let key: K = K::rebuild(&mut deserializer);
+ 			KeySubscription {
+ 				key = key.hash(),
+-				start = || keyed_key_forward(transport, codec, channel, source, elements, key_of, key),
++				start = || keyed_key_forward(
++					transport,
++					codec,
++					channel,
++					source,
++					elements,
++					key_of,
++					key,
++				),
+ 			}
+ 		};
+ 		self.sources
+ 			.write()
+-			.push((channel, Capability { start, resolve = Some(resolve), dynamic = false, identity = 0 - 1, control = None }));
++			.push((
++				channel,
++				Capability {
++					start,
++					resolve = Some(resolve),
++					dynamic = false,
++					identity = 0 - 1,
++					control = None,
++				}
++			));
+ 		channel
+ 	}
+ 
+@@ -2731,7 +2786,16 @@
+ 		};
+ 		self.sources
+ 			.write()
+-			.push((channel, Capability { start, resolve = Some(resolve), dynamic = false, identity = 0 - 1, control = None }));
++			.push((
++				channel,
++				Capability {
++					start,
++					resolve = Some(resolve),
++					dynamic = false,
++					identity = 0 - 1,
++					control = None,
++				}
++			));
+ 		channel
+ 	}
+ 
+@@ -2764,7 +2828,16 @@
+ 				};
+ 				self.sources
+ 					.write()
+-					.push((channel, Capability { start, resolve = Some(resolve), dynamic = true, identity = cell_identity(cell.elements), control = None }));
++					.push((
++						channel,
++						Capability {
++							start,
++							resolve = Some(resolve),
++							dynamic = true,
++							identity = cell_identity(cell.elements),
++							control = None,
++						}
++					));
+ 				channel
+ 			},
+ 		}
+@@ -3646,12 +3719,16 @@
+ 		}
+ 		for entry in now_keys {
+ 			if !carries(was_keys, entry.key) {
+-				(self.transport).send(encode_control_keyed(self.codec, "Subscribe", channel, entry.describe));
++				(self.transport).send(
++					encode_control_keyed(self.codec, "Subscribe", channel, entry.describe),
++				);
+ 			}
+ 		}
+ 		for entry in was_keys {
+ 			if !carries(now_keys, entry.key) {
+-				(self.transport).send(encode_control_keyed(self.codec, "Unsubscribe", channel, entry.describe));
++				(self.transport).send(
++					encode_control_keyed(self.codec, "Unsubscribe", channel, entry.describe),
++				);
+ 			}
+ 		}
+ 		if was_whole && !now_whole {
+@@ -4001,9 +4078,11 @@
+ 				ret None;
+ 			}
+ 			match cache.get() {
+-				Some(let value) => Some(encode_update(codec, channel_cell.read(), |mut serializer: Serializer| {
+-					value.describe(&mut serializer);
+-				})),
++				Some(let value) => Some(
++					encode_update(codec, channel_cell.read(), |mut serializer: Serializer| {
++						value.describe(&mut serializer);
++					}),
++				),
+ 				None => None,
+ 			}
+ 		};
+@@ -4071,10 +4150,12 @@
+ 				ret None;
+ 			}
+ 			match cache.get() {
+-				Some(let list) => Some(encode_patch(codec, channel_cell.read(), |mut serializer: Serializer| {
+-					let ops: List<Delta<K, T>> = [Delta::Reset(list)];
+-					ops.describe(&mut serializer);
+-				})),
++				Some(let list) => Some(
++					encode_patch(codec, channel_cell.read(), |mut serializer: Serializer| {
++						let ops: List<Delta<K, T>> = [Delta::Reset(list)];
++						ops.describe(&mut serializer);
++					}),
++				),
+ 				None => None,
+ 			}
+ 		};
+@@ -4922,7 +5003,10 @@
+ 				// re-subscribes for whatever demand exists by then.
+ 				self.released.write() = false;
+ 				let _reminting = async {
+-					let fresh: Result<Option<i32>, RpcError> = (origin.reissue)(origin.method, origin.describers);
++					let fresh: Result<Option<i32>, RpcError> = (origin.reissue)(
++						origin.method,
++						origin.describers,
++					);
+ 					match fresh {
+ 						// The call failed. Under A92 this is a REACHABLE arm and
+ 						// the mirror's only way to say so: the sync stub handed out
+@@ -4943,7 +5027,10 @@
+ 								self.released.write() = true;
+ 								self.mint.set(Some(Status::Absent));
+ 							},
+-							Some(let channel) => self.rebind(channel, encode_control(self.codec, "Subscribe", channel)),
++							Some(let channel) => self.rebind(
++								channel,
++								encode_control(self.codec, "Subscribe", channel),
++							),
+ 						},
+ 					}
+ 				};
+@@ -4976,7 +5063,9 @@
+ 				// sibling's demand keeps it, and this `Unsubscribe` would release
+ 				// the sibling's forward instead.
+ 				if !self.wire.holds(self.channel.read()) {
+-					(self.transport).send(encode_control(self.codec, "Unsubscribe", self.channel.read()));
++					(self.transport).send(
++						encode_control(self.codec, "Unsubscribe", self.channel.read()),
++					);
+ 				}
+ 			}
+ 			self.retired();
+@@ -5378,7 +5467,9 @@
+ 							for offset < arriving {
+ 								match inserted.get(offset) {
+ 									Some(let element) => {
+-										ops.push(Delta::Insert(element.key, element.value, at + offset));
++										ops.push(
++											Delta::Insert(element.key, element.value, at + offset),
++										);
+ 									},
+ 									None => {},
+ 								}
+@@ -5726,7 +5817,10 @@
+ 			Some(let origin) => {
+ 				self.released.write() = false;
+ 				let _reminting = async {
+-					let fresh: Result<Option<i32>, RpcError> = (origin.reissue)(origin.method, origin.describers);
++					let fresh: Result<Option<i32>, RpcError> = (origin.reissue)(
++						origin.method,
++						origin.describers,
++					);
+ 					match fresh {
+ 						Err(let failure) => {
+ 							self.released.write() = true;
+@@ -5761,7 +5855,9 @@
+ 				// sibling's demand keeps it, and this `Unsubscribe` would release
+ 				// the sibling's forward instead.
+ 				if !self.wire.holds(self.channel.read()) {
+-					(self.transport).send(encode_control(self.codec, "Unsubscribe", self.channel.read()));
++					(self.transport).send(
++						encode_control(self.codec, "Unsubscribe", self.channel.read()),
++					);
+ 				}
+ 			}
+ 			self.retired();
+@@ -6056,7 +6152,12 @@
+ 				self.remint();
+ 			} else {
+ 				lease.on_wire.write() = true;
+-				self.wire.open(self.channel.read(), self.channel.identity(), Some(lease.key), lease.describe);
++				self.wire.open(
++					self.channel.read(),
++					self.channel.identity(),
++					Some(lease.key),
++					lease.describe,
++				);
+ 				(self.join_key.read())(lease.key);
+ 			}
+ 		}
+@@ -7068,7 +7169,9 @@
+ 			if parameter.name == "self" {
+ 				jump continue;
+ 			}
+-			statements.push(i"let {parameter.name}: {parameter.type_.render()} = rpc::arg(__request, {arity});");
++			statements.push(
++				i"let {parameter.name}: {parameter.type_.render()} = rpc::arg(__request, {arity});",
++			);
+ 			arguments.push(parameter.name);
+ 			arity = arity + 1;
+ 		}
+@@ -7138,7 +7241,9 @@
+ 				exposures.push(i"session.expose_keyed_cell(self.{field_name})");
+ 			} else {
+ 				let exposer = if is_map { "expose_keyed_map" } else { "expose_keyed" };
+-				exposures.push(i"session.{exposer}(self.{field_name}, |element: {element}| element.key())");
++				exposures.push(
++					i"session.{exposer}(self.{field_name}, |element: {element}| element.key())",
++				);
+ 			}
+ 		}
+ 		exposure_index = exposure_index + 1;
+@@ -7261,7 +7366,9 @@
+ 				jump continue;
+ 			}
+ 			stub = stub.parameter(i"{parameter.name}: {parameter.type_.render()}");
+-			describers.push(i"|mut serializer: Serializer| {parameter.name}.describe(&mut serializer)");
++			describers.push(
++				i"|mut serializer: Serializer| {parameter.name}.describe(&mut serializer)",
++			);
+ 		}
+ 		let label = quote(method.name);
+ 		let describer_list = join(describers, ", ");
+@@ -7319,7 +7426,9 @@
+ 			// mirror is minted unleased and its first hold issues the method;
+ 			// deduped per origin in this method's table (A134).
+ 			let table_name = i"__stores_{target.client_name}_{method.name}";
+-			origin_tables.push(i"let {table_name}: MirrorTable<RemoteStoreSome<{element}>> = MirrorTable::new();");
++			origin_tables.push(
++				i"let {table_name}: MirrorTable<RemoteStoreSome<{element}>> = MirrorTable::new();",
++			);
+ 			let wrapped = if kind == "store_some" { "true" } else { "false" };
+ 			let issue = "|handle_method: str, handle_args: List<|Serializer| void>| rpc::call_reading(self.transport, self.codec, handle_method, handle_args, |handle_reply: Deserializer| mirror::read_store_reply<"
+ 				+ element
+@@ -7388,7 +7497,9 @@
+ 			} else {
+ 				i"RemoteSource<{element}>"
+ 			};
+-			origin_tables.push(i"let {table_name}: MirrorTable<{mirror_type}> = MirrorTable::new();");
++			origin_tables.push(
++				i"let {table_name}: MirrorTable<{mirror_type}> = MirrorTable::new();",
++			);
+ 			let minting = if kind == "keyed" {
+ 				i"let handle_mirror: {mirror_type} = self.reactive.origin_keyed_source({table_name}, {origin});"
+ 			} else {
+@@ -7451,13 +7562,17 @@
+ 		};
+ 		if key == "" {
+ 			body.push(i"let mirror_{field_name}: RemoteSource<{element}> = reactive.attached_source(channels[{channel_index}]);");
+-			rebind_lines.push(i"|channel: i32, subscribe: Frame| mirror_{field_name}.rebind(channel, subscribe)");
++			rebind_lines.push(
++				i"|channel: i32, subscribe: Frame| mirror_{field_name}.rebind(channel, subscribe)",
++			);
+ 		} else {
+ 			body.push(i"let mirror_{field_name}: KeyedSource<{key}, {element}> = reactive.attached_keyed_source(channels[{channel_index}]);");
+ 			// A keyed mirror re-encodes its own `Subscribe` frames — one per demand
+ 			// it still holds — so the positional frame the plain path rebinds with
+ 			// is not its to use.
+-			rebind_lines.push(i"|channel: i32, _subscribe: Frame| mirror_{field_name}.rebind(channel)");
++			rebind_lines.push(
++				i"|channel: i32, _subscribe: Frame| mirror_{field_name}.rebind(channel)",
++			);
+ 		}
+ 		ok_fields.push(i"{field_name} = mirror_{field_name}");
+ 		channel_index = channel_index + 1;
+@@ -7475,7 +7590,12 @@
+ 	body.push("socket.on_reconnect.write().push(|| {\n"
+ 		+ indent("reactive.reset_wire();", 1)
+ 		+ "\n"
+-		+ indent("rpc::reattach_mirrors(socket, transport, codec, " + hash + ", rebinds, || reactive.replay_dynamic());", 1)
++		+ indent(
++			"rpc::reattach_mirrors(socket, transport, codec, "
++				+ hash
++				+ ", rebinds, || reactive.replay_dynamic());",
++			1,
++		)
+ 		+ "\n});");
+ 	let field_lines = join(ok_fields, ",\n");
+ 	let client_value = i"Result::Ok({target.client_name} \{\n" + indent(field_lines, 1) + "\n})";
+@@ -7616,14 +7736,18 @@
+ 					jump continue;
+ 				}
+ 				stub = stub.parameter(i"{parameter.name}: {parameter.type_.render()}");
+-				describers.push(i"|mut serializer: Serializer| {parameter.name}.describe(&mut serializer)");
++				describers.push(
++					i"|mut serializer: Serializer| {parameter.name}.describe(&mut serializer)",
++				);
+ 			}
+ 			let label = quote(method.name);
+ 			let describer_list = join(describers, ", ");
+ 			// SYNC and void, by R4: a notification has no reply to await, so
+ 			// calling one is not a suspension point and cannot hold the caller's
+ 			// wire turn open for a round trip.
+-			proxy_impl = proxy_impl.method(stub.expr(i"rpc::notify(self.connection, {label}, [{describer_list}])"));
++			proxy_impl = proxy_impl.method(
++				stub.expr(i"rpc::notify(self.connection, {label}, [{describer_list}])"),
++			);
+ 		}
+ 		proxy_source = proxy_struct + proxy_ctor + proxy_impl.render();
+ 	}
+diff -ruN -x lucide -x search-dict pristine/std/src/web/document.vl ungated/std/src/web/document.vl
+--- pristine/std/src/web/document.vl	2026-10-15 17:59:12.276617951 -0400
++++ ungated/std/src/web/document.vl	2026-10-15 18:01:14.771801667 -0400
+@@ -406,7 +406,13 @@
+ 				if self.head != "" || self.body != "" {
+ 					match check_shell(composed, self.build, default_mount) {
+ 						Ok(let _checked) => {},
+-						Err(let faults) => panic(fault_report(i"{self.source} composed with this document's `head`/`body` markup", self.build, faults)),
++						Err(let faults) => panic(
++							fault_report(
++								i"{self.source} composed with this document's `head`/`body` markup",
++								self.build,
++								faults,
++							),
++						),
+ 					}
+ 				}
+ 				composed
+@@ -421,7 +427,13 @@
+ 				if self.head != "" || self.body != "" {
+ 					match check_shell(markup, self.build, self.mount) {
+ 						Ok(let _checked) => {},
+-						Err(let faults) => panic(fault_report("this generated document's `head`/`body` markup", self.build, faults)),
++						Err(let faults) => panic(
++							fault_report(
++								"this generated document's `head`/`body` markup",
++								self.build,
++								faults,
++							),
++						),
+ 					}
+ 				}
+ 				markup
+diff -ruN -x lucide -x search-dict pristine/std/src/web/router.vl ungated/std/src/web/router.vl
+--- pristine/std/src/web/router.vl	2026-10-15 17:59:12.276783854 -0400
++++ ungated/std/src/web/router.vl	2026-10-15 18:01:14.811801659 -0400
+@@ -212,9 +212,12 @@
+ 			let equals = pair.split("=");
+ 			if equals.len() > 1 {
+ 				let mark = equals[0].len();
+-				values.insert(percent_decode(pair.substring(0, mark).replace("+", " ")), percent_decode(pair
+-					.substring(mark + 1, pair.len())
+-					.replace("+", " ")));
++				values.insert(
++					percent_decode(pair.substring(0, mark).replace("+", " ")),
++					percent_decode(pair
++						.substring(mark + 1, pair.len())
++						.replace("+", " ")),
++				);
+ 			} else {
+ 				values.insert(percent_decode(pair.replace("+", " ")), "");
+ 			}
+diff -ruN -x lucide -x search-dict pristine/std/src/web/style.vl ungated/std/src/web/style.vl
+--- pristine/std/src/web/style.vl	2026-10-15 17:59:12.276866455 -0400
++++ ungated/std/src/web/style.vl	2026-10-15 18:01:14.959801631 -0400
+@@ -366,10 +366,14 @@
+ 
+ fun check_oklch(lightness: f64, chroma: f64, hue: f64) {
+ 	if lightness < 0.0 || lightness > 1.0 {
+-		panic(i"oklch lightness {lightness} is outside 0.0-1.0 (the CSS number form — 1.0 is white)");
++		panic(
++			i"oklch lightness {lightness} is outside 0.0-1.0 (the CSS number form — 1.0 is white)",
++		);
+ 	}
+ 	if chroma < 0.0 || chroma > 0.5 {
+-		panic(i"oklch chroma {chroma} is outside 0.0-0.5 (0 is achromatic; sRGB tops out near 0.37)");
++		panic(
++			i"oklch chroma {chroma} is outside 0.0-0.5 (0 is achromatic; sRGB tops out near 0.37)",
++		);
+ 	}
+ 	if hue < 0.0 || hue > 360.0 {
+ 		panic(i"oklch hue {hue} is outside 0.0-360.0 (degrees; angles wrap, so write the canonical turn)");
+@@ -2154,7 +2158,12 @@
+ 				Some(let entry) => {
+ 					let (_class, declaration) = entry;
+ 					let composed = compose_condition(set, slot.media, slot.condition);
+-					out = out.rule(condition_set_media(composed), condition_set_text(composed), slot.property, declaration);
++					out = out.rule(
++						condition_set_media(composed),
++						condition_set_text(composed),
++						slot.property,
++						declaration,
++					);
+ 				}
+ 				None => {}
+ 			}
+@@ -2614,7 +2623,10 @@
+ 	preflight_rule("body", declarations().raw("margin", "0").raw("line-height", "inherit"));
+ 
+ 	// The UA's margins, gone — the block elements that carry one by default.
+-	preflight_rule("blockquote,dl,dd,h1,h2,h3,h4,h5,h6,hr,figure,p,pre", declarations().raw("margin", "0"));
++	preflight_rule(
++		"blockquote,dl,dd,h1,h2,h3,h4,h5,h6,hr,figure,p,pre",
++		declarations().raw("margin", "0"),
++	);
+ 	preflight_rule("fieldset", declarations().raw("margin", "0").raw("padding", "0"));
+ 	preflight_rule("legend", declarations().raw("padding", "0"));
+ 	preflight_rule("dialog", declarations().raw("padding", "0"));
+diff -ruN -x lucide -x search-dict pristine/std/src/ws.vl ungated/std/src/ws.vl
+--- pristine/std/src/ws.vl	2026-10-15 17:59:12.277518357 -0400
++++ ungated/std/src/ws.vl	2026-10-15 18:01:14.999801623 -0400
+@@ -157,7 +157,10 @@
+ 						if masked {
+ 							mut index = 0;
+ 							for index < length.as_usize() {
+-								payload.set(index, payload.get(index) ^ buffer.get(mask_at + (index & 3)));
++								payload.set(
++									index,
++									payload.get(index) ^ buffer.get(mask_at + (index & 3)),
++								);
+ 								index += 1;
+ 							}
+ 						}

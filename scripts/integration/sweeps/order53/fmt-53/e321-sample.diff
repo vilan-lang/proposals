@@ -1,0 +1,344 @@
+E321 SAMPLE - the argument-per-line layout with all five hole_depth gates dropped; base b923bfc6 (origin/next); debug build of vilan fmt
+Method: scratch copies (cp -r); every estate was already clean under the base formatter (kolt lucide excluded); every ungated output is a fixed point (fmt --check rc=0).
+estate      files  +lines  -lines  diff-lines   (full diff: finds/e321-<estate>.diff)
+std            19     499     155       1334
+kolt            8     156      29        317
+native         13     101      14        244
+website         6      77       8        152
+examples        2      12       3         35
+test            1       4       1         15
+benchmarks      0       0       0          0
+TOTAL          49     849     210       2097
+Tuple-split gate (the fifth) alone: std 141, native 24 diff lines. benchmarks: 0 files move.
+No css { } block is an operand of any moved call; they stay whole. fmt-52's 1,813 / 60 files came from a different count; today's is above.
+Entries marked WRONG? / QUESTIONABLE are moves that look worse than the base layout; the slice's two re-pinned refusals fix the chain ones.
+Hunks are verbatim from the full diffs (capped at 19 lines each); path is relative to the estate root, [estate] names which.
+====================================================================================================
+
+### 1. plain long call (arguments one per line, const calls as arguments)
+### kolt/command_palette.vl  [kolt]  pristine line 95+
+@@ -95,10 +95,24 @@
+ 		activate,
+ 	};
+ 	mut commands = List<Command>::new();
+-	for command in state_group(next_command_id, "text-selection", const search_dict::expand("UI: Toggle full text selection"), const search_dict::expand("UI: Enable full text selection"), const search_dict::expand("UI: Disable full text selection"), prefs.text_selection_enabled) {
++	for command in state_group(
++		next_command_id,
++		"text-selection",
++		const search_dict::expand("UI: Toggle full text selection"),
++		const search_dict::expand("UI: Enable full text selection"),
++		const search_dict::expand("UI: Disable full text selection"),
++		prefs.text_selection_enabled,
++	) {
+ 		commands.push(command);
+ 	}
+-	for command in state_group(next_command_id, "context-menu", const search_dict::expand("UI: Toggle native context menu"), const search_dict::expand("UI: Enable native context menu"), const search_dict::expand("UI: Disable native context menu"), prefs.context_menu_enabled) {
++	for command in state_group(
++		next_command_id,
++		"context-menu",
+   ... (hunk continues in the full diff)
+### 1. plain long call (interpolated strings, a nested method chain kept)
+### std/src/compare.vl  [std]  pristine line 277+
+@@ -277,7 +277,10 @@
+ 		for variant in target.variants {
+ 			let arity = variant.payload.len();
+ 			if arity == 0 {
+-				arms = arms.arm(i"({target.name}::{variant.name}, {target.name}::{variant.name})", "true");
++				arms = arms.arm(
++					i"({target.name}::{variant.name}, {target.name}::{variant.name})",
++					"true",
++				);
+ 			} else {
+ 				mut self_binds: List<str> = [];
+ 				mut other_binds: List<str> = [];
+
+### 2. nested call (a call in a closure argument in a call)
+### native/store_mirror_set.vl  [native]  pristine line 74+
+@@ -74,7 +74,16 @@
+ 	let dispatcher = Dispatcher::new()
+ 		.on("global", |request: RpcRequest| reply_store(request, global));
+ 	let local = local_rpc(dispatcher.into_protocol(codec).for_connection(7));
+-	let g: RemoteStoreSome<Global> = mint_store(client, || call_reading(local, codec, "global", [], |reply: Deserializer| read_store_reply<Global>(reply, false)));
++	let g: RemoteStoreSome<Global> = mint_store(
++		client,
++		|| call_reading(
++			local,
++			codec,
++			"global",
++			[],
++			|reply: Deserializer| read_store_reply<Global>(reply, false),
++		),
++	);
+ 	let page = Owner::new();
+ 	let watching = Owner::new();
+ 	run_with_owner(page, || {
+
+### 3. chain operand (the call subject breaks, the link follows on its own line)
+### kolt/prefs.vl  [kolt]  pristine line 140+
+@@ -140,7 +140,8 @@
+ }
+ 
+ export fun create_prefs_modal() {
+-	let modal = overlay::Overlay::modal(overlay::Pin::Center, overlay::Pin::Center).extent(overlay::Extent::Fill(size(256)), overlay::Extent::Fill(size(128)));
++	let modal = overlay::Overlay::modal(overlay::Pin::Center, overlay::Pin::Center)
++		.extent(overlay::Extent::Fill(size(256)), overlay::Extent::Fill(size(128)));
+ 
+ 	get_overlays().attach(modal, || {
+ 		let active_tab = Signal::new(0);
+
+### 3. chain operand (a link whose argument is a tuple holding a struct literal)
+### std/src/rpc.vl  [std]  pristine line 2496+
+@@ -2496,7 +2498,16 @@
+ 		});
+ 		self.sources
+ 			.write()
+-			.push((channel, Capability { start = starter, resolve = None, dynamic = false, identity = 0 - 1, control = None }));
++			.push((
++				channel,
++				Capability {
++					start = starter,
++					resolve = None,
++					dynamic = false,
++					identity = 0 - 1,
++					control = None,
++				}
++			));
+ 		channel
+ 	}
+ 
+
+### 4. struct-literal argument (first literal breaks, its equal sibling stays inline)
+### kolt/app_overlay.vl  [kolt]  pristine line 13+
+@@ -13,7 +13,15 @@
+ 	/// is centered horizontally, 48px from the top. Scrimmed and EXCLUSIVE by
+ 	/// default - opening one clears the container of the last.
+ 	fun modal(x: Pin, y: Pin): Overlay {
+-		Overlay::custom(Anchor::Container, AxisSpec { role = AxisRole::Pinned(x), strategy = Strategy::Slide }, AxisSpec { role = AxisRole::Pinned(y), strategy = Strategy::Slide }, default_panel_style)
++		Overlay::custom(
++			Anchor::Container,
++			AxisSpec {
++				role = AxisRole::Pinned(x),
++				strategy = Strategy::Slide,
++			},
++			AxisSpec { role = AxisRole::Pinned(y), strategy = Strategy::Slide },
++			default_panel_style,
++		)
+ 			.scrim(true)
+ 			.exclusive(true)
+ 	}
+
+### 5. closure argument (closure as the last argument of a split call)
+### examples/walkthrough/src/views.vl  [examples]  pristine line 212+
+@@ -212,8 +212,14 @@
+ 		Some(let note) => (note.title, note.body),
+ 		None => ("", ""),
+ 	};
+-	let title = draft(seed_title, |value: str| commit_outcome(client.retitle_note(token.get(), note_id, value), note_id));
+-	let body = draft(seed_body, |value: str| commit_outcome(client.rewrite_note(token.get(), note_id, value), note_id));
++	let title = draft(
++		seed_title,
++		|value: str| commit_outcome(client.retitle_note(token.get(), note_id, value), note_id),
++	);
++	let body = draft(
++		seed_body,
++		|value: str| commit_outcome(client.rewrite_note(token.get(), note_id, value), note_id),
++	);
+ 
+ 	// Remote edits (another session's typing — or our own echo) fold in.
+ 	entry.effect(|current| {
+
+### 5. closure argument (closure as the lone argument of a link)
+### native/keyed_chat_server.vl  [native]  pristine line 81+
+@@ -81,7 +81,9 @@
+ 		.port(0)
+ 		.with_service(Service::new(chat.dispatcher().into_protocol(json_codec())))
+ 		.on_request(|request| Response::builder().code(404).body("nope").build())
+-		.on_start(|server| print(i"vilan-test-port={server.port()} contract={chat.contract_hash()}"))
++		.on_start(
++			|server| print(i"vilan-test-port={server.port()} contract={chat.contract_hash()}"),
++		)
+ 		.build()
+ 		.start();
+ }
+
+### 5. closure argument (closure as 2nd argument, last of a field initialiser)
+### std/src/http.vl  [std]  pristine line 740+
+@@ -740,7 +740,10 @@
+ 		let fallback = self.request_handler;
+ 		Server {
+ 			port = self.port,
+-			request_handler = fold_service_requests(self.services, |request| respond_from_build(assets, cache, fallback, request)),
++			request_handler = fold_service_requests(
++				self.services,
++				|request| respond_from_build(assets, cache, fallback, request),
++			),
+ 			on_start = self.on_start,
+ 			on_stop = self.on_stop,
+ 			upgrade_handler = fold_service_upgrades(self.services, self.upgrade_handler),
+
+### 6. css {} neighbour (NO css operand moves anywhere; this is the closest, a hole beside one)
+### kolt/sidebar.vl  [kolt]  pristine line 80+
+@@ -80,8 +80,8 @@
+ 
+ 	<div
+ 		.styled(sidebar_style)
+-		.style_var("width", prefs.sidebar_width.signal
+-			.derive(|width| style::Length::px(width).css_text()))
++		.style_var("width", prefs.sidebar_width.signal.derive(|width| style::Length::px(width)
++			.css_text()))
+ 	>
+ 		<div
+ 			.styled(css {
+
+### 7. lone over-wide argument (a string wider than the line takes a line of its own)
+### website/page.vl  [website]  pristine line 559+
+@@ -559,7 +559,10 @@
+ let cards_grid = const (style()
+ 	.display(Display::Grid)
+ 	.gap(space(4))
+-	.raw("background", "radial-gradient(340px circle at var(--glow-x, -999px) var(--glow-y, -999px), rgb(from var(--primary) r g b / 0.10), transparent 70%)")
++	.raw(
++		"background",
++		"radial-gradient(340px circle at var(--glow-x, -999px) var(--glow-y, -999px), rgb(from var(--primary) r g b / 0.10), transparent 70%)",
++	)
+ 	.sm(style().grid_template_columns("1fr 1fr"))
+ 	.lg(style().grid_template_columns("1fr 1fr 1fr"))
+ 	+ reveal);
+
+### 7. lone argument that fits once moved
+### native/shared_indexed_writes.vl  [native]  pristine line 71+
+@@ -71,7 +71,9 @@
+ 	grid.write()[0][1] += 1000;
+ 	let names = Shared::new(["a", "b"]);
+ 	names.write()[1] += "c";
+-	print(i"element: {points.read()[1].x} {tuples.read()[0].1} {grid.read()[0][1]} {names.read()[1]}");
++	print(
++		i"element: {points.read()[1].x} {tuples.read()[0].1} {grid.read()[0][1]} {names.read()[1]}",
++	);
+ 
+ 	print(i"same statement: {grid.write()[1][2]} {grid.read()[0][1]}");
+ 	grid.write()[0] = grid.read()[1];
+
+### tuple (split, no trailing comma - the grammar has none)
+### native/map_operator_walk.vl  [native]  pristine line 42+
+@@ -42,7 +42,19 @@
+ 		let followed_sum = cell
+ 			.sum_by(|v| flag_for(flags, v).derive(|on| if on { v } else { 0 }))
+ 			.memo();
+-		(values, entries, tens, signed, odd, followed, counted, summed, odd_values, followed_count, followed_sum)
++		(
++			values,
++			entries,
++			tens,
++			signed,
++			odd,
++			followed,
++			counted,
++			summed,
++			odd_values,
++			followed_count,
++			followed_sum
++		)
+ 	});
+   ... (hunk continues in the full diff)
+### IMPROVED: a base layout that was worse (arguments crowded on one line, chain argument dangling)
+### std/src/web/router.vl  [std]  pristine line 212+
+@@ -212,9 +212,12 @@
+ 			let equals = pair.split("=");
+ 			if equals.len() > 1 {
+ 				let mark = equals[0].len();
+-				values.insert(percent_decode(pair.substring(0, mark).replace("+", " ")), percent_decode(pair
+-					.substring(mark + 1, pair.len())
+-					.replace("+", " ")));
++				values.insert(
++					percent_decode(pair.substring(0, mark).replace("+", " ")),
++					percent_decode(pair
++						.substring(mark + 1, pair.len())
++						.replace("+", " ")),
++				);
+ 			} else {
+ 				values.insert(percent_decode(pair.replace("+", " ")), "");
+ 			}
+
+### WRONG?: an `&&` chain of 3 operands - the last operand's chain breaks, the chain itself no longer does
+### std/src/reactive/store.vl  [std]  pristine line 207+
+@@ -207,9 +207,8 @@
+ 				}
+ 			}
+ 			for hash in other.table.keys() {
+-				if (fed || !changed)
+-					&& !self.table.contains_key(hash)
+-					&& store_keyed(node, hash).is_none() {
++				if (fed || !changed) && !self.table.contains_key(hash) && store_keyed(node, hash)
++					.is_none() {
+ 					changed = true;
+ 					store_touch(node, StoreTouch::Key(hash), woken);
+ 				}
+
+### WRONG?: same family - a call argument broken to `1,` inside a comparison chain
+### std/src/markdown.vl  [std]  pristine line 539+
+@@ -539,7 +539,10 @@
+ 	}
+ 	first == 47
+ 		&& n >= 2
+-		&& ((inner.code_at(1) >= 97 && inner.code_at(1) <= 122) || (inner.code_at(1) >= 65 && inner.code_at(1) <= 90))
++		&& ((inner.code_at(1) >= 97 && inner.code_at(1) <= 122) || (inner.code_at(1) >= 65 && inner.code_at(
++			1,
++		)
++			<= 90))
+ }
+ 
+ // --- the heading-id algorithm (mdBook v0.5.4, pinned — §3) -------------------
+
+### WRONG?: a `+` chain whose first operand now splits its own chain (siblings stay inline)
+### kolt/styles.vl  [kolt]  pristine line 80+
+@@ -80,9 +83,14 @@
+ 	let selected_style = style::style().color(Theme::primary_b()).background(Theme::primary_a());
+ 	style::style()
+ 		.on(style::attribute("x-selected").eq("true"), selected_style)
+-		.on(style::attribute("x-selected").eq("true").not() + style::pseudo("focus-visible") + style::active().not(), style::style()
+-			.color(Theme::primary_a())
+-			.background(Theme::primary_a().alpha(0.1)))
++		.on(
++			style::attribute("x-selected")
++				.eq("true")
++				.not()
++				+ style::pseudo("focus-visible")
++				+ style::active().not(),
++			style::style().color(Theme::primary_a()).background(Theme::primary_a().alpha(0.1)),
++		)
+ };
+ 
+ fun icon_button_style(color: style::Color) {
+
+### WRONG?: a closure body chain breaks instead of the outer chain (base was the better layout)
+### kolt/sidebar.vl  [kolt]  pristine line 80+
+@@ -80,8 +80,8 @@
+ 
+ 	<div
+ 		.styled(sidebar_style)
+-		.style_var("width", prefs.sidebar_width.signal
+-			.derive(|width| style::Length::px(width).css_text()))
++		.style_var("width", prefs.sidebar_width.signal.derive(|width| style::Length::px(width)
++			.css_text()))
+ 	>
+ 		<div
+ 			.styled(css {
+
+### QUESTIONABLE: a match arm body `=> x.push(` hugging, arm then spans three lines
+### std/src/reactive/delta.vl  [std]  pristine line 1946+
+@@ -1946,8 +1952,12 @@
+ 			ElementEvent::Changed(let at, let before, let after, let _rerun) => {
+ 				ops.push(SeqOp::SetAt(at, before.1, after.1));
+ 			},
+-			ElementEvent::Reset(let _left, let now) => ops.push(SeqOp::Reset(now.map(|pair| pair.1))),
+-			ElementEvent::Moved(let from, let count, let to) => ops.push(SeqOp::Move(from, count, to)),
++			ElementEvent::Reset(let _left, let now) => ops.push(
++				SeqOp::Reset(now.map(|pair| pair.1)),
++			),
++			ElementEvent::Moved(let from, let count, let to) => ops.push(
++				SeqOp::Move(from, count, to),
++			),
+ 		}
+ 	}
+ 	ops
