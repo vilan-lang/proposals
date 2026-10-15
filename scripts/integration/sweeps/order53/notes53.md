@@ -1,0 +1,3 @@
+# Order 53 — integrator notes
+
+- 2026-10-15 GO (base next @b923bfc6 = the v0.50.0 fold; meters all-models 37% / Fable 48% - Fable ahead again, the split rule holds strictly). The owner: 'Go with all recs' - every ask R-a..R-l on its recommendation (F138 door (1); E321 sample first, slice last; layering stays on; the F5 check GREEN so debug-53 takes S7 directly; Fable only on incr-53b; E318's Workspace flag; M152 door (b); A171 door (a); M151's exemption first; v0.51.0). Wave 1 launched: incr-53a (Opus: E318 -> M149 -> M150 -> M148 -> C1, alone in the core), editor-53 (Sonnet), std-53 (Opus), native-53 (Opus), debug-53 (Opus: S7). fmt-53's sample run as the first slot frees. At C1: incr-53b (Fable: M144 -> P3 + N177 -> C2) + solver-53; at C2: incr-53c.
