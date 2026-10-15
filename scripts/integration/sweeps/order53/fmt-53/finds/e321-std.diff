@@ -1,6 +1,6 @@
-diff -ruN -x lucide -x search-dict pristine/std/src/browser/web/ui.vl ungated/std/src/browser/web/ui.vl
---- pristine/std/src/browser/web/ui.vl	2026-10-15 17:59:12.256026322 -0400
-+++ ungated/std/src/browser/web/ui.vl	2026-10-15 18:01:13.015802005 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/browser/web/ui.vl v4/std/src/browser/web/ui.vl
+--- pristine/std/src/browser/web/ui.vl	2026-10-15 19:13:27.018460253 -0400
++++ v4/std/src/browser/web/ui.vl	2026-10-15 19:17:17.475993661 -0400
 @@ -1638,7 +1638,13 @@
  		let plan = if whole {
  			reconcile(row_keys.read(), row_items.read(), list, key, same)
@@ -31,9 +31,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/browser/web/ui.vl ungated/st
  		};
  		// A98, exactly as `place_each` reads it: the rows already in their new
  		// relative order stay put, and every other row is threaded in before the
-diff -ruN -x lucide -x search-dict pristine/std/src/compare.vl ungated/std/src/compare.vl
---- pristine/std/src/compare.vl	2026-10-15 17:59:12.260354237 -0400
-+++ ungated/std/src/compare.vl	2026-10-15 18:01:13.043802000 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/compare.vl v4/std/src/compare.vl
+--- pristine/std/src/compare.vl	2026-10-15 19:13:27.018645456 -0400
++++ v4/std/src/compare.vl	2026-10-15 19:17:17.491993658 -0400
 @@ -277,7 +277,10 @@
  		for variant in target.variants {
  			let arity = variant.payload.len();
@@ -58,9 +58,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/compare.vl ungated/std/src/c
  			}
  		}
  		arms = arms.arm("_", "false");
-diff -ruN -x lucide -x search-dict pristine/std/src/db.vl ungated/std/src/db.vl
---- pristine/std/src/db.vl	2026-10-15 17:59:12.260508629 -0400
-+++ ungated/std/src/db.vl	2026-10-15 18:01:13.055801997 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/db.vl v4/std/src/db.vl
+--- pristine/std/src/db.vl	2026-10-15 19:13:27.018770008 -0400
++++ v4/std/src/db.vl	2026-10-15 19:17:17.499993657 -0400
 @@ -255,7 +255,9 @@
  		// Sampled per step, inside the transaction: a step that never finishes
  		// records when it started applying, which is the more useful of the two
@@ -72,9 +72,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/db.vl ungated/std/src/db.vl
  		match run_guarded(recorder, [step.name, now().millis]) {
  			Some(let message) => {
  				self.rollback_migration();
-diff -ruN -x lucide -x search-dict pristine/std/src/debug.vl ungated/std/src/debug.vl
---- pristine/std/src/debug.vl	2026-10-15 17:59:12.260554470 -0400
-+++ ungated/std/src/debug.vl	2026-10-15 18:01:13.071801994 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/debug.vl v4/std/src/debug.vl
+--- pristine/std/src/debug.vl	2026-10-15 19:13:27.018821849 -0400
++++ v4/std/src/debug.vl	2026-10-15 19:17:17.507993655 -0400
 @@ -183,7 +183,10 @@
  		for variant in target.variants {
  			let arity = variant.payload.len();
@@ -87,9 +87,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/debug.vl ungated/std/src/deb
  			} else {
  				mut binds: List<str> = [];
  				mut parts: List<str> = [];
-diff -ruN -x lucide -x search-dict pristine/std/src/http.vl ungated/std/src/http.vl
---- pristine/std/src/http.vl	2026-10-15 17:59:12.260913417 -0400
-+++ ungated/std/src/http.vl	2026-10-15 18:01:13.135801982 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/http.vl v4/std/src/http.vl
+--- pristine/std/src/http.vl	2026-10-15 19:13:27.019195156 -0400
++++ v4/std/src/http.vl	2026-10-15 19:17:17.551993647 -0400
 @@ -740,7 +740,10 @@
  		let fallback = self.request_handler;
  		Server {
@@ -102,9 +102,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/http.vl ungated/std/src/http
  			on_start = self.on_start,
  			on_stop = self.on_stop,
  			upgrade_handler = fold_service_upgrades(self.services, self.upgrade_handler),
-diff -ruN -x lucide -x search-dict pristine/std/src/json.vl ungated/std/src/json.vl
---- pristine/std/src/json.vl	2026-10-15 17:59:12.261771152 -0400
-+++ ungated/std/src/json.vl	2026-10-15 18:01:13.215801967 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/json.vl v4/std/src/json.vl
+--- pristine/std/src/json.vl	2026-10-15 19:13:27.019970560 -0400
++++ v4/std/src/json.vl	2026-10-15 19:17:17.607993636 -0400
 @@ -961,7 +961,9 @@
  	// reachable wherever the derive is; its variants may not be in scope).
  	for field in target.fields {
@@ -169,24 +169,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/json.vl ungated/std/src/json
  		}
  	}
  	mut rebuild_arms = match_of("tag");
-diff -ruN -x lucide -x search-dict pristine/std/src/markdown.vl ungated/std/src/markdown.vl
---- pristine/std/src/markdown.vl	2026-10-15 17:59:12.261941105 -0400
-+++ ungated/std/src/markdown.vl	2026-10-15 18:01:13.295801951 -0400
-@@ -539,7 +539,10 @@
- 	}
- 	first == 47
- 		&& n >= 2
--		&& ((inner.code_at(1) >= 97 && inner.code_at(1) <= 122) || (inner.code_at(1) >= 65 && inner.code_at(1) <= 90))
-+		&& ((inner.code_at(1) >= 97 && inner.code_at(1) <= 122) || (inner.code_at(1) >= 65 && inner.code_at(
-+			1,
-+		)
-+			<= 90))
- }
- 
- // --- the heading-id algorithm (mdBook v0.5.4, pinned — §3) -------------------
-diff -ruN -x lucide -x search-dict pristine/std/src/reactive/delta.vl ungated/std/src/reactive/delta.vl
---- pristine/std/src/reactive/delta.vl	2026-10-15 17:59:12.268309038 -0400
-+++ ungated/std/src/reactive/delta.vl	2026-10-15 18:01:13.703801872 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive/delta.vl v4/std/src/reactive/delta.vl
+--- pristine/std/src/reactive/delta.vl	2026-10-15 19:13:27.022665548 -0400
++++ v4/std/src/reactive/delta.vl	2026-10-15 19:17:17.859993587 -0400
 @@ -1305,7 +1305,11 @@
  fun apply_ops<T>(cell: ListCell<T>, ops: List<SeqOp<T>>) {
  	for op in ops {
@@ -340,9 +325,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/delta.vl ungated/st
  			KeyEvent::Reset(let rows) => {
  				mut map: HashMap<K, U> = HashMap::new();
  				for row in rows {
-diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store_core.vl ungated/std/src/reactive/store_core.vl
---- pristine/std/src/reactive/store_core.vl	2026-10-15 17:59:12.269451332 -0400
-+++ ungated/std/src/reactive/store_core.vl	2026-10-15 18:01:13.967801822 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store_core.vl v4/std/src/reactive/store_core.vl
+--- pristine/std/src/reactive/store_core.vl	2026-10-15 19:13:27.022985283 -0400
++++ v4/std/src/reactive/store_core.vl	2026-10-15 19:17:17.991993561 -0400
 @@ -799,7 +799,12 @@
  			},
  			Some(let held) => match other {
@@ -357,44 +342,10 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store_core.vl ungat
  			},
  		};
  		store_wake_me(node, changed, woken);
-diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/std/src/reactive/store.vl
---- pristine/std/src/reactive/store.vl	2026-10-15 17:59:12.269245828 -0400
-+++ ungated/std/src/reactive/store.vl	2026-10-15 18:01:13.919801831 -0400
-@@ -207,9 +207,8 @@
- 				}
- 			}
- 			for hash in other.table.keys() {
--				if (fed || !changed)
--					&& !self.table.contains_key(hash)
--					&& store_keyed(node, hash).is_none() {
-+				if (fed || !changed) && !self.table.contains_key(hash) && store_keyed(node, hash)
-+					.is_none() {
- 					changed = true;
- 					store_touch(node, StoreTouch::Key(hash), woken);
- 				}
-@@ -245,17 +244,15 @@
- 		}
- 		if fed || (here && !changed) {
- 			for hash in self.table.keys() {
--				if (fed || !changed)
--					&& !other.table.contains_key(hash)
--					&& store_keyed(node, hash).is_none() {
-+				if (fed || !changed) && !other.table.contains_key(hash) && store_keyed(node, hash)
-+					.is_none() {
- 					changed = true;
- 					store_touch(node, StoreTouch::Key(hash), woken);
- 				}
- 			}
- 			for hash in other.table.keys() {
--				if (fed || !changed)
--					&& !self.table.contains_key(hash)
--					&& store_keyed(node, hash).is_none() {
-+				if (fed || !changed) && !self.table.contains_key(hash) && store_keyed(node, hash)
-+					.is_none() {
- 					changed = true;
- 					store_touch(node, StoreTouch::Key(hash), woken);
- 				}
-@@ -491,7 +488,11 @@
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl v4/std/src/reactive/store.vl
+--- pristine/std/src/reactive/store.vl	2026-10-15 19:13:27.022901232 -0400
++++ v4/std/src/reactive/store.vl	2026-10-15 19:17:17.963993566 -0400
+@@ -491,7 +491,11 @@
  	mut noted = pending;
  	match touch {
  		StoreTouch::Key(let hash) => noted.keys.push(hash),
@@ -407,7 +358,7 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/st
  		StoreTouch::Whole => {
  			noted.whole = true;
  		},
-@@ -1489,7 +1490,12 @@
+@@ -1489,7 +1493,12 @@
  					serializer.begin_list(taking.as_i32());
  					mut index: usize = 0;
  					for index < taking {
@@ -421,7 +372,7 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/st
  						index += 1;
  					}
  					serializer.end_list();
-@@ -1791,7 +1797,9 @@
+@@ -1791,7 +1800,9 @@
  export impl RemoteStore<HashMap<type K: Hashable + Wire, type V: StoreWire + Storable>> {
  	fun at(self, key: K): RemoteStore<Option<V>> {
  		let local = self.local.at(key);
@@ -432,7 +383,7 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/st
  		RemoteStore {
  			local,
  			at = MirrorAt {
-@@ -1806,7 +1814,9 @@
+@@ -1806,7 +1817,9 @@
  export impl RemoteStoreSome<HashMap<type K: Hashable + Wire, type V: StoreWire + Storable>> {
  	fun at(self, key: K): RemoteStoreSome<Option<V>> {
  		let local = self.local.at(key);
@@ -443,7 +394,7 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/st
  		// Through a variant the key's handle is a `StoreSome`: its applier writes
  		// only while the variant is live, through `patch`.
  		RemoteStoreSome {
-@@ -1828,7 +1838,9 @@
+@@ -1828,7 +1841,9 @@
  export impl RemoteStore<HashSet<type T: Hashable + Wire>> {
  	fun contains(self, member: T): RemoteStore<bool> {
  		let local = self.local.contains(member);
@@ -454,7 +405,7 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/st
  		RemoteStore {
  			local,
  			at = MirrorAt {
-@@ -1848,7 +1860,9 @@
+@@ -1848,7 +1863,9 @@
  
  	fun contains(self, member: T): RemoteStoreSome<bool> {
  		let local = self.local.contains(member);
@@ -465,7 +416,7 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/st
  		RemoteStoreSome {
  			local,
  			at = MirrorAt {
-@@ -2271,7 +2285,9 @@
+@@ -2271,7 +2288,9 @@
  	mut store_impl = impl_of(i"Store<{target.name}{store_bare_binders(target.generics)}>");
  	mut some_impl = impl_of(i"StoreSome<{target.name}{store_bare_binders(target.generics)}>");
  	mut remote_impl = impl_of(i"RemoteStore<{target.name}{store_bare_binders(target.generics)}>");
@@ -476,7 +427,7 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/st
  	mut index: usize = 0;
  	for field in target.fields {
  		let method = if field.reactive_name != "" { field.reactive_name } else { field.name };
-@@ -2288,10 +2304,32 @@
+@@ -2288,10 +2307,32 @@
  			"store_diff"
  		};
  		diff = diff.line(i"changed = self.{field.name}.{step}(&other.{field.name}, store_kid(node, {index}), here && !changed, woken) || changed;");
@@ -513,18 +464,6 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/st
  		index = index + 1;
  	}
  	diff = diff.line("store_wake_me(node, changed, woken);").expr("changed");
-@@ -2513,7 +2551,10 @@
- 	mut body = arms;
- 	body.push(absent);
- 	"match path[from] {\n"
--		+ indent(i"StoreStep::Field(let {binder}) => " + "{\n" + indent(join(body, "\n"), 1) + "\n},", 1)
-+		+ indent(
-+			i"StoreStep::Field(let {binder}) => " + "{\n" + indent(join(body, "\n"), 1) + "\n},",
-+			1,
-+		)
- 		+ "\n"
- 		+ indent(i"StoreStep::Key(let _hash) => {absent},", 1)
- 		+ "\n}"
 @@ -2550,7 +2591,9 @@
  			steps.push(store_wire_if(i"index == {index}", [
  				i"ret self.{field.name}.store_describe_at(path, from + 1, serializer, write);",
@@ -558,33 +497,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/store.vl ungated/st
  				}
  				spread.push(i"m{position}");
  				position = position + 1;
-@@ -2820,7 +2867,10 @@
- 					"ret StoreReach::Described;",
- 				]),
- 				"match path[from + 1] {\n"
--					+ indent(i"StoreStep::Field(let {binder}) => " + "{\n" + indent(join(position_arm, "\n"), 1) + "\n},", 1)
-+					+ indent(
-+						i"StoreStep::Field(let {binder}) => " + "{\n" + indent(join(position_arm, "\n"), 1) + "\n},",
-+						1,
-+					)
- 					+ "\n"
- 					+ indent("StoreStep::Key(let _hash) => StoreReach::Absent,", 1)
- 					+ "\n}",
-@@ -2863,7 +2913,10 @@
- 			mut merged_walk = gathered;
- 			merged_walk.push(store_wire_if("from + 1 == path.len()", listed_in));
- 			merged_walk.push("ret match path[from + 1] {\n"
--				+ indent(i"StoreStep::Field(let {apply_binder}) => " + "{\n" + indent(join(apply_position_arm, "\n"), 1) + "\n},", 1)
-+				+ indent(
-+					i"StoreStep::Field(let {apply_binder}) => " + "{\n" + indent(join(apply_position_arm, "\n"), 1) + "\n},",
-+					1,
-+				)
- 				+ "\n"
- 				+ indent("StoreStep::Key(let _hash) => StoreReach::Absent,", 1)
- 				+ "\n};");
-diff -ruN -x lucide -x search-dict pristine/std/src/reactive/transient.vl ungated/std/src/reactive/transient.vl
---- pristine/std/src/reactive/transient.vl	2026-10-15 17:59:12.269586024 -0400
-+++ ungated/std/src/reactive/transient.vl	2026-10-15 18:01:13.983801819 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive/transient.vl v4/std/src/reactive/transient.vl
+--- pristine/std/src/reactive/transient.vl	2026-10-15 19:13:27.023044624 -0400
++++ v4/std/src/reactive/transient.vl	2026-10-15 19:17:17.999993559 -0400
 @@ -110,7 +110,10 @@
  			TransientState::Pending => TransientState::Pending,
  			TransientState::Ready(let value) => TransientState::Ready(transform(value)),
@@ -597,7 +512,7 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/transient.vl ungate
  			TransientState::Absent => TransientState::Absent,
  		}
  	}
-@@ -157,11 +160,19 @@
+@@ -157,11 +160,20 @@
  	fun zip<U>(own self, own other: TransientState<U, E>): TransientState<(T, U), E> {
  		let stale = self.latest().zip(other.latest());
  		match (self, other) {
@@ -614,15 +529,16 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive/transient.vl ungate
  			(TransientState::Absent, _) => TransientState::Absent,
  			(_, TransientState::Absent) => TransientState::Absent,
 -			(TransientState::Ready(let mine), TransientState::Ready(let theirs)) => TransientState::Ready((mine, theirs)),
-+			(TransientState::Ready(let mine), TransientState::Ready(let theirs)) => TransientState::Ready(
-+				(mine, theirs),
-+			),
++			(TransientState::Ready(let mine), TransientState::Ready(let theirs)) => TransientState::Ready((
++				mine,
++				theirs
++			)),
  			_ => match stale {
  				Some(let both) => TransientState::Refreshing(both),
  				None => TransientState::Pending,
-diff -ruN -x lucide -x search-dict pristine/std/src/reactive.vl ungated/std/src/reactive.vl
---- pristine/std/src/reactive.vl	2026-10-15 17:59:12.263688846 -0400
-+++ ungated/std/src/reactive.vl	2026-10-15 18:01:14.107801795 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/reactive.vl v4/std/src/reactive.vl
+--- pristine/std/src/reactive.vl	2026-10-15 19:13:27.021970065 -0400
++++ v4/std/src/reactive.vl	2026-10-15 19:17:18.083363929 -0400
 @@ -2976,7 +2976,9 @@
  		let outer_pull = outer.pull;
  		// The FIRST selection is made here, at start — the instance's state begins
@@ -634,9 +550,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/reactive.vl ungated/std/src/
  		let followed_handle: Shared<Option<Subscription>> = Shared::new(None);
  		Instance<U> {
  			pull = || (followed.read().pull)(),
-diff -ruN -x lucide -x search-dict pristine/std/src/rpc/mirror.vl ungated/std/src/rpc/mirror.vl
---- pristine/std/src/rpc/mirror.vl	2026-10-15 17:59:12.271260854 -0400
-+++ ungated/std/src/rpc/mirror.vl	2026-10-15 18:01:14.231801772 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/rpc/mirror.vl v4/std/src/rpc/mirror.vl
+--- pristine/std/src/rpc/mirror.vl	2026-10-15 19:13:27.024772815 -0400
++++ v4/std/src/rpc/mirror.vl	2026-10-15 19:17:18.147993530 -0400
 @@ -708,51 +708,53 @@
  			ret;
  		}
@@ -772,9 +688,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/rpc/mirror.vl ungated/std/sr
  			let stamp = retire.identity();
  			table.entries.write().insert(key, (stamp, mirror));
  			retire.write().push(|| table.forget(key, stamp));
-diff -ruN -x lucide -x search-dict pristine/std/src/rpc/server.vl ungated/std/src/rpc/server.vl
---- pristine/std/src/rpc/server.vl	2026-10-15 17:59:12.271507999 -0400
-+++ ungated/std/src/rpc/server.vl	2026-10-15 18:01:14.287801761 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/rpc/server.vl v4/std/src/rpc/server.vl
+--- pristine/std/src/rpc/server.vl	2026-10-15 19:13:27.024907097 -0400
++++ v4/std/src/rpc/server.vl	2026-10-15 19:17:18.179993523 -0400
 @@ -1014,13 +1014,19 @@
  				Session::anonymous()
  			};
@@ -821,9 +737,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/rpc/server.vl ungated/std/sr
  							match reply {
  								Frame::Binary(let answer) => {
  									socket.write_bytes(binary_frame(tag_rpc_bytes(id, answer)));
-diff -ruN -x lucide -x search-dict pristine/std/src/rpc.vl ungated/std/src/rpc.vl
---- pristine/std/src/rpc.vl	2026-10-15 17:59:12.269892310 -0400
-+++ ungated/std/src/rpc.vl	2026-10-15 18:01:14.695801681 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/rpc.vl v4/std/src/rpc.vl
+--- pristine/std/src/rpc.vl	2026-10-15 19:13:27.023347280 -0400
++++ v4/std/src/rpc.vl	2026-10-15 19:17:18.371993486 -0400
 @@ -1046,7 +1046,9 @@
  	dispatch: |Frame| void,
  	serve: |Frame| void,
@@ -1184,21 +1100,7 @@ diff -ruN -x lucide -x search-dict pristine/std/src/rpc.vl ungated/std/src/rpc.v
  		}
  		ok_fields.push(i"{field_name} = mirror_{field_name}");
  		channel_index = channel_index + 1;
-@@ -7475,7 +7590,12 @@
- 	body.push("socket.on_reconnect.write().push(|| {\n"
- 		+ indent("reactive.reset_wire();", 1)
- 		+ "\n"
--		+ indent("rpc::reattach_mirrors(socket, transport, codec, " + hash + ", rebinds, || reactive.replay_dynamic());", 1)
-+		+ indent(
-+			"rpc::reattach_mirrors(socket, transport, codec, "
-+				+ hash
-+				+ ", rebinds, || reactive.replay_dynamic());",
-+			1,
-+		)
- 		+ "\n});");
- 	let field_lines = join(ok_fields, ",\n");
- 	let client_value = i"Result::Ok({target.client_name} \{\n" + indent(field_lines, 1) + "\n})";
-@@ -7616,14 +7736,18 @@
+@@ -7616,14 +7731,18 @@
  					jump continue;
  				}
  				stub = stub.parameter(i"{parameter.name}: {parameter.type_.render()}");
@@ -1219,9 +1121,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/rpc.vl ungated/std/src/rpc.v
  		}
  		proxy_source = proxy_struct + proxy_ctor + proxy_impl.render();
  	}
-diff -ruN -x lucide -x search-dict pristine/std/src/web/document.vl ungated/std/src/web/document.vl
---- pristine/std/src/web/document.vl	2026-10-15 17:59:12.276617951 -0400
-+++ ungated/std/src/web/document.vl	2026-10-15 18:01:14.771801667 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/web/document.vl v4/std/src/web/document.vl
+--- pristine/std/src/web/document.vl	2026-10-15 19:13:27.026939274 -0400
++++ v4/std/src/web/document.vl	2026-10-15 19:17:18.423993476 -0400
 @@ -406,7 +406,13 @@
  				if self.head != "" || self.body != "" {
  					match check_shell(composed, self.build, default_mount) {
@@ -1252,9 +1154,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/web/document.vl ungated/std/
  					}
  				}
  				markup
-diff -ruN -x lucide -x search-dict pristine/std/src/web/router.vl ungated/std/src/web/router.vl
---- pristine/std/src/web/router.vl	2026-10-15 17:59:12.276783854 -0400
-+++ ungated/std/src/web/router.vl	2026-10-15 18:01:14.811801659 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/web/router.vl v4/std/src/web/router.vl
+--- pristine/std/src/web/router.vl	2026-10-15 19:13:27.027131647 -0400
++++ v4/std/src/web/router.vl	2026-10-15 19:17:18.439993473 -0400
 @@ -212,9 +212,12 @@
  			let equals = pair.split("=");
  			if equals.len() > 1 {
@@ -1271,9 +1173,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/web/router.vl ungated/std/sr
  			} else {
  				values.insert(percent_decode(pair.replace("+", " ")), "");
  			}
-diff -ruN -x lucide -x search-dict pristine/std/src/web/style.vl ungated/std/src/web/style.vl
---- pristine/std/src/web/style.vl	2026-10-15 17:59:12.276866455 -0400
-+++ ungated/std/src/web/style.vl	2026-10-15 18:01:14.959801631 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/web/style.vl v4/std/src/web/style.vl
+--- pristine/std/src/web/style.vl	2026-10-15 19:13:27.027218999 -0400
++++ v4/std/src/web/style.vl	2026-10-15 19:17:18.503993461 -0400
 @@ -366,10 +366,14 @@
  
  fun check_oklch(lightness: f64, chroma: f64, hue: f64) {
@@ -1317,9 +1219,9 @@ diff -ruN -x lucide -x search-dict pristine/std/src/web/style.vl ungated/std/src
  	preflight_rule("fieldset", declarations().raw("margin", "0").raw("padding", "0"));
  	preflight_rule("legend", declarations().raw("padding", "0"));
  	preflight_rule("dialog", declarations().raw("padding", "0"));
-diff -ruN -x lucide -x search-dict pristine/std/src/ws.vl ungated/std/src/ws.vl
---- pristine/std/src/ws.vl	2026-10-15 17:59:12.277518357 -0400
-+++ ungated/std/src/ws.vl	2026-10-15 18:01:14.999801623 -0400
+diff -ruN -x lucide -x search-dict pristine/std/src/ws.vl v4/std/src/ws.vl
+--- pristine/std/src/ws.vl	2026-10-15 19:13:27.028030493 -0400
++++ v4/std/src/ws.vl	2026-10-15 19:17:18.523993457 -0400
 @@ -157,7 +157,10 @@
  						if masked {
  							mut index = 0;

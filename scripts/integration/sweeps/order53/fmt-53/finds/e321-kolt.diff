@@ -1,6 +1,6 @@
-diff -ruN -x lucide -x search-dict pristine/kolt/app_overlay.vl ungated/kolt/app_overlay.vl
+diff -ruN -x lucide -x search-dict pristine/kolt/app_overlay.vl v4/kolt/app_overlay.vl
 --- pristine/kolt/app_overlay.vl	2026-10-15 17:59:12.433272639 -0400
-+++ ungated/kolt/app_overlay.vl	2026-10-15 18:01:16.547801327 -0400
++++ v4/kolt/app_overlay.vl	2026-10-15 19:17:19.219993321 -0400
 @@ -13,7 +13,15 @@
  	/// is centered horizontally, 48px from the top. Scrimmed and EXCLUSIVE by
  	/// default - opening one clears the container of the last.
@@ -64,9 +64,9 @@ diff -ruN -x lucide -x search-dict pristine/kolt/app_overlay.vl ungated/kolt/app
 +		)
  	}
  }
-diff -ruN -x lucide -x search-dict pristine/kolt/client.vl ungated/kolt/client.vl
+diff -ruN -x lucide -x search-dict pristine/kolt/client.vl v4/kolt/client.vl
 --- pristine/kolt/client.vl	2026-10-15 17:59:12.408664018 -0400
-+++ ungated/kolt/client.vl	2026-10-15 18:01:16.595801318 -0400
++++ v4/kolt/client.vl	2026-10-15 19:17:19.235993317 -0400
 @@ -36,10 +36,25 @@
  	// FIXME: Investigate alternative forms for this.
  	style::preflight();
@@ -97,9 +97,9 @@ diff -ruN -x lucide -x search-dict pristine/kolt/client.vl ungated/kolt/client.v
  	style::declare(":root", style::declarations().raw("color-scheme", "dark"));
  };
  
-diff -ruN -x lucide -x search-dict pristine/kolt/command_palette.vl ungated/kolt/command_palette.vl
+diff -ruN -x lucide -x search-dict pristine/kolt/command_palette.vl v4/kolt/command_palette.vl
 --- pristine/kolt/command_palette.vl	2026-10-15 17:59:12.847825279 -0400
-+++ ungated/kolt/command_palette.vl	2026-10-15 18:01:16.611801315 -0400
++++ v4/kolt/command_palette.vl	2026-10-15 19:17:19.247993315 -0400
 @@ -95,10 +95,24 @@
  		activate,
  	};
@@ -154,9 +154,9 @@ diff -ruN -x lucide -x search-dict pristine/kolt/command_palette.vl ungated/kolt
  		commands.push(command);
  	}
  	commands.push(single(const search_dict::expand("User: Export configuration"), || {
-diff -ruN -x lucide -x search-dict pristine/kolt/lib/search_test.vl ungated/kolt/lib/search_test.vl
+diff -ruN -x lucide -x search-dict pristine/kolt/lib/search_test.vl v4/kolt/lib/search_test.vl
 --- pristine/kolt/lib/search_test.vl	2026-10-15 17:59:12.857644752 -0400
-+++ ungated/kolt/lib/search_test.vl	2026-10-15 18:01:16.687801299 -0400
++++ v4/kolt/lib/search_test.vl	2026-10-15 19:17:19.295993305 -0400
 @@ -71,8 +71,16 @@
  	let expanded = const search_dict::expand("Toggle sidebar");
  	let expanded_index = SearchIndex::new([expanded], config);
@@ -209,9 +209,9 @@ diff -ruN -x lucide -x search-dict pristine/kolt/lib/search_test.vl ungated/kolt
  	expect("palette tie keeps list order", names(palette, "sidebar"), "UI: Hide sidebar|");
  	expect("palette show", names(palette, "show sidebar"), "UI: Show sidebar|");
  	expect("palette expand", top(palette, "expand sidebar"), "UI: Show sidebar [4,8)[9,16)");
-diff -ruN -x lucide -x search-dict pristine/kolt/prefs.vl ungated/kolt/prefs.vl
+diff -ruN -x lucide -x search-dict pristine/kolt/prefs.vl v4/kolt/prefs.vl
 --- pristine/kolt/prefs.vl	2026-10-15 17:59:12.852851932 -0400
-+++ ungated/kolt/prefs.vl	2026-10-15 18:01:18.627800929 -0400
++++ v4/kolt/prefs.vl	2026-10-15 19:17:20.303993108 -0400
 @@ -140,7 +140,8 @@
  }
  
@@ -222,23 +222,9 @@ diff -ruN -x lucide -x search-dict pristine/kolt/prefs.vl ungated/kolt/prefs.vl
  
  	get_overlays().attach(modal, || {
  		let active_tab = Signal::new(0);
-diff -ruN -x lucide -x search-dict pristine/kolt/sidebar.vl ungated/kolt/sidebar.vl
---- pristine/kolt/sidebar.vl	2026-10-15 17:59:12.848606390 -0400
-+++ ungated/kolt/sidebar.vl	2026-10-15 18:01:18.663800922 -0400
-@@ -80,8 +80,8 @@
- 
- 	<div
- 		.styled(sidebar_style)
--		.style_var("width", prefs.sidebar_width.signal
--			.derive(|width| style::Length::px(width).css_text()))
-+		.style_var("width", prefs.sidebar_width.signal.derive(|width| style::Length::px(width)
-+			.css_text()))
- 	>
- 		<div
- 			.styled(css {
-diff -ruN -x lucide -x search-dict pristine/kolt/store.vl ungated/kolt/store.vl
+diff -ruN -x lucide -x search-dict pristine/kolt/store.vl v4/kolt/store.vl
 --- pristine/kolt/store.vl	2026-10-15 17:59:12.425056751 -0400
-+++ ungated/kolt/store.vl	2026-10-15 18:01:18.671800921 -0400
++++ v4/kolt/store.vl	2026-10-15 19:17:20.331993103 -0400
 @@ -246,8 +246,12 @@
  	database.exec("CREATE TABLE IF NOT EXISTS account (id INTEGER PRIMARY KEY, username TEXT UNIQUE, salt TEXT, password_hash TEXT)");
  	database.exec("CREATE TABLE IF NOT EXISTS session (token TEXT PRIMARY KEY, uuid TEXT)");
@@ -254,9 +240,9 @@ diff -ruN -x lucide -x search-dict pristine/kolt/store.vl ungated/kolt/store.vl
  	database
  }
  
-diff -ruN -x lucide -x search-dict pristine/kolt/styles.vl ungated/kolt/styles.vl
+diff -ruN -x lucide -x search-dict pristine/kolt/styles.vl v4/kolt/styles.vl
 --- pristine/kolt/styles.vl	2026-10-15 17:59:12.433490213 -0400
-+++ ungated/kolt/styles.vl	2026-10-15 18:01:18.687800917 -0400
++++ v4/kolt/styles.vl	2026-10-15 19:17:20.335993103 -0400
 @@ -26,7 +26,10 @@
  	}
  

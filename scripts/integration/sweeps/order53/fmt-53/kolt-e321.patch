@@ -1,0 +1,303 @@
+diff -ruN -x lucide -x search-dict a/src/app_overlay.vl b/src/app_overlay.vl
+--- a/src/app_overlay.vl	2026-10-15 19:18:42.892493092 -0400
++++ b/src/app_overlay.vl	2026-10-15 19:18:43.073982718 -0400
+@@ -13,7 +13,15 @@
+ 	/// is centered horizontally, 48px from the top. Scrimmed and EXCLUSIVE by
+ 	/// default - opening one clears the container of the last.
+ 	fun modal(x: Pin, y: Pin): Overlay {
+-		Overlay::custom(Anchor::Container, AxisSpec { role = AxisRole::Pinned(x), strategy = Strategy::Slide }, AxisSpec { role = AxisRole::Pinned(y), strategy = Strategy::Slide }, default_panel_style)
++		Overlay::custom(
++			Anchor::Container,
++			AxisSpec {
++				role = AxisRole::Pinned(x),
++				strategy = Strategy::Slide,
++			},
++			AxisSpec { role = AxisRole::Pinned(y), strategy = Strategy::Slide },
++			default_panel_style,
++		)
+ 			.scrim(true)
+ 			.exclusive(true)
+ 	}
+@@ -21,18 +29,42 @@
+ 	/// A context menu that opens at a point (`open_at` / `open_at_pointer`),
+ 	/// down and to the right, flipping either axis when the container runs out.
+ 	fun menu(): Overlay {
+-		Overlay::custom(Anchor::Point, AxisSpec { role = AxisRole::Outward, strategy = Strategy::Flip }, AxisSpec { role = AxisRole::Outward, strategy = Strategy::Flip }, default_panel_style)
++		Overlay::custom(
++			Anchor::Point,
++			AxisSpec {
++				role = AxisRole::Outward,
++				strategy = Strategy::Flip,
++			},
++			AxisSpec { role = AxisRole::Outward, strategy = Strategy::Flip },
++			default_panel_style,
++		)
+ 	}
+ 
+ 	/// A dropdown under `element`, left edges aligned; flips above it when
+ 	/// there is no room below. Tracks the element.
+ 	fun below(element: Element): Overlay {
+-		Overlay::custom(Anchor::Attached(element), AxisSpec { role = AxisRole::Aligned, strategy = Strategy::Slide }, AxisSpec { role = AxisRole::Outward, strategy = Strategy::Flip }, default_panel_style)
++		Overlay::custom(
++			Anchor::Attached(element),
++			AxisSpec {
++				role = AxisRole::Aligned,
++				strategy = Strategy::Slide,
++			},
++			AxisSpec { role = AxisRole::Outward, strategy = Strategy::Flip },
++			default_panel_style,
++		)
+ 	}
+ 
+ 	/// A submenu to the right of `element`, top edges aligned; flips to the
+ 	/// left of it when there is no room. Tracks the element.
+ 	fun beside(element: Element): Overlay {
+-		Overlay::custom(Anchor::Attached(element), AxisSpec { role = AxisRole::Outward, strategy = Strategy::Flip }, AxisSpec { role = AxisRole::Aligned, strategy = Strategy::Slide }, default_panel_style)
++		Overlay::custom(
++			Anchor::Attached(element),
++			AxisSpec {
++				role = AxisRole::Outward,
++				strategy = Strategy::Flip,
++			},
++			AxisSpec { role = AxisRole::Aligned, strategy = Strategy::Slide },
++			default_panel_style,
++		)
+ 	}
+ }
+diff -ruN -x lucide -x search-dict a/src/client.vl b/src/client.vl
+--- a/src/client.vl	2026-10-15 19:18:42.888491120 -0400
++++ b/src/client.vl	2026-10-15 19:18:43.070954124 -0400
+@@ -36,10 +36,25 @@
+ 	// FIXME: Investigate alternative forms for this.
+ 	style::preflight();
+ 	style::declare("html", style::declarations().raw("font-family", "var(--default-font-family)"));
+-	style::declare("code,kbd,samp,pre", style::declarations().raw("font-family", "var(--default-mono-font-family)"));
+-	style::declare("[data-dragging=\"row\"] *", style::declarations().raw("cursor", "ns-resize !important"));
+-	style::declare("[data-dragging=\"col\"] *", style::declarations().raw("cursor", "ew-resize !important"));
+-	style::declare("*", style::declarations().raw("scrollbar-color", i"{Theme::stroke1().text} {style::Color::transparent().text}"));
++	style::declare(
++		"code,kbd,samp,pre",
++		style::declarations().raw("font-family", "var(--default-mono-font-family)"),
++	);
++	style::declare(
++		"[data-dragging=\"row\"] *",
++		style::declarations().raw("cursor", "ns-resize !important"),
++	);
++	style::declare(
++		"[data-dragging=\"col\"] *",
++		style::declarations().raw("cursor", "ew-resize !important"),
++	);
++	style::declare(
++		"*",
++		style::declarations().raw(
++			"scrollbar-color",
++			i"{Theme::stroke1().text} {style::Color::transparent().text}",
++		),
++	);
+ 	style::declare(":root", style::declarations().raw("color-scheme", "dark"));
+ };
+ 
+diff -ruN -x lucide -x search-dict a/src/command_palette.vl b/src/command_palette.vl
+--- a/src/command_palette.vl	2026-10-15 19:18:42.998187527 -0400
++++ b/src/command_palette.vl	2026-10-15 19:18:43.157394555 -0400
+@@ -95,10 +95,24 @@
+ 		activate,
+ 	};
+ 	mut commands = List<Command>::new();
+-	for command in state_group(next_command_id, "text-selection", const search_dict::expand("UI: Toggle full text selection"), const search_dict::expand("UI: Enable full text selection"), const search_dict::expand("UI: Disable full text selection"), prefs.text_selection_enabled) {
++	for command in state_group(
++		next_command_id,
++		"text-selection",
++		const search_dict::expand("UI: Toggle full text selection"),
++		const search_dict::expand("UI: Enable full text selection"),
++		const search_dict::expand("UI: Disable full text selection"),
++		prefs.text_selection_enabled,
++	) {
+ 		commands.push(command);
+ 	}
+-	for command in state_group(next_command_id, "context-menu", const search_dict::expand("UI: Toggle native context menu"), const search_dict::expand("UI: Enable native context menu"), const search_dict::expand("UI: Disable native context menu"), prefs.context_menu_enabled) {
++	for command in state_group(
++		next_command_id,
++		"context-menu",
++		const search_dict::expand("UI: Toggle native context menu"),
++		const search_dict::expand("UI: Enable native context menu"),
++		const search_dict::expand("UI: Disable native context menu"),
++		prefs.context_menu_enabled,
++	) {
+ 		commands.push(command);
+ 	}
+ 	commands.push(single(const search_dict::expand("UI: Show theme picker"), || {
+@@ -112,10 +126,24 @@
+ 	}));
+ 	// `sidebar_collapsed` is set when the sidebar is HIDDEN, so "Hide" is the
+ 	// group's `set` variant.
+-	for command in state_group(next_command_id, "sidebar", const search_dict::expand("UI: Toggle sidebar"), const search_dict::expand("UI: Hide sidebar"), const search_dict::expand("UI: Show sidebar"), prefs.sidebar_collapsed) {
++	for command in state_group(
++		next_command_id,
++		"sidebar",
++		const search_dict::expand("UI: Toggle sidebar"),
++		const search_dict::expand("UI: Hide sidebar"),
++		const search_dict::expand("UI: Show sidebar"),
++		prefs.sidebar_collapsed,
++	) {
+ 		commands.push(command);
+ 	}
+-	for command in state_group(next_command_id, "sidebar-drag-handle", const search_dict::expand("User: Toggle sidebar drag-to-resize handle"), const search_dict::expand("User: Hide sidebar drag-to-resize handle"), const search_dict::expand("User: Show sidebar drag-to-resize handle"), prefs.sidebar_drag_handle_hidden) {
++	for command in state_group(
++		next_command_id,
++		"sidebar-drag-handle",
++		const search_dict::expand("User: Toggle sidebar drag-to-resize handle"),
++		const search_dict::expand("User: Hide sidebar drag-to-resize handle"),
++		const search_dict::expand("User: Show sidebar drag-to-resize handle"),
++		prefs.sidebar_drag_handle_hidden,
++	) {
+ 		commands.push(command);
+ 	}
+ 	commands.push(single(const search_dict::expand("User: Export configuration"), || {
+diff -ruN -x lucide -x search-dict a/src/lib/search_test.vl b/src/lib/search_test.vl
+--- a/src/lib/search_test.vl	2026-10-15 19:18:43.000120771 -0400
++++ b/src/lib/search_test.vl	2026-10-15 19:18:43.158853122 -0400
+@@ -71,8 +71,16 @@
+ 	let expanded = const search_dict::expand("Toggle sidebar");
+ 	let expanded_index = SearchIndex::new([expanded], config);
+ 	expect("dictionary alias", top(expanded_index, "switching"), "Toggle sidebar [0,6)");
+-	expect("dictionary alias, second word", top(expanded_index, "toggle panel"), "Toggle sidebar [0,6)[7,14)");
+-	expect("unknown word", names(SearchIndex::new([const search_dict::expand("Qzx")], config), "qzx"), "Qzx|");
++	expect(
++		"dictionary alias, second word",
++		top(expanded_index, "toggle panel"),
++		"Toggle sidebar [0,6)[7,14)",
++	);
++	expect(
++		"unknown word",
++		names(SearchIndex::new([const search_dict::expand("Qzx")], config), "qzx"),
++		"Qzx|",
++	);
+ 
+ 	// 5: exclusive groups. Every variant aliases the others' verbs, so any of
+ 	// them finds the group - and only the closest variant is shown.
+@@ -100,12 +108,29 @@
+ 	expect("collapse", names(grouped, "collapse"), "Hide sidebar|");
+ 	expect("alias highlight", top(grouped, "collapse side"), "Hide sidebar [0,4)[5,9)");
+ 	expect("ungrouped rides along", names(grouped, "show"), "Show sidebar|Show theme picker|");
+-	expect("empty query keeps the first variant", names(grouped, ""), "Toggle sidebar|Show theme picker|");
++	expect(
++		"empty query keeps the first variant",
++		names(grouped, ""),
++		"Toggle sidebar|Show theme picker|",
++	);
+ 
+ 	// The palette's shape: dictionary-expanded names, one group per pref, the
+ 	// state-changing variant first.
+-	let palette = SearchIndex::new([(const search_dict::expand("UI: Hide sidebar")).exclusive("sidebar"), (const search_dict::expand("UI: Show sidebar")).exclusive("sidebar"), (const search_dict::expand("UI: Toggle sidebar")).exclusive("sidebar"), const search_dict::expand("UI: Show theme picker"), const search_dict::expand("User: Logout")], config);
+-	expect("palette empty", names(palette, ""), "UI: Hide sidebar|UI: Show theme picker|User: Logout|");
++	let palette = SearchIndex::new(
++		[
++			(const search_dict::expand("UI: Hide sidebar")).exclusive("sidebar"),
++			(const search_dict::expand("UI: Show sidebar")).exclusive("sidebar"),
++			(const search_dict::expand("UI: Toggle sidebar")).exclusive("sidebar"),
++			const search_dict::expand("UI: Show theme picker"),
++			const search_dict::expand("User: Logout"),
++		],
++		config,
++	);
++	expect(
++		"palette empty",
++		names(palette, ""),
++		"UI: Hide sidebar|UI: Show theme picker|User: Logout|",
++	);
+ 	expect("palette tie keeps list order", names(palette, "sidebar"), "UI: Hide sidebar|");
+ 	expect("palette show", names(palette, "show sidebar"), "UI: Show sidebar|");
+ 	expect("palette expand", top(palette, "expand sidebar"), "UI: Show sidebar [4,8)[9,16)");
+diff -ruN -x lucide -x search-dict a/src/prefs.vl b/src/prefs.vl
+--- a/src/prefs.vl	2026-10-15 19:18:42.998490592 -0400
++++ b/src/prefs.vl	2026-10-15 19:18:43.157555848 -0400
+@@ -140,7 +140,8 @@
+ }
+ 
+ export fun create_prefs_modal() {
+-	let modal = overlay::Overlay::modal(overlay::Pin::Center, overlay::Pin::Center).extent(overlay::Extent::Fill(size(256)), overlay::Extent::Fill(size(128)));
++	let modal = overlay::Overlay::modal(overlay::Pin::Center, overlay::Pin::Center)
++		.extent(overlay::Extent::Fill(size(256)), overlay::Extent::Fill(size(128)));
+ 
+ 	get_overlays().attach(modal, || {
+ 		let active_tab = Signal::new(0);
+diff -ruN -x lucide -x search-dict a/src/store.vl b/src/store.vl
+--- a/src/store.vl	2026-10-15 19:18:42.892303158 -0400
++++ b/src/store.vl	2026-10-15 19:18:43.073829976 -0400
+@@ -246,8 +246,12 @@
+ 	database.exec("CREATE TABLE IF NOT EXISTS account (id INTEGER PRIMARY KEY, username TEXT UNIQUE, salt TEXT, password_hash TEXT)");
+ 	database.exec("CREATE TABLE IF NOT EXISTS session (token TEXT PRIMARY KEY, uuid TEXT)");
+ 	database.exec("CREATE TABLE IF NOT EXISTS channel (id INTEGER PRIMARY KEY, name TEXT)");
+-	database.exec("CREATE TABLE IF NOT EXISTS message (id INTEGER PRIMARY KEY, author INTEGER, message TEXT)");
+-	database.exec("CREATE TABLE IF NOT EXISTS joined_channel (channel_id UNIQUE, account_id UNIQUE)");
++	database.exec(
++		"CREATE TABLE IF NOT EXISTS message (id INTEGER PRIMARY KEY, author INTEGER, message TEXT)",
++	);
++	database.exec(
++		"CREATE TABLE IF NOT EXISTS joined_channel (channel_id UNIQUE, account_id UNIQUE)",
++	);
+ 	database
+ }
+ 
+diff -ruN -x lucide -x search-dict a/src/styles.vl b/src/styles.vl
+--- a/src/styles.vl	2026-10-15 19:18:42.892543913 -0400
++++ b/src/styles.vl	2026-10-15 19:18:43.074018399 -0400
+@@ -26,7 +26,10 @@
+ 	}
+ 
+ 	fun select_off(self) {
+-		self.on(style::within(style::attribute("data-user-select").eq("false")), style::style().user_select(style::UserSelect::Off))
++		self.on(
++			style::within(style::attribute("data-user-select").eq("false")),
++			style::style().user_select(style::UserSelect::Off),
++		)
+ 	}
+ 
+ 	fun ghost(self) {
+@@ -80,9 +83,14 @@
+ 	let selected_style = style::style().color(Theme::primary_b()).background(Theme::primary_a());
+ 	style::style()
+ 		.on(style::attribute("x-selected").eq("true"), selected_style)
+-		.on(style::attribute("x-selected").eq("true").not() + style::pseudo("focus-visible") + style::active().not(), style::style()
+-			.color(Theme::primary_a())
+-			.background(Theme::primary_a().alpha(0.1)))
++		.on(
++			style::attribute("x-selected")
++				.eq("true")
++				.not()
++				+ style::pseudo("focus-visible")
++				+ style::active().not(),
++			style::style().color(Theme::primary_a()).background(Theme::primary_a().alpha(0.1)),
++		)
+ };
+ 
+ fun icon_button_style(color: style::Color) {
+@@ -103,10 +111,24 @@
+ 		.on(attribute("disabled"), s().cursor(Cursor::Default))
+ 		.on(attribute("x-selected").eq("true"), active_style)
+ 		.on(attribute("x-focused").eq("true"), hover_style + focused_style)
+-		.on(attribute("x-selected").eq("true").not() + attribute("disabled").not() + hover() + active().not(), hover_style)
+-		.on(attribute("x-selected").eq("true").not() + pseudo("focus-visible") + active().not(), hover_style)
++		.on(
++			attribute("x-selected")
++				.eq("true")
++				.not()
++				+ attribute("disabled").not()
++				+ hover()
++				+ active().not(),
++			hover_style,
++		)
++		.on(
++			attribute("x-selected").eq("true").not() + pseudo("focus-visible") + active().not(),
++			hover_style,
++		)
+ 		.on(pseudo("focus-visible"), focused_style)
+-		.on(attribute("x-selected").eq("true").not() + attribute("disabled").not() + active(), active_style)
++		.on(
++			attribute("x-selected").eq("true").not() + attribute("disabled").not() + active(),
++			active_style,
++		)
+ }
+ 
+ let icon_style = css {

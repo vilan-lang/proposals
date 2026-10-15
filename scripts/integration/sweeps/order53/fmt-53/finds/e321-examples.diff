@@ -1,6 +1,6 @@
-diff -ruN -x lucide -x search-dict pristine/examples/todo/src/store.vl ungated/examples/todo/src/store.vl
---- pristine/examples/todo/src/store.vl	2026-10-15 17:59:12.309664848 -0400
-+++ ungated/examples/todo/src/store.vl	2026-10-15 18:01:15.231801578 -0400
+diff -ruN -x lucide -x search-dict pristine/examples/todo/src/store.vl v4/examples/todo/src/store.vl
+--- pristine/examples/todo/src/store.vl	2026-10-15 19:13:27.050072275 -0400
++++ v4/examples/todo/src/store.vl	2026-10-15 19:17:18.571993448 -0400
 @@ -125,7 +125,10 @@
  // is corrupt: the codec's decode is validating.
  fun load(): List<Todo> {
@@ -13,9 +13,9 @@ diff -ruN -x lucide -x search-dict pristine/examples/todo/src/store.vl ungated/e
  		match stored {
  			Ok(let list) => list,
  			Err(let _reason) => [],
-diff -ruN -x lucide -x search-dict pristine/examples/walkthrough/src/views.vl ungated/examples/walkthrough/src/views.vl
---- pristine/examples/walkthrough/src/views.vl	2026-10-15 17:59:12.311646981 -0400
-+++ ungated/examples/walkthrough/src/views.vl	2026-10-15 18:01:15.263801573 -0400
+diff -ruN -x lucide -x search-dict pristine/examples/walkthrough/src/views.vl v4/examples/walkthrough/src/views.vl
+--- pristine/examples/walkthrough/src/views.vl	2026-10-15 19:13:27.052809829 -0400
++++ v4/examples/walkthrough/src/views.vl	2026-10-15 19:17:18.591993443 -0400
 @@ -212,8 +212,14 @@
  		Some(let note) => (note.title, note.body),
  		None => ("", ""),

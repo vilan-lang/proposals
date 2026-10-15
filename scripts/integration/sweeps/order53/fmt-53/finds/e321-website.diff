@@ -1,6 +1,6 @@
-diff -ruN -x lucide -x search-dict pristine/website/art.vl ungated/website/art.vl
+diff -ruN -x lucide -x search-dict pristine/website/art.vl v4/website/art.vl
 --- pristine/website/art.vl	2026-10-15 17:59:12.395825365 -0400
-+++ ungated/website/art.vl	2026-10-15 18:01:16.387801358 -0400
++++ v4/website/art.vl	2026-10-15 19:17:19.135993337 -0400
 @@ -283,7 +283,10 @@
  let dg_line_dashed = const style()
  	.flex("1")
@@ -13,9 +13,9 @@ diff -ruN -x lucide -x search-dict pristine/website/art.vl ungated/website/art.v
  	.raw("animation", "dash-flow 1.6s linear infinite");
  
  let dg_note = const style().font_size(Length::px(11.0)).text_align(TextAlign::Center).opacity(0.6);
-diff -ruN -x lucide -x search-dict pristine/website/masthead.vl ungated/website/masthead.vl
+diff -ruN -x lucide -x search-dict pristine/website/masthead.vl v4/website/masthead.vl
 --- pristine/website/masthead.vl	2026-10-15 17:59:12.398024858 -0400
-+++ ungated/website/masthead.vl	2026-10-15 18:01:16.403801355 -0400
++++ v4/website/masthead.vl	2026-10-15 19:17:19.151993334 -0400
 @@ -71,7 +71,10 @@
  let bloom_blurwrap = const style()
  	.position(Position::Absolute)
@@ -28,9 +28,9 @@ diff -ruN -x lucide -x search-dict pristine/website/masthead.vl ungated/website/
  
  let bloom_band_geometry = const style()
  	.position(Position::Absolute)
-diff -ruN -x lucide -x search-dict pristine/website/page.vl ungated/website/page.vl
+diff -ruN -x lucide -x search-dict pristine/website/page.vl v4/website/page.vl
 --- pristine/website/page.vl	2026-10-15 17:59:12.405446660 -0400
-+++ ungated/website/page.vl	2026-10-15 18:01:16.443801347 -0400
++++ v4/website/page.vl	2026-10-15 19:17:19.171993329 -0400
 @@ -559,7 +559,10 @@
  let cards_grid = const (style()
  	.display(Display::Grid)
@@ -43,9 +43,9 @@ diff -ruN -x lucide -x search-dict pristine/website/page.vl ungated/website/page
  	.sm(style().grid_template_columns("1fr 1fr"))
  	.lg(style().grid_template_columns("1fr 1fr 1fr"))
  	+ reveal);
-diff -ruN -x lucide -x search-dict pristine/website/playground_page.vl ungated/website/playground_page.vl
+diff -ruN -x lucide -x search-dict pristine/website/playground_page.vl v4/website/playground_page.vl
 --- pristine/website/playground_page.vl	2026-10-15 17:59:12.398328403 -0400
-+++ ungated/website/playground_page.vl	2026-10-15 18:01:16.483801339 -0400
++++ v4/website/playground_page.vl	2026-10-15 19:17:19.195993325 -0400
 @@ -280,8 +280,14 @@
  	.color(up_normal)
  	.background(down_normal)
@@ -63,9 +63,9 @@ diff -ruN -x lucide -x search-dict pristine/website/playground_page.vl ungated/w
  	.raw("background-size", "4px 4px, 4px 4px")
  	.raw("background-repeat", "no-repeat")
  	.raw("box-sizing", "border-box")
-diff -ruN -x lucide -x search-dict pristine/website/playground.vl ungated/website/playground.vl
+diff -ruN -x lucide -x search-dict pristine/website/playground.vl v4/website/playground.vl
 --- pristine/website/playground.vl	2026-10-15 17:59:12.398860562 -0400
-+++ ungated/website/playground.vl	2026-10-15 18:01:16.459801343 -0400
++++ v4/website/playground.vl	2026-10-15 19:17:19.183993327 -0400
 @@ -434,7 +434,26 @@
  		rows.len()
  	};
@@ -94,9 +94,9 @@ diff -ruN -x lucide -x search-dict pristine/website/playground.vl ungated/websit
  
  	editor_init("#editor", example_source("counter"));
  
-diff -ruN -x lucide -x search-dict pristine/website/server.vl ungated/website/server.vl
+diff -ruN -x lucide -x search-dict pristine/website/server.vl v4/website/server.vl
 --- pristine/website/server.vl	2026-10-15 17:59:12.399145008 -0400
-+++ ungated/website/server.vl	2026-10-15 18:01:16.491801338 -0400
++++ v4/website/server.vl	2026-10-15 19:17:19.199993324 -0400
 @@ -172,7 +172,27 @@
  		"\t</filter>",
  		"</svg>",
