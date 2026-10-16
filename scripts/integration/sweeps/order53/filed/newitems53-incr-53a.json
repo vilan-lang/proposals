@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "M?1",
+   "section": "M",
+   "kind": "performance (editor; S–M)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-15 (incr-53a's find, Order 53)",
+   "discussion": "incr-53a (Order 53); the per-pass probe in the lane report",
+   "title": "E145's import-alias spans and the type-reference hover labels are rendered over every file of the world on every analysis — ~11–13 ms of a served kolt keystroke (the largest single row of the extraction tail after M148)",
+   "body": "`collect_import_alias_spans` walks every expression and every type reference of the program with a `spelling_at` and an alias lookup each, and the `type_references` map renders a `pretty_print_type` label for every written type reference in every file (std's and lucide's included). Both are per-file and a pure function of the settled types and the text, the M148 shape: span-keyed rows per module/item (the label by `(source, span)`), skipped for a restored region, a served item's re-based with its text. The labels are read by hover only; find-references reads the (source, span, definition) triple, which stays. Measured (probe marks, load 10): 'type references labels' 11.4–15.1 ms per served keystroke."
+  },
+  {
+   "id": "M?2",
+   "section": "M",
+   "kind": "performance (editor; M)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-15 (incr-53a's find, Order 53)",
+   "discussion": "incr-53a (Order 53)",
+   "title": "R11's whole-program sets (`LexicalCandidates` over every binding, place and `is` test of the world) cost 7.5–14 ms of a served kolt keystroke whenever one instantiation is seeded; M149's fold now supplies the loaned captures and crossings, the three span indexes remain",
+   "body": "An instantiation slices the candidates inside its callee's declaration, and the callee may be any module's — so the index must cover the world, but its rows are per-region facts (the binding, place and test ids with their spans): the same row family shape as M149's, indexed by span at the fold. Sizing M."
+  },
+  {
+   "id": "M?3",
+   "section": "M",
+   "kind": "performance (editor; M)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-15 (incr-53a's find, Order 53)",
+   "discussion": "incr-53a (Order 53)",
+   "title": "`plan_resource_drops` still re-plans every enrolled body on a served keystroke (5–9 ms on kolt): `resource_reaching_roots` sweeps every function and closure with a per-body predicate (not a live walk), and the per-root scan runs for served bodies too",
+   "body": "The outputs a served body contributes to diagnostics are Id-only: its `drop_call_edges` (drop method, construction site) and its C11 refusals; the TypeIds (dropped bindings' types, overwrite types) are emitter inputs. A per-root record of the edges and refusals, gated by a digest of the Drop-implementing nominal set (the validator M149 asked for, needed here because these would be served verdicts), would let a seeded analysis plan live roots only — but the emitter (and the const pass, E318) still needs `dropped_bindings` and the glue for every body it lowers, so the slice is only sound once E318 says which bodies those are. Rec: after E318."
+  }
+ ]
+}

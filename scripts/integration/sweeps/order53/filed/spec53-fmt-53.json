@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "E329",
+   "section": "E",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-15 (fmt-53's find, Order 53)",
+   "discussion": "fmt-53 (Order 53); sweeps/order53/fmt-53/finds/call_at_exactly_the_budget_before_its_semicolon.vl",
+   "title": "A call statement that is exactly 100 columns before its `;` is left on one 101-column line: the Call arm measures `first_line_over_budget` before the `;` is pushed, while a chain statement of the same width splits",
+   "body": "`let value = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaaaaaa);` inside a function (tab = 4 columns) is 100 columns without the `;`: the statement hook arms the split (the whole statement is 101), but the Call arm's own measure (E314/E321) sees 100 and keeps the arguments inline. The same width as a three-link chain splits at its links. Unchanged since E314 (hole-only); E321 makes it reachable outside markup. Fix: the Call arm counts one column for the statement's terminator when the call is the statement's tail (or carries the armed split's knowledge that the statement overflowed). Sizing XS."
+  },
+  {
+   "id": "E330",
+   "section": "E",
+   "kind": "fmt layout question",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-15 (fmt-53's find, Order 53)",
+   "discussion": "fmt-53 (Order 53); sweeps/order53/fmt-53/e321-sample.diff",
+   "title": "A two-operand binary whose right operand is a call (`a == b + 1 && starts_with(write.path, held.path)`) breaks the CALL's arguments one per line while the `&&` stays inline: `&& starts_with(` ... `)`",
+   "body": "E321's refusals cover chains of three or more operands; a two-operand chain has no operator split (E147's threshold), so the call's arguments are the only break left and the result reads `let a_key = x == y + 1 && starts_with(\\n\\twrite.path,\\n\\theld.path,\\n);` (std reactive/store_core.vl, two sites). Accepted with the layout; alternatives: refuse the call-in-a-2-operand-chain too (the line stays long, as before E321), or let a 2-operand `&&`/`||` chain break at its operator when its right operand is a call. Owner's taste."
+  }
+ ]
+}

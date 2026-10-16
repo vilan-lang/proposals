@@ -1,0 +1,12 @@
+{
+ "date": "2026-10-16",
+ "order": "Order 53",
+ "closes": [
+  {
+   "id": "E318",
+   "lane": "incr-53a",
+   "commit": "6fe278ca",
+   "text": "CLOSED AS UNSOUND, NOT BUILT: the ruled Workspace flag skipping the emitter-only tail was built and probed (incr-53a) and refused - the language server DOES emit: its const pass lowers every const site through the JS transformer (transformer::ConstWorld) over the same clone decisions, last uses and view plans, and a skipping analysis evaluated let a = [1, 2]; mut b = a; b.push(3); a.len() to 3 where the emitting one answers 2; and the drop plan is not emitter-only either (its conditional-temporary refusal is a diagnostic, and its per-root drop types feed drop_call_edges which the call graph and platform coloring walk); the emitter tail costs ~21 ms of a served kolt keystroke; revisit only as a const-reach-lane paper if the tail is still wanted after M151/M137 (an under-approximated reach is a silent wrong const value); the owner's recommendation accepted: close"
+  }
+ ]
+}

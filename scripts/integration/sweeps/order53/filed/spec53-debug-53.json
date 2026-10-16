@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "E323",
+   "section": "E",
+   "kind": "tooling (vilan-dap; S7 residue; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-15 (debug-53's find, Order 53)",
+   "discussion": "debug-53 (Order 53); sweeps/order53/debug-53/finds/written_debug_prints_structurally_in_the_pane.vl",
+   "title": "vilan-dap prints a type with a WRITTEN `Debug` impl by its structure (`secret: Secret = Secret { code = 42 }`) where `dbg(secret)` prints through the impl (`<redacted>`, E275): the sidecar's layout is structural and names no function the adapter could call",
+   "body": "E275 ruled that a written `Debug` impl decides what `dbg` prints; the S7 sidecar records the printer's STRUCTURAL layout only, because naming the impl would mean asking the transformer for the impl's emitted function, and the sidecar may not cause emission (the script must stay byte-identical with and without it). Two doors: (a) the sidecar records the impl's `debug` function's JS name when the walk emitted it anyway (it is reachable whenever some `dbg` or `print` reached the type) and vilan-dap evaluates that name in the paused frame and calls it on the value, falling back to the structure when the name does not resolve (a module-scope function V8 did not context-allocate); (b) the walker is handed the impl through the table it already reads for `dyn`. Rec (a), with a session pin beside `session.test.ts`'s shapes. Sizing S."
+  },
+  {
+   "id": "E324",
+   "section": "E",
+   "kind": "tooling (vilan-dap; S7 residue; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-15 (debug-53's find, Order 53)",
+   "discussion": "debug-53 (Order 53); sweeps/order53/debug-53/finds/dyn_without_show_slot_prints_unknown.vl",
+   "title": "vilan-dap prints a `dyn` binding as `dyn Area(<?>)` in a program that never calls `dbg` or prints an object: its tables carry no `show` slot (S1b emits the slot only when the program prints), and the sidecar does not say which concrete type a table stands for",
+   "body": "The walker prints `[value, table]` through `table.$show(value)` when the slot exists — which is exactly `dbg`'s answer — and `<?>` otherwise. Rec: the sidecar records, per emitted `dyn` table, the JS names of its method functions and the concrete type's layout index; the walker reads `table.<first method>.name` and prints the erased value by that layout, so the pane needs no slot the program did not ask for. Sizing S; the transformer records (it names the tables already), vilan-dap reads."
+  },
+  {
+   "id": "E325",
+   "section": "E",
+   "kind": "formatter (comment placement; S)",
+   "area": "Editor",
+   "status": "OPEN — filed 2026-10-15 (debug-53's find, Order 53)",
+   "discussion": "debug-53 (Order 53); sweeps/order53/debug-53/finds/fmt_trailing_comment_moves_into_then_branch.vl",
+   "title": "`vilan fmt` moves a trailing comment after a one-line `if c { 1 } else { 2 } // the tail` into the then-branch (`1 // the tail`) when it breaks the `if` over lines — the comment annotated the whole `if` and now annotates its first arm",
+   "body": "Found writing debug-53's fixture (`// break: shared` landed on `None`). The break itself is the formatter's rule for an `if`/`else` tail (it breaks without the comment too); only the comment's anchor is wrong: a trailing comment of the line the construct STARTED on belongs after its opening `{` line's end or after the closing `}`, not on the first arm's tail. Owner: the formatter (fmt-53's file); pin beside the fmt corpus. Sizing S."
+  },
+  {
+   "id": "E326",
+   "section": "E",
+   "kind": "tooling (vilan-dap; S8 prerequisite; S)",
+   "area": "LSP & tooling",
+   "status": "OPEN — filed 2026-10-15 (debug-53's find, Order 53)",
+   "discussion": "debug-53 (Order 53); debugging.md §5.5, §10's S8 row",
+   "title": "vilan-dap shows no async parent frames: it asks node's inspector for 32 levels of async stack (`Debugger.setAsyncCallStackDepth`) but its Call Stack lists `callFrames` only, so a stop inside an awaited call or an effect a microtask drain runs has no caller below it — what S8's async stack tagging (`console.createTask` per queued relay) would show",
+   "body": "S8 (the reactive trace) needs it: the inspector hands `asyncStackTrace` (a description, `callFrames`, a `parent` chain) with every pause; the adapter should append those frames under a `label` frame naming the description (`await`, or the task name S8's tagging gives a relay), each mapped through the source map like the synchronous ones and marked `subtle` where they land in std. Sizing S; pin in `session.test.ts` with an `async fun` awaited across a breakpoint."
+  }
+ ]
+}

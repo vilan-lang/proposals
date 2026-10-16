@@ -1,0 +1,42 @@
+{
+ "date": "2026-10-16",
+ "order": "Order 53",
+ "note": "PLACEHOLDER ids: the integrator replaces each id with the real id the filing of sweeps/order53/filed/newitems53-<finds_lane>.json allocated, drops finds_lane, then runs close_batch AFTER file_items",
+ "closes": [
+  {
+   "id": "F?1",
+   "finds_lane": "native-53",
+   "lane": "native-53",
+   "commit": "b529975d",
+   "text": "closed on arrival - FIXED in the filing lane (41e7a705 after the rebase; a1370a6d before): vilan-rust's closure_call_arguments now asks defers_its_cell_copy as a named callee does and settles the other code-running arguments in lets first, and the JS transformer reads the argument late through a closure value too (F138's rule without cell views); a computed callee and a literal applied where it is written keep their order on both; estate 0; one pin"
+  },
+  {
+   "id": "A?1",
+   "finds_lane": "std-53",
+   "lane": "solver-53",
+   "commit": "c5b59f0f",
+   "text": "closed on arrival - FIXED with B627 (af6ea4ea): a method's expectation reaches its receiver call and an external member's return-only generic (to_array<const N>) is recorded from an expectation (record_external_return_generics), so let a: [i32; 2] = xs.to_array().unwrap() and let x: i32 = make().unwrap_or(3) infer; the residue (an argument at a NON-generic parameter) is solver-53's B?1"
+  },
+  {
+   "id": "B?2",
+   "finds_lane": "native-53",
+   "lane": "solver-53",
+   "commit": "c5b59f0f",
+   "text": "closed on arrival - FIXED for the RE-BIND in solver-53 (e9c08894): a lent place's root re-bound by a later argument is refused with a steer (check_lent_root_rebinds, section 6.4 rule 4; diagnostics, estate 0, NEW ledger row); the in-place twin (rustc E0499) is solver-53's B?3"
+  },
+  {
+   "id": "M?1",
+   "finds_lane": "editor-53",
+   "lane": "incr-53a",
+   "commit": "6fe278ca",
+   "text": "closed on arrival - FIXED as the item asked: M148 folded E317's variant_use_labels onto the live label lane (1256a9db), its three sweeps (bindings, calls, expected types) walking only the complement of the restored label ranges, so a served keystroke no longer pays the whole-analysis scan"
+  },
+  {
+   "id": "N?1",
+   "finds_lane": "incr-53b",
+   "lane": "incr-53c",
+   "commit": "69b607bd",
+   "text": "closed on arrival - FIXED as P4 in incr-53c: vilan cache warm/prune/clean over the world root with a 256 MiB LRU bound and G28's build-id stamp read from the file header, so a rebuilt vilan-core's files are pruned"
+  }
+ ]
+}

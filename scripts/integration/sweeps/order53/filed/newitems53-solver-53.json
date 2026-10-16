@@ -1,0 +1,44 @@
+{
+  "items": [
+    {
+      "id": "B?1",
+      "section": "B",
+      "kind": "false refusal (inference; S)",
+      "area": "Type inference",
+      "status": "OPEN — filed 2026-10-15 (solver-53's find, Order 53)",
+      "discussion": "solver-53 (Order 53); sweeps/order53/solver-53/finds/b1_argument_of_a_plain_callee_carries_no_expectation_to_a_receiver.vl",
+      "title": "B627's residue: an expected type reaches a method's RECEIVER only where the method call itself has an expectation — `take(make().unwrap_or(5))` with `fun take(value: i32)` is still refused \"cannot infer 'T'\" (`let x: i32 = make().unwrap_or(5); take(x)` compiles)",
+      "body": "B627 re-infers a receiver directed by `expected_types[method call]`, which an annotated binding, a typed tail or a decided parameter (B501) seeds. An argument at a NON-generic parameter records no expectation, so the chain has nothing to read. Rec: seed an argument call's expectation from a concrete parameter type too (the parameter is a typed position as surely as an annotation), measured on the estate (it moves `expected_types` for every argument call). Sizing S; the solver."
+    },
+    {
+      "id": "B?2",
+      "section": "B",
+      "kind": "native refusal of a JS-accepted program (S)",
+      "area": "Native targets & rendering",
+      "status": "OPEN — filed 2026-10-15 (solver-53's find, Order 53)",
+      "discussion": "solver-53 (Order 53); sweeps/order53/solver-53/finds/b2_literal_grounded_only_by_a_later_annotation_is_refused_natively.vl",
+      "title": "A generic struct literal no field grounds (`let both = Page { items = [], first = None };`) settled only by a LATER annotated binding (`let n: Page<i32> = both;`) runs on JS and is refused natively — \"does not emit a value of an unbound generic type parameter (parameter 1 of struct `Page`) yet\"; the same on v0.50.0",
+      "body": "Met beside B628. The literal's binding settles as the declaration's `Page<T>` and the later annotation reconciles with it without reaching back; JS never needs the parameter, native does. Rec: the B580/residual sweep's question asked of the literal (a binding whose type keeps the struct's own parameter, read through a later typed binding, is refused with the annotation steer on both backends), or the later binding's type flows back to the literal's slot. Sizing S; the solver."
+    },
+    {
+      "id": "B?3",
+      "section": "B",
+      "kind": "diagnostics (checker hole; native backend defect message; S)",
+      "area": "Language",
+      "status": "OPEN — filed 2026-10-15 (solver-53's find, Order 53)",
+      "discussion": "solver-53 (Order 53); sweeps/order53/solver-53/finds/b3_in_place_write_of_a_lent_root_inside_a_later_argument.vl",
+      "title": "native-53's B?2's in-place twin: a later argument WRITING the lent place in place — `log.items.push({ log.items.push(1); 9 })` — checks clean; JS prints 2 and rustc refuses the native emission (E0499: `log.items` borrowed mutably twice), reported as a backend defect",
+      "body": "Spec §6.4 rule 4 reads it as an invalidating mutation under the live `&mut` view, as the re-bind is. solver-53's `check_lent_root_rebinds` refuses the re-bind only (its brief). Rec: the same check widened to an in-place write of the lent place or a place under it (`log.items.push(..)`, `log.items[0] = ..`, a `&mut` call over it), with the same settle-first steer; estate counted first (expected 0). A captured root stays F138's. Sizing S; the checks."
+    },
+    {
+      "id": "B?4",
+      "section": "B",
+      "kind": "internal error (JS; XS)",
+      "area": "Type inference",
+      "status": "OPEN — filed 2026-10-15 (solver-53's find, Order 53)",
+      "discussion": "solver-53 (Order 53); sweeps/order53/solver-53/finds/b4_undetermined_static_as_an_unannotated_tail.vl",
+      "title": "B627's refusal residue: a bare static whose bounded impl binder only its return carries, as the TAIL of an unannotated function (`fun tail_of() { Holder::build() }`), is still \"internal: a call resolved to `Make`'s requirement `make`, which has no body\" on JS",
+      "body": "`undetermined_value_flows_on` follows the call's value into a binding, a consuming call, a field read or a discarded statement, and leaves every other position (a list element, a tuple, a tail) to whatever types it, because those are usually typed. An unannotated function's tail is typed by nothing. Rec: a tail of a function whose return type is inferred continues the walk at the function's call sites (or is refused there when the inferred return keeps the binder). Sizing XS-S; the checks."
+    }
+  ]
+}

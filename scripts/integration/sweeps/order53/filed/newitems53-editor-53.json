@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "E?1",
+   "section": "E",
+   "kind": "editor (semantic tokens; XS)",
+   "area": "Editor",
+   "status": "OPEN — filed 2026-10-15 (editor-53's find, Order 53)",
+   "discussion": "editor-53 (Order 53), met at E315; repro: sweeps/order53/editor-53/finds/e53_module_segments_in_patterns_and_initializers.vl.md",
+   "title": "the MODULE segments of a qualified pattern (`lib::deep::Mode::On =>`) and of a qualified struct initializer (`lib::deep::Overlay { .. }`) paint nothing - only the enum and variant (the type name) carry a token, where the same path in value position and in a type annotation paints Namespace since E315",
+   "body": "The pattern arm of the analyzer's pattern resolution records only the variant (the last segment) and the enum before it (`analyzer.rs`, \"Record each `::`-separated segment\"); the struct initializer's path records its type name only. Record the module segments the way E315's drain does: a Type::Module row per segment. Pins: a three-segment pattern path, an initializer path, rename/find-references from a module segment."
+  },
+  {
+   "id": "E?2",
+   "section": "E",
+   "kind": "editor (hover; XS)",
+   "area": "Editor",
+   "status": "OPEN — filed 2026-10-15 (editor-53's find, Order 53)",
+   "discussion": "editor-53 (Order 53), met at E317; repro: sweeps/order53/editor-53/finds/e53_generic_variant_value_hover_has_no_payload.md",
+   "title": "a generic enum's payload variant in value position hovers without its payload - `Some` in `Some(1)` reads `Option<i32>::Some` where a pattern reads `Option<i32>::Some(i32)`",
+   "body": "`variant_value_hover` (vilan-lsp) spells the declared payload only for an enum with no parameters; with E317 the instantiation is known for a constructor call's callee, so the payload can be substituted under the enum's arguments as `pattern_labels` does (`applied_substitution`). Pin: `Some(1)`, `Ok(1)`, `Err(\"no\")` in a return, a binding and an argument."
+  },
+  {
+   "id": "M?1",
+   "section": "M",
+   "kind": "performance (editor; incremental; XS)",
+   "area": "Editor",
+   "status": "OPEN — filed 2026-10-15 (editor-53's find, Order 53)",
+   "discussion": "editor-53 (Order 53); measured with scripts/lsp-latency.py on the kolt copy at the fold, base 0.50.0 b923bfc6 against the lane tip (instructions to idle, G: leaf 3.44 -> 3.46, shared.vl 1.33 -> 1.34, css 5.58 -> 5.61; bisect: E317's scan is ~0.02 G of the leaf row)",
+   "title": "E317's label scan (`Analyzer::variant_use_labels`) walks every `function_calls`, `expected_types` and `variables` entry per editor analysis for the ~20 rendered ids, about +0.5 % instructions per served keystroke - M148 (the hover rows rendered for every file) should fold it into the per-item rows instead of scanning the world",
+   "body": "The scan is guarded by the reading aids (the CLI pays nothing) and by a cache-hot scope test before any map lookup, and it was cut to two passes; what remains is the iteration itself over std's share of the maps. Rendering the labels per item (the rows M148 plans) and restoring them with the module's record would make a keystroke in an unrelated module pay none of it. The same applies to E313's other row tables."
+  }
+ ]
+}

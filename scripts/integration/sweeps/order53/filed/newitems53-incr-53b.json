@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "M?1",
+   "section": "M",
+   "kind": "determinism (S) - the std-prefix shape's package ids",
+   "area": "Performance & footprint",
+   "status": "OPEN - filed 2026-10-15 (incr-53b's find, Order 53)",
+   "discussion": "incr-53b (Order 53); sweeps/order53/incr-53b/finds/m144_prefix_shape_package_ids/run.sh",
+   "title": "After M144 a std item's id is one id in both shapes, but a PACKAGE item's id is not: the std-only prefix world resolves std (minting 621 entities on the repro's std set) before the package's nodes mint, the canonical path mints them before its one resolve - so the native backend (names `name_<id>`) emits `two_10238` canonically and `two_10859` over `VILAN_STD_PREFIX=on` for one program, while the JS is byte-identical",
+   "body": "Measured on the M144 repro package (`std::path::basename` beside two sibling modules): canonical `b` module node Id(10235), over the prefix Id(10856); the gap is the entity mints of std's own `resolve_world` (prelude bindings, impl namespaces, post-settle mints). M144 could not close it: exact cross-shape equality needs the canonical path to resolve std ALONE before the package mints (std-prefix.md §4.2 hardened from guard to language rule), or the native backend to name items without ids (a content suffix). Nothing a user sees moves (the four differentials and the corpus hold over the prefix; the native differential compares stdout, not bytes), and the CLI's default is the canonical shape, so no output changes today. Rec: own it under §4.2's hardening (the rule the paper already recommends after a release without refusals) - then the std-prefix world and the canonical world are one layout and the native bytes agree across shapes; until then a program built natively under `VILAN_STD_PREFIX=on` is reproducible but not byte-equal to its canonical build. The in-process pin `prefix_roundtrip_native::m144_a_package_with_siblings_names_std_the_same_over_a_loaded_prefix` compares std's names across shapes and the package's between the built and the loaded prefix only."
+  },
+  {
+   "id": "N?1",
+   "section": "N",
+   "kind": "tooling (S) - the world cache's housekeeping (std-prefix P4)",
+   "area": "Performance & footprint",
+   "status": "OPEN - filed 2026-10-15 (incr-53b's find, Order 53)",
+   "discussion": "incr-53b (Order 53)",
+   "title": "`~/.vilan/cache/worlds` grows by one 1-6.4 MB tier file per (build id, platform, std closure) and nothing prunes it: every dev build of vilan-core is a new build id, and a developer's cache gains a set of files per rebuild (the suite is kept off it by `.cargo/config.toml` until P5)",
+   "body": "P3 writes `<root>/<key>/std.world` once per key and never removes a sibling. P4 (`vilan cache prune/clean/warm`, the byte bound, G28's stamp in the header - the header already carries the build id in clear, so a prune can tell a foreign build's file from this build's without decoding it) is incr-53c's if time, else Order 54's. Measured: 1.01 MB for a one-import corpus program, 6.06/6.39 MB for kolt's server/client closures; a session that builds both kolt legs and a corpus program writes ~13.5 MB. Rec: P4 prunes other build ids' directories at write time (cheap, the common case is one installed toolchain) and bounds the root by bytes with the check-cache's rule."
+  },
+  {
+   "id": "M?2",
+   "section": "M",
+   "kind": "performance (S) - the prefix file carries no M19/S2 records yet (std-prefix.md Q9)",
+   "area": "Performance & footprint",
+   "status": "OPEN - filed 2026-10-15 (incr-53b's find, Order 53)",
+   "discussion": "incr-53b (Order 53)",
+   "title": "The persisted prefix holds the std-only WORLD; M19's checks record and S2's tables for std's sources (Q9: 'yes') are not in the file, so the first analysis over a loaded prefix in a process re-runs std's Class A checks and files them in memory (the paper's 53% -> ~45% of std)",
+   "body": "The record (`WorldChecks`: per-source diagnostics, the class D table slices, the post record) is filed AFTER the world's analysis completes, under the prefix key only in P1's forced shape (`VILAN_STD_PREFIX=on`); a LAYERED build (the server's default) files under the world's own key and never consults the prefix key's record, so for the editor the saving is not on the table either way. P3 writes the world at its build, before any record exists. The step: at the end of the top-level analysis that built the prefix, append (or rewrite) the file with the prefix key's `WorldChecks` minus `per_item` (package-keyed), and insert it into `CHECKED_CACHE` on load after the world; the types need the same derives (ItemRecord/ModuleDiagnostics/ModuleTables/PostRecord already carry them for the world's `items` field, PostRecord's `OnceLock` needs a helper). Rec: Order 54 with P5, measured on the CLI's cold `vilan check` rows (empty web, kolt both legs) in instructions."
+  }
+ ]
+}

@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "B?2",
+   "section": "B",
+   "kind": "inference (design; S-M)",
+   "area": "Type inference",
+   "status": "OPEN — filed 2026-10-15 (std-53's find, Order 53)",
+   "discussion": "std-53 (Order 53); sweeps/order53/std-53/finds/expected_type_through_a_method_chain.vl",
+   "title": "An expected type does not reach a call's own generic through a method on the call's result: `let a: [i32; 2] = xs.to_array().unwrap();` and `let x: i32 = make().unwrap_or(3);` (`fun make<T>(): Option<T>`) are refused \"cannot infer\" (B424's door (a)); writing the argument (`xs.to_array<2>()`, `make<i32>()`) compiles",
+   "body": "A172's `to_array` makes the shape common: the natural spelling of a checked conversion is `list.to_array().unwrap()` / `.ok_or(..)!` under an annotated binding, and today the `N` has to be written at the call. The binding's type unifies with the METHOD's result (`unwrap`'s `T`), and the receiver call's own generic is closed (refused) before that unification can reach it: B424 refuses a free own generic the call's arguments do not bind, and the receiver position is not a channel. Same on v0.50.0 for a plain type parameter, so this is the general rule, not A172's. B627 is the static-path cousin (there the chain reaches the call and the JS emitter hits an internal error). Rec: a design note first — whether a call that is a method RECEIVER may stay open until the method's return unifies (an inference variable, Rust's answer) or the refusal stands and its steer names the written form (B?1). Sizing S (steer) / M (inference)."
+  },
+  {
+   "id": "B?1",
+   "section": "B",
+   "kind": "diagnostics (S)",
+   "area": "Diagnostics",
+   "status": "OPEN — filed 2026-10-15 (std-53's find, Order 53)",
+   "discussion": "std-53 (Order 53); sweeps/order53/std-53/finds/cannot_infer_steer_spells_a_method_as_a_free_call.vl",
+   "title": "B424's \"cannot infer\" refusal spells a METHOD call's fix as a free call — \"as the call's argument (`to_array<4>(…)`)\" for `numbers.to_array()`, \"as the call's type argument (`get<…>(…)`)\" and \"ascribe the call (`get(…) as …`)\" for `bag.get()` — where the written forms are `numbers.to_array<4>()` and `bag.get<i32>()`",
+   "body": "`check_generic_bound_satisfaction_declarations` renders `{member}<4>(…)` from `callable_name(member_id)`, which has no receiver. For a method the steer should keep the call's own shape: the receiver text (or `…`) and a `.`, `….to_array<4>()`. The length and the type variants share the defect. Sizing S (the message, two pins); the analyzer core's checks (solver's area)."
+  }
+ ]
+}
