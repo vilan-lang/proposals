@@ -602,3 +602,45 @@ receiver admitted by a `Callable` struct through the call operator's coercion �
 own. Dependencies (M146) are still refused: the hot load lacks the drain's dependency machinery; the
 recommended door is a dependency tier in the prefix (find Q?1 in `newitems52-incr-52b.json`).
 Measured rows: incr-52b's report.
+
+**As built (P3, incr-53b, Order 53).** The std-only prefix world is PERSISTED under
+`~/.vilan/cache/worlds/<key>/std.world` (`VILAN_WORLD_CACHE=<dir>|off` overrides; a test process
+never reaches it) and loaded where a std-prefix key misses the in-memory base cache: the CLI under
+`VILAN_STD_PREFIX=on`, the server's layered mode on a cold start. The key is §6's (the format
+version, vilan-core's `BUILD_ID`, the platform, the closure, a hash over the closure's files under
+every std root and `lib.vl`, the macro limits, the entry prelude, the workspace rows) and the file
+carries a tier list (`std`; dependencies reserved for M152) from version 1. The form is §5's by
+serde with an in-tree codec (`prefix_file/codec.rs`: varints, positional fields, a string table
+every `&'src str` borrows from — the paper's "strings borrow from the file buffer", with the table
+rather than the source texts as the buffer); the census (§2) landed as: rows 1–3 dropped, row 4
+recompiled on demand, row 5 by value in the file and references into a leaked slice in the world
+(not the tree change: 322 sites read `&'src Span`), row 6 DRAINED before the store (so the in-memory
+prefix is pre-drained too), rows 7–9 and 12 borrowed from the table, rows 10–11 rebuilt or dropped,
+row 13 reproduced, row 14 re-rooted (the file holds canonical std roots; the loader maps them to its
+spec's), row 15 never stored — plus one row the census did not list: std's 39 `[hint(..)]`
+attributes keep their type NODES (re-resolved on every checks phase), so the AST family in
+`node.rs` derives serde and the nodes ride by value. Four premises were wrong in detail: (1) §3's
+relocation is unneeded after M144, which mints the package's nodes after std's walk — but a package
+item's id STILL differs between the shapes (the std-only world's resolve mints ~600 entities before
+the package's nodes; the canonical path mints them before its one resolve), so native output across
+shapes is not byte-equal until §4.2 hardens to a rule (find); (2) the paper's "reorder-only golden
+diff" for M144 never materialized — nothing in the goldens depends on where a module node sits; (3)
+"a std item's ids reproduced exactly" holds, and the loaded world's HashMaps reproduce the stored
+world's content with their own layouts — nothing a user sees depends on a map's iteration order
+(the round-trip differential's proof); (4) the closure is COMPUTED by parsing std's modules in the
+loading process (§4.3's "the closure costs microseconds" is true of the in-process shape with a warm
+parse cache, not of a fresh process: 31 ms on a one-import program, 105–162 ms per kolt leg in
+release), so §4.3's std import INDEX exists after all: `std-index/<hash>.index` beside the worlds,
+3 KB per std content, built by parsing once and read by every later process (6 / 11 ms on kolt's
+legs); and a one-shot process (the CLI, its in-memory store off) is handed the loaded world itself,
+neither retained nor cloned (retained and cloned it read +48 % peak RSS on kolt). Measured (release,
+the box at load 6–10): the std tier is 1.01 MB (a one-import corpus program), 6.06 / 6.39 MB (kolt's
+server / client closures); read-and-decode 8 / 41 / 52 ms; a cold `vilan check` over the loaded prefix
+726.2 → 674.0 M instructions (corpus, −7.2 %) and 10.68 → 9.27 G (kolt's two legs, −13.2 %), peak RSS
+55.5 → 56.3 MB and 266 → 274 MB (+2.7 %); the run that builds and writes both files costs +8 % once. Not in the file: M19's record and S2's tables (Q9 — filed as the next step: the record is
+filed after the world's analysis, and only under the prefix key in P1's shape); P4's housekeeping
+(filed). Gates: the round-trip differential (vilan-core: every replay-harness fixture in every
+state, observation and JS byte-identical built / written / loaded / clean; vilan-cli: a corpus
+sample emitted to JS and Rust through the binary, bytes and diagnostics alike), the damaged-file
+pins, vilan-lsp's cold-start pin; N177 landed with it (content-keyed const-site keys, 109/109 on
+kolt).
