@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B?1",
+   "section": "B",
+   "kind": "design (language: `[track_caller]` on a trait member; E257 S8's remaining half)",
+   "area": "Language",
+   "status": "OPEN — filed 2026-10-16 (debug-54's find, Order 54)",
+   "discussion": "debug-54 (Order 54); sweeps/order54/debug-54/finds/b1_track_caller_on_a_trait_member.vl",
+   "title": "`[track_caller]` is refused on every trait member, so the reactive trace (E257 S8) cannot name where a cell made by `Signal::new` was made, where an effect made by `.effect`/`.sub`/`.on_change` was made, or where a write through `S: Signal<T>` / `dyn Signal` came from — the paper's own line (`effect at views.vl:30 woken by count (store.vl:12)`) needs all three",
+   "body": "debugging.md §6.2 assumed `Signal::new` and `set` could be `[track_caller]`; both are trait members (the trait's default, the `SignalCell` impl's), and S0's refusal (analyzer.rs, `walking_trait_body || walking_trait_impl_body`) stands because a call through a bound or a `dyn` table names no location. S8 shipped what an INHERENT method reaches (an inherent method is found before the trait's): `SignalCell::new`/`set`/`update` are inherent and tracking, so `cell.set(v)` on a concrete cell names its place; `Signal::new` (the book's spelling, 85 doc uses against 12 of `SignalCell::new`), every `Flow` effect constructor and every write through a bound name none. Rec: `[track_caller]` DECLARED on the trait member — every impl takes the hidden location, every call passes it (a static call its own site; a bound's call after monomorphization the same; a `dyn` table's slot signature carries it on both backends, the JS slot an extra argument, the native fn type a `Location` parameter); a trait member taken as a value refused as a free function is. Then std marks `Signal::new`, `Signal::set`, `Flow::effect`/`sub`/`on_change` and the trace's line gains `effect at …`. Sizing M (the analyzer refusal, `track_caller.rs`'s threading through dispatch, both emitters' table signatures); a ruling first on whether tracking may be part of a trait's contract."
+  }
+ ]
+}

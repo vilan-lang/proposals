@@ -23,12 +23,12 @@
   {
    "id": "N?3",
    "section": "N",
-   "kind": "performance (native)",
+   "kind": "performance (native) — FIXED in native-54 (commit 7ed7d1ff)",
    "area": "Native targets & rendering",
-   "status": "OPEN — filed 2026-10-16 (native-54's find, Order 54)",
+   "status": "FIXED — native-54, Order 54 (close at the merge)",
    "discussion": "native-54 (Order 54); sweeps/order54/native-54/finds/n3_module_read_cloned_twice.vl",
-   "title": "A by-value read of a module-level binding copied by rule 1 natively is copied TWICE: `has_N((MODULE_ITEMS.with(|cell| cell.get())).clone(), grow())` — `cell.get()` already answers a clone of the cell's value; the same for a field spine (`(MODULE_LOG.with(|cell| cell.get()).items).clone()` copies the whole struct, then the list again)",
-   "body": "`copy_a_consumed_place_read` skips a read out of a boxed binding's cell or a `Shared` view (\"a copy already, F62/F103\") but not one out of a module binding's `thread_local!` cell, which is rendered `cell.get()` (a whole-value clone) — so wherever rule 1's copy applies (the JS `clone_sites` mark it beside a later writing argument, a non-last-use read) the value is cloned twice, and a field read clones the whole binding to read one field (F103's shape, unfixed for module roots). Rec: skip the second copy for a bare module read and a field/tuple-slot spine over one (an index spine still needs it: moving out of a `Vec` temporary's element is E0507), and read a field spine through the cell (`cell.read_with(|view| view.items.clone())`, F103's form) — native copy census rows move by the removed copies only; byte-identical output."
+   "title": "A by-value read of a module-level binding at a consuming position was copied TWICE natively: `has_N((MODULE_ITEMS.with(|cell| cell.get())).clone(), 9)` — `cell.get()` already answers a clone of the cell's value; the same for a field or tuple-slot spine (`(MODULE_LOG.with(|cell| cell.get()).items).clone()`)",
+   "body": "`copy_a_consumed_place_read` skipped a read out of a boxed binding's cell or a `Shared` view (\"a copy already\", F62/F103) but not one out of a module binding's `thread_local!` cell, rendered `cell.get()` (a whole-value clone), so every non-last-use consumed read of one was cloned twice. A bare read and a field/tuple-slot spine over one now skip the second clone (`reads_a_module_binding_copy`); an element read keeps it (moving out of a `Vec` temporary's element is E0507). Output unchanged; native emission moves at std's module-level bindings only (the website's server sheds 47 second copies, the ssr example 2, todo 1; kolt's server and the corpus byte-identical). Pin `native_differential::a_module_binding_read_by_value_is_copied_once_natively`. Residue (not done): a field spine over a module binding still copies the whole value to read one field (`cell.get().items`); F103's `read_with` form would copy the field alone."
   }
  ]
 }
