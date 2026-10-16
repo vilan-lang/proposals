@@ -1,0 +1,19 @@
+// Find: a nursery BODY parked on ambient-signal IO when the nursery cancels
+// itself surfaces `AbortError` out of `nursery` (exit 1), though task.vl says
+// "Cancellation is absorbed at the join - it never wins as the nursery's error".
+// The same wait in a spawned child is absorbed (exit 0).
+import std::io::print;
+import std::task;
+import std::time;
+
+fun main() {
+    task::nursery(|n| {
+        async {
+            time::sleep(20);
+            n.cancel();
+        };
+        time::sleep(100000);
+        print("body resumed after cancel");
+    });
+    print("cancelled and joined");
+}

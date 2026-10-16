@@ -1,0 +1,35 @@
+// Find: a `for x in subject` whose `next` reads a context (here the ambient
+// nursery, through `task::ambient_signal()`; no await anywhere) - the loop's
+// implicit `next` call is not handed the threaded context argument.
+import std::io::print;
+import std::iterator::Iterator;
+import std::option::Option::{ self, None, Some };
+import std::task;
+
+struct Countdown {
+    left: i32,
+}
+
+impl Countdown with Iterator<i32> {
+    fun next(&mut self): Option<i32> {
+        if self.left == 0 {
+            ret None;
+        }
+        self.left = self.left - 1;
+        if task::ambient_signal().is_some() {
+            Some(self.left + 100)
+        } else {
+            Some(self.left)
+        }
+    }
+}
+
+fun main() {
+    mut direct = Countdown { left = 1 };
+    print(i"direct {direct.next().unwrap_or(-1)}");
+    let counter = Countdown { left = 2 };
+    for value in counter {
+        print(i"loop {value}");
+    }
+    print("done");
+}

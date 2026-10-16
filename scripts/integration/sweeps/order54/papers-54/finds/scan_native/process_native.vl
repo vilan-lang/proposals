@@ -1,0 +1,6 @@
+// Find: the native backend implements env (prints HOME) but refuses scan, args, exit and cwd.
+import std::io::print;
+import std::process;
+fun main() {
+    print(process::env("HOME").unwrap_or("none"));
+}

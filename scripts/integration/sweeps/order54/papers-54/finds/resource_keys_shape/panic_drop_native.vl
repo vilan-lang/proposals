@@ -1,0 +1,32 @@
+// (native variant: panic only) A173: does a resource's Drop run when a panic unwinds past its owner, and
+// on `process::exit`? (the terminal's restore must not depend on it alone).
+import std::drop::Drop;
+import std::io::{ panic, print };
+import std::process;
+
+[resource]
+struct Raw {
+    tag: i32,
+}
+
+impl Raw with Drop {
+    fun drop(&mut self) {
+        print("raw off");
+    }
+}
+
+fun use_it(raw: &Raw, code: i32) {
+    if code == 1 {
+        panic("boom");
+    }
+    if code == 2 {
+    }
+    print(i"using {raw.tag}");
+}
+
+fun main() {
+    let raw = Raw { tag = 1 };
+    let code = "1";
+    use_it(&raw, if code == "1" { 1 } else if code == "2" { 2 } else { 0 });
+    print("end of main");
+}

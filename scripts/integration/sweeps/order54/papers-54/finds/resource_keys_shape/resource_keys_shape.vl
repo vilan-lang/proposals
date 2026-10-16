@@ -1,0 +1,72 @@
+// A173 S2's shape on today's language: a `[resource]` handle with a `Drop`
+// that restores (here: prints), an awaiting inherent `next(self): Option<T>`
+// carrying the ambient signal, pulled by a bare `for { match .. }` loop that
+// breaks early - the Drop must run at the break's scope end, and a loop
+// spawned as a nursery child must be cancellable.
+import std::drop::Drop;
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::shared::Shared;
+import std::task;
+import std::time;
+
+[resource]
+struct Keys {
+    left: Shared<i32>,
+}
+
+impl Keys {
+    fun open(count: i32): Keys {
+        print("raw on");
+        Keys { left = Shared::new(count) }
+    }
+
+    fun next(self): Option<i32> {
+        if self.left.read() == 0 {
+            ret None;
+        }
+        time::sleep(5);
+        self.left.write() = self.left.read() - 1;
+        Some(self.left.read())
+    }
+}
+
+impl Keys with Drop {
+    fun drop(&mut self) {
+        print("raw off");
+    }
+}
+
+fun first_three() {
+    let keys = Keys::open(10);
+    for {
+        match keys.next() {
+            Some(let key) => {
+                print(i"key {key}");
+                if key == 7 {
+                    jump break;
+                }
+            }
+            None => jump break,
+        }
+    }
+    print("after loop");
+}
+
+fun main() {
+    first_three();
+    task::nursery(|n| {
+        async {
+            let keys = Keys::open(1000000);
+            for {
+                match keys.next() {
+                    Some(let key) => {}
+                    None => jump break,
+                }
+            }
+        };
+        time::sleep(30);
+        n.cancel();
+    });
+    print("cancelled and joined");
+}

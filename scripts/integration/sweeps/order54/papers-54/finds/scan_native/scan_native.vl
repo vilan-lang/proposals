@@ -1,0 +1,10 @@
+// A173 ground truth: process::scan() on both backends (pipe and EOF).
+import std::process;
+import std::io::print;
+
+fun main() {
+    let first = process::scan();
+    let second = process::scan();
+    let third = process::scan();
+    print(i"first=[{first}] second=[{second}] third=[{third}]");
+}

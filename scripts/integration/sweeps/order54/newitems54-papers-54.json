@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B?1",
+   "section": "B",
+   "kind": "fix (JS runtime helper; std::process) - closed by A173 S1 if std-54 lands it",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-16 (papers-54's find, Order 54)",
+   "discussion": "papers-54 (Order 54); proposal/terminal.md §1.1; sweeps/order54/papers-54/finds/scan_native/scan_native.vl",
+   "title": "`process::scan()` answers \"\" on EVERY call on the JS backend since v0.33.0: the `__scan` helper calls `require(\"fs\")` inside the emitted ES module (`.mjs` since B86b, e5a809c0), and its own `catch` swallows the `ReferenceError` - `printf 'a\\nb\\n' \\| vilan run p.vl` prints three empty lines",
+   "body": "`transformer.rs::helper_source(\"__scan\")` fills its line array with `require(\"fs\").readFileSync(0, \"utf-8\").split(\"\\n\")` in a `try`, falling back to `[]` on any error; an `.mjs` has no `require`, so the fallback always runs. Unnoticed because nothing calls `scan()` (zero uses in the tree, the corpus, kolt and the website; the corpus runs programs with stdin `Stdio::null()`). A173 S1 replaces the helper wholesale (an incremental awaiting reader); if S1 slips, the one-line fix is `process.getBuiltinModule(\"node:fs\").readFileSync(0, \"utf-8\")` (synchronous, valid in an ES module on node >= 22.3), plus a pin that pipes two lines through `vilan run`. `fix`."
+  },
+  {
+   "id": "B?2",
+   "section": "B",
+   "kind": "miscompile (both backends; the context threading pass vs the for-in desugar)",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-16 (papers-54's find, Order 54)",
+   "discussion": "papers-54 (Order 54); proposal/terminal.md §1.3; sweeps/order54/papers-54/finds/for_in_context_next/for_in_context_next.vl and finds/async_iterator_for/async_inherent_for_in.vl",
+   "title": "A `for x in subject` whose `next` reads a context - any std IO wait (`time::sleep`, through `ambient_signal()`), or `task::ambient_signal()` itself in a SYNC `impl .. with Iterator<i32>` - is emitted without the threaded context argument: check-clean, JS crashes `TypeError: Cannot read properties of undefined (reading '0')`, native fails cargo (E0061, 'a BACKEND defect')",
+   "body": "The same `next` called directly (`direct.next()`) gets its context argument (`next($g, $a)`); the loop's implicit call is emitted `next($g)` on JS and `next_N(&mut iterator)` natively. The for-in's desugared `next` call is outside the context threading pass's call-site walk (a binder the loop lowering mints, not a call the source wrote). Rec: thread the context at the loop's `next` exactly as at a written call, on both backends; pins: the sync context-reading `Iterator`, the async inherent `next(self)` over a `Shared` cursor, both printing the same on JS and native. Unblocks `for key in keys` for A173 S2 (with F-3). Estate: no program in kolt/the website/the corpus iterates such a subject (they would crash). `miscompile`."
+  },
+  {
+   "id": "F?3",
+   "section": "F",
+   "kind": "backend defect (native)",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-16 (papers-54's find, Order 54)",
+   "discussion": "papers-54 (Order 54); proposal/terminal.md §1.3; sweeps/order54/papers-54/finds/async_iterator_for/async_inherent_for_in.vl",
+   "title": "Native: a `for x in subject` over a type whose INHERENT `next(self): Option<T>` awaits (the checker accepts it - spec §3.5's iteration protocol) is emitted as `while let Some(x) = next_N(&mut iterator)` with no `.await`; cargo refuses (E0308 'expected future, found Option'). JS awaits it (and only fails on B?2's context argument)",
+   "body": "The emitter's for-in lowering does not ask whether the subject's `next` is async. Rec: await it as the JS lowering does (and take the receiver by the shape `next` declares - `&mut iterator` for a by-value `self` is the other half of the same rustc error list); pin with B?2's async probe once both land. The trait form (`Iterator::next(&mut self)`) stays refused for async by the `&mut`-across-suspension rule - this is only the inherent by-value form."
+  },
+  {
+   "id": "F?4",
+   "section": "F",
+   "kind": "native coverage (std::process)",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-16 (papers-54's find, Order 54); recommended INTO A173 S1 (std-54)",
+   "discussion": "papers-54 (Order 54); proposal/terminal.md §1.1 and §5.2; sweeps/order54/papers-54/finds/scan_native/process_native.vl",
+   "title": "The native backend implements `process::env` but refuses `scan` (intrinsic `Scan`), `args` (intrinsic `Args`), `exit` and `cwd` (host bindings `process.exit` / `process.cwd`) with F1's S1b refusal - four of std::process's five functions",
+   "body": "Each is a few lines of Rust std in vilan-rt (`std::env::args().skip(1)`, `std::process::exit` after flushing stdout, `std::env::current_dir`), no dependency. Rec: land them with A173 S1 so the S1 pins (a prompt that exits non-zero on bad input) and every CLI example build both ways; the differential's refusal census drops four rows."
+  },
+  {
+   "id": "E?5",
+   "section": "E",
+   "kind": "std surface gap (output)",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-16 (papers-54's find, Order 54); A173's Q2 answers half of it",
+   "discussion": "papers-54 (Order 54); proposal/terminal.md §1.1 and Q2",
+   "title": "std has no way to write to stdout WITHOUT a newline: `io::print` is `console.log` (JS) / `println!` (native) and there is no other stdout door, so an interactive prompt (`name? ` with the cursor after it), a progress line or any terminal redraw cannot be written",
+   "body": "A173's Q2 recommends `process::prompt(text)` for the prompt case in S1 (written unterminated and FLUSHED - Rust's stdout is a LineWriter); the general `io::write(text)` (stdout, no newline, flushed) is recommended for A173 S2, where every key-driven redraw needs it. Both backends: `process.stdout.write` / `print!` + `flush`."
+  }
+ ]
+}

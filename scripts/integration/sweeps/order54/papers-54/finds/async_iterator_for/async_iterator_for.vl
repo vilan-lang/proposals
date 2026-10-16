@@ -1,0 +1,29 @@
+// A173 ground truth: does a `for` over an `Iterator` whose `next` awaits work
+// through the async adaptation? (a plain struct; `next` calls `time::sleep`).
+import std::io::print;
+import std::iterator::Iterator;
+import std::option::Option::{ self, None, Some };
+import std::time;
+
+struct Ticks {
+    left: i32,
+}
+
+impl Ticks with Iterator<i32> {
+    fun next(&mut self): Option<i32> {
+        if self.left == 0 {
+            ret None;
+        }
+        time::sleep(5);
+        self.left = self.left - 1;
+        Some(self.left)
+    }
+}
+
+fun main() {
+    let ticks = Ticks { left = 3 };
+    for tick in ticks {
+        print(i"tick {tick}");
+    }
+    print("done");
+}
