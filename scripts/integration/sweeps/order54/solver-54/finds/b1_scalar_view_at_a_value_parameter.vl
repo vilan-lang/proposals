@@ -1,0 +1,17 @@
+// solver-54 find B?1 (Order 54): a VIEW of a scalar (`&2`, `&two`) handed to a BY-VALUE
+// parameter checks clean; JS passes the view pair and compares it unequal (false x4),
+// native passes the value (true x4).
+import std::io::print;
+
+fun same(left: i32, right: i32): bool {
+	left == right
+}
+
+fun main() {
+	let numbers: List<i32> = [1, 2];
+	print(numbers.contains(&2));
+	print(numbers.index_of(&2).is_some());
+	print(same(2, &2));
+	let two = 2;
+	print(numbers.contains(&two));
+}

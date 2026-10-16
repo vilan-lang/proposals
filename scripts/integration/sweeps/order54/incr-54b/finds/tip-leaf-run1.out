@@ -1,0 +1,11 @@
+server pid 3881434: /home/reed/code/vilan-lang/vilan/.claude/worktrees/incr-54b/target/incr-54b-scratch/bin-tip/vilan-lsp
+  leaf keystroke ...
+vilan-lsp latency — vilan-lsp 0.51.1 (5d2a077a0) on the prepared tree /home/reed/code/vilan-lang/vilan/.claude/worktrees/incr-54b/target/incr-54b-scratch/kolt-src (std discovered at vilan/std (an ancestor checkout)); 3 run(s) per edit; loadavg 3.38 3.96 4.50 before, 2.93 3.84 4.45 after; 16 cores
+
+| edit | CPU to diagnostics ms | CPU to idle ms | instructions:u to idle (G) | analyses | wall to diagnostics ms | errors | keystroke wall ms (hover / completion / inlay / tokens) | idle CPU ms (hover / completion / inlay / tokens) | VmHWM MB |
+|---|---:|---:|---:|---:|---:|---:|---|---|---:|
+| open src/views.vl | 1530 | 1530 | | | 1540 | | | | 318 |
+| leaf keystroke | 380 | 390 | 2.63 | 1 | 537 | 0 | 2.3 / 1.1 / 0.4 / 0.5 | 1.96 / 1.14 / 0.48 / 0.41 | 465 |
+
+Medians over the runs. E121's targets: <10 ms on the keystroke path, <500 ms to errors.
+CPU is the whole server process (every thread) from the edit to the analysis's publish for the file, and to idle; instructions are user-space, every thread, edit to idle; wall includes the debounce and the machine's load. Keystroke requests are asked before the analysis lands; idle requests after it. A pause row rests until the server has been quiet for its pause; every other row resumes after 0.4 s.
