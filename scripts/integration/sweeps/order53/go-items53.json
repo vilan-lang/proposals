@@ -186,5 +186,55 @@
   ],
   "rulings_mid_order": [
     "2026-10-15 E321 (the owner, on fmt-53's sample): generalise; the two refusals pinned; tuple split included"
+  ],
+  "checkpoints_reached": {
+    "C1": "6fe278ca (2026-10-15; incr-53a: M149, M150, M148; E318 unsound, not built)"
+  },
+  "merged": [
+    {
+      "lane": "editor-53",
+      "sha": "b41591a7",
+      "items": [
+        "E315",
+        "E316",
+        "E317",
+        "E322"
+      ]
+    },
+    {
+      "lane": "std-53",
+      "sha": "fe19e1c1",
+      "items": [
+        "B633",
+        "A172",
+        "A171 (door a)",
+        "B630"
+      ],
+      "ledger_rows": "737..738"
+    },
+    {
+      "lane": "native-53",
+      "sha": "b529975d",
+      "items": [
+        "F138 (door 1; estate 0)",
+        "F?1 (fixed)",
+        "B634"
+      ]
+    },
+    {
+      "lane": "incr-53a",
+      "sha": "6fe278ca",
+      "items": [
+        "M149",
+        "M150",
+        "M148"
+      ],
+      "checkpoint": "C1",
+      "not_built": "E318 (unsound: the LSP's const pass emits through the transformer; the drop plan feeds diagnostics and drop_call_edges)"
+    }
+  ],
+  "wave2_launched": [
+    "incr-53b (fable)",
+    "solver-53 (opus)"
   ]
 }
