@@ -1,0 +1,5 @@
+debug-54 (Order 54): the S8 session's Call Stack at a traced wake's stop (session.test.ts, 'a traced wake shows ...'), frames as [name, line, hint, source]:
+
+["a closure in main",18,"normal","trace.vl"],["(anonymous)",2500,"subtle","reactive.vl"],["(anonymous)",412,"subtle",null],["(anonymous)",2774,"subtle","reactive.vl"],["__trace_run",57,"subtle","vilan:///runtime.js"],["running_wake.v",913,"subtle","reactive.vl"],["__with_finally",66,"subtle","vilan:///runtime.js"],["run_traced",911,"subtle","reactive.vl"],["run_queued_wake",888,"subtle","reactive.vl"],["(anonymous)",517,"subtle","reactive.vl"],["__with_finally",66,"subtle","vilan:///runtime.js"],["drain",466,"subtle","reactive.vl"],["batch",1001,"subtle","reactive.vl"],["main",20,"normal","trace.vl"],...
+
+`running_wake.v` is V8's inferred name for run_traced's body closure (`|| { match token { .. } }`); vilan never wrote it.
