@@ -1,0 +1,367 @@
+{
+ "sha": "9716b72fa959eb3753420be973817352bd43bad7",
+ "date": "2026-10-16",
+ "verdict": "green",
+ "red": [],
+ "load": 1.0,
+ "class": "reference",
+ "counter": "instructions:u",
+ "t2": {
+  "results": {
+   "example:math": {
+    "counter": "instructions:u",
+    "instructions": 250190375,
+    "peak_rss_kb": 30572,
+    "cpu_s": 0.039,
+    "exit": 0,
+    "subject": "example:math"
+   },
+   "example:watch": {
+    "counter": "instructions:u",
+    "instructions": 312124276,
+    "peak_rss_kb": 32384,
+    "cpu_s": 0.049,
+    "exit": 0,
+    "subject": "example:watch"
+   },
+   "example:browser": {
+    "counter": "instructions:u",
+    "instructions": 1330572454,
+    "peak_rss_kb": 77840,
+    "cpu_s": 0.173,
+    "exit": 0,
+    "subject": "example:browser"
+   },
+   "example:fullstack": {
+    "counter": "instructions:u",
+    "instructions": 2773188947,
+    "peak_rss_kb": 72908,
+    "cpu_s": 0.343,
+    "exit": 0,
+    "subject": "example:fullstack"
+   },
+   "example:router": {
+    "counter": "instructions:u",
+    "instructions": 1449723044,
+    "peak_rss_kb": 78756,
+    "cpu_s": 0.188,
+    "exit": 0,
+    "subject": "example:router"
+   },
+   "example:reactive-ui": {
+    "counter": "instructions:u",
+    "instructions": 1559323849,
+    "peak_rss_kb": 78880,
+    "cpu_s": 0.193,
+    "exit": 0,
+    "subject": "example:reactive-ui"
+   },
+   "example:ssr": {
+    "counter": "instructions:u",
+    "instructions": 3117145554,
+    "peak_rss_kb": 76464,
+    "cpu_s": 0.369,
+    "exit": 0,
+    "subject": "example:ssr"
+   },
+   "example:canvas": {
+    "counter": "instructions:u",
+    "instructions": 1338608120,
+    "peak_rss_kb": 78512,
+    "cpu_s": 0.171,
+    "exit": 0,
+    "subject": "example:canvas"
+   },
+   "example:rpc": {
+    "counter": "instructions:u",
+    "instructions": 1571179502,
+    "peak_rss_kb": 81860,
+    "cpu_s": 0.206,
+    "exit": 0,
+    "subject": "example:rpc"
+   },
+   "example:todo": {
+    "counter": "instructions:u",
+    "instructions": 3866819166,
+    "peak_rss_kb": 84832,
+    "cpu_s": 0.464,
+    "exit": 0,
+    "subject": "example:todo"
+   },
+   "example:walkthrough": {
+    "counter": "instructions:u",
+    "instructions": 3992720534,
+    "peak_rss_kb": 92312,
+    "cpu_s": 0.474,
+    "exit": 0,
+    "subject": "example:walkthrough"
+   },
+   "genapp:46": {
+    "counter": "instructions:u",
+    "instructions": 7413799197,
+    "peak_rss_kb": 170124,
+    "cpu_s": 0.84,
+    "exit": 0,
+    "subject": "genapp:46"
+   },
+   "plain:160": {
+    "counter": "instructions:u",
+    "instructions": 2840509239,
+    "peak_rss_kb": 129748,
+    "cpu_s": 0.381,
+    "exit": 0,
+    "subject": "plain:160"
+   },
+   "plain:320": {
+    "counter": "instructions:u",
+    "instructions": 5480174120,
+    "peak_rss_kb": 237632,
+    "cpu_s": 0.805,
+    "exit": 0,
+    "subject": "plain:320"
+   }
+  },
+  "judged": [
+   "  ok   example:math                  250,190,375 / ceiling      253,309,219 (x0.9877, limit x1.0100)",
+   "  ok   example:watch                 312,124,276 / ceiling      316,493,354 (x0.9862, limit x1.0100)",
+   "  ok   example:browser             1,330,572,454 / ceiling    1,371,583,124 (x0.9701, limit x1.0100)",
+   "  ok   example:fullstack           2,773,188,947 / ceiling    2,828,515,825 (x0.9804, limit x1.0100)",
+   "  ok   example:router              1,449,723,044 / ceiling    1,532,276,405 (x0.9461, limit x1.0100)",
+   "  ok   example:reactive-ui         1,559,323,849 / ceiling    1,626,337,835 (x0.9588, limit x1.0100)",
+   "  ok   example:ssr                 3,117,145,554 / ceiling    3,448,815,594 (x0.9038, limit x1.0100)",
+   "  ok   example:canvas              1,338,608,120 / ceiling    1,378,211,823 (x0.9713, limit x1.0100)",
+   "  ok   example:rpc                 1,571,179,502 / ceiling    1,766,105,821 (x0.8896, limit x1.0100)",
+   "  ok   example:todo                3,866,819,166 / ceiling    4,210,143,329 (x0.9185, limit x1.0100)",
+   "  ok   example:walkthrough         3,992,720,534 / ceiling    4,315,348,241 (x0.9252, limit x1.0100)",
+   "  ok   genapp:46                   7,413,799,197 / ceiling    7,759,098,337 (x0.9555, limit x1.0100)",
+   "  ok   growth plain 160 -> 320 modules: x1.929 (at most x2.3, Q11/M107)"
+  ]
+ },
+ "t3": {
+  "kolt": "d48ab612",
+  "sources": {
+   "base": "kolt@d48ab612",
+   "tip": "kolt@d48ab612"
+  },
+  "different_sources": false,
+  "counter": "instructions:u",
+  "load_max": 1.0,
+  "runs": 5,
+  "base": {
+   "cpu_s": 1.704,
+   "peak_rss_kb": 355540,
+   "peak_rss_runs_kb": [
+    345708,
+    353572,
+    355540,
+    356032,
+    356092
+   ],
+   "instructions": 14152082337,
+   "exit": 0
+  },
+  "tip": {
+   "cpu_s": 1.715,
+   "peak_rss_kb": 325672,
+   "peak_rss_runs_kb": [
+    323356,
+    325372,
+    325672,
+    327528,
+    329292
+   ],
+   "instructions": 13739132163,
+   "exit": 0
+  },
+  "ratio": {
+   "cpu_s": 1.006455399061033,
+   "peak_rss_kb": 0.9159925746751421,
+   "instructions": 0.9708205362174611
+  },
+  "threshold": 1.1,
+  "rss_threshold": 1.05,
+  "red": [],
+  "notes": []
+ },
+ "lsp": [
+  {
+   "scenario": "leaf keystroke",
+   "base_ms": 480.0,
+   "tip_ms": 410.0,
+   "ratio": 0.8541666666666666
+  },
+  {
+   "scenario": "leaf keystroke + pause",
+   "base_ms": 1260.0,
+   "tip_ms": 1020.0,
+   "ratio": 0.8095238095238095
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "base_ms": 170.0,
+   "tip_ms": 170.0,
+   "ratio": 1.0
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "base_ms": 180.0,
+   "tip_ms": 170.0,
+   "ratio": 0.9444444444444444
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "base_ms": 570.0,
+   "tip_ms": 480.0,
+   "ratio": 0.8421052631578947
+  },
+  {
+   "scenario": "css keystroke",
+   "base_ms": 710.0,
+   "tip_ms": 650.0,
+   "ratio": 0.9154929577464789
+  },
+  {
+   "scenario": "parse break",
+   "base_ms": 700.0,
+   "tip_ms": 610.0,
+   "ratio": 0.8714285714285714
+  },
+  {
+   "scenario": "parse repair",
+   "base_ms": 730.0,
+   "tip_ms": 670.0,
+   "ratio": 0.9178082191780822
+  }
+ ],
+ "lsp_notes": [],
+ "lsp_measured": [
+  "leaf keystroke",
+  "leaf keystroke + pause",
+  "shared.vl keystroke",
+  "model.vl keystroke",
+  "model.vl keystroke, importers open",
+  "css keystroke",
+  "parse break",
+  "parse repair"
+ ],
+ "lsp_skipped": [],
+ "e121": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 410.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 1
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 170.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 4
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 170.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 3,
+   "series": "Order 52 (N174): the keystroke edit is unchanged; the Find References probe moved from `fun messages(self)` (gone from model.vl) to `fun global()`, the mirrored store reader, so that probe starts a new series."
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "median_ms": 490.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 0
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 650.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0
+  },
+  {
+   "scenario": "parse break",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 610.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0,
+   "series": "Order 52 (N174): re-anchored from `let messages = channel.messages();` (gone with the mirrored-store exhibit, kolt@dee494ab) to `channel_name.adopt(channel.current_name());` in the same channel.vl - a statement over a `g.channels()` boundary; the break and its repair are the same shape, the figures start a new series."
+  }
+ ],
+ "bumps": [],
+ "bumps_for_the_owner": [],
+ "genapp_phases_cpu_ms": {
+  "load+walk": 278.8,
+  "base": 222.2,
+  "build": 11.8,
+  "checks": 308.20000000000005,
+  "contexts+graph": 52.6,
+  "async-infer": 14.100000000000001,
+  "view-suspensions": 0.0,
+  "async-drops": 0.0,
+  "context-drops": 0.0,
+  "platform-color": 16.7,
+  "const-pass": 17.7,
+  "init-order": 0.1,
+  "emission-walk": 25.6,
+  "program-drop": 13.2
+ },
+ "e121_after": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 2,
+   "blocking": true,
+   "mandate": true
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 5,
+   "blocking": true
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 4,
+   "blocking": true,
+   "series": "Order 52 (N174): the keystroke edit is unchanged; the Find References probe moved from `fun messages(self)` (gone from model.vl) to `fun global()`, the mirrored store reader, so that probe starts a new series."
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "target_ms": 500,
+   "green_seals": 1,
+   "blocking": false
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false,
+   "mandate": true
+  },
+  {
+   "scenario": "parse break",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false,
+   "mandate": true,
+   "series": "Order 52 (N174): re-anchored from `let messages = channel.messages();` (gone with the mirrored-store exhibit, kolt@dee494ab) to `channel_name.adopt(channel.current_name());` in the same channel.vl - a statement over a `g.channels()` boundary; the break and its repair are the same shape, the figures start a new series."
+  }
+ ]
+}
