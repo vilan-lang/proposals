@@ -668,7 +668,21 @@ departs from the text above:
   pane where `dbg` calls it (E275); a `dyn` binding in a program that never
   prints one reads `dyn Area(<?>)` (its tables carry no `show` slot); async
   parent frames are requested but not shown (S8 needs them); a breakpoint's
-  condition is JavaScript.
+  condition is JavaScript. The first three were built in Order 54
+  (debug-54): **E323** — the sidecar names, per type with a written impl,
+  the functions that print it (its printer if a `dbg`/`print` reached it, the
+  impl's `debug` if anything called it; never one the walk did not emit), and
+  vilan-dap looks each up in the paused frame and calls the first it reaches.
+  The item's door (a) held with one correction: a module-scope function is
+  reachable from a FUNCTION's frame only when V8 context-allocated it — when
+  another function refers to it (the printer refers to the impl) — while the
+  module's own frame (a synchronous `main`) reaches every one; an unreachable
+  name falls back to the structure. **E324** — each trait-object layout
+  lists the tables the walk emitted for the trait, by their methods' emitted
+  functions and the concrete type; the walker reads the functions' `name`s
+  off the value's table and prints by that type (tables M89 shares between
+  two types are not listed). **E326** — the async parent frames (§6.2's "As
+  built").
 - **Cost** (instructions, callgrind, release builds of the base and the tip):
   `vilan build` of `examples/reactive-ui` (the `debug` preset: map and
   sidecar) +0.21 % (+3.73 M of 1.806 G, warm: about half the sidecar — the
@@ -760,6 +774,77 @@ too. It needs one compiler primitive.
 A graph view (a devtools panel listing cells, pipes, effects and their edges)
 is a later piece that reads the same records. It is not sliced here.
 
+**As built (Order 54, debug-54; E257 S8, with E326).** What landed, and where
+it departs from the text above:
+
+- **The premise that `Signal::new` and `set` take `[track_caller]` was wrong.**
+  Both are TRAIT members (`Signal::new` the trait's default, `set` the
+  `SignalCell` impl's), and S0 refuses `[track_caller]` on every trait member
+  — a call through a bound or a `dyn` table has no call site that knows to pass
+  the location. An INHERENT method is found before a trait's, so `SignalCell`
+  gained inherent `[track_caller]` `new`, `set` and `update` (`update` was
+  inherent already); the trait's `set` stays for a bound or a `dyn Signal` and
+  names no place. A cell made by `Signal::new` (the book's spelling) and an
+  effect made by `.effect`/`.sub`/`.on_change` (trait members) therefore carry
+  no place — filed as the language item the trace needs next: `[track_caller]`
+  on a trait member, declared on the trait, every impl taking the hidden
+  location and every call (static, bound, `dyn`) passing it.
+- **The line.** `trace(true)` (`std::reactive::trace::trace`) writes, per WAKE, as the woken subscriber runs:
+  `[reactive] effect #4 woken by cell #1 (made at src/main.vl:6:14), set at
+  src/main.vl:12:2`. A subscriber is an `effect` or a `derivation` (a stage, a
+  `.memo()`, a relay) numbered by its id; a cell is numbered by its identity
+  (`Shared::identity`), since a cell has no name. A place is printed only when
+  it is the program's own (a `std/…` place is left out); a write std makes
+  inside a traced wake says `set by derivation #2`, and a relay's wake
+  (`distinct`, `switch`) is `woken by derivation #N`. A deferred action
+  (`at_settle`) is nobody's wake and prints nothing.
+- **Every wake path, byte-identical on both backends** (`native_differential`'s
+  `e257_s8_every_wake_path_traces_the_same_on_both_backends`): a write with no
+  turn (inline), a write queued in a `batch`, a derivation's write joining the
+  DRAINING turn, a write after its turn settled (one microtask drains it), a
+  relay's wake, `update`, an unplaced cell written through a bound, and the
+  trace off.
+- **Off, it is not there.** The trace is its own module,
+  `std::reactive::trace` (`import std::reactive::trace::trace;`), and the
+  scheduler reaches it only through hooks `trace(true)` installs — so a
+  program that never imports it neither analyzes nor emits it. What every
+  reactive program carries is the seam: a flag read per notify, per queued
+  wake and per drained subscriber, and the hook table's no-op defaults
+  (~0.6–2.2 KB of a reactive corpus program's script; the first build, with
+  the trace inline in `reactive.vl`, cost `vilan check` of `examples/todo`
+  +1.5 % and `reactive-ui` +2.0 %, which is what moved it out). The release
+  half of the text above ("`trace` to nothing") is not built: the threading
+  pass does not read the preset (`post_analysis_passes` runs with the default
+  options by design), so a concrete `set` passes its location string in every
+  build — the cost S0 already accepted for panics (Q11).
+- **Async stack tagging (§5.5's probe): node honours it.** A wake queued under
+  the trace gets a task (`console.createTask`, named by its cause) made on the
+  waking write's stack, and the drain runs the subscriber inside it
+  (`task.run`). node's inspector then reports the write's stack as the woken
+  frame's async parent, described by the task's name — so vilan-dap's Call
+  Stack (E326, below) shows `cell #1 (made at …), set at main.vl:11:8` as a
+  label with `set` (std, subtle) and the user's `bump` under it. Native has no
+  host task: the token names nothing and the wake is a plain call.
+- **E326, the async parent frames.** vilan-dap appends the paused event's
+  `asyncStackTrace` chain below the synchronous frames: each segment under a
+  `label` frame naming its description (`await`, or a trace task's name), its
+  frames mapped through the map like the synchronous ones and subtle in std; a
+  segment that reaches no mapped script (node's module loader) is left out. An
+  awaiting frame names its function but not where it starts, so the sidecar
+  records every frame's whole text (`span`) and an anonymous awaiting frame is
+  the innermost record whose text holds its place. Awaiting frames have no
+  scopes and refuse an evaluation.
+- **The debug console.** The trace's lines are written with `console.error`
+  (`console.log` in a browser, as `dbg`), so a debugger hears them as
+  `Runtime.consoleAPICalled`; vilan-dap turns each into a `console` output
+  event placed at the write it names (the cell's place when the write has
+  none), whatever the launch did with stderr (in an `internalConsole` launch
+  the stderr copy is dropped so a line shows once).
+- **Pins.** `session.test.ts`: a stop after an `await` with its callers below
+  the label (E326); a traced wake's stop with the write below its cause and the
+  line in the console (S8). `native_differential`: the wake paths above.
+  `source_maps::e326_every_frame_carries_its_whole_text`.
+
 ## 7. Prior art, briefly
 
 - **Rust:** `dbg!` (stderr, file:line, expression text, returns its argument,
@@ -850,7 +935,7 @@ Written to `sweeps/order46/newitems46-papers-b.json`.
 | S5 | **BUILT (Order 51, debug-51; §5.1 "As built").** v3 maps from level 2 marks (statements and tails, calls, closures, function heads with `names`), `sourcesContent` for user files, std by its cache path in `ignoreList`, a derive at its attribute; `<script>.map` + `sourceMappingURL` in the `debug` preset, `[build] source-maps` / `--source-maps` elsewhere; `--enable-source-maps` in `vilan run`; `vilan run --inspect[-brk]` (S6's CLI half). A watch round writes a server leg's map as `vilan build` does. Not built: maps for an HMR-instrumented browser bundle, a `split = true` leg's chunks and a lone package's `run --watch` script; locals' `names` under `release` (find 2's instance names are covered by the function heads) | M–L | met: every corpus program byte-identical with and without a map; a decoder round trip and every segment inside its source's text; a pin per construct (function head, statement and tail, call, closure, both instances of a generic, derive, std frame); an uncaught panic's stack names `.vl` lines | the transformer, `source_map.rs` |
 | S6 | **BUILT (Order 52, debug-52; §5.2 "As built").** `vilan run --inspect[-brk]` (S5); the extension's `vilan` debug type (resolving to the JavaScript debugger: `vilan run --inspect-brk` attached at its port, or `vilan run --watch` under child-process attach), a "Debug" code lens on `fun main`; maps for the HMR browser bundle (shifted by the shim's lines, named at the dev channel, served there), a split leg's eager bundle and chunks, and the lone package's `run --watch` script; `--inspect` under `--watch` (every round's node child under the inspector, and every watched child under `--enable-source-maps`); the runtime helpers as the synthetic, ignore-listed `vilan:///runtime.js`; the 256 KB `sourcesContent` cap (kolt's client map 978 → 291 KB). Remaining: a built browser leg's map through `serve_build` (std); a live VS Code session over the resolved configuration | S | met: the extension's `npm test` pins the resolved configuration and the lens; `vilan-cli` pins the split maps byte-neutral, the HMR map read back through node's `module.SourceMap` across the shim, the inspector re-opened per watch round with a `.vl` stack; `vilan-core` pins the runtime source and the cap | S5 |
 | S7 | **BUILT (Order 53, debug-53; §5.3 "As built").** D1: `<script>.vdbg.json` beside every map (frames keyed by the emitted function's name and the head's mapped place, `main` as the top level; each binding's vilan name, JS name, type and how it holds its value; the printer's layouts per grounded type), written by the map's walk and never changing the script; `vilan-dap`, TypeScript inline in the extension host, speaking node's inspector directly (js-debug offers no DAP endpoint an extension can front; `"adapter": "js-debug"` keeps S6), the Variables, Watch and hover panes printed as `dbg` prints, plain and `--watch --inspect-brk` rounds; three S5 map gaps closed (block statements, closure tails, match-leg values). Remaining (filed): written `Debug` impls in the pane, `dyn` without a show slot, async parent frames (S8) | L | met: `session.test.ts` (cargo's `vscode_extension::e257_s7_…`): the Variables pane against `dbg`'s output for struct, nested struct, enum with payload, list, map, `Option`/`Result`, a cell, a view, a closure, a tuple — plain and watch (two rounds); a function's frame, a closure's and its captures, a shared generic body, Watch paths, stop on entry and stepping, a compile error; `dap.test.ts` the map, the layout, the walker, the sidecar; `vilan-core` the sidecar's frames, types, instances and reads; `vilan-cli` the file beside the map and its removal | S1's layouts, S5, S6 |
-| S8 | reactive trace (`trace(true)`), cell and set locations via `[track_caller]`, async stack tagging (probe node first) | M | a pin per wake path; trace lines compared | S0 |
+| S8 | **BUILT (Order 54, debug-54; §6.2 "As built").** `std::reactive::trace::trace(true)`: a line per wake (`[reactive] effect #4 woken by cell #1 (made at …), set at …`) on stderr and in the debug console, byte-identical on both backends; places through `[track_caller]` where it reaches (inherent `SignalCell::new`/`set`/`update`; a trait member is refused — `Signal::new`, `.effect`/`.sub`, a bound's `set` name no place, filed); async stack tagging (`console.createTask` per queued wake — node honours it) shown by vilan-dap's async frames (E326); its own module, reached through hooks `trace(true)` installs, so a program that never imports it analyzes and emits none of it. Remaining: places for trait members (the filed language item); release builds still pass `set`'s location | M | met: `native_differential` a pin per wake path (inline, `batch`, the draining turn, a settled turn's microtask, a relay, `update`, unplaced, off), both backends; `session.test.ts` the traced wake's async parent and its console line | S0, E326 |
 | S9 | native: `.debug_line` remapping to `.vl`, lldb/gdb formatters from the sidecar | L | a scripted lldb session | S7 |
 
 **Order.** S0 first: small, useful alone, and it builds the primitive S8
