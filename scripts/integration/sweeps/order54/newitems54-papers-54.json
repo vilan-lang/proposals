@@ -49,6 +49,16 @@
    "discussion": "papers-54 (Order 54); proposal/terminal.md §1.1 and Q2",
    "title": "std has no way to write to stdout WITHOUT a newline: `io::print` is `console.log` (JS) / `println!` (native) and there is no other stdout door, so an interactive prompt (`name? ` with the cursor after it), a progress line or any terminal redraw cannot be written",
    "body": "A173's Q2 recommends `process::prompt(text)` for the prompt case in S1 (written unterminated and FLUSHED - Rust's stdout is a LineWriter); the general `io::write(text)` (stdout, no newline, flushed) is recommended for A173 S2, where every key-driven redraw needs it. Both backends: `process.stdout.write` / `print!` + `flush`."
+  },
+  {
+   "id": "N?6",
+   "section": "N",
+   "kind": "tooling (census legibility)",
+   "area": "Performance & footprint",
+   "status": "OPEN - filed 2026-10-16 (papers-54's find, Order 54)",
+   "discussion": "papers-54 (Order 54); proposal/std-prefix.md §14.3; sweeps/order54/papers-54/finds/p6_cold_rows/corpus-refusals.txt",
+   "title": "Under `VILAN_STD_PREFIX=on` the phase census prints `prefix-world 0 prefix-refusal -` for a program that silently does not take the prefix (8 corpus programs: every one that builds a macro world - `crypto`, `db`, `file`, `watch`, `interpolated-multiline-string`, `macro-block`, `macro-derive`, `macro-invoke`): the column says neither served nor why",
+   "body": "The prefix is not attempted when reuse is not allowed (a macro world makes the base world uncacheable), and no refusal reason is noted, so a census over the estate reads those programs as unexplained. Rec: `note_prefix_refusal(\"uncacheable\")` (or the reuse gate's own reason) where `std_prefix_wanted` is false only because reuse is off, so P6a's census and P6b's default can count every program by name. XS; `tooling`."
   }
  ]
 }

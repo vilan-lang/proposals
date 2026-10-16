@@ -672,3 +672,222 @@ shapes (incr-53b's M?1, a P6 paper); the dependency's do not. Measured: fullstac
 without decoding — G28's stamp), cleans the root, and holds it to `VILAN_WORLD_CACHE_BYTES` (256 MiB)
 at every write, least recently used first (a load touches its file); `vilan cache warm` writes a
 program's prefix. Not built: P5 (the suite on `target/`) and M19's record in the file (Order 54).
+
+## 14. P6 — §4.2 hardened from guard to rule: one id layout for both shapes (M157)
+
+> **DRAFT 2026-10-16 — for the owner's ruling (P6-Q1–Q5).** Written by lane papers-54 of Order 54
+> against `origin/next` @b7c7afe0 (read in `vilan/.claude/worktrees/papers-54`); probes on the
+> installed `vilan 0.51.0 (4b41c7ff5)`, both locations, which carries M144, P3, M152 and P4 as
+> merged. Instructions are `scripts/perf_count.py`'s `instructions:u`, three runs each (spread
+> ≤0.3 %; the box at load 4–5 with four lanes building — the CPU columns are not cited). kolt is a
+> `cp -r` copy of the owner's working tree with `src/lucide` and `src/search-dict`. Probe script
+> and raw rows: `scripts/integration/sweeps/order54/papers-54/finds/p6_cold_rows/`.
+
+### 14.1 The ask, and the answer up front
+
+**The ask** (M157, incr-53b's Q3): after M144 a std item's id is one id in both shapes, a PACKAGE
+item's is not — the std-only prefix world resolves std (minting entities) before the package's
+nodes mint, the canonical path mints them before its one resolve — so the native backend, which
+names items `name_<id>`, emits `two_10238` canonically and `two_10859` under `VILAN_STD_PREFIX=on`.
+Harden §4.2 so the two shapes are one layout, size the alternative (id-free native names), cost
+both on the cold rows, and answer the CLI-default question.
+
+**The answer.**
+
+1. **The gap is a permutation, not extra work** (§14.2). On the repro both shapes mint exactly the
+   same entities — the highest id is `Id(10904)` in both `--debug` dumps — in a different order:
+   std's resolve-time mints (621 here) land before the package's nodes in the prefix shape and
+   after them canonically. JS is byte-identical across the shapes; only id-NAMED output moves.
+2. **Single-file programs are already one layout** (§14.2): their pre-entry world IS std, so the
+   canonical path already resolves std alone. Measured: 57 of the corpus's first 60 programs emit
+   native Rust both ways (3 refused natively), and all 57 are byte-identical across the shapes. The
+   divergence is confined to programs with package modules beside the entry.
+3. **Door A, the rule (recommended):** the canonical drain resolves the PREFIX TIERS (std, and the
+   dependency tier M152 walks before the package) before the first package node mints, and the
+   package resolves after its walk — exactly what the prefix shape already does, at the boundary
+   M144's `DeferredMint` already draws. One inserted `resolve_world` call in the canonical path,
+   the guard's `impl-reached` refusal retired, and every id-keyed artifact — native names, M19's
+   records, S7's item records, a future persisted row — agrees across shapes by construction.
+4. **Door B, id-free native names, is sized and not recommended** (§14.4): M in vilan-rust alone,
+   every native expectation that spells a name churns, and it fixes ONE reader. The ids stay
+   different, so the next cross-shape reader needs N177's content-keying treatment again (N177 was
+   the second: the const cache's keys had to go id-free in Order 53 for exactly this reason).
+5. **The estate says the rule is free** (§14.3): §4.2's guard has refused NO program on the estate
+   since M145's narrowing — kolt both legs served, the corpus 138 served and 8 not taken (macro
+   worlds, uncacheable, not refusals), the examples 10 served and `todo` refused for
+   `defines-a-macro` (a cacheability refusal, not §4.2's). Hardening changes no answer the estate
+   computes.
+6. **The cold rows** (§14.5): today's in-process prefix build is an UPPER bound on door A's cost —
+   kolt +0.49 % (both legs), the M157 repro +164 % — and the repro's excess is attributable, by its
+   phase lines, to two things door A does not do: computing the std closure by parsing (107 ms with
+   no index; the index lives in the world cache, which the probe turned off) and the guard's
+   `everything` reach log during std's resolve. Over a LOADED file: kolt −14.2 %, the repro −37.6 %.
+7. **The CLI default** (§14.6): `VILAN_STD_PREFIX=on` by default once door A has landed and held
+   one release, with P5 (the suite on the file) and M158 (the record in the file) — not before.
+
+### 14.2 Ground truth
+
+- **The repro** (`sweeps/order53/incr-53b/finds/m144_prefix_shape_package_ids/run.sh`, re-run on
+  0.51.0): `basename_8149` in both shapes; `two_10238` / `three_10241` canonically,
+  `two_10859` / `three_10862` over the prefix (gap 621); `vilan build --stdout` JS byte-identical.
+  The whole Rust diff is those two items' four spellings.
+- **The two orders, read** (`analyzer.rs` @b7c7afe0). Canonical (`analyze_inner`): std's modules
+  mint and walk, std's `lib.vl` walks, then M144's block ("the deferred non-std nodes", ~86690)
+  mints and walks every dependency whole and then the package, then ONE pre-entry
+  `resolve_world()` (~87350, under the entry's reach filter when one is set). Prefix shape: the
+  std-only world drains std (and the dependency tier), runs its `resolve_world()` under
+  `ReachFilter { everything: true }` (`std_prefix_keys`, ~84055 — "every question std's resolve
+  asks is recorded"), is stored, then `load_hot_modules` mints and walks the package in the same
+  discovery order and `resolve_package_over_prefix` (~82635) resolves it, testing the package's
+  impls against std's recorded questions (`impl_reach`; a hit refuses the prefix and the analysis is
+  rebuilt canonically, cold).
+- **Same entities, different order.** Both `--debug` dumps of the repro top out at `Id(10904)`; the
+  function `two` is `Id(10238)` in one and `Id(10859)` in the other.
+- **Single files.** No package module exists, so the canonical pre-entry world is std alone and its
+  resolve is already std's alone: the 57 natively emitted corpus programs are byte-identical across
+  the shapes (`--stdout --backend rust`, `VILAN_WORLD_CACHE=off`, both shapes, 60 programs tried).
+- **Dependencies** (M152): `dependencies.world` is ONE world holding std and the dependency tier,
+  resolved together; the package is the hot set over it. So with dependencies, the boundary the
+  prefix draws is between the prefix TIERS and the package, not between std and everything else —
+  and a dependency's ids already agree across shapes (incr-53c). Door A keeps that boundary.
+
+### 14.3 Door A — the rule
+
+**Statement** (spec `types.md` §5.7, method and operator dispatch — beside §5.4's coherence rule —
+and `std-prefix.md` §4.2 rewritten from guard to rule): *the standard library's declarations, and a dependency's, are resolved before
+the entry package's declarations exist. An impl the entry package declares never answers a question
+that std's — or a dependency's — own resolution asks; it answers its own package's questions and the
+questions asked at its uses.* That is the entry's rule since M121 (`ImplReachLog::asked_by_std`,
+"what std's lookups answer is std's to decide") and B583's narrowing (std's candidates are std
+traits) extended from the entry file to the entry package. Nothing about dispatch at a USE moves: a
+std generic instantiated with a package type, a package `Ord` impl handed to std's `sort`, a
+package `Display` printed through std — those are questions the package's code asks at its call
+sites, after both tiers have resolved, exactly as today.
+
+**The change.** In `analyze_inner`'s canonical path, the pre-entry resolve splits at M144's
+boundary: `resolve_world()` over the prefix tiers runs after std's (and the dependencies') walk and
+BEFORE the `DeferredMint` block mints the first package node; the package resolves after its walk
+(`resolve_world()` is already incremental over the prepped lists — `resolve_package_over_prefix`
+is that second call with a reach log around it). The B553 deferred order and B239/M70's open-module
+order defer only the PACKAGE half to the entry's `build()`, as they defer today's one resolve: the
+tiers' half never waits for the entry, because the entry cannot answer the tiers' questions under
+the rule. The production reach log over std's questions goes (no refusal to compute), and so does
+the `impl-reached` refusal for the prefix; the log survives as a TEST ORACLE — a plant the
+permutation and prefix-roundtrip differentials turn on, asserting that no package impl on the
+estate could have answered one of std's questions (the guard demoted to a gate that names a program
+whose meaning the rule decided).
+
+**What it touches.**
+- **M144's `DeferredMint`**: unchanged in kind; the deferred mints now wait for the tiers' resolve
+  as well as their walk. The `deferred_requests` assertion stands.
+- **B625's premint**: the first round expands before it mints, so a std module's generated items
+  exist before std's resolve; P6 relies on B625's `late-round-mints = 0` holding (it does on the
+  whole estate since incr-53c). A late-round std module would mint after the tiers' resolve; the
+  rule's code path asserts the counter in debug builds and, in release, resolves the straggler with
+  the package (the world is already `prefix_unstorable` there).
+- **M152's tier order**: the dependency tier walks whole before the package (M152's reorder) and
+  now RESOLVES before it too; `canonical_declaration_key`'s named tiers are untouched (they order
+  declarations, not mints), so emission order is byte-identical as it is across shapes today.
+- **§7.1's named declaration key**: unchanged — door A is why it can stay named rather than read
+  off ids (the ids it would read move; the key does not).
+- **M110 S6's windows / anchors**: the tiers' resolve mints are anchored to their items as the
+  prefix shape's already are (`set_drain_anchor`); the window table is the prefix's.
+- **M19's records and S2's tables**: a package module's records under the canonical key and under
+  the layered key now hold the same ids — the precondition for sharing them across shapes (the
+  LSP's layered worlds and the CLI's canonical ones) and for M158's std record in the file being
+  read by a canonical analysis.
+- **Goldens**: the JS corpus goldens cannot move (JS is byte-identical across shapes today and the
+  declaration key is named). Single-file native output cannot move (§14.2). What moves is the
+  native spelling of a multi-module PACKAGE's items in canonical builds — the prefix shape's
+  spelling becomes the only one.
+
+**Estate** (the guard's census, `VILAN_STD_PREFIX=on`, `VILAN_PHASE_TIMING=passes`'s
+`prefix-refusal` column): kolt server and client — served; the corpus (`vilan/test`, 146
+programs) — 138 served, 8 not taken (`crypto`, `db`, `file`, `watch`, `interpolated-multiline-string`,
+`macro-block`, `macro-derive`, `macro-invoke`: every one builds macro worlds, which makes the world
+uncacheable — no §4.2 refusal among them); the examples — 10 served, `todo` refused for
+`defines-a-macro` (§13 P1's cacheability refusal, not §4.2's). Zero `impl-reached`. The rule moves
+no answer the estate computes, so the commit's family is `fix` (determinism), not `breaking`.
+
+### 14.4 Door B — native names without ids, sized
+
+The native backend spells a declaration `{name}_{id}` in four functions (`binding_name`,
+`mint_type_name`, `mint_function_name` and the instance-sequence suffixes they add) plus the
+`context_<id>`, `nursery_<id>`, `try_good_<id>`/`try_bad_<id>` minted locals — 35 `binding_name`
+call sites. An id-free spelling: a top-level declaration named by its sanitized name and its
+ORDINAL among same-named declarations in canonical declaration order (shape-stable, because that
+order is §7.1's named key and JS emission already proves it equal across shapes), a local by a
+per-function renamer as the JS backend's. Cost: M in vilan-rust; every native expectation that
+spells a numbered name re-spelled; the native debug sidecar (debugging.md S9, Order 55) maps
+different names; rustc's messages read better (a gain). What it does NOT do: make the ids agree.
+Every other reader that holds an id across shapes keeps the divergence — the const cache had to be
+re-keyed by content for it in Order 53 (N177: 109/109 keys identical only after keying by content
+digests), and M158's record in the file and any later persisted row would each need the same
+treatment. Door B treats the symptom M157 happened to see; door A removes the cause. **Not
+recommended**, and not needed after A (a readability pass on native names can stand on its own
+merits later).
+
+### 14.5 The cold rows
+
+`vilan check .`, instructions (3 runs, median; RSS peak):
+
+| subject | canonical (`off`) | prefix built in-process (`on`, no file) | prefix over the loaded file (`on`, warm) |
+|---|---:|---:|---:|
+| M157 repro (3 modules, `std::path`) | 252.94 M / 25.8 MB | 667.85 M (+164 %) / 43.9 MB | 157.77 M (−37.6 %) / 22.9 MB |
+| `examples/todo` | 4.068 G | 4.080 G (refused: `defines-a-macro`, noise) | 4.083 G (refused) |
+| kolt (both legs) | 10.210 G / 232.8 MB | 10.260 G (+0.49 %) / 242.8 MB | 8.765 G (−14.2 %) / 232.4 MB |
+
+**Reading the middle column.** It is today's prefix shape built cold in one process, and it pays
+two things the canonical path does not, by the repro's phase lines: `prefix-closure modules=25
+us=106814` (the std closure computed by PARSING, because the closure index lives in the world cache
+the probe turned off; with the cache on it is P3's 6 ms index read) and a std-only resolve of 28.7 ms
+against the canonical world's 6.1 ms (`locals` 8.0 vs 0.8 ms, `fixpoint` 19.1 vs 4.1 ms) — run
+under the guard's `everything` reach log, which records every impl question of the fixpoint.
+Door A computes no closure on the canonical path (the drain's own std set is the set; only a STORE
+needs the key) and keeps no reach log, so its expected cold cost is the canonical row's, ± the
+split resolve (`prefix-package-resolve` reads 305 µs on the repro). That attribution of the 22.6 ms
+to the log is from phase lines, not from a build with the log off — P6a measures it first.
+On kolt the parse is mostly work the drain does anyway (the parse cache is shared), which is why the
+whole excess is +0.49 % there.
+
+### 14.6 The CLI default
+
+Today: `VILAN_STD_PREFIX` is `off` for the CLI, `layered` for the server. After door A the shapes
+are one layout, so turning the CLI's default to `on` changes no output byte, JS or native. What a
+user would see: the first cold check per (toolchain build, platform, std set, dependency tier)
+builds and writes the prefix (+8 % once, incr-53b's measure), every later cold check reads it
+(kolt −14.2 %, a small package −37.6 %); a `~/.vilan/cache/worlds/` directory of ~1–6 MB per std set,
+held under P4's 256 MiB LRU bound (`VILAN_WORLD_CACHE_BYTES`), pruned of other builds by
+`vilan cache prune`, emptied by `vilan cache clean`, disabled by `VILAN_WORLD_CACHE=off`;
+programs that define macros or use a package prelude take the canonical path silently, with the
+same output. **Rec:** flip the default in the order AFTER door A lands, together with P5 (the suite
+on the file, so the default is exercised by every test process) and M158 (std's record in the
+file, so a loaded std replays its Class A checks rather than re-running them); the docs gain a
+"caches" paragraph naming the directory and the two variables.
+
+### 14.7 Slices (Order 55)
+
+| Slice | Content | Size | Needs | Gate |
+|---|---|---|---|---|
+| P6a | The rule: the canonical pre-entry resolve split at M144's boundary (tiers, then package; B553/B239 defer the package half only); the production reach log over std's questions and the `impl-reached` prefix refusal retired; the log kept as a test oracle (a plant the permutation and prefix-roundtrip differentials turn on); spec `types.md` §5.7 + §4.2 rewritten; FIRST a build with the log off measuring the repro's std-only resolve | S–M | none | M157's repro byte-identical native across shapes (pin); `prefix_roundtrip_native`'s M144 pin compares the WHOLE Rust text, package included; a new leg: every corpus program, the examples and kolt's legs emit identical Rust canonical vs prefix (in-process and loaded), both native modes; JS goldens byte-identical; perf T2 (cold rows flat or down; name the functions); the deep-nesting canary; the census of the oracle on the estate = 0 |
+| P6b | The CLI default `VILAN_STD_PREFIX=on` | S | P6a, P5, M158 | the cold rows over the file in instructions; a first-run row; the docs' caches paragraph; `vilan cache` pins |
+| (P6c) | std alone UNDER a dependency tier (std.world shared by every program, the tier layered over it) | M | P6a | only if the cache's footprint on multi-package workspaces asks for it — not scheduled |
+
+### 14.8 Questions for the owner
+
+- **P6-Q1. Door A (the rule) or door B (id-free native names)?** **Rec: A** — one inserted resolve
+  at a boundary M144 already draws, every id-keyed reader agrees by construction, and the estate
+  moves no answer; B is M of churn that fixes one reader and leaves the ids divergent.
+- **P6-Q2. The rule's statement and family:** "std's and a dependency's declarations resolve before
+  the entry package's exist; a package impl never answers their resolution's questions" — the entry's
+  M121 rule extended to the package. **Rec: yes, family `fix`** (estate 0 refusals), with the guard
+  kept as a test oracle rather than deleted.
+- **P6-Q3. The tier boundary with dependencies:** the prefix tiers (std + dependencies) resolve
+  together before the package (today's `dependencies.world` shape), or std alone and then each
+  dependency over it (one `std.world` shared by every program). **Rec: the former for P6a**; the
+  latter (P6c) only on a measured need.
+- **P6-Q4. The deferred orders:** B553's and B239/M70's deferral of the pre-entry resolve to the
+  entry's `build()` applies to the PACKAGE half only; the tiers always resolve first. **Rec: yes** —
+  the entry cannot answer a tier's question under the rule, so nothing a deferral protects is lost.
+- **P6-Q5. The CLI default:** `on` in the order after P6a, with P5 and M158. **Rec: yes**; not this
+  order (R-e's ruling stands), and not before the default is what the suite exercises.
