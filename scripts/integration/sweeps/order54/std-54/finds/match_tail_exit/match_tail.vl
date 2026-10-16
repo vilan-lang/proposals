@@ -1,0 +1,13 @@
+import std::io::print;
+import std::time;
+
+fun main() {
+	async {
+		time::sleep(50);
+		print("the spawned task finished");
+	};
+	match 2 {
+		1 => print("one"),
+		_ => print("the tail is a match"),
+	}
+}

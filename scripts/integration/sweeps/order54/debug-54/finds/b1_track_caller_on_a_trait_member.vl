@@ -1,0 +1,27 @@
+// debug-54's find (Order 54, E257 S8): `[track_caller]` is refused on every
+// trait member, so the reactive trace cannot name where a cell made by
+// `Signal::new` was made, where an effect made by `.effect`/`.sub`/`.on_change`
+// was made, or where a write through `S: Signal<T>` / `dyn Signal` came from.
+// `vilan check` this file: the refusal at `put`'s name.
+import std::debug::caller;
+import std::io::print;
+
+trait Writer {
+	[track_caller]
+	fun put(self, value: i32);
+}
+
+struct Cell {
+	value: i32,
+}
+
+impl Cell with Writer {
+	fun put(self, value: i32) {
+		print(caller().text());
+	}
+}
+
+fun main() {
+	let cell = Cell { value = 1 };
+	cell.put(3);
+}

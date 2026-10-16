@@ -1,0 +1,26 @@
+// native-54's B?2: a callee that WRITES a module-level `mut` binding it was
+// handed a loan of. JS: the `&` is the binding's object, so the callee sees
+// its own push (`1`); natively the `&` is a copy out of the binding's
+// `thread_local!` cell (`0`). A `&mut` loan holds the cell's borrow for the
+// call, and the callee's own write stops with the runtime's reentrancy
+// sentence natively (JS: `2`).
+import std::io::print;
+
+mut module_items: List<i32> = [];
+
+fun lent_and_grow(items: &List<i32>): usize {
+	module_items.push(1);
+	items.len()
+}
+
+fun touch(items: &mut List<i32>) {
+	items.push(1);
+	module_items.push(2);
+}
+
+fun main() {
+	print(lent_and_grow(&module_items));
+	module_items = [];
+	touch(&mut module_items);
+	print(module_items.len());
+}

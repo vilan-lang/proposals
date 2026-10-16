@@ -1,0 +1,17 @@
+// native-54's N?3: a by-value read of a module-level binding at a consuming
+// position is copied TWICE natively - `cell.get()` already answers a clone of
+// the cell's value, and rule 1's consumed-place copy clones that again:
+//   has_N((MODULE_ITEMS.with(|cell| cell.get())).clone(), 9)
+// (one whole-list copy is the semantics; the second is waste).
+import std::io::print;
+
+mut module_items: List<i32> = [1, 2, 3];
+
+fun has(items: List<i32>, value: i32): bool {
+	items.contains(value)
+}
+
+fun main() {
+	print(has(module_items, 9));
+	print(has(module_items, 1));
+}

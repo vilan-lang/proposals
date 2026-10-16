@@ -1,0 +1,18 @@
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+import std::process::{ exit, prompt };
+
+fun main() {
+	match prompt("name? ") {
+		Some(let name) => print(i"hello, {name}"),
+		None => print("no name"),
+	}
+	match prompt("again? ") {
+		Some(let name) => print(i"hello again, {name}"),
+		None => {
+			print("no answer");
+			exit(3);
+		}
+	}
+	print("exit returned");
+}

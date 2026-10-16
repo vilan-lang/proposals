@@ -1,0 +1,14 @@
+import std::io::print;
+import std::time;
+
+fun main() {
+	async {
+		time::sleep(50);
+		print("the spawned task finished");
+	};
+	if 2 > 1 {
+		print("the tail is an if");
+	} else {
+		print("no");
+	}
+}
