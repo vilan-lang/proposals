@@ -1,0 +1,19 @@
+// solver-53 find B?1 (Order 53, after B627): an expected type reaches a method
+// receiver only where the method call itself HAS an expectation - a binding's
+// annotation, a typed tail. An argument at a NON-generic parameter records
+// none, so `take(make().unwrap_or(5))` is still refused "cannot infer 'T'"
+// while `let x: i32 = make().unwrap_or(5); take(x)` compiles.
+import std::io::print;
+import std::option::Option::{ self, None, Some };
+
+fun make<T>(): Option<T> {
+	None
+}
+
+fun take(value: i32): i32 {
+	value + 1
+}
+
+fun main() {
+	print(take(make().unwrap_or(5)));
+}

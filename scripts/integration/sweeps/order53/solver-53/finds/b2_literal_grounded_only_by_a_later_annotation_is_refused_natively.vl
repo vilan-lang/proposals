@@ -1,0 +1,18 @@
+// solver-53 find B?2 (Order 53): a generic literal no field grounds (`Page { items = [], first = None }`)
+// settled only by a LATER annotated binding (`let n: Page<i32> = both;`) runs on
+// JS and is refused natively ("does not emit a value of an unbound generic type
+// parameter ... F1 S1b"); the same on v0.50.0.
+import std::debug::Debug;
+import std::io::print;
+
+[derive(Debug)]
+struct Page<T> {
+	items: List<T>,
+	first: Option<T>,
+}
+
+fun main() {
+	let both = Page { items = [], first = None };
+	let n: Page<i32> = both;
+	print(n.debug());
+}
