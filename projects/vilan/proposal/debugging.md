@@ -653,7 +653,11 @@ departs from the text above:
   breakpoints, so a breakpoint holds in every round (S6's child-process
   attach could miss a round's start). Ending the session interrupts `vilan
   run --watch` the way Ctrl-C does, so it removes the round's script, map and
-  sidecar.
+  sidecar. (E331, after the owner's F5 check of v0.51.0: the session ended at
+  kolt's first round boundary — `vilan run`'s pid, read from the round's node
+  before node had bootstrapped, was `null`, and the liveness check between
+  rounds took it for a dead process. The pids are read at the first line now,
+  and an async `main`'s arrow is mapped at `main` so its frame is `main`'s.)
 - **Three map gaps S5 left, closed as listed arms** (marks only; the JS is
   byte-identical, pinned over the corpus): a block expression's statements
   carried no statement marks (a breakpoint inside a block-bodied closure slid
