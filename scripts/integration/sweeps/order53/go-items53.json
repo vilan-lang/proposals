@@ -337,7 +337,23 @@
     "ci_run": "38891463662 GREEN 14/14",
     "assets": 10,
     "fold": "4b41c7ff (main = next = 4b41c7ff on origin; tag v0.51.0 = f38b40cb)",
-    "toolchain": "vilan 0.51.0 (4b41c7ff5) in ~/.cargo/bin and ~/.vilan/bin; vilan-lsp; vilan-vscode.vsix installed in the VS Code server"
+    "toolchain": "vilan 0.51.0 (4b41c7ff5) in ~/.cargo/bin and ~/.vilan/bin; vilan-lsp; vilan-vscode.vsix installed in the VS Code server",
+    "website": "six files fmt-moved under 0.51.0 (E321); keywords unchanged; fmt/check/harness green; pushed f1ef179; deploy green; live manifest compiler v0.51.0 (versions v0.51.0..v0.46.0); site 200"
   },
-  "worktrees": "only integration remains (next @4b41c7ff)"
+  "worktrees": "only integration remains (next @4b41c7ff)",
+  "kolt": "checks clean under 0.51.0 at the owner's working tree; fmt differs in seven files = the owner's E321 patch (fmt-53/kolt-e321.patch)",
+  "sweep": {
+    "status": "PREPARED, NOT APPLIED (the clerk's file_items.py call was denied by the permission layer; the owner's word awaited)",
+    "closes": 36,
+    "stamps": 6,
+    "filed": 28,
+    "on_arrival_closes": 5,
+    "files": [
+      "closes53.json",
+      "stamps53.json",
+      "filed/spec53-<lane>.json x9",
+      "allocated53.json"
+    ]
+  },
+  "status": "COMPLETE except the sweep (owner's word) and the owner's two items"
 }
