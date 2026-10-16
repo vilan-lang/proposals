@@ -239,6 +239,24 @@ Phase 2, whole-program and cheap: seed, propagate over summaries, report in orde
   live with M19's checks record, which a lone document's base-cache HIT does replay — so door B
   serves both rows, unlike S3's post-pass records.
 
+**As built at C1 (incr-54a, M155, Order 54) — what door B reads.** The span
+indexes are `analyzer/r11_candidates.rs`: per region a `CandidateRows` (per
+kind — bindings, places, `is` tests — `placed: Vec<(Id, file, start, end)>`
+and `unplaced: Vec<Id>`, every id the region's own), the fourth `RowFamily`
+(`R11`) in `ModuleTables`, restored for a reused module or served item (an
+item's re-based by `rebased(rebase, shift, source)`), walked for the family's
+live lane (`live_r11_candidate_rows`), filed only by a seeded analysis that
+built the indexes, and folded into `R11Candidates { bindings, places, tests }`
+(`SpanIndex` per kind: per source `(start, end, id)` sorted by `(start, id)`)
+whose `R11Candidates::within(index, analyzer, callee)` is §1.1's slice. Two
+measured facts move §1.2's row before door B starts: the sets row is
+~1.5 ms on a served keystroke (restored), and the instantiations row fell
+by about two thirds — every instance's slice used to carry ~25,000 span-less
+member references minted by `wire_method_call` (`Local(function)`, never a
+resource place), now excluded from the rows. On kolt's lone `views.vl`
+keystroke at load ~14: sets 12.5 -> 1.4 ms, instantiations 68 -> 19 ms
+(cold client check: 38-54 -> 14-18 ms).
+
 ## 5. Questions for the owner
 
 1. **Door B in Order 54** — an "r11-instances" row family keyed `(callee, resources,

@@ -1,0 +1,38 @@
+pass                                                                  q-base-leaf.q-tip-leaf.t
+analyzer.seal_frozen_ranges()                                                  1.3         2.1
+analyzer.seal_world_table_ranges(&reusable_sources, &replay_records)           1.1         2.1
+analyzer.infer_borrows()                                                       1.4         1.5
+analyzer.infer_bumps()                                                        11.6        12.6
+analyzer.check_view_escape()                                                   2.3         2.3
+analyzer.check_invalidation()                                                  3.2         3.0
+analyzer.check_generic_bound_satisfaction()                                   15.1        14.8
+analyzer.check_container_resource_arguments()                                  4.1         4.0
+analyzer.check_resource_moves()                                                1.3         1.3
+R11: the whole-program sets                                                    6.2         0.0
+analyzer.check_resource_generic_instantiations()                              30.0        10.1
+analyzer.plan_resource_drops()                                                 4.2         4.0
+analyzer.check_trait_method_scope(global_scope_id)                             1.2         1.2
+liveness::LastUse::compute                                                     9.6         9.0
+analyzer.compute_shared_read_bindings()                                        4.6         4.9
+analyzer.compute_resource_types()                                              1.6         1.4
+the view, clone and hmr plans                                                  4.2         4.0
+the stage hints and auto fills                                                 1.8         1.7
+the label tables                                                              12.1         3.8
+the hover rows                                                                 2.9         2.2
+the class D partition and the records                                          1.6         3.2
+the remaining tables, labels and records                                       8.8         0.0
+PHASE load+walk                                                               37.9        33.7
+PHASE build                                                                   21.2        21.5
+PHASE checks                                                                 145.9       108.2
+POST post-passes                                                              97.2        80.5
+POST contexts+graph                                                           49.5        32.9
+POST async-infer                                                              16.6        15.2
+POST const-pass                                                               20.1        20.3
+POST const-lower                                                               4.8         4.5
+POST const-interp                                                              5.2         5.3
+POST dispatch-refine                                                          12.1        12.5
+LSP lsp-context                                                               27.8        30.0
+LSP lsp-analyze                                                              315.2       253.6
+LSP lsp-index                                                                 27.7        28.6
+LSP lsp-landed                                                                18.2        18.7
+E145's import-alias spans                                                      0.0         1.4

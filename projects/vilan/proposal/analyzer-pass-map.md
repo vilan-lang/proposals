@@ -937,6 +937,35 @@ site through `transformer::ConstWorld` over the same clone decisions,
 last uses and view plans (probe: a skipping analysis evaluated
 `let a = [1, 2]; mut b = a; b.push(3); a.len()` to 3).
 
+**Order 54, as built (incr-54a: M159, M154, M155, M160, M161).** M159 (door
+(a)): the language server seeds a LONE open document's analysis with the
+document's own path; in file mode the entry walks post-store already, so
+the seed names no hot module (`hot_set_closure` is never asked — only a
+declared entry builds a hot set) and only the seam changes: S3's post
+record, the S2b label rows and M148's hover rows are filed and read on the
+editor's common row. The census carries the seam (`post-seam=`), and the
+edit-replay differential gained a lone-document leg (`observe_lone`: file
+mode, `main` declared, the module as the entry). M154: not rows — the two
+costs were work no reader could ask for: E145's alias spans test every
+reference against every alias although an alias is spelled only in its own
+file at a use of its target (now filtered on the target first), and the
+type-reference labels were rendered for std's references and for a `vilan
+check` (now under the reading aids, for a file that banks hover rows). M155
+(`analyzer/r11_candidates.rs`): R11's three lexical indexes are the fourth
+row family — `(id, file, start, end)` per placed candidate, the unplaced
+apart (DERIVED_SOURCE is `u32::MAX`, so no sentinel file), folded per
+source in `(start, id)` order; filed by a seeded analysis that built them.
+`wire_method_call`'s member reference (a span-less `Local` reading a
+function) is no candidate: ~25,000 of them rode every instance's slice on
+kolt's client. M160: platform coloring's walk carries a frame `Self` for a
+trait default reached on a concrete receiver (`OnType(None, ..)` dispatches
+on it, the trait's `Self` marker in a callee's bindings is grounded to it,
+the visited key carries it), and a FREE function is handed only its own
+bindings on a record-less call (the visited key no longer multiplies its
+subtree by the caller's unrelated bindings). M161: a const site's reach
+holds the shared union behind its `Rc` beside its own globals; the prelude
+fixpoint's first round reads the union in place.
+
 ## 8. The seams this order
 
 | seam | incr-48 (world, base cache, drivers, const pass, LSP scheduling) | solver-48 (inference, checks, `impl_select`, mono) | others |
