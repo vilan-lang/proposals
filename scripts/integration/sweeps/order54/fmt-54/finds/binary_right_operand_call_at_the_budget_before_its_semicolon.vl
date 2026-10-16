@@ -1,0 +1,13 @@
+// E?3 (question): `let value = 1 + call(..)` 100 columns before the `;` stays one 101-column line by a DOCUMENTED rule (binary_operand_layout::a_right_operand_at_the_budget_stays_inline_and_one_column_over_splits: the `;` is the statement's, not the operand's); E329 now splits a call that IS the statement's value. Row 5 stays, row 6 (101) splits.
+fun demo() {
+	let value = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaaaaa)!;
+	let value = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaaaaaa)!;
+	let value = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaa).field;
+	let value = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaa).field;
+	let value = 1 + plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaa);
+	let value = 1 + plain_function_call_with_no_chain_at_all(
+		argument_one,
+		argument_two,
+		aaaaaaaaaaa,
+	);
+}

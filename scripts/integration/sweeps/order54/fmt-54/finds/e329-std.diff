@@ -1,0 +1,29 @@
+diff -ru std-base/db.vl std-new/db.vl
+--- std-base/db.vl	2026-10-16 15:33:15.853957467 -0400
++++ std-new/db.vl	2026-10-16 15:37:24.283339355 -0400
+@@ -268,7 +268,9 @@
+ 		match exec_guarded(self, "COMMIT") {
+ 			Some(let message) => {
+ 				self.rollback_migration();
+-				panic(i"std::db migrate: migration '{step.name}' could not be committed: {message}");
++				panic(
++					i"std::db migrate: migration '{step.name}' could not be committed: {message}",
++				);
+ 			},
+ 			None => {},
+ 		}
+diff -ru std-base/json.vl std-new/json.vl
+--- std-base/json.vl	2026-10-16 15:33:15.860821691 -0400
++++ std-new/json.vl	2026-10-16 15:37:24.439355971 -0400
+@@ -1120,7 +1120,10 @@
+ 				Some(let type_) => decoded(type_, i"value.field({tag})"),
+ 				None => i"_::from_json_value(value.field({tag}))",
+ 			};
+-			from_arms = from_arms.arm(tag, i"Result::Ok({target.name}::{variant.name}({payload}!))");
++			from_arms = from_arms.arm(
++				tag,
++				i"Result::Ok({target.name}::{variant.name}({payload}!))",
++			);
+ 		} else {
+ 			mut elements: List<str> = [];
+ 			mut index = 0;

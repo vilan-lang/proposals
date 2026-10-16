@@ -1,0 +1,14 @@
+diff -ru native-base/store_variant.vl native-new/store_variant.vl
+--- native-base/store_variant.vl	2026-10-16 15:33:15.800386083 -0400
++++ native-new/store_variant.vl	2026-10-16 15:37:27.733988705 -0400
+@@ -63,7 +63,9 @@
+ 		presence.effect_on_change(|_p| mark("presence"));
+ 	});
+ 	presence.set(Presence::Online(Device { name = "laptop", since = 2 }));
+-	print(i"same-variant write: [{drained()}] since={presence.online().since().get().unwrap_or(0)}");
++	print(
++		i"same-variant write: [{drained()}] since={presence.online().since().get().unwrap_or(0)}",
++	);
+ 	presence.set(Presence::Offline);
+ 	print(i"to Offline: [{drained()}] name={name.get().unwrap_or("-")}");
+ 	print(i"patch through the dead variant: {name.patch("ghost")} [{drained()}]");

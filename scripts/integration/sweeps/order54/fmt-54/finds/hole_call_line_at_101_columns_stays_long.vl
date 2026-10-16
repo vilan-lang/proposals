@@ -1,0 +1,9 @@
+// E?2: a call in an element hole: the line is measured without the hole's closing `}`; the third hole line is 101 columns and stays inline (the fourth, 102, splits)
+fun demo(): View {
+	<div>
+		{plain_call_with_no_chain(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)}
+		{plain_call_with_no_chain(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)}
+		{plain_call_with_no_chain(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)}
+		{plain_call_with_no_chain(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)}
+	</div>
+}

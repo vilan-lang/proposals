@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "E?1",
+   "section": "E",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-16 (fmt-54's find, Order 54)",
+   "discussion": "fmt-54 (Order 54); sweeps/order54/fmt-54/finds/call_with_postfix_never_breaks.vl",
+   "title": "A call followed by `!`, `?` or a field access (`f(a, b, c)!;`, `f(..).field;`) never breaks its arguments, at any width: the statement hook arms the split but the postfix prints its subject without the permission",
+   "body": "Found probing E329 (the terminator width). `let value = plain_function_call_with_no_chain_at_all(argument_one, argument_two, <150 columns>)!;`, `.field;` and `?;` stay one line after `vilan fmt` at any length, while the same call with no postfix breaks one argument per line (E321) and `1 + f(..)` breaks too. `Node::TryAssert` / a non-call postfix print their subject through `print_operand` with no split permission, so the Call arm's `split != Split::Off` gate never opens. Likely the fix is to hand the permission to the subject of `!`/`?`/a field step when the postfix is the statement's value (the E329 `terminator_end` check then counts the `;` against the postfix's end, not the call's). The estate has no such line over the budget today (kolt, std, website, examples and the native tests unchanged). Sizing S."
+  },
+  {
+   "id": "E?2",
+   "section": "E",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-16 (fmt-54's find, Order 54)",
+   "discussion": "fmt-54 (Order 54); sweeps/order54/fmt-54/finds/hole_call_line_at_101_columns_stays_long.vl",
+   "title": "A call inside an element hole (`{f(a, b, c)}`) is measured without the hole's closing `}`: the 101-column hole line stays inline and the 102-column one splits",
+   "body": "Found pinning E329's 'inside an element hole unchanged' case. The hole is not a statement, so no statement hook arms the split at the line's true width; the Call arm's own measure ends at the `)`, one column short of the line (the `}`). The result is a 101-column hole line left as written, the same one-column edge E329 closed for a terminated call statement. Left unchanged by E329 on purpose (the brief pins the hole as it was). Fix, if wanted: the hole print passes the same one-column extra the statement hook's `terminator_end` gives a `;` (the hole's expression ends where the hole's `}` begins). Sizing XS; owner's taste whether the hole's `}` counts."
+  },
+  {
+   "id": "E?3",
+   "section": "E",
+   "kind": "fmt layout question",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-16 (fmt-54's find, Order 54)",
+   "discussion": "fmt-54 (Order 54); sweeps/order54/fmt-54/finds/binary_right_operand_call_at_the_budget_before_its_semicolon.vl",
+   "title": "After E329 a call that IS a statement's value counts the `;`, but a binary's right operand (`let v = 1 + f(..);`) and a chain link keep the documented rule that the `;` is the statement's: the same 100-column call splits as `let v = f(..);` and stays at 101 columns as `let v = 1 + f(..);`",
+   "body": "A first attempt counted the `;` for a binary's right operand too (print_split_right measured with the terminator); `binary_operand_layout::a_right_operand_at_the_budget_stays_inline_and_one_column_over_splits` documents the opposite as deliberate ('the `;` the statement glues after the operand is the statement's, not the operand's ... the same rule a chain link's line follows'), so E329 was kept to the Call arm and the pin untouched. The edge: `let v = f(..);` 100 columns before the `;` splits; `let v = 1 + f(..);` 100 columns before the `;` stays one 101-column line (the split arms and then declines). Question for the owner: keep (the pin's rule), or make the right operand count the `;` as the call now does (one `terminator_after` call in print_split_right plus re-pinning that test)? Rec: keep for now; two statement shapes differ by one column in a case that does not occur in the estate."
+  }
+ ]
+}

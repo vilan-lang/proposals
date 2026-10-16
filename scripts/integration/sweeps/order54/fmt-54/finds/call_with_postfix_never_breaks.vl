@@ -1,0 +1,8 @@
+// E?1: a call whose value is followed by `!`, `?` or a field never breaks its arguments, at ANY width
+// (the Call arm is reached with the split permission only as the statement's own value, `!`/`?`/`.field`
+// print their subject without it). Each line is 150+ columns after `vilan fmt`.
+fun demo() {
+	let value = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)!;
+	let value = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa).field;
+	let value = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)?;
+}
