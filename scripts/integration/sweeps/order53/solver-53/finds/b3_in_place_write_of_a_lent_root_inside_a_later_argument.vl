@@ -1,0 +1,18 @@
+// solver-53 find B?3 (Order 53, beside B?2): an IN-PLACE write of a lent place's
+// root inside a later argument - `log.items.push({ log.items.push(1); 9 })` - checks
+// clean; JS prints 2 and rustc refuses the native emission (E0499: two mutable
+// borrows), reported as a backend defect. B?2 refuses the RE-BIND only.
+import std::io::print;
+
+struct Log {
+	items: List<i32>,
+}
+
+fun main() {
+	mut log = Log { items = [] };
+	log.items.push({
+		log.items.push(1);
+		9
+	});
+	print(log.items.len());
+}

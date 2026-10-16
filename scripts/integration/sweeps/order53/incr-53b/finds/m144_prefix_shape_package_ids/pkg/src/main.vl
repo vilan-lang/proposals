@@ -1,0 +1,8 @@
+import std::path::{ basename };
+import pkg::b::{ two };
+import pkg::c::{ three };
+
+fun main() {
+	print(basename("/x/y.txt"));
+	print(two() + three());
+}

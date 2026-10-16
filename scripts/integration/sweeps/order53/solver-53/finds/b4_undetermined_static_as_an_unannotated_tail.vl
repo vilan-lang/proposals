@@ -1,0 +1,32 @@
+// solver-53 find B?4 (Order 53, B627's residue): a bare static whose bounded impl
+// binder only its return carries, as the TAIL of an unannotated function
+// (`fun tail_of() { Holder::build() }`), is still an internal error on JS (B627's
+// refusal follows a value into a binding, a call, a field read or a statement, and
+// leaves a tail to whatever types it).
+import std::io::print;
+
+trait Make {
+	fun make(): Self;
+}
+
+impl i32 with Make {
+	fun make(): i32 {
+		7
+	}
+}
+
+struct Holder<T> {
+	value: T,
+}
+
+impl Holder<type T: Make> {
+	fun build(): Option<Holder<T>> {
+		Some(Holder { value = T::make() })
+	}
+}
+fun tail_of() {
+	Holder::build()
+}
+fun main() {
+	tail_of();
+}
