@@ -63,7 +63,8 @@
       "model": "opus",
       "wave": 1,
       "items": [
-        "F143"
+        "F143",
+        "papers-54's F?3 (native for-in misses .await on an async next)"
       ]
     },
     "editor-54": {
@@ -92,14 +93,18 @@
         "B638",
         "B642",
         "B639",
-        "F141 widening"
+        "F141 widening",
+        "papers-54's B?2 (a for-in's implicit next drops the threaded context argument - miscompile both backends)"
       ]
     },
     "std-54": {
       "model": "opus",
-      "wave": "after terminal.md is ruled",
+      "wave": "launched 2026-10-16 on the ruling",
       "items": [
-        "A173 S1 (scan() incremental + awaiting, both backends)"
+        "A173 S1 (read_line/scan()/prompt on both backends; the JS pump; the native reader)",
+        "papers-54's F?4 (native args/exit/cwd)",
+        "papers-54's E?5 (flushed no-newline stdout)",
+        "papers-54's B?1 (scan returns \"\" since v0.33.0)"
       ]
     },
     "incr-54c": {
@@ -181,5 +186,8 @@
     "debug-54",
     "native-54",
     "editor-54"
+  ],
+  "rulings_mid_order": [
+    "2026-10-16 terminal.md (A173): every recommendation accepted (Q1 names: process::keys()/Keys/Key, read_line(): Option<str>, scan() = read_line().unwrap_or(\"\"); Q2 prompt(text) yes; Q3 no crossterm, no Rust decoder - one vilan state machine, raw mode via a vilan-rt-term FFI crate; Q4 a non-TTY stdin decodes the full grammar, no timeout; Q5 Ctrl-C as Key::Ctrl(\"c\"); Q6 the explicit next() loop for S2)"
   ]
 }
