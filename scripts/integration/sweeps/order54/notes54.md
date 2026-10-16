@@ -1,0 +1,3 @@
+# Order 54 — integrator notes
+
+- 2026-10-16 GO (the owner: "Go with all recs"; meters not given; base next @b7c7afe0 = the v0.51.0 fold + the E331 fix, with the v0.51.1 merge-back to land beneath wave 1 - CHANGELOG retitle + version bump only). Wave 1 launched: incr-54a (Opus: M159 -> M154 -> M155 -> M160 -> M161 -> C1, alone in the core), papers-54 (Opus: terminal.md first, then P6), debug-54 (Opus: E326 -> S8, E323, E324), native-54 (Opus: F143), editor-54 (Sonnet: E327, E328). At C1: incr-54b (FABLE: R11 door B -> C2) + solver-54; std-54 when terminal.md is ruled; at C2 incr-54c; fmt-54 as a slot frees (merges LAST). The v0.51.1 patch cut continues in parallel (release/0.51 CI in flight).

@@ -1,10 +1,13 @@
 {
   "order": 54,
-  "base": "next after release/0.51's --no-ff merge-back (v0.51.1 = the E331 fix); the sha is named at GO",
+  "base": "b7c7afe0 (the v0.51.0 fold + the E331 fix); the v0.51.1 merge-back lands beneath wave 1",
   "drafted": "2026-10-16",
-  "go": null,
+  "go": "2026-10-16 (the owner: 'Go with all recs' - R-a..R-l on their recommendations; wave 1 launched off next @b7c7afe0 before the v0.51.1 merge-back, which adds only the release commit's CHANGELOG retitle + version bump beneath the lanes)",
   "theme": "the incremental order, part seven: R11 door B (Fable) + M159's seeding + M154/M155 rows + M138's seeded form; the std prefix's suite half (P5, M158) and the P6 hardening paper (M157); terminal input (A173 paper + S1); the debugger's reactive trace (S8) + E326; the solver/native residues",
-  "meters_at_draft": {"all_models": "to ask at GO (37% at Order 53's GO)", "fable": "to ask at GO (48% at Order 53's GO)"},
+  "meters_at_draft": {
+    "all_models": "to ask at GO (37% at Order 53's GO)",
+    "fable": "to ask at GO (48% at Order 53's GO)"
+  },
   "open_at_draft": 115,
   "owner_owes": [],
   "asks": [
@@ -22,20 +25,161 @@
     "R-l the base = the v0.51.1 merge-back"
   ],
   "lanes": {
-    "incr-54a": {"model": "opus", "wave": 1, "items": ["M159", "M154", "M155", "M160", "M161", "E292 (measured)"], "checkpoint": "C1", "note": "alone in the core; ends at C1"},
-    "papers-54": {"model": "opus", "wave": 1, "items": ["A173 paper (terminal.md)", "M157 -> std-prefix P6 paper"], "note": "no tree change"},
-    "debug-54": {"model": "opus", "wave": 1, "items": ["E326", "E257 S8", "E323", "E324", "the orphan sidecar race"]},
-    "native-54": {"model": "opus", "wave": 1, "items": ["F143"]},
-    "editor-54": {"model": "sonnet", "wave": 1, "items": ["E327", "E328"]},
-    "incr-54b": {"model": "fable", "wave": "at C1", "items": ["R11 door B"], "checkpoint": "C2", "note": "the ONLY Fable lane; alone in the core; ends at C2"},
-    "solver-54": {"model": "opus", "wave": "at C1", "items": ["B637", "B640", "B638", "B642", "B639", "F141 widening"]},
-    "std-54": {"model": "opus", "wave": "after terminal.md is ruled", "items": ["A173 S1 (scan() incremental + awaiting, both backends)"]},
-    "incr-54c": {"model": "opus", "wave": "at C2", "items": ["M138 seeded form", "M158", "std-prefix P5 (N157, M36 stamped)", "B635", "M156 (evaluated)"]},
-    "fmt-54": {"model": "sonnet", "wave": "as a slot frees", "items": ["E329", "E325"], "note": "merges LAST"}
+    "incr-54a": {
+      "model": "opus",
+      "wave": 1,
+      "items": [
+        "M159",
+        "M154",
+        "M155",
+        "M160",
+        "M161",
+        "E292 (measured)"
+      ],
+      "checkpoint": "C1",
+      "note": "alone in the core; ends at C1"
+    },
+    "papers-54": {
+      "model": "opus",
+      "wave": 1,
+      "items": [
+        "A173 paper (terminal.md)",
+        "M157 -> std-prefix P6 paper"
+      ],
+      "note": "no tree change"
+    },
+    "debug-54": {
+      "model": "opus",
+      "wave": 1,
+      "items": [
+        "E326",
+        "E257 S8",
+        "E323",
+        "E324",
+        "the orphan sidecar race"
+      ]
+    },
+    "native-54": {
+      "model": "opus",
+      "wave": 1,
+      "items": [
+        "F143"
+      ]
+    },
+    "editor-54": {
+      "model": "sonnet",
+      "wave": 1,
+      "items": [
+        "E327",
+        "E328"
+      ]
+    },
+    "incr-54b": {
+      "model": "fable",
+      "wave": "at C1",
+      "items": [
+        "R11 door B"
+      ],
+      "checkpoint": "C2",
+      "note": "the ONLY Fable lane; alone in the core; ends at C2"
+    },
+    "solver-54": {
+      "model": "opus",
+      "wave": "at C1",
+      "items": [
+        "B637",
+        "B640",
+        "B638",
+        "B642",
+        "B639",
+        "F141 widening"
+      ]
+    },
+    "std-54": {
+      "model": "opus",
+      "wave": "after terminal.md is ruled",
+      "items": [
+        "A173 S1 (scan() incremental + awaiting, both backends)"
+      ]
+    },
+    "incr-54c": {
+      "model": "opus",
+      "wave": "at C2",
+      "items": [
+        "M138 seeded form",
+        "M158",
+        "std-prefix P5 (N157, M36 stamped)",
+        "B635",
+        "M156 (evaluated)"
+      ]
+    },
+    "fmt-54": {
+      "model": "sonnet",
+      "wave": "as a slot frees",
+      "items": [
+        "E329",
+        "E325"
+      ],
+      "note": "merges LAST"
+    }
   },
-  "checkpoints": {"C1": "M159 + M154 + M155 + M160 + M161 (incr-54a, Opus)", "C2": "R11 door B (incr-54b, Fable)"},
-  "merge_order": ["editor-54", "native-54", "debug-54", "incr-54a C1", "solver-54", "incr-54b C2", "std-54", "incr-54c", "fmt-54 LAST"],
-  "cut": {"version": "v0.52.0", "breaking_expected": [], "families_expected": ["F143 miscompile", "A173 S1 fix", "R11 door B / M159 / M154 / M155 performance", "B639 / F141 diagnostics", "S8 feature"], "kolt_patch": ["only if fmt-54 moves kolt lines"], "post_cut": ["delete release/0.51 (§7.3 step 5)"]},
-  "integrator": ["L24 routing when vilan-windows is online", "the seal's base copy = the owner's working tree, same-source", "the runner checked online before the seal", "the sweep: a clerk drafts with real ids; the integrator runs the scripts", "placeholders replaced AFTER the cut commit", "terminal.md handed to the owner as soon as papers-54 writes it"],
-  "deferred_to_55": ["A173 S2 (the Keys resource) and S3", "E257 S9 (native)", "P6's slices (one id layout; the CLI prefix default)", "the span rows' by-value tree change (incr-53b Q4)", "F124 §2.3 on a real program", "arrays Wire on a need"]
+  "checkpoints": {
+    "C1": "M159 + M154 + M155 + M160 + M161 (incr-54a, Opus)",
+    "C2": "R11 door B (incr-54b, Fable)"
+  },
+  "merge_order": [
+    "editor-54",
+    "native-54",
+    "debug-54",
+    "incr-54a C1",
+    "solver-54",
+    "incr-54b C2",
+    "std-54",
+    "incr-54c",
+    "fmt-54 LAST"
+  ],
+  "cut": {
+    "version": "v0.52.0",
+    "breaking_expected": [],
+    "families_expected": [
+      "F143 miscompile",
+      "A173 S1 fix",
+      "R11 door B / M159 / M154 / M155 performance",
+      "B639 / F141 diagnostics",
+      "S8 feature"
+    ],
+    "kolt_patch": [
+      "only if fmt-54 moves kolt lines"
+    ],
+    "post_cut": [
+      "delete release/0.51 (§7.3 step 5)"
+    ]
+  },
+  "integrator": [
+    "L24 routing when vilan-windows is online",
+    "the seal's base copy = the owner's working tree, same-source",
+    "the runner checked online before the seal",
+    "the sweep: a clerk drafts with real ids; the integrator runs the scripts",
+    "placeholders replaced AFTER the cut commit",
+    "terminal.md handed to the owner as soon as papers-54 writes it"
+  ],
+  "deferred_to_55": [
+    "A173 S2 (the Keys resource) and S3",
+    "E257 S9 (native)",
+    "P6's slices (one id layout; the CLI prefix default)",
+    "the span rows' by-value tree change (incr-53b Q4)",
+    "F124 §2.3 on a real program",
+    "arrays Wire on a need"
+  ],
+  "meters_at_go": {
+    "all_models": "not given at GO (37% at Order 53's GO)",
+    "fable": "not given at GO (48% at Order 53's GO)"
+  },
+  "wave1_launched": [
+    "incr-54a",
+    "papers-54",
+    "debug-54",
+    "native-54",
+    "editor-54"
+  ]
 }
