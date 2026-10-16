@@ -188,7 +188,8 @@
     "2026-10-15 E321 (the owner, on fmt-53's sample): generalise; the two refusals pinned; tuple split included"
   ],
   "checkpoints_reached": {
-    "C1": "6fe278ca (2026-10-15; incr-53a: M149, M150, M148; E318 unsound, not built)"
+    "C1": "6fe278ca (2026-10-15; incr-53a: M149, M150, M148; E318 unsound, not built)",
+    "C2": "3cbd78ca (2026-10-16; incr-53b: M144 + P3 + N177)"
   },
   "merged": [
     {
@@ -262,10 +263,24 @@
         "native-53's B?2"
       ],
       "ledger_rows": "4 NEW"
+    },
+    {
+      "lane": "incr-53b",
+      "sha": "3cbd78ca",
+      "items": [
+        "M144",
+        "std-prefix P3 (the serializer; the std import index)",
+        "N177"
+      ],
+      "checkpoint": "C2",
+      "model": "fable"
     }
   ],
   "wave2_launched": [
     "incr-53b (fable)",
     "solver-53 (opus)"
+  ],
+  "wave3_launched": [
+    "incr-53c (opus)"
   ]
 }
