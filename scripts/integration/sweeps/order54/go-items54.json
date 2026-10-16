@@ -189,5 +189,30 @@
   ],
   "rulings_mid_order": [
     "2026-10-16 terminal.md (A173): every recommendation accepted (Q1 names: process::keys()/Keys/Key, read_line(): Option<str>, scan() = read_line().unwrap_or(\"\"); Q2 prompt(text) yes; Q3 no crossterm, no Rust decoder - one vilan state machine, raw mode via a vilan-rt-term FFI crate; Q4 a non-TTY stdin decodes the full grammar, no timeout; Q5 Ctrl-C as Key::Ctrl(\"c\"); Q6 the explicit next() loop for S2)"
-  ]
+  ],
+  "merged": [
+    {
+      "lane": "editor-54",
+      "sha": "00df2f09",
+      "items": [
+        "E327",
+        "E328",
+        "(a rename-corruption fix in references.rs)"
+      ],
+      "note": "its CHANGELOG entries were auto-filed under v0.51.1 at this sha; corrected at ed729e58"
+    },
+    {
+      "lane": "std-54",
+      "sha": "ed729e58",
+      "items": [
+        "A173 S1 (read_line/scan/prompt)",
+        "papers-54's F?4 (native args/exit/cwd)",
+        "E?5 (half: prompt's flushed write)",
+        "B?1 (scan returned \"\" since v0.33.0)"
+      ]
+    }
+  ],
+  "papers": {
+    "papers-54": "terminal.md (A173, RULED) + std-prefix.md §14 P6 (M157; Q7-Q11 for Order 55)"
+  }
 }

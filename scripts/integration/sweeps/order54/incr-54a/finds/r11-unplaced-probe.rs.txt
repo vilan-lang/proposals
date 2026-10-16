@@ -1,0 +1,81 @@
+// Inserted in check_resource_generic_instantiations, before `let resource_bindings = ...` (incr-54a, temporary, not committed).
+// Run: VILAN_WORLD_CACHE=off VILAN_R11_PROBE=1 vilan check src/client.vl (kolt copy with src/lucide).
+            if std::env::var("VILAN_R11_PROBE").is_ok() {
+                let mut old_places: Vec<Id> = self
+                    .expr_id_to_expr_map
+                    .iter()
+                    .filter(|(_, expr)| {
+                        matches!(
+                            expr,
+                            Expr::Local(_)
+                                | Expr::Field(_, _, _)
+                                | Expr::TupleIndex(_, _, _)
+                                | Expr::Index(_, _)
+                        )
+                    })
+                    .map(|(id, _)| *id)
+                    .filter(|id| {
+                        match (
+                            self.source_of_id(instance.callee),
+                            self.span_map.get(&instance.callee),
+                        ) {
+                            (Some(source), Some(span)) => {
+                                match (self.source_of_id(*id), self.span_map.get(id)) {
+                                    (Some(s), Some(sp)) => {
+                                        s == source && sp.start >= span.start && sp.end <= span.end
+                                    }
+                                    _ => true,
+                                }
+                            }
+                            _ => true,
+                        }
+                    })
+                    .collect();
+                old_places.sort_unstable_by_key(|id| id.0);
+                let mut new_places = r11_candidates::R11Candidates::within(
+                    &candidates.places,
+                    self,
+                    instance.callee,
+                );
+                new_places.sort_unstable_by_key(|id| id.0);
+                let old_set: HashSet<Id> = old_places.iter().copied().collect();
+                let extra: Vec<Id> = new_places
+                    .iter()
+                    .copied()
+                    .filter(|id| !old_set.contains(id))
+                    .collect();
+                let unplaced_old = old_places
+                    .iter()
+                    .filter(|id| {
+                        self.source_of_id(**id).is_none() || self.span_map.get(id).is_none()
+                    })
+                    .count();
+                eprintln!(
+                    "[r11 probe] callee {} places old {} new {} equal {} unplaced-old {} extra {} high {}",
+                    instance.callee.0,
+                    old_places.len(),
+                    new_places.len(),
+                    old_places == new_places,
+                    unplaced_old,
+                    extra.len(),
+                    self.entity_id
+                );
+                if instance.callee.0 == 13864 {
+                    let unplaced: Vec<Id> = old_places.iter().copied().filter(|id| self.source_of_id(*id).is_none() || self.span_map.get(id).is_none()).collect();
+                    let no_source = unplaced.iter().filter(|id| self.source_of_id(**id).is_none()).count();
+                    let no_span = unplaced.iter().filter(|id| self.span_map.get(*id).is_none()).count();
+                    let min = unplaced.iter().map(|id| id.0).min();
+                    let max = unplaced.iter().map(|id| id.0).max();
+                    let locals = unplaced.iter().filter(|id| matches!(self.expr_id_to_expr_map.get(id), Some(Expr::Local(_)))).count();
+                    eprintln!("[r11 probe] unplaced {} no-source {no_source} no-span {no_span} ids {min:?}..{max:?} locals {locals} ranges-end {:?}", unplaced.len(), self.sorted_source_ranges.last().map(|range| range.1));
+                }
+                for id in extra.iter().take(5) {
+                    eprintln!(
+                        "[r11 probe]   extra {} in-map {} source {:?} span {:?}",
+                        id.0,
+                        self.expr_id_to_expr_map.contains_key(id),
+                        self.source_of_id(*id),
+                        self.span_map.get(id).map(|span| span.start..span.end)
+                    );
+                }
+            }
