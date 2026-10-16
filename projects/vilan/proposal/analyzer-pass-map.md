@@ -903,6 +903,40 @@ construction: the drop plan (`TypeId`s per body) and the move scan's
 whole-program sets (M?1 of the lane's finds), the lazy tables, the HMR
 transfer bounds.
 
+**Order 53, as built (incr-53a: M149, M150, M148; E318 refused on its
+premise).** The conditional row FAMILIES (`analyzer/row_families.rs`): a
+pass that does not run on every analysis (the move scan derives nothing
+without a resource binding, the lazy pass nothing without a `lazy` cell,
+the HMR pass nothing without `std::web::dev`) files its contributions only
+when it ran, a slice says which families it carries, and each family seals
+its own live lane (the complement of the restored ranges whose slice
+carried it) beside the Class A, table, module and held lanes. M149
+(`analyzer/move_tables.rs`): the seven helper sets of the move scan and the
+drop plan are folded from per-region contributions (bindings, places,
+loaned captures, `is` refinements keyed by `(test, subject)`, value
+crossings, overwrite candidates); the partial-move roots and the name
+overwrites keep a decision over every candidate, so the Drop-nominal digest
+the item asked for is not needed — no verdict is served. R11 and the drop
+plan read the fold. M150 (`analyzer/lazy_tables.rs`): the lazy pairs as
+`(call, position, effects)` folded in `function_calls`' order (the thunk
+table's order), the eager fixpoint over every pair; the HMR sites as rows,
+their minting re-inference on every analysis; `check_written_nominal_bounds`
+in M143's module lane, its refusals riding `bound_diagnostics` with
+`written_bound_questions` under the late-impl guard. M148
+(`analyzer/hover_records.rs`): E206, E237, E240 (type parameters) and E241
+recorded per module and per item with the S2b labels; span rows skip by
+place (a restored module's source, a served item's region); E310's trait
+rows stay live (`implemented_by` is whole-program — found by the
+differential once its observation rendered the four tables under the
+reading aids); E317's variant labels walk the label rows' lane. **E318's
+premise was wrong twice**: the drop plan is not emitter-only (its C11
+refusal is a diagnostic and its per-root drop types become the §8
+`drop_call_edges` the call graph and platform coloring walk), and no
+emitter table is editor-dead — the server's const pass lowers every const
+site through `transformer::ConstWorld` over the same clone decisions,
+last uses and view plans (probe: a skipping analysis evaluated
+`let a = [1, 2]; mut b = a; b.push(3); a.len()` to 3).
+
 ## 8. The seams this order
 
 | seam | incr-48 (world, base cache, drivers, const pass, LSP scheduling) | solver-48 (inference, checks, `impl_select`, mono) | others |
