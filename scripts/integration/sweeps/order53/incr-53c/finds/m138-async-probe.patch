@@ -1,0 +1,46 @@
+diff --git a/crates/vilan-core/src/async_infer.rs b/crates/vilan-core/src/async_infer.rs
+index cb4f0765..283bb2da 100644
+--- a/crates/vilan-core/src/async_infer.rs
++++ b/crates/vilan-core/src/async_infer.rs
+@@ -113,10 +113,20 @@ pub fn infer(program: &mut Program, graph: &CallGraph) {
+         crate::incremental::update_census(|census| census.seeded_passes += 1);
+     }
+     let seeds = async_set.clone();
++    let probe = std::env::var("VILAN_ASYNC_PROBE").is_ok() && !crate::macros::in_macro_world();
++    if probe {
++        let seam = program.seam.as_ref();
++        eprintln!("[probe seam] seam {} seeded {} record {} matches {} cold {}", seam.is_some(), seam.is_some_and(|s| s.seeded), seam.is_some_and(|s| s.record.is_some()), seam.is_some_and(|s| s.record_matches), seam.and_then(|s| s.record.as_ref()).is_some_and(|r| r.async_cold.get().is_some()));
++    }
+     let adaptation = loop {
++        let t0 = std::time::Instant::now();
+         base_fixpoint(program, graph, &held_values, &mut async_set);
++        let t1 = std::time::Instant::now();
+         let before = async_set.len();
+         let adaptation = compute_adaptation(program, graph, &held_values, &mut async_set);
++        if probe {
++            eprintln!("[probe async] base {:?} adapt {:?} set {} -> {} instances {} seeded {}", t1 - t0, t1.elapsed(), before, async_set.len(), adaptation.instances.len(), seeded);
++        }
+         if async_set.len() == before {
+             break adaptation;
+         }
+@@ -1514,6 +1524,10 @@ fn compute_adaptation(
+ 
+     // --- Final pass: with every flag stable, collect each instance's
+     // emission decisions and the context-dependent diagnostics.
++    if std::env::var("VILAN_ASYNC_PROBE").is_ok() && !crate::macros::in_macro_world() {
++        eprintln!("[probe adapt-worklist] keys {} ", instance_async.len());
++    }
++    let final_start = std::time::Instant::now();
+     let mut instances: HashMap<InstanceKey, crate::analyzer::AdaptedInstance> = HashMap::default();
+     let mut diagnostics: Vec<(crate::error::Error, SourceId)> = Vec::new();
+     let mut reported: HashSet<(Id, Id)> = HashSet::default();
+@@ -1718,6 +1732,9 @@ fn compute_adaptation(
+         }
+     }
+ 
++    if std::env::var("VILAN_ASYNC_PROBE").is_ok() && !crate::macros::in_macro_world() {
++        eprintln!("[probe adapt-final] {:?}", final_start.elapsed());
++    }
+     Adaptation {
+         instances,
+         diagnostics,

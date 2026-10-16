@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "M?1",
+   "section": "M",
+   "kind": "performance (S-M) - the editor's common row never reads M110 S3's post-pass record",
+   "area": "Performance & footprint",
+   "status": "OPEN - filed 2026-10-16 (incr-53c's find, Order 53)",
+   "discussion": "incr-53c (Order 53); sweeps/order53/incr-53c/finds/m138-async-probe.patch (the seam print)",
+   "title": "A LONE open document's keystroke (M104's hybrid: a file that is the only open document of its world keeps its own analysis) is never SEEDED - `ReuseSeam::seeded` is `!workspace.hot_seeds.is_empty()` and that path passes no hot seed - so M110 S3's post-pass record (the context rewrite log's replayed graph, S3b's async cold seed) is neither filed nor read on `lsp-latency.py`'s `leaf keystroke` row, the editor's common case; only the world-mode row (two open documents) reads it",
+   "body": "Probed with a seam print in `async_infer::infer` (the patch in the finds directory): every `leaf keystroke` analysis read `seam true seeded false record false matches false cold false`; every `leaf keystroke, world mode` analysis `seeded true record true matches true cold true`. So M138's seeded form (and anything else filed with the post-pass record) cannot help the row the E292 mandate measures. M19's checks record IS read on the lone path (its key is the base-cache key, filed and replayed on any hit), which is why the R11 paper (`proposal/r11-instantiations.md`) files its door B with M19's record rather than S3's. Doors: (a) seed the lone-document analysis with its own path as the hot seed (it is the entry, which `hot_set_closure` treats as 'nothing hot but the entry' - the census path - so the seam would be seeded with an empty hot set); (b) make `seeded` mean 'a front end that will analyze again asked' (a `Workspace` flag the server sets on every analysis) rather than 'hot seeds were given'. Rec: (b) - one flag, no change to the hot-set shape; measure the lone row's post-pass bucket (contexts+graph ~51-55 ms after M137, async-infer ~16-18 after M138 S1) before and after."
+  },
+  {
+   "id": "M?2",
+   "section": "M",
+   "kind": "performance (M) - M138's seeded half, carried",
+   "area": "Performance & footprint",
+   "status": "OPEN - filed 2026-10-16 (incr-53c's find, Order 53)",
+   "discussion": "incr-53c (Order 53); REPORT-incr-53c.md M138",
+   "title": "M138's SEEDED adaptation (the cold instances `(callee, bits)` with origins and diagnostics recorded over the cold nodes, `instance_async` seeded from them, the iteration from the hot keys) is not built: incr-53c built S1 (the decisions pass once per analysis) and measured what is left - per round ~2-3 ms of worklist, ~4-5 ms of decisions once, 0.6-3 ms of base fixpoint (kolt client, served keystroke) - and the seeded form serves only seeded analyses (M?1)",
+   "body": "The premise '2 x 11 ms' was the adaptation INCLUDING its per-round decisions pass (~5 ms of each ~7 ms round, the first round's thrown away); S1 removed one decisions pass and the base instances' flag loop: async-infer 22-24 -> 16-18 ms on the leaf and world-mode keystrokes. A seeded form has three parts with different soundness arguments: (1) the worklist's last round restarted from recorded verdicts needs per-key READ SETS of the async set (the reads go through `subject_awaits`, `binding_holds_async`, `value_async_in`, `bits_for_call`, `call_suspends`, `dispatch_candidates`) and held-value reads of bindings a hot module assigns; (2) the decisions of an untouched cold key are restorable when its reads did not move and its callee verdicts did not; (3) intermediate-flag instance keys (a round's partial-bits encounters) make the instance SET order-sensitive today, so a restart must reproduce the last round's encounters or prune to the keys reachable under final flags (a semantic tightening that moves `adapted_instances`). Rec: after M?1 makes the editor's common row seeded; record the decisions per cold key with its read set first (part 2, the larger half)."
+  },
+  {
+   "id": "M?3",
+   "section": "M",
+   "kind": "performance (S-M) - M133's residue",
+   "area": "Performance & footprint",
+   "status": "OPEN - filed 2026-10-16 (incr-53c's find, Order 53)",
+   "discussion": "incr-53c (Order 53); REPORT-incr-53c.md M133",
+   "title": "After M133 (an impl candidate's binders bound from the receiver, blanket receivers narrowed) platform coloring's per-instantiation walk still fans out to EVERY implementation at two dispatch shapes: a `self` call inside a trait DEFAULT body (`OnType(None, member)` - the walk has no `Self` slot, so `Flow::start`'s defaults reached on a concrete receiver walk every `start`) and a member's own generic no call records (`OnConstraint` with the constraint unbound); A165's `impl type S: Flow<Option<View>> with Slot` still costs reactive-ui 5.4 M instructions at the margin, as before M133",
+   "body": "Probed with a dispatch print in `Traversal::walk` on reactive-ui: after M133 the unresolved `place` dispatches are gone (28 -> 0 in the open-row chain), and 700-odd `start` dispatches fan out at n=15 from `Flow` defaults and `observe_flow -> sub -> follow` chains. The walk's visited key is (node, substitution); a frame-level `self_type: Option<TypeId>` set when a trait default is walked from a concrete receiver (and `OnType(None, ..)` resolved through it) is the door, mirroring how emission specializes a default per receiver. Rec: Order 54, measured against M131's VILAN_STD variants and the kolt client walks (369 M after M133)."
+  },
+  {
+   "id": "M?4",
+   "section": "M",
+   "kind": "performance (S) - M147's residue",
+   "area": "Performance & footprint",
+   "status": "OPEN - filed 2026-10-16 (incr-53c's find, Order 53)",
+   "discussion": "incr-53c (Order 53); REPORT-incr-53c.md M147",
+   "title": "After M147 (2)-(3) a warm kolt client const pass is 164 M instructions; `ConstWorld::reach_from` still spends ~6 of its ~10 M copying the shared union's module-level bindings into every site's `SiteReach.globals`, and `prepare` copies them again into `referenced_globals` - the style chain's globals, the same set at almost every site",
+   "body": "Callgrind (warm, `const_eval::evaluate` inclusive): 183.6 M at C2 -> 164.0 M with (2) and (3); `free_locals` 13.3 -> 0.5 M; `reach_from` 17.4 -> 10.0 M (the per-root closures and the per-set unions memoized); `prepare` 42.7 -> 35.9 M. The remaining per-site cost is the globals: share the union's set behind an `Rc` with the site's own few rows beside it, and key the prelude fixpoint's `referenced_globals` by that pair rather than a merged copy. Expected a further ~5-8 M. Rec: Order 54 beside M147 (1)'s follow-ups, small."
+  },
+  {
+   "id": "B?1",
+   "section": "B",
+   "kind": "determinism (XS) - latent, no observable instance found",
+   "area": "Type system & the type solver",
+   "status": "OPEN - filed 2026-10-16 (incr-53c's find, Order 53)",
+   "discussion": "incr-53c (Order 53); REPORT-incr-53c.md M137",
+   "title": "`context::apply`'s canonical order is cold-first PER SECTION (`Plan::cold_rows_first`: the param nodes, spawns, gets and thread calls each cold then hot), so the cold thread-call rows mint AFTER the hot param nodes, spawns and gets - and M110 S3's replayed post-rewrite graph renumbers the cold rewrite's minted `Some(..)` wrap calls by a uniform base shift (`CallGraph::remap_minted`), which is right only while the HOT rows' mint count is unchanged; a keystroke that makes a hot function need (or stop needing) a context, with a covered-to-safe wrap in a cold module, replays a cold graph naming the wrong call ids",
+   "body": "Read, not reproduced: the record is replayed whenever the cold mutation log matches (`ContextLog` holds cold rows only), and the hot rows minted before the cold thread section move the cold wraps' ids. The impact is believed nil today - a wrap is a variant-constructor call (`CallTarget::Variant`), which the async, platform and const passes treat as inert - so no differential has gone red; but the graph is the program's call graph after the pass and its replay is meant to be exact. M137 does not change it (its shared reference entities mint in the cold section by the same rule). Door: mint every section's COLD rows before any section's hot rows (two passes over the plan in `apply`), so the cold sequence is a function of the cold rows alone; pin with a cold covered-to-safe boundary and a hot edit that adds a hot context reader, comparing the replayed graph with a rebuilt one. Rec: XS, next time the context pass is touched."
+  }
+ ]
+}

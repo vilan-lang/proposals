@@ -644,3 +644,31 @@ state, observation and JS byte-identical built / written / loaded / clean; vilan
 sample emitted to JS and Rust through the binary, bytes and diagnostics alike), the damaged-file
 pins, vilan-lsp's cold-start pin; N177 landed with it (content-keyed const-site keys, 109/109 on
 kolt).
+
+**As built (M152 — the dependency tier — and P4, incr-53c, Order 53).** Door (b) as ruled: a
+program with dependencies takes the prefix (the `dependencies` refusal is retired; package preludes
+stay refused). The prefix world's drain already loads the hot set's `Origin::Dep` requests, so it
+holds std AND the dependency modules the package asks for — each surface package's `lib.vl`, the
+entry's and the package modules' requests, theirs in turn, each package's own prelude — and only
+the package is hot. The key gains `BaseCacheKey::dependency_tier` (the tier's requests and a hash
+over every dependency file it loads); the std closure gains the std modules the tier's own files
+ask for, mirroring the drain's seeding exactly (a surface gets its written `std::` imports and its
+`[service]` seed, a loaded module also the `css`/element/`async` seeds — or the world loads a std
+set its key does not name and `prefix_unstorable` never stores it; fullstack's client, whose own
+prelude is `std::web::prelude` and whose `common` declares `std::prelude`, was the case); the file's
+header names both tiers (`["std", "dependencies"]`, `dependencies.world`) with the tier's rows among
+the workspace rows — no format change. Two premises were wrong in detail: (1) "only the package is
+hot" needed a canonical reorder to keep M144's promise for a dependency — the drain minted the
+package's nodes before walking the dependencies and walked their `lib.vl` surfaces after the
+package, so a dependency's ids (and its declarations' emitted order) differed between the shapes;
+the drain now mints and walks every dependency whole first, and (2) that moved spec §7.1's
+ratified declaration order (dependency roots after the entry package's modules), which `init_order`
+and function emission had read off the raw id — the order is now NAMED
+(`Program::canonical_declaration_key`, from the roots' recorded entity ranges and the entry walk's
+start), and every bundle is byte-identical to the base. The package's own ids still differ across
+shapes (incr-53b's M?1, a P6 paper); the dependency's do not. Measured: fullstack's server 2.10 →
+1.10 G over the loaded file, its client 1.34 → 0.93 G, the two-package fixture 255 → 164 M. P4:
+`vilan_core::world_cache` prunes the directories another BUILD wrote (the header's build id, read
+without decoding — G28's stamp), cleans the root, and holds it to `VILAN_WORLD_CACHE_BYTES` (256 MiB)
+at every write, least recently used first (a load touches its file); `vilan cache warm` writes a
+program's prefix. Not built: P5 (the suite on `target/`) and M19's record in the file (Order 54).
