@@ -1,0 +1,14 @@
+fun helper(n: i32): i32 {
+	n + 1
+}
+
+fun twice(n: i32): i32 {
+	n * 2
+}
+
+const let add = |n: i32| helper(n);
+
+fun main() {
+	let x = const twice(add(1));
+	print("{x}");
+}
