@@ -1,1 +1,21 @@
 tip=6c460ca4 loadavg=0.00 0.30 2.77
+     Summary [ 451.859s] 10808 tests run: 10808 passed (1 slow), 37 skipped
+union exit=0
+doc-tests exit=0
+native whole-set exit=0
+clippy exit=0
+windows exit=0
+audit exit=0
+fmt exit=0
+vilan-fmt exit=0
+wasm exit=0
+canary@1.5MiB exit=0
+perf leg starts at loadavg=1.25 2.60 4.58
+LSP harness leg REFUSED or failed (no LSP rows): see /home/reed/code/vilan-lang/proposals/scripts/integration/lsp-base-6c460ca4.log and lsp-tip-6c460ca4.log
+  REFUSED  the base's source (kolt@66109df7) does not check under the base compiler (exit 1): Error: cannot find 'rich_editor' in the imported path
+  REFUSED  the tip's source (kolt@66109df7) does not check under the tip compiler (exit 1): Error: cannot find 'rich_editor' in the imported path
+PERF VERDICT: REFUSED — each side must check its source with no errors (a measurement of a broken program is not a measurement); nothing was measured and no verdict was written
+perf exit=1
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-base-6c460ca4.log:the copy of kolt @66109df7 does not check clean under /home/reed/.vilan/bin/vilan:
+changelog parity 38 / 38
+verdict: union=0 doctests=0 native=0 clippy=0 windows=0 audit=0 fmt=0 vilan-fmt=0 wasm=0 canary=0 perf=1

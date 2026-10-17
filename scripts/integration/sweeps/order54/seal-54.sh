@@ -12,7 +12,7 @@ export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.nvm/versions/node/v24.2.0/
 export CARGO_BUILD_JOBS=6
 SP=/tmp/claude-1000/-home-reed-code-vilan-lang/89336be2-ed61-4826-b9ee-21d5898255eb/scratchpad/seal-54
 export VILAN_PERF_KOLT_DIR="$SP/kolt-base"
-export VILAN_PERF_KOLT_COMMIT=66109df
+export VILAN_PERF_KOLT_COMMIT=611d86f
 export VILAN_PERF_ADVANCE=1
 # VILAN_PERF_THRESHOLD unset = perf_gate's default 1.10; VILAN_SEAL_PERF_ONLY=1 for a re-run of the perf leg alone.
 exec bash /home/reed/code/vilan-lang/proposals/scripts/integration/seal.sh
