@@ -197,19 +197,19 @@
   {
    "id": "E329",
    "lane": "fmt-54",
-   "commit": "FMT54",
+   "commit": "6c460ca4",
    "text": "a call statement is measured WITH its ; (d214a8f5, terminator_end/terminator_after - the Call arm only), so a statement exactly 100 columns before its ; no longer stays on one 101-column line; 14 pins through assert_construct (6 red-first), no existing pin or golden moved; estate: std 2 (db.vl:271, json.vl:1123), examples 1 (walkthrough store.vl:179), native tests 1 (store_variant.vl:66), reformatted in the merge commit (the digit-only golden check passes); kolt 0 (no patch), website 0. The binary-right-operand question (E339), a call followed by !/?/a field (E337) and the element-hole edge (E338) filed; tooling"
   },
   {
    "id": "E325",
    "lane": "fmt-54",
-   "commit": "FMT54",
+   "commit": "6c460ca4",
    "text": "take_trailing_comment refuses a comment when the gap to it holds { or } (5218c62a): the general fix - any block-tail flush had claimed a comment trailing a later brace - so fun one(): i32 { 7 } // note prints } // note and a comment after a one-line if/else stays with the whole if, not its then-arm; pinned through assert_construct; fix"
   },
   {
    "id": "E330",
    "lane": "fmt-54",
-   "commit": "FMT54",
+   "commit": "6c460ca4",
    "text": "RULED 2026-10-16 (R-g, 'Go with all recs'): kept as the layout's rule - a two-operand chain with a call as its right operand breaks the CALL's arguments while the && stays inline; no change. The sibling edge (a binary's right operand keeps the documented rule that the ; is the statement's, so `let v = f(..);` splits at 100 columns before the ; but `let v = 1 + f(..);` stays at 101) is the open design question E339, owner rec keep"
   }
  ]
