@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "M162",
+   "section": "M",
+   "kind": "performance (checks; FIXED in incr-54a's M155 commit)",
+   "area": "Performance & footprint",
+   "status": "FIXED - filed and closed on arrival, Order 54 (incr-54a, merge 5d2a077a); the filing lane's find was fixed by that lane's merge",
+   "discussion": "incr-54a (Order 54); sweeps/order54/incr-54a/finds/r11-unplaced-probe.rs.txt",
+   "title": "Every wired method call's member reference (`wire_method_call`'s span-less `Expr::Local(member)`) rode EVERY R11 instantiation's candidate slice as an unplaced place — ~25,000 on kolt's client, re-classified for each of its 34 instances — the larger part of R11's instantiations row",
+   "body": "`LexicalCandidates::within` widens a callee's slice with every candidate the index cannot place (no span or no source range), so a missing span costs time, never an answer. `wire_method_call` mints a `Local` naming the member FUNCTION for every method call, with no span and minted past the source ranges, so all of them were unplaced places in every slice (probe: 25,175 unplaced of each slice's ~25,180 on kolt's client). A function is never a resource place (`compute_resource`), so none was ever an answer. M155's rows exclude a `Local` reading a function or an external; the instantiations pass reads 38-54 -> 14-18 ms on a cold kolt client check and 68 -> 19 ms on the served lone keystroke (load ~14). This moves R11 door B's premise (incr-54b): the instantiations row it replaces is now ~19 ms at load (~10 quiet), not ~40."
+  },
+  {
+   "id": "B648",
+   "section": "B",
+   "kind": "correctness (const pass; a valid program refused) — FIXED in incr-54a",
+   "area": "Language",
+   "status": "FIXED - filed and closed on arrival, Order 54 (incr-54a, merge 5d2a077a); the filing lane's find was fixed by that lane's merge",
+   "discussion": "incr-54a (Order 54); sweeps/order54/incr-54a/finds/b2_const_reach_dropped.vl",
+   "title": "`ConstWorld::prepare` REPLACED a const site's reach with its prelude's when the prelude's walk required code: `const twice(add(1))` beside `const let add = \\|n: i32\\| helper(n)` failed with \"const evaluation failed: unknown host call `twice`\" (v0.51.0 too)",
+   "body": "The prelude frame opens empty (`record_enter`), so `closed.requires` held only what the prelude's own walks required — a G24 snapshot written into the prelude by `const_value_node` requires its callee — and the site's reach was rebuilt from that alone (`reach = self.reach_from(&closed)`), dropping the union of the site's own walk. Fixed: the prelude's requirements, globals, helpers and imports join the site's own record before `reach_from`. Pin `a_const_site_calling_a_function_beside_a_const_let_closure_keeps_its_own_reach` (inference/const_eval.rs); the repro program is in the finds directory, and the installed v0.51.0 refuses it."
+  },
+  {
+   "id": "N181",
+   "section": "N",
+   "kind": "tooling (measurement)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-16 (incr-54a's find, Order 54)",
+   "discussion": "incr-54a (Order 54); scripts/perf_count.py on `vilan check .` over a lucide-carrying kolt copy",
+   "title": "`vilan check .` on kolt (two legs) is not instruction-deterministic: identical runs of one binary read 13.04 / 13.41 / 13.54 / 13.62 G instructions with the world cache off and a fixed check cache (and 10.0-13.7 G with the persisted prefix on its default `~/.vilan/cache/worlds`), where a single-entry program (reactive-ui) repeats to 0.001 %",
+   "body": "The two legs run concurrently and share the in-process base cache and the macro-world machinery, so which leg builds what varies run to run; the persisted std prefix adds its own load/write split. A lane comparing kolt's cold check in instructions needs either per-leg runs (`vilan check src/client.vl`) or medians over many runs; the RSS probe's 3 % gate is unaffected in practice but rides the same variance. Rec: document it in `perf_count.py`'s header and have `perf_gate.py`'s kolt row measure the legs one at a time (or with the legs serialized by a flag)."
+  }
+ ]
+}

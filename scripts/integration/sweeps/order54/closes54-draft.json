@@ -1,0 +1,102 @@
+{
+ "date": "2026-10-16",
+ "order": "Order 54",
+ "closes": [
+  {
+   "id": "E327",
+   "lane": "editor-54",
+   "commit": "00df2f09",
+   "text": "the module segments of a qualified pattern (lib::deep::Mode::On =>) and of a qualified struct initializer (lib::deep::Overlay { .. }) record their Namespace rows (3ab0801b), through the listed arms resolve_pattern's Variant arm, resolve_variant_path, resolve_struct_initializer and resolve_initializer_head; ALSO a pre-existing rename CORRUPTION found on the way and fixed: vilan-lsp's ReferenceIndex::build derived a second row for every struct literal anchored at the literal's start with the struct name's length, so renaming Overlay in lib::deep::Overlay { .. } rewrote lib::de - the derived arm is removed, the analyzer's exact row covers it"
+  },
+  {
+   "id": "E328",
+   "lane": "editor-54",
+   "commit": "00df2f09",
+   "text": "a generic enum's payload variant in value position hovers with its instantiated payload (e5a89f27): the payload is computed in core in variant_use_labels with applied_substitution, and the table's string is now the whole variant line (Option<i32>::Some(i32)) instead of the bare Option::Some; finds E333 (the list/tuple-element and method-receiver positions still hover bare) and E334 (an ignored E126 gate failing on its own exhibit) filed"
+  },
+  {
+   "id": "E326",
+   "lane": "debug-54",
+   "commit": "67bb1240",
+   "text": "vilan-dap shows async parent frames (a880ae4b): the inspector's asyncStackTrace chain is appended under a label frame naming the description (await, or the task name S8's tagging gives a relay), each frame mapped through the source map like the synchronous ones and marked subtle where it lands in std; the sidecar records each frame's whole span; pinned in session.test.ts with an async fun awaited across a breakpoint; tooling"
+  },
+  {
+   "id": "E323",
+   "lane": "debug-54",
+   "commit": "67bb1240",
+   "text": "door (a): the sidecar names a written Debug impl's emitted printer/debug function and vilan-dap evaluates it in the paused frame, so secret: Secret prints through the impl as dbg does, with the structure as the fallback when the name does not resolve (684c32b4, one commit with E324); tooling"
+  },
+  {
+   "id": "E324",
+   "lane": "debug-54",
+   "commit": "67bb1240",
+   "text": "the sidecar records, per emitted dyn table, the JS names of its method functions and the concrete type's layout, so a dyn binding prints by its concrete layout in a program that never calls dbg (684c32b4, one commit with E323); tooling"
+  },
+  {
+   "id": "F143",
+   "lane": "native-54",
+   "commit": "a6a1d983",
+   "text": "a module-level mut binding waits for the later arguments on BOTH backends (0747db32, 5f0ed7d3): JS is_captured is true for any module binding via module_level_bindings() (the transformer's own set missed the entry file's top-level bindings), takes_a_cell_view is false for a module root, a module & reads late whatever its type; native defers_its_cell_copy admits a module spine, a reading intrinsic's receiver is deferred, and slice 2 settles a & argument that runs code before a module cell's &mut borrow (the reentrancy sentence); 15 module shapes in the F138 pin file - six differed across backends at the base; estate 0; spec 6.9's module paragraph; miscompile. Residue filed as B647 (a callee that writes a module mut it was lent)"
+  },
+  {
+   "id": "M159",
+   "lane": "incr-54a",
+   "commit": "5d2a077a",
+   "text": "door (a) built (94c4ef7e): the lone open document's analysis is seeded with its own canonical path in analyze_world's M104 branch. The premise was wrong in one respect: hot_set_closure is never asked for a file-mode entry, and unseeded the lone row also never read S2b's label rows or M148's hover rows. Every lone leaf analysis is now seeded+record+matches+cold; graphs-replayed 2, context-log-replayed 1, hover-rows-restored 2,473 where all were 0; quiet leaf post-passes 97 -> 81 ms, contexts+graph 50 -> 33, label tables 12 -> 4; server RSS +1.3% accepted. Async and const read the record but replay no verdicts yet (M138's seeded form, incr-54c)"
+  },
+  {
+   "id": "M154",
+   "lane": "incr-54a",
+   "commit": "5d2a077a",
+   "text": "closed as a CUT, not rows (8caeaa2f): the cost was work no reader asks for - alias spans are now found in the declaring module only (13 -> 2 ms) and type-reference labels are rendered only under the reading aids, in files that bank hover rows (5 -> 1.3 ms); empty type-reference labels outside the server accepted"
+  },
+  {
+   "id": "M155",
+   "lane": "incr-54a",
+   "commit": "5d2a077a",
+   "text": "analyzer/r11_candidates.rs, RowFamily::R11 the fourth row family (d910e342): per-region CandidateRows {bindings, places, tests} placed/unplaced, folded to per-file SpanIndexes, R11Candidates::within = the paper's section 1.1 slice (exactly what door B reads). ALSO ~25k span-less Local(member fn) mints from wire_method_call rode every R11 slice and are no longer candidates: R11 sets 6.2 -> 0 ms, instantiations 30 -> 10 ms, cold client 38-54 -> 14-18 ms (a u32::MAX sentinel collided with DERIVED_SOURCE, caught by a probe); filed and closed as M162"
+  },
+  {
+   "id": "M160",
+   "lane": "incr-54a",
+   "commit": "5d2a077a",
+   "text": "platform coloring walks a trait default per receiver (8c0f026b): a frame Self = (receiver, trait) for a trait member on a concrete receiver, closures inherit, ground_self, the visited key includes the receiver, and a record-less free function passes only its own bindings (the per-receiver walk had cost +9.7% on kolt): reactive-ui walks 91.5 -> 15.5 M, A165's arm 2.75 -> 1.42 M, kolt client walks 388.5 -> 273.2 M"
+  },
+  {
+   "id": "M161",
+   "lane": "incr-54a",
+   "commit": "5d2a077a",
+   "text": "SiteReach.union is an Rc<ReachClosure> shared by the const sites (0be642b9): prepare 45.2 -> 38.7 M, reach_from 18.8 -> 16.2 M"
+  },
+  {
+   "id": "B637",
+   "lane": "solver-54",
+   "commit": "68666705",
+   "text": "an argument at a non-generic parameter directs its receiver call (13823716): the premise was wrong - B501 already seeded a concrete parameter's expectation, but only for an argument already mapped as Expr::Call (method calls skipped) and the inner call resolved before the seed arrived; now pending member accesses, & call views and closure calls seed, and a method call whose receiver still carries an answer-borne generic WAITS for its expectation; kolt client +0.067% after a type-minting fix; fix"
+  },
+  {
+   "id": "B640",
+   "lane": "solver-54",
+   "commit": "68666705",
+   "text": "an inferred function's result is followed to its call sites (54785acc) and a body-level discard statement or a closure's tail that hit the same internal error is refused with a message (e108a772, the closure residue; the wording to be softened later); fix x2"
+  },
+  {
+   "id": "B638",
+   "lane": "solver-54",
+   "commit": "68666705",
+   "text": "the REFUSAL door (d6e9b17c): a generic literal binding no field grounds (let both = Page { items = [], first = None };) is refused with the annotation steer, and so is let o = None; let n: Option<i32> = o; ; diagnostics, estate 0"
+  },
+  {
+   "id": "B642",
+   "lane": "solver-54",
+   "commit": "68666705",
+   "text": "the cannot-infer fix-its keep a method call's shape (ee8a6932): xs.to_array<4>() is spelled as the method, not a free to_array<4>(xs); the ledger rows 581 and 719 amended; fix"
+  },
+  {
+   "id": "B639",
+   "lane": "solver-54",
+   "commit": "68666705",
+   "text": "a lent place written in place by a later argument is refused (37b7133b), including a write to a place that HOLDS the lent place (list elements are not told apart): log.items.push({ log.items.push(1); 9 }) no longer checks clean; a NEW ledger row; diagnostics, estate 0"
+  }
+ ]
+}

@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "F147",
+   "section": "F",
+   "kind": "miscompile (native) — FIXED in native-54 (commit e5686dff)",
+   "area": "Native targets & rendering",
+   "status": "FIXED - filed and closed on arrival, Order 54 (native-54, merge a6a1d983); the filing lane's find was fixed by that lane's merge",
+   "discussion": "native-54 (Order 54); sweeps/order54/native-54/finds/f1_option_take_through_a_cell.vl",
+   "title": "`Option::take` / `Option::replace` over a receiver that lives in a cell natively — a module-level binding (`module_maybe.take()`), a field of one, a captured `mut` binding, a `Shared` view's field (`cell.write().maybe.take()`) — wrote a COPY taken out of the cell: the take answered the value and left the binding holding it (`Some(1)` natively, `None` on JS)",
+   "body": "vilan-rust's `emit_intrinsic` counted only `mutates_its_receiver`'s eight intrinsics as writing their receiver, so `OptionTake`/`OptionReplace` rendered the receiver through the reading arm (`(MODULE.with(|cell| cell.get())).take()`, `(local.get()).take()`). They now count as mutating there: the receiver is `mutable_place` (the cell's `borrow_mut`, the arguments hoisted ahead of it, F30's shape). A plain local, a field of one and a `&mut self` field were places already and emit the same. Estate 0 (native emission of kolt's and the website's servers, every example entry and the corpus byte-identical). Pin `native_differential::an_option_take_through_a_cell_writes_the_cell_on_both_backends` (the base differed at 4 of 18 rows)."
+  },
+  {
+   "id": "B647",
+   "section": "B",
+   "kind": "miscompile (JS vs native) / diagnostics (checker hole)",
+   "area": "Language",
+   "status": "OPEN — filed 2026-10-16 (native-54's find, Order 54)",
+   "discussion": "native-54 (Order 54); sweeps/order54/native-54/finds/b2_callee_writes_a_lent_module_binding.vl",
+   "title": "A callee that WRITES a module-level `mut` binding it was handed a loan of answers differently: `lent_and_grow(&module_items)` (the callee pushing into `module_items`, then reading `items.len()`) prints `1` on JS (the `&` is the binding's object) and `0` natively (a copy out of its `thread_local!` cell); `touch(&mut module_items)` (the callee pushing through the loan and then into `module_items` directly) prints `2` on JS and stops natively with the runtime's reentrancy sentence (the `&mut` holds the cell's borrow for the call)",
+   "body": "F143's neighbour, past an argument list: the second path to the place is the CALLEE's body, not a later argument. Spec §6.4 rule 4 (no invalidating mutation under a live view) reads both as a write of the lent place while the loan is live — the checker cannot see it today because the write is in another function. The analyzer already has per-function write summaries (`function_reaches_an_in_place_write`, B634's closure-literal twin). Rec: a checker refusal at the call — lending a module-level `mut` binding (`&` or `&mut`, a receiver included) to a callee whose write summary reaches that binding — with the steer \"copy it first: `let items = module_items; lent_and_grow(&items)`\", estate counted first (expected 0: kolt and the website have no module-level `mut`, the corpus's four are scalar counters never lent). The alternative — a native VIEW of the cell held for the call — turns the `&` case into the runtime's reentrancy stop too, so it is no fix."
+  },
+  {
+   "id": "N180",
+   "section": "N",
+   "kind": "performance (native) — FIXED in native-54 (commit 7ed7d1ff)",
+   "area": "Native targets & rendering",
+   "status": "FIXED - filed and closed on arrival, Order 54 (native-54, merge a6a1d983); the filing lane's find was fixed by that lane's merge",
+   "discussion": "native-54 (Order 54); sweeps/order54/native-54/finds/n3_module_read_cloned_twice.vl",
+   "title": "A by-value read of a module-level binding at a consuming position was copied TWICE natively: `has_N((MODULE_ITEMS.with(\\|cell\\| cell.get())).clone(), 9)` — `cell.get()` already answers a clone of the cell's value; the same for a field or tuple-slot spine (`(MODULE_LOG.with(\\|cell\\| cell.get()).items).clone()`)",
+   "body": "`copy_a_consumed_place_read` skipped a read out of a boxed binding's cell or a `Shared` view (\"a copy already\", F62/F103) but not one out of a module binding's `thread_local!` cell, rendered `cell.get()` (a whole-value clone), so every non-last-use consumed read of one was cloned twice. A bare read and a field/tuple-slot spine over one now skip the second clone (`reads_a_module_binding_copy`); an element read keeps it (moving out of a `Vec` temporary's element is E0507). Output unchanged; native emission moves at std's module-level bindings only (the website's server sheds 47 second copies, the ssr example 2, todo 1; kolt's server and the corpus byte-identical). Pin `native_differential::a_module_binding_read_by_value_is_copied_once_natively`. Residue (not done): a field spine over a module binding still copies the whole value to read one field (`cell.get().items`); F103's `read_with` form would copy the field alone."
+  }
+ ]
+}

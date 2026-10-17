@@ -1,0 +1,13 @@
+{
+ "date": "2026-10-16",
+ "order": "Order 54",
+ "note": "SECOND PASS ONLY: fill commit with fmt-54's merge sha (it merges LAST), then run. commit is deliberately empty so close_batch refuses it until then. Alternative if the integrator prefers: do not close, stamp E330 as 'RULED kept' instead.",
+ "closes": [
+  {
+   "id": "E330",
+   "lane": "fmt-54",
+   "commit": "",
+   "text": "RULED 2026-10-16 (R-g, 'Go with all recs'): the layout stays as shipped - a two-operand chain with a call as its right operand breaks the CALL's arguments while the && stays inline; no change made. The same family of question (a binary's right operand keeps the documented rule that the ; is the statement's) is E?3 of fmt-54's finds, kept as ruled in the same stroke; E329 and E325 were fixed this order in fmt-54"
+  }
+ ]
+}

@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "E333",
+   "section": "E",
+   "kind": "editor (hover; XS)",
+   "area": "Editor",
+   "status": "OPEN — filed 2026-10-16 (editor-54's find, Order 54)",
+   "discussion": "editor-54 (Order 54), met at E328; repro: sweeps/order54/editor-54/finds/e54_variant_in_list_tuple_receiver_hovers_bare.md",
+   "title": "a generic enum's variant as a LIST or TUPLE element or as a method receiver hovers bare - `Some` in `[Some(1), None]`, `(Some(\"a\"), 2)` and `Some(4).map(..)` read `Option::Some`, with no instantiation and no payload",
+   "body": "`variant_use_labels` (hover_labels.rs) settles a variant's instantiation from the return slot, an annotation, the initialized binding's type and a plain call's declared parameter (E317, E328); a container element and a receiver have none of those facts. Read the element type from the container's recorded type (the list's or tuple's `expr_types` row) and the receiver's from the member call's subject type. Pin: the three shapes with `Some`, `None`, `Ok`, `Err`."
+  },
+  {
+   "id": "E334",
+   "section": "E",
+   "kind": "editor (gate)",
+   "area": "Editor",
+   "status": "OPEN — filed 2026-10-16 (editor-54's find, Order 54)",
+   "discussion": "editor-54 (Order 54); `VILAN_EDITOR_KOLT=<kolt copy> cargo nextest run -p vilan-lsp --run-ignored only the_view_exhibit_tracks`",
+   "title": "the `#[ignore]`d E126 gate `keystroke::gate::the_view_exhibit_tracks_the_recorded_application_shape` fails on its own generated exhibit: `Combine<(str, i32)> has no method 'map'` (the exhibit must analyze clean)",
+   "body": "Run at the editor-54 tip (the change is rows and labels only); not run at the base, so it may predate Order 54. The generated `view1791` exhibit uses a `Combine` method std no longer has (or has under another name/import); the gate asserts a clean analysis before its census, so it asserts nothing until the generator is updated. Also: the ignored `leak_soak_corpus_plateaus` and `cancellation_measurement_on_an_external_subject` need VILAN_PERF_KOLT / VILAN_M26_SUBJECT (documented, not failures)."
+  }
+ ]
+}

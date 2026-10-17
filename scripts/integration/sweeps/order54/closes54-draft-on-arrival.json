@@ -1,0 +1,61 @@
+{
+ "date": "2026-10-16",
+ "order": "Order 54",
+ "note": "on-arrival closes: run close_batch AFTER the matching file_items (it needs the item file and INDEX row). Real ids, no placeholders.",
+ "closes": [
+  {
+   "id": "B643",
+   "lane": "std-54",
+   "commit": "ed729e58",
+   "text": "closed on arrival - FIXED by A173 S1 in std-54 (49a7e22e): process::scan() was reading NOTHING on JS since v0.33.0 (the __scan helper's require(\"fs\") threw a ReferenceError its own catch swallowed, reproduced on 0.51.0); Intrinsic::Scan is retired for [extern(\"__stdin_line\")], an incremental awaited stdin reader on both backends (read_line(): Option<str>, scan() = read_line().unwrap_or(\"\")); pins in vilan-cli/tests/process.rs on both backends and stdin fixtures for the corpus and the differential (the harness had given every program empty stdin)"
+  },
+  {
+   "id": "B644",
+   "lane": "solver-54",
+   "commit": "68666705",
+   "text": "closed on arrival - FIXED in solver-54 (4f45e9db): context::apply appended threaded arguments through function_calls, which a for-in loop has no entry in, so the minted context argument was dropped; a new Program::for_each_context_arguments table is read by transformer.rs's ForEach lowering and vilan-rust's for_each_iterator (both next_step forms); the miscompile is gone on both backends (listed arms approved)"
+  },
+  {
+   "id": "F144",
+   "lane": "native-54",
+   "commit": "a6a1d983",
+   "text": "closed on arrival - FIXED in native-54 (ba86deec): vilan-rust's for_each_iterator asks async_functions, so a for-in over an awaiting inherent next awaits each step natively (the for e in &mut c form too); the pin goes with B644's async probe"
+  },
+  {
+   "id": "F145",
+   "lane": "std-54",
+   "commit": "ed729e58",
+   "text": "closed on arrival - FIXED in std-54 (b313c298): native args, exit and cwd build through a new std-only vilan_rt::process (with the executor hooks and vilan-rust's host bindings); the corpus program process-env.vl is now identical natively; pins in vilan-cli/tests/process.rs on both backends"
+  },
+  {
+   "id": "B645",
+   "lane": "native-54",
+   "commit": "a6a1d983",
+   "text": "closed on arrival - FIXED in native-54 (b248c182): a void main's tail is handled by its TYPE (transformer.rs main_tail_is_void; a call reads the callee's return) instead of syntactically, so a match of void arms or a ;-less print(..) no longer becomes process.exit(<tail>) after a pending spawned task; eight corpus goldens moved from process.exit($x) to $x; with unchanged output; natively a ;-less void call tail did not even build - function_body closes it; estate 0"
+  },
+  {
+   "id": "F147",
+   "lane": "native-54",
+   "commit": "a6a1d983",
+   "text": "closed on arrival - FIXED in the filing lane (8fb24c04): Option::take and Option::replace over a module binding, a field of one, a captured mut binding or a Shared view's field write the cell natively instead of a copy taken out of it; miscompile"
+  },
+  {
+   "id": "N180",
+   "lane": "native-54",
+   "commit": "a6a1d983",
+   "text": "closed on arrival - FIXED in the filing lane (007ed7c2): a module binding's by-value read at a consuming position is copied once natively (cell.get() already answers a clone), the website's server sheds 47 second copies; the residue (a field spine reads through the cell) is Order 55's, no item"
+  },
+  {
+   "id": "M162",
+   "lane": "incr-54a",
+   "commit": "5d2a077a",
+   "text": "closed on arrival - FIXED in the filing lane with M155 (d910e342): the span-less Local(member fn) mints wire_method_call makes are no longer R11 candidates (R11 sets 6.2 -> 0 ms, instantiations 30 -> 10 ms on the kolt client)"
+  },
+  {
+   "id": "B648",
+   "lane": "incr-54a",
+   "commit": "5d2a077a",
+   "text": "closed on arrival - FIXED in the filing lane (fe834d2c): a const site keeps its own reach beside its prelude's, so const twice(add(1)) beside const let add = |n: i32| helper(n) no longer fails with unknown host call twice; fix (v0.51.0 too)"
+  }
+ ]
+}

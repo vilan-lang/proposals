@@ -1,0 +1,13 @@
+{
+ "date": "2026-10-16",
+ "order": "Order 54",
+ "note": "RECOMMENDED but outside the merged lanes' items: E331 is still OPEN in the tracker though its fix shipped in v0.51.1 (Order 53 notes). Drop this file if the integrator closes E331 with the v0.51.1 cut sweep.",
+ "closes": [
+  {
+   "id": "E331",
+   "lane": "debug-53",
+   "commit": "b7c7afe0",
+   "text": "FIXED and shipped in v0.51.1 (the fix on next ddb1a706, merged b7c7afe0; cherry-picked e79fec2d onto release/0.51, released 8a5face9): vilan-dap read [process.pid, process.ppid] from the round's node BEFORE node had bootstrapped (both null), then during the rebuild gap alive(null) threw and read as 'vilan run is gone' and finish() ended the session; the pids are read at the program's first line, only real pids are kept (validPid), an unknown pid never counts as dead, ending a watch session stops the round's server; ALSO an async main (kolt's server) showed an (anonymous) wrapper frame with JS-shaped locals - the arrow now carries a map mark at main; pins on a new two-leg fixtures/watch-workspace (re-attach across a round, no terminated, the frame is main, the last server stops) and source_maps::e331_*"
+  }
+ ]
+}
