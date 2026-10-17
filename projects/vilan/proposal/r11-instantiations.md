@@ -257,6 +257,58 @@ resource place), now excluded from the rows. On kolt's lone `views.vl`
 keystroke at load ~14: sets 12.5 -> 1.4 ms, instantiations 68 -> 19 ms
 (cold client check: 38-54 -> 14-18 ms).
 
+**As built at C2 (incr-54b, Order 54) — door B.** `analyzer/r11_records.rs`. One
+record per `(callee, resources)` the world's analysis scanned, the resources in the callee's
+own terms — `Parameter(position)` among its generic constraints, `Subject(position)` among the
+generics its impl's subject is written in (the `method_call_substitution` channel: kolt's
+34th instance), or `SelfMarker` — never a `TypeId` (§3.6). The record holds the verdicts as
+the emitters already split them (the affine violations anchored in the body, the exactly-once
+leaks `(note anchor, binding, kind)`, the `drop` forwards, the container check's body SITES,
+the lazy offenses `(position, parameter)`) and the propagation EDGES (the body calls whose
+discovery under the instance's resources instantiated something — re-discovered live at
+replay, a few memoized type questions per call, so the dedup and the reporting order stay the
+worklist's). Filed with `WorldChecks` beside the post record and the item records, under the
+base-cache key and the prefix's source hashes, by a seeded analysis (the item records' rule),
+on a hit and on a miss alike, merged per key. The worklist is the one §1.1 describes; an
+instance is served when its callee is COLD — minted by the stored world and in M110 S3's cold
+set, sealed before the checks (`r11_cold_sources`; on a MISS of the open-module shape the
+alias closure is asked too, so a record filed under one entry never serves a module that
+reaches it through `pkg::` under another entry sharing the key) — and its record's digest is
+the current one; it is emitted through the unchanged emitters at the CURRENT reporting call
+(`r11_emit_verdict`: violations, leaks, forwards, the container check asked live of the
+reporting call's bindings over the recorded sites, then B344 only when nothing else spoke).
+Everything else is scanned live (`r11_scan_instance`), the sets built lazily at the first
+live scan, and filed when the callee is cold. **The digest deviates from §3 deliberately:**
+per resource, whether its CURRENT bound holds a `Drop` (the one bit `type_contains_drop`
+reads through `known` for that constraint — the restriction §3 asked for, as a bit per bound
+rather than a nominal set), PLUS the program's whole `Drop`-nominal set (a world nominal by
+id, a hot one by name and file), because a `Drop` impl written in a HOT module for a COLD
+type changes a nominal a cold body may name outright — no walk from the known types meets
+it, and the enrolment record (`drop_nominals_fingerprints`) closes the same hole the same
+way. The price is one live pass and a refile on the keystroke a `Drop` impl appears or goes
+(the differential's fixture: 5 scanned, 5 refiled, then 5 served again); an all-std instance
+no longer digests "std facts alone" on that one keystroke. Measured on kolt's lone
+`views.vl` keystroke (`lsp-latency.py`, 3 runs, load ~2, the C1 build as the base): the
+instantiations row 10.2–13.2 ms CPU with `slots+167` per analysis → under the 1 ms print
+floor with no slots, `instances-served=34 instances-scanned=0` on every served analysis (the
+open scans 34 and files 34; the server leg 23), edit-to-idle instructions 2.72 → 2.62 G, CPU
+to diagnostics 410 → 380–410 (load-bound). Validated by the edit-replay differential's
+`r11_records` fixture on the classes and the lone legs — a `Drop` impl typed into the leaf
+(the digest moves), the refused instantiation's argument replaced by a number (no longer
+seeded: the recorded refusal is not spoken), the cold generic edited with the seed on the
+leaf (its module hot, scanned live), the propagated child edited in its own module (the
+record's edge leads to a live scan) — the plant `R11RecordUnguarded` (the digest ignored at
+lookup) turning the `Drop` edit red, and the census pin (first 5 scanned / 5 filed; warm 5
+served / 0 scanned). The cold `vilan check` rows (`perf_gate.py`, base 5d2a077a) read within 0.1 %
+after two fixes of the live path's own shape (an edge asked twice; the typed container sites
+re-read) and one of codegen's: `place_value_type_id` and `type_id_of_expr` had been inlined
+into the old loop body and became 13,000 out-of-line calls from `r11_scan_instance` (canvas:
++0.9 M and +0.37 M of a +1.05 M pass delta, callgrind base vs tip) — hinted `#[inline]`, the
+resource rows read +0.03–0.08 %, the others at noise. `set_r11_records` switches the records
+off (serving and filing): M155's stale-row pin observes with it off, since a served instance
+reads no candidate row at all. Door C (per-module filing over P3's file) and §5 Q4 (the lexical
+indexes) stand as written.
+
 ## 5. Questions for the owner
 
 1. **Door B in Order 54** — an "r11-instances" row family keyed `(callee, resources,
