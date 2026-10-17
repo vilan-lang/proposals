@@ -316,5 +316,17 @@
     "stamped": 7,
     "open_after": 108,
     "ids": "B643-B651, E332-E339, F144-F147, M162-M163, N179-N182"
-  }
+  },
+  "seal": {
+    "tip": "6c460ca4",
+    "base_kolt": "scratchpad/seal-54/kolt-base @611d86f (the owner's working tree incl. the untracked rich_editor.vl)",
+    "mode": "same-source; ADVANCE=1; CPU 1.10; RSS 1.05; eight rows (N174)",
+    "script": "sweeps/order54/seal-54.sh",
+    "verdict": "pass 1: every leg green, perf REFUSED (the base commit lacked an untracked source); the perf leg re-run alone: GREEN - T3 kolt CPU x0.988, instructions x0.968, RSS x0.993; leaf 410 -> 330 ms (x0.80), pause x0.82, importers open x0.88, css 650 -> 600, parse break 620 flat; E292 open",
+    "perf_verdict": "perf-verdict-6c460ca4.json (copy)",
+    "bumps": [
+      "nine [[bump]] rows at 1.01 (debug-54's S8 hook seam, ci + reference)"
+    ]
+  },
+  "sealed": "6c460ca4 (2026-10-17; the perf leg re-run once for the base copy's missing untracked file)"
 }

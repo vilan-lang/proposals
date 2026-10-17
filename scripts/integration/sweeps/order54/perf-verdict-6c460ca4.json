@@ -1,0 +1,494 @@
+{
+ "sha": "6c460ca4dd31265972937876c56a1f9eb9354d26",
+ "date": "2026-10-17",
+ "verdict": "green",
+ "red": [],
+ "load": 0.85,
+ "class": "reference",
+ "counter": "instructions:u",
+ "t2": {
+  "results": {
+   "example:math": {
+    "counter": "instructions:u",
+    "instructions": 246054728,
+    "peak_rss_kb": 30712,
+    "cpu_s": 0.036,
+    "exit": 0,
+    "subject": "example:math"
+   },
+   "example:watch": {
+    "counter": "instructions:u",
+    "instructions": 307292719,
+    "peak_rss_kb": 32264,
+    "cpu_s": 0.043,
+    "exit": 0,
+    "subject": "example:watch"
+   },
+   "example:browser": {
+    "counter": "instructions:u",
+    "instructions": 1311684500,
+    "peak_rss_kb": 77952,
+    "cpu_s": 0.171,
+    "exit": 0,
+    "subject": "example:browser"
+   },
+   "example:fullstack": {
+    "counter": "instructions:u",
+    "instructions": 2713464567,
+    "peak_rss_kb": 72756,
+    "cpu_s": 0.325,
+    "exit": 0,
+    "subject": "example:fullstack"
+   },
+   "example:router": {
+    "counter": "instructions:u",
+    "instructions": 1416572330,
+    "peak_rss_kb": 78768,
+    "cpu_s": 0.183,
+    "exit": 0,
+    "subject": "example:router"
+   },
+   "example:reactive-ui": {
+    "counter": "instructions:u",
+    "instructions": 1463358948,
+    "peak_rss_kb": 79372,
+    "cpu_s": 0.186,
+    "exit": 0,
+    "subject": "example:reactive-ui"
+   },
+   "example:ssr": {
+    "counter": "instructions:u",
+    "instructions": 3054378898,
+    "peak_rss_kb": 76828,
+    "cpu_s": 0.362,
+    "exit": 0,
+    "subject": "example:ssr"
+   },
+   "example:canvas": {
+    "counter": "instructions:u",
+    "instructions": 1319862769,
+    "peak_rss_kb": 78512,
+    "cpu_s": 0.176,
+    "exit": 0,
+    "subject": "example:canvas"
+   },
+   "example:rpc": {
+    "counter": "instructions:u",
+    "instructions": 1539280769,
+    "peak_rss_kb": 81812,
+    "cpu_s": 0.193,
+    "exit": 0,
+    "subject": "example:rpc"
+   },
+   "example:todo": {
+    "counter": "instructions:u",
+    "instructions": 3697041969,
+    "peak_rss_kb": 94428,
+    "cpu_s": 0.448,
+    "exit": 0,
+    "subject": "example:todo"
+   },
+   "example:walkthrough": {
+    "counter": "instructions:u",
+    "instructions": 3851874960,
+    "peak_rss_kb": 92524,
+    "cpu_s": 0.454,
+    "exit": 0,
+    "subject": "example:walkthrough"
+   },
+   "genapp:46": {
+    "counter": "instructions:u",
+    "instructions": 7143071807,
+    "peak_rss_kb": 169272,
+    "cpu_s": 0.82,
+    "exit": 0,
+    "subject": "genapp:46"
+   },
+   "plain:160": {
+    "counter": "instructions:u",
+    "instructions": 2799773692,
+    "peak_rss_kb": 128776,
+    "cpu_s": 0.351,
+    "exit": 0,
+    "subject": "plain:160"
+   },
+   "plain:320": {
+    "counter": "instructions:u",
+    "instructions": 5402625880,
+    "peak_rss_kb": 235740,
+    "cpu_s": 0.783,
+    "exit": 0,
+    "subject": "plain:320"
+   }
+  },
+  "judged": [
+   "  ok   example:math                  246,054,728 / ceiling      253,309,219 (x0.9714, limit x1.0100)",
+   "  ok   example:watch                 307,292,719 / ceiling      316,493,354 (x0.9709, limit x1.0100)",
+   "  ok   example:browser             1,311,684,500 / ceiling    1,330,572,454 (x0.9858, limit x1.0201)",
+   "  ok   example:fullstack           2,713,464,567 / ceiling    2,828,515,825 (x0.9593, limit x1.0201)",
+   "  ok   example:router              1,416,572,330 / ceiling    1,449,723,044 (x0.9771, limit x1.0201)",
+   "  ok   example:reactive-ui         1,463,358,948 / ceiling    1,559,323,849 (x0.9385, limit x1.0201)",
+   "  ok   example:ssr                 3,054,378,898 / ceiling    3,117,145,554 (x0.9799, limit x1.0201)",
+   "  ok   example:canvas              1,319,862,769 / ceiling    1,338,608,120 (x0.9860, limit x1.0201)",
+   "  ok   example:rpc                 1,539,280,769 / ceiling    1,571,179,502 (x0.9797, limit x1.0201)",
+   "  ok   example:todo                3,697,041,969 / ceiling    3,866,819,166 (x0.9561, limit x1.0201)",
+   "  ok   example:walkthrough         3,851,874,960 / ceiling    3,992,720,534 (x0.9647, limit x1.0201)",
+   "  ok   genapp:46                   7,143,071,807 / ceiling    7,413,799,197 (x0.9635, limit x1.0100)",
+   "  ok   growth plain 160 -> 320 modules: x1.930 (at most x2.3, Q11/M107)"
+  ]
+ },
+ "t3": {
+  "kolt": "611d86f7",
+  "sources": {
+   "base": "kolt@611d86f7",
+   "tip": "kolt@611d86f7"
+  },
+  "different_sources": false,
+  "counter": "instructions:u",
+  "load_max": 0.85,
+  "runs": 5,
+  "base": {
+   "cpu_s": 1.669,
+   "peak_rss_kb": 326776,
+   "peak_rss_runs_kb": [
+    321536,
+    325960,
+    326776,
+    326804,
+    327996
+   ],
+   "instructions": 13800495237,
+   "exit": 0
+  },
+  "tip": {
+   "cpu_s": 1.649,
+   "peak_rss_kb": 324620,
+   "peak_rss_runs_kb": [
+    323812,
+    324604,
+    324620,
+    324748,
+    325732
+   ],
+   "instructions": 13352814682,
+   "exit": 0
+  },
+  "ratio": {
+   "cpu_s": 0.988016776512882,
+   "peak_rss_kb": 0.9934022082405073,
+   "instructions": 0.9675605442187509
+  },
+  "threshold": 1.1,
+  "rss_threshold": 1.05,
+  "red": [],
+  "notes": []
+ },
+ "lsp": [
+  {
+   "scenario": "leaf keystroke",
+   "base_ms": 410.0,
+   "tip_ms": 330.0,
+   "ratio": 0.8048780487804879
+  },
+  {
+   "scenario": "leaf keystroke + pause",
+   "base_ms": 1070.0,
+   "tip_ms": 880.0,
+   "ratio": 0.822429906542056
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "base_ms": 170.0,
+   "tip_ms": 140.0,
+   "ratio": 0.8235294117647058
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "base_ms": 170.0,
+   "tip_ms": 160.0,
+   "ratio": 0.9411764705882353
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "base_ms": 490.0,
+   "tip_ms": 430.0,
+   "ratio": 0.8775510204081632
+  },
+  {
+   "scenario": "css keystroke",
+   "base_ms": 650.0,
+   "tip_ms": 600.0,
+   "ratio": 0.9230769230769231
+  },
+  {
+   "scenario": "parse break",
+   "base_ms": 620.0,
+   "tip_ms": 620.0,
+   "ratio": 1.0
+  },
+  {
+   "scenario": "parse repair",
+   "base_ms": 640.0,
+   "tip_ms": 640.0,
+   "ratio": 1.0
+  }
+ ],
+ "lsp_notes": [],
+ "lsp_measured": [
+  "leaf keystroke",
+  "leaf keystroke + pause",
+  "shared.vl keystroke",
+  "model.vl keystroke",
+  "model.vl keystroke, importers open",
+  "css keystroke",
+  "parse break",
+  "parse repair"
+ ],
+ "lsp_skipped": [],
+ "e121": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 330.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 2
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 140.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 5
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 160.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 4,
+   "series": "Order 52 (N174): the keystroke edit is unchanged; the Find References probe moved from `fun messages(self)` (gone from model.vl) to `fun global()`, the mirrored store reader, so that probe starts a new series."
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "median_ms": 450.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 1
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 600.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0
+  },
+  {
+   "scenario": "parse break",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 620.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0,
+   "series": "Order 52 (N174): re-anchored from `let messages = channel.messages();` (gone with the mirrored-store exhibit, kolt@dee494ab) to `channel_name.adopt(channel.current_name());` in the same channel.vl - a statement over a `g.channels()` boundary; the break and its repair are the same shape, the figures start a new series."
+  }
+ ],
+ "bumps": [
+  {
+   "subject": "example:browser",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00746 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:browser",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00746 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00502 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00502 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:router",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00978 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:router",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00978 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00893 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00893 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00659 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00659 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00926 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00926 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00858 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00858 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00825 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00825 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "ci",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00525 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "reference",
+   "ratio": 1.01,
+   "reason": "E257 S8's reactive-trace seam in std::reactive (the hook table, the flag reads, SignalCell's inherent tracking new/set/update; the trace itself is its own module, analyzed only where imported): x1.00525 callgrind instructions of `vilan check` on the lane's box against next @b7c7afe0; the inline first build cost todo +1.48 % and reactive-ui +1.98 %, which is what moved the trace out. Re-taken at the Order 54 seal.",
+   "item": "E257"
+  }
+ ],
+ "bumps_for_the_owner": [],
+ "genapp_phases_cpu_ms": {
+  "load+walk": 278.7,
+  "base": 227.7,
+  "build": 11.5,
+  "checks": 285.8,
+  "contexts+graph": 52.3,
+  "async-infer": 13.8,
+  "view-suspensions": 0.0,
+  "async-drops": 0.0,
+  "context-drops": 0.0,
+  "platform-color": 13.7,
+  "const-pass": 18.0,
+  "init-order": 0.1,
+  "emission-walk": 23.400000000000002,
+  "program-drop": 13.299999999999999
+ },
+ "e121_after": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 3,
+   "blocking": true,
+   "mandate": true
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 6,
+   "blocking": true
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 5,
+   "blocking": true,
+   "series": "Order 52 (N174): the keystroke edit is unchanged; the Find References probe moved from `fun messages(self)` (gone from model.vl) to `fun global()`, the mirrored store reader, so that probe starts a new series."
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "target_ms": 500,
+   "green_seals": 2,
+   "blocking": true
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false,
+   "mandate": true
+  },
+  {
+   "scenario": "parse break",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false,
+   "mandate": true,
+   "series": "Order 52 (N174): re-anchored from `let messages = channel.messages();` (gone with the mirrored-store exhibit, kolt@dee494ab) to `channel_name.adopt(channel.current_name());` in the same channel.vl - a statement over a `g.channels()` boundary; the break and its repair are the same shape, the figures start a new series."
+  }
+ ]
+}
