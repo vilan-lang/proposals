@@ -161,37 +161,37 @@
   {
    "id": "M138",
    "lane": "incr-54c",
-   "commit": "INCR54C",
+   "commit": "0279b560",
    "text": "BOTH halves built: S1 in Order 53 (incr-53c, 9b2a7074: the decisions pass runs once, after convergence; async-infer 22-24 -> 16-18 ms) and now the SEEDED FORM (6740877f): the async worklist restarts from the world's cold instance record - read sets with two extra channels (dispatch reads re-asked per round and by member name; binding-level held-value reads), escape positions outside the cold set skipped, the first round's own flips recorded; leaf async-infer 16-18 -> 7.2-8.0 ms (async-seeded=4705/0); the edit-replay differential gained the s3b_held fixture. Accepted: M138's intermediate keys may differ from a clean run while the final flags, emission and diagnostics match. B650 (S3b's cold async seed counted a hot module's assignment into a cold binding) found and fixed in the same commit"
   },
   {
    "id": "M158",
    "lane": "incr-54c",
-   "commit": "INCR54C",
+   "commit": "0279b560",
    "text": "the persisted prefix file carries the prefix key's checks record, std.checks (e06d0ce7): any analysis served a loaded world whose record misses writes it (B553's deferred shape never filed one) and loads it into CHECKED_CACHE after the world, so std's Class A checks no longer re-run; vilan check over a loaded prefix -20.8% instructions on the corpus, -5.1% on the kolt client, -22.2% on the kolt server"
   },
   {
    "id": "B635",
    "lane": "incr-54c",
-   "commit": "INCR54C",
+   "commit": "0279b560",
    "text": "context::apply mints every section's cold rows before any hot row (30898f55): a replayed graph and a rebuild had disagreed on 2 cold call rows; fix"
   },
   {
    "id": "N157",
    "lane": "incr-54c",
-   "commit": "INCR54C",
+   "commit": "0279b560",
    "text": "closed by std-prefix P5 (12886e1c): .cargo/config.toml sets VILAN_TEST_WORLD_CACHE = target/world-cache and the inference and docs test binaries build over the persisted std prefix (the CLI-spawning binaries wait for P6b). Measured CPU: one inference test 174 -> 101-106 ms; the inference binary 975 -> 567-593 CPU-s; the docs binary 25.7 -> 19.0 CPU-s; the WHOLE SUITE 4,050 -> 3,637 CPU-s (-10.2%); Order 48's 13,002 CPU-s figure was the debug profile - today's suite is 28% of it. Door (a)'s cross-process world is the P3 file, so neither the fork-server door (b) nor a wait for M36 was needed. N182 (the first analysis over a loaded prefix rebuilds a derived impl index, ~390 rows, once per process) filed as the residue"
   },
   {
    "id": "B650",
    "lane": "incr-54c",
-   "commit": "INCR54C",
+   "commit": "0279b560",
    "text": "closed on arrival - FIXED in the filing lane with M138's seeded form (6740877f): S3b's cold async seed (PostRecord::async_cold) counted a value a HOT module assigned into a cold binding as the cold world's, so a keystroke that removed hook = holder.run kept call_hook async in the emitted JS where a clean analysis made it synchronous; fixed by M138's cold view (async_infer::View::admits_held: a held value outside the cold set is skipped in the cold computations); pinned by the edit-replay differential's s3b_held fixture, red on the classes and layered legs with the filter reverted; latent since Order 50 (M127)"
   },
   {
    "id": "B651",
    "lane": "incr-54c",
-   "commit": "INCR54C",
+   "commit": "0279b560",
    "text": "closed on arrival - FIXED in the filing lane (376c94b7): a std NAMESPACE a program's import names rides in the prefix key's closure as name/ (a spelling no module has), so a world built for a program that never named std::web is no longer served to one that does (which refused import std::web::dmo; as the moved web prelude); pinned by a_std_namespace_the_import_names_is_part_of_the_prefix_key over the file and the in-process prefix; wrong on v0.51.1 too; found by P5; the dev-only edge (a std edit adding a module under a namespace is not in the content hash) is noted in the commit"
   },
   {
