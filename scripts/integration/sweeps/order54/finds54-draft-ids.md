@@ -1,4 +1,4 @@
-# Order 54 finds: real ids, sections, filing notes (draft for the integrator; PASS 1 of 2)
+# Order 54 finds: real ids, sections, filing notes (draft for the integrator; PASS 1 + PASS 2 (incr-54c, fmt-54 appended))
 
 Method: every `newitems54-<lane>.json` for the eight MERGED lanes (papers-54, editor-54, std-54, debug-54, native-54, incr-54a, solver-54, incr-54b) was turned into `filed/spec54-<lane>.json` with REAL ids, checked against file_items.py's own rules by a read-only re-implementation (required fields, id starts with its section letter, no existing item/INDEX row/tombstone, no unescaped pipe in title or discussion, section heading exists, no leftover `X?n` placeholder anywhere). No scripts were run. Fixes applied to the lanes' files: three titles carried an unescaped `|` inside backticks (incr-54a B648, native-54 N180 twice) and were escaped to `\|` (papers-54's B643 already had it); papers-54's F?3 cross-references to its own B?2 now say B644; the fixed finds' status fields say FIXED (they are closed on arrival); E332's status/body carry the narrowing note.
 
@@ -6,18 +6,18 @@ Maxima at the start (INDEX + items + archive tombstones): A173, B642, E331, F143
 
 File ONE lane at a time in this order (ids are distinct across files, so the order is only for tidiness): papers-54, editor-54, std-54, debug-54, native-54, incr-54a, solver-54. incr-54b has NO new items (its file is `"items": []`; no spec written).
 
-## Next free id per section (reserved for pass 2: incr-54c, then fmt-54)
+## Next free id per section (after pass 2)
 
 | section | next free |
 |---|---|
 | A | A174 |
-| B | B650 |
-| E | E337 |
+| B | B652 |
+| E | E340 |
 | F | F148 |
-| M | M163 |
-| N | N182 |
+| M | M164 |
+| N | N183 |
 
-Pass 2 notes: fmt-54's `newitems54-fmt-54.json` already exists (E?1, E?2, E?3 -> three E ids) and would take E337..E339 if incr-54c files no E item; merge order is incr-54c then fmt-54, so allocate incr-54c first. incr-54c's finds (M138's seeded form is M138 itself; its likely finds are M/B/N) continue at M163 / B650 / N182. closes54-draft-second-pass.json (E330) references fmt-54's E?3: replace the wording with the real id once allocated.
+Pass 2 consumed B650-B651, E337-E339, M163, N182 (incr-54c then fmt-54, in that order).
 
 ## Allocation table
 
@@ -57,3 +57,23 @@ Finds filed: 20 (papers-54 6, editor-54 2, std-54 3, debug-54 2, native-54 3, in
 ## Not filed / skipped
 
 None skipped: every find in the eight files is allocated. incr-54b: no finds (its two design deviations from the paper are in the paper's 'As built at C2' paragraph).
+
+## PASS 2 (incr-54c, fmt-54)
+
+Specs: `filed/spec54-incr-54c.json` then `filed/spec54-fmt-54.json` (file in that order). Pipe escapes in titles checked; no leftover placeholders.
+
+| lane | placeholder | id | sec | title (short) | filing note |
+|---|---|---|---|---|---|
+| incr-54c | B?1 | B650 | B | S3b's cold async seed counted a value a HOT module assigned into a cold binding | file, then CLOSE ON ARRIVAL (INCR54C, fixed with M138's seeded form) |
+| incr-54c | B?2 | B651 | B | a std NAMESPACE the import names was not part of the prefix key (wrong diagnostic over a shared prefix) | file, then CLOSE ON ARRIVAL (INCR54C, 376c94b7) |
+| incr-54c | M?3 | M163 | M | M156 measured: const pass reaches 0 of ~300 drop roots but the soundness gate cannot be checked at plan time; doors (a)/(b)/(c) | file OPEN (design question; rec (c) this order); M156 is STAMPED, not closed |
+| incr-54c | N?4 | N182 | N | first analysis over a LOADED prefix examines ~390 more impl rows (derived index rebuilt once per process) | file OPEN; Order 55 beside P6 |
+| fmt-54 | E?1 | E337 | E | a call followed by `!`/`?`/a field never breaks its arguments | file OPEN (S, next order) |
+| fmt-54 | E?2 | E338 | E | a call inside an element hole is measured without the hole's `}` | file OPEN (XS; ask at the sweep whether the hole's `}` counts) |
+| fmt-54 | E?3 | E339 | E | binary right operand vs the call statement's `;` (101-column asymmetry) | file OPEN as a design question, owner rec KEEP; E330's close names it |
+
+Pass-2 counts: 7 finds (B 2, E 3, M 1, N 1); 2 on-arrival closes (B650, B651); 5 open (E337, E338, E339, M163, N182). Totals after both passes: 27 finds, 11 on-arrival closes, 16 open.
+
+## Merged one-shot files
+
+`closes54.json` (35 closes = first pass 16 + first-pass on-arrival 9 + E331 + second pass 9 [M138, M158, B635, N157, E329, E325, E330 + on-arrival B650, B651]; ids unique; tokens `INCR54C` and `FMT54` remain in `commit`) and `stamps54.json` (7 stamps: E292 [incr-54c rows appended], E257, A173, M157, L24, M156, M36). Order: file_items per lane (papers, editor, std, debug, native, incr-54a, solver, incr-54c, fmt) -> close_batch closes54.json (it checks item files wholesale, so ALL on-arrival ids and E339 must be filed first) -> stamp_items stamps54.json. The component drafts are kept.
