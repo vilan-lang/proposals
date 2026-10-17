@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B?1",
+   "section": "B",
+   "kind": "correctness (incremental: a stale async seed; FIXED in incr-54c's M138 commit)",
+   "area": "Performance & footprint",
+   "status": "FIXED — incr-54c, Order 54 (close at the merge, with M138)",
+   "discussion": "incr-54c (Order 54); sweeps/order54/incr-54c/finds/s3b_held_seed/",
+   "title": "S3b's cold async seed (`PostRecord::async_cold`) counted a value a HOT module assigned into a cold binding as the cold world's: a keystroke that removed `hook = holder.run` (an `async || i32` field read assigned into another module's `export mut hook`) kept `call_hook` async in the emitted JS where a clean analysis made it synchronous",
+   "body": "The cold result is meant to be the least fixpoint over the cold nodes with every hot fact unknown, but `binding_holds_async` asked a cold binding's held values without asking where each came from: a held CLOSURE from a hot module reads as not async by itself (never in the cold set), a held FIELD read or async-returning CALL did not (`async_fields` / `async_returning` are program facts), so the caller entered the seed through the hot assignment and a monotone fixpoint could not drop it once the assignment went. Fixed by M138's cold view (`async_infer::View::admits_held`: a held value outside the cold set is skipped in the cold computations). Pinned by the edit-replay differential's `s3b_held` fixture (red on the classes and layered legs with the filter reverted; the std-prefix leg stayed green). Latent since Order 50 (M127)."
+  },
+  {
+   "id": "B?2",
+   "section": "B",
+   "kind": "correctness (std prefix: a wrong diagnostic over a shared prefix; FIXED in incr-54c, commit d86886d9)",
+   "area": "Performance & footprint",
+   "status": "FIXED — incr-54c, Order 54 (close at the merge)",
+   "discussion": "incr-54c (Order 54); sweeps/order54/incr-54c/finds/a154_namespace_key/",
+   "title": "A std NAMESPACE a program's import names was not part of the std prefix's key: a prefix world built for a program that never named `std::web` was served to one that does, which then refused `import std::web::dmo;` as the moved web prelude (\"`std::web` moved to `std::web::prelude`\") instead of reporting the miss under the namespace",
+   "body": "The prefix is keyed by the std CLOSURE (std-prefix.md §4.3) and `std_closure` skipped a pure namespace (a directory with no body: nothing of its own to follow), but the world holds it (`namespace_only_modules`, which an import resolving through it reads), so two programs with one module closure and different namespaces shared a world right for only one of them. Reproduced with v0.51.1: `VILAN_STD_PREFIX=on VILAN_WORLD_CACHE=dir vilan check empty.vl` then `... vilan check dmo.vl` (the repro directory); in one process over the in-process prefix (P1) the same pair answers the same wrong way. Found by P5 (std_surface's a154 pin red over the suite's shared world cache). Fixed: a namespace rides in the closure as `name/` (a spelling no module has; the drain's comparison of what it loaded and the key's content hash read the bodied entries only); pinned by `a_std_namespace_the_import_names_is_part_of_the_prefix_key` over the file and the in-process prefix. A std edit that adds a module under a namespace is not in the key's content hash (the hash covers the closure's module files and lib.vl, not directory listings) - a dev-only edge, noted."
+  },
+  {
+   "id": "M?3",
+   "section": "M",
+   "kind": "performance (editor; design question before the slice)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-16 (incr-54c's find, Order 54): M156 MEASURED, the slice NOT built",
+   "discussion": "incr-54c (Order 54); sweeps/order54/incr-54c/finds/m156_const_reach/README.md",
+   "title": "M156 measured: the const pass reaches NONE of kolt's enrolled drop roots (client 0 of 301, server 0 of 256; on every served leaf/css keystroke 0 of 290-301) - but the slice's soundness gate (\"bodies the const pass does NOT reach\") cannot be evaluated where the drop plan runs: the plan runs in the checks phase, the const pass after it, and a served analysis's const pass lowers whatever its MISSED sites reach (a hot site, an evicted entry) - a hot const site can reach any cold root its module imports",
+   "body": "Probe (temporary): the union of the const world's lowered functions (`ConstWorld::reach_memo`/`union_memo`) and their nested closures, intersected with `plan_resource_drops`' roots. Kolt client: 167 sites lower 187 functions = 188 of 5,745 bodies; the 301 roots (248 functions, 53 closures) are all outside; server: 1 site, 0 lowered, 256 roots outside; every analysis of the lsp-latency leaf and css rows the same (0 reached). So by the item's measure the slice would serve ~all roots - the brief's condition to build it holds - but no analysis can know at planning time which bodies its const pass will lower: `dropped_bindings` and the glue are emitter inputs (TypeIds), which the record cannot carry (editor-latency.md §3.6), and the transformer reads them for every body it lowers. Doors: (a) served-with-verification - skip planning a cold root whose record's digest holds, mark it on the Program, and have the const pass compare its lowered bodies with the served roots; a hit (never on kolt) re-runs the analysis with planning whole (M: needs a post-pass retry path, which the analysis does not have today); (b) a static over-approximation of the const reach at plan time - every body reachable from any const site by any call, function reference, dispatch candidate (by name) and module-level initializer read (M: a call-graph-shaped walk in the checks phase, its own soundness argument); (c) leave it: plan_resource_drops is ~4 ms of the served leaf keystroke after M19 T1c restores the enrolment. Rec: (c) this order and (a) if E292's css/parse-break rows still need ~4 ms after Order 55's items; (b) only with a second reader for the same reach."
+  },
+  {
+   "id": "N?4",
+   "section": "N",
+   "kind": "tooling / measurement (std prefix)",
+   "area": "Performance & footprint",
+   "status": "OPEN — filed 2026-10-16 (incr-54c's find, Order 54)",
+   "discussion": "incr-54c (Order 54); `std_surface::m107_impl_lookups_examine_rows_linear_in_the_package` run over the suite's world cache",
+   "title": "The first analysis over a LOADED std prefix examines more impl rows than a base-cache hit of the same world: m107's 30-type program read 1,534 rows where its 60-type twin, served the same world from memory a moment later, read 1,142 (canonically the margin is ~0) - so the M107 pin's doubling ratio read x1140 over the file",
+   "body": "Seen when P5 put the inference binary over the persisted prefix (the pin now opts out: it counts base-cache hits of one canonical world). The extra ~390 rows are paid once per process by the first analysis served a decoded world, not per lookup (the 60/120-type rows doubled as they should); a plausible cause is a derived index the load leaves to rebuild (std-prefix P3's 'derived indexes left to rebuild'), first queried inside the counted window. Not a correctness question and not quadratic; it moves what a counting pin reads. Rec: find the index (S), rebuild it in `prefix_file_load` so a loaded world counts as a stored one, and drop the pin's opt-out."
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+import std::time;
+import pkg::lib::{ call_hook, hook };
+
+struct Holder {
+	run: async || i32,
+}
+
+export fun render(): i32 {
+	let holder = Holder { run = || {
+		time::sleep(1);
+		2
+	} };
+	hook = holder.run;
+	call_hook()
+}
