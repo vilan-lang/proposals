@@ -59,6 +59,7 @@
 | ID | Title | Kind | Discussion |
 |----|-------|------|------------|
 | [D5](items/D5.md) | Public traction plan | design | |
+| [D16](items/D16.md) | The tour and the gotchas page still say a `match` cannot be an operator operand (B231 made it one); the only refusal left is a `match` beginning a statement, and the gotcha cites the working `(match x { … }) + 1` as the broken form | documentation (S) | kolt rich text editor (2026-10-19) |
 
 ## E. LSP & tooling
 
