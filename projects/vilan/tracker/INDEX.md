@@ -50,6 +50,7 @@
 | [B658](items/B658.md) | `let x = opt is Some(let t) else ret;` inside an `if` block is reported only at the `else` branch below it ("found ')' expected ','" in an unrelated call); the line at fault is never named | diagnostics (parser; S) | kolt message editor (2026-10-20) |
 | [B659](items/B659.md) | An unsuffixed integer literal next to a closure in a generic call (`opt.map_or(\|it\| it.depth, 0)`, `depth: usize`) defaults to `i32` before the closure's result type is unified: "Expected i32, but got usize" inside the closure | type inference (checker; S) | kolt rich text editor (2026-10-20) |
 | [B660](items/B660.md) | A tuple literal's trailing comma (none by design) is diagnosed as "unclosed `(`" when the tuple is a call argument, and as a bare "expected an expression" otherwise; neither names the comma | diagnostics (parser; S) | kolt message editor (2026-10-20) |
+| [B661](items/B661.md) | A closure type taking a closure without parentheses (`|str, |bool| void| void`) fails to parse with no hint to parenthesize the inner type; in a large struct the recovery drops the other fields and cascades into "no field" errors | diagnostics (parser; S) | kolt message editor (2026-10-20) |
 
 ## C. Memory model
 
