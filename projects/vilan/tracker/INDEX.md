@@ -48,6 +48,7 @@
 | [B656](items/B656.md) | A local named `css` inside a closure in an element hole loses the "`css` is a keyword" diagnostic (only the hole's `List<void>` error and two "expected `;`"); at a `fun` body's top it is reported, but after a cascade error | diagnostics (parser; S) | kolt rich text editor (2026-10-19) |
 | [B657](items/B657.md) | Struct update (`Point { x = 1, ..origin() }`) is not in the language and the parser never says so ("unclosed `{`" on a closed brace; in larger literals "expects 6 fields, but got 0" and a stray "expected `;`"); whether to add it is the owner's call | diagnostics (parser; S) + feature question | kolt rich text editor (2026-10-19) |
 | [B658](items/B658.md) | `let x = opt is Some(let t) else ret;` inside an `if` block is reported only at the `else` branch below it ("found ')' expected ','" in an unrelated call); the line at fault is never named | diagnostics (parser; S) | kolt message editor (2026-10-20) |
+| [B659](items/B659.md) | An unsuffixed integer literal next to a closure in a generic call (`opt.map_or(\|it\| it.depth, 0)`, `depth: usize`) defaults to `i32` before the closure's result type is unified: "Expected i32, but got usize" inside the closure | type inference (checker; S) | kolt rich text editor (2026-10-20) |
 
 ## C. Memory model
 
