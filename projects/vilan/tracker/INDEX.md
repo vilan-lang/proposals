@@ -44,6 +44,7 @@
 | [B652](items/B652.md) | String-literal escapes beyond the single-character set reach the JS output with their backslash escaped: `"\x41"` and `"\u{1F600}"` always (lengths 4 and 9), `"\u0301"` in some files (a package import or a particular sibling set flips it) — spec §2 promises JS escape semantics | miscompile (JS emitter; S) | kolt rich text editor (2026-10-19); repros inline in the item |
 | [B653](items/B653.md) | A struct literal may name the same field twice (`Pair { left = 1, left = 2 }`): checks clean, the last value wins | diagnostics (checker; S) — a missing error | kolt rich text editor (2026-10-19); a FIXME in kolt's old rich_editor.vl |
 | [B654](items/B654.md) | A triple-quoted string as an attribute argument (`[extern("""…""")]`) does not parse, and the errors ("cannot find 'extern'", "expected `;`" at `)]`) do not say why; a multi-line host binding has no spelling | diagnostics / grammar (parser; S) | kolt rich text editor (2026-10-19) |
+| [B655](items/B655.md) | A `struct` declared inside an `impl` block is accepted silently and then does not exist ("unknown struct" only at a use; nothing at all if unused) | diagnostics (parser/checker; S) — a missing error | kolt rich text editor (2026-10-19) |
 
 ## C. Memory model
 
