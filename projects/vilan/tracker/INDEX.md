@@ -45,6 +45,7 @@
 | [B653](items/B653.md) | A struct literal may name the same field twice (`Pair { left = 1, left = 2 }`): checks clean, the last value wins | diagnostics (checker; S) — a missing error | kolt rich text editor (2026-10-19); a FIXME in kolt's old rich_editor.vl |
 | [B654](items/B654.md) | A triple-quoted string as an attribute argument (`[extern("""…""")]`) does not parse, and the errors ("cannot find 'extern'", "expected `;`" at `)]`) do not say why; a multi-line host binding has no spelling | diagnostics / grammar (parser; S) | kolt rich text editor (2026-10-19) |
 | [B655](items/B655.md) | A `struct` declared inside an `impl` block is accepted silently and then does not exist ("unknown struct" only at a use; nothing at all if unused) | diagnostics (parser/checker; S) — a missing error | kolt rich text editor (2026-10-19) |
+| [B656](items/B656.md) | A local named `css` inside a closure in an element hole loses the "`css` is a keyword" diagnostic (only the hole's `List<void>` error and two "expected `;`"); at a `fun` body's top it is reported, but after a cascade error | diagnostics (parser; S) | kolt rich text editor (2026-10-19) |
 
 ## C. Memory model
 
