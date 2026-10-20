@@ -46,6 +46,7 @@
 | [B654](items/B654.md) | A triple-quoted string as an attribute argument (`[extern("""…""")]`) does not parse, and the errors ("cannot find 'extern'", "expected `;`" at `)]`) do not say why; a multi-line host binding has no spelling | diagnostics / grammar (parser; S) | kolt rich text editor (2026-10-19) |
 | [B655](items/B655.md) | A `struct` declared inside an `impl` block is accepted silently and then does not exist ("unknown struct" only at a use; nothing at all if unused) | diagnostics (parser/checker; S) — a missing error | kolt rich text editor (2026-10-19) |
 | [B656](items/B656.md) | A local named `css` inside a closure in an element hole loses the "`css` is a keyword" diagnostic (only the hole's `List<void>` error and two "expected `;`"); at a `fun` body's top it is reported, but after a cascade error | diagnostics (parser; S) | kolt rich text editor (2026-10-19) |
+| [B657](items/B657.md) | Struct update (`Point { x = 1, ..origin() }`) is not in the language and the parser never says so ("unclosed `{`" on a closed brace; in larger literals "expects 6 fields, but got 0" and a stray "expected `;`"); whether to add it is the owner's call | diagnostics (parser; S) + feature question | kolt rich text editor (2026-10-19) |
 
 ## C. Memory model
 
