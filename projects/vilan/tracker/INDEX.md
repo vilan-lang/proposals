@@ -33,6 +33,7 @@
 | [B665](items/B665.md) | NEW — a non-`const` `css { … } + style()` sum is reported at a caller's closure (no mention of the sum or its function) | diagnostic (checker; S) | kolt message hover (2026-10-21) |
 | [M666](items/M666.md) | NEW — a derived `FromJson` refuses an object missing an `Option` field ("missing field"), so stored JSON can never gain a field | API / schema evolution (std::json; S) | kolt panel lock (2026-10-21) |
 | [B667](items/B667.md) | NEW — a function with no written return type calling itself in a `match` arm: "type of match expression could not be resolved" (`: void` fixes it) | checker / inference (S) | kolt panels (2026-10-21) |
+| [M668](items/M668.md) | NEW — `std::web::router` writes `""` as every entry's history state and exposes no way to set or read one; apps re-mark entries with their own externs | API gap (std::web::router; S) | kolt panel history (2026-10-21) |
 | [B663](items/B663.md) | NEW — a struct literal as a `match` subject is a parse error with no hint to parenthesize; inside element syntax it is reported at the closing tag, far from the cause | diagnostic (parser; S) | kolt channel dialogs (2026-10-20) |
 | [B146](items/B146.md) | NEW — the context coverage check's refinement consumes node-owned dispatch sites only | feature | |
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
