@@ -29,6 +29,7 @@
 |----|-------|------|------------|
 | [B3](items/B3.md) | Variadic-generics tail | feature | |
 | [B11](items/B11.md) | `!` / `?.` tail | design | |
+| [B663](items/B663.md) | NEW — a struct literal as a `match` subject is a parse error with no hint to parenthesize; inside element syntax it is reported at the closing tag, far from the cause | diagnostic (parser; S) | kolt channel dialogs (2026-10-20) |
 | [B146](items/B146.md) | NEW — the context coverage check's refinement consumes node-owned dispatch sites only | feature | |
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
 | [B183](items/B183.md) | NEW — tuple comprehension `(item in tuple => EXP)` + the zip form | design | owner-proposed |
