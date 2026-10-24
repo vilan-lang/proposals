@@ -41,6 +41,7 @@
 | [B673](items/B673.md) | NEW — a closure type taking a closure (`|A, |B| void| void`) is a parse error with no hint to parenthesize, and the struct is then reported as having no fields | diagnostic (parser; S) | kolt spelling (2026-10-24) |
 | [M674](items/M674.md) | NEW — no way to find an item's position by a condition (`position`): only `index_of(value)` | API gap (std::list / std::iterator; S) | kolt reactions (2026-10-24) |
 | [M675](items/M675.md) | NEW — no empty `View`: a view function with nothing to show (and an `each` row kept only for its effects) must place a DOM element | API gap (std::ui; S–M) | kolt placeholders (2026-10-24) |
+| [M676](items/M676.md) | NEW — `Event` has `prevent_default` but no `stop_propagation` | API gap (std::web::dom; S) | kolt document comments (2026-10-24) |
 | [B663](items/B663.md) | NEW — a struct literal as a `match` subject is a parse error with no hint to parenthesize; inside element syntax it is reported at the closing tag, far from the cause | diagnostic (parser; S) | kolt channel dialogs (2026-10-20) |
 | [B146](items/B146.md) | NEW — the context coverage check's refinement consumes node-owned dispatch sites only | feature | |
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
