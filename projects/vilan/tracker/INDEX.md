@@ -39,6 +39,7 @@
 | [B671](items/B671.md) | NEW — `vilan fmt` declines a `match` statement with valued arms (`match … { … };`), and in a long file names an unrelated line (an import) | formatter (S) | kolt task table (2026-10-22) |
 | [B672](items/B672.md) | NEW — an unsupported string escape (`"\u{10FFFF}"`) is kept as its literal characters, with no error | diagnostic (lexer; S) | kolt spelling (2026-10-24) |
 | [B673](items/B673.md) | NEW — a closure type taking a closure (`|A, |B| void| void`) is a parse error with no hint to parenthesize, and the struct is then reported as having no fields | diagnostic (parser; S) | kolt spelling (2026-10-24) |
+| [B677](items/B677.md) | NEW — `run_with_owner(owner, f)` with a closure parameter is refused, and the suggested closure-literal wrap compiles but runs `f` under its creation owner (silent leak) | diagnostic (checker; S) | kolt page actions (2026-10-24) |
 | [M674](items/M674.md) | NEW — no way to find an item's position by a condition (`position`): only `index_of(value)` | API gap (std::list / std::iterator; S) | kolt reactions (2026-10-24) |
 | [M675](items/M675.md) | NEW — no empty `View`: a view function with nothing to show (and an `each` row kept only for its effects) must place a DOM element | API gap (std::ui; S–M) | kolt placeholders (2026-10-24) |
 | [M676](items/M676.md) | NEW — `Event` has `prevent_default` but no `stop_propagation` | API gap (std::web::dom; S) | kolt document comments (2026-10-24) |
