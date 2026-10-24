@@ -37,6 +37,9 @@
 | [M669](items/M669.md) | NEW — `Server` has no bind address (always every interface) and `require_build` looks for `dist/` only in the working folder | API gap (std::http, std::build; S) | kolt desktop app (2026-10-21) |
 | [B670](items/B670.md) | NEW — `(param * 100.0).round()` in a closure whose parameter type comes from the receiver: "cannot call method on unknown" (`param.round()` is fine) | checker / inference (S) | kolt image zoom (2026-10-22) |
 | [B671](items/B671.md) | NEW — `vilan fmt` declines a `match` statement with valued arms (`match … { … };`), and in a long file names an unrelated line (an import) | formatter (S) | kolt task table (2026-10-22) |
+| [B672](items/B672.md) | NEW — an unsupported string escape (`"\u{10FFFF}"`) is kept as its literal characters, with no error | diagnostic (lexer; S) | kolt spelling (2026-10-24) |
+| [B673](items/B673.md) | NEW — a closure type taking a closure (`|A, |B| void| void`) is a parse error with no hint to parenthesize, and the struct is then reported as having no fields | diagnostic (parser; S) | kolt spelling (2026-10-24) |
+| [M674](items/M674.md) | NEW — no way to find an item's position by a condition (`position`): only `index_of(value)` | API gap (std::list / std::iterator; S) | kolt reactions (2026-10-24) |
 | [B663](items/B663.md) | NEW — a struct literal as a `match` subject is a parse error with no hint to parenthesize; inside element syntax it is reported at the closing tag, far from the cause | diagnostic (parser; S) | kolt channel dialogs (2026-10-20) |
 | [B146](items/B146.md) | NEW — the context coverage check's refinement consumes node-owned dispatch sites only | feature | |
 | [B147](items/B147.md) | NEW — a module/file-level default for `[platform(...)]` | design | |
