@@ -1,0 +1,8 @@
+// tooling-55 find: an un-annotated list of Ok/Err records its element type as a bare `Result`.
+// Hover `Ok(2)`: reads `Result::Ok` (no instantiation) - the analysis' recorded list type is `List<Result>`
+// with the enum's arguments empty, so no hover label can be built from it. Annotated, it hovers
+// `Result<i32, str>::Ok(i32)` (E333).
+fun main() {
+	let results = [Ok(2), Err("bad")];
+	let _ = results;
+}

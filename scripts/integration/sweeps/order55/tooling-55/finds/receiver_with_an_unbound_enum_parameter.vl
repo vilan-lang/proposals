@@ -1,0 +1,7 @@
+// tooling-55 find: a variant receiver whose method leaves one of the enum's parameters out of the call's
+// substitution says nothing on hover: `Ok(5).map_err(|code: str| code)` records F and E in
+// `method_call_substitution` but not T (bound only through the receiver's own payload), so the receiver
+// `Ok` hovers bare. The payload `5` (T = i32) and the closure parameter (E = str) are both known.
+fun main() {
+	let _ = Ok(5).map_err(|code: str| code);
+}

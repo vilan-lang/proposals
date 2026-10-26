@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "E?1",
+   "section": "E",
+   "kind": "tooling - `vilan run --watch` and a SIGTERM",
+   "area": "Tooling",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55); sweeps/order55/tooling-55/finds/watch_sigterm_orphan.sh",
+   "title": "`vilan run --watch` answers SIGTERM/SIGHUP (and a lone SIGINT) by exiting 130 and leaving the round's node child running - E335's forwarding covers the plain run only",
+   "body": "E335 forwards the three signals to a plain `vilan run`'s program; a watch session registers no child with the forwarding pipeline (its rounds restart children through `ManagedChild::kill` and the brief said to keep that path intact), so a supervisor stopping a watcher still leaves the program holding its port. The repro (`finds/watch_sigterm_orphan.sh <vilan>`) prints `child N STILL ALIVE (orphan)`. Rec: the hook, with no plain-run child registered, kills the watch loop's current child (the loop can publish its pid into the same registry in `Exit` mode: forward, wait up to a bound, then exit 130). `tooling`; XS-S."
+  },
+  {
+   "id": "B?1",
+   "section": "B",
+   "kind": "editor - an un-annotated list of `Ok`/`Err` records a bare `Result` element type",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55); sweeps/order55/tooling-55/finds/unannotated_result_list.vl",
+   "title": "`[Ok(2), Err(\"bad\")]` with no annotation is recorded as `List<Result>` - the enum's arguments are empty - so a variant element hovers bare (`Result::Ok`) where `[Some(1), None]` hovers `Option<i32>::Some(i32)`",
+   "body": "Found writing E333's pin: the annotated list (`List<Result<i32, str>>`) and a tuple of `Some`/`None` are read correctly from the container's type, the un-annotated `Ok`/`Err` list is not, because its recorded type carries `Enum(result, [])`. Either the unifier leaves the arguments off when two variants of a two-parameter enum meet (`T` from one arm, `E` from the other - the right answer is `Result<i32, str>`), or the table records it before the merge. `solver`/`diagnostics` territory; `fix`."
+  },
+  {
+   "id": "E?2",
+   "section": "E",
+   "kind": "editor (hover; XS)",
+   "area": "Editor",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55); sweeps/order55/tooling-55/finds/receiver_with_an_unbound_enum_parameter.vl",
+   "title": "a variant receiver whose method does not bind every enum parameter in the call's substitution hovers bare - `Ok(5).map_err(|code: str| code)` has F and E but not T",
+   "body": "E333 reads a receiver's instantiation from the member call's `self` parameter under `method_call_substitution`; a parameter only the receiver's own payload binds (`T` of `Ok(5)`, `E` of `Err(\"six\")`) is absent, so the label has a hole and says nothing. Rec: fill the gap from the variant call's payload argument types (`Ok(5)` binds the payload slot's generic) when the receiver IS the variant call. `tooling`."
+  },
+  {
+   "id": "E?3",
+   "section": "E",
+   "kind": "tooling (gate; M)",
+   "area": "Editor",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55); E334's stamp",
+   "title": "the E126 exhibit is now SMALLER than kolt: the recorded application shape (2026-09-04: 99,522 entities / 18,745 substitutions / 433 implementations) is a third of today's kolt (634,908 / 35,988 / 1,224 on `src/client.vl`) and the exhibit's census (257,606 / 27,870 / 575) tracks neither",
+   "body": "E334 fixed the exhibit's generator (the stage is `.derive(..).cell()`); it now analyzes clean and reads 2.59x the OLD recording's entities, outside the 2x band, so the shape gate stays ignored. Re-recording against today's kolt (a release-profile measurement of five warm keystrokes for RECORDED_WARM_CPU_MS too) flips the band: the exhibit would be 0.41x of kolt's entities. The 500 ms diagnostics budget gates are only as honest as the subject: decide whether the exhibit grows (more components / icons) to track kolt, or the recording is re-taken and the band widened. Owner's call on the subject's size; a Sonnet lane can do the measurement. `tooling`."
+  },
+  {
+   "id": "E?4",
+   "section": "E",
+   "kind": "tooling (process; XS)",
+   "area": "Tooling",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55)",
+   "title": "vilan-dap's frame naming resolves a closure to its enclosing function by the NEAREST PRECEDING NAMED SEGMENT in the generated script - a function declared inside another function is the one blind spot",
+   "body": "E336 names `a closure in <name>` from the source map (S5 marks function heads with `names`; the emitted functions are flat at module level, so the last head before a closure's head is the function holding it). A function declared INSIDE a function (a local `fun`) sits between the outer head and a later closure of the outer function and would be named instead. Rec: S5 also marks the end of each function head's span (or the map carries the function's extent) so the adapter can nest properly; or the sidecar's span records cover std. Cosmetic; `tooling`."
+  }
+ ]
+}

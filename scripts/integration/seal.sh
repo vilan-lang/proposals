@@ -5,7 +5,7 @@
 # The PERF LEG's environment (Order 50; this folds in sweeps/order49/perf-leg.sh's two options):
 #   VILAN_PERF_KOLT_DIR     the BASE's kolt: a CLONE COPY (never the owner's checkout) where the integrator committed the
 #                           owner's working tree, generated inputs carried (src/lucide, src/search-dict); default ~/code/kolt.
-#   VILAN_PERF_KOLT_COMMIT  the commit in that copy the base is archived at (the seal refuses a base that does not check clean
+#   VILAN_PERF_KOLT_COMMIT  REQUIRED (no default, N175): the commit in that copy the base is archived at (the seal refuses a base that does not check clean
 #                           under the BASE compiler, and says why - read the base LSP rows' `errors` column anyway).
 #   VILAN_PERF_THRESHOLD    the ratio past which a row is RED (perf_gate.py --threshold; its default is 1.10).
 #   VILAN_PERF_RSS_THRESHOLD  the ratio past which the T3 kolt row's PEAK RSS is red (N166; perf_gate.py reads it itself; default 1.05).
@@ -56,8 +56,12 @@ cargo build -q --release -p vilan-cli -p vilan-lsp > "$S/perf-build-$tip.log" 2>
 # (a plain directory: no git; built once so generated files exist). Without it, both sides check kolt@$VILAN_PERF_KOLT_COMMIT.
 # `shared.vl keystroke` is left out: its anchors are gone from today's kolt (N145). Add --advance by exporting
 # VILAN_PERF_ADVANCE=1 on the order's FINAL seal only. Run QUIET (load <= 2).
-commit="${VILAN_PERF_KOLT_COMMIT:-984a1dfb}"; kolt="${VILAN_PERF_KOLT_DIR:-$HOME/code/kolt}"
+# N175: there is NO default commit - 984a1dfb (the v0.44.0 seal's base) pre-dates the mirrored-store exhibit, so on it N174's
+# harness SKIPS `parse break` on the base side and the seal is red on a skipped mandate row. The commit is the one the integrator
+# made inside the base kolt copy, so the seal names it or refuses.
+commit="${VILAN_PERF_KOLT_COMMIT:-}"; kolt="${VILAN_PERF_KOLT_DIR:-$HOME/code/kolt}"
 [ -d "$kolt" ] || { echo "VILAN_PERF_KOLT_DIR=$kolt is not a directory"; pb=1; }
+[ -n "$commit" ] || { echo "VILAN_PERF_KOLT_COMMIT is not set (the commit in the base kolt copy the base is archived at; there is no default)"; pb=1; }
 # The suite above leaves the load high; the CPU verdict goes red past load 2, so wait for quiet (at most 15 min).
 for _ in $(seq 1 90); do awk '{exit !($1 < 1.5)}' /proc/loadavg && break; sleep 10; done; echo "perf leg starts at loadavg=$(cut -d' ' -f1-3 /proc/loadavg)"
 # The seven E121 scenarios by default; VILAN_PERF_LSP_SCENARIOS="a|b|c" (a `|`-separated subset) overrides it for a seal
