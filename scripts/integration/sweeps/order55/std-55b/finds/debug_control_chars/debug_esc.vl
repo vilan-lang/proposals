@@ -1,0 +1,20 @@
+import std::bytes::Bytes;
+import std::debug::Debug;
+import std::io::print;
+import std::process::KeyDecoder;
+
+// A bracketed paste whose text holds an ESC sequence: `debug()` (and `dbg`,
+// which shares the spelling, E275) prints the ESC raw, so the terminal running
+// the program interprets it (here: bold on) instead of showing it.
+fun main() {
+	let codes = [27, 91, 50, 48, 48, 126, 97, 27, 91, 49, 109, 98, 27, 91, 50, 48, 49, 126];
+	let bytes = Bytes::alloc(codes.len());
+	mut index = 0;
+	for code in codes {
+		bytes.set(index, code);
+		index += 1;
+	}
+	mut decoder = KeyDecoder::new();
+	decoder.feed(bytes);
+	print(decoder.next().unwrap().key().debug());
+}

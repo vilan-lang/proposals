@@ -502,3 +502,56 @@ caller exists.
 - **F-3** native: a `for`-in over a subject whose inherent `next` awaits is emitted without
   `.await`; cargo refuses.
 - **F-4** native implements `env` but refuses `scan`, `args`, `exit` and `cwd`.
+
+## 9. As built — S2 (Order 55, lane std-55b; with E332 and F146)
+
+Built on `next` @ed1a3ddf as RULED (Q1–Q6, the 2026-10-16 stamp), commits f6bfab0a (E332),
+ce21c4ae (S2), c68c3420 (F146). What differs from the paper above, and what the paper did not say:
+
+- **The surface is §3.2's**, plus `KeyDecoder` public (`new`, `feed`, `next`, `finish`; §4.4 step 1
+  feeds it directly) and `Press::key()`, the flattening `Keys::next` applies. In a `Press`,
+  Shift+Tab is `Key::Tab` with `shift` (`BackTab` is the flat view's only); the ASCII capitals
+  carry `shift`; Ctrl+Space (NUL) is `Char(" ")` with `ctrl`; 0x1c–0x1f are `Ctrl("\")`,
+  `Ctrl("]")`, `Ctrl("^")`, `Ctrl("_")`; `0x08` is `Backspace`, so Ctrl-H is not a `Ctrl`.
+- **vilan's or-pattern is a COMMA** (a leg's comma-separated patterns, grammar.md), not `|`:
+  §3.2.1's `Key::Char("q") | Key::Ctrl("c")` is written `Key::Char("q"), Key::Ctrl("c")`.
+- **The escape timeout is a WAIT on the byte read**, not a timer the decoder owns:
+  `__stdin_bytes(signal, wait_ms)` answers an EMPTY chunk when `wait_ms` passes with nothing
+  read, and an empty chunk fed to `KeyDecoder` is the terminal's silence — a pending lone ESC
+  resolves to `Escape` (a cut-short `ESC [` to Alt-`[`, `ESC O` to Alt-`O`). Only a pending ESC
+  asks for the wait; a split scalar or an open paste waits as long as it takes. On a pipe the
+  wait is never asked (§4.3).
+- **ONE shared pump, in bytes, on both backends.** The JS helper S1 wrote held a string
+  (`setEncoding("utf8")`); it holds a `Buffer` now and decodes per line, so a LINE waiter and a
+  BYTES waiter queue on one buffer (`__stdin_pump`, with `__stdin_line` and `__stdin_bytes`
+  over `__stdin_wait`); natively the reader thread's chunks feed both kinds the same way. A
+  `\n` that ends a `\r`-ended line belongs to the line whoever reads next. `stdin-lines.mjs`
+  moved; its output did not.
+- **Raw mode natively is `vilan-rt-term`** (libc / windows-sys, `cfmakeraw` with
+  `OPOST|ONLCR` back on, the console's VT input mode on Windows), linked only when `keys()` is
+  reached. The restore roads of §3.3 as built: the `Drop`; `process::exit` and a `main` that ends
+  with the handle unfinished (`vilan_rt::process::at_exit`, run by `exit` and by the emitted
+  `main`'s guard — the one seam into `vilan-rt`); SIGTERM, SIGHUP and SIGINT natively through
+  the crate's OWN handler (not `vilan-rt-signal`: it restores with `tcsetattr`, writes the
+  paste switch off, puts back the previous disposition and re-raises — so a server's graceful
+  stop still runs, and a plain program still dies of the signal); on JS an `'exit'` listener and
+  SIGTERM/SIGHUP/SIGINT listeners that restore and re-raise. The mode is restored BEFORE the paste
+  switch's bytes are written, so a reader that sees them sees a cooked terminal. Bracketed
+  paste is switched on only when stdout is a terminal too (a redirected stdout never gets the
+  escape in its file); its brackets are still DECODED on a pipe.
+- **`for key in keys`** (Q6): the plain awaiting inherent `next` drives a `for` on both
+  backends (F-2/F-3 fixed), but over a RESOURCE the native emitter moves the subject into the
+  loop and then drops the moved binding (cargo refuses; filed). The docs write the
+  `for { match keys.next() .. }` loop.
+- **`io::write` (E332) is `std::io::stdout::write`, re-exported** from `std::io`: a module of its
+  own because `write` needs `@process` (a browser build is refused naming the chain) and an
+  `std::io` that imported `std::process` made the smallest example's check 15% dearer.
+  `prompt` writes through it.
+- **F146 landed with S2**: when stdin's reader is the only live I/O source the executor blocks
+  on its channel until the next timer deadline (`IoSource::block`); 0.08–0.09 s of CPU per 5 s
+  parked (debug) / 0.05 s (release) became 0.00.
+- **The §4.4 gate**: the corpus programs `key-decoder.vl` and `stdin-keys.vl` written out byte
+  for byte on both backends (`native_differential`), a scripted pipe session and two pty pins
+  per backend in `vilan-cli/tests/process.rs`.
+- **What S2 taught S3**: filed beside this (terminal size and resize, an ESC literal after B652,
+  the cursor-position report that shares `CSI … R` with a modified F3, display widths).

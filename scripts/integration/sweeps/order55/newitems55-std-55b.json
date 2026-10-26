@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "F?1",
+   "section": "F",
+   "kind": "native backend defect (cargo refuses) - a for-in over a resource",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-26 (std-55b's find, Order 55)",
+   "discussion": "std-55b (Order 55); sweeps/order55/std-55b/finds/native_for_in_resource/",
+   "title": "Natively, `for x in subject` over a `[resource]` struct whose inherent `next(self): Option<T>` drives the loop MOVES the subject into the loop's iterator, and the analyzer's last-use drop after the loop then names the moved binding - cargo refuses the emitted Rust (E0382, \"use of moved value\") where JS runs it (the resource drops after the loop) - so `for key in keys` over `process::keys()` builds on JS only",
+   "body": "Met verifying terminal.md Q6 for A173 S2 (`for key in keys` through the implicit `next`, F-2/F-3 fixed in Order 54). The plain (non-resource) awaiting inherent `next` works on both backends (verified); the RESOURCE form does not: `vilan_rust::Emitter::for_each_iterator` emits `let mut iterator = <subject>;` through `consumed_value_of`, while the analyzer treats the loop as a LOAN of the resource and places its `Drop` after the loop (`std::mem::drop(ticks)`), so the binding is used after its move. The fix is the loop borrowing a place subject that is a resource (`let iterator = &mut ticks;` and `next(iterator, ..)`), with the binding emitted `mut`; a temporary subject (`for k in keys()`) still moves. Repro: res_for.vl (raw on/off prints, a `jump break` loop and a full loop). A173 S2 documents the `for { match keys.next() .. }` loop meanwhile. `fix` (a refusal by cargo, not a silent wrong answer)."
+  },
+  {
+   "id": "A?2",
+   "section": "A",
+   "kind": "design note - A173 S3 (line editing on keys), what S2 taught",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (std-55b's find, Order 55); on a shown need",
+   "discussion": "std-55b (Order 55); proposal/terminal.md §2.3, §6 S3; the S2 'As built' paragraph",
+   "title": "A173 S3 (a line editor on `process::keys()`) needs four things S2 does not give, found building S2: the terminal's SIZE and a resize signal, a portable ESC in a string literal, a decoder answer for the cursor-position report, and grapheme display widths",
+   "body": "S2 leaves a line editor everything on the INPUT side (`Press` with the modifier set, `Paste` whole, the escape timeout, the shared pump so `read_line` and `keys` interleave) and `io::write` (E332) on the output side. What it would still need: (1) the terminal's width (and height) and a resize notification - wrapping a line longer than the screen, or redrawing after a resize, needs `process.stdout.columns`/`TIOCGWINSZ` and SIGWINCH (natively one more FFI call and one more signal in `vilan-rt-term`); (2) an ESC in a vilan string literal: every cursor move or erase (`ESC [K`, `ESC [nD`) is written from vilan source, and today `\"\\u001b[1m\".len()` is 9 and `\"\\x1b[1m\".len()` 7 on JS (the escape text, not the decoded string) - B652 (parser-55) settles the decode, and S3 should start after it; (3) the cursor-position report (`ESC [ row ; col R`, the reply to `ESC [6n`) is the same CSI as a modified F3 (`ESC [1;5R` is Ctrl+F3): the decoder reads `R` as F3 today, so an editor that queries the cursor needs the decoder to tell a report from a key (a mode set while a query is outstanding, as crossterm does); (4) display widths: a wide (CJK) or combining or ZWJ scalar does not advance the cursor by one column, and std has no width table. Rec: S3 stays on a shown need (the ruling); when one is shown, slice it as `process::terminal_size()` + a resize stream first (S, both backends), then the editor."
+  },
+  {
+   "id": "E?3",
+   "section": "E",
+   "kind": "debug output - control characters printed raw",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (std-55b's find, Order 55)",
+   "discussion": "std-55b (Order 55); sweeps/order55/std-55b/finds/debug_control_chars/",
+   "title": "`str::debug()` - and so `dbg` and `print` of any value holding a `str` (E275's one spelling) - escapes only `\\\\`, `\\\"`, `\\n`, `\\t`, `\\r` and `\\0`, and prints every other control character RAW: a `Key::Paste` holding pasted terminal output prints a live ESC sequence that the terminal running the program obeys",
+   "body": "Met pinning A173 S2's decoder table: `dbg(key)` of `Key::Paste(\"a<ESC>[1mb\")` writes byte 0x1b into stdout (`od -c` shows `a 033 [ 1 m b`), turning the rest of the terminal's output bold; the same for BEL, DEL and the other C0 controls in any debugged string. Rust's Debug writes `\\u{1b}`. A debug spelling is a promise that the output shows the value rather than acting on it, so every C0 control (and DEL) should print escaped - in the literal form B652 settles for vilan source (`\\u{1b}` or `\\x1b`), on both backends (`vilan_rt::show` natively). Repro: debug_esc.vl. Estate: goldens that print a control character through debug/dbg would move (count first). `fix`."
+  },
+  {
+   "id": "N?4",
+   "section": "N",
+   "kind": "tooling - the audit gate",
+   "area": "Tooling",
+   "status": "OPEN - filed 2026-10-26 (std-55b's find, Order 55)",
+   "discussion": "std-55b (Order 55); `cargo audit --deny unsound` on next @ed1a3ddf",
+   "title": "`cargo audit --deny unsound` (CLAUDE.md's dependency gate, and a CI leg) is RED on next @ed1a3ddf: RUSTSEC-2026-0386 (2026-10-13), tokio 1.52.3 marked `unsound` - `AsyncFd::new` and related constructors violate I/O safety",
+   "body": "Met running the dependency gate for A173 S2's new crate (`vilan-rt-term`, whose `libc`/`windows-sys` were already locked): the same single denial on the base tree's lockfile, so it is not this lane's. tokio is the language server's (tower-lsp); whether the LSP reaches `AsyncFd` at all is the first question, then the patched tokio release (offline here, so not looked up). Rec: bump tokio to the advisory's patched version in its own small commit, or record an `ignore` with the reason in the audit config if the advisory's patched line is not yet released. `tooling`."
+  }
+ ]
+}
