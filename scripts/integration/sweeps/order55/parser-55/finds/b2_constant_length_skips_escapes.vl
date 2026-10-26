@@ -1,0 +1,8 @@
+// parser-55 find B?2: the analyzer's out-of-range check on a string literal's
+// slice measures only escape-free literals (analyzer.rs ~58111,
+// `text.contains('\\')` returns early); B652 made the lexer's decode total, so
+// `lexing::unescape_string` can measure these too.
+fun main() {
+	let s = "\x41\x42"; // 2 units
+	let t = "\x41\x42".substring(0, 5); // not refused at compile time; "ab".substring(0, 5) is
+}

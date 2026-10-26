@@ -1,0 +1,11 @@
+// parser-55 find B?1: the "could not be resolved" DEMOTE guard does not see
+// PARSE errors. Each program below has one parse error and one cascade.
+struct Provider {
+	name: str,
+	check: i32 i32,
+}
+
+fun main() {
+	let provider = Provider { name = "a", check = 1 };
+	let c = provider.check + 1; // "type of variable 'c' could not be resolved"
+}
