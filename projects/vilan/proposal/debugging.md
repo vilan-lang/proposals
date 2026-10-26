@@ -789,6 +789,29 @@ it departs from the text above:
   no place — filed as the language item the trace needs next: `[track_caller]`
   on a trait member, declared on the trait, every impl taking the hidden
   location and every call (static, bound, `dyn`) passing it.
+- **Amended (Order 55, solver-55; B646): `[track_caller]` on a trait member.**
+  The filed language item landed as ruled (R-i): the attribute DECLARED on a
+  trait's member is part of the trait's contract. Every implementation of the
+  member takes the hidden location whether or not it writes the attribute
+  (`track_caller::imply_trait_tracking`, the member's home trait found through
+  the supertrait chain); the trait's signature-only declaration takes the
+  parameter too, so a `dyn` table's slot is typed and sized with it (the JS
+  slot an extra argument, the native object trait's method a `Location`
+  parameter); and every call naming the member passes one — static, through a
+  bound (resolved to the declaration, re-dispatched by emission with the
+  threaded argument list) and through a table. Neither emitter changed. An
+  implementation marking a member its trait does not declare tracking is
+  refused, a tracking member taken as a value is refused as a free function
+  is, and a `for .. in` over a tracking `next` is refused at the iterable (its
+  protocol call has no argument list; it was handed nothing). std marks
+  `Signal::new`, `Signal::set`, `Flow::effect`, `effect_on_change`, `sub` and
+  `on_change` (and `observe_flow`, through which a stage's subscriber is
+  minted), and the line gains the subscriber's place:
+  `[reactive] effect #0 at src/views.vl:30:8 woken by cell #1 (made at
+  src/store.vl:12:14), set at src/channel.vl:88:3` — the id stays, since `set
+  by effect #0` refers to it. A cell has no name, so the paper's `woken by
+  count` stays `cell #N`. Derivations (`.memo()`, stages) are not placed: the
+  `Pipe` members are not marked (a follow-up if the trace wants them).
 - **The line.** `trace(true)` (`std::reactive::trace::trace`) writes, per WAKE, as the woken subscriber runs:
   `[reactive] effect #4 woken by cell #1 (made at src/main.vl:6:14), set at
   src/main.vl:12:2`. A subscriber is an `effect` or a `derivation` (a stage, a

@@ -1,0 +1,11 @@
+// solver-55 find B?2: a readonly `&` at a `&mut` parameter checks clean.
+// JS writes through it (prints 2); the native emission is refused by rustc
+// (E0308, "a BACKEND defect").
+fun bump(a: &mut i32) {
+	a = *a + 1;
+}
+fun main() {
+	mut x = 1;
+	bump(&x);
+	print(x);
+}

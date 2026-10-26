@@ -1,0 +1,8 @@
+// solver-55 find B?1: a literal accumulator over an unannotated closure.
+// `fold<B>(init: B, f: |B, T| B)`: the literal `0` decides `B = i32`, and the
+// body's `sum + value` (i32 + usize) is refused. Annotating either closure
+// parameter, or writing `0usize`, checks.
+fun main() {
+	let total = [1usize, 2].fold(0, |sum, value| sum + value);
+	print(total);
+}

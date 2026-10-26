@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B?1",
+   "section": "B",
+   "kind": "type inference (checker; S)",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (solver-55's find, Order 55)",
+   "discussion": "solver-55 (Order 55); sweeps/order55/solver-55/finds/b1_fold_literal_accumulator.vl",
+   "title": "A literal accumulator decides `fold`'s `B` as `i32` before the unannotated closure's body says otherwise - `[1usize, 2].fold(0, |sum, value| sum + value)` is refused \"`+` adds two values of the same type, but the operands are `i32` and `usize`\"",
+   "body": "B659's neighbour, left out of B659 on purpose: there the generic sat only in the closure's RESULT, so the literal could wait for the closure. Here `B` is also the closure's first PARAMETER, so the closure cannot type without it, and the literal is the only binder (B589 covers the case where the closure's parameters are WRITTEN). The answer would need the body's arithmetic as evidence (`sum + value` with `value: usize` says `B = usize`) - a deferral of the literal's default until the closure's body has typed with `B` open, then a retry. Same on v0.52.0. Workarounds: `0usize`, or `|sum: usize, value|`. Sizing S-M; rec: defer only an unsuffixed literal whose generic the closure's body constrains by an operator against a known width, else keep `i32`."
+  },
+  {
+   "id": "B?2",
+   "section": "B",
+   "kind": "miscompile (JS) / backend defect (native) - a readonly view at a `&mut` parameter",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (solver-55's find, Order 55)",
+   "discussion": "solver-55 (Order 55); sweeps/order55/solver-55/finds/b2_shared_view_at_a_mut_parameter.vl",
+   "title": "A readonly `&` at a `&mut` parameter checks clean - `bump(&x)` over `fun bump(a: &mut i32)` writes `x` on JS (prints 2) and the native emission is refused by rustc (E0308, reported as a backend defect)",
+   "body": "B649's sibling, met probing it: `check_view_arguments` asks a `&mut` parameter only whether the argument IS a view (`assignment_target_is_view`), not whether it is a WRITABLE one, so `&x`, a `&` view binding or a `borrows` call returning `&T` all pass. Rec: refuse with \"this parameter takes `&mut`: write `bump(&mut x)`\" (the binding must be `mut`, which `check_mutable_references` already says); count the estate first (expected 0: the native backend would have refused every site). Sizing S."
+  },
+  {
+   "id": "E?3",
+   "section": "E",
+   "kind": "debugging (the reactive trace; S)",
+   "area": "Tooling",
+   "status": "OPEN - filed 2026-10-26 (solver-55's find, Order 55)",
+   "discussion": "solver-55 (Order 55), after B646",
+   "title": "The reactive trace places effects and cells but not derivations, and not a UI binding's subscription - `derivation #2 woken by ..` has no place, and `text(count)`'s subscriber is made inside std (`ui.vl`'s `follow`), so its line names none",
+   "body": "B646 placed what the trait members reach: `Flow::effect`/`sub`/`on_change` (and `observe_flow`), `Signal::new`/`set`. Two kinds of subscriber are still placeless: a DERIVATION (`.memo()`, a stage's relay - `Pipe` members are not marked) and every UI binding (`follow` in std/browser/web/ui.vl calls `.sub` from std, so the place is std's and the trace leaves it out). Doors: mark `Pipe::memo` and the stage constructors `[track_caller]`, and thread a location through the ui binding helpers (`text`, `bind_*`, `follow`) so a binding names the element that made it. Sizing S-M; rec: both, after the owner says the trace should name bindings."
+  },
+  {
+   "id": "B?4",
+   "section": "B",
+   "kind": "miscompile (JS) - a view fallback at a generic `T` that is a view",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (solver-55's find, Order 55)",
+   "discussion": "solver-55 (Order 55); sweeps/order55/solver-55/finds/b4_view_fallback_on_none.vl",
+   "title": "`opt.unwrap_or(&0) + 1` over an `Option<&i32>` that is `None` prints `0,01` on JS and `1` natively - the fallback view's `[cell, key]` pair is handed on as the value",
+   "body": "Met pinning B649's exemption. `Shelf::count(&self, i): Option<&i32>` answers a wrapped view; B577 made the JS emitter read a SOME payload out where the option is consumed (`unwrap_or`, `map`, `+ 1`), but when the option is `None` the result is the FALLBACK argument, which is itself a view (`&0`, `&zero`) and is not read out, so `+ 1` concatenates the pair. Same on v0.52.0; natively F99 reads both. B649 deliberately leaves the `&` there alone (the parameter's `T` IS a view: a by-value fallback would not type). Rec: the JS emitter reads the fallback out at the same consuming positions B577 reads the payload (transformer, B577's seam); a pin per consumer (`unwrap_or`, `unwrap_or_else`'s result, `+`). Sizing S."
+  }
+ ]
+}

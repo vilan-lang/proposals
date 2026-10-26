@@ -1,0 +1,16 @@
+// solver-55 find B?4: `unwrap_or(&0)` over an `Option<&i32>` that is None prints `0,01`
+// on JS (the fallback view's [cell, key] pair, concatenated by `+ 1`) and `1`
+// natively. B577 reads a SOME payload out; the fallback is not read out.
+struct Shelf { counts: List<i32> }
+impl Shelf {
+	fun count(&self, index: usize): Option<&i32> {
+		if index < self.counts.len() { Some(&self.counts[index]) } else { None }
+	}
+}
+fun main() {
+	let shelf = Shelf { counts = [3, 4] };
+	print(shelf.count(0).unwrap_or(&0) + 1);
+	print(shelf.count(7).unwrap_or(&0) + 1);
+	let zero = 0;
+	print(shelf.count(7).unwrap_or(&zero) + 1);
+}
