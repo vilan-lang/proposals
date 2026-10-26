@@ -1,0 +1,10 @@
+// Each statement is 110 columns; none breaks its arguments (E337 fixed `!`, `?` and `.field`, not these three).
+fun demo() {
+	let a = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaa)[0];
+}
+fun demo() {
+	let b = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaa) as i32;
+}
+fun demo() {
+	let c = plain_function_call_with_no_chain_at_all(argument_one, argument_two, aaaaaaaaaaaaaaaaaaaaaaaaaaaa)?.x;
+}

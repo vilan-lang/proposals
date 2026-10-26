@@ -209,7 +209,7 @@
     "B610, B612, B614",
     "A106 door 2 after the collision census"
   ],
-  "status": "GO 2026-10-26; wave 1 launched (parser-55, solver-55, std-55, rpc-55 FABLE, incr-55) | rpc-55 HANDED BACK 2026-10-26 @def08264 (6 commits: M172, B677 door 1 + nested rule, M165 rpc half, A174 door 2, perf bumps; gates green; paper closure-owner.md written; merge waits its turn after solver-55) | tooling-55 LAUNCHED 2026-10-26 (Sonnet) into the freed slot | std-55 MERGED ed1a3ddf (pushed; worktree reaped) | incr-55 handed back @819d83ab = C1, MERGING | http-55 LAUNCHED off ed1a3ddf | parser-55 handed back @d2beefac (merges after incr-55) | std-55b LAUNCHED off ed1a3ddf | C1: incr-55 MERGED b29304ae (pushed) | parser-55 MERGING | tooling-55 handed back @3b8058b4 (merges after parser-55) | parser-55 MERGED 3a0e57ae (pushed) | tooling-55 MERGING | fmt-55 LAUNCHED off 3a0e57ae (merges LAST) | tooling-55 MERGED af75bd82 (pushed) | solver-55 handed back rebased @878dee9a, MERGING",
+  "status": "GO 2026-10-26; wave 1 launched (parser-55, solver-55, std-55, rpc-55 FABLE, incr-55) | rpc-55 HANDED BACK 2026-10-26 @def08264 (6 commits: M172, B677 door 1 + nested rule, M165 rpc half, A174 door 2, perf bumps; gates green; paper closure-owner.md written; merge waits its turn after solver-55) | tooling-55 LAUNCHED 2026-10-26 (Sonnet) into the freed slot | std-55 MERGED ed1a3ddf (pushed; worktree reaped) | incr-55 handed back @819d83ab = C1, MERGING | http-55 LAUNCHED off ed1a3ddf | parser-55 handed back @d2beefac (merges after incr-55) | std-55b LAUNCHED off ed1a3ddf | C1: incr-55 MERGED b29304ae (pushed) | parser-55 MERGING | tooling-55 handed back @3b8058b4 (merges after parser-55) | parser-55 MERGED 3a0e57ae (pushed) | tooling-55 MERGING | fmt-55 LAUNCHED off 3a0e57ae (merges LAST) | tooling-55 MERGED af75bd82 (pushed) | solver-55 handed back rebased @878dee9a, MERGING | fmt-55 first hand-back @43fb4f3b (rebases last)",
   "wave1_launched": [
     "parser-55",
     "solver-55",
@@ -256,6 +256,13 @@
       "rebased_on": "3a0e57ae",
       "date": "2026-10-27",
       "merged": false
+    },
+    {
+      "lane": "fmt-55",
+      "tip": "43fb4f3b",
+      "date": "2026-10-27",
+      "merged": false,
+      "note": "first pass; rebases LAST"
     }
   ],
   "wave2_launched": [

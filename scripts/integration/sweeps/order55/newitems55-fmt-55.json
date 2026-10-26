@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "E?1",
+   "section": "E",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); sweeps/order55/fmt-55/finds/return_call_never_breaks.vl",
+   "title": "A call that is the value of a `return` statement (`return f(a, b, c);`) never breaks its arguments, at any width",
+   "body": "Found probing E337 across the statement shapes the hook arms. `return plain_function_call_with_no_chain_at_all(argument_one, argument_two, <110 columns>);` stays one line after `vilan fmt` at 101, 102 and 104 columns, while `let v = f(..);`, `v = f(..);` and a bare call statement break at 101. The return's value is printed without the permission the statement hook armed. Likely one arm handing the split to the return's value and counting its `;`, as E329/E337 do for the other shapes. Sizing XS."
+  },
+  {
+   "id": "E?2",
+   "section": "E",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); sweeps/order55/fmt-55/finds/call_under_index_ascription_lift_never_breaks.vl",
+   "title": "A call under an index (`f(..)[0];`), an ascription (`f(..) as i32;`) or a lift continuation (`f(..)?.x;`) never breaks its arguments, at any width",
+   "body": "E337 gave the statement's permission to a call under `!`, `?` and `.field`; the same statement-ending postfixes `[index]`, ` as T` and `?.continuation` still print their subject without it, so a 110-column `let a = f(argument_one, argument_two, <..>)[0];` stays one line. The mechanism is E337's `enter_postfix_subject` (the suffix width of an index is the index's printed width, of an ascription ` as ` plus the type, of a lift continuation the continuation's - the three need their printed width up front, which the field's name did not). Sizing S. Rec: only if a real line shows up; the estate has none."
+  },
+  {
+   "id": "E?3",
+   "section": "E",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); sweeps/order55/fmt-55/finds/grouped_call_misses_the_close_paren.vl",
+   "title": "A call inside a written paren group (`let v = (f(..));`) is measured without the group's `)` and the `;`: lines of 101 and 102 columns stay as written, 104 breaks",
+   "body": "The `LiftGroup` arm hands the split to its inside, but the call's own measure ends at its `)` and the terminator state belongs to the group's end, not the call's, so the group's closing paren and the `;` are two columns the call never counts (the shape E329 closed for an unwrapped call, E338 for a hole). Same fix family as E337: shift `terminator_end` to the inner expression's end and add the `)` to `terminator_columns` while printing a group at the value's end. Sizing XS."
+  },
+  {
+   "id": "E?4",
+   "section": "E",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); sweeps/order55/fmt-55/finds/comment_between_brace_and_semicolon_declines.vl",
+   "title": "A comment between a block statement's `}` and its written `;` still declines the file (after B671 keeps the `;`)",
+   "body": "B671's `written_terminator_after` reads the `;` only past whitespace; `match a { .. }` + newline + `// note` + newline + `;` has a comment in the gap, so the `;` is not found, the reprint drops it and the net declines (naming the `;` line correctly, since B671 also fixed the location). The shape is unwritten in the estate. Rec: leave; the decline is honest and names the line. Sizing XS if wanted (skip the comment spans in the scan and print the comment before the brace's `;`)."
+  },
+  {
+   "id": "E?5",
+   "section": "E",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); formatter.rs item_local_span",
+   "title": "A decline's line inside ONE large item can still fall back to the first token the canonicalization moved when the item has canonicalizations on both sides of the divergence",
+   "body": "B671 localizes the net's answer to the top-level item the divergence falls in (an import run is one item) and asks the prefix, suffix and deletion alignments of that item alone. Inside one big function with a deletion (a trailing comma) before the divergence and a permuted run (a style chain, an element head, a css block) after it, all three still fail and the answer is the item's first moved token. Not observed on a real printer bug (none is open); needs a planted print to see. Rec: if one is ever met, recurse the same cut over the item's top-level statements. Sizing S."
+  }
+ ]
+}
