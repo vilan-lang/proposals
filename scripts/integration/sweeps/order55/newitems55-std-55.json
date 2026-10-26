@@ -1,0 +1,84 @@
+{
+ "items": [
+  {
+   "id": "B?1",
+   "section": "B",
+   "kind": "bug - a derive's generated code does not parse",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "std-55 (Order 55); sweeps/order55/std-55/finds/derive_json_qualified_field_type.vl",
+   "title": "`[derive(Json)]` over a field whose type is MODULE-QUALIFIED and applied (`flag: option::Option<bool>` under `import std::option;`) generates code that does not parse - \"macro `Json` generated invalid Vilan (unclosed `{` in struct initializer)\" - on 0.52.0 and after M166",
+   "body": "Met probing M166's syntactic `Option` test. The derive's `decoded` helper spells the field's decoder `{type_.render()}::from_json_value(..)`, and a qualified applied type renders as a path head with generic arguments in the middle of a path (`option::Option<bool>::from_json_value`), which the parser reads as a struct initializer. Doors: route a qualified type through `from_json_value_of<T>(..)` (as a tuple already is, B623), or render the path head without its module prefix when the type resolves. Rec: the first - `is_path_head` answers false for a `::`-qualified applied name. M166's absent-`Option` rule tests the bare written name `Option` and so does not reach such a field either (documented). `fix`."
+  },
+  {
+   "id": "B?2",
+   "section": "B",
+   "kind": "bug - silent escape pass-through (B652 family)",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "std-55 (Order 55); sweeps/order55/std-55/finds/plain_string_brace_escape.vl",
+   "title": "A plain string literal keeps `\\{` as TWO characters - `print(\"\\{\\\"id\\\": 1}\")` prints `\\{\"id\": 1}` - so a JSON literal written with the i-string's brace escape is not JSON; M166's own repro (`Node::from_json(\"\\{\\\"id\\\": 1}\")`) answered `false` for that reason, not for the missing field",
+   "body": "`\\{` is the i-string's brace escape; in a plain string it is an unknown escape the lexer passes through verbatim (both backends). This is B652's \"reject unknown escapes\" door (folded from B672) meeting a real case: kolt's item text, written by the owner, used the i-string spelling in a plain string. Rec: fold into B652 as its third case (parser-55 owns the lexer this order) - either decode `\\{` to `{` in every string form (the escape then means one thing everywhere) or refuse it outside an i-string with a steer. `fix`."
+  },
+  {
+   "id": "F?1",
+   "section": "F",
+   "kind": "miscompile (backend divergence) - std::db column readers",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "std-55 (Order 55); sweeps/order55/std-55/finds/db_null_column_reads.vl",
+   "title": "A NULL column read through `Row::integer`/`text`/`real`/`big_integer` answers the host's `null` on JS - an `i32` that prints `null`, a `str` that prints `null` - and the coerced `0` / `\"\"` natively (`vilan-rt-sqlite`'s `Row::number`/`text` claim to be the JS reader's coercion; the JS `__db_column` does not coerce)",
+   "body": "Met writing M165's pins. `db.vl` binds the four readers to one helper (`__db_column`: `row[name]`) and lets the signature supply the type, so a NULL arrives as `null` behind an `i32`/`str` on JS; native `Row::number` maps NULL to 0 and `Row::text` to \"\", calling that `Number(null)`/`String(null)`'s coercion - which the JS side never applies (and `String(null)` is \"null\", not \"\"). Doors: (a) coerce on JS to the native answers (`Number(v ?? 0)`, `v ?? \"\"`), split into per-reader helpers as the native emitter already splits them by vilan name; (b) make the readers `Option`-returning (`integer_or_null`) - a breaking surface change. Rec: (a) now, both backends answering 0/\"\" (the documented contract is \"guard NULLABLE columns with `is_null`\"), and the `SqlValue` follow-up's row half considers (b). `miscompile`."
+  },
+  {
+   "id": "F?2",
+   "section": "F",
+   "kind": "backend defect - native any coercion",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "std-55 (Order 55); sweeps/order55/std-55/finds/untyped_none_at_any.vl, std-55 (Order 55); sweeps/order55/std-55/finds/struct_at_any.vl",
+   "title": "An `any` position the native backend cannot fill reaches rustc: a bare `None` (`shown(None)` over `fun shown(value: any)`) is E0282 on `vilan_rt::Any::from(None)`, and a struct (`shown(Point { x = 1 })`) is E0277 (no `From<Point>` for `Any`) - both reported as \"a BACKEND defect\"; JS builds both (`null`, `[ 1 ]`)",
+   "body": "`vilan_rt::Any` holds a number, a `str`, a `bool`, NULL and (through `From<Option<T>>`) an `Option` of those; the checker lets ANY value reach an `any` position (print/hash externs aside, which the native emitter lowers as intrinsics). Two halves: (1) the untyped `None` - emit `Any::Null` for a `None` whose payload type is open; (2) a value `any` cannot hold - refuse it at the checker with the holdable set named (\"`Point` cannot be held by `any`: an `any` holds a number, a `str`, a `bool` or an `Option` of one\"), which is also what M165's ruling wanted for a bind list (the refusal names the VILAN type, which the JS binder cannot see at run time). (2) is a new refusal: count the estate first (kolt binds only scalars/`Option`s; std's `any` sites are print/hash/db). See the A?1 question. `diagnostics` for (2), `fix` for (1)."
+  },
+  {
+   "id": "B?3",
+   "section": "B",
+   "kind": "backend divergence - any coercion through a generic",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "std-55 (Order 55); sweeps/order55/std-55/finds/generic_option_at_any.vl",
+   "title": "An `Option` that reaches an `any` position through a GENERIC body (`fun collect<T>(value: T): List<any> { held.push(value) }` called at `Option<i32>`) is its variant array on JS (`[ 0, 1 ]`) and its payload natively (`1`): M165's conversion is recorded statically, so a generic `T` bound to an `Option` per instance is not seen",
+   "body": "M165 records `Program::any_option_coercions` where the inferred type at the landing IS an `Option`; inside a generic body it is `T`. Natively the monomorphized `Any::from` converts per instance. Door: record a landing whose type is a generic parameter, and have the JS emitter consult the ACTIVE substitution at the site (the shape N149 used for `print` of a generic number). Low reach (a bind list built through a generic helper); rec: fix with the active-substitution read, the pin as above on both backends. `miscompile`."
+  },
+  {
+   "id": "M?1",
+   "section": "M",
+   "kind": "API (std::json derive)",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (std-55's M166 follow-up, Order 55)",
+   "discussion": "M166 (std-55, Order 55)",
+   "title": "`[default(value)]` on a non-`Option` field of a `[derive(Json)]` struct - so a struct that gains a `bool` or a number still decodes JSON stored before it (M166 closed the `Option` half only); kolt's rich-text `TextStyle` keeps a hand-written `FromJson` because `code: bool` arrived after stored text",
+   "body": "M166's optional second ask, filed rather than built: a field attribute needs the parser's attribute table, the analyzer's attribute validation, `macro_std::meta::Field` gaining a slot (every construction site in `macros.rs`), and the derive emitting `if value.has_field(..) { .. } else { <default> }` with the literal type-checked at the field - M-sized and across parser-55's and solver-55's files. Rec: `[default(false)] code: bool` with the value an expression typed at the field; `Default::default()` when written bare (`[default]`). Exhibit: kolt `src/lib/rich_text/style.vl:14`. `feature`."
+  },
+  {
+   "id": "M?2",
+   "section": "M",
+   "kind": "API (std::db typing)",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (std-55's M165 follow-up, Order 55; R-c)",
+   "discussion": "M165 (std-55, Order 55)",
+   "title": "`SqlValue`: type `std::db`'s bind lists - `List<any>` lets a struct, a list or a tuple through to a run-time refusal (JS) or a rustc error (native) - with what the boundary half taught",
+   "body": "R-c's typed form. What M165's boundary half taught: (1) the conversion an `Option` and a `bool` need already existed natively in `vilan_rt::Any` and its binder; JS needed the analyzer to record WHERE an `Option` lands at `any`, because the JS value carries no type - so a run-time refusal can name the index but never the vilan type; (2) a bind list is built three ways in the estate (a literal - kolt's 295 sites, `push` onto a `List<any>`, a generic helper - B?3), and a trait-typed list catches all three at the checker; (3) `any`'s holdable set (number, str, bool, Option of those) IS the `SqlValue` impl set. Rec: `trait SqlValue` implemented for the integer and float types, `str`, `bool`, `Bytes` (BLOB, new), `Option<T: SqlValue>`; `run`/`all`/`first` take `List<dyn SqlValue>` (or a variadic tuple), a literal's elements erased at the element; the JS binder stays as the host seam; `any` then has no std bind-list user, which lets F?2's refusal be stated for `any` everywhere. M. `breaking` only for a program that passes a `List<any>` it built itself (estate: 0 in kolt)."
+  },
+  {
+   "id": "A?1",
+   "section": "A",
+   "kind": "design question",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "M165 (std-55, Order 55); F?2",
+   "title": "What `any` holds: the native backend's `vilan_rt::Any` is a number, a `str`, a `bool`, NULL and an `Option` of those, the JS backend takes anything, and the checker admits anything - so the same program prints `[ 0, 1 ]` (JS, before M165) or `1` (native) at a user's `any` parameter, and a struct at one builds on JS and fails rustc natively",
+   "body": "M165 made the JS backend convert an `Option` where it lands at `any` (the native semantics), excepting `print`'s and an external's direct `any` parameters, which take the value as it is. Open: (1) whether `any` is a language type at all for user code (std uses it for `print`, `canonical_hash` and the db bind list only); (2) if it is, refuse a value `any` cannot hold at the checker (F?2 (2)); (3) if it is not, refuse `any` outside std. Rec: (2) now, (1)/(3) with `SqlValue` (M?2), which removes std's last value-level `any` user."
+  }
+ ]
+}

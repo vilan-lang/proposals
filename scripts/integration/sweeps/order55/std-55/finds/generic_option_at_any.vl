@@ -1,0 +1,19 @@
+// std-55 find: an `Option` that reaches `any` through a GENERIC body is not
+// converted on JS (M165's record is static), where the native backend's
+// monomorphized `Any::from` converts it.
+fun collect<T>(value: T): List<any> {
+	mut held: List<any> = [];
+	held.push(value);
+	held
+}
+
+fun shown(value: any) {
+	print(value);
+}
+
+fun main() {
+	let maybe: Option<i32> = Some(1);
+	for value in collect(maybe) {
+		shown(value);
+	}
+}

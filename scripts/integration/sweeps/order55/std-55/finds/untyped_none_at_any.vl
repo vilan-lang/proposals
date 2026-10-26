@@ -1,0 +1,10 @@
+// std-55 find: a bare `None` at an `any` parameter builds on JS and is refused
+// by rustc natively (E0282 on `vilan_rt::Any::from(None)`), reported as a
+// backend defect.
+fun shown(value: any) {
+	print(value);
+}
+
+fun main() {
+	shown(None);
+}

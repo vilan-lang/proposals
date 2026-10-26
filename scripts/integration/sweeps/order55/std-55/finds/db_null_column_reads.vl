@@ -1,0 +1,14 @@
+// std-55 find: a NULL column read through a typed reader answers the host's
+// `null` on JS (printed `null`, an `i32` holding null) and the coerced
+// `0` / `""` natively.
+import std::db::Database;
+
+fun main() {
+	let db = Database::open(":memory:");
+	db.exec("CREATE TABLE t (n INTEGER, s TEXT)");
+	let none: Option<i32> = None;
+	db.prepare("INSERT INTO t (n, s) VALUES (?, NULL)").run([none]);
+	for row in db.prepare("SELECT n, s FROM t").all([]) {
+		print(i"n={row.integer("n")} s=[{row.text("s")}] plus={row.integer("n") + 1}");
+	}
+}

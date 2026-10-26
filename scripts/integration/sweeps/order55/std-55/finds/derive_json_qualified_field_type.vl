@@ -1,0 +1,12 @@
+import std::option;
+import std::json::{ FromJson, Json };
+
+[derive(Json)]
+struct Qualified {
+	flag: option::Option<bool>,
+}
+
+fun main() {
+	let value = Qualified::from_json("{}").unwrap();
+	print(value.to_json());
+}

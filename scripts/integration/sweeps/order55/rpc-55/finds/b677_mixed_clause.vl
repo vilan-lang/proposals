@@ -1,0 +1,31 @@
+import std::context::Context;
+import std::io::print;
+import std::reactive::{ Owner, get_owner, on_cleanup, owner_scope, run_with_owner };
+
+let focus: Context<str> = Context::new();
+
+fun page_for(name: str): str {
+	print(i"+{name} (focus {focus.get()})");
+	on_cleanup(|| print(i"-{name}"));
+	name
+}
+
+/// `page` carries a clause for `focus` but not for `owner_scope`: injected for
+/// one, captured for the other.
+fun area(page: (|str| str) context focus) {
+	let first = Owner::new();
+	run_with_owner(first, || focus.run("one", || page("a")));
+	first.dispose();
+	print("first disposed");
+	let second = Owner::new();
+	run_with_owner(second, || focus.run("two", || page("b")));
+	second.dispose();
+	print("second disposed");
+}
+
+fun main() {
+	let root = Owner::new();
+	run_with_owner(root, || area(|name| page_for(name)));
+	print("root still holds:");
+	root.dispose();
+}

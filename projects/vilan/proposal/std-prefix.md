@@ -315,7 +315,19 @@ next round (B?1; no instance on the estate).
 
 ### 4.2 Std resolves alone (Q3)
 
-Today the pre-entry `resolve_world` resolves std and the package modules in one fixpoint, so a
+**The rule (P6a, Order 55 — §14.3, ruled R-j).** The standard library's declarations, and each
+dependency's, resolve before the entry package's declarations exist, in EVERY shape: the canonical
+drain resolves the tiers (std and the dependency tier, together) after their walk and before the
+first package node mints, exactly as the std-only prefix world does, and the package resolves after
+its own walk over their settled answers. An impl the entry package declares never answers a question
+the tiers' own resolution asks — the entry's rule since M121, extended to its package (spec
+`types.md` §5.7, "Which impls a library's own code sees"). There is nothing left for a package impl
+to refuse, so the guard below is no longer a production path: it survives as a TEST oracle
+(`VILAN_TIER_ORACLE=on`) that the permutation and prefix round-trip differentials turn on, counting
+the programs whose meaning the rule decided (0 on the estate). The paragraph that follows is the
+guard as P1 built it.
+
+The text before P6a: today the pre-entry `resolve_world` resolves std and the package modules in one fixpoint, so a
 package impl on a FOREIGN subject (kolt has them: `impl View`, `impl Document`, `impl Style`,
 `impl Store<Account>`, `impl Source<..>`) is visible to std's lookups. The entry's impls are
 already not: "what std's lookups answer is std's to decide" (`ImplReachLog::asked_by_std`,
@@ -891,3 +903,57 @@ file, so a loaded std replays its Class A checks rather than re-running them); t
   the entry cannot answer a tier's question under the rule, so nothing a deferral protects is lost.
 - **P6-Q5. The CLI default:** `on` in the order after P6a, with P5 and M158. **Rec: yes**; not this
   order (R-e's ruling stands), and not before the default is what the suite exercises.
+
+### 14.9 As built (P6a, incr-55, Order 55, `b39a2505`)
+
+Door A as ruled (R-j: Q1 door A, Q2 `fix` with the guard kept as an oracle, Q3 the tiers together,
+Q4 the package half only deferred). `analyze_inner`'s canonical drain mints and walks the dependency
+tier (M152), captures the lang items, queues the tiers' prelude tables and calls
+`Analyzer::resolve_tiers` BEFORE the package's `DeferredMint`s (now `mint_deferred_nodes`, called once
+per tier); the package's nodes mint, its prelude tables queue, its modules walk, and the existing
+pre-entry resolve becomes the PACKAGE half (`Analyzer::resolve_package_half`, under the entry's reach
+filter as before). B553's deferred order and B239/M70's open module skip only the package half; a
+world whose entry IS a module keeps the monolithic order. The prefix key's `reach` is `None` (the
+production log over std's questions is gone) and `resolve_package_over_prefix` can no longer fail —
+the `impl-reached` prefix refusal is retired; `kept_by`/`absorb` (std's questions carried into a
+layered world's log) went with it, since a hot impl can no longer answer a question the tiers'
+resolve asked in either shape. The oracle: `VILAN_TIER_ORACLE=on` (`incremental::set_tier_oracle`)
+records every question of the tiers' resolve into `Analyzer::tier_oracle` (carried by the world and
+the file; the key's `tier_oracle` and a `tier-oracle` workspace row keep the two kinds of world
+apart) and `check_tier_oracle` tests the package's impls against it as the entry is about to walk;
+a hit is counted (`tier-oracle=`, `[vilan phase] tier-oracle member `len``) and refuses nothing.
+
+Measured. M157's repro: `two_10238` / `two_10859` → `two_10859` in every shape; the whole Rust text
+byte-identical canonical / built / written / loaded (`prefix_roundtrip_native::m157_…`, red with the
+tiers' resolve planted out). The estate census (the lane's script over 164 subjects — the 147 corpus
+programs, the 15 example entries, kolt's two legs — each built `off`, `on` in-process and `on` over a
+loaded file, the oracle on): JavaScript byte-identical in all three shapes AND to the base's canonical
+build for all 164; 146 emit natively, every one byte-identical across the shapes (18 refused
+natively); the oracle reads 0 in both shapes; the prefix is taken by 154 (the 8 `macro-text` corpus
+programs and `examples/todo`'s two `defines-a-macro` entries are not attempted, N179). Cold rows
+(`perf_gate.py measure`, instructions, against a build of d18f50d8): single-file programs flat (watch
+−0.02 %, browser/router −0.00 %), package programs +0.04 to +0.69 % (math +0.69, canvas +0.47, ssr
++0.31, reactive-ui +0.24, todo +0.16, walkthrough +0.14 — `[[bump]]` rows, item M157), the plain
+packages −0.93 / −1.04 %, genapp:46 −0.01 %; kolt per leg (`vilan check src/<leg>.vl`, steady runs):
+server 7.340 → 7.300 G (−0.55 %), client 23.73 → 23.61 G (−0.49 %). And one effect the paper did not price: an OPEN
+MODULE's world (B239/M70, the entry-shaped world a file its siblings import builds) was stored
+wholly UNRESOLVED and every keystroke's `build()` resolved std again; it now carries the tiers
+resolved, so kolt's css keystroke (`styles.vl`) reads 8.06 → 6.61 G instructions to idle (−18 %,
+`build` ~500 → ~340 ms CPU at load 13–15); the other E292 rows are flat in instructions.
+
+Premises wrong in detail. (1) §14.5's 22.6 ms for the guard's `everything` log during std's resolve
+was the closure parse: P6a's first measurement, the log off, reads the repro's in-process prefix build
+686.34 → 685.25 M instructions (−0.16 %); the rest of the column's excess over canonical is
+`prefix-closure` (the closure parsed without the index), as the paragraph suspected. (2) "Expected
+flat: one inserted resolve": a SECOND fixpoint is not free when the package walked something — it is
+one more pass of the backstop rounds over the constraints std's resolve left open (the paper's own
+`prefix-package-resolve`, ~0.3 ms on the repro, is that cost); where the package walked nothing (a
+single file) the package half runs no fixpoint at all, and the reach log still draws its floor
+(M110 S2a reads it). Larger packages gain (smaller first fixpoint). (3) §14.3's B625 note — "a
+late-round std module would mint after the tiers' resolve" — cannot happen: every drain round
+completes before std walks, so a late-round std module walks and resolves with the tiers; there is
+nothing to assert. (4) The guard's question cannot be re-asked after `build()`: there, a package
+blanket's binder (`impl type T { fun len }`) no longer admits std's rigid receivers, so the oracle asks
+where the guard did, before the entry walks (and covers the two-phase order; a deferred shape resolves
+its package inside `build()`). The P6b default (`on` for the CLI) and P5/M158's exercise stay Order 56
+(R-j's Q5).

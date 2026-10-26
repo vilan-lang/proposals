@@ -1,0 +1,26 @@
+{
+ "items": [
+  {
+   "id": "A?1",
+   "section": "A",
+   "kind": "feature (std::rpc server; S-M)",
+   "area": "std",
+   "status": "OPEN - filed 2026-10-26 (rpc-55's follow-up to A174 door 2, Order 55)",
+   "discussion": "rpc-55 (Order 55); A174's door 1, filed with what door 2 taught",
+   "title": "A174 door 1: revoke by value - `connection.revoke(store)` / `Service::revoke(connection_id, source)` ends ONE connection's subscriptions to a source the service handed out, sending the client the mirror's `Absent`, without closing the wire",
+   "body": "Door 2 (`Connection::close(reason)`, Order 55) covers sign-out and member removal by dropping the whole session; a client with other, still-valid mirrors pays a reconnect, a re-attach and a re-seed of everything for one revoked store. Door 1 is finer. What door 2 taught about reaching a returned store's channel: a `Store<T>` reply opens one `MirrorChannel` per store ROOT per connection (`mirror_channel`, `session.controlled_channel_for(identity)` keyed by `store_identity_at(root, [])`) and a GRANT per handle path (`MirrorChannel::grant`, keyed by `bases: HashMap<identity, base>` since M172), so revoking `store` on `connection` is: find the session (`session_of(connection)`), the channel by the root's identity (`controlled_channel_for`), then either `session.revoke(channel)` (the whole root - every grant on it - the client's view hears `Gone` for every slot and the mint reads `Absent`... today a revoked channel's view closes and the mint re-asks on the next hold, which the service's `[rpc]` then refuses: the right end state) or a per-grant release (`release_grant(base)` for the handle's path identity, then the channel if no grant remains). The client side already handles both: a `Gone` on the base boundary lands `replica.set(None)` and `states()` reads `Absent`; the mint's next hold re-asks. Surface: `Connection::revoke<T>(self, store: Store<T>)` (the `Connection` value kolt's factory keeps) and `revoke_connection_store(connection_id, store)` for the id form. Pin: a client holding two stores on one connection, one revoked - that one reads `Absent` and the other keeps patching; a re-hold after the revoke re-asks and is refused by the `[rpc]`'s own check. kolt's `remove_member` is the exhibit (the removed user's connections, found by the app's own user -> connection map).",
+   "lane": "rpc"
+  },
+  {
+   "id": "M?1",
+   "section": "M",
+   "kind": "performance (std reactive store core; M)",
+   "area": "std",
+   "status": "OPEN - filed 2026-10-26 (rpc-55's find under M172, Order 55)",
+   "discussion": "rpc-55 (Order 55); sweeps/order55/rpc-55/finds/m172_holds.vl (the four-phase program; the `done` phase)",
+   "title": "A keyed replica's per-key `gone` (and every write at a keyed collection) diffs EVERY watched key: `keyed_hashes(node)` snapshots the collection's key list and `store_diff` walks it, so releasing K keys one turn each costs K^2 key copies (1.05M `__map_keys` copies at 1024 keys; 65k at 256)",
+   "body": "Measured under M172's program after the mirror's own lists were keyed: the table's unmount (K holds released, each in its own turn since nothing batches a dispose) grew 15x -> 4.9x for 4x the keys, and the residual is `Array.map <- __map_keys <- keyed_hashes` - `store.vl`'s keyed `store_diff` (`:182` `let watched = keyed_hashes(node); for hash in watched { .. store_diff .. }`, `:239` the set form) and `store_core.vl`'s `node_empty` (`:364` `keyed_hashes(Some(node)).is_empty()` - a full key snapshot for an emptiness check). Each key's `gone` is a write at the collection (`MirrorAt`'s boundary `gone` removes the key from the replica), and a write at a keyed collection diffs every watched key. Not the 550 ms (that was the mirror's lists, M172) but the next quadratic under a large keyed replica. Doors: (a) a write that names its key (a `Key` touch) diffs that key alone - the store already records `StoreTouch::Key(hash)`; (b) `node_empty` asks the table's `len()`; (c) `keyed_hashes` iterates without the snapshot. Rec: (a)+(b), a std lane in Order 56; a counting pin like M172's over the `done` phase (bound 6x for 4x the keys).",
+   "lane": "std"
+  }
+ ]
+}

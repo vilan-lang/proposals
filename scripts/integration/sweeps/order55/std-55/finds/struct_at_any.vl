@@ -1,0 +1,14 @@
+// std-55 find: a value `any` cannot hold (a struct) at an `any` position
+// checks clean; JS hands the host the struct's array, natively rustc refuses
+// `vilan_rt::Any::from(Point)` (E0277) as a backend defect.
+struct Point {
+	x: i32,
+}
+
+fun shown(value: any) {
+	print(value);
+}
+
+fun main() {
+	shown(Point { x = 1 });
+}

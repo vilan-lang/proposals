@@ -1,0 +1,20 @@
+--- a/src/lib/std_ext.vl
++++ b/src/lib/std_ext.vl
+@@ -27,17 +27,8 @@
+ 	[extern(get, "timeStamp")]
+ 	external fun time_stamp(self): f64;
+ 
+-	/// Whether a handler already claimed this event with `preventDefault`.
+-	[extern(get, "defaultPrevented")]
+-	external fun default_prevented(self): bool;
+-
+ 	[extern(get, "pointerId")]
+ 	external fun pointer_id(self): i32;
+-
+-	/// Keeps the event from reaching the element's ancestors (std's `Event`
+-	/// has no `stopPropagation`; vilan-lang tracker M171).
+-	[extern(method, "stopPropagation")]
+-	external fun stop_propagation(self): void;
+ }
+ 
+ /// A wheel event's vertical turn, in pixels (lines and pages counted as 16

@@ -1,0 +1,86 @@
+import std::hash_map::HashMap;
+import std::io::print;
+import std::json::json_codec;
+import std::option::Option::{ self, None, Some };
+import std::process;
+import std::reactive::{ Owner, Source, run_with_owner };
+import std::reactive::store::{ RemoteStoreSome, Storable, Store, StoreSome };
+import std::rpc::{ DuplexEnd, DuplexTransport, ReactiveClient, duplex_pair, local_rpc, register_session };
+import std::time::{ Duration, now_millis, sleep_for };
+import std::wire::{ Frame, Wire };
+
+[derive(Storable, Wire)]
+struct Message {
+	id: u53,
+	content: str,
+}
+
+[derive(Storable, Wire)]
+struct Global {
+	messages: HashMap<u53, Message>,
+	motd: str,
+}
+
+fun seeded(count: u53): Global {
+	mut messages: HashMap<u53, Message> = HashMap::new();
+	mut id: u53 = 0;
+	for id < count {
+		messages.insert(id, Message { id, content = i"m{id}" });
+		id += 1;
+	}
+	Global { messages, motd = "welcome" }
+}
+
+let shared: Store<Global> = Store::new(seeded(0));
+
+[service(BoardClient)]
+struct Board {}
+
+impl Board {
+	[rpc]
+	fun global(self): Store<Global> {
+		shared
+	}
+}
+
+fun main() {
+	let count: u53 = process::args()[0].parse_i32().unwrap_or(16).as_u53();
+	shared.set(seeded(count));
+	let (client_end, server_end) = duplex_pair();
+	register_session(7, server_end, json_codec());
+	let transport = local_rpc(Board {}.dispatcher().into_protocol(json_codec()).for_connection(7));
+	let client = BoardClient { transport, codec = json_codec(), reactive = ReactiveClient::new(client_end, json_codec()) };
+	let g: RemoteStoreSome<Global> = client.global();
+	// A second view on the same store, holding every key: the "table open beside it".
+	let table = Owner::new();
+	run_with_owner(table, || {
+		mut id: u53 = 0;
+		for id < count {
+			g.messages().at(id).some().content().effect(|_content| {});
+			id += 1;
+		}
+	});
+	sleep_for(Duration::millis(0));
+	print("table mounted");
+	let page = Owner::new();
+	let mount_started = now_millis();
+	run_with_owner(page, || {
+		mut id: u53 = 0;
+		for id < count {
+			g.messages().at(id).some().content().effect(|_content| {});
+			id += 1;
+		}
+	});
+	let mount_took = now_millis() - mount_started;
+	sleep_for(Duration::millis(0));
+	print("page mounted");
+	let started = now_millis();
+	page.dispose();
+	let took = now_millis() - started;
+	sleep_for(Duration::millis(0));
+	print("page unmounted");
+	print(i"count {count}: mount {mount_took} ms, unmount {took} ms");
+	table.dispose();
+	sleep_for(Duration::millis(0));
+	print("done");
+}
