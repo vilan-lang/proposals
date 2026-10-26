@@ -1,0 +1,21 @@
+// http-55 find: a panicking request handler ENDS the node server (the
+// createServer callback's promise rejects unhandled), while the native server
+// reports it and never answers the client (the response is left open).
+// Run: vilan build handler_panic_ends_node_server.vl && node handler_panic_ends_node_server.mjs
+// then: curl -i localhost:<port>/boom ; curl -i localhost:<port>/  (node: refused - the process is gone)
+import std::io::{ panic, print };
+import std::http::{ Response, Server };
+
+fun main() {
+	Server::builder()
+		.port(0)
+		.on_request(|request| {
+			if request.path() == "/boom" {
+				panic("handler blew up");
+			}
+			Response::builder().body("still here").build()
+		})
+		.on_start(|server| print(i"port={server.port()}"))
+		.build()
+		.start();
+}

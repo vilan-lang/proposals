@@ -1,0 +1,84 @@
+{
+  "items": [
+    {
+      "id": "M?1",
+      "section": "M",
+      "area": "std",
+      "kind": "feature (std::http; M) - M164's follow-up, R-g",
+      "title": "`Request::body_stream(): Reader` - a request body read incrementally (`next(size): Bytes`, like `std::fs::Reader`), the cap enforced as it reads, so an upload costs a chunk of memory instead of its whole size",
+      "status": "OPEN - filed 2026-10-26 (http-55's follow-up, Order 55; RULED as a follow-up at GO, R-g)",
+      "body": "M164 made the body capped and LAZY (read on the handler's first `bytes()`), but a body that is read is still read WHOLE into memory. Measured (one upload, peak RSS delta `VmHWM`, `MALLOC_ARENA_MAX=1`, debug native): JS 25 MiB read whole costs 56,284 kB after M164 (81,872 kB before - `Buffer.concat` now sized); native 25 MiB costs 25,500 kB after (a 15 MiB upload cost 63,600 kB before: the inbox was cloned per poll while waiting); a body refused or never read costs ~0 (JS 1,812 kB, native 20 kB, where both paid the whole upload before). Kolt's server held 135,952 kB peak after a 5 MB and a 20 MB upload (74,008 kB with both refused). Ask: `request.body_stream(): BodyReader` with `async fun next(self, size: usize): Option<Bytes>` - the node side a `data`/`pause` pump (`__http_read_body`'s listener, resumed per `next`), natively `BodyRead` answering what the inbox holds up to `size` (the decoder and the per-turn `BODY_SLICE` already exist) - the cap counted as it reads (the refusal is the same `413` + cancellation), `bytes()` and `body_stream()` exclusive (the second to be called after the first refuses). Pins: a 64 MiB upload hashed through `crypto` with peak RSS under a few MiB on both backends; the cap mid-stream; kolt's `(storage.put)` written from the stream.",
+      "discussion": "http-55 (Order 55); the M164 report's measurements; sweeps/order55/http-55-prompt.md item 4"
+    },
+    {
+      "id": "M?2",
+      "section": "M",
+      "area": "std",
+      "kind": "feature (std::http; M) - after M?1",
+      "title": "`multipart/form-data` parsed on the body stream - parts (headers, name, filename) read incrementally, each part's bytes a stream of their own",
+      "status": "OPEN - filed 2026-10-26 (http-55's follow-up, Order 55; R-g)",
+      "body": "Kolt and every browser-form upload send `multipart/form-data`; today a handler gets the whole body and parses it by hand (kolt sidesteps it by POSTing the file raw with `X-Kolt-Filename`). After M?1's reader: a `Multipart` over `BodyReader` (boundary from `Content-Type`, RFC 7578), `next_part(): Option<Part>` with `name`, `filename`, `content_type` and a part `Reader`, the cap the body's. The rpc POST leg keeps refusing multipart (its CSRF gate, docs/std/rpc.md). Pins: a two-part form with a 10 MiB file part at a few MiB of RSS; a boundary split across chunk edges; a malformed part refused 400.",
+      "discussion": "http-55 (Order 55); M164's ask list"
+    },
+    {
+      "id": "M?3",
+      "section": "M",
+      "area": "std",
+      "kind": "feature (std::http; S-M) - the response mirror of M?1",
+      "title": "`ResponseStream::send_bytes(chunk: Bytes)` (and a `fs::Reader`-fed body) - file serving streams from storage instead of holding a whole `Bytes`",
+      "status": "OPEN - filed 2026-10-26 (http-55's follow-up, Order 55; R-g)",
+      "body": "`ResponseStream::send` takes `str` chunks only, so a large file is served from a whole `Bytes` buffer (`body_bytes`): kolt's `GET /files/{id}` reads the stored upload whole (`(storage.get)(sha)`) and hands it to `etag_response`, so a 25 MB file costs 25 MB per concurrent download (the upload measurements in M?1 bound it: the read is the same size as the body). Ask: `send_bytes(self, chunk: Bytes)` (node `response.write(Uint8Array)`, natively `Response::write` over bytes - the native `write` takes `&str` today), and a `ResponseBuilder::body_reader(reader)` that pipes an `fs::Reader` with backpressure (`drain`). Pins: a 64 MiB file served at a few MiB of RSS on both backends; `Content-Length` declared when the size is known.",
+      "discussion": "http-55 (Order 55); M164's last paragraph"
+    },
+    {
+      "id": "M?4",
+      "section": "M",
+      "area": "std",
+      "kind": "robustness (std::http; S) - both backends wrong, differently",
+      "title": "A request handler that PANICS ends the node server process (the `createServer` callback's promise rejects unhandled), while the native server reports it and never answers the client (the response is left open)",
+      "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+      "body": "Repro: sweeps/order55/http-55/finds/handler_panic_ends_node_server.vl - `GET /boom` panics. Node: `curl` gets `Empty reply` (exit 52) and the process exits with the panic (`node:internal/process/promises ... triggerUncaughtException`) - every later request is refused. Native: `vilan_rt::http` spawns the handler and the executor prints `unhandled task error (spawned in an http request handler)`, but nothing ends the response, so the client waits until it gives up. M164's `__http_respond` already wraps the answer and lets a cancellation end quietly; it rethrows everything else unchanged (the lane kept today's behaviour). Rec: a panic in `answer` is reported once (the unhandled-task line, both backends) and, when the response has not started, answered `500` with `Connection: close`; natively the same at the spawned task's failure. The rpc server already does this for a throwing `[rpc]` (M165's rpc half).",
+      "discussion": "http-55 (Order 55); found while designing M164's abort"
+    },
+    {
+      "id": "B?1",
+      "section": "B",
+      "area": "Language",
+      "kind": "diagnostics/platform reach over-approximation (checker)",
+      "title": "An `impl Default` (any std trait impl) in a `[platform(\"@process\")]` std module refuses a browser app that reaches a generic `N::default()` - the reach counts every impl in the world as the static call's callee",
+      "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+      "body": "Met building M164: an interim `export impl BodyLimits with Default` in http.vl made `vilan check` on kolt's copy refuse its CLIENT entry: `default requires the @process platform its file declares and cannot run on browser`, reach chain `... child (std::web::ui) -> place -> place_swap -> follow -> sub (std::reactive) -> observe_flow -> start (std::reactive) -> start (std::reactive::delta) -> default (std::default) -> default (std::http)`. `MapSum::start` (delta.vl ~3711) calls `N::default()` for the stage's own `N`; the platform walk takes every `Default` impl as reachable, including one whose type no client flow can carry. The lane used an inherent `BodyLimits::new()`; the trap stays for the next std module (or package module) that implements a common trait. A minimal package repro (a @process module with `impl Default`, a browser entry with a `SignalCell`) did not reproduce - the kolt copy with the interim impl is the repro (note: sweeps/order55/http-55/finds/platform_reach_default_impl.md). Rec: the reach of a static trait call `N::default()` is the impls of the types N is instantiated at (monomorphization's answer), not every impl.",
+      "discussion": "http-55 (Order 55); finds/platform_reach_default_impl.md"
+    },
+    {
+      "id": "F?1",
+      "section": "F",
+      "area": "native",
+      "kind": "differential (status line)",
+      "title": "An app-set status's reason phrase differs between the backends - node says `413 Payload Too Large` and `422 Unprocessable Entity`, the native server RFC 9110's `Content Too Large` and `Unprocessable Content`",
+      "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+      "body": "`vilan_rt::http::reason` writes RFC 9110's phrases; node's `http.STATUS_CODES` keeps the older names for 413 and 422. So kolt's own `plain(413, \"Files can be up to 25 MB.\")` answers `HTTP/1.1 413 Payload Too Large` on node and `... Content Too Large` natively (seen in http-55's exhibit and its overrides pin, which compares only the code for that reason). M164's own `413` sets node's `statusMessage` to RFC 9110's, so std's refusal agrees on both. Rec: one table - the JS side sets `statusMessage` from RFC 9110 for the few codes node names differently (413, 422; 418 aside), or the native table follows node's; the differential then compares whole status lines everywhere.",
+      "discussion": "http-55 (Order 55); request_body.rs `the_upload_route_shape`"
+    },
+    {
+      "id": "F?2",
+      "section": "F",
+      "area": "native",
+      "kind": "robustness (vilan-rt http; S)",
+      "title": "The native HTTP server has no head or body timeout - a client that sends half a head, or declares a body and stalls, holds its connection (and, since M164, a handler awaiting `bytes()`) forever",
+      "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+      "body": "Node bounds both (`server.headersTimeout` 60 s, `requestTimeout` 300 s); `vilan_rt::http` has only the upgraded socket's `setTimeout`. Before M164 a stalled body held the connection unanswered; after M164 the handler runs on the head and a `bytes()` waits on the stalled client (a graceful stop now closes such a connection - `terminate` counts a body being read as waiting on the client). M164's refusal linger (500 ms) is the only timer on the request path. Rec: node's two defaults natively (a head not complete within 60 s closes; a request not answered within 300 s closes, a read in flight cancelled), each a connection deadline polled in `service`.",
+      "discussion": "http-55 (Order 55)"
+    },
+    {
+      "id": "M?5",
+      "section": "M",
+      "area": "std",
+      "kind": "feature (std::http; S) - M164's lazy body, the last mile",
+      "title": "`Expect: 100-continue` answered when the handler READS, not at the head - node sends `100 Continue` before the handler runs, so a client that asks (curl does for bodies over 1 MiB) uploads a body the handler is about to refuse from the head",
+      "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+      "body": "With no `checkContinue` listener node writes `100 Continue` as soon as the head arrives; after M164 the handler may answer `401` without reading, but the client has already been told to send. Natively no `100` is ever sent (curl waits its 1 s and sends anyway). Rec: `server.on(\"checkContinue\", handler)` on node with `__http_read_body` calling `response.writeContinue()` on the first read; natively the same at `read_body`'s first poll when the head carries `Expect: 100-continue`. Pins: a client sending `Expect: 100-continue` and a 2 MiB declared body to a `401`-from-head route receives the `401` and no `100`; to a reading route the `100` then the body.",
+      "discussion": "http-55 (Order 55)"
+    }
+  ]
+}
