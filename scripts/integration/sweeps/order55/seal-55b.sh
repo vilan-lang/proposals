@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Order 55's perf leg RE-RUN alone (pass 2) on the ANCHORED exhibit: pass 1 (seal-c50a0a58.out) was green on every leg and
+# RED on the perf verdict for the exhibit's drift, not a regression (T3 CPU x0.989, instr x1.001, RSS x0.991; the four LSP
+# rows measured x1.01/x0.98/x0.97/x0.84): N174's anchors for `parse break` (a mandate row) and the two model.vl rows are
+# gone from the owner's kolt since 38a7ac9 (organizations), and E121's 500 ms leaf mandate is exceeded by the BASE itself
+# (1190 ms) on the 168-commit kolt. Base kolt = kolt-base (the clone) archived at 46c5b59 (2026-10-20, the last owner
+# commit carrying every anchor; checks clean under 0.52.0); tip = kolt-anchored-tip (46c5b59 + the M171 member removed +
+# nothing else needed; checks clean under the tip). Reset ~/.vilan/perf-verdicts/e121-state.json from e121-state-pre-seal.json
+# BEFORE this run (pass 1 advanced shared.vl 6 -> 7 despite its red verdict). Run QUIET, no CI in flight.
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.nvm/versions/node/v24.2.0/bin:$PATH"
+export CARGO_BUILD_JOBS=6
+SP=/tmp/claude-1000/-home-reed-code-vilan-lang/e520b8fd-c1d8-40ac-8d5e-45f93d2477ba/scratchpad/seal-55
+export VILAN_PERF_KOLT_DIR="$SP/kolt-base"
+export VILAN_PERF_KOLT_COMMIT=46c5b59
+export VILAN_PERF_TIP_KOLT="$SP/kolt-anchored-tip"
+export VILAN_PERF_ADVANCE=1
+export VILAN_SEAL_PERF_ONLY=1
+cp /home/reed/code/vilan-lang/proposals/scripts/integration/sweeps/order55/e121-state-pre-seal.json "$HOME/.vilan/perf-verdicts/e121-state.json"
+exec bash /home/reed/code/vilan-lang/proposals/scripts/integration/seal.sh
