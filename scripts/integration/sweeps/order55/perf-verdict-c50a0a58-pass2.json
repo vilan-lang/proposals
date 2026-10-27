@@ -1,0 +1,1188 @@
+{
+ "sha": "c50a0a589300a8a97da4641e3b10a9f68d185aba",
+ "date": "2026-10-27",
+ "verdict": "red",
+ "red": [
+  "LSP leaf keystroke: CPU to diagnostics x1.14",
+  "E121 model.vl keystroke, importers open: 690 ms > 500 ms"
+ ],
+ "load": 0.69,
+ "class": "reference",
+ "counter": "instructions:u",
+ "t2": {
+  "results": {
+   "example:math": {
+    "counter": "instructions:u",
+    "instructions": 249510164,
+    "peak_rss_kb": 31412,
+    "cpu_s": 0.038,
+    "exit": 0,
+    "subject": "example:math"
+   },
+   "example:watch": {
+    "counter": "instructions:u",
+    "instructions": 309249811,
+    "peak_rss_kb": 32520,
+    "cpu_s": 0.048,
+    "exit": 0,
+    "subject": "example:watch"
+   },
+   "example:browser": {
+    "counter": "instructions:u",
+    "instructions": 1320728630,
+    "peak_rss_kb": 78556,
+    "cpu_s": 0.175,
+    "exit": 0,
+    "subject": "example:browser"
+   },
+   "example:fullstack": {
+    "counter": "instructions:u",
+    "instructions": 2778168042,
+    "peak_rss_kb": 70864,
+    "cpu_s": 0.327,
+    "exit": 0,
+    "subject": "example:fullstack"
+   },
+   "example:router": {
+    "counter": "instructions:u",
+    "instructions": 1428621469,
+    "peak_rss_kb": 79660,
+    "cpu_s": 0.192,
+    "exit": 0,
+    "subject": "example:router"
+   },
+   "example:reactive-ui": {
+    "counter": "instructions:u",
+    "instructions": 1474467344,
+    "peak_rss_kb": 79632,
+    "cpu_s": 0.185,
+    "exit": 0,
+    "subject": "example:reactive-ui"
+   },
+   "example:ssr": {
+    "counter": "instructions:u",
+    "instructions": 3135738117,
+    "peak_rss_kb": 85116,
+    "cpu_s": 0.397,
+    "exit": 0,
+    "subject": "example:ssr"
+   },
+   "example:canvas": {
+    "counter": "instructions:u",
+    "instructions": 1334440139,
+    "peak_rss_kb": 79104,
+    "cpu_s": 0.172,
+    "exit": 0,
+    "subject": "example:canvas"
+   },
+   "example:rpc": {
+    "counter": "instructions:u",
+    "instructions": 1548666991,
+    "peak_rss_kb": 82528,
+    "cpu_s": 0.195,
+    "exit": 0,
+    "subject": "example:rpc"
+   },
+   "example:todo": {
+    "counter": "instructions:u",
+    "instructions": 3777134227,
+    "peak_rss_kb": 92288,
+    "cpu_s": 0.527,
+    "exit": 0,
+    "subject": "example:todo"
+   },
+   "example:walkthrough": {
+    "counter": "instructions:u",
+    "instructions": 3941177146,
+    "peak_rss_kb": 90544,
+    "cpu_s": 0.49,
+    "exit": 0,
+    "subject": "example:walkthrough"
+   },
+   "genapp:46": {
+    "counter": "instructions:u",
+    "instructions": 7168685120,
+    "peak_rss_kb": 168248,
+    "cpu_s": 0.906,
+    "exit": 0,
+    "subject": "genapp:46"
+   },
+   "plain:160": {
+    "counter": "instructions:u",
+    "instructions": 2779865538,
+    "peak_rss_kb": 128520,
+    "cpu_s": 0.395,
+    "exit": 0,
+    "subject": "plain:160"
+   },
+   "plain:320": {
+    "counter": "instructions:u",
+    "instructions": 5358232956,
+    "peak_rss_kb": 237276,
+    "cpu_s": 0.888,
+    "exit": 0,
+    "subject": "plain:320"
+   }
+  },
+  "judged": [
+   "  ok   example:math                  249,510,164 / ceiling      246,054,728 (x1.0140, limit x1.0365)",
+   "  ok   example:watch                 309,249,811 / ceiling      307,292,719 (x1.0064, limit x1.0345)",
+   "  ok   example:browser             1,320,728,630 / ceiling    1,311,684,500 (x1.0069, limit x1.0303)",
+   "  ok   example:fullstack           2,778,168,042 / ceiling    2,713,464,567 (x1.0238, limit x1.0458)",
+   "  ok   example:router              1,428,621,469 / ceiling    1,416,572,330 (x1.0085, limit x1.0324)",
+   "  ok   example:reactive-ui         1,474,467,344 / ceiling    1,463,358,948 (x1.0076, limit x1.0314)",
+   "  ok   example:ssr                 3,135,738,117 / ceiling    3,054,378,898 (x1.0266, limit x1.0542)",
+   "  ok   example:canvas              1,334,440,139 / ceiling    1,319,862,769 (x1.0110, limit x1.0355)",
+   "  ok   example:rpc                 1,548,666,991 / ceiling    1,539,280,769 (x1.0061, limit x1.0273)",
+   "  ok   example:todo                3,777,134,227 / ceiling    3,697,041,969 (x1.0217, limit x1.0521)",
+   "  ok   example:walkthrough         3,941,177,146 / ceiling    3,851,874,960 (x1.0232, limit x1.0427)",
+   "  ok   genapp:46                   7,168,685,120 / ceiling    7,143,071,807 (x1.0036, limit x1.0171)",
+   "  ok   growth plain 160 -> 320 modules: x1.928 (at most x2.3, Q11/M107)"
+  ]
+ },
+ "t3": {
+  "kolt": "46c5b59c",
+  "sources": {
+   "base": "kolt@46c5b59c",
+   "tip": "the prepared tree `kolt-anchored-tip`"
+  },
+  "different_sources": true,
+  "counter": "instructions:u",
+  "load_max": 0.69,
+  "runs": 5,
+  "base": {
+   "cpu_s": 1.587,
+   "peak_rss_kb": 260252,
+   "peak_rss_runs_kb": [
+    253096,
+    259956,
+    260252,
+    260696,
+    261144
+   ],
+   "instructions": 11650899872,
+   "exit": 0
+  },
+  "tip": {
+   "cpu_s": 1.597,
+   "peak_rss_kb": 244440,
+   "peak_rss_runs_kb": [
+    241572,
+    242124,
+    244440,
+    248396,
+    252476
+   ],
+   "instructions": 11825087107,
+   "exit": 0
+  },
+  "ratio": {
+   "cpu_s": 1.0063011972274731,
+   "peak_rss_kb": 0.9392435024514701,
+   "instructions": 1.0149505391784042
+  },
+  "threshold": 1.1,
+  "rss_threshold": 1.05,
+  "red": [],
+  "notes": [
+   "the two sides checked DIFFERENT sources: the base kolt@46c5b59c, the tip the prepared tree `kolt-anchored-tip` \u2014 a breaking release, whose base source does not check under the tip (nor the migrated tree under the base). Each side's check was clean; the ratios compare the same app before and after its migration, not one text."
+  ]
+ },
+ "lsp": [
+  {
+   "scenario": "leaf keystroke",
+   "base_ms": 420.0,
+   "tip_ms": 480.0,
+   "ratio": 1.1428571428571428
+  },
+  {
+   "scenario": "leaf keystroke + pause",
+   "base_ms": 1140.0,
+   "tip_ms": 1200.0,
+   "ratio": 1.0526315789473684
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "base_ms": 150.0,
+   "tip_ms": 150.0,
+   "ratio": 1.0
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "base_ms": 160.0,
+   "tip_ms": 160.0,
+   "ratio": 1.0
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "base_ms": 680.0,
+   "tip_ms": 670.0,
+   "ratio": 0.9852941176470589
+  },
+  {
+   "scenario": "css keystroke",
+   "base_ms": 890.0,
+   "tip_ms": 690.0,
+   "ratio": 0.7752808988764045
+  },
+  {
+   "scenario": "parse break",
+   "base_ms": 880.0,
+   "tip_ms": 700.0,
+   "ratio": 0.7954545454545454
+  },
+  {
+   "scenario": "parse repair",
+   "base_ms": 900.0,
+   "tip_ms": 720.0,
+   "ratio": 0.8
+  }
+ ],
+ "lsp_notes": [
+  "the LSP harness replayed its edit script over DIFFERENT sources: the base kolt@46c5b59c, the tip the prepared tree `kolt-anchored-tip` \u2014 a breaking release; each row compares the same edit in the same app before and after its migration"
+ ],
+ "lsp_measured": [
+  "leaf keystroke",
+  "leaf keystroke + pause",
+  "shared.vl keystroke",
+  "model.vl keystroke",
+  "model.vl keystroke, importers open",
+  "css keystroke",
+  "parse break",
+  "parse repair"
+ ],
+ "lsp_skipped": [],
+ "e121": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 480.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 3
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 150.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 6
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 160.0,
+   "target_ms": 500,
+   "state": "green",
+   "green_seals": 5,
+   "series": "Order 52 (N174): the keystroke edit is unchanged; the Find References probe moved from `fun messages(self)` (gone from model.vl) to `fun global()`, the mirrored store reader, so that probe starts a new series."
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "median_ms": 690.0,
+   "target_ms": 500,
+   "state": "RED (blocking)",
+   "green_seals": 2
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 690.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0
+  },
+  {
+   "scenario": "parse break",
+   "metric": "diagnostics_cpu_ms",
+   "median_ms": 700.0,
+   "target_ms": 500,
+   "state": "red (reporting)",
+   "green_seals": 0,
+   "series": "Order 52 (N174): re-anchored from `let messages = channel.messages();` (gone with the mirrored-store exhibit, kolt@dee494ab) to `channel_name.adopt(channel.current_name());` in the same channel.vl - a statement over a `g.channels()` boundary; the break and its repair are the same shape, the figures start a new series."
+  }
+ ],
+ "bumps": [
+  {
+   "subject": "example:math",
+   "class": "reference",
+   "ratio": 1.009,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0073",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:math",
+   "class": "ci",
+   "ratio": 1.009,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0073",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:watch",
+   "class": "reference",
+   "ratio": 1.009,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0071",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:watch",
+   "class": "ci",
+   "ratio": 1.009,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0071",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:browser",
+   "class": "reference",
+   "ratio": 1.007,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0051",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:browser",
+   "class": "ci",
+   "ratio": 1.007,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0051",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "reference",
+   "ratio": 1.007,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0054",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "ci",
+   "ratio": 1.007,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0054",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:router",
+   "class": "reference",
+   "ratio": 1.008,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0062",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:router",
+   "class": "ci",
+   "ratio": 1.008,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0062",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0039",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0039",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "reference",
+   "ratio": 1.006,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0043",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "ci",
+   "ratio": 1.006,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0043",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "reference",
+   "ratio": 1.006,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0050",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "ci",
+   "ratio": 1.006,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0050",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0026",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0026",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0027",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0027",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "reference",
+   "ratio": 1.007,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0052",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "ci",
+   "ratio": 1.007,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0052",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "genapp:46",
+   "class": "reference",
+   "ratio": 1.003,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0015",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "genapp:46",
+   "class": "ci",
+   "ratio": 1.003,
+   "reason": "std-55: std growth (position, the router entry, ui::nothing/each_owned, the derive's Option rule) and M165's any-landing check; measured x1.0015",
+   "item": "M165, M166, M167, M169, M170"
+  },
+  {
+   "subject": "example:math",
+   "class": "ci",
+   "ratio": 1.008,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.692 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:math",
+   "class": "reference",
+   "ratio": 1.008,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.692 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "ci",
+   "ratio": 1.006,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.468 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "reference",
+   "ratio": 1.006,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.468 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.310 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.310 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "ci",
+   "ratio": 1.003,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.235 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "reference",
+   "ratio": 1.003,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.235 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.002,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.159 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.002,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.159 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "ci",
+   "ratio": 1.002,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.143 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "reference",
+   "ratio": 1.002,
+   "reason": "std-prefix P6a: the canonical pre-entry resolve splits at M144's boundary - the tiers (std, the dependencies) resolve before the package's first node mints and the package resolves after its walk, so a program with package modules runs one more fixpoint pass over the constraints std's resolve left open (the prefix shape's own `prefix-package-resolve`, which the paper's cold rows priced at ~0.3 ms); +0.143 % instructions:u of `vilan check` on the lane's box (9800X3D) against next @d18f50d8, single-file programs flat (the package half runs only when the package walked something) and the plain packages down 0.9-1.0 %.",
+   "item": "M157"
+  },
+  {
+   "subject": "example:math",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00111 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:math",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00111 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:watch",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00100 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:watch",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00100 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:browser",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00257 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:browser",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00257 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00308 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00308 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:router",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00102 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:router",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00102 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00179 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00179 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00170 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00170 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00192 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00192 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00224 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00224 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00221 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00221 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00172 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "B646's [track_caller] on trait members: std marks Signal::new/set and Flow's effect/effect_on_change/sub/on_change (and observe_flow), every implementation gains the hidden Location parameter and every call through the trait its argument, and the trace's `placed` hook: x1.00172 instructions:u of `vilan check` on the lane's box (reference machine, loaded) against the installed v0.52.0 (d18f50d8).",
+   "item": "B646"
+  },
+  {
+   "subject": "example:math",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00204 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:math",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00204 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:watch",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00191 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:watch",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00191 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:browser",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00200 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:browser",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00200 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00280 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00280 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:router",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00256 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:router",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00256 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00513 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00513 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00212 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00212 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00165 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00165 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00247 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00247 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00342 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00342 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00363 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00363 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "genapp:46",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00392 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659"
+  },
+  {
+   "subject": "genapp:46",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "solver-55's checks beside B646's own rows: B647's whole-program module-loan check and the write summary over a WriteSubject, B649's by-value arm, B659's literal prechecks per generic call, B667's match leg record, B670's subtree deferral, B665's cause map. The lane's whole cost on the rebased tip against origin/next @3a0e57ae: x1.00392 instructions:u (B646's share is under its own 1.005 rows).",
+   "item": "B659",
+   "series": "Order 52 (N174): re-anchored from `let messages = channel.messages();` (gone with the mirrored-store exhibit, kolt@dee494ab) to `channel_name.adopt(channel.current_name());` in the same channel.vl - a statement over a `g.channels()` boundary; the break and its repair are the same shape, the figures start a new series."
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "std grew on every program's load: the mirror's keyed tables (M172), the rpc answer under guarded_async (M165), Connection::close (A174) and B677's warning pass \u2014 todo +0.24% on the lane's box (math and watch flat)",
+   "item": "M172"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "std grew on every program's load: the mirror's keyed tables (M172), the rpc answer under guarded_async (M165), Connection::close (A174) and B677's warning pass \u2014 todo +0.24% on the lane's box (math and watch flat)",
+   "item": "M172"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "reference",
+   "ratio": 1.003,
+   "reason": "http-55: std::http's capped, lazy request body (BodyLimits, the lazy Request, the three helpers); measured x1.0012",
+   "item": "M164"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "ci",
+   "ratio": 1.003,
+   "reason": "http-55: std::http's capped, lazy request body (BodyLimits, the lazy Request, the three helpers); measured x1.0012",
+   "item": "M164"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "http-55: std::http's capped, lazy request body (BodyLimits, the lazy Request, the three helpers); measured x1.0022",
+   "item": "M164"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "http-55: std::http's capped, lazy request body (BodyLimits, the lazy Request, the three helpers); measured x1.0022",
+   "item": "M164"
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.003,
+   "reason": "http-55: std::http's capped, lazy request body (BodyLimits, the lazy Request, the three helpers); measured x1.0016",
+   "item": "M164"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.003,
+   "reason": "http-55: std::http's capped, lazy request body (BodyLimits, the lazy Request, the three helpers); measured x1.0016",
+   "item": "M164"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "reference",
+   "ratio": 1.003,
+   "reason": "http-55: std::http's capped, lazy request body (BodyLimits, the lazy Request, the three helpers); measured x1.0016",
+   "item": "M164"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "ci",
+   "ratio": 1.003,
+   "reason": "http-55: std::http's capped, lazy request body (BodyLimits, the lazy Request, the three helpers); measured x1.0016",
+   "item": "M164"
+  },
+  {
+   "subject": "example:watch",
+   "class": "reference",
+   "ratio": 1.006,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0037 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:watch",
+   "class": "ci",
+   "ratio": 1.006,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0037 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:browser",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0016 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:browser",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0016 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:router",
+   "class": "reference",
+   "ratio": 1.005,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0022 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:router",
+   "class": "ci",
+   "ratio": 1.005,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0022 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0014 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:reactive-ui",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0014 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0015 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0015 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0014 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:canvas",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0014 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0010 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:rpc",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0010 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0019 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.004,
+   "reason": "std-55b: `std::io` re-exports `write` from the new `@process` module `std::io::stdout`, one more module every program that loads `std::io` loads; measured x1.0019 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "E332"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "reference",
+   "ratio": 1.016,
+   "reason": "std-55b: `std::process` gains the key stream (`Keys`, `Key`, `Press`, the std `KeyDecoder`), analyzed by every program that loads `std::process`; measured x1.0133 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "A173"
+  },
+  {
+   "subject": "example:fullstack",
+   "class": "ci",
+   "ratio": 1.016,
+   "reason": "std-55b: `std::process` gains the key stream (`Keys`, `Key`, `Press`, the std `KeyDecoder`), analyzed by every program that loads `std::process`; measured x1.0133 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "A173"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "reference",
+   "ratio": 1.016,
+   "reason": "std-55b: `std::process` gains the key stream (`Keys`, `Key`, `Press`, the std `KeyDecoder`), analyzed by every program that loads `std::process`; measured x1.0138 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "A173"
+  },
+  {
+   "subject": "example:ssr",
+   "class": "ci",
+   "ratio": 1.016,
+   "reason": "std-55b: `std::process` gains the key stream (`Keys`, `Key`, `Press`, the std `KeyDecoder`), analyzed by every program that loads `std::process`; measured x1.0138 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "A173"
+  },
+  {
+   "subject": "example:todo",
+   "class": "reference",
+   "ratio": 1.014,
+   "reason": "std-55b: `std::process` gains the key stream (`Keys`, `Key`, `Press`, the std `KeyDecoder`), analyzed by every program that loads `std::process`; measured x1.0112 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "A173"
+  },
+  {
+   "subject": "example:todo",
+   "class": "ci",
+   "ratio": 1.014,
+   "reason": "std-55b: `std::process` gains the key stream (`Keys`, `Key`, `Press`, the std `KeyDecoder`), analyzed by every program that loads `std::process`; measured x1.0112 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "A173"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "reference",
+   "ratio": 1.011,
+   "reason": "std-55b: `std::process` gains the key stream (`Keys`, `Key`, `Press`, the std `KeyDecoder`), analyzed by every program that loads `std::process`; measured x1.0085 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "A173"
+  },
+  {
+   "subject": "example:walkthrough",
+   "class": "ci",
+   "ratio": 1.011,
+   "reason": "std-55b: `std::process` gains the key stream (`Keys`, `Key`, `Press`, the std `KeyDecoder`), analyzed by every program that loads `std::process`; measured x1.0085 (callgrind, VILAN_STD at the commit's std over the base's)",
+   "item": "A173"
+  }
+ ],
+ "bumps_for_the_owner": [],
+ "genapp_phases_cpu_ms": {
+  "load+walk": 208.0,
+  "base": 238.5,
+  "build": 12.3,
+  "checks": 301.5,
+  "contexts+graph": 57.2,
+  "async-infer": 12.2,
+  "view-suspensions": 0.0,
+  "async-drops": 0.0,
+  "context-drops": 0.0,
+  "platform-color": 15.7,
+  "const-pass": 12.399999999999999,
+  "init-order": 0.2,
+  "emission-walk": 25.8,
+  "program-drop": 14.7
+ },
+ "e121_after": [
+  {
+   "scenario": "leaf keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 4,
+   "blocking": true,
+   "mandate": true
+  },
+  {
+   "scenario": "shared.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 7,
+   "blocking": true
+  },
+  {
+   "scenario": "model.vl keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 6,
+   "blocking": true,
+   "series": "Order 52 (N174): the keystroke edit is unchanged; the Find References probe moved from `fun messages(self)` (gone from model.vl) to `fun global()`, the mirrored store reader, so that probe starts a new series."
+  },
+  {
+   "scenario": "model.vl keystroke, importers open",
+   "metric": "cpu_ms",
+   "target_ms": 500,
+   "green_seals": 2,
+   "blocking": true
+  },
+  {
+   "scenario": "css keystroke",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false,
+   "mandate": true
+  },
+  {
+   "scenario": "parse break",
+   "metric": "diagnostics_cpu_ms",
+   "target_ms": 500,
+   "green_seals": 0,
+   "blocking": false,
+   "mandate": true,
+   "series": "Order 52 (N174): re-anchored from `let messages = channel.messages();` (gone with the mirrored-store exhibit, kolt@dee494ab) to `channel_name.adopt(channel.current_name());` in the same channel.vl - a statement over a `g.channels()` boundary; the break and its repair are the same shape, the figures start a new series."
+  }
+ ]
+}
