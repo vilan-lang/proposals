@@ -1,0 +1,45 @@
+tip=c50a0a58 loadavg=0.01 1.19 5.27
+     Summary [ 543.175s] 10960 tests run: 10960 passed (3 slow), 37 skipped
+union exit=0
+doc-tests exit=0
+native whole-set exit=0
+clippy exit=0
+windows exit=0
+audit exit=0
+fmt exit=0
+vilan-fmt exit=0
+wasm exit=0
+canary@1.5MiB exit=0
+perf leg starts at loadavg=1.19 2.49 5.27
+  T3 kolt (base and tip on different sources) @3dbc73ba: CPU x0.989  RSS x0.991  instructions x1.001  (load max 1.1)
+  T3 thresholds: CPU and instructions 1.10, peak RSS 1.05 (VILAN_PERF_RSS_THRESHOLD / --rss-threshold)
+  T3 peak RSS, a fresh process per run, median of 5: base 470.2 MB [467 469 470 470 470]; tip 465.7 MB [461 462 465 465 478]
+  LSP rows measured (4): leaf keystroke, leaf keystroke + pause, shared.vl keystroke, css keystroke
+  LSP row leaf keystroke: CPU to diagnostics base 1190 ms, tip 1200 ms (x1.01)
+  LSP row leaf keystroke + pause: CPU to diagnostics base 3410 ms, tip 3340 ms (x0.98)
+  LSP row shared.vl keystroke: CPU to diagnostics base 300 ms, tip 290 ms (x0.97)
+  LSP row css keystroke: CPU to diagnostics base 1230 ms, tip 1030 ms (x0.84)
+  LSP SKIPPED (base) model.vl keystroke: informational row - a note; model.vl keystroke: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl
+  LSP SKIPPED (base) model.vl keystroke, importers open: informational row - a note; model.vl keystroke, importers open: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl
+  LSP SKIPPED (base) parse break: mandate row - RED; parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl
+  LSP SKIPPED (base) parse repair: informational row - a note; parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl
+  LSP SKIPPED (tip) model.vl keystroke: informational row - a note; model.vl keystroke: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl
+  LSP SKIPPED (tip) model.vl keystroke, importers open: informational row - a note; model.vl keystroke, importers open: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl
+  LSP SKIPPED (tip) parse break: mandate row - RED; parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl
+  LSP SKIPPED (tip) parse repair: informational row - a note; parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl
+wrote /home/reed/.vilan/perf-verdicts/perf-c50a0a589300a8a97da4641e3b10a9f68d185aba.json
+PERF VERDICT: RED — LSP parse break: SKIPPED on the base side, a mandate row with nothing to compare against (parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl); E121 leaf keystroke: 1200 ms > 500 ms; E121 parse break: SKIPPED by the harness, a mandate row that was not measured (parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl)
+perf exit=1
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-base-c50a0a58.log:SKIPPED model.vl keystroke: model.vl keystroke: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl; model.vl keystroke: the hover anchor 'create_channel(name)' is not in src/model.vl; model.vl keystroke: the references anchor 'fun global()' is not in src/model.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-base-c50a0a58.log:SKIPPED model.vl keystroke, importers open: model.vl keystroke, importers open: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl; model.vl keystroke, importers open: the hover anchor 'create_channel(name)' is not in src/model.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-base-c50a0a58.log:SKIPPED parse break: parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl; parse break: the hover anchor 'channel.current_name());' is not in src/channel.vl; parse break: the completion anchor 'channel.current_name());' is not in src/channel.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-base-c50a0a58.log:SKIPPED parse repair: parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl; parse break: the hover anchor 'channel.current_name());' is not in src/channel.vl; parse break: the completion anchor 'channel.current_name());' is not in src/channel.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-base-c50a0a58.log:SKIPPED (anchors missing in this source; not measured): model.vl keystroke, model.vl keystroke, importers open, parse break, parse repair
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED model.vl keystroke: model.vl keystroke: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl; model.vl keystroke: the hover anchor 'create_channel(name)' is not in src/model.vl; model.vl keystroke: the references anchor 'fun global()' is not in src/model.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED model.vl keystroke, importers open: model.vl keystroke, importers open: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl; model.vl keystroke, importers open: the hover anchor 'create_channel(name)' is not in src/model.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED parse break: parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl; parse break: the hover anchor 'channel.current_name());' is not in src/channel.vl; parse break: the completion anchor 'channel.current_name());' is not in src/channel.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED parse repair: parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl; parse break: the hover anchor 'channel.current_name());' is not in src/channel.vl; parse break: the completion anchor 'channel.current_name());' is not in src/channel.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED (anchors missing in this source; not measured): model.vl keystroke, model.vl keystroke, importers open, parse break, parse repair
+changelog parity 48 / 48
+verdict: union=0 doctests=0 native=0 clippy=0 windows=0 audit=0 fmt=0 vilan-fmt=0 wasm=0 canary=0 perf=1
+seal exit=0
