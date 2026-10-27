@@ -1,0 +1,13 @@
+tip=c50a0a58 loadavg=0.09 0.03 0.01
+VILAN_PERF_KOLT_DIR=/tmp/claude-1000/-home-reed-code-vilan-lang/e520b8fd-c1d8-40ac-8d5e-45f93d2477ba/scratchpad/seal-55/kolt-base is not a directory
+perf leg starts at loadavg=0.09 0.03 0.01
+LSP harness leg REFUSED or failed (no LSP rows): see /home/reed/code/vilan-lang/proposals/scripts/integration/lsp-base-c50a0a58.log and lsp-tip-c50a0a58.log
+perf exit=1
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED model.vl keystroke: model.vl keystroke: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl; model.vl keystroke: the hover anchor 'create_channel(name)' is not in src/model.vl; model.vl keystroke: the references anchor 'fun global()' is not in src/model.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED model.vl keystroke, importers open: model.vl keystroke, importers open: the edit anchor '\t\tget_client().get_safe()!.create_channel(name)' is not in src/model.vl; model.vl keystroke, importers open: the hover anchor 'create_channel(name)' is not in src/model.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED parse break: parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl; parse break: the hover anchor 'channel.current_name());' is not in src/channel.vl; parse break: the completion anchor 'channel.current_name());' is not in src/channel.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED parse repair: parse break: the edit anchor '\t\t\tchannel_name.adopt(channel.current_name());' is not in src/channel.vl; parse break: the hover anchor 'channel.current_name());' is not in src/channel.vl; parse break: the completion anchor 'channel.current_name());' is not in src/channel.vl
+/home/reed/code/vilan-lang/proposals/scripts/integration/lsp-tip-c50a0a58.log:SKIPPED (anchors missing in this source; not measured): model.vl keystroke, model.vl keystroke, importers open, parse break, parse repair
+changelog parity 48 / 48
+verdict: union=skipped doctests=skipped native=skipped clippy=skipped windows=skipped audit=skipped fmt=skipped vilan-fmt=skipped wasm=skipped canary=skipped perf=1
+exit 0

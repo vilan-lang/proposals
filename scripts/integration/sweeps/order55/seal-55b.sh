@@ -9,7 +9,11 @@
 # BEFORE this run (pass 1 advanced shared.vl 6 -> 7 despite its red verdict). Run QUIET, no CI in flight.
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.nvm/versions/node/v24.2.0/bin:$PATH"
 export CARGO_BUILD_JOBS=6
-SP=/tmp/claude-1000/-home-reed-code-vilan-lang/e520b8fd-c1d8-40ac-8d5e-45f93d2477ba/scratchpad/seal-55
+# The exhibit lives OUTSIDE the session scratchpad (the first pass-2 attempt refused: a session restart wiped /tmp/claude-*/scratchpad,
+# taking both copies with it). Rebuilt 2026-10-27: kolt-base = `git clone --no-hardlinks ~/code/kolt` + src/lucide + src/search-dict;
+# kolt-anchored-tip = `git archive 46c5b59` + the two generated dirs + the `default_prevented` member (its doc line and attribute) deleted
+# from src/lib/std_ext.vl by hand (std-55's patch is against 3dbc73b and does not apply at 46c5b59; `stop_propagation` is not there yet).
+SP=$HOME/.vilan/perf-exhibit/order55
 export VILAN_PERF_KOLT_DIR="$SP/kolt-base"
 export VILAN_PERF_KOLT_COMMIT=46c5b59
 export VILAN_PERF_TIP_KOLT="$SP/kolt-anchored-tip"
