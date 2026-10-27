@@ -1,0 +1,20 @@
+tip=c50a0a58 loadavg=0.05 0.21 0.12
+perf leg starts at loadavg=0.05 0.21 0.12
+  T3 kolt (base and tip on different sources) @46c5b59c: CPU x1.035  RSS x0.927  instructions x1.017  (load max 0.8)
+  T3 thresholds: CPU and instructions 1.10, peak RSS 1.05 (VILAN_PERF_RSS_THRESHOLD / --rss-threshold)
+  T3 peak RSS, a fresh process per run, median of 5: base 253.3 MB [252 252 253 255 255]; tip 234.7 MB [233 234 234 239 243]
+  LSP rows measured (8): leaf keystroke, leaf keystroke + pause, shared.vl keystroke, model.vl keystroke, model.vl keystroke, importers open, css keystroke, parse break, parse repair
+  LSP row leaf keystroke: CPU to diagnostics base 430 ms, tip 500 ms (x1.16)
+  LSP row leaf keystroke + pause: CPU to diagnostics base 1180 ms, tip 1250 ms (x1.06)
+  LSP row shared.vl keystroke: CPU to diagnostics base 170 ms, tip 160 ms (x0.94)
+  LSP row model.vl keystroke: CPU to diagnostics base 150 ms, tip 150 ms (x1.00)
+  LSP row model.vl keystroke, importers open: CPU to diagnostics base 660 ms, tip 800 ms (x1.21)
+  LSP row css keystroke: CPU to diagnostics base 850 ms, tip 720 ms (x0.85)
+  LSP row parse break: CPU to diagnostics base 870 ms, tip 740 ms (x0.85)
+  LSP row parse repair: CPU to diagnostics base 940 ms, tip 770 ms (x0.82)
+wrote /home/reed/.vilan/perf-verdicts/perf-c50a0a589300a8a97da4641e3b10a9f68d185aba.json
+PERF VERDICT: RED — LSP leaf keystroke: CPU to diagnostics x1.16; LSP model.vl keystroke, importers open: CPU to diagnostics x1.21; E121 model.vl keystroke, importers open: 830 ms > 500 ms
+perf exit=1
+changelog parity 48 / 48
+verdict: union=skipped doctests=skipped native=skipped clippy=skipped windows=skipped audit=skipped fmt=skipped vilan-fmt=skipped wasm=skipped canary=skipped perf=1
+exit 0
