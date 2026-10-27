@@ -1,0 +1,459 @@
+{
+ "folds": [
+  {
+   "lane": "std-55",
+   "placeholder": "B?2",
+   "into": "B652",
+   "reason": "std-55's find (a plain string keeps `\\{` as two characters, so M166's own repro string was not JSON) is already resolved by B652 as merged: parser-55's lexer decodes `\\{` and `\\}` to literal braces in every string form (lexical.md section 2, lexing.rs read_escape maps '{' -> '{', unit row (r\"\\{\", '{', 2); commit 86179eb9 lists the braces among the decoded escapes). The lane recommended folding into B652 (parser-55 owns the lexer) and B652 CLOSES this order, so the brief's alternative (file it as its own B item citing B652) would file an item that is already fixed; it is recorded in B652's close text instead. NOT filed. Not run against a built 0.53 binary (none on this box) - the integrator can confirm with sweeps/order55/std-55/finds/plain_string_brace_escape.vl after the cut build: print(\"\\{\\\"id\\\": 1}\") should print {\"id\": 1}."
+  }
+ ],
+ "kept_distinct": [
+  {
+   "a": "rpc-55:M?1 (M173)",
+   "b": "http-55:M?1 (M176)",
+   "reason": "different items: the store's per-key diff under a keyed replica (std reactive store core, performance) vs Request::body_stream (std::http, feature); both kept"
+  },
+  {
+   "a": "tooling-55:B?1 (B682)",
+   "b": "solver-55:B?1/B?2/B?4 (B683/B684/B685)",
+   "reason": "B682 is the unifier/table leaving Result's arguments off when two variants of a two-parameter enum meet (hover shows a bare element type); the solver finds are fold literal accumulator, readonly & at &mut, and the None fallback view miscompile; none overlaps"
+  },
+  {
+   "a": "std-55:F?2 (F150)",
+   "b": "std-55:A?1 (A176)",
+   "reason": "F150 is the backend defect (two any positions reach rustc) and A176 the design question of what any holds; they cross-reference; both kept"
+  },
+  {
+   "a": "std-55:M?2 (M175 SqlValue)",
+   "b": "std-55:F?1 (F149 NULL column reads)",
+   "reason": "M175 types the bind list; F149 is the READ side (JS null vs native 0/\"\"); M175's body already notes the row half may consider F149's option (b); both kept"
+  },
+  {
+   "a": "incr-55:E?3 (E340)",
+   "b": "tooling-55:E?3 (E343)",
+   "reason": "E340 is the E292 series re-anchor (lsp-latency.py); E343 is the E126 exhibit's size vs kolt (keystroke gate); both are measurement-subject drift but different harnesses and owners; both kept"
+  },
+  {
+   "a": "parser-55:B?2 (B681)",
+   "b": "B652",
+   "reason": "B681 (the substring range check on a literal receiver skips any literal with a backslash) is a still-open checker gap that B652's total decode makes fixable; B652 does not touch analyzer.rs; kept"
+  }
+ ],
+ "on_arrival_closed": [
+  {
+   "id": "N185",
+   "fixed_by": "1d666757",
+   "close_entry": "closes55-draft.json (last entry); run close_batch AFTER file_items"
+  }
+ ],
+ "next_free_after": {
+  "A": "A178",
+  "B": "B687",
+  "E": "E352",
+  "F": "F154",
+  "M": "M181",
+  "N": "N186"
+ },
+ "items": [
+  {
+   "id": "A175",
+   "section": "A",
+   "title": "A174 door 1: revoke by value - `connection.revoke(store)` / `Service::revoke(connection_id, source)` ends ONE connection's subscriptions to a source the service handed out, sending the client the mirror's `Absent`, without closing the wire",
+   "kind": "feature (std::rpc server; S-M)",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (rpc-55's follow-up to A174 door 2, Order 55)",
+   "discussion": "rpc-55 (Order 55); A174's door 1, filed with what door 2 taught",
+   "body": "Door 2 (`Connection::close(reason)`, Order 55) covers sign-out and member removal by dropping the whole session; a client with other, still-valid mirrors pays a reconnect, a re-attach and a re-seed of everything for one revoked store. Door 1 is finer. What door 2 taught about reaching a returned store's channel: a `Store<T>` reply opens one `MirrorChannel` per store ROOT per connection (`mirror_channel`, `session.controlled_channel_for(identity)` keyed by `store_identity_at(root, [])`) and a GRANT per handle path (`MirrorChannel::grant`, keyed by `bases: HashMap<identity, base>` since M172), so revoking `store` on `connection` is: find the session (`session_of(connection)`), the channel by the root's identity (`controlled_channel_for`), then either `session.revoke(channel)` (the whole root - every grant on it - the client's view hears `Gone` for every slot and the mint reads `Absent`... today a revoked channel's view closes and the mint re-asks on the next hold, which the service's `[rpc]` then refuses: the right end state) or a per-grant release (`release_grant(base)` for the handle's path identity, then the channel if no grant remains). The client side already handles both: a `Gone` on the base boundary lands `replica.set(None)` and `states()` reads `Absent`; the mint's next hold re-asks. Surface: `Connection::revoke<T>(self, store: Store<T>)` (the `Connection` value kolt's factory keeps) and `revoke_connection_store(connection_id, store)` for the id form. Pin: a client holding two stores on one connection, one revoked - that one reads `Absent` and the other keeps patching; a re-hold after the revoke re-asks and is refused by the `[rpc]`'s own check. kolt's `remove_member` is the exhibit (the removed user's connections, found by the app's own user -> connection map)."
+  },
+  {
+   "id": "M173",
+   "section": "M",
+   "title": "A keyed replica's per-key `gone` (and every write at a keyed collection) diffs EVERY watched key: `keyed_hashes(node)` snapshots the collection's key list and `store_diff` walks it, so releasing K keys one turn each costs K^2 key copies (1.05M `__map_keys` copies at 1024 keys; 65k at 256)",
+   "kind": "performance (std reactive store core; M)",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (rpc-55's find under M172, Order 55)",
+   "discussion": "rpc-55 (Order 55); sweeps/order55/rpc-55/finds/m172_holds.vl (the four-phase program; the `done` phase)",
+   "body": "Measured under M172's program after the mirror's own lists were keyed: the table's unmount (K holds released, each in its own turn since nothing batches a dispose) grew 15x -> 4.9x for 4x the keys, and the residual is `Array.map <- __map_keys <- keyed_hashes` - `store.vl`'s keyed `store_diff` (`:182` `let watched = keyed_hashes(node); for hash in watched { .. store_diff .. }`, `:239` the set form) and `store_core.vl`'s `node_empty` (`:364` `keyed_hashes(Some(node)).is_empty()` - a full key snapshot for an emptiness check). Each key's `gone` is a write at the collection (`MirrorAt`'s boundary `gone` removes the key from the replica), and a write at a keyed collection diffs every watched key. Not the 550 ms (that was the mirror's lists, M172) but the next quadratic under a large keyed replica. Doors: (a) a write that names its key (a `Key` touch) diffs that key alone - the store already records `StoreTouch::Key(hash)`; (b) `node_empty` asks the table's `len()`; (c) `keyed_hashes` iterates without the snapshot. Rec: (a)+(b), a std lane in Order 56; a counting pin like M172's over the `done` phase (bound 6x for 4x the keys)."
+  },
+  {
+   "id": "N183",
+   "section": "N",
+   "title": "The macro-defining bypass of the base cache is textual: an entry whose TEXT contains `macro` (`entry_source.contains(\"macro\")` in `analyze_inner`'s `base_cacheable`) - a comment or a string that says the word - is uncacheable, so it gets no base-cache hit and never takes the std prefix; 4 of the 147 corpus programs (`crypto`, `db`, `file`, `watch`) say it only in a comment",
+   "kind": "performance / tooling (the reuse gate reads the entry's text; S)",
+   "area": "Performance & footprint",
+   "status": "OPEN — incr-55's find, Order 55",
+   "discussion": "incr-55 (Order 55); sweeps/order55/incr-55/finds/macro_text_gate/",
+   "body": "The gate stands in for 'this entry DEFINES a macro', whose definitions would register into the registry the stored world carries (E23's entanglement). N179 now names it in the census (`prefix-refusal macro-text`). Rec: decide it from the parsed tree (a top-level `macro fun` definition, or whatever `macros::register_file` would register) rather than the text; the four corpus programs then take the prefix. Not built in incr-55 (it moves which programs are cached, so it wants its own estate count)."
+  },
+  {
+   "id": "N184",
+   "section": "N",
+   "title": "An impl-reach verdict asked AFTER `build()` reads a package blanket binder differently from the same verdict asked before it: the tier oracle's log (std's questions, asked under std's rigid binder scopes) against `impl type T { fun len(self): i32 }` in a package module hits `member len` before `build()` and does not after",
+   "kind": "investigation (incremental guard; low)",
+   "area": "Performance & footprint",
+   "status": "OPEN — incr-55's find, Order 55",
+   "discussion": "incr-55 (Order 55); sweeps/order55/incr-55/finds/reach_verdict_after_build/",
+   "body": "Found building P6a's oracle (which therefore asks where section 4.2's guard asked, as the entry is about to walk). `impl_subject_admits(receiver, Generic(binder))` under a rigid `rigid_binder_scope` answers differently once `build()` has run. M121's own post-build verdict (`impl_reach`, the entry's and a hot set's impls) still hits an ENTRY blanket asked about a package's rigid `List<T>` (0.52.0: `impl-reached member len (hot false, entry true)`), so it is narrower than every blanket; whether an S1 hot blanket against a std question the package half re-asks can be missed there is the open question. Rec: find what `build()` changes about the binder's admission and ask the verdict before `build()` or under the pre-build state; pin with the oracle fixture."
+  },
+  {
+   "id": "E340",
+   "section": "E",
+   "title": "On the owner's CURRENT kolt (a `cp -r` of the working tree past b04095a, lucide carried) E292's rows read 3-7x the Order 54 seal's under v0.52.0 itself - leaf keystroke 2,360 ms CPU / 8.41 G instructions to idle (the seal on kolt@611d86f7: 330 ms / 2.53 G), css keystroke 2,270 ms / 8.06 G - and four scenarios cannot be measured at all: the `model.vl` keystroke rows' and the `parse break`/`repair` rows' anchors are gone from the source (N174 again)",
+   "kind": "editor latency (E292's series on the owner's current kolt; measurement + the next door)",
+   "area": "LSP & tooling",
+   "status": "OPEN — incr-55's find, Order 55 (for Order 56's incr lane)",
+   "discussion": "incr-55 (Order 55); target/incr-55-scratch/e292-{base,tip}.log and e292-passes-{base,tip}.log in the lane's worktree (numbers in REPORT-incr-55)",
+   "body": "lsp-latency.py --runs 5 at load 12-15 (CPU columns load-polluted; instructions are the comparison). The served leaf analysis is seeded (post-seam seeded+record+matches+cold, records-served 41-44, instances-served 33, hover-rows-restored 24,458) yet its checks phase is ~1.0-1.7 s: the top passes on the leaf keystroke (VILAN_PHASE_TIMING=passes, CPU ms at load ~14) are `check_view_escape` 180-530, contexts+graph 200 (post-pass), `LastUse::compute` 45-125, `check_generic_bound_satisfaction` 45-90, `infer_bumps` 45-100, `plan_resource_drops` 30-110 (M156/M163's premise was ~4 ms), the hover rows 55-75. The E292 series needs re-anchoring on this kolt (new anchors for the model.vl and parse-break rows) and a new baseline before Order 56's incr item picks its door; `check_view_escape` first (it is not served from a record on a keystroke)."
+  },
+  {
+   "id": "B678",
+   "section": "B",
+   "title": "`[derive(Json)]` over a field whose type is MODULE-QUALIFIED and applied (`flag: option::Option<bool>` under `import std::option;`) generates code that does not parse - \"macro `Json` generated invalid Vilan (unclosed `{` in struct initializer)\" - on 0.52.0 and after M166",
+   "kind": "bug - a derive's generated code does not parse",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "std-55 (Order 55); sweeps/order55/std-55/finds/derive_json_qualified_field_type.vl",
+   "body": "Met probing M166's syntactic `Option` test. The derive's `decoded` helper spells the field's decoder `{type_.render()}::from_json_value(..)`, and a qualified applied type renders as a path head with generic arguments in the middle of a path (`option::Option<bool>::from_json_value`), which the parser reads as a struct initializer. Doors: route a qualified type through `from_json_value_of<T>(..)` (as a tuple already is, B623), or render the path head without its module prefix when the type resolves. Rec: the first - `is_path_head` answers false for a `::`-qualified applied name. M166's absent-`Option` rule tests the bare written name `Option` and so does not reach such a field either (documented). `fix`."
+  },
+  {
+   "id": "F149",
+   "section": "F",
+   "title": "A NULL column read through `Row::integer`/`text`/`real`/`big_integer` answers the host's `null` on JS - an `i32` that prints `null`, a `str` that prints `null` - and the coerced `0` / `\"\"` natively (`vilan-rt-sqlite`'s `Row::number`/`text` claim to be the JS reader's coercion; the JS `__db_column` does not coerce)",
+   "kind": "miscompile (backend divergence) - std::db column readers",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "std-55 (Order 55); sweeps/order55/std-55/finds/db_null_column_reads.vl",
+   "body": "Met writing M165's pins. `db.vl` binds the four readers to one helper (`__db_column`: `row[name]`) and lets the signature supply the type, so a NULL arrives as `null` behind an `i32`/`str` on JS; native `Row::number` maps NULL to 0 and `Row::text` to \"\", calling that `Number(null)`/`String(null)`'s coercion - which the JS side never applies (and `String(null)` is \"null\", not \"\"). Doors: (a) coerce on JS to the native answers (`Number(v ?? 0)`, `v ?? \"\"`), split into per-reader helpers as the native emitter already splits them by vilan name; (b) make the readers `Option`-returning (`integer_or_null`) - a breaking surface change. Rec: (a) now, both backends answering 0/\"\" (the documented contract is \"guard NULLABLE columns with `is_null`\"), and the `SqlValue` follow-up's row half considers (b). `miscompile`."
+  },
+  {
+   "id": "F150",
+   "section": "F",
+   "title": "An `any` position the native backend cannot fill reaches rustc: a bare `None` (`shown(None)` over `fun shown(value: any)`) is E0282 on `vilan_rt::Any::from(None)`, and a struct (`shown(Point { x = 1 })`) is E0277 (no `From<Point>` for `Any`) - both reported as \"a BACKEND defect\"; JS builds both (`null`, `[ 1 ]`)",
+   "kind": "backend defect - native any coercion",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "std-55 (Order 55); sweeps/order55/std-55/finds/untyped_none_at_any.vl, std-55 (Order 55); sweeps/order55/std-55/finds/struct_at_any.vl",
+   "body": "`vilan_rt::Any` holds a number, a `str`, a `bool`, NULL and (through `From<Option<T>>`) an `Option` of those; the checker lets ANY value reach an `any` position (print/hash externs aside, which the native emitter lowers as intrinsics). Two halves: (1) the untyped `None` - emit `Any::Null` for a `None` whose payload type is open; (2) a value `any` cannot hold - refuse it at the checker with the holdable set named (\"`Point` cannot be held by `any`: an `any` holds a number, a `str`, a `bool` or an `Option` of one\"), which is also what M165's ruling wanted for a bind list (the refusal names the VILAN type, which the JS binder cannot see at run time). (2) is a new refusal: count the estate first (kolt binds only scalars/`Option`s; std's `any` sites are print/hash/db). See the A176 question. `diagnostics` for (2), `fix` for (1)."
+  },
+  {
+   "id": "B679",
+   "section": "B",
+   "title": "An `Option` that reaches an `any` position through a GENERIC body (`fun collect<T>(value: T): List<any> { held.push(value) }` called at `Option<i32>`) is its variant array on JS (`[ 0, 1 ]`) and its payload natively (`1`): M165's conversion is recorded statically, so a generic `T` bound to an `Option` per instance is not seen",
+   "kind": "backend divergence - any coercion through a generic",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "std-55 (Order 55); sweeps/order55/std-55/finds/generic_option_at_any.vl",
+   "body": "M165 records `Program::any_option_coercions` where the inferred type at the landing IS an `Option`; inside a generic body it is `T`. Natively the monomorphized `Any::from` converts per instance. Door: record a landing whose type is a generic parameter, and have the JS emitter consult the ACTIVE substitution at the site (the shape N149 used for `print` of a generic number). Low reach (a bind list built through a generic helper); rec: fix with the active-substitution read, the pin as above on both backends. `miscompile`."
+  },
+  {
+   "id": "M174",
+   "section": "M",
+   "title": "`[default(value)]` on a non-`Option` field of a `[derive(Json)]` struct - so a struct that gains a `bool` or a number still decodes JSON stored before it (M166 closed the `Option` half only); kolt's rich-text `TextStyle` keeps a hand-written `FromJson` because `code: bool` arrived after stored text",
+   "kind": "API (std::json derive)",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (std-55's M166 follow-up, Order 55)",
+   "discussion": "M166 (std-55, Order 55)",
+   "body": "M166's optional second ask, filed rather than built: a field attribute needs the parser's attribute table, the analyzer's attribute validation, `macro_std::meta::Field` gaining a slot (every construction site in `macros.rs`), and the derive emitting `if value.has_field(..) { .. } else { <default> }` with the literal type-checked at the field - M-sized and across parser-55's and solver-55's files. Rec: `[default(false)] code: bool` with the value an expression typed at the field; `Default::default()` when written bare (`[default]`). Exhibit: kolt `src/lib/rich_text/style.vl:14`. `feature`."
+  },
+  {
+   "id": "M175",
+   "section": "M",
+   "title": "`SqlValue`: type `std::db`'s bind lists - `List<any>` lets a struct, a list or a tuple through to a run-time refusal (JS) or a rustc error (native) - with what the boundary half taught",
+   "kind": "API (std::db typing)",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (std-55's M165 follow-up, Order 55; R-c)",
+   "discussion": "M165 (std-55, Order 55)",
+   "body": "R-c's typed form. What M165's boundary half taught: (1) the conversion an `Option` and a `bool` need already existed natively in `vilan_rt::Any` and its binder; JS needed the analyzer to record WHERE an `Option` lands at `any`, because the JS value carries no type - so a run-time refusal can name the index but never the vilan type; (2) a bind list is built three ways in the estate (a literal - kolt's 295 sites, `push` onto a `List<any>`, a generic helper - B679), and a trait-typed list catches all three at the checker; (3) `any`'s holdable set (number, str, bool, Option of those) IS the `SqlValue` impl set. Rec: `trait SqlValue` implemented for the integer and float types, `str`, `bool`, `Bytes` (BLOB, new), `Option<T: SqlValue>`; `run`/`all`/`first` take `List<dyn SqlValue>` (or a variadic tuple), a literal's elements erased at the element; the JS binder stays as the host seam; `any` then has no std bind-list user, which lets F150's refusal be stated for `any` everywhere. M. `breaking` only for a program that passes a `List<any>` it built itself (estate: 0 in kolt)."
+  },
+  {
+   "id": "A176",
+   "section": "A",
+   "title": "What `any` holds: the native backend's `vilan_rt::Any` is a number, a `str`, a `bool`, NULL and an `Option` of those, the JS backend takes anything, and the checker admits anything - so the same program prints `[ 0, 1 ]` (JS, before M165) or `1` (native) at a user's `any` parameter, and a struct at one builds on JS and fails rustc natively",
+   "kind": "design question",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (std-55's find, Order 55)",
+   "discussion": "M165 (std-55, Order 55); F150",
+   "body": "M165 made the JS backend convert an `Option` where it lands at `any` (the native semantics), excepting `print`'s and an external's direct `any` parameters, which take the value as it is. Open: (1) whether `any` is a language type at all for user code (std uses it for `print`, `canonical_hash` and the db bind list only); (2) if it is, refuse a value `any` cannot hold at the checker (F150 (2)); (3) if it is not, refuse `any` outside std. Rec: (2) now, (1)/(3) with `SqlValue` (M175), which removes std's last value-level `any` user."
+  },
+  {
+   "id": "B680",
+   "section": "B",
+   "title": "The \"could not be resolved\" family (`type of variable 'x' could not be resolved`, `type of function call arguments could not be resolved`) is DEMOTED behind an analyzer error but not behind a PARSE error, so a parse-recovery hole (a broken field type, a tuple atom that declined) still prints its cascade beside the parse error that caused it",
+   "kind": "diagnostics (checker) - a cascade beside a parse error",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (parser-55's find, Order 55)",
+   "discussion": "parser-55 (Order 55); sweeps/order55/parser-55/finds/b1_could_not_be_resolved_beside_a_parse_error.vl",
+   "body": "Met pinning B660/B673. The guard (ledger rows 142-145/147, DEMOTE) reads `self.diagnostics.is_empty()`, the analyzer's own list; `analyze_source` and the CLI fold the parse errors in OUTSIDE the analyzer, so a program whose only real error is a syntax error still gets the residual. Doors: hand the analyzer a flag (or the parse-error count) at `analyze` so the guard counts them; or have the folds drop the residual family when the parse list is non-empty. Rec: the flag - one place, and the editor (which analyzes recovered trees on every keystroke) gains the same quiet. `diagnostics`, solver lane."
+  },
+  {
+   "id": "B681",
+   "section": "B",
+   "title": "The substring-range check on a string LITERAL receiver skips any literal with a backslash (`analyzer.rs`'s \"Escapes are still raw source here\" early return), so `\"\\x41\\x42\".substring(0, 5)` is left to the runtime helper where `\"AB\".substring(0, 5)` is refused at compile time",
+   "kind": "diagnostics (checker) - a missed compile-time refusal",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (parser-55's find, Order 55)",
+   "discussion": "parser-55 (Order 55); sweeps/order55/parser-55/finds/b2_constant_length_skips_escapes.vl",
+   "body": "B652 made the lexer's decode total (every escape the lexer admits has one value, `lexing::unescape_string`), so the check can measure the decoded value's UTF-16 length instead of declining. S, solver lane; `diagnostics`."
+  },
+  {
+   "id": "E341",
+   "section": "E",
+   "title": "`vilan run --watch` answers SIGTERM/SIGHUP (and a lone SIGINT) by exiting 130 and leaving the round's node child running - E335's forwarding covers the plain run only",
+   "kind": "tooling - `vilan run --watch` and a SIGTERM",
+   "area": "Tooling",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55); sweeps/order55/tooling-55/finds/watch_sigterm_orphan.sh",
+   "body": "E335 forwards the three signals to a plain `vilan run`'s program; a watch session registers no child with the forwarding pipeline (its rounds restart children through `ManagedChild::kill` and the brief said to keep that path intact), so a supervisor stopping a watcher still leaves the program holding its port. The repro (`finds/watch_sigterm_orphan.sh <vilan>`) prints `child N STILL ALIVE (orphan)`. Rec: the hook, with no plain-run child registered, kills the watch loop's current child (the loop can publish its pid into the same registry in `Exit` mode: forward, wait up to a bound, then exit 130). `tooling`; XS-S."
+  },
+  {
+   "id": "B682",
+   "section": "B",
+   "title": "`[Ok(2), Err(\"bad\")]` with no annotation is recorded as `List<Result>` - the enum's arguments are empty - so a variant element hovers bare (`Result::Ok`) where `[Some(1), None]` hovers `Option<i32>::Some(i32)`",
+   "kind": "editor - an un-annotated list of `Ok`/`Err` records a bare `Result` element type",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55); sweeps/order55/tooling-55/finds/unannotated_result_list.vl",
+   "body": "Found writing E333's pin: the annotated list (`List<Result<i32, str>>`) and a tuple of `Some`/`None` are read correctly from the container's type, the un-annotated `Ok`/`Err` list is not, because its recorded type carries `Enum(result, [])`. Either the unifier leaves the arguments off when two variants of a two-parameter enum meet (`T` from one arm, `E` from the other - the right answer is `Result<i32, str>`), or the table records it before the merge. `solver`/`diagnostics` territory; `fix`."
+  },
+  {
+   "id": "E342",
+   "section": "E",
+   "title": "a variant receiver whose method does not bind every enum parameter in the call's substitution hovers bare - `Ok(5).map_err(\\|code: str\\| code)` has F and E but not T",
+   "kind": "editor (hover; XS)",
+   "area": "Editor",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55); sweeps/order55/tooling-55/finds/receiver_with_an_unbound_enum_parameter.vl",
+   "body": "E333 reads a receiver's instantiation from the member call's `self` parameter under `method_call_substitution`; a parameter only the receiver's own payload binds (`T` of `Ok(5)`, `E` of `Err(\"six\")`) is absent, so the label has a hole and says nothing. Rec: fill the gap from the variant call's payload argument types (`Ok(5)` binds the payload slot's generic) when the receiver IS the variant call. `tooling`."
+  },
+  {
+   "id": "E343",
+   "section": "E",
+   "title": "the E126 exhibit is now SMALLER than kolt: the recorded application shape (2026-09-04: 99,522 entities / 18,745 substitutions / 433 implementations) is a third of today's kolt (634,908 / 35,988 / 1,224 on `src/client.vl`) and the exhibit's census (257,606 / 27,870 / 575) tracks neither",
+   "kind": "tooling (gate; M)",
+   "area": "Editor",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55); E334's stamp",
+   "body": "E334 fixed the exhibit's generator (the stage is `.derive(..).cell()`); it now analyzes clean and reads 2.59x the OLD recording's entities, outside the 2x band, so the shape gate stays ignored. Re-recording against today's kolt (a release-profile measurement of five warm keystrokes for RECORDED_WARM_CPU_MS too) flips the band: the exhibit would be 0.41x of kolt's entities. The 500 ms diagnostics budget gates are only as honest as the subject: decide whether the exhibit grows (more components / icons) to track kolt, or the recording is re-taken and the band widened. Owner's call on the subject's size; a Sonnet lane can do the measurement. `tooling`."
+  },
+  {
+   "id": "E344",
+   "section": "E",
+   "title": "vilan-dap's frame naming resolves a closure to its enclosing function by the NEAREST PRECEDING NAMED SEGMENT in the generated script - a function declared inside another function is the one blind spot",
+   "kind": "tooling (process; XS)",
+   "area": "Tooling",
+   "status": "OPEN - filed 2026-10-26 (tooling-55's find, Order 55)",
+   "discussion": "tooling-55 (Order 55)",
+   "body": "E336 names `a closure in <name>` from the source map (S5 marks function heads with `names`; the emitted functions are flat at module level, so the last head before a closure's head is the function holding it). A function declared INSIDE a function (a local `fun`) sits between the outer head and a later closure of the outer function and would be named instead. Rec: S5 also marks the end of each function head's span (or the map carries the function's extent) so the adapter can nest properly; or the sidecar's span records cover std. Cosmetic; `tooling`."
+  },
+  {
+   "id": "B683",
+   "section": "B",
+   "title": "A literal accumulator decides `fold`'s `B` as `i32` before the unannotated closure's body says otherwise - `[1usize, 2].fold(0, \\|sum, value\\| sum + value)` is refused \"`+` adds two values of the same type, but the operands are `i32` and `usize`\"",
+   "kind": "type inference (checker; S)",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (solver-55's find, Order 55)",
+   "discussion": "solver-55 (Order 55); sweeps/order55/solver-55/finds/b1_fold_literal_accumulator.vl",
+   "body": "B659's neighbour, left out of B659 on purpose: there the generic sat only in the closure's RESULT, so the literal could wait for the closure. Here `B` is also the closure's first PARAMETER, so the closure cannot type without it, and the literal is the only binder (B589 covers the case where the closure's parameters are WRITTEN). The answer would need the body's arithmetic as evidence (`sum + value` with `value: usize` says `B = usize`) - a deferral of the literal's default until the closure's body has typed with `B` open, then a retry. Same on v0.52.0. Workarounds: `0usize`, or `|sum: usize, value|`. Sizing S-M; rec: defer only an unsuffixed literal whose generic the closure's body constrains by an operator against a known width, else keep `i32`."
+  },
+  {
+   "id": "B684",
+   "section": "B",
+   "title": "A readonly `&` at a `&mut` parameter checks clean - `bump(&x)` over `fun bump(a: &mut i32)` writes `x` on JS (prints 2) and the native emission is refused by rustc (E0308, reported as a backend defect)",
+   "kind": "miscompile (JS) / backend defect (native) - a readonly view at a `&mut` parameter",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (solver-55's find, Order 55)",
+   "discussion": "solver-55 (Order 55); sweeps/order55/solver-55/finds/b2_shared_view_at_a_mut_parameter.vl",
+   "body": "B649's sibling, met probing it: `check_view_arguments` asks a `&mut` parameter only whether the argument IS a view (`assignment_target_is_view`), not whether it is a WRITABLE one, so `&x`, a `&` view binding or a `borrows` call returning `&T` all pass. Rec: refuse with \"this parameter takes `&mut`: write `bump(&mut x)`\" (the binding must be `mut`, which `check_mutable_references` already says); count the estate first (expected 0: the native backend would have refused every site). Sizing S."
+  },
+  {
+   "id": "E345",
+   "section": "E",
+   "title": "The reactive trace places effects and cells but not derivations, and not a UI binding's subscription - `derivation #2 woken by ..` has no place, and `text(count)`'s subscriber is made inside std (`ui.vl`'s `follow`), so its line names none",
+   "kind": "debugging (the reactive trace; S)",
+   "area": "Tooling",
+   "status": "OPEN - filed 2026-10-26 (solver-55's find, Order 55)",
+   "discussion": "solver-55 (Order 55), after B646",
+   "body": "B646 placed what the trait members reach: `Flow::effect`/`sub`/`on_change` (and `observe_flow`), `Signal::new`/`set`. Two kinds of subscriber are still placeless: a DERIVATION (`.memo()`, a stage's relay - `Pipe` members are not marked) and every UI binding (`follow` in std/browser/web/ui.vl calls `.sub` from std, so the place is std's and the trace leaves it out). Doors: mark `Pipe::memo` and the stage constructors `[track_caller]`, and thread a location through the ui binding helpers (`text`, `bind_*`, `follow`) so a binding names the element that made it. Sizing S-M; rec: both, after the owner says the trace should name bindings."
+  },
+  {
+   "id": "B685",
+   "section": "B",
+   "title": "`opt.unwrap_or(&0) + 1` over an `Option<&i32>` that is `None` prints `0,01` on JS and `1` natively - the fallback view's `[cell, key]` pair is handed on as the value",
+   "kind": "miscompile (JS) - a view fallback at a generic `T` that is a view",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (solver-55's find, Order 55)",
+   "discussion": "solver-55 (Order 55); sweeps/order55/solver-55/finds/b4_view_fallback_on_none.vl",
+   "body": "Met pinning B649's exemption. `Shelf::count(&self, i): Option<&i32>` answers a wrapped view; B577 made the JS emitter read a SOME payload out where the option is consumed (`unwrap_or`, `map`, `+ 1`), but when the option is `None` the result is the FALLBACK argument, which is itself a view (`&0`, `&zero`) and is not read out, so `+ 1` concatenates the pair. Same on v0.52.0; natively F99 reads both. B649 deliberately leaves the `&` there alone (the parameter's `T` IS a view: a by-value fallback would not type). Rec: the JS emitter reads the fallback out at the same consuming positions B577 reads the payload (transformer, B577's seam); a pin per consumer (`unwrap_or`, `unwrap_or_else`'s result, `+`). Sizing S."
+  },
+  {
+   "id": "M176",
+   "section": "M",
+   "title": "`Request::body_stream(): Reader` - a request body read incrementally (`next(size): Bytes`, like `std::fs::Reader`), the cap enforced as it reads, so an upload costs a chunk of memory instead of its whole size",
+   "kind": "feature (std::http; M) - M164's follow-up, R-g",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (http-55's follow-up, Order 55; RULED as a follow-up at GO, R-g)",
+   "discussion": "http-55 (Order 55); the M164 report's measurements; sweeps/order55/http-55-prompt.md item 4",
+   "body": "M164 made the body capped and LAZY (read on the handler's first `bytes()`), but a body that is read is still read WHOLE into memory. Measured (one upload, peak RSS delta `VmHWM`, `MALLOC_ARENA_MAX=1`, debug native): JS 25 MiB read whole costs 56,284 kB after M164 (81,872 kB before - `Buffer.concat` now sized); native 25 MiB costs 25,500 kB after (a 15 MiB upload cost 63,600 kB before: the inbox was cloned per poll while waiting); a body refused or never read costs ~0 (JS 1,812 kB, native 20 kB, where both paid the whole upload before). Kolt's server held 135,952 kB peak after a 5 MB and a 20 MB upload (74,008 kB with both refused). Ask: `request.body_stream(): BodyReader` with `async fun next(self, size: usize): Option<Bytes>` - the node side a `data`/`pause` pump (`__http_read_body`'s listener, resumed per `next`), natively `BodyRead` answering what the inbox holds up to `size` (the decoder and the per-turn `BODY_SLICE` already exist) - the cap counted as it reads (the refusal is the same `413` + cancellation), `bytes()` and `body_stream()` exclusive (the second to be called after the first refuses). Pins: a 64 MiB upload hashed through `crypto` with peak RSS under a few MiB on both backends; the cap mid-stream; kolt's `(storage.put)` written from the stream."
+  },
+  {
+   "id": "M177",
+   "section": "M",
+   "title": "`multipart/form-data` parsed on the body stream - parts (headers, name, filename) read incrementally, each part's bytes a stream of their own",
+   "kind": "feature (std::http; M) - after M176",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (http-55's follow-up, Order 55; R-g)",
+   "discussion": "http-55 (Order 55); M164's ask list",
+   "body": "Kolt and every browser-form upload send `multipart/form-data`; today a handler gets the whole body and parses it by hand (kolt sidesteps it by POSTing the file raw with `X-Kolt-Filename`). After M176's reader: a `Multipart` over `BodyReader` (boundary from `Content-Type`, RFC 7578), `next_part(): Option<Part>` with `name`, `filename`, `content_type` and a part `Reader`, the cap the body's. The rpc POST leg keeps refusing multipart (its CSRF gate, docs/std/rpc.md). Pins: a two-part form with a 10 MiB file part at a few MiB of RSS; a boundary split across chunk edges; a malformed part refused 400."
+  },
+  {
+   "id": "M178",
+   "section": "M",
+   "title": "`ResponseStream::send_bytes(chunk: Bytes)` (and a `fs::Reader`-fed body) - file serving streams from storage instead of holding a whole `Bytes`",
+   "kind": "feature (std::http; S-M) - the response mirror of M176",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (http-55's follow-up, Order 55; R-g)",
+   "discussion": "http-55 (Order 55); M164's last paragraph",
+   "body": "`ResponseStream::send` takes `str` chunks only, so a large file is served from a whole `Bytes` buffer (`body_bytes`): kolt's `GET /files/{id}` reads the stored upload whole (`(storage.get)(sha)`) and hands it to `etag_response`, so a 25 MB file costs 25 MB per concurrent download (the upload measurements in M176 bound it: the read is the same size as the body). Ask: `send_bytes(self, chunk: Bytes)` (node `response.write(Uint8Array)`, natively `Response::write` over bytes - the native `write` takes `&str` today), and a `ResponseBuilder::body_reader(reader)` that pipes an `fs::Reader` with backpressure (`drain`). Pins: a 64 MiB file served at a few MiB of RSS on both backends; `Content-Length` declared when the size is known."
+  },
+  {
+   "id": "M179",
+   "section": "M",
+   "title": "A request handler that PANICS ends the node server process (the `createServer` callback's promise rejects unhandled), while the native server reports it and never answers the client (the response is left open)",
+   "kind": "robustness (std::http; S) - both backends wrong, differently",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+   "discussion": "http-55 (Order 55); found while designing M164's abort",
+   "body": "Repro: sweeps/order55/http-55/finds/handler_panic_ends_node_server.vl - `GET /boom` panics. Node: `curl` gets `Empty reply` (exit 52) and the process exits with the panic (`node:internal/process/promises ... triggerUncaughtException`) - every later request is refused. Native: `vilan_rt::http` spawns the handler and the executor prints `unhandled task error (spawned in an http request handler)`, but nothing ends the response, so the client waits until it gives up. M164's `__http_respond` already wraps the answer and lets a cancellation end quietly; it rethrows everything else unchanged (the lane kept today's behaviour). Rec: a panic in `answer` is reported once (the unhandled-task line, both backends) and, when the response has not started, answered `500` with `Connection: close`; natively the same at the spawned task's failure. The rpc server already does this for a throwing `[rpc]` (M165's rpc half)."
+  },
+  {
+   "id": "B686",
+   "section": "B",
+   "title": "An `impl Default` (any std trait impl) in a `[platform(\"@process\")]` std module refuses a browser app that reaches a generic `N::default()` - the reach counts every impl in the world as the static call's callee",
+   "kind": "diagnostics/platform reach over-approximation (checker)",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+   "discussion": "http-55 (Order 55); finds/platform_reach_default_impl.md",
+   "body": "Met building M164: an interim `export impl BodyLimits with Default` in http.vl made `vilan check` on kolt's copy refuse its CLIENT entry: `default requires the @process platform its file declares and cannot run on browser`, reach chain `... child (std::web::ui) -> place -> place_swap -> follow -> sub (std::reactive) -> observe_flow -> start (std::reactive) -> start (std::reactive::delta) -> default (std::default) -> default (std::http)`. `MapSum::start` (delta.vl ~3711) calls `N::default()` for the stage's own `N`; the platform walk takes every `Default` impl as reachable, including one whose type no client flow can carry. The lane used an inherent `BodyLimits::new()`; the trap stays for the next std module (or package module) that implements a common trait. A minimal package repro (a @process module with `impl Default`, a browser entry with a `SignalCell`) did not reproduce - the kolt copy with the interim impl is the repro (note: sweeps/order55/http-55/finds/platform_reach_default_impl.md). Rec: the reach of a static trait call `N::default()` is the impls of the types N is instantiated at (monomorphization's answer), not every impl."
+  },
+  {
+   "id": "F151",
+   "section": "F",
+   "title": "An app-set status's reason phrase differs between the backends - node says `413 Payload Too Large` and `422 Unprocessable Entity`, the native server RFC 9110's `Content Too Large` and `Unprocessable Content`",
+   "kind": "differential (status line)",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+   "discussion": "http-55 (Order 55); request_body.rs `the_upload_route_shape`",
+   "body": "`vilan_rt::http::reason` writes RFC 9110's phrases; node's `http.STATUS_CODES` keeps the older names for 413 and 422. So kolt's own `plain(413, \"Files can be up to 25 MB.\")` answers `HTTP/1.1 413 Payload Too Large` on node and `... Content Too Large` natively (seen in http-55's exhibit and its overrides pin, which compares only the code for that reason). M164's own `413` sets node's `statusMessage` to RFC 9110's, so std's refusal agrees on both. Rec: one table - the JS side sets `statusMessage` from RFC 9110 for the few codes node names differently (413, 422; 418 aside), or the native table follows node's; the differential then compares whole status lines everywhere."
+  },
+  {
+   "id": "F152",
+   "section": "F",
+   "title": "The native HTTP server has no head or body timeout - a client that sends half a head, or declares a body and stalls, holds its connection (and, since M164, a handler awaiting `bytes()`) forever",
+   "kind": "robustness (vilan-rt http; S)",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+   "discussion": "http-55 (Order 55)",
+   "body": "Node bounds both (`server.headersTimeout` 60 s, `requestTimeout` 300 s); `vilan_rt::http` has only the upgraded socket's `setTimeout`. Before M164 a stalled body held the connection unanswered; after M164 the handler runs on the head and a `bytes()` waits on the stalled client (a graceful stop now closes such a connection - `terminate` counts a body being read as waiting on the client). M164's refusal linger (500 ms) is the only timer on the request path. Rec: node's two defaults natively (a head not complete within 60 s closes; a request not answered within 300 s closes, a read in flight cancelled), each a connection deadline polled in `service`."
+  },
+  {
+   "id": "M180",
+   "section": "M",
+   "title": "`Expect: 100-continue` answered when the handler READS, not at the head - node sends `100 Continue` before the handler runs, so a client that asks (curl does for bodies over 1 MiB) uploads a body the handler is about to refuse from the head",
+   "kind": "feature (std::http; S) - M164's lazy body, the last mile",
+   "area": "Standard library",
+   "status": "OPEN - filed 2026-10-26 (http-55's find, Order 55)",
+   "discussion": "http-55 (Order 55)",
+   "body": "With no `checkContinue` listener node writes `100 Continue` as soon as the head arrives; after M164 the handler may answer `401` without reading, but the client has already been told to send. Natively no `100` is ever sent (curl waits its 1 s and sends anyway). Rec: `server.on(\"checkContinue\", handler)` on node with `__http_read_body` calling `response.writeContinue()` on the first read; natively the same at `read_body`'s first poll when the head carries `Expect: 100-continue`. Pins: a client sending `Expect: 100-continue` and a 2 MiB declared body to a `401`-from-head route receives the `401` and no `100`; to a reading route the `100` then the body."
+  },
+  {
+   "id": "F153",
+   "section": "F",
+   "title": "Natively, `for x in subject` over a `[resource]` struct whose inherent `next(self): Option<T>` drives the loop MOVES the subject into the loop's iterator, and the analyzer's last-use drop after the loop then names the moved binding - cargo refuses the emitted Rust (E0382, \"use of moved value\") where JS runs it (the resource drops after the loop) - so `for key in keys` over `process::keys()` builds on JS only",
+   "kind": "native backend defect (cargo refuses) - a for-in over a resource",
+   "area": "Native targets & rendering",
+   "status": "OPEN - filed 2026-10-26 (std-55b's find, Order 55)",
+   "discussion": "std-55b (Order 55); sweeps/order55/std-55b/finds/native_for_in_resource/",
+   "body": "Met verifying terminal.md Q6 for A173 S2 (`for key in keys` through the implicit `next`, F-2/F-3 fixed in Order 54). The plain (non-resource) awaiting inherent `next` works on both backends (verified); the RESOURCE form does not: `vilan_rust::Emitter::for_each_iterator` emits `let mut iterator = <subject>;` through `consumed_value_of`, while the analyzer treats the loop as a LOAN of the resource and places its `Drop` after the loop (`std::mem::drop(ticks)`), so the binding is used after its move. The fix is the loop borrowing a place subject that is a resource (`let iterator = &mut ticks;` and `next(iterator, ..)`), with the binding emitted `mut`; a temporary subject (`for k in keys()`) still moves. Repro: res_for.vl (raw on/off prints, a `jump break` loop and a full loop). A173 S2 documents the `for { match keys.next() .. }` loop meanwhile. `fix` (a refusal by cargo, not a silent wrong answer)."
+  },
+  {
+   "id": "A177",
+   "section": "A",
+   "title": "A173 S3 (a line editor on `process::keys()`) needs four things S2 does not give, found building S2: the terminal's SIZE and a resize signal, a portable ESC in a string literal, a decoder answer for the cursor-position report, and grapheme display widths",
+   "kind": "design note - A173 S3 (line editing on keys), what S2 taught",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (std-55b's find, Order 55); on a shown need",
+   "discussion": "std-55b (Order 55); proposal/terminal.md §2.3, §6 S3; the S2 'As built' paragraph",
+   "body": "S2 leaves a line editor everything on the INPUT side (`Press` with the modifier set, `Paste` whole, the escape timeout, the shared pump so `read_line` and `keys` interleave) and `io::write` (E332) on the output side. What it would still need: (1) the terminal's width (and height) and a resize notification - wrapping a line longer than the screen, or redrawing after a resize, needs `process.stdout.columns`/`TIOCGWINSZ` and SIGWINCH (natively one more FFI call and one more signal in `vilan-rt-term`); (2) an ESC in a vilan string literal: every cursor move or erase (`ESC [K`, `ESC [nD`) is written from vilan source, and today `\"\\u001b[1m\".len()` is 9 and `\"\\x1b[1m\".len()` 7 on JS (the escape text, not the decoded string) - B652 (parser-55) settles the decode, and S3 should start after it; (3) the cursor-position report (`ESC [ row ; col R`, the reply to `ESC [6n`) is the same CSI as a modified F3 (`ESC [1;5R` is Ctrl+F3): the decoder reads `R` as F3 today, so an editor that queries the cursor needs the decoder to tell a report from a key (a mode set while a query is outstanding, as crossterm does); (4) display widths: a wide (CJK) or combining or ZWJ scalar does not advance the cursor by one column, and std has no width table. Rec: S3 stays on a shown need (the ruling); when one is shown, slice it as `process::terminal_size()` + a resize stream first (S, both backends), then the editor."
+  },
+  {
+   "id": "E346",
+   "section": "E",
+   "title": "`str::debug()` - and so `dbg` and `print` of any value holding a `str` (E275's one spelling) - escapes only `\\\\`, `\\\"`, `\\n`, `\\t`, `\\r` and `\\0`, and prints every other control character RAW: a `Key::Paste` holding pasted terminal output prints a live ESC sequence that the terminal running the program obeys",
+   "kind": "debug output - control characters printed raw",
+   "area": "Language",
+   "status": "OPEN - filed 2026-10-26 (std-55b's find, Order 55)",
+   "discussion": "std-55b (Order 55); sweeps/order55/std-55b/finds/debug_control_chars/",
+   "body": "Met pinning A173 S2's decoder table: `dbg(key)` of `Key::Paste(\"a<ESC>[1mb\")` writes byte 0x1b into stdout (`od -c` shows `a 033 [ 1 m b`), turning the rest of the terminal's output bold; the same for BEL, DEL and the other C0 controls in any debugged string. Rust's Debug writes `\\u{1b}`. A debug spelling is a promise that the output shows the value rather than acting on it, so every C0 control (and DEL) should print escaped - in the literal form B652 settles for vilan source (`\\u{1b}` or `\\x1b`), on both backends (`vilan_rt::show` natively). Repro: debug_esc.vl. Estate: goldens that print a control character through debug/dbg would move (count first). `fix`."
+  },
+  {
+   "id": "N185",
+   "section": "N",
+   "title": "`cargo audit --deny unsound` (CLAUDE.md's dependency gate, and a CI leg) is RED on next @ed1a3ddf: RUSTSEC-2026-0386 (2026-10-13), tokio 1.52.3 marked `unsound` - `AsyncFd::new` and related constructors violate I/O safety",
+   "kind": "tooling - the audit gate",
+   "area": "Tooling",
+   "status": "FIXED 2026-10-27 - closed on arrival (std-55b's find, Order 55; fixed by the integrator's commit 1d666757 on next)",
+   "discussion": "std-55b (Order 55); `cargo audit --deny unsound` on next @ed1a3ddf",
+   "body": "Met running the dependency gate for A173 S2's new crate (`vilan-rt-term`, whose `libc`/`windows-sys` were already locked): the same single denial on the base tree's lockfile, so it is not this lane's. tokio is the language server's (tower-lsp); whether the LSP reaches `AsyncFd` at all is the first question, then the patched tokio release (offline here, so not looked up). Rec: bump tokio to the advisory's patched version in its own small commit, or record an `ignore` with the reason in the audit config if the advisory's patched line is not yet released. `tooling`. FIXED: the integrator ran `cargo update -p tokio` 1.52.3 -> 1.54.1 (RUSTSEC-2026-0386) as 1d666757 on next after the solver-55 merge (lockfile + a tooling CHANGELOG entry; ci_ignored_pins / hygiene / release_scripts 58 green), because the CI audit job had gone red on 640e813f's run; the item is filed so the find has a number, and closes with the on-arrival entry in closes55-draft.json."
+  },
+  {
+   "id": "E347",
+   "section": "E",
+   "title": "A call that is the value of a `return` statement (`return f(a, b, c);`) never breaks its arguments, at any width",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); sweeps/order55/fmt-55/finds/return_call_never_breaks.vl",
+   "body": "Found probing E337 across the statement shapes the hook arms. `return plain_function_call_with_no_chain_at_all(argument_one, argument_two, <110 columns>);` stays one line after `vilan fmt` at 101, 102 and 104 columns, while `let v = f(..);`, `v = f(..);` and a bare call statement break at 101. The return's value is printed without the permission the statement hook armed. Likely one arm handing the split to the return's value and counting its `;`, as E329/E337 do for the other shapes. Sizing XS."
+  },
+  {
+   "id": "E348",
+   "section": "E",
+   "title": "A call under an index (`f(..)[0];`), an ascription (`f(..) as i32;`) or a lift continuation (`f(..)?.x;`) never breaks its arguments, at any width",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); sweeps/order55/fmt-55/finds/call_under_index_ascription_lift_never_breaks.vl",
+   "body": "E337 gave the statement's permission to a call under `!`, `?` and `.field`; the same statement-ending postfixes `[index]`, ` as T` and `?.continuation` still print their subject without it, so a 110-column `let a = f(argument_one, argument_two, <..>)[0];` stays one line. The mechanism is E337's `enter_postfix_subject` (the suffix width of an index is the index's printed width, of an ascription ` as ` plus the type, of a lift continuation the continuation's - the three need their printed width up front, which the field's name did not). Sizing S. Rec: only if a real line shows up; the estate has none."
+  },
+  {
+   "id": "E349",
+   "section": "E",
+   "title": "A call inside a written paren group (`let v = (f(..));`) is measured without the group's `)` and the `;`: lines of 101 and 102 columns stay as written, 104 breaks",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); sweeps/order55/fmt-55/finds/grouped_call_misses_the_close_paren.vl",
+   "body": "The `LiftGroup` arm hands the split to its inside, but the call's own measure ends at its `)` and the terminator state belongs to the group's end, not the call's, so the group's closing paren and the `;` are two columns the call never counts (the shape E329 closed for an unwrapped call, E338 for a hole). Same fix family as E337: shift `terminator_end` to the inner expression's end and add the `)` to `terminator_columns` while printing a group at the value's end. Sizing XS."
+  },
+  {
+   "id": "E350",
+   "section": "E",
+   "title": "A comment between a block statement's `}` and its written `;` still declines the file (after B671 keeps the `;`)",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); sweeps/order55/fmt-55/finds/comment_between_brace_and_semicolon_declines.vl",
+   "body": "B671's `written_terminator_after` reads the `;` only past whitespace; `match a { .. }` + newline + `// note` + newline + `;` has a comment in the gap, so the `;` is not found, the reprint drops it and the net declines (naming the `;` line correctly, since B671 also fixed the location). The shape is unwritten in the estate. Rec: leave; the decline is honest and names the line. Sizing XS if wanted (skip the comment spans in the scan and print the comment before the brace's `;`)."
+  },
+  {
+   "id": "E351",
+   "section": "E",
+   "title": "A decline's line inside ONE large item can still fall back to the first token the canonicalization moved when the item has canonicalizations on both sides of the divergence",
+   "kind": "fmt edge",
+   "area": "Formatter",
+   "status": "OPEN - filed 2026-10-26 (fmt-55's find, Order 55)",
+   "discussion": "fmt-55 (Order 55); formatter.rs item_local_span",
+   "body": "B671 localizes the net's answer to the top-level item the divergence falls in (an import run is one item) and asks the prefix, suffix and deletion alignments of that item alone. Inside one big function with a deletion (a trailing comma) before the divergence and a permuted run (a style chain, an element head, a css block) after it, all three still fail and the answer is the item's first moved token. Not observed on a real printer bug (none is open); needs a planted print to see. Rec: if one is ever met, recurse the same cut over the item's top-level statements. Sizing S."
+  }
+ ]
+}
