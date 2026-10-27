@@ -41,6 +41,20 @@ GitHub-hosted runners (the container's `_work` keeps `target/` warm by itself).
 - Phase 2 (ruled 2026-10-05): a native Windows runner on the WSL host for the windows legs, after
   this one has proved out.
 
+## When Docker Desktop itself is down (seen 2026-10-13, 2026-10-27)
+
+`docker.exe` answers `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine`
+and `tasklist.exe` lists no `Docker Desktop.exe`. Launch it from WSL through PowerShell (a `cmd.exe /c start`
+from a WSL cwd did NOT start it on 2026-10-27):
+
+```bash
+/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoProfile -Command 'Start-Process -FilePath "C:\Program Files\Docker\Docker\Docker Desktop.exe"'
+```
+
+The engine answers `docker.exe info` within ~10-20 s; the container came up on its own with the engine on
+2026-10-27 (`docker.exe start vilan-runner-1` is harmless if it did), and `gh api repos/vilan-lang/vilan/actions/runners`
+shows `vilan-linux-1 online` within a minute. The queued ubuntu legs then run.
+
 ## After a host reboot (seen 2026-10-08)
 
 Docker Desktop came back but the container stayed `Exited (143)`: `restart: unless-stopped` was not
