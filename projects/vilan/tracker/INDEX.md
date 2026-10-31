@@ -94,6 +94,7 @@
 | [E349](items/E349.md) | A call inside a written paren group (`let v = (f(..));`) is measured without the group's `)` and the `;`: lines of 101 and 102 columns stay as written, 104 breaks | fmt edge | fmt-55 (Order 55); sweeps/order55/fmt-55/finds/grouped_call_misses_the_close_paren.vl |
 | [E350](items/E350.md) | A comment between a block statement's `}` and its written `;` still declines the file (after B671 keeps the `;`) | fmt edge | fmt-55 (Order 55); sweeps/order55/fmt-55/finds/comment_between_brace_and_semicolon_declines.vl |
 | [E351](items/E351.md) | A decline's line inside ONE large item can still fall back to the first token the canonicalization moved when the item has canonicalizations on both sides of the divergence | fmt edge | fmt-55 (Order 55); formatter.rs item_local_span |
+| [E352](items/E352.md) | A method chain in the `else` arm of a multi-line `then … else` is joined onto one line at any width (161 columns in the repro; kolt's `mark_unseen` query to 170) | fmt edge | kolt upgrading to 0.53.0 (2026-10-31); repro in the item |
 ```
 mod x::y::z
 impl T
