@@ -51,3 +51,16 @@ the copy (HEAD only).
 - The LSP latency harness's anchors (`model.vl` `create_channel(name)`, `channel.vl` `channel_name.adopt(..)`) left
   the tree with 38a7ac9; the Order 55 seal measured kolt@46c5b59. N186 (Order 56) re-anchors on the current tree.
 - owner-questions55.md holds the lanes' open questions (closure-owner.md held for the Order 56 draft).
+
+## Under v0.53.1 (E352 + E353, 2026-10-31)
+
+- **E352** fixes the `then … else` arm reflow: `store.vl`'s `mark_unseen` stays as written. The evened-out rule
+  also breaks every other then/else arm over 100 columns the way its statement form breaks: 18 kolt files move
+  once (251 lines; channel, coedit_test, file_page, rich_text/controller, markdown, mcp, mcp_write,
+  message_editor, message_view, org_pages, panels, settings, shared, sidebar_sections, spelling, store,
+  tracker_import, plus clipboard and task_table which 0.53.0 already moved identically). The whole reflow as one
+  patch against the written tree: `fmt-e352/kolt-e352-vs-written.diff` (or just run `vilan fmt .` under 0.53.1 -
+  it is the same result). After it, `vilan check` exits 0 (the two B677 warnings) and `fmt --check` is clean.
+- **E353**: `// vilan-fmt: skip` alone on the line immediately above a statement or an item keeps that node as
+  written; `vilan fmt --check` lists each skip as `path:line: vilan-fmt: skip` without failing. A reason may
+  follow after a space (`// vilan-fmt: skip - E352`). Nothing in kolt needs it now that E352 is fixed.
