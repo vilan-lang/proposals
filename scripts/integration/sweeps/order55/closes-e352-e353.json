@@ -1,0 +1,11 @@
+{
+ "date": "2026-10-31",
+ "order": "Order 55 (post-order lane fmt-e352; shipped in v0.53.1)",
+ "note": "the owner's two kolt-053 items, built between Order 55 and Order 56 and cut as the §7.3 patch v0.53.1",
+ "closes": [
+  {"id": "E352", "lane": "fmt-e352", "commit": "5fc4dd85",
+   "text": "cause as the item guessed - print_then_form_parts printed each arm of a broken then/else form with plain print_expr and no width permission; the new print_then_form_arm measures each arm on the line it opens (inline first, split at 101 columns, the `;` counted per E329), so a chain under `else` breaks one link per line as the same chain does as a statement's value; 8 pins in formatter::then_form_arm_layout (6 red without the fix) + an inference round-trip; the repo's .vl unmoved; kolt's mark_unseen stays as written and 18 more kolt files reflow once (every one a then/else arm over 100 columns; the owner's patch sweeps/order55/fmt-e352/kolt-e352-vs-written.diff); perf within 0.1 %; cherry-picked to release/0.53 as e69bdc06, tag v0.53.1 = 84dfcb9a"},
+  {"id": "E353", "lane": "fmt-e352", "commit": "2022fed8",
+   "text": "`// vilan-fmt: skip` alone on the line immediately above ONE node (a statement, a block's final expression, an item at module level or inside impl/trait/mod) keeps it exactly as written - the first line at the surrounding indentation, later lines byte for byte, a written `;` kept, a reason allowed after a space; a blank line or comment between, code before it, a match leg or a field make it an ordinary comment; a top-level import is always formatted; wrap_comments never re-fills it; `vilan fmt --check` lists each skip as path:line to stdout without changing the exit code; docs in docs/appendix/cli.md + --help; 10 pins in formatter::skip_directive + 2 in fmt_declines + a round-trip; follow-ups filed in the lane report: an attribute form [fmt(skip)], a region form, skipping a top-level import, the then-form condition line's width permission; cherry-picked to release/0.53 as 92736a22, tag v0.53.1"}
+ ]
+}
