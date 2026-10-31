@@ -197,6 +197,7 @@ fun f(): void
 | [M178](items/M178.md) | `ResponseStream::send_bytes(chunk: Bytes)` (and a `fs::Reader`-fed body) - file serving streams from storage instead of holding a whole `Bytes` | feature (std::http; S-M) - the response mirror of M176 | http-55 (Order 55); M164's last paragraph |
 | [M179](items/M179.md) | A request handler that PANICS ends the node server process (the `createServer` callback's promise rejects unhandled), while the native server reports it and never answers the client (the response is left open) | robustness (std::http; S) - both backends wrong, differently | http-55 (Order 55); found while designing M164's abort |
 | [M180](items/M180.md) | `Expect: 100-continue` answered when the handler READS, not at the head - node sends `100 Continue` before the handler runs, so a client that asks (curl does for bodies over 1 MiB) uploads a body the handler is about to refuse from the head | feature (std::http; S) - M164's lazy body, the last mile | http-55 (Order 55) |
+| [M181](items/M181.md) | Percent-encoding has no platform-neutral home: `percent_decode` is in the browser-only router (code that also runs on Node can't call it) and there's no encoder; kolt keeps two externs | feature (std; S) | kolt (2026-10-31); rec: `std::url` `percent_encode`/`percent_decode` on both backends, re-exported by the router |
 
 ## N. Hygiene & rot — NEW SECTION
 
