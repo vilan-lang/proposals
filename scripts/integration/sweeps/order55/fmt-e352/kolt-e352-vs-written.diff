@@ -1,0 +1,620 @@
+diff -ru kolt-base/src/channel.vl kolt-fnew/src/channel.vl
+--- kolt-base/src/channel.vl	2026-10-31 14:53:22.976962314 -0400
++++ kolt-fnew/src/channel.vl	2026-10-31 14:53:41.662993020 -0400
+@@ -713,15 +713,27 @@
+ 			mut all = channel_resources(g, ids.get());
+ 			for (id, title) in index.tasks.get().sort_by(|a, b| b.0.compare(a.0)) {
+ 				!title.is_empty()
+-					then all.push(Resource { label = title, kind = "Task", target = i"{task_link_prefix}{id}" });
++					then all.push(Resource {
++						label = title,
++						kind = "Task",
++						target = i"{task_link_prefix}{id}",
++					});
+ 			}
+ 			for (id, title) in index.documents.get().sort_by(|a, b| b.0.compare(a.0)) {
+ 				!title.is_empty()
+-					then all.push(Resource { label = title, kind = "Document", target = i"{document_link_prefix}{id}" });
++					then all.push(Resource {
++						label = title,
++						kind = "Document",
++						target = i"{document_link_prefix}{id}",
++					});
+ 			}
+ 			for (id, name) in index.people.get().sort_by(|a, b| a.1.compare(b.1)) {
+ 				!name.is_empty()
+-					then all.push(Resource { label = i"@{name}", kind = "Person", target = i"{user_link_prefix}{id.uuid}" });
++					then all.push(Resource {
++						label = i"@{name}",
++						kind = "Person",
++						target = i"{user_link_prefix}{id.uuid}",
++					});
+ 			}
+ 			all
+ 		},
+@@ -743,7 +755,10 @@
+ 					.map_or(|found| found.1, "");
+ 				ret Some(title.is_empty()
+ 					then ResourceCard { title = "Task", detail = "No longer exists" }
+-					else ResourceCard { title, detail = i"Task #{numbers.number(id)} · {open_gesture()}" });
++					else ResourceCard {
++						title,
++						detail = i"Task #{numbers.number(id)} · {open_gesture()}",
++					});
+ 			}
+ 			if linked_document(target) is Some(let id) {
+ 				let title = index.documents
+@@ -1198,13 +1213,30 @@
+ 							{swap(
+ 								combine((text, being_edited)).memo(),
+ 								|((content, body, _), on)| on
+-									then edit_view(org, channel.id, message.id, body, host, viewer, |saved| {
+-										editing.set(None);
+-										if saved is Some(let outgoing) {
+-											text.set((outgoing.text, outgoing.body, wall_seconds()));
+-										}
+-									})
+-									else message_view(content, body, host, viewer.at(ImageFrom::Message(channel.id, message.id))),
++									then edit_view(
++										org,
++										channel.id,
++										message.id,
++										body,
++										host,
++										viewer,
++										|saved| {
++											editing.set(None);
++											if saved is Some(let outgoing) {
++												text.set((
++													outgoing.text,
++													outgoing.body,
++													wall_seconds()
++												));
++											}
++										},
++									)
++									else message_view(
++										content,
++										body,
++										host,
++										viewer.at(ImageFrom::Message(channel.id, message.id)),
++									),
+ 							)}
+ 							{reaction_row(org, g, channel.id, message.id, me)}
+ 						</div>, |_| {}, Some(PersonHover { card = cards, id = message.author })), |event| {
+@@ -1236,8 +1268,21 @@
+ 									combine((message.content(), message.body(), being_edited))
+ 										.memo(),
+ 									|(content, body, on)| on
+-										then edit_view(org, channel.id, message_id, body, host, viewer, |_| editing.set(None))
+-										else message_view(content, body, host, viewer.at(ImageFrom::Message(channel.id, message_id))),
++										then edit_view(
++											org,
++											channel.id,
++											message_id,
++											body,
++											host,
++											viewer,
++											|_| editing.set(None),
++										)
++										else message_view(
++											content,
++											body,
++											host,
++											viewer.at(ImageFrom::Message(channel.id, message_id)),
++										),
+ 								)}
+ 								{reaction_row(org, g, channel.id, message_id, me)}
+ 							</div>, |_| {}, Some(PersonHover { card = cards, id = message.get().author })), |event| {
+@@ -1274,7 +1319,16 @@
+ 				// Within a page (a task's comments, a document's), it waits to be
+ 				// clicked rather than taking the keyboard as it appears.
+ 				embedded
+-					then ComposerOptions { action = "Send", initial = "", clear_after = true, allow_empty = false, autofocus = false, cancel = None, limits = BodyLimits::message(), page = false }
++					then ComposerOptions {
++						action = "Send",
++						initial = "",
++						clear_after = true,
++						allow_empty = false,
++						autofocus = false,
++						cancel = None,
++						limits = BodyLimits::message(),
++						page = false,
++					}
+ 					else ComposerOptions::message(),
+ 			)}
+ 			// Laid over the composer's formatting row (no use while picking
+diff -ru kolt-base/src/coedit_test.vl kolt-fnew/src/coedit_test.vl
+--- kolt-base/src/coedit_test.vl	2026-10-31 14:53:22.979205573 -0400
++++ kolt-fnew/src/coedit_test.vl	2026-10-31 14:53:41.714996920 -0400
+@@ -12,7 +12,10 @@
+ fun apply_part(doc: List<(str, str)>, part: CoPart): List<(str, str)> {
+ 	match part.kind {
+ 		"text" => doc.map(|(id, text)| id == part.block
+-			then (id, text.substring(0, part.from) + part.fragment + text.substring(part.to, text.len()))
++			then (
++				id,
++				text.substring(0, part.from) + part.fragment + text.substring(part.to, text.len())
++			)
+ 			else (id, text)),
+ 		"insert" => {
+ 			mut out: List<(str, str)> = [];
+diff -ru kolt-base/src/file_page.vl kolt-fnew/src/file_page.vl
+--- kolt-base/src/file_page.vl	2026-10-31 14:53:22.981156621 -0400
++++ kolt-fnew/src/file_page.vl	2026-10-31 14:53:41.779001718 -0400
+@@ -489,7 +489,10 @@
+ 				let shown = cut.ends_with("\n") then cut.substring(0, cut.len() - 1) else cut;
+ 				let converted = kind == "markdown"
+ 					then markdown_body(shown)
+-					else Converted { content = shown, body = MessageBody { version = body_version, blocks = [BodyBlock { kind = "code", content = code_content(shown), images = [] }] }.to_json() };
++					else Converted {
++						content = shown,
++						body = MessageBody { version = body_version, blocks = [BodyBlock { kind = "code", content = code_content(shown), images = [] }] }.to_json(),
++					};
+ 				<div
+ 					style(kind == "markdown" then "max-width: 760px" else "")
+ 					.styled(css {
+diff -ru kolt-base/src/lib/rich_text/clipboard.vl kolt-fnew/src/lib/rich_text/clipboard.vl
+--- kolt-base/src/lib/rich_text/clipboard.vl	2026-10-31 14:53:22.984248969 -0400
++++ kolt-fnew/src/lib/rich_text/clipboard.vl	2026-10-31 14:53:41.847006818 -0400
+@@ -9,7 +9,14 @@
+ // apps are dropped rather than imported.
+ import std::json::{ FromJson, Json };
+ import pkg::lib::rich_text::document::{ Fragment, ListItem, Piece, Run, list_markers };
+-import pkg::lib::rich_text::style::{ StyleFlag, StyleId, StyleTable, TextStyle, is_bold_weight, text_decoration };
++import pkg::lib::rich_text::style::{
++	StyleFlag,
++	StyleId,
++	StyleTable,
++	TextStyle,
++	is_bold_weight,
++	text_decoration,
++};
+ 
+ export *;
+ 
+diff -ru kolt-base/src/lib/rich_text/controller.vl kolt-fnew/src/lib/rich_text/controller.vl
+--- kolt-base/src/lib/rich_text/controller.vl	2026-10-31 14:53:22.985369311 -0400
++++ kolt-fnew/src/lib/rich_text/controller.vl	2026-10-31 14:53:41.923012516 -0400
+@@ -1459,7 +1459,10 @@
+ 				let (target, shown) = (hooks.pasted_link)(address).unwrap_or((address, address));
+ 				let span = current.span();
+ 				let linked = current.is_collapsed()
+-					then Fragment::plain(shown, regions[index].doc.styles.with_link(base, Some(target)))
++					then Fragment::plain(
++						shown,
++						regions[index].doc.styles.with_link(base, Some(target)),
++					)
+ 					else regions[index].doc.linked(span, Some(target));
+ 				change(span, linked, ChangeKind::Other, After::Caret);
+ 				pending = None;
+@@ -1660,7 +1663,9 @@
+ 				let later = region != origin_id && !earlier;
+ 				mut next = earlier || (!later && reached.0 < origin.0)
+ 					then Selection::range(origin.1, reached.0)
+-					else Selection::range(origin.0, later then reached.1 else reached.1.max(origin.1));
++					else Selection::range(origin.0, later
++						then reached.1
++						else reached.1.max(origin.1));
+ 				// A click past a wrapped line's end keeps the caret on that line.
+ 				next.upstream = count == 1 && at.upstream;
+ 				next
+@@ -1753,25 +1758,26 @@
+ 					contain("inline-size");
+ 				})
+ 			>
+-				{combine((active, anchor_region, selection, revision, focused, selection_on_blur)).derive(|(_, _, _, _, has_focus, on_blur)| {
+-					(has_focus || on_blur) else ret [];
+-					// This region's share of the selection, which may span regions.
+-					covered().find(|part| part.region == id) is Some(let share) else ret [];
+-					index_of(id) is Some(let found) else ret [];
+-					let region = regions[found];
+-					region.layout
+-						.selection_rects(region.doc.styles, share.span, break_width)
+-						.map(|rect| {
+-							<div
+-								style(i"left:{rect.x + padding}px;top:{rect.y + padding}px;width:{rect.width}px;height:{rect.height}px")
+-								.styled(css {
+-									position("absolute");
+-									background-color(Theme::ink2_a().alpha(0.5));
+-									.ghost();
+-								})
+-							/>
+-						})
+-				})}
++				{combine((active, anchor_region, selection, revision, focused, selection_on_blur))
++					.derive(|(_, _, _, _, has_focus, on_blur)| {
++						(has_focus || on_blur) else ret [];
++						// This region's share of the selection, which may span regions.
++						covered().find(|part| part.region == id) is Some(let share) else ret [];
++						index_of(id) is Some(let found) else ret [];
++						let region = regions[found];
++						region.layout
++							.selection_rects(region.doc.styles, share.span, break_width)
++							.map(|rect| {
++								<div
++									style(i"left:{rect.x + padding}px;top:{rect.y + padding}px;width:{rect.width}px;height:{rect.height}px")
++									.styled(css {
++										position("absolute");
++										background-color(Theme::ink2_a().alpha(0.5));
++										.ghost();
++									})
++								/>
++							})
++					})}
+ 				// The host's marks, under their text: a wavy line along each
+ 				// piece of the span's lines.
+ 				{combine((marks, revision)).derive(|(spans, _)| {
+@@ -2273,7 +2279,8 @@
+ 				// Its styles join the region's own, as a paste's do.
+ 				let fragment = json.is_empty()
+ 					then Fragment::empty()
+-					else decode_fragment(&mut regions[index].doc.styles, json).unwrap_or(Fragment::empty());
++					else decode_fragment(&mut regions[index].doc.styles, json)
++						.unwrap_or(Fragment::empty());
+ 				let (start, end) = regions[index].doc.clamp_range(span);
+ 				regions[index].splice((start, end), fragment);
+ 				// Undo's steps were for the text before this; they'd undo the wrong thing.
+diff -ru kolt-base/src/markdown.vl kolt-fnew/src/markdown.vl
+--- kolt-base/src/markdown.vl	2026-10-31 14:53:22.990660239 -0400
++++ kolt-fnew/src/markdown.vl	2026-10-31 14:53:42.099025714 -0400
+@@ -347,7 +347,14 @@
+ 	let count = text.len();
+ 	let flush = |runs: &mut List<InlineRun>, buffer: str, bold: bool, italic: bool, strike: bool| {
+ 		!buffer.is_empty()
+-			then runs.push(InlineRun { text = buffer, bold, italic = italic || italic_all, strike, code = false, link = None });
++			then runs.push(InlineRun {
++				text = buffer,
++				bold,
++				italic = italic || italic_all,
++				strike,
++				code = false,
++				link = None,
++			});
+ 	};
+ 	for index < count {
+ 		let c = text.substring(index, index + 1);
+diff -ru kolt-base/src/mcp.vl kolt-fnew/src/mcp.vl
+--- kolt-base/src/mcp.vl	2026-10-31 14:53:22.991124843 -0400
++++ kolt-fnew/src/mcp.vl	2026-10-31 14:53:42.139028712 -0400
+@@ -94,7 +94,10 @@
+ 	if request.header("Origin") is Some(let origin) {
+ 		let host = request.header("Host").unwrap_or("");
+ 		(origin.ends_with(i"//{host}"))
+-			else ret json_reply(403, failure("null", -32000, "Requests from other sites are refused."));
++			else ret json_reply(
++				403,
++				failure("null", -32000, "Requests from other sites are refused."),
++			);
+ 	}
+ 	request.method() == "POST"
+ 		else ret Response::builder().code(405).set_header("Allow", "POST").body("").build();
+@@ -105,7 +108,14 @@
+ 		_ => "",
+ 	};
+ 	user_of_access_token(token) is Some((let user, let scope))
+-		else ret json_reply(401, failure("null", -32001, "Sign in with an access token: Authorization: Bearer kolt_pat_… (Settings › Account › Access tokens)."));
++		else ret json_reply(
++			401,
++			failure(
++				"null",
++				-32001,
++				"Sign in with an access token: Authorization: Bearer kolt_pat_… (Settings › Account › Access tokens).",
++			),
++		);
+ 	request.body().try_parse_json() is Some(let message)
+ 		else ret json_reply(400, failure("null", -32700, "That isn't JSON."));
+ 	message.kind() == JsonKind::Object
+@@ -634,7 +644,10 @@
+ 	query.len() >= 2 else ret Err("Search for at least 2 characters.");
+ 	let limit = number_field(arguments, "limit").unwrap_or(20f).clamp(1f, 100f).as_usize();
+ 	let kinds = arguments.has_field("kinds") && arguments.field("kinds").kind() == JsonKind::Array
+-		then arguments.field("kinds").elements().map(|each| str::from_json_value(each).unwrap_or(""))
++		then arguments
++			.field("kinds")
++			.elements()
++			.map(|each| str::from_json_value(each).unwrap_or(""))
+ 		else ["tasks", "documents", "messages"];
+ 	let words = search_words(query);
+ 	words.is_empty() then ret Err("Search for at least one word of 2 characters or more.");
+diff -ru kolt-base/src/mcp_write.vl kolt-fnew/src/mcp_write.vl
+--- kolt-base/src/mcp_write.vl	2026-10-31 14:53:22.991510026 -0400
++++ kolt-fnew/src/mcp_write.vl	2026-10-31 14:53:42.159030214 -0400
+@@ -90,7 +90,9 @@
+ fun set_status(store: KoltStore, org: OrgSummary, task: u53, name: str): Result<bool, str> {
+ 	let all = statuses_of(org.id);
+ 	all.filter(|each| each.name.to_lowercase() == name.trim().to_lowercase()).first() is Some(let status)
+-		else ret Err(i"There's no status {name}. The statuses: {all.map(|each| each.name).join(", ")}.");
++		else ret Err(
++			i"There's no status {name}. The statuses: {all.map(|each| each.name).join(", ")}.",
++		);
+ 	ok_or(store.move_task(org.id, task, status.id, 1000000u53), "set the status")
+ }
+ 
+@@ -100,7 +102,9 @@
+ 	let fields = fields_of(org.id);
+ 	for key in keys_of(values) {
+ 		fields.filter(|each| each.name.to_lowercase() == key.trim().to_lowercase()).first() is Some(let field)
+-			else ret Err(i"There's no field {key}. The fields: {fields.map(|each| each.name).join(", ")}.");
++			else ret Err(
++				i"There's no field {key}. The fields: {fields.map(|each| each.name).join(", ")}.",
++			);
+ 		let given = match values.field(key).kind() {
+ 			JsonKind::Number => i"{f64::from_json_value(values.field(key)).unwrap_or(0f)}",
+ 			JsonKind::Null => "",
+@@ -428,7 +432,9 @@
+ 	}
+ 	if text_field(arguments, "text") is Some(let given) {
+ 		kind == "text"
+-			else ret Err(i"Section {id} is a {kind}, not text: update_checklist changes a checklist.");
++			else ret Err(
++				i"Section {id} is a {kind}, not text: update_checklist changes a checklist.",
++			);
+ 		let text = written(org, given);
+ 		if store.set_section_text(org.id, id, text.content, text.body) is Err(let reason) {
+ 			ret Err(i"Couldn't write it: {reason}");
+diff -ru kolt-base/src/message_editor.vl kolt-fnew/src/message_editor.vl
+--- kolt-base/src/message_editor.vl	2026-10-31 14:53:22.992400787 -0400
++++ kolt-fnew/src/message_editor.vl	2026-10-31 14:53:42.263038011 -0400
+@@ -829,7 +829,9 @@
+ 	});
+ 	let verb = limits.noun == "message" then "send" else "save";
+ 	chars > limits.chars
+-		then ret Some(i"{grouped(chars)} of {grouped(limits.chars)} characters: shorten it to {verb}.");
++		then ret Some(
++			i"{grouped(chars)} of {grouped(limits.chars)} characters: shorten it to {verb}.",
++		);
+ 	images > limits.images
+ 		then ret Some(i"{images} of {limits.images} pictures and files: remove some to {verb}.");
+ 	None
+@@ -2348,7 +2350,11 @@
+ 			then blocks[0].bounding_rect().top
+ 			else index == blocks.len()
+ 			then blocks[index - 1].bounding_rect().bottom()
+-			else (blocks[index - 1].bounding_rect().bottom() + blocks[index].bounding_rect().top) / 2;
++			else (blocks[index - 1]
++				.bounding_rect()
++				.bottom()
++				+ blocks[index].bounding_rect().top)
++				/ 2;
+ 		let distance = (boundary - y).abs();
+ 		if distance < best_distance {
+ 			best = index;
+@@ -2794,7 +2800,11 @@
+ 		match block.kind {
+ 			"images" => {
+ 				!mine.is_empty()
+-					then message.blocks.push(Block { key = message.fresh_id(), kind = BlockKind::Images, images = mine });
++					then message.blocks.push(Block {
++						key = message.fresh_id(),
++						kind = BlockKind::Images,
++						images = mine,
++					});
+ 			},
+ 			_ => {
+ 				let code = block.kind == "code";
+diff -ru kolt-base/src/message_view.vl kolt-fnew/src/message_view.vl
+--- kolt-base/src/message_view.vl	2026-10-31 14:53:22.992741592 -0400
++++ kolt-fnew/src/message_view.vl	2026-10-31 14:53:42.283039510 -0400
+@@ -167,7 +167,10 @@
+ /// links underlined.
+ fun link_decoration(target: str): LinkDecoration {
+ 	target.starts_with("kolt://")
+-		then LinkDecoration { padding = 4, css = "background:rgba(127,127,127,0.2);border-radius:4px" }
++		then LinkDecoration {
++			padding = 4,
++			css = "background:rgba(127,127,127,0.2);border-radius:4px",
++		}
+ 		else LinkDecoration { padding = 0, css = "text-decoration:underline" }
+ }
+ 
+diff -ru kolt-base/src/org_pages.vl kolt-fnew/src/org_pages.vl
+--- kolt-base/src/org_pages.vl	2026-10-31 14:53:22.993959031 -0400
++++ kolt-fnew/src/org_pages.vl	2026-10-31 14:53:42.343044009 -0400
+@@ -519,7 +519,8 @@
+ 				async {
+ 					let id = editing.get();
+ 					let result = id == 0u53
+-						then model::add_repository(org.id, name.get(), host.get(), url.get(), branch.get(), template.get()).map(|_| true)
++						then model::add_repository(org.id, name.get(), host.get(), url.get(), branch.get(), template.get())
++							.map(|_| true)
+ 						else model::update_repository(org.id, id, name.get(), host.get(), url.get(), branch.get(), template.get());
+ 					match result {
+ 						Ok(let _) => reset(),
+diff -ru kolt-base/src/panels.vl kolt-fnew/src/panels.vl
+--- kolt-base/src/panels.vl	2026-10-31 14:53:22.994639512 -0400
++++ kolt-fnew/src/panels.vl	2026-10-31 14:53:42.431050608 -0400
+@@ -2351,12 +2351,24 @@
+ 						let nearest = [across, 1 - across, down, 1 - down]
+ 							.fold(2f, |least, each| each.min(least));
+ 						let (side, marker) = nearest == across
+-							then ("left", DropMarker::Box(box.left, box.top, box.width / 2, box.height))
++							then (
++								"left",
++								DropMarker::Box(box.left, box.top, box.width / 2, box.height)
++							)
+ 							else nearest == 1 - across
+-							then ("right", DropMarker::Box(box.left + box.width / 2, box.top, box.width / 2, box.height))
++							then (
++								"right",
++								DropMarker::Box(box.left + box.width / 2, box.top, box.width / 2, box.height)
++							)
+ 							else nearest == down
+-							then ("top", DropMarker::Box(box.left, box.top, box.width, box.height / 2))
+-							else ("bottom", DropMarker::Box(box.left, box.top + box.height / 2, box.width, box.height / 2));
++							then (
++								"top",
++								DropMarker::Box(box.left, box.top, box.width, box.height / 2)
++							)
++							else (
++								"bottom",
++								DropMarker::Box(box.left, box.top + box.height / 2, box.width, box.height / 2)
++							);
+ 						ret Some(DropSpot {
+ 							at = drop_sides.index_of(side).unwrap_or(0usize),
+ 							marker,
+@@ -2367,11 +2379,17 @@
+ 					let (side, marker) = across < edge
+ 						then ("left", DropMarker::Box(box.left, box.top, box.width / 2, box.height))
+ 						else across > 1 - edge
+-						then ("right", DropMarker::Box(box.left + box.width / 2, box.top, box.width / 2, box.height))
++						then (
++							"right",
++							DropMarker::Box(box.left + box.width / 2, box.top, box.width / 2, box.height)
++						)
+ 						else down < edge
+ 						then ("top", DropMarker::Box(box.left, box.top, box.width, box.height / 2))
+ 						else down > 1 - edge
+-						then ("bottom", DropMarker::Box(box.left, box.top + box.height / 2, box.width, box.height / 2))
++						then (
++							"bottom",
++							DropMarker::Box(box.left, box.top + box.height / 2, box.width, box.height / 2)
++						)
+ 						else ("center", DropMarker::Box(box.left, box.top, box.width, box.height));
+ 					Some(DropSpot { at = drop_sides.index_of(side).unwrap_or(0usize), marker })
+ 				},
+diff -ru kolt-base/src/settings.vl kolt-fnew/src/settings.vl
+--- kolt-base/src/settings.vl	2026-10-31 14:53:22.996095358 -0400
++++ kolt-fnew/src/settings.vl	2026-10-31 14:53:42.499055707 -0400
+@@ -351,7 +351,9 @@
+ 	>
+ 		{hits.derive(|found| {
+ 			found.is_empty()
+-				then ret [empty_state(icon(lucide::search()), "No settings match", "Try another word.", None)];
++				then ret [
++					empty_state(icon(lucide::search()), "No settings match", "Try another word.", None),
++				];
+ 			mut sections: List<str> = [];
+ 			for hit in found {
+ 				!sections.contains(hit.item.section) then sections.push(hit.item.section);
+diff -ru kolt-base/src/shared.vl kolt-fnew/src/shared.vl
+--- kolt-base/src/shared.vl	2026-10-31 14:53:22.996322415 -0400
++++ kolt-fnew/src/shared.vl	2026-10-31 14:53:42.503056007 -0400
+@@ -227,7 +227,9 @@
+ fun extension_of(name: str): str {
+ 	let parts = name.split(".");
+ 	parts.len() < 2
+-		then ret name.to_lowercase_ascii() == "dockerfile" || name.to_lowercase_ascii() == "makefile" then name.to_lowercase_ascii() else "";
++		then ret name.to_lowercase_ascii() == "dockerfile" || name.to_lowercase_ascii() == "makefile"
++			then name.to_lowercase_ascii()
++			else "";
+ 	parts.last().unwrap_or("").to_lowercase_ascii()
+ }
+ 
+diff -ru kolt-base/src/sidebar_sections.vl kolt-fnew/src/sidebar_sections.vl
+--- kolt-base/src/sidebar_sections.vl	2026-10-31 14:53:22.997014920 -0400
++++ kolt-fnew/src/sidebar_sections.vl	2026-10-31 14:53:42.535058406 -0400
+@@ -122,7 +122,12 @@
+ 		.derive(|(list, active, layout)| list
+ 			.filter(|tab| tab.org == org.id)
+ 			.map(|tab| tab.id == active
+-				then TabRecord { id = tab.id, org = tab.org, name = tab.name, layout = layout.to_json() }
++				then TabRecord {
++					id = tab.id,
++					org = tab.org,
++					name = tab.name,
++					layout = layout.to_json(),
++				}
+ 				else tab))
+ 		.memo();
+ 	let ids = mine.derive(|list| list.map(|tab| tab.id)).cell();
+diff -ru kolt-base/src/spelling.vl kolt-fnew/src/spelling.vl
+--- kolt-base/src/spelling.vl	2026-10-31 14:53:22.997288850 -0400
++++ kolt-fnew/src/spelling.vl	2026-10-31 14:53:42.551059606 -0400
+@@ -350,7 +350,10 @@
+ 		let typed = ends_line(controller) then typed_word(controller) else None;
+ 		let shown = match typed {
+ 			Some((let prefix, _, _)) => (prefix.len() >= 2 && prefs.complete_words.get()) || listing.get()
+-				then choices.get().get(picked.get()).map(|choice| choice.substring(prefix.len(), choice.len()))
++				then choices
++					.get()
++					.get(picked.get())
++					.map(|choice| choice.substring(prefix.len(), choice.len()))
+ 				else None,
+ 			None => None,
+ 		};
+diff -ru kolt-base/src/store.vl kolt-fnew/src/store.vl
+--- kolt-base/src/store.vl	2026-10-31 14:53:23.002656009 -0400
++++ kolt-fnew/src/store.vl	2026-10-31 14:53:42.695070404 -0400
+@@ -1391,7 +1391,9 @@
+ 				else ret Some(i"Files in a {limits.noun} must be uploaded to Kolt.");
+ 			let id = image.src.substring(7, image.src.len());
+ 			db.prepare("SELECT 1 AS found FROM upload WHERE id = ? AND organization_id = ?").first([id, org]).is_some()
+-				else ret Some(i"A file in the {limits.noun} isn't one of this organization's uploads.");
++				else ret Some(
++					i"A file in the {limits.noun} isn't one of this organization's uploads.",
++				);
+ 		}
+ 	}
+ 	images <= limits.images else ret Some(i"{a} holds up to {limits.images} pictures and files.");
+@@ -1461,7 +1463,9 @@
+ 	fun permitted(self, org: str, least: str): Result<OrgLive, str> {
+ 		let role = role_of(self.user_id, org).unwrap_or("");
+ 		rank(role) >= rank(least)
+-			else ret Err(rank(role) == 0 then "You're not a member of that organization." else "You don't have permission to do that.");
++			else ret Err(rank(role) == 0
++				then "You're not a member of that organization."
++				else "You don't have permission to do that.");
+ 		org_live(org) is Some(let found) else ret Err("That organization doesn't exist.");
+ 		Ok(found)
+ 	}
+@@ -2334,7 +2338,9 @@
+ 		if live.sessions.read().get(i"doc:{id}") is Some(let session) {
+ 			let now = now_seconds();
+ 			session.get().cursors.filter(|each| now - each.at < 120f).is_empty()
+-				else ret Err("People are editing this document right now. Try again when they're done.");
++				else ret Err(
++					"People are editing this document right now. Try again when they're done.",
++				);
+ 			live.sessions.write().remove(i"doc:{id}");
+ 		}
+ 		if body_problem(org, content, body, BodyLimits::document()) is Some(let problem) {
+@@ -2578,7 +2584,17 @@
+ 				.set(session
+ 					.get().anchors
+ 					.map(|each| each.id == id
+-						then CoAnchor { id = each.id, block = each.block, from = each.from, to = each.to, quote = each.quote, channel = each.channel, author = each.author, resolved, gone = each.gone }
++						then CoAnchor {
++							id = each.id,
++							block = each.block,
++							from = each.from,
++							to = each.to,
++							quote = each.quote,
++							channel = each.channel,
++							author = each.author,
++							resolved,
++							gone = each.gone,
++						}
+ 						else each));
+ 		}
+ 		Ok(true)
+diff -ru kolt-base/src/task_table.vl kolt-fnew/src/task_table.vl
+--- kolt-base/src/task_table.vl	2026-10-31 14:53:23.004555084 -0400
++++ kolt-fnew/src/task_table.vl	2026-10-31 14:53:42.811079102 -0400
+@@ -426,7 +426,11 @@
+ 												align-items("center");
+ 											})
+ 										>
+-											{head(field.name, i"{field.id}", field.kind == "number")}
++											{head(
++												field.name,
++												i"{field.id}",
++												field.kind == "number",
++											)}
+ 											{is_admin(org) then Some(<button
+ 												type("button")
+ 												aria-haspopup("menu")
+diff -ru kolt-base/src/tracker_import.vl kolt-fnew/src/tracker_import.vl
+--- kolt-base/src/tracker_import.vl	2026-10-31 14:53:23.005674546 -0400
++++ kolt-fnew/src/tracker_import.vl	2026-10-31 14:53:42.867083302 -0400
+@@ -173,7 +173,9 @@
+ 			.first([org]),
+ 	};
+ 	author is Some(let author_row)
+-		else ret Err(author_name.is_some() then i"{author_name.unwrap_or("")} isn't a member of {slug}." else i"{slug} has no members.");
++		else ret Err(author_name.is_some()
++			then i"{author_name.unwrap_or("")} isn't a member of {slug}."
++			else i"{slug} has no members.");
+ 	let author_id = author_row.text("id");
+ 
+ 	db.exec("BEGIN");
