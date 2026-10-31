@@ -1,8 +1,13 @@
 # Kolt under v0.53.0 - the owner's patch notes (Order 55)
 
 The integrator never edits /home/reed/code/kolt; these are the edits the owner applies. Checked on a copy of the
-owner's tree (main @3dbc73b) under the seal tip c50a0a58: with the two REQUIRED edits the copy checks with 0 errors
-and the B677 warnings below.
+owner's tree (main @3dbc73b) under the seal tip c50a0a58, and again on 2026-10-31 under the INSTALLED `vilan 0.53.0
+(a08f8f73b)` after the fold: unpatched, 48 errors (the M171 collision, 24 files x 2 members); with the two REQUIRED
+edits the copy checks with 0 errors and exactly the two B677 warnings below (panels.vl:1280 and :2555). `vilan fmt
+--check` on the patched copy names four files: `src/task_table.vl` (E338's reflow, fmt-55 - the one line at :429) and
+`src/lib/rich_text/clipboard.vl`, `src/lib/rich_text/controller.vl`, `src/store.vl`, which 0.52.0 also wants
+reformatted (the owner's pending edits, not this order's). The owner's uncommitted `src/panels.vl` change was not in
+the copy (HEAD only).
 
 ## REQUIRED (the tip refuses kolt without them)
 
