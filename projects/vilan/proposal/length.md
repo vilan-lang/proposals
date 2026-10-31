@@ -1,7 +1,7 @@
 # Lengths as data — A178
 
-- status: DRAFT 2026-10-31 (the integrator's proposition; the owner has ideas of
-  their own and reads this first)
+- status: APPROVED 2026-10-31 by the owner as written (one question answered:
+  `dp` REPLACES kolt's hand-written `Scale`, §5); lane-ready for Order 56's std lane
 - tracker: A178 (filed 2026-10-31 by kolt); touches A8, A106, B340
 - area: `std::web::style` — `Length`, the property builders, the hole vocabulary
 
@@ -127,9 +127,13 @@ role-less rendering (rem).
 - `space(step)` is unchanged (a text token with its root line); it now also
   adds, scales and compares as §3 says — through `calc`, since a token's value
   is the theme's, not the program's.
-- Kolt's `Scale` (B340) keeps working as written (`Length::rem(self.unit * n)`),
-  or becomes `dp(4 * n)` and lets each property choose; `size(2) + dp(1)` is now
-  data either way.
+- Kolt's `Scale` (B340's customer, `src/lib/scale_step.vl`) is REPLACED: its
+  `size(n)` is `0.25rem * n`, which is `dp(4 * n)` exactly, and every one of its
+  60 sites feeds a rem-role property (gap 28, margin/padding 20, size/width/
+  height/min 7, radius 3) — so the migration renders byte-identical CSS and the
+  struct and its file are deleted. `Callable` stays a language feature; it just
+  loses this customer. S3 writes `const let step = dp(4);` and `step * n`, or
+  `dp(4 * n)` at the site, the owner's taste.
 - `view.style_var(name, source)` takes a `Flow<str>` today; a
   `style_var_length<S: Flow<Length>>` that maps through `css_text` is a one-line
   door (not in A178; Q4).
