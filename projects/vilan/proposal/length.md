@@ -132,8 +132,9 @@ role-less rendering (rem).
   60 sites feeds a rem-role property (gap 28, margin/padding 20, size/width/
   height/min 7, radius 3) — so the migration renders byte-identical CSS and the
   struct and its file are deleted. `Callable` stays a language feature; it just
-  loses this customer. S3 writes `const let step = dp(4);` and `step * n`, or
-  `dp(4 * n)` at the site, the owner's taste.
+  loses this customer. S3 BAKES the multiplication: `size(4)` becomes `dp(16)` at the
+  site, no step constant kept (the owner, 2026-10-31: the quarter-rem step only
+  mirrored Tailwind's model; design pixels need no step).
 - `view.style_var(name, source)` takes a `Flow<str>` today; a
   `style_var_length<S: Flow<Length>>` that maps through `css_text` is a one-line
   door (not in A178; Q4).
@@ -149,6 +150,7 @@ rem(8 / 16)  (163 sites)            →  dp(8)
 rem(-4 / 16)                        →  dp(-4)
 width(rem(448 / 16))                →  width(dp(448))
 border(px(1), gray(300))            →  unchanged (or dp(1): same CSS)
+size(4) / size(2)  (60 sites)       →  dp(16) / dp(8)  — the scale's step baked in; scale_step.vl deleted
 ```
 
 A codemod does the bulk: `rem\((\w+) / 16\)` → `dp($1)` (540 sites) and the
