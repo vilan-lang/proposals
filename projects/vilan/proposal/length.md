@@ -1,7 +1,6 @@
 # Lengths as data — A178
 
-- status: APPROVED 2026-10-31 by the owner as written (one question answered:
-  `dp` REPLACES kolt's hand-written `Scale`, §5); lane-ready for Order 56's std lane
+- status: BUILT 2026-10-31 - S1 + S2 landed on next (lane std-a178 @5d984949, merged 7911d954; rides v0.54.0); S3 = the owner's codemod (sweeps/order55/a178/dp_codemod.py, proven byte-identical on kolt). Approved as written; what did not survive contact: no associated consts (`Length::root_px()`), `zero()` is the arithmetic zero, `dp(0)` renders `0rem`, a `dp` inside a `calc` is written in rem, a css block's undotted `border(dp(1))` writes rem (owner Q4 in owner-questions55.md)
 - tracker: A178 (filed 2026-10-31 by kolt); touches A8, A106, B340
 - area: `std::web::style` — `Length`, the property builders, the hole vocabulary
 

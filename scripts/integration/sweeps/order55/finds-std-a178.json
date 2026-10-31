@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "B688",
+   "section": "B",
+   "title": "JS MISCOMPILE: a module-level `const let` read only from a function reached through an operator (`a > b` -> `PartialOrd::gt` -> `partial_compare`) is never declared in the emitted JS - a ReferenceError at run time; native is fine",
+   "kind": "miscompile (JS emitter; liveness through operator dispatch)",
+   "area": "Compiler",
+   "status": "OPEN - filed 2026-10-31 (std-a178's find; A178 S1 works around it in std with a private function)",
+   "discussion": "std-a178 (post-Order 55); repro in the lane's scratch `probe/src/k.vl` (re-make from the description: a module `const let k = ..;`, a struct with `impl .. with PartialOrd` whose `partial_compare` reads `k`, and `main` using only `a > b`); A178 S1's `Length::root_px()` is the workaround",
+   "body": "The JS emitter's reachability (which module bindings get a declaration) follows call edges; an operator use `a > b` lowers to the trait method through the dispatch table, and the binding read inside the trait method's body is not reached - the emitted module has no `const k` and the call throws `ReferenceError: k is not defined`. Native declares it (the Rust backend emits every module binding). Rec: the emitter's liveness walk must follow operator lowering into the trait impls it selects (the same edge the checker's platform reach already follows - see B686's complaint that it follows TOO many); pin: the probe on both backends in native_differential."
+  },
+  {
+   "id": "F154",
+   "section": "F",
+   "title": "NATIVE: a str-backed enum's `.value()` read at run time does not compile under rustc - `match &*(this)` over an `&Rc<str>` - so A178's `Unit` had to be a plain enum",
+   "kind": "native backend (vilan-rust; enum lowering)",
+   "area": "Native",
+   "status": "OPEN - filed 2026-10-31 (std-a178's find)",
+   "discussion": "std-a178 (post-Order 55); A178 S1 (`Unit` is plain, the unit text comes from a match); repro: `enum Unit: str { Px = \"px\", Rem = \"rem\" }` with `fun text(self) { self.value() }` called at run time, `vilan build --target native`",
+   "body": "`Display`-style enums (`Enum::Variant.value()`, the keyword-property enums use them at const time) lower on the Rust side to a `match &*(this)` that rustc rejects when `this` is `&Rc<str>` - the backing value is matched where the discriminant should be. Const-time uses never reach rustc (folded), which is why the style enums never tripped it. Rec: lower `.value()` on a str-backed enum to the variant's literal through a match on the variant, not on the backing string; pin in the native suite."
+  }
+ ]
+}

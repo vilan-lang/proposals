@@ -64,3 +64,12 @@ the copy (HEAD only).
 - **E353**: `// vilan-fmt: skip` alone on the line immediately above a statement or an item keeps that node as
   written; `vilan fmt --check` lists each skip as `path:line: vilan-fmt: skip` without failing. A reason may
   follow after a space (`// vilan-fmt: skip - E352`). Nothing in kolt needs it now that E352 is fixed.
+
+## Under v0.54.0 (A178 - lengths as data; lands at Order 56's cut)
+
+- The codemod: `a178/dp_codemod.py` (`--check` prints the diff, `--apply` rewrites): 599 `rem(n / 16)` -> `dp(n)`, 5 `rem(0)` -> `dp(0)`,
+  59 `size(n)` -> `dp(4n)`, 22 constant uses -> the constant; nine constants become `const let .. = dp(..)` (styles.vl's eight +
+  channel.vl's content_width); `const let size = Scale::new(0.25)` and its import go, `src/lib/scale_step.vl` is deleted. Proven on a copy of
+  3dbc73b: `vilan check` clean (the same two warnings), the built client.css BYTE-IDENTICAL, 38 files -605/+601 lines; `vilan fmt .` then
+  rejoins 3 shorter lines (message_actions, settings, views). Left for you (printed by the tool): `avatar_gap` (inside a sum), `views.vl:323`,
+  and `sidebar.vl:127-128` (`.border_left/right(rem(2 / 16))` - `dp(2)` renders `2px` there, a px-role hairline; the rec is to take it).

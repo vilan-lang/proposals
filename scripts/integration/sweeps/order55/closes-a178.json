@@ -1,0 +1,9 @@
+{
+ "date": "2026-10-31",
+ "order": "post-Order 55 (lane std-a178; rides v0.54.0)",
+ "note": "the paper proposal/length.md approved as written; S1 + S2 in std, S3 = the owner's kolt codemod delivered",
+ "closes": [
+  {"id": "A178", "lane": "std-a178", "commit": "5d984949",
+   "text": "lengths are data - `Length { value, unit, text, root }` with `enum Unit { Dp, Px, Rem, Em, Pct, Vh, Vw, Text }`; every constructor renders as before; `+ - * /` per the paper's table (one unit stays, dp bridges px and rem at `Length::root_px()` = 16, any other mix and every token becomes `calc(..)` keeping each `:root` line once; `zero()` is the arithmetic zero; `auto` in arithmetic and division by zero fail the build); `as_rem/as_px/as_dp` and `PartialOrd` across px/rem/dp, refused at build time elsewhere; `Length::dp(n)` + the hole alias `dp` (the prelude's 47th name) rendered by the property's role - rem everywhere, px at the five border builders (`Length::rendered(role)`); explicit units never re-unitized; 33 pins in inference/styling.rs + a native differential; the estate's CSS byte-identical (corpus, examples, website, kolt); perf green with the A178 bump rows (instructions x1.006-x1.014 on the browser rows); paper deviations: no associated consts (`root_px()`), `dp(0)` renders `0rem` to keep kolt's hashes, a css block's undotted `border(dp(1))` still writes rem (owner Q4), `with_length_as` dropped for the fmt lane's file (Q5); S3 = the owner's: `a178/dp_codemod.py` proven byte-identical on a kolt copy (599 + 5 + 59 + 22 rewrites, nine constants, Scale deleted); finds B688 (JS miscompile) + F154 (native enum .value()); merged into next 7911d954"}
+ ]
+}
