@@ -100,6 +100,7 @@
 | [E352](items/E352.md) | A method chain in the `else` arm of a multi-line `then … else` is joined onto one line at any width (161 columns in the repro; kolt's `mark_unseen` query to 170) | fmt edge | kolt upgrading to 0.53.0 (2026-10-31); repro in the item |
 | [E353](items/E353.md) | `vilan fmt` has no way to leave one statement as written (no `// vilan-fmt: skip`): a formatter bug like E352 must be reverted by hand after every run, and `fmt --check` can never pass on that file | feature (formatter; S) | kolt (2026-10-31); rec: a one-node comment directive, verbatim like macro arguments |
 | [E354](items/E354.md) | A struct literal with a method call after it (`Body { .. }.size()`) is never broken, at any width (110 columns in the repro; kolt's `file_page.vl` to 161) | fmt edge | kolt upgrading to 0.53.1 (2026-10-31); repro in the item |
+| [E355](items/E355.md) | A repeated `[derive]` over one item is a parse error that doesn't say so: "expected `;`" standalone, "cannot find 'derive'; import it first" inside a larger file | diagnostic | kolt (2026-10-31); repro in the item |
 ```
 mod x::y::z
 impl T
