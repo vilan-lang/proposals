@@ -1,0 +1,23 @@
+import std::hash_map::HashMap;
+
+[extern("(() => performance.now())")]
+external fun clock_ms(): f64;
+
+/// Appends `count` values under one key in place, with `update`.
+fun grow(count: i32): f64 {
+	let started = clock_ms();
+	mut groups: HashMap<i32, List<i32>> = HashMap::new();
+	mut index = 0;
+	for index < count {
+		groups.update(1, [], |list| list.push(index));
+		index += 1;
+	}
+	let held = groups.get(1).map_or(|list| list.len(), 0usize);
+	held == count.as_usize() then clock_ms() - started else -1f
+}
+
+fun main() {
+	print(i"1000: {grow(1000)} ms");
+	print(i"4000: {grow(4000)} ms");
+	print(i"16000: {grow(16000)} ms");
+}

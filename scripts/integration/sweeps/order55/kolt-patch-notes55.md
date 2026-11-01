@@ -73,3 +73,17 @@ the copy (HEAD only).
   3dbc73b: `vilan check` clean (the same two warnings), the built client.css BYTE-IDENTICAL, 38 files -605/+601 lines; `vilan fmt .` then
   rejoins 3 shorter lines (message_actions, settings, views). Left for you (printed by the tool): `avatar_gap` (inside a sum), `views.vl:323`,
   and `sidebar.vl:127-128` (`.border_left/right(rem(2 / 16))` - `dp(2)` renders `2px` there, a px-role hairline; the rec is to take it).
+
+## Under v0.54.0 (B689 + M182 - the map lends; lands at Order 56's cut)
+
+- **B689** needs nothing from you: `g.tasks().at(id).some()` and every keyed read now lends the slot in place and copies only the
+  leaf a `get()` returns. The item's repro went 10.7 / 30 / 240 ms -> 7 / 3 / 3 ms on node; the Board's 4.5 s of `__clone` should go
+  with it - measure the 2,072-task organization again under 0.54.0 and say what it reads. A copy of your tree (3dbc73b + M171 +
+  M164 + the E352 reflow) checks clean under the lane's binary: exit 0, the same two B677 warnings.
+- **M182**: `HashMap::update(key, lazy missing: V, change: |&mut V| void)` is the grouping idiom - `groups.update(key, [], |list|
+  list.push(row))`, O(1) per push (the repro's 16k pushes: 2,274 ms -> 5 ms). `peek(key, |&Option<V>| U)` reads a slot in place,
+  `modify(key, |&mut Option<V>| U)` writes it (leave `None` = removed; `Some` under a new key = inserted last). The take-copy /
+  push / put-back sites to rewrite when you like: `sidebar_rows.vl` (2), `task_sections.vl` (2), `command_palette.vl`, `live_edit.vl`,
+  `panels.vl` (the `get(..).unwrap_or([])` + `get_or_insert` shapes). `missing` is `lazy`, not `|| V` (hash-map-lend.md Q2).
+- A `HashMap`'s debug/DAP layout is now `keys`/`values`; the vscode extension's printer moved with it and the vsix is refreshed at
+  the fold - debug a 0.54.0 build with the 0.54.0 extension.

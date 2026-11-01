@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B691",
+   "section": "B",
+   "title": "JS MISCOMPILE: an enum value is never copied at a value seam - `mut b = a` of an `Option<List<i32>>` aliases `a`'s payload, so a write through `b` shows in `a`; `*p` of an `&Option<List<i32>>` aliases too",
+   "kind": "miscompile (JS emitter; rule 1 copies skip `Type::Enum`)",
+   "area": "Compiler",
+   "status": "OPEN - filed 2026-10-31 (lane b689's find; B689's `HashMap::get` keeps the table's own `get` rather than `peek(key, |slot| *slot)` because of it)",
+   "discussion": "lane b689 (post-Order 55); repro sweeps/order55/b689/repros/selfeq-main.vl: `let a: Option<List<i32>> = Some([1]); mut b = a; match &mut b { Some(let l) => l.push(2), None => {} }; print(a)` prints `Some([1, 2])` on JS (native prints `Some([1])`); same for `fun f(p: &Option<List<i32>>): Option<List<i32>> { *p }`; anchor `is_cloneable_aggregate` (crates/vilan-core/src/analyzer.rs:27673) excludes `Type::Enum`",
+   "body": "Rule 1 (value semantics) wraps an aggregate in `__clone(..)` at a value seam - a `let`/`mut` from a place, a `*view` read, a return of a borrowed place - and the analyzer's `is_cloneable_aggregate` answers structs, tuples, lists and maps but NOT enums, so an enum whose payload is an aggregate (`Option<List<T>>`, `Result<Struct, E>`, any user enum with data) is handed out BY REFERENCE and two bindings share one payload. Natively every binding is its own value (`Clone`), so the backends disagree. Rec: `is_cloneable_aggregate` answers true for an enum with any aggregate payload (a payload-less or scalar-payload enum stays a scalar copy); pins in inference/borrows.rs for the three seams (`mut b = a`, `*p`, a return of `*p`) on both backends; the copy-elision census moves and is read. Note the two B689 sites that work around it (hash_map.vl `get` and `get_or_insert` comments) can take `peek`/`modify` once this is fixed."
+  },
+  {
+   "id": "B692",
+   "section": "B",
+   "title": "An un-annotated closure parameter against a declared `\\|&mut Option<List<i32>>\\| void` loses its type inside `match &mut slot`: `Some(let l) => l.push(3)` is refused with `cannot call method 'push' on T`; the annotated parameter works",
+   "kind": "bug (checker; closure parameter type flows into a `match &mut` capture)",
+   "area": "Type system & the type solver",
+   "status": "OPEN - filed 2026-10-31 (lane b689's find; `HashMap::update`'s closure annotates its parameter to dodge it)",
+   "discussion": "lane b689 (post-Order 55); repro: `map.modify(key, \\|slot\\| match &mut slot { Some(let l) => l.push(3), None => {} })` with `modify(&mut self, key: K, write: \\|&mut Option<V>\\| U)` - refused; `\\|slot: &mut Option<List<i32>>\\| ..` accepted. Compare `\\|held: &Option<P>, f\\| match &held { Some(let payload) => f(payload), .. }` (store_core.vl) which is annotated",
+   "body": "The expected closure type gives the parameter `&mut Option<List<i32>>`, but a `match &mut slot` over that parameter binds the `Some` capture as the still-unresolved `T` rather than `&mut List<i32>`, so a method call on it fails. Rec: the parameter's type from the expected closure type must be settled before the match's capture types are read (an ordering in the solver, or the expected type applied at the parameter's binding rather than at the call); pin: the un-annotated and annotated forms in inference/closures.rs both accept."
+  },
+  {
+   "id": "F155",
+   "section": "F",
+   "title": "NATIVE: `groups == groups` on a `HashMap` fails rustc with E0505 - the derived `eq(&self, other)` call moves the operand it also borrows",
+   "kind": "native backend (vilan-rust; operator lowering of `==` on a by-value `other`)",
+   "area": "Native",
+   "status": "OPEN - filed 2026-10-31 (lane b689's find)",
+   "discussion": "lane b689 (post-Order 55); repro: `mut groups: HashMap<i32, List<i32>> = HashMap::new(); print(groups == groups)` under `vilan build --target native` - rustc E0505 `cannot move out of groups because it is borrowed` (the lowering is `eq(&groups, groups)`); JS runs it",
+   "body": "`PartialEq::eq(self, other: HashMap<K, V>)` takes `other` by value; the native lowering of `a == a` borrows `a` for `self` and moves `a` for `other` in one expression, which rustc refuses when both are the same place. Rec: lower a by-value operand that is the same place as a borrowed one through a clone (`eq(&a, a.clone())`), or evaluate the operands into temporaries first; pin in the native differential with a map and a struct deriving PartialEq."
+  },
+  {
+   "id": "M183",
+   "section": "M",
+   "title": "The store's `Storable` diff for a `HashMap` still copies every compared value - `value_at`/`entry_at` read through `get` - where B689's `peek` could lend both sides in place",
+   "kind": "perf (std reactive store; map diff)",
+   "area": "Standard library (reactive store)",
+   "status": "OPEN - filed 2026-10-31 (lane b689's follow-up; proposal/hash-map-lend.md §6)",
+   "discussion": "lane b689 (post-Order 55); store.vl's `impl HashMap .. with Storable` (`store_diff`, ~:190-260) and the `value_at`/`entry_at` helpers: each key compared copies `mine` and `theirs`; a write of a large map through `Store<HashMap>::set` pays a copy per key",
+   "body": "B689 made the keyed STEP lend; the diff a whole-map write runs (`Store::set` on a map field, `write_at` -> `store_diff`) still reads each value by `get`. Rec: `self.values.lend(hash, |mine| other.values.lend(hash, |theirs| differs(..)))` for the compare, and `entry_at` only where the (key, value) pair is really needed (the feed's old/new entries); pin: a codegen-shape pin that the diff's compare closures carry no `__clone`, plus the existing diff pins unchanged. Sizing S."
+  },
+  {
+   "id": "M184",
+   "section": "M",
+   "title": "`HashMapCell::at(key)` reads its key through `HashMap::get`, a copy per read - the same keyed step B689 fixed for the store, one layer up",
+   "kind": "perf (std reactive; HashMapCell)",
+   "area": "Standard library (reactive)",
+   "status": "OPEN - filed 2026-10-31 (lane b689's follow-up; proposal/hash-map-lend.md §6)",
+   "discussion": "lane b689 (post-Order 55); reactive/hash_map_cell.vl: `at(key)` and the `HashMapEntry` handle's `get`/derive read the entry by `get`; with `HashMap::peek` the handle can lend the slot and copy only what its consumer copies",
+   "body": "The cell's per-key handle (`HashMapEntry<K, V>`, a `Source<Option<V>>`) answers `get` by copying the value out of the map; a derive over one field of a large value pays the whole value per wake. Rec: read through `peek` (the handle's lend), `get` copying only at the leaf; pin as B689's: the compiled read carries no `__clone` of the value. Sizing S."
+  }
+ ]
+}

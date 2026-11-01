@@ -1,0 +1,11 @@
+fun lend_payload(held: &Option<List<i32>>, f: |&List<i32>| void) {
+	match &held {
+		Some(let payload) => f(payload),
+		None => {},
+	}
+}
+
+fun main() {
+	let value: Option<List<i32>> = Some([1, 2, 3]);
+	lend_payload(&value, |list: &List<i32>| print(list.len()));
+}

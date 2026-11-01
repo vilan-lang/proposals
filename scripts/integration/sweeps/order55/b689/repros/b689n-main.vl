@@ -1,0 +1,44 @@
+import std::hash_map::HashMap;
+import std::time::now_millis;
+import std::reactive::store::Store;
+
+fun clock_ms(): f64 {
+	now_millis()
+}
+
+[derive(PartialEq, Storable)]
+struct Record {
+	title: str,
+	notes: List<str>,
+}
+
+[derive(Storable)]
+struct State {
+	records: HashMap<i32, Record>,
+}
+
+fun read_title(size: i32, reads: i32): f64 {
+	mut notes: List<str> = [];
+	mut index = 0;
+	for index < size {
+		notes.push("a note of some length, repeated");
+		index += 1;
+	}
+	mut records: HashMap<i32, Record> = HashMap::new();
+	records.insert(1, Record { title = "first", notes });
+	let store = Store::new(State { records });
+	let started = clock_ms();
+	mut count = 0;
+	mut read = 0;
+	for read < reads {
+		count += store.records().at(1).some().title().get().map_or(|title| title.len(), 0usize).as_i32();
+		read += 1;
+	}
+	count > 0 then clock_ms() - started else 0f
+}
+
+fun main() {
+	print(i"10 notes: {read_title(10, 2000)} ms");
+	print(i"1000 notes: {read_title(1000, 2000)} ms");
+	print(i"10000 notes: {read_title(10000, 2000)} ms");
+}

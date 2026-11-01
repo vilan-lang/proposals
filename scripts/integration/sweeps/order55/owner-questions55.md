@@ -103,3 +103,9 @@ std-a178 (A178 S1 + S2, merged to next for v0.54.0):
 6. `PartialOrd` bridges px/rem/dp but `==` is structural: `px(16) <= rem(1)` and `>=` are both true while `!=` also holds. Lane rec: keep as the paper has it and settle when `Ord` comes. Integrator rec: agree; note it in the docs.
 7. The codemod left four sites for you: `avatar_gap` (used inside a sum), `views.vl:323`, and `sidebar.vl:127-128` `.border_left/right(rem(2/16))` where `dp(2)` would render `2px` under the border role (today `0.125rem`). Rec: take `dp(2)` there - a hairline in px is the point of the role.
 8. Two finds filed: B690 (JS miscompile: a module `const let` read only through operator dispatch is never declared) and F154 (native: a str-backed enum's `.value()` at run time does not compile). B690 is a miscompile - rec Order 56's first solver/emitter item.
+
+b689 (B689 + M182, merged to next 26257f20 for v0.54.0; design + as-built in proposal/hash-map-lend.md):
+9. Names: `peek` (the in-place read, after `ListCell::peek`/`HashMapCell::peek`), `modify` (the in-place write of the `Option` slot) and `update` (M182's word; the value-level grouping form). Rename at review if `modify` beside `update` reads wrong - a one-line codemod.
+10. `update(key, lazy missing: V, change)` over M182's `|| V`: `lazy` is the ratified spelling for "evaluated only on the miss" (`unwrap_or`, `expect`). Say if `|| V` is wanted.
+11. `HashMap` is two `NativeMap` tables (keys + values) rather than one table of pairs: the price of a real `&Option<V>` place without unsafe in vilan-rt (§2 of the paper weighs the always-`Some` wrapper and a two-parameter NativeMap). A second index per map; every write touches both inside one method.
+12. B691 (JS MISCOMPILE, found on the way): an enum value is never copied at a value seam - `mut b = a` of an `Option<List<i32>>` aliases `a`'s payload. It is why `get`/`get_or_insert` kept the table's own `get` rather than `peek`. Order 56 head with B690/B688?

@@ -66,7 +66,7 @@ are the frozen eras before it.
 | `fixed-arrays.md` | shipped (core); tail deferred, see backlog I2 | `[T; n]` fixed-length arrays; const-generic lengths left for §7. |
 | `fn-coercion.md` | shipped arc (2026-07-11) | Named functions used directly as closure values. |
 | `frontend.md` | shipped arc (2026-07-22) | The handwritten recursive-descent frontend that replaced chumsky. |
-| `hash-map-lend.md` | DESIGNED 2026-10-31; building in lane b689 (B689 + M182) | A `HashMap` read or written in place — `peek`, `modify`, `update` — on two `NativeMap` tables with the runtime tombstone moved onto the value so a `&Option<V>` exists to lend; the store's keyed step (`at(key)`) lends instead of copying the whole value (B689); M182's grouping idiom at O(1) per push. |
+| `hash-map-lend.md` | BUILT 2026-10-31 (lane b689; rides v0.54.0; B689 + M182 closed; owner Q1-Q3 open) | A `HashMap` read or written in place — `peek`, `modify`, `update` — on two `NativeMap` tables with the runtime tombstone moved onto the value so a `&Option<V>` exists to lend; the store's keyed step (`at(key)`) lends instead of copying the whole value (B689); M182's grouping idiom at O(1) per push. |
 | `hashable-keys.md` | draft / proposed (2026-07-14) | Hashable keys for `Map`/`Set` beyond primitives; tail tracked in the backlog trailer. |
 | `hmr.md` | shipped arc (2026-07-21) | Hot module replacement closing the dev loop (A13). |
 | `kolt-migration.md` | active (living document) | The kolt→vilan migration driver; tracks the reference app's porting status. |

@@ -1,0 +1,10 @@
+fun main() {
+	let a: Option<List<i32>> = Some([1]);
+	mut b = a;
+	match &mut b {
+		Some(let list) => list.push(2),
+		None => {},
+	}
+	print(a);
+	print(b);
+}

@@ -1,6 +1,6 @@
 # A `HashMap` read or written in place: `peek`, `modify`, `update` — and the store's keyed step (B689 + M182)
 
-- status: DESIGNED 2026-10-31 (integrator, at the owner's "Fix B689"); building in lane b689
+- status: BUILT 2026-10-31 (lane b689, commit aae8ae6e, merged into next 26257f20; rides v0.54.0) - designed the same day at the owner's "Fix B689"
 - items: B689 (a field read through a store's `some()` copies the whole value), M182 (a map's value can't be changed in place)
 - area: Standard library (`std::hash_map`, `std::js::native_map`, `std::reactive::store`), the three backends' map intrinsics, `vilan_rt::Map`
 
@@ -221,3 +221,33 @@ copies are a separate matter (left as they are, noted below).
   wanted.
 - Q3 Two tables per map (a second index) over the always-`Some` wrapper — the
   trade in §2.
+
+## 8. As built (2026-10-31, lane b689 @aae8ae6e, next 26257f20)
+
+Built as above, with six deviations, each with its reason:
+
+1. `get` reads the table's own `get` rather than `peek(key, |slot| *slot)`: on
+   JS `*slot` of an `Option` answered through a closure does not copy (B691, the
+   enum-copy miscompile), so the `peek` form would have ALIASED the stored
+   value. Still one copy instead of two.
+2. `get_or_insert` stays on the tables for the same reason (a `Some(let held)`
+   capture of an enum `V` would alias).
+3. `NativeMap::insert` takes `own value`: with the pair gone, nothing copied an
+   inserted value, and two tables would have aliased it. This also closed a
+   pre-existing JS aliasing bug in `HashSet` (`set.insert(member); member.push(2)`
+   showed in the set) — its own CHANGELOG miscompile entry.
+4. The native `some()` readers match through `&` (`match &held`): natively the
+   old `match held` cloned the whole `Option` to destructure it, so B689 was
+   unfixed there (285 ms at 10k notes) until this change.
+5. The dbg/DAP layout of a map is `keys`/`values` (the editor's printer.ts and
+   its test moved with it; the vsix is refreshed at the fold).
+6. Two compiler tests that named a user function `peek` collided with std's
+   `peek` through the harness prelude and were renamed.
+
+Measured (the item's repros): B689 node 10.66 / 30.2 / 240 ms → 7.1 / 3.2 /
+2.8 ms; native 9 / 109 / 968 → 6 / 6 / 7 ms. M182 1k/4k/16k pushes 10.7 /
+127 / 2274 ms as written → 0.8 / 2.2 / 5.4 ms on `update`. Perf bump rows for
+math and watch (x1.007). Finds: B691 (JS enum copy miscompile), B692 (closure
+parameter type in `match &mut`), F155 (native `a == a` E0505); follow-ups M183
+(the map diff still copies), M184 (`HashMapCell::at`). Q1–Q3 above stand for
+the owner.
