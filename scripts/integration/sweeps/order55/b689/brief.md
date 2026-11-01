@@ -1,12 +1,12 @@
 # Lane b689 — B689 (store keyed step copies the whole value) + M182 (HashMap in-place update)
 
-Worktree: /home/reed/code/vilan-lang/vilan/.claude/worktrees/b689 (branch `b689` off origin/next @7911d954).
-Design: /home/reed/code/vilan-lang/proposals/projects/vilan/proposal/hash-map-lend.md — READ IT FIRST, build what it says; deviations go in the report with the reason.
-Items: /home/reed/code/vilan-lang/proposals/.claude/worktrees/kolt-053/projects/vilan/tracker/items/B689.md and M182.md (the owner's text and repros).
+Worktree: vilan/.claude/worktrees/b689 (branch `b689` off origin/next @7911d954).
+Design: proposals/projects/vilan/proposal/hash-map-lend.md — READ IT FIRST, build what it says; deviations go in the report with the reason.
+Items: proposals (branch kolt-053, now cherry-picked to main)/projects/vilan/tracker/items/B689.md and M182.md (the owner's text and repros).
 
 Shell: every command starts with
 `export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.nvm/versions/node/v24.2.0/bin:$PATH"; export CARGO_BUILD_JOBS=6`
-and runs from the worktree by absolute path (the shell's cwd resets between calls). Suite: `cargo nextest run --workspace -j 6 > suite.log 2>&1; echo $?` — never pipe a gate through grep/head/tail. Never `git stash`, never `git config`, never `--no-verify`, never touch /home/reed/code/kolt or the integration worktree. Commit on `b689` only; do not merge or push.
+and runs from the worktree by its absolute path (the shell's cwd resets between calls). Suite: `cargo nextest run --workspace -j 6 > suite.log 2>&1; echo $?` — never pipe a gate through grep/head/tail. Never `git stash`, never `git config`, never `--no-verify`, never touch the owner's kolt checkout or the integration worktree. Commit on `b689` only; do not merge or push.
 
 ## Order of work
 
