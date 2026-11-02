@@ -1,0 +1,43 @@
+import std::hash_map::HashMap;
+import std::reactive::store::Store;
+
+[extern("(() => performance.now())")]
+external fun clock_ms(): f64;
+
+[derive(PartialEq, Storable)]
+struct Record {
+	title: str,
+	notes: List<str>,
+}
+
+[derive(Storable)]
+struct State {
+	records: HashMap<i32, Record>,
+}
+
+/// Reads record 1's title `reads` times through `assume()` (what
+/// `when_remote_live` hands its body), the state holding `count` records.
+fun read_title(count: i32, reads: i32): f64 {
+	mut records: HashMap<i32, Record> = HashMap::new();
+	mut index = 0;
+	for index < count {
+		records.insert(index, Record { title = "a title", notes = ["one note", "another note"] });
+		index += 1;
+	}
+	let store: Store<Option<State>> = Store::new(Some(State { records }));
+	let live = store.some().assume();
+	let started = clock_ms();
+	mut total = 0;
+	mut read = 0;
+	for read < reads {
+		total += live.records().at(1).some().title().get().map_or(|title| title.len(), 0usize).as_i32();
+		read += 1;
+	}
+	total > 0 then clock_ms() - started else 0f
+}
+
+fun main() {
+	print(i"10 records: {read_title(10, 2000)} ms");
+	print(i"1000 records: {read_title(1000, 2000)} ms");
+	print(i"10000 records: {read_title(10000, 2000)} ms");
+}

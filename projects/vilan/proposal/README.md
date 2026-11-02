@@ -67,6 +67,7 @@ are the frozen eras before it.
 | `fn-coercion.md` | shipped arc (2026-07-11) | Named functions used directly as closure values. |
 | `frontend.md` | shipped arc (2026-07-22) | The handwritten recursive-descent frontend that replaced chumsky. |
 | `hash-map-lend.md` | BUILT 2026-10-31 (lane b689; rides v0.54.0; B689 + M182 closed; owner Q1-Q3 open) | A `HashMap` read or written in place — `peek`, `modify`, `update` — on two `NativeMap` tables with the runtime tombstone moved onto the value so a `&Option<V>` exists to lend; the store's keyed step (`at(key)`) lends instead of copying the whole value (B689); M182's grouping idiom at O(1) per push. |
+| `store-assume-keeper.md` | DESIGN 2026-11-02 (lane b693 building; rides v0.54.0; B693; owner Q1-Q2 open) | `StoreSome::assume`'s fallback kept by a KEEPER feed on the variant's flag node, copied once in the write that ends the variant (`store_switch` now touches the flags' feeds) and released with the ambient owner - no copy at `assume()`, none per read; B526's last-value rule restated as "the payload as it stood when the variant ended". |
 | `hashable-keys.md` | draft / proposed (2026-07-14) | Hashable keys for `Map`/`Set` beyond primitives; tail tracked in the backlog trailer. |
 | `hmr.md` | shipped arc (2026-07-21) | Hot module replacement closing the dev loop (A13). |
 | `kolt-migration.md` | active (living document) | The kolt→vilan migration driver; tracks the reference app's porting status. |
