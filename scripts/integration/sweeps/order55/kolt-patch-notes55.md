@@ -106,3 +106,10 @@ process (the codec module compiles), then ~350 ms for a 12 MP JPEG decode + Cove
 on the upload handler, not a page render. The bundle of a server that reaches the codec grows ~783 KB (nothing in the client bundle:
 the module is `@process` and refused on a browser leg). A `resized` whose result would exceed 50,000,000 pixels panics at your call -
 sizes are yours to pick, so keep them small. Nothing in kolt changes until you write the feature.
+
+## Under v0.54.0 (parser-56: E355, B657 part 1, E354; lands at Order 56's cut)
+
+- **E354** (fmt): `vilan fmt .` reflows SIX sites in four files - `src/accounts.vl:177`, `src/lib/search.vl:144/176/188`, `src/login_page.vl:212`, `src/mcp.vl:665` - a struct or list literal receiver of a call now breaks one element per line with `].to_json()` after the bracket. Idempotent; nothing else in kolt moves. (The item's own `file_page.vl` line no longer moves in the lane's copy of your tree.)
+- **E355**: a repeated `[derive]` over one item is one error at the second copy ("merge them, `[derive(PartialEq, Json)]`" when the lists differ; "keep one" when they match) and the item still reads - no more "cannot find 'derive'" steers.
+- **B657**: `..base` in a struct literal is one error at the `..` naming the `mut p = base; p.x = ..` form; the `..base` feature itself is not built (your 2026-10-19 note stands).
+
