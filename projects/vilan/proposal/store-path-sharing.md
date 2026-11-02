@@ -1,6 +1,6 @@
 # A store handle's path is shared, not copied (M186)
 
-- status: DESIGN 2026-11-02 (integrator; lane m186 builds it; rides v0.54.0)
+- status: BUILT 2026-11-03 (lane m186 25e305fc + 0221febf; merged to next; rides v0.54.0; M186 closed; Q1 export+internal, Q2 not built - measured, as recommended)
 - item: M186 — a read below any store handle copies the handle's path lists on the
   way down (~74 `__clone` calls per read of a five-step path, whatever the payload)
 - lineage: `store.md` (A142 S7, the handle types), `hash-map-lend.md` (B689: the
@@ -176,3 +176,12 @@ makes every copy cheap without touching the surface.
   export, internal.
 - Q2: the lazily cached identity key (§2.3) is not built unless measured. Rec:
   measure first.
+
+## 7. As built (lane m186, 2026-11-02/03)
+
+Built as §2 in two passes. The first (25e305fc) was the `StorePath { end: Option<Shared<StorePathStep>> }` wrapper: 74 → 29 `__clone` calls per read, because a wrapper copy is four calls on node (a struct array over an Option array) and `variant`'s eager `flag_path` plus the gate copy add theirs. The second (0221febf, the integrator's follow-up) dropped the wrapper: the handles' `path`/`gate` are a bare `Shared<StorePathStep>` (`step`, `above: Option<Shared<StorePathStep>>`, `depth`), the root a SENTINEL step at depth 0 whose `step` (`Field(0)`) is never read; `path_root`/`path_child` private, `store_path_steps` exported `[internal]` (store.vl and rpc/mirror.vl call it; it stops at depth 0). A projection emits `__shared_new([step, [0, path], depth])` and a handle copy emits NO `__clone`: a read copies only the value it returns — 74 → 1 on the B693 phases program, 200/200/200 per hundred reads at depths 3/4/5. `StorePath` as a named type went with the wrapper (methods cannot attach to a `Shared`, so it would have been a bare alias); `StorePathStep` is re-exported from `std::reactive::store` under the reach rule.
+
+Deviations: `store_identity_at` and `store_watch` keep taking lists (every caller in rpc/mirror.vl holds wire lists; `mirror_boundary` materializes `place` once for both; `identity_of` / `observe_steps` are the list cores); `counted` captures the list `watch_at` already materialized; `steps` fills by recursion (push on the way back down, no placeholders).
+
+Numbers (interleaved medians, the box at load ~21, ratios the meaningful part): node warm 200k reads at 1,000 records 279 → 102 ms (0.36×; the wrapper form was 0.60×); node cold 2,000 reads 10.9 / 5.8 / 6.6 → 8.3 / 2.7 / 4.6 ms at 10 / 1,000 / 10,000 records; native release 194 → 114 ms per 200k (both forms ≈ equal there: an `Rc` clone either way). §2.3's identity fill: a bare `identity()` ask +0.055 µs (61 → 72 ms per 200k), a tracked-read loop 84 → 85 ms — inside noise, so the cached key stays unbuilt (Q2). The wire is unchanged. Perf reference class green (fullstack x1.0111 of x1.0201), no bump. Shared census store_core 5 → 7. Pins as §4, every new one red under a plant (a list copy in `descend`; identity keyed by the step's `Shared`; the fill read leaf first); the b693 codegen pin tightened to "no `__clone` anywhere in the assumed handle". No golden moved.
+
