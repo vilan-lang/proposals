@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "N187",
+   "section": "N",
+   "title": "`check_hygiene.py` has exited 1 on proposals main since before 5b970199: five proposal files have no row in proposal/README.md (terminal.md, tuple-module.md, type-ascription.md, unit-literal.md, visibility.md)",
+   "kind": "records (proposals hygiene; the README index)",
+   "area": "Process & records",
+   "status": "OPEN - filed 2026-11-02 (integrator, found syncing B693/M185)",
+   "discussion": "integrator 2026-11-02; `python3 scripts/check_hygiene.py` on main prints `proposal/README.md: <file> has 0 index rows (want exactly 1)` for the five and exits 1 beside the long-standing absolute-home-path offenders under scripts/integration (runner/, order37-39 sweeps, lsp-tip-9fab0ff5.json)",
+   "body": "The README's one-row-per-file rule is enforced by the script but the five papers landed without rows (Order 48 for type-ascription/unit-literal/visibility; terminal.md and tuple-module.md later), so the gate has been red for a reason nobody acted on - which is how B689's missing `hash-map-lend.md` row was nearly missed too. Rec: add the five rows (status read from each file's own header), and decide the absolute-path offenders: the runner's Dockerfile/compose/entrypoint paths are CONTAINER paths (`/home/runner`) and should be allowed by the check (a `/home/runner` exemption or a per-line marker), the order37-39 sweep scripts and lsp-tip-9fab0ff5.json are records of the machine they ran on (allowlist the sweeps directories as records, or strip). Then `check_hygiene.py` exits 0 and can be a commit gate in the records sweep. Sizing S."
+  }
+ ]
+}
