@@ -54,7 +54,7 @@ cargo build -q --release -p vilan-cli -p vilan-lsp > "$S/perf-build-$tip.log" 2>
 # Since Order 46 (M105 S6, fix-46): `perf_gate.py seal` writes the verdict the cut requires. ACROSS A BREAKING RELEASE the
 # base and the tip cannot check one source, so the tip gets its own prepared, migrated kolt in $VILAN_PERF_TIP_KOLT
 # (a plain directory: no git; built once so generated files exist). Without it, both sides check kolt@$VILAN_PERF_KOLT_COMMIT.
-# `shared.vl keystroke` is left out: its anchors are gone from today's kolt (N145). Add --advance by exporting
+# `shared.vl keystroke` is IN the list again since N186 re-anchored the series (its N145 note is history). Add --advance by exporting
 # VILAN_PERF_ADVANCE=1 on the order's FINAL seal only. Run QUIET (load <= 2).
 # N186 (5): only a GREEN perf verdict advances the e121 state. perf_gate.py seal itself skips the advance on a red
 # verdict (Order 56); this script also keeps the state as it was before the leg and puts it back when the leg is red
