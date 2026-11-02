@@ -1,6 +1,6 @@
 # Closure parameters and the owner they build under (B677, door 2)
 
-Status: **RULED 2026-11-02 as §5 recommends (the owner's "do B677"; lane solver-56 builds door 2, rides v0.54.0)** — originally a QUESTION for the owner, Order 56 — written by rpc-55 (Order 55,
+Status: **BUILT 2026-11-03 (lane solver-56 05f25ec2 + 211e6259; merged to next; rides v0.54.0, BREAKING; B677 closed) — RULED 2026-11-02 as §5 recommends (the owner's "do B677")** — originally a QUESTION for the owner, Order 56 — written by rpc-55 (Order 55,
 2026-10-26) as B677's paper half (R-b: door 1, the warning, shipped in Order 55;
 door 2, this page, not built). One recommendation at the end.
 
@@ -143,3 +143,8 @@ Questions the ruling settles:
    is a different thing (`Pending` states exist for it).
 3. The opt-out spelling, if any. Rec: none until a caller wants the creation
    owner; file it then.
+
+## 6. As built (lane solver-56, 2026-11-03)
+
+Door 2 as §4's paragraph: the implied `context owner_scope` (+ `sync`) on a closure parameter whose declared result is `View` or `impl Slot`, answered by `clause_of_type`; a written clause accepted (redundant); a written clause naming ANOTHER context keeps it after the implied `owner_scope`; `async`-marked and `external` parameters left as written. The implied clause lives in the parameter's type, so diagnostics print it as a written one; `sync` prints from the marker. Door 1's `|…| View` warning removed (unreachable), its `|…| void` half kept (row 765). Spec §8.5. Estate: std 0, website/examples/corpus 0, one test program's stored field typed; kolt checks clean with 0 warnings (the seven written clauses accepted, `page`'s two door-1 warnings gone). No golden moved. Q1–Q3 as recommended.
+
