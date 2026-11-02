@@ -199,3 +199,57 @@ limit, orientation, the sync note, what each backend runs on), rows in
   white — a transparent avatar on a white page.
 - **Q5. The default pixel limit**: 50 MP (a 12 MP phone photo decodes; a 60,000²
   bomb does not). Rec: 50,000,000.
+
+## 7. As built (lane m185, 2026-11-02)
+
+Built as §2–§3 say, in five commits on `m185` (the core + native glue + wasm
+export layer; the native wiring; the JS seam; `std/src/image.vl` + pins + docs;
+the AGENTS.md repo map), plus the pre-merge follow-ups in §7.2. Deviations:
+
+1. **Own resampler.** `vilan-image` carries its own Lanczos3 rather than
+   `imageops::resize`: the crate's kernel calls `f32::sin`, which the host's libm
+   and wasm's compiler-builtins round differently in the last bit, and `imageops`
+   assumes premultiplied input without premultiplying. The lane's kernel builds its
+   sines from additions and multiplications and resamples non-opaque pictures
+   premultiplied — the native differential is byte-identical on both backends,
+   JPEG bytes included.
+2. **`Cover`** crops the source to the box's aspect first (centred, integer
+   rounding) and then scales: within a sub-pixel of §3 and cheaper.
+3. **The wasm ABI**: exports prefixed `image_*` (no host `alloc`/`free` clash),
+   counts as `f64` (no mod-2³² wrap of a large usize), `image_load` in place of a
+   separate set call; `width`/`height`/`rgba` on JS read the plain object without
+   the module; `sniff` and `from_rgba` go through wasm (one implementation); a trap
+   drops the instance and rethrows.
+4. **Native recognition** of `Image` by the extern that reads it (`__image_width`'s
+   first parameter), never by name.
+5. **The dev profile** optimizes the nine codec packages of `vilan-image`'s
+   lockfile graph (`IMAGE_OPTIMIZED_PACKAGES`, pinned to the graph), not only the
+   glue crate.
+6. **Notices**: `zlib-rs` is locked as flate2's never-enabled backend and left out
+   by cargo-about; exempted by name with the reason in `third_party_notices.rs`.
+7. **release.yml** also runs `scripts/build-image-wasm.sh --check`: a tag can come
+   from a commit CI never saw.
+8. `Image` `==` is identity on both backends (as `Bytes`); printing one is refused
+   natively and prints the plain object on node (the `Bytes` split).
+
+Numbers: the committed blob 584,203 bytes (222 KB gzipped); a node bundle that
+reaches the codec grows ~783 KB (304 KB gzipped), one that does not carries
+nothing (pinned, including a program that only names `Fit`). A synthetic
+4000x3000 JPEG, decode + `Cover` 256 + WebP encode: node 330–400 ms warm (the
+first call 1.4 s: module compile + baseline tier), native ~140 ms in the default
+debug build with the codec crates at opt-level 3. The blob is reproducible byte
+for byte across a clean rebuild and a different checkout path with a fresh
+`CARGO_HOME` (the script pins the toolchain from `rust-toolchain.toml` and maps
+machine paths), so the byte compare stands in CI's `wasm` leg (Q1 as recommended).
+
+### 7.2 Pre-merge follow-ups (the lane's own finds)
+
+- The playground's `vilan_wasm_bg.wasm` carried the 779 KB base64 blob (+9 %) for a
+  `@process` module the browser cannot run → a default-on `vilan-core` feature
+  gates the embedding; `vilan-wasm`/`vilan-ide` build without it, and an emitter
+  without it refuses a program reaching `std::image` by name.
+- `resized` had no output cap (`100000 x 100000` allocates ~40 GB: a trap on node,
+  an abort natively) → refused over 50,000,000 pixels with a panic naming both
+  sizes (the box is the app's choice).
+- `build-image-wasm.sh` ran `rustup toolchain install` on every call → skipped
+  when the pinned toolchain and its wasm32 target are present.
