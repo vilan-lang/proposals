@@ -56,6 +56,10 @@ cargo build -q --release -p vilan-cli -p vilan-lsp > "$S/perf-build-$tip.log" 2>
 # (a plain directory: no git; built once so generated files exist). Without it, both sides check kolt@$VILAN_PERF_KOLT_COMMIT.
 # `shared.vl keystroke` is left out: its anchors are gone from today's kolt (N145). Add --advance by exporting
 # VILAN_PERF_ADVANCE=1 on the order's FINAL seal only. Run QUIET (load <= 2).
+# N186 (5): only a GREEN perf verdict advances the e121 state. perf_gate.py seal itself skips the advance on a red
+# verdict (Order 56); this script also keeps the state as it was before the leg and puts it back when the leg is red
+# for any reason perf_gate.py does not see (a failed build, a refused harness leg) - Order 55's pass 1 moved
+# `shared.vl keystroke` 6 -> 7 on a red verdict and it was restored by hand.
 # N175: there is NO default commit - 984a1dfb (the v0.44.0 seal's base) pre-dates the mirrored-store exhibit, so on it N174's
 # harness SKIPS `parse break` on the base side and the seal is red on a skipped mandate row. The commit is the one the integrator
 # made inside the base kolt copy, so the seal names it or refuses.
@@ -84,11 +88,17 @@ python3 scripts/lsp-latency.py --kolt "$kolt" --commit "$commit" --runs 5 --lsp 
 python3 scripts/lsp-latency.py "${tip_src[@]}" --runs 5 --lsp "$W/target/release/vilan-lsp" --vilan "$W/target/release/vilan" "${scen[@]}" --json "$S/lsp-tip-$tip.json" > "$S/lsp-tip-$tip.log" 2>&1 &&
 lsp_json=(--lsp-json "$S/lsp-base-$tip.json" "$S/lsp-tip-$tip.json")
 adv=(); [ -n "${VILAN_PERF_ADVANCE:-}" ] && adv=(--advance)
+e121_state="${VILAN_PERF_VERDICTS:-$HOME/.vilan/perf-verdicts}/e121-state.json"
+[ ${#adv[@]} -gt 0 ] && [ -f "$e121_state" ] && cp "$e121_state" "$S/e121-state-before-$tip.json"
 lsl=0; [ ${#lsp_json[@]} -eq 0 ] && { lsl=1; echo "LSP harness leg REFUSED or failed (no LSP rows): see $S/lsp-base-$tip.log and lsp-tip-$tip.log"; }
 python3 scripts/perf_gate.py seal --class reference --tip "$W/target/release/vilan" --tip-std "$W/vilan/std" \
     --base "${VILAN_PERF_BASE:-$HOME/.vilan/bin/vilan}" --kolt "$kolt" --commit "$commit" "${tip_kolt[@]}" --runs 5 \
     --sha "$(git rev-parse HEAD)" "${lsp_json[@]}" "${adv[@]}" ${VILAN_PERF_THRESHOLD:+--threshold "$VILAN_PERF_THRESHOLD"} > "$S/perf-$tip.log" 2>&1; pf=$?
-[ $lsl -ne 0 ] && pf=1; [ $pb -ne 0 ] && pf=$pb; grep -E "T3 |T2 VERDICT|PERF VERDICT|REFUSED|OWNER|RED|different sources|wrote|LSP rows|LSP row |LSP SKIPPED" "$S/perf-$tip.log"; echo "perf exit=$pf"
+[ $lsl -ne 0 ] && pf=1; [ $pb -ne 0 ] && pf=$pb
+if [ ${#adv[@]} -gt 0 ] && [ $pf -ne 0 ] && [ -f "$S/e121-state-before-$tip.json" ]; then
+  cp "$S/e121-state-before-$tip.json" "$e121_state"; echo "E121 state NOT advanced (perf leg red): restored from $S/e121-state-before-$tip.json"
+fi
+grep -E "T3 |T2 VERDICT|PERF VERDICT|REFUSED|OWNER|RED|different sources|wrote|LSP rows|LSP row |LSP SKIPPED|NOT advanced" "$S/perf-$tip.log"; echo "perf exit=$pf"
 # A harness leg that refused (its copy did not check clean) says so in its own log, which the grep above does not read:
 for side in base tip; do grep -H -E "does not check clean|cannot find the|^SKIPPED " "$S/lsp-$side-$tip.log" 2>/dev/null; done
 python3 - "$W/CHANGELOG.md" <<'PY'
