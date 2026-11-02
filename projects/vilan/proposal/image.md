@@ -1,6 +1,6 @@
 # `std::image` — decode, resize, crop and encode pictures on both backends (M185)
 
-- status: DESIGN 2026-11-02 (integrator; lane m185 builds it; rides v0.54.0)
+- status: BUILT 2026-11-02 (lane m185 @92c6cfff; merged to next 8e8c463c; rides v0.54.0; M185 closed; owner Q1-Q5 built on the recs, Q6-Q7 open)
 - tracker: M185 (the owner's item, filed 2026-11-02; kolt's custom avatars, task #9)
 - touches: NEW `std/src/image.vl` (`@process`), NEW crates `vilan-image` (the codec core), `vilan-rt-image` (native glue, a satellite of `vilan-rt`), `vilan-image-wasm` (the same core as a wasm module for node); `vilan-rust` (`OptionalCrates`, the extern table), the JS emitter's helpers (`transformer.rs`), `vilan-core`'s `build.rs` (the wasm blob as base64), CI's `wasm` leg, `THIRD-PARTY-NOTICES.txt`, docs `std/image.md`
 - related: `native-apps.md` §8 Q7 / Order 37 R8 (`vilan-rt` is dependency-free; the SEPARATE-crate shape `vilan-rt-sqlite` / `-crypto` / `-signal` / `-term` already follow), F19 (the materialized runtime cache), N134 (the wasm leg runs its artifact under node)
@@ -242,14 +242,49 @@ for byte across a clean rebuild and a different checkout path with a fresh
 `CARGO_HOME` (the script pins the toolchain from `rust-toolchain.toml` and maps
 machine paths), so the byte compare stands in CI's `wasm` leg (Q1 as recommended).
 
-### 7.2 Pre-merge follow-ups (the lane's own finds)
+### 7.2 Pre-merge follow-ups (the lane's own finds; built, 02d2a791 + 92c6cfff)
 
 - The playground's `vilan_wasm_bg.wasm` carried the 779 KB base64 blob (+9 %) for a
-  `@process` module the browser cannot run → a default-on `vilan-core` feature
-  gates the embedding; `vilan-wasm`/`vilan-ide` build without it, and an emitter
-  without it refuses a program reaching `std::image` by name.
+  `@process` module the browser cannot run → vilan-core's default-on `image-codec`
+  feature gates the embedding (`build.rs` and `__image_wasm`); `vilan-wasm`,
+  `vilan-ide` and `vilan-lsp` take vilan-core with `default-features = false`
+  (release.yml builds `vilan-cli` and `vilan-lsp` in one invocation, so the release
+  lsp binary unifies the feature back on; nothing there references the blob). A
+  compiler without it REFUSES a program that reaches the codec, at assembly where
+  the helper set is final, naming the feature — never a bundle with an empty
+  codec (ledger row NEW, `transformer.rs` `image_codec_refusal`). The artifact:
+  8,354,466 bytes with the blob, 7,577,125 without. Pins: `tests/image_codec_feature.rs`
+  built both ways (the wasm leg runs it `--no-default-features`, ~8 s) and the wasm
+  leg greps the artifact for the blob's first 64 base64 characters (the grep does
+  hit the CLI binary, so it is not vacuous).
 - `resized` had no output cap (`100000 x 100000` allocates ~40 GB: a trap on node,
-  an abort natively) → refused over 50,000,000 pixels with a panic naming both
-  sizes (the box is the app's choice).
-- `build-image-wasm.sh` ran `rustup toolchain install` on every call → skipped
-  when the pinned toolchain and its wasm32 target are present.
+  an abort natively) → a RESULT over 50,000,000 pixels (`MAX_RESIZED_PIXELS` =
+  `DEFAULT_MAX_PIXELS`) is refused before anything is allocated: an `Err` through
+  the seam (a panic inside the wasm core would surface as a trap with no message)
+  and a `[track_caller]` panic in `image.vl` — `a 100000 x 100000 result exceeds
+  the 50,000,000-pixel limit`. The result is what is measured (a `Contain` that
+  comes out small is fine) and box sides past `u32` are reported as asked, not
+  wrapped (u128 arithmetic in `contain_size`). Pinned in the core (2; 36 total),
+  rt-image, `std_surface::m185_a_resize_past_the_pixel_limit_panics_naming_both_sizes`
+  and the differential `m185_a_resize_past_the_pixel_limit_panics_at_its_caller_on_both_backends`
+  (an exact `panicked at <caller site>: …` line on each backend). The blob was
+  rebuilt: 586,107 bytes.
+- `build-image-wasm.sh` ran `rustup toolchain install` on every call → it asks
+  `rustup target list --installed --toolchain <pinned>` first and installs only
+  when wasm32 is missing; the wasm leg's log has no rustup lines.
+
+The lane's final full suite on the follow-up tree: 11,100 run / 11,100 passed / 37
+skipped (one earlier run red on the refusal's missing ledger row, added in
+92c6cfff). The integrator's merge gates on next 8e8c463c (b693 beneath it): fmt,
+build, `diagnostics_ledger` (25), `docs` (12), the `b693_*`/`m185_*` inference
+pins (19), the `m185_*` differentials (3), `third_party_notices` — all 0.
+
+### 7.3 Open after the build
+
+- Q6 (owner): the playground refuses a program reaching the codec rather than
+  carrying it. The alternative is a lazily fetched blob beside the playground's
+  wasm; nothing asks for it today (`std::image` is `@process`, and the
+  playground's server mode is a demo).
+- Q7 (owner): `resized`'s cap is a panic, not an `Err` (the box is the program's
+  choice); `decode`'s stays an `Err` (the upload's). Ratify the split or make
+  both `Err`.

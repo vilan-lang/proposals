@@ -91,3 +91,18 @@ the copy (HEAD only).
 ## Under v0.54.0 (B693 - the assumed handle's keeper; lands at Order 56's cut)
 
 Nothing to change: kolt's 28 `when_live` / `when_remote_live` sites get the fix as they are. What to expect: a field read below a body handle costs the field (the item's repro 4,264 ms -> 4.5 ms at 10,000 records on node); the organization is copied ONCE per page leave (the write that ends the variant), not per read. Re-measure Tasks / Board / Table of the 2,089-task organization under the 0.54.0 toolchain; the remaining per-read constant is the path-list copies (M186, ~74 `__clone` per read, size-independent).
+
+## Under v0.54.0 (M185 - std::image; lands at Order 56's cut)
+
+Custom avatars (kolt task #9): `import std::image::{ Image, Fit, Format };` on a server (`@process`) module, then per size
+
+    let picture = Image::decode(upload)!;                      // Result<Image, str>: "not a PNG, JPEG, WebP or GIF" / the 50 MP limit
+    let avatar = picture.resized(size, size, Fit::Cover)       // the centre square, scaled; sizes 32 / 64 / 256
+        .encode(Format::Webp, 80)!;                            // Bytes; WebP is lossless (quality ignored) - use Format::Jpeg for photos
+
+`Image::sniff(upload)` answers the format without decoding (refuse anything but `Some(..)` at the upload). Thumbnails of pictures in
+messages: `picture.resized(300, 300, Fit::Contain)` keeps the aspect inside the box. Costs on node: ~1.4 s for the FIRST call in a
+process (the codec module compiles), then ~350 ms for a 12 MP JPEG decode + Cover 256 + WebP encode; the call is synchronous, so put it
+on the upload handler, not a page render. The bundle of a server that reaches the codec grows ~783 KB (nothing in the client bundle:
+the module is `@process` and refused on a browser leg). A `resized` whose result would exceed 50,000,000 pixels panics at your call -
+sizes are yours to pick, so keep them small. Nothing in kolt changes until you write the feature.
