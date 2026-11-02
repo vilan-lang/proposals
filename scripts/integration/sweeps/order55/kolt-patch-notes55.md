@@ -87,3 +87,7 @@ the copy (HEAD only).
   `panels.vl` (the `get(..).unwrap_or([])` + `get_or_insert` shapes). `missing` is `lazy`, not `|| V` (hash-map-lend.md Q2).
 - A `HashMap`'s debug/DAP layout is now `keys`/`values`; the vscode extension's printer moved with it and the vsix is refreshed at
   the fold - debug a 0.54.0 build with the 0.54.0 extension.
+
+## Under v0.54.0 (B693 - the assumed handle's keeper; lands at Order 56's cut)
+
+Nothing to change: kolt's 28 `when_live` / `when_remote_live` sites get the fix as they are. What to expect: a field read below a body handle costs the field (the item's repro 4,264 ms -> 4.5 ms at 10,000 records on node); the organization is copied ONCE per page leave (the write that ends the variant), not per read. Re-measure Tasks / Board / Table of the 2,089-task organization under the 0.54.0 toolchain; the remaining per-read constant is the path-list copies (M186, ~74 `__clone` per read, size-independent).

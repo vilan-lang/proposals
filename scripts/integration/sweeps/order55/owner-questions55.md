@@ -109,3 +109,15 @@ b689 (B689 + M182, merged to next 26257f20 for v0.54.0; design + as-built in pro
 10. `update(key, lazy missing: V, change)` over M182's `|| V`: `lazy` is the ratified spelling for "evaluated only on the miss" (`unwrap_or`, `expect`). Say if `|| V` is wanted.
 11. `HashMap` is two `NativeMap` tables (keys + values) rather than one table of pairs: the price of a real `&Option<V>` place without unsafe in vilan-rt (§2 of the paper weighs the always-`Some` wrapper and a two-parameter NativeMap). A second index per map; every write touches both inside one method.
 12. B691 (JS MISCOMPILE, found on the way): an enum value is never copied at a value seam - `mut b = a` of an `Option<List<i32>>` aliases `a`'s payload. It is why `get`/`get_or_insert` kept the table's own `get` rather than `peek`. Order 56 head with B690/B688?
+
+b693 (B693, merged to next 2f89bee9 for v0.54.0; design + as-built in proposal/store-assume-keeper.md):
+13. The keeper's life outside any owner: `assume()` at the top of `main` (the existing A142 S7 pin's shape) stands its keeper on the store for the store's life - `register_with_owner`'s leak-as-today rule, as the paper recommends. The stronger law (refuse `assume()` outside an owner, a COMPILE error as `on_cleanup` has) is A130's conversation. Say if you want the refusal.
+14. The restated rule: "a reader in the turn that ends the variant reads the payload AS IT STOOD WHEN THE VARIANT ENDED" (docs + CHANGELOG), in place of "the LAST payload a read through the live variant saw". Never older; ratify or revert the wording (the mechanism satisfies both).
+15. B694 (the lane's find): the server `ui` twin's one-shot owners (`when`, `when_live`, `swap`, `each` rows, `when_some`) are never disposed, so a server that SSRs pages over a long-lived store accumulates a keeper per render (and already accumulated every subscription a body made). Kolt's server renders no views today. Rec: dispose each owner right after its body placed its view (S); Order 56 std lane.
+
+m185 (M185, lane in flight; design proposal/image.md §6 - the lane builds on the recs):
+16. The wasm blob COMMITTED (`crates/vilan-image-wasm/vilan_image.wasm`, ~1 MB, rebuilt by `scripts/build-image-wasm.sh`, checked by CI's wasm leg) rather than built inside `cargo build` by a build.rs on every machine. Rec: commit.
+17. WebP encoding is LOSSLESS only (the `image` crate's pure-Rust encoder; lossy means libwebp in C on both hosts); `quality` ignored for WebP and documented. Rec: accept; JPEG for photos.
+18. Synchronous decode/encode only (a 12 MP JPEG is ~100-200 ms of the event loop on node, a tenth natively); a worker-backed `decode_async` is a follow-up item. Rec: accept for the avatar case.
+19. JPEG has no alpha: a transparent picture is flattened onto WHITE on encode (the crate's default drops to black). Rec: white.
+20. The default decode pixel limit: 50,000,000 (`decode` = `decode_within(bytes, 50_000_000)`; a 12 MP photo decodes, a 60,000-square bomb is refused from the header). Rec: 50 MP.

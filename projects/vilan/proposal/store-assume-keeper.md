@@ -1,6 +1,6 @@
 # The assumed handle's fallback, kept at the variant's end — not copied per read (B693)
 
-- status: DESIGN 2026-11-02 (integrator; lane b693 builds it; rides v0.54.0)
+- status: BUILT 2026-11-02 (lane b693 @6d8b902e, merged to next 2f89bee9; rides v0.54.0; B693 closed; owner Q1-Q2 open)
 - tracker: B693 (the owner's item, filed 2026-11-02 measuring B689's fix on next f9fcc6ce)
 - touches: `std/src/reactive/store_core.vl` (`StoreSome::assume`, `store_switch`), docs `std/store.md`, pins in `crates/vilan-core/tests/inference/store.rs`
 - related: B689 / `hash-map-lend.md` (the keyed step), B526 / `mirrored-store.md` Q11 (the last-value rule this must keep), A149 S3 (feeds), `ambient-owner.md` (`defer_to_owner`)
@@ -224,3 +224,38 @@ consistent, leave or reword to match. CHANGELOG `## Unreleased`: a `fix` entry
   stronger law is A130's conversation.
 - **Q2.** The reworded semantics ("as it stood when the variant ended") — ratify, or
   keep the old sentence (which the new mechanism also satisfies).
+
+## 7. As built (lane b693, 2026-11-02)
+
+Built as §2 says: `store_switch` touches the two flags' feeds; `assume()` lends to
+check liveness (no copy), stands the keeper on `self.gate`, defers its detach to
+the ambient owner, and the handle's lend reads in place with `match &last` for the
+fallback. Three deviations:
+
+1. **The codegen pin** cannot say the keeper's `before` is the only `__clone` in
+   `assume`: the handle struct copies its `path` and `gate` lists too. It asserts
+   exactly one `__clone(payload)`, in the keeper before `attach_feed`, and no
+   `__clone` in the returned handle's lend apart from its path. (The path copies
+   are M186: ~74 per read of a five-step path, size-independent.)
+2. **§2.2's rows are one pin each**, not one combined test; against the old
+   `store_core.vl` nine of the eleven go red (the dead-`assume` and live-again pins
+   keep old behaviour).
+3. **No pin for an equality-less leaf above the handle** (§4.5 did not list it).
+
+§4.4 answered by the harness's `__clone` counter (M172's, now the shared
+`copies_per_print`): a write inside the payload copies the same amount at 10 and
+at 1,000 records; moving the keeper onto the payload node turns that phase red
+(174 vs 8,094). The `emitted_function` helper moved into `support.rs`.
+
+Numbers (2,000 reads; 10 / 1,000 / 10,000 records): node 15.0 / 280 / 4,148 ms ->
+10.4 / 4.3 / 4.5 ms; native release 2 / 68 / 646 -> 1 / 1 / 1 ms; debug 10 / 316 /
+3,102 -> 6 / 6 / 7 ms. `__clone` calls per 100 reads at 1,000 records: 807,800 ->
+7,400 (the path lists); the ending write copies 8,025 (one payload). No golden
+moved. One `[[bump]]` row (fullstack, reference, x1.0005 where next's std already
+stood at x1.0099 of the x1.01 ceiling). The emitted JS of `assume` takes a hidden
+owner-context argument (`defer_to_owner` reads `owner_scope.get_safe()`); the
+source signature is unchanged.
+
+Finds: B694 (the server `ui` twin's one-shot owners are never disposed — each
+server render of a `when_live` body leaves a keeper; kolt's server renders no
+views), M186 (the path-list copies).

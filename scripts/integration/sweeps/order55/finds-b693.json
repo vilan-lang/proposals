@@ -1,6 +1,26 @@
 {
  "items": [
   {
+   "id": "B694",
+   "section": "B",
+   "title": "SERVER: the one-shot owners the server `ui` twin makes for `when`, `when_live`, `swap`, `each` rows and `when_some` are never disposed, so whatever a body registers with its owner - a subscription, an `on_cleanup`, B693's keeper - stays on the store for the process's life, one per render",
+   "kind": "bug (std process/web/ui; owner lifetime; leak per server render)",
+   "area": "Standard library (web, server)",
+   "status": "OPEN - filed 2026-11-02 (lane b693's find)",
+   "discussion": "lane b693 (post-Order 55); `Conditional::place` (process/web/ui.vl ~:639), `place_swap` (~:680), `place_each` (~:704, ~:739) and `place_when_some` (~:956) each do `let owner = Owner::new(); run_with_owner(owner, \\|\\| ..)` and never `owner.dispose()`. A server render hears no later change, so the subscriptions are dead weight; with B693 each server render of a `when_live`/`when_remote_live` body over a long-lived store leaves one keeper feed on that store's flag node, and every keeper copies the payload once when the variant ends. Kolt's server renders no views today (no `render(` of the process twin), so it is not exposed; a server that SSRs pages over a long-lived store is",
+   "body": "The browser twin disposes a body's owner when the boundary goes; the server twin, which renders once, has no boundary end and so never disposes. Rec: dispose each one-shot owner right after its body has placed its view - the render is the body's whole life on the server (`let row = run_with_owner(owner, ..); owner.dispose();`), which runs `on_cleanup`s at the right moment too; pin with `store_feed_census` (a server `render` of `when_live` over a store leaves 0 feeds) and the existing server-twin pins unchanged. Alternatively a request-scoped root owner the five sites parent under, disposed at the end of `render`. Sizing S."
+  },
+  {
+   "id": "M186",
+   "section": "M",
+   "title": "A read below any store handle copies the handle's PATH lists on the way down - about 74 `__clone` calls per read of a five-step path, whatever the payload's size (`child_path`, the handle's `path`/`gate` fields)",
+   "kind": "perf (std reactive store core; path lists)",
+   "area": "Standard library (reactive store)",
+   "status": "OPEN - filed 2026-11-02 (lane b693's find)",
+   "discussion": "lane b693 (post-Order 55); measured with the inference harness's `__clone` counter (`copies_per_print`, store.rs `B693_PHASES`): 100 reads of `live.records().at(1).some().title().get()` at 1,000 records cost 7,400 `__clone` calls after B693 (807,800 before) - 74 per read at any size, all of them copies of `List<StoreStep>` path lists as each projection builds `child_path(self.path, step)` and the handle structs copy `path` and `gate`",
+   "body": "Every projection allocates and copies the path list of its parent plus one step, and each handle struct literal copies the list again (`root = self.root, path = self.path, gate = self.gate`); a five-step read builds five handles. The payload copy B689/B693 removed was the big term; this is the remaining per-read constant (~10 us on node). Rec: share the path - a persistent cons-list of steps (`Shared<PathNode>` parent pointers: a child's path is one allocation pointing at its parent's, equality/hashing by walking), or build the path lazily only when a slot is asked for (`watch_at`/`identity_at` need it; a plain `get` does not). Measure on kolt's leaf keystroke before choosing. Sizing M."
+  },
+  {
    "id": "N187",
    "section": "N",
    "title": "`check_hygiene.py` has exited 1 on proposals main since before 5b970199: five proposal files have no row in proposal/README.md (terminal.md, tuple-module.md, type-ascription.md, unit-literal.md, visibility.md)",
