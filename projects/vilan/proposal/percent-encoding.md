@@ -1,6 +1,6 @@
 # `std::url`: percent-encoding on both backends (M181)
 
-- status: DESIGN 2026-11-02 (integrator; lane std-56 builds it; rides v0.54.0)
+- status: BUILT 2026-11-02 (lane std-56 a5df8059; merged to next 79a620f9; rides v0.54.0; M181 closed; Q1 built as recommended)
 - item: M181 — `percent_decode` is browser-only (in `std::web::router`), and
   there is no encoder
 
@@ -63,3 +63,8 @@ SUMMARY/README's std table; CHANGELOG feature entry (M181), one bold head.
 
 - Q1: a module `std::url` (rec) vs `str` methods (`text.percent_encode()`).
   Rec: the module; `str` methods on a shown need.
+
+## 7. As built (lane std-56, 2026-11-02)
+
+As §2–§3, two deviations: (1) the JS decoder decodes per maximal `%XX` RUN (as §3 says and as native must), not the router's old whole-text fallback — `"%zz%20"` now decodes to `"%zz "` where it used to stay as written; a run that is not valid UTF-8 as a whole (`%41%FF`) stays as written, matching `decodeURIComponent` on that run; (2) the JS encoder is a `__percent_encode` helper rather than bare `encodeURIComponent`, because a lone surrogate is reachable on JS (`"😀".substring(0, 1)`) and the host function throws on it — the helper retries with U+FFFD (pinned). The router's extern became a one-line re-export (the split golden's `router.vl:<line>` labels moved up 6). Docs landed on std/encoding.md (beside base64) and browser.md. Pins: `std_surface::m181_*` ×6, the native differential (26 inputs, byte-identical), vilan-rt url units ×4. Find filed from the probe: B695 (a substring splitting a surrogate pair diverges between backends).
+

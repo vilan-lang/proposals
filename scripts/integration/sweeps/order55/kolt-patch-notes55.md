@@ -113,3 +113,8 @@ sizes are yours to pick, so keep them small. Nothing in kolt changes until you w
 - **E355**: a repeated `[derive]` over one item is one error at the second copy ("merge them, `[derive(PartialEq, Json)]`" when the lists differ; "keep one" when they match) and the item still reads - no more "cannot find 'derive'" steers.
 - **B657**: `..base` in a struct literal is one error at the `..` naming the `mut p = base; p.x = ..` form; the `..base` feature itself is not built (your 2026-10-19 note stands).
 
+## Under v0.54.0 (std-56: M181 std::url + A179 the cancellable dial; lands at Order 56's cut)
+
+- **M181**: `import std::url::{ percent_encode, percent_decode };` on both backends. `src/lib/std_ext.vl`'s `decode_uri_component` / `encode_uri_component` externs and their imports (code_links.vl, files.vl's `X-Kolt-Filename`, the `Content-Disposition` writer) can go. One visible difference from your extern: a text mixing a malformed escape with a good one (`%zz%20`) now decodes the good one (`%zz `); a lone `%zz` still reads as written.
+- **A179**: in `src/client.vl`'s connect loop, wrap the dial - `dial_within(4000, || KoltClient::connect_with(url, codec, protocols))` - and match `Err(RpcError::Timeout)` as the "Can't reach Kolt" case; a hung first attempt no longer holds the retries back, and the abandoned socket is closed (nothing it opens later is left running). Inside a nursery you cancel, the dial now answers `Err(RpcError::Cancelled)`. Your `client.vl:151` match has a fallthrough, so nothing breaks before you add the arm.
+

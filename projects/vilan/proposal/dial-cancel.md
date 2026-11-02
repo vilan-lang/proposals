@@ -1,6 +1,6 @@
 # A dial that can be cancelled, and a dial with a deadline (A179)
 
-- status: DESIGN 2026-11-02 (integrator; lane std-56 builds it; rides v0.54.0)
+- status: BUILT 2026-11-02 (lane std-56 fdb52613 + 73a10909 + 37688072; merged to next 79a620f9; rides v0.54.0; A179 closed; Q1–Q2 built as recommended)
 - item: A179 — `connect_with` can't be timed out: the dial has no deadline and ignores cancellation
 - lineage: `std::task`'s nurseries (the race idiom), `rpc.vl` `dial_socket` /
   `dial_with_backoff` (A47 typed failures, A52 `Unavailable`), `time.vl` `sleep`
@@ -107,3 +107,17 @@ signal; CHANGELOG feature entry (A179), one bold head.
 - Q1: `dial_within` as a free function over any dial (rec) vs a generated
   `connect_with_timeout`. Rec: the free function.
 - Q2: `RpcError::Timeout` and `RpcError::Cancelled` as two arms (rec) vs one.
+
+## 7. As built (lane std-56, 2026-11-02)
+
+Doors (a) and (b) as §2, with these deviations and findings:
+
+1. **The signal is a parameter.** `dial_with_backoff(…, signal)` through a new `dial_attempt`; `dial` keeps its exported signature. `handle_drop`'s REDIAL passes `None`: the socket-event closures capture the connect's nursery as their ambient, so once a race had cancelled that nursery a redial that read it ended immediately and closed the duplex for good — the plant reproduced it; a pin covers it.
+2. `dial_within(ms: i32, dial)` — there is no `i64`; `sleep` and `Timer` take `i32`.
+3. A dial win calls off only the timer; the nursery is cancelled only when the timer wins, so nothing of the new connection is cancelled (§4.4 is an outcome pin: a planted cancel-on-win does not turn it red, because nothing reads the signal after the socket opened).
+4. **Native**: there is no native WebSocket dial at all (the rust backend refuses the host type `WebSocket`, F1 S1b), so the cancel arms are JS-only; `dial_within` is plain std code and runs natively over any dial — the differential proves it, including a minute-long dial cut off at 20 ms.
+5. `RpcError` estate: the one exhaustive match was std's own `status_of_outcome` (`Timeout` → 504, `Cancelled` → 500); kolt's `client.vl:151` and `service_layer.rs` match with a fallthrough. The docs' enum listings and services.md's counted sentence updated (the `docs_enum_parity` gate caught them).
+6. **undici** (node's WebSocket): `close()` while CONNECTING opens one extra TCP connection that sends nothing and is closed ~4 s later (a bare `new WebSocket(url); ws.close()` against a `net` server sees two accepts). `dial_cancel.rs` tolerates an empty extra connection and fails on a real second upgrade; its socket reads are bounded at 120 s, under undici's 300 s handshake timeout.
+
+Pins: `dial_cancel.rs` ×6 on node (orderings through stdin and held listeners, never a sleep; plants: the throwing backoff sleep, no `close()` in the abort handler, no detach, the redial reading the ambient signal), `native_differential::a179_*`.
+
