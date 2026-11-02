@@ -1,6 +1,6 @@
 # Closure parameters and the owner they build under (B677, door 2)
 
-Status: **QUESTION for the owner, Order 56** — written by rpc-55 (Order 55,
+Status: **RULED 2026-11-02 as §5 recommends (the owner's "do B677"; lane solver-56 builds door 2, rides v0.54.0)** — originally a QUESTION for the owner, Order 56 — written by rpc-55 (Order 55,
 2026-10-26) as B677's paper half (R-b: door 1, the warning, shipped in Order 55;
 door 2, this page, not built). One recommendation at the end.
 
