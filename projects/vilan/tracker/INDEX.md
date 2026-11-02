@@ -102,6 +102,7 @@
 | [E351](items/E351.md) | A decline's line inside ONE large item can still fall back to the first token the canonicalization moved when the item has canonicalizations on both sides of the divergence | fmt edge | fmt-55 (Order 55); formatter.rs item_local_span |
 | [E354](items/E354.md) | A struct literal with a method call after it (`Body { .. }.size()`) is never broken, at any width (110 columns in the repro; kolt's `file_page.vl` to 161) | fmt edge | kolt upgrading to 0.53.1 (2026-10-31); repro in the item |
 | [E355](items/E355.md) | A repeated `[derive]` over one item is a parse error that doesn't say so: "expected `;`" standalone, "cannot find 'derive'; import it first" inside a larger file | diagnostic | kolt (2026-10-31); repro in the item |
+| [E356](items/E356.md) | Calling an `own self` builder (`fn(own self, ...): Self`) as a statement drops the change silently; the receiver still holds the old value | diagnostic | kolt (2026-11-02); repro in the item |
 ```
 mod x::y::z
 impl T
@@ -208,6 +209,7 @@ fun f(): void
 | [M183](items/M183.md) | The store's `Storable` diff for a `HashMap` still copies every compared value - `value_at`/`entry_at` read through `get` - where B689's `peek` could lend both sides in place | perf (std reactive store; map diff) | lane b689 (post-Order 55); store.vl's `impl HashMap .. with Storable` (`store_diff`, ~:190-260) and the `value_at`/`entry_at` helpers: each key compared copies `mine` and `theirs`; a write of a large map through `Store<HashMap>::set` pays a copy per key |
 | [M184](items/M184.md) | `HashMapCell::at(key)` reads its key through `HashMap::get`, a copy per read - the same keyed step B689 fixed for the store, one layer up | perf (std reactive; HashMapCell) | lane b689 (post-Order 55); reactive/hash_map_cell.vl: `at(key)` and the `HashMapEntry` handle's `get`/derive read the entry by `get`; with `HashMap::peek` the handle can lend the slot and copy only what its consumer copies |
 | [M186](items/M186.md) | A read below any store handle copies the handle's PATH lists on the way down - about 74 `__clone` calls per read of a five-step path, whatever the payload's size (`child_path`, the handle's `path`/`gate` fields) | perf (std reactive store core; path lists) | lane b693 (post-Order 55); measured with the inference harness's `__clone` counter (`copies_per_print`, store.rs `B693_PHASES`): 100 reads of `live.records().at(1).some().title().get()` at 1,000 records cost 7,400 `__clone` calls after B693 (807,800 before) - 74 per read at any size, all of them copies of `List<StoreStep>` path lists as each projection builds `child_path(self.path, step)` and the handle structs copy `path` and `gate` |
+| [M187](items/M187.md) | A region's `cut_row` makes a new live DOM Range per row: `close` of a long list is quadratic (8,000 rows: 598 ms vs 2 ms removed directly), and later mutations stay slow until GC (kolt's Table: 8.5 s to leave) | performance (std::ui; S) | kolt (2026-11-02; repro in the item); rec: walk siblings, or one removal per close |
 
 ## N. Hygiene & rot — NEW SECTION
 
