@@ -152,3 +152,56 @@ Door 2 as §4's paragraph: the implied `context owner_scope` (+ `sync`) on a clo
 
 The owner read §4's door 2 as only vaguely general and asked what makes it so. The answer: the result type is a proxy for the rule - a closure that BUILDS something owner-registered belongs where it is called; one that REACTS belongs where it was made - and the general form is a marker trait on the result type (the types a value of which registers with the ambient owner on creation), with the implied clause following the trait instead of the names `View` / `impl Slot`. RULED: accepted as recommended, with the owner's reservation on record ('not fully convinced on the struct type carrying markers like this, but no evidence to doubt it'). A180 carries the slice; its paper half must show the evidence (the census of owner-registered types, the counter-evidence that would refute it, the opt-out question) before the lane builds.
 
+
+## 8. The evidence for the marker trait (A180's paper half, lane solver-56, Order 56): it does not hold — door 2 stays as shipped
+
+§7's ruling asked for evidence before the build, and named what would refute the design. The census below reads std at `next` 5fd01232 (paths under `vilan/std/src`; R = `reactive.vl`, B = `browser/web/ui.vl`, P = `process/web/ui.vl`), the website, the corpus and kolt at 0de9e2e (a copy). **Verdict: the defining property — "a value of the type registers with the ambient owner on creation" — is true of NO std type.** Registration is something FUNCTIONS do, and the same type comes out of registering and non-registering functions alike. A marker on the result type therefore cannot mean what §7 says it means, and the one candidate it would have to carry beyond `View`/`Slot` to be general (`Subscription`) is the counter-example (4) asked for. The lane STOPPED here, as A180's brief directs: nothing was built, door 2 (`View`/`impl Slot` by name, §6) stays as shipped.
+
+### 8.1 Census: what registers, and where (1)
+
+The ambient owner is `owner_scope: Context<Owner>` (R:1322); the three ways in are `get_owner().take/defer` (strict), `register_with_owner` (R:1349) and `defer_to_owner` (R:1359) (both owner-optional, "leak-as-today" outside one).
+
+| type | does CREATING a value register? | where registration actually happens |
+| --- | --- | --- |
+| `View` | **no** — `view(tag)` is `create_element` (B:102-108); `nothing()` B:127; B's header: "a `View` carries no owner" | the binding METHODS on a built view: `bind_text` B:285 → `follow` (B:86-88, `get_owner().take(flow.sub(..))`), `bind_class` B:294, `bind_attr` B:330, `show` B:554, `focus_scope` B:510 → B:2877; SSR (P) registers nothing anywhere |
+| `Slot` implementors (B:893; 12 impls B:898-2474) | **no** — a slot value is data (`Swap`, `Each`, `WhenSome` are structs whose closure fields carry the clause, B:1105-1109) | `Slot::place`, at PLACING: the flow arms defer + `follow` (B:932-933, B:986, B:1020, B:1064), the region arms make per-row `Owner::new` + `run_with_owner` (B:1343-1360, B:1445-1463, B:1663, B:1974, B:2495); the static arms (`View`, `str`, `List<View>`) register nothing |
+| `Subscription` | **no**, by design — `Flow::sub`/`on_change` (R:2137-2150), `on_settle` (R:2012), `attach_observer` (R:2023), `observe` (R:2600) hand it back `[must_use]`: "You hold the `Subscription`; `effect` is the owner-tied spelling" (R:2141) | `.effect`/`.effect_on_change` register and return `void` (R:2229, R:2166) — no handle type exists |
+| `Owner` | **no** — `Owner::new` (R:1117) is unparented; `comp` (R:1452) and `mount_root` (B:2405) likewise | parenting is explicit: `owner.take(child)` or a boundary's `defer(|| owner.dispose())` |
+| `SignalCell` | **no** — `SignalCell::new` (R:2711) | **yes** out of `.cell()` (R:2395 `register_with_owner`), `unzip` (R:2798), `Selector::of` (R:3042), `KeyedSource::of` (rpc.vl:6079); **no** out of `.cell_global()` (R:2411) |
+| `MemoCell` and the collection memos | — (no public constructor) | **yes** out of `.memo()` (R:2378 → `.cell()`), `ListMemo`/`HashMapMemo`/`HashSetMemo` seals (reactive/delta.vl:1279, :2689, :2873), `RemoteStoreSome::state` (rpc/mirror.vl:2229/2232); **no** out of `.memo_global()` (R:2401) |
+| `Resource`, `Transient`, `Store<P>` from `assume` | constructors no | `Source::load` (R:3762), `.transient()` → `hold` (reactive/transient.vl:284), `StoreSome::assume` (reactive/store_core.vl:1149) |
+| `Task` / `Nursery` | **no owner at all** — a task registers with `ambient_nursery` (task.vl:95) at the `async` expression; `nursery()` task.vl:127 | — (as §7 expected) |
+| plain data | no | — |
+
+So the partition §7 assumed — a set of types whose values register, and a set whose values do not — does not exist: `SignalCell` is in both columns depending on the function that made it, `MemoCell` likewise (`memo` vs `memo_global`), and `View`, the type door 2 was built on, registers nothing when made. What `View` and `Slot` really mark is narrower and true: **the code that BUILDS one is where bindings, effects and holds are made** (B's binding methods and `place`), which is why the builder belongs at the call. That is a property of the result type's *producers*, and std's two UI types are the place it holds without exception.
+
+### 8.2 Is every marked type a closure result, and no unmarked one? (2)
+
+Std's closure parameters answering a view are all written `C: Slot` with the clause already (B:1114-2589, P:548-998, web/remote.vl:31; door 2 makes them redundant, §6). For the wider candidates:
+
+- **`MemoCell`** — supported: kolt writes `name_of: (sync |K| MemoCell<str>) context owner_scope` (panels.vl:1868) and `entries_of: (sync || MemoCell<List<(K, str)>>) context owner_scope` (panels.vl:1913) — builders whose product registers at the call, clause written by hand after B677. No std fun parameter answers a `MemoCell`.
+- **`SignalCell`** — no closure parameter in std, the website, the corpus or kolt answers one (`render: |SignalCell<T>| C` takes it as an ARGUMENT, B:925-976).
+- **`Subscription`** — answered by closure positions that must NOT take the call owner (8.3).
+- **`Owner`**, **`Task`** — no closure parameter answers either.
+
+### 8.3 The counter-evidence (4): a closure answering a would-be-marked type that must not take the call owner
+
+`Subscription` is what a general marker would have to carry to be more than `View` by another name ("Subscription from `on_settle`/`attach_observer`/`observe`", §7's own list), and its closure positions are exactly the REACTING/attaching kind §7 says belongs where it was made:
+
+- `Connection::open_forward(self, channel, key, start: || Subscription)` (rpc.vl:3008) — a `fun` parameter, door 2's own position: `start()` runs inside the call and its handle goes into the connection's `live` table (rpc.vl:3011-3014), released by `close_forward` per demand, never by an owner. Implying `context owner_scope` (+ `sync`) there would make `start` an injected closure for nothing — `.sub` registers nothing — and §3's restrictions would then bind its callers: the starters arrive from `Capability.start` / `KeySubscription.start` FIELDS (rpc.vl:2473, :2529), plain closures that B324's rule makes clause-less.
+- `Instance.attach: |Subscriber| Subscription` (R:2083) and the delta stages' `attach` fields (reactive/delta.vl:1188, :1753, :2623, :2816, :3328) — the pipeline's attach channel; registration is the SEAL's (`cell`, `seal_*`), deliberately after the attach.
+- kolt's `ProxySignal.on_settle: |Subscriber| Subscription` (lib/proxy_signal.vl:6) — the same attach shape in user code.
+
+The last two are fields (door 2 implies nothing on a field, §6), but they show what the type means in the language: a `Subscription` is the handle a caller HOLDS, and a closure answering one is an attach, not a build. Marking it would put door 2's clause on `open_forward` — the first site a marked non-UI type reaches — where it is wrong. Without `Subscription` (and with `SignalCell`/`MemoCell` registering only through some of their producers), the marker's set is `View` + `Slot` + possibly the memo family: not a general property of types, but a list.
+
+### 8.4 The opt-out (5)
+
+The census answers it the way the reservation feared: std ALREADY has an opt-out, and it is spelled on the PRODUCER — `.memo_global()`/`.cell_global()` (R:2401, R:2411), "a cell that lives as long as the program". A marker on `MemoCell` would imply the call owner for a closure answering `memo_global()`'s product too, which wants no owner at all; widening the set makes an opt-out spelling necessary on the closure (`(|| MemoCell<T>) context ()`?) the first time such a closure appears. With door 2's two names no such closure can exist (a view always registers what it binds through its builder), which is why §5 Q3 could defer it.
+
+### 8.5 Estate (what a build would have moved)
+
+std: 0 closure parameters answer a `Subscription`-free marked type beyond the `C: Slot` sites door 2 already covers; 1 `fun` parameter answers `Subscription` (`open_forward`, rpc.vl:3008 — the counter-example). Website and corpus: 0 closure types answering `Subscription`, `SignalCell`, `MemoCell` or `Owner` (grep of every `.vl`). kolt (0de9e2e copy): 2 closure parameters answering `MemoCell`, both already clause-written (panels.vl:1868, :1913); 1 field answering `Subscription` (proxy_signal.vl:6).
+
+### 8.6 Recommendation (owner question)
+
+Keep door 2 as shipped (`View`/`impl Slot` by name — the two types whose BUILDER is where registration happens, without exception). If the owner wants the memo family covered (kolt's two `MemoCell` builders are the evidence for it), the honest generalization is a list, not a trait: add `MemoCell` (and the three collection memos) to `answers_a_view`'s set, with `.memo_global()` closures as the opt-out question it then raises. A marker trait a user type opts into is not supported by the census: the property it would name is a property of functions, and the first non-UI type it would carry (`Subscription`) is refuted by std's own `open_forward`.
