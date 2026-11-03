@@ -1,4 +1,4 @@
-# Kolt under v0.54.0 — the owner's patches from Order 56 (kolt branch vilan-migration @3fb5d74 = the B688 imports, committed by the integrator on the owner's word)
+# Kolt under v0.54.0 (tag 3891c987; toolchain `vilan 0.54.0 (56008e46d)`) — the owner's patches from Order 56 (kolt branch vilan-migration @3fb5d74 = the B688 imports, committed by the integrator on the owner's word)
 
 Everything here is the OWNER's to apply; no lane and no integrator edits ~/code/kolt without the owner's word. Order: B688 is in (3fb5d74); then the items below in the order they ride.
 
