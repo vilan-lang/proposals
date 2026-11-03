@@ -122,3 +122,4 @@ CI GREEN on next @26257f20 (run 41268020027: all 14 legs success incl. perf and 
 - 2026-11-03 ~15:30 kolt B688 imports COMMITTED by the integrator on the owner's word: vilan-migration 3fb5d74 (not pushed). Exhibit = 3fb5d74 for both seal sides.
 - 2026-11-03 ~16:00 the owner: Q9 + Q11 rec accepted -> M191 FILED (one table + the entry idiom; `update` goes); hash-map-lend.md §9 records the ruling. Open with the owner: Q24, Q30.
 - 2026-11-03 ~16:30 the owner: Q30 rec accepted -> the interim E121 targets on next's [[e121]] rows (pushed; ci-watch-e121-targets.log). Only Q24 (door 2's generality) stays open.
+- 2026-11-03 ~16:40 SLIP: the targets commit 12c00cbe carried a stray backslash (`arc\'s`) in the e121 series strings - budgets.toml did not parse; fixed on the next commit within minutes (the watcher reads HEAD after its wait, so the fix's run is the verdict). LESSON: run tomllib on budgets.toml BEFORE committing, never after.
