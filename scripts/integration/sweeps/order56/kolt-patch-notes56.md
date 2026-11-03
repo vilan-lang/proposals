@@ -25,3 +25,11 @@ N183: 0 kolt files affected. E346: `dbg`/`print` of a str holding control charac
 ## incr-56
 
 Nothing: analyzer-internal (the editor's keystroke on kolt reads −20.7 % instructions).
+
+## The order of adoption under v0.54.0 (tag 7c11bea4)
+
+1. B688's imports are in (vilan-migration @3fb5d74, committed by the integrator on the owner's word; not pushed).
+2. `vilan fmt .` under 0.54.0: rewrites the 21 `(impl _)` lines to `(impl *)` (A181 - the compiler READS `(impl _)` this release but reports an error; next release refuses it), collapses the 4 lone-selector sets, and applies E354's receiver-literal reflow (the 37-file drift the owner has been carrying). One commit.
+3. Nothing else is required: A182 drops no method in kolt (the compiler's census), M191 has 0 `update`/`modify` users in kolt, B695 changes no kolt answer the owner relies on (owner question 3 for the initial-letter site), B677/E356/B690/B691/E360 0 sites.
+4. Optional, when the owner wants them: M185's `std::image` for the upload thumbnails; M176/M177 for the raw `X-Kolt-Filename` POST (multipart form uploads); `Connection::revoke` when A175 lands.
+5. Checked: both entries (`src/server.vl`, `src/client.vl`) check clean with 0 errors 0 warnings under 7c11bea4's parent (305f8721) on the exhibit + the A181 patch (~/.vilan/perf-exhibit/order56/kolt-tip).

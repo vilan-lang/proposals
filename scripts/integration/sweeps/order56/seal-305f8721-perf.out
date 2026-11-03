@@ -1,0 +1,20 @@
+tip=305f8721 loadavg=0.28 0.74 2.54
+perf leg starts at loadavg=0.95 0.87 2.49
+  T3 kolt (base and tip on different sources) @3fb5d742: CPU x0.995  RSS x0.989  instructions x1.008  (load max 1.1)
+  T3 thresholds: CPU and instructions 1.10, peak RSS 1.05 (VILAN_PERF_RSS_THRESHOLD / --rss-threshold)
+  T3 peak RSS, a fresh process per run, median of 5: base 503.3 MB [487 503 503 505 506]; tip 497.8 MB [496 497 497 498 498]
+  LSP rows measured (8): leaf keystroke, leaf keystroke + pause, shared.vl keystroke, model.vl keystroke, model.vl keystroke, importers open, css keystroke, parse break, parse repair
+  LSP row leaf keystroke: instructions edit-to-idle base 9.741 G, tip 7.674 G (x0.788, judged); CPU to diagnostics base 1230 ms, tip 1090 ms (x0.89, reported)
+  LSP row leaf keystroke + pause: instructions edit-to-idle base 25.789 G, tip 22.242 G (x0.862, judged); CPU to diagnostics base 3730 ms, tip 3260 ms (x0.87, reported)
+  LSP row shared.vl keystroke: instructions edit-to-idle base 1.500 G, tip 1.527 G (x1.018, judged); CPU to diagnostics base 340 ms, tip 340 ms (x1.00, reported)
+  LSP row model.vl keystroke: instructions edit-to-idle base 3.836 G, tip 3.636 G (x0.948, judged); CPU to diagnostics base 660 ms, tip 580 ms (x0.88, reported)
+  LSP row model.vl keystroke, importers open: instructions edit-to-idle base 19.979 G, tip 18.475 G (x0.925, judged); CPU to diagnostics base 2250 ms, tip 2100 ms (x0.93, reported)
+  LSP row css keystroke: instructions edit-to-idle base 8.818 G, tip 8.430 G (x0.956, judged); CPU to diagnostics base 1290 ms, tip 1220 ms (x0.95, reported)
+  LSP row parse break: instructions edit-to-idle base 16.783 G, tip 15.442 G (x0.920, judged); CPU to diagnostics base 2090 ms, tip 1920 ms (x0.92, reported)
+  LSP row parse repair: instructions edit-to-idle base 17.261 G, tip 15.916 G (x0.922, judged); CPU to diagnostics base 2090 ms, tip 1960 ms (x0.94, reported)
+wrote /home/reed/.vilan/perf-verdicts/perf-305f8721beeebb744aee35394672564143613d11.json
+PERF VERDICT: green
+perf exit=0
+changelog parity 46 / 46
+verdict: union=skipped doctests=skipped native=skipped clippy=skipped windows=skipped audit=skipped fmt=skipped vilan-fmt=skipped wasm=skipped canary=skipped perf=0
+seal exit 0
