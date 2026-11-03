@@ -251,3 +251,8 @@ math and watch (x1.007). Finds: B691 (JS enum copy miscompile), B692 (closure
 parameter type in `match &mut`), F155 (native `a == a` E0505); follow-ups M183
 (the map diff still copies), M184 (`HashMapCell::at`). Q1–Q3 above stand for
 the owner.
+
+## 9. The owner's ruling (2026-11-03): one table, and the entry idiom on it (M191)
+
+The two-table layout of §2 bought delivery time and nothing else: a second index per map, two hashes and two inserts per write, and a closure-only API (`modify`'s after-step keeps the keys table in step, which is exactly what a returned place cannot do). RULED: build the two-parameter `NativeMap<K, V>` the section names as the end state - the key beside its `Option<V>` slot, `None` a tombstone on both backends - and on it `slot(&mut self, key): &mut Option<V> borrows self` (the `Shared::write` shape) with `Option::get_or_insert(&mut self, lazy v): &mut V borrows self`, so `groups.slot(key).get_or_insert([]).push(row)` is the entry idiom with no handle type; `update` goes. The slice's paper half is a short addition here before the lane builds (M191).
+
