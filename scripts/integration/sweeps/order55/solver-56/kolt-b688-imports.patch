@@ -1,0 +1,411 @@
+diff --git a/src/accounts.vl b/src/accounts.vl
+index d74483b..8637690 100644
+--- a/src/accounts.vl
++++ b/src/accounts.vl
+@@ -23,6 +23,7 @@ import pkg::states::problem_line;
+ import pkg::styles::{ button_style, common_input_style, dialog_style, icon };
+ import pkg::task_assignees::avatar;
+ import pkg::theme::Theme;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/backlinks.vl b/src/backlinks.vl
+index b733fc0..1aa0121 100644
+--- a/src/backlinks.vl
++++ b/src/backlinks.vl
+@@ -16,6 +16,7 @@ import pkg::store::{ Backlink, BacklinkKind, OrgState, OrgSummary };
+ import pkg::styles::{ button_style, dialog_style, icon, overflow_style, row_gap };
+ import pkg::task_assignees::name_of;
+ import pkg::theme::Theme;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/board.vl b/src/board.vl
+index ccfe7ab..6f61e6a 100644
+--- a/src/board.vl
++++ b/src/board.vl
+@@ -43,6 +43,7 @@ import pkg::task_assignees::assignee_stack;
+ import pkg::task_menu::{ TaskMenu, task_menu };
+ import pkg::theme::Theme;
+ import pkg::toast::{ toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/channel.vl b/src/channel.vl
+index 92f0c88..f54990d 100644
+--- a/src/channel.vl
++++ b/src/channel.vl
+@@ -95,6 +95,7 @@ import pkg::task_assignees::avatar;
+ import pkg::task_menu::my_id;
+ import pkg::theme::Theme;
+ import pkg::toast::{ toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/channel_ui.vl b/src/channel_ui.vl
+index a16a80e..c9bc710 100644
+--- a/src/channel_ui.vl
++++ b/src/channel_ui.vl
+@@ -37,6 +37,7 @@ import pkg::styles::{
+ import pkg::task_menu::my_id;
+ import pkg::theme::Theme;
+ import pkg::toast::{ toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/command_palette.vl b/src/command_palette.vl
+index 0e38f21..4e7032d 100644
+--- a/src/command_palette.vl
++++ b/src/command_palette.vl
+@@ -30,6 +30,7 @@ import pkg::store::{ OrgSummary, SearchHit, SearchKind };
+ import pkg::styles::{ button_style, common_input_style, icon, overflow_style, search_mark_style };
+ import pkg::theme::Theme;
+ import pkg::toast::{ ToastKind, ToastSlot };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/desktop.vl b/src/desktop.vl
+index 986a081..1b88c30 100644
+--- a/src/desktop.vl
++++ b/src/desktop.vl
+@@ -6,6 +6,7 @@ import std::json::Json;
+ import std::reactive::{ FlushPolicy, turn };
+ import pkg::app_context::get_input_system;
+ import pkg::lib::keymap::{ KeyCombo, Keymap };
++import std::display::Display;
+ 
+ export *;
+ 
+diff --git a/src/documents.vl b/src/documents.vl
+index ba126f9..0ec0231 100644
+--- a/src/documents.vl
++++ b/src/documents.vl
+@@ -55,6 +55,7 @@ import pkg::styles::{
+ import pkg::task_menu::my_id;
+ import pkg::theme::Theme;
+ import pkg::toast::{ toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/hover_card.vl b/src/hover_card.vl
+index a8aa258..d16e7da 100644
+--- a/src/hover_card.vl
++++ b/src/hover_card.vl
+@@ -19,6 +19,7 @@ import pkg::styles::{ card_inset, overflow_style };
+ import pkg::task_assignees::{ assignee_stack, avatar, name_of };
+ import pkg::task_menu::my_id;
+ import pkg::theme::Theme;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/lib/keymap.vl b/src/lib/keymap.vl
+index 33286dd..c027ebc 100644
+--- a/src/lib/keymap.vl
++++ b/src/lib/keymap.vl
+@@ -20,6 +20,7 @@ import std::shared::Shared;
+ import std::web::dom::Event;
+ import pkg::lib::search::Document;
+ import pkg::lib::std_ext::is_apple_platform;
++import std::display::Display;
+ 
+ export *;
+ 
+diff --git a/src/lib/rich_text/controller.vl b/src/lib/rich_text/controller.vl
+index cb6b488..eaf8a6d 100644
+--- a/src/lib/rich_text/controller.vl
++++ b/src/lib/rich_text/controller.vl
+@@ -75,6 +75,8 @@ import pkg::lib::std_ext::{
+ 	(impl _),
+ };
+ import pkg::theme::Theme;
++import pkg::styles;
++import std::display::Display;
+ 
+ export *;
+ 
+diff --git a/src/line_editor.vl b/src/line_editor.vl
+index 6821280..5ee8b1a 100644
+--- a/src/line_editor.vl
++++ b/src/line_editor.vl
+@@ -23,6 +23,7 @@ import pkg::message_editor::{ LiveEditor, LiveLink, edit_groups };
+ import pkg::shared::{ BlockKind, BodyBlock };
+ import pkg::spelling::{ SpellProvider, Spelling, attach_spelling };
+ import pkg::theme::Theme;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/link_menu.vl b/src/link_menu.vl
+index e04a859..76a113d 100644
+--- a/src/link_menu.vl
++++ b/src/link_menu.vl
+@@ -15,6 +15,7 @@ import pkg::prefs::LinkOpen;
+ import pkg::styles::icon;
+ import pkg::theme::Theme;
+ import pkg::toast::toast;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/live_edit.vl b/src/live_edit.vl
+index be8a072..82ca64f 100644
+--- a/src/live_edit.vl
++++ b/src/live_edit.vl
+@@ -54,6 +54,8 @@ import pkg::styles::{ button_style, icon };
+ import pkg::task_menu::my_id;
+ import pkg::theme::Theme;
+ import pkg::toast::toast_error;
++import pkg::app_overlay;
++import std::display::Display;
+ 
+ export *;
+ 
+diff --git a/src/message_actions.vl b/src/message_actions.vl
+index 63828fa..7c7f849 100644
+--- a/src/message_actions.vl
++++ b/src/message_actions.vl
+@@ -29,6 +29,7 @@ import pkg::styles::{
+ import pkg::task_menu::my_id;
+ import pkg::theme::Theme;
+ import pkg::toast::{ toast, toast_action, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/message_editor.vl b/src/message_editor.vl
+index 53426f4..6487f54 100644
+--- a/src/message_editor.vl
++++ b/src/message_editor.vl
+@@ -157,6 +157,7 @@ import pkg::styles::{
+ };
+ import pkg::theme::{ Theme, var_ink3_b };
+ import pkg::toast::{ toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/notification_center.vl b/src/notification_center.vl
+index 42152c1..c4bd8bc 100644
+--- a/src/notification_center.vl
++++ b/src/notification_center.vl
+@@ -15,6 +15,7 @@ import pkg::store::{ NoticeKind, NotificationRecord };
+ import pkg::styles::{ button_style, icon, icon_button_style, overflow_style };
+ import pkg::theme::Theme;
+ import pkg::toast::toast_error;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/org_pages.vl b/src/org_pages.vl
+index 3558f58..e1a274e 100644
+--- a/src/org_pages.vl
++++ b/src/org_pages.vl
+@@ -29,6 +29,7 @@ import pkg::store::{
+ };
+ import pkg::styles::{ button_style, common_input_style, icon };
+ import pkg::theme::Theme;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/panels.vl b/src/panels.vl
+index 50af38e..059e612 100644
+--- a/src/panels.vl
++++ b/src/panels.vl
+@@ -99,6 +99,7 @@ import pkg::styles::{
+ import pkg::tasks::new_task_modal;
+ import pkg::theme::Theme;
+ import pkg::toast::{ ToastKind, ToastSlot, toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/reactions.vl b/src/reactions.vl
+index 5519266..efae793 100644
+--- a/src/reactions.vl
++++ b/src/reactions.vl
+@@ -16,6 +16,7 @@ import pkg::store::{ Conversation, OrgState, OrgSummary, Reaction };
+ import pkg::styles::button_style;
+ import pkg::theme::Theme;
+ import pkg::toast::toast_error;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/settings.vl b/src/settings.vl
+index 40fc341..30e87f1 100644
+--- a/src/settings.vl
++++ b/src/settings.vl
+@@ -43,6 +43,7 @@ import pkg::styles::{
+ };
+ import pkg::theme::Theme;
+ import pkg::toast::toast;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/sidebar.vl b/src/sidebar.vl
+index 3fd5a5c..4c24222 100644
+--- a/src/sidebar.vl
++++ b/src/sidebar.vl
+@@ -39,6 +39,7 @@ import pkg::styles::{
+ };
+ import pkg::tasks::new_task_modal;
+ import pkg::theme::Theme;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/sidebar_rows.vl b/src/sidebar_rows.vl
+index 6ea84a7..108340d 100644
+--- a/src/sidebar_rows.vl
++++ b/src/sidebar_rows.vl
+@@ -7,6 +7,7 @@ import std::hash_map::HashMap;
+ import std::hash_set::HashSet;
+ import pkg::shared::User;
+ import pkg::store::{ ChannelKind, ChannelSummary, PrivateChannel };
++import std::display::Display;
+ 
+ export *;
+ 
+diff --git a/src/sidebar_sections.vl b/src/sidebar_sections.vl
+index 6324426..90a428b 100644
+--- a/src/sidebar_sections.vl
++++ b/src/sidebar_sections.vl
+@@ -59,6 +59,7 @@ import pkg::styles::{
+ };
+ import pkg::theme::Theme;
+ import pkg::toast::{ toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/spelling.vl b/src/spelling.vl
+index 9f77756..8f01fea 100644
+--- a/src/spelling.vl
++++ b/src/spelling.vl
+@@ -27,6 +27,8 @@ import pkg::model;
+ import pkg::shared::words_in;
+ import pkg::spell_words::checked_words;
+ import pkg::theme::Theme;
++import pkg::app_overlay;
++import pkg::styles;
+ 
+ export *;
+ 
+diff --git a/src/store.vl b/src/store.vl
+index 8c59429..916584a 100644
+--- a/src/store.vl
++++ b/src/store.vl
+@@ -64,6 +64,7 @@ import pkg::shared::{
+ 	single,
+ 	words_in,
+ };
++import std::hash_set::HashSet;
+ 
+ export *;
+ 
+diff --git a/src/styles.vl b/src/styles.vl
+index db2b9c6..ba36044 100644
+--- a/src/styles.vl
++++ b/src/styles.vl
+@@ -13,6 +13,7 @@ import std::web::style::prelude::{
+ };
+ import pkg::lib::scale_step::Scale;
+ import pkg::theme::{ self, Theme };
++import std::display::Display;
+ 
+ export *;
+ 
+diff --git a/src/task_assignees.vl b/src/task_assignees.vl
+index a601ec6..609fdf3 100644
+--- a/src/task_assignees.vl
++++ b/src/task_assignees.vl
+@@ -13,6 +13,7 @@ import pkg::styles::{ button_style, common_input_style, icon, icon_button_style,
+ import pkg::task_menu::my_id;
+ import pkg::theme::Theme;
+ import pkg::toast::{ toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/task_fields.vl b/src/task_fields.vl
+index 3fe5eff..2837909 100644
+--- a/src/task_fields.vl
++++ b/src/task_fields.vl
+@@ -40,6 +40,7 @@ import pkg::styles::{
+ export import pkg::task_query::{ choice_of, value_in, value_text };
+ import pkg::theme::Theme;
+ import pkg::toast::toast_error;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/task_filter.vl b/src/task_filter.vl
+index a446a2d..25dde4b 100644
+--- a/src/task_filter.vl
++++ b/src/task_filter.vl
+@@ -40,6 +40,7 @@ export import pkg::task_query::{
+ };
+ import pkg::theme::Theme;
+ import pkg::toast::toast_error;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/task_menu.vl b/src/task_menu.vl
+index 17da6a1..c76d149 100644
+--- a/src/task_menu.vl
++++ b/src/task_menu.vl
+@@ -26,6 +26,7 @@ import pkg::store::{ OrgState, OrgSummary, TaskRecord };
+ import pkg::styles::{ button_style, common_input_style, dialog_style, icon };
+ import pkg::theme::Theme;
+ import pkg::toast::{ toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/task_sections.vl b/src/task_sections.vl
+index 6d6e52a..3afdc32 100644
+--- a/src/task_sections.vl
++++ b/src/task_sections.vl
+@@ -47,6 +47,7 @@ import pkg::styles::{ button_style, common_input_style, icon, icon_button_style,
+ import pkg::task_menu::{ TaskMenu, task_menu };
+ import pkg::theme::Theme;
+ import pkg::toast::{ toast, toast_error };
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/task_table.vl b/src/task_table.vl
+index 8c2f992..dee6d12 100644
+--- a/src/task_table.vl
++++ b/src/task_table.vl
+@@ -51,6 +51,7 @@ import pkg::task_sections::open_below;
+ import pkg::tasks::new_task_modal;
+ import pkg::theme::Theme;
+ import pkg::toast::toast_error;
++import pkg::app_overlay;
+ 
+ export *;
+ 
+diff --git a/src/tasks.vl b/src/tasks.vl
+index d5fc373..6d6539f 100644
+--- a/src/tasks.vl
++++ b/src/tasks.vl
+@@ -53,6 +53,7 @@ import pkg::task_menu::{ delete_task_modal, may_remove, my_id, task_menu };
+ import pkg::task_sections::{ editable_text, task_sections };
+ import pkg::theme::Theme;
+ import pkg::toast::toast;
++import pkg::app_overlay;
+ 
+ export *;
+ 
