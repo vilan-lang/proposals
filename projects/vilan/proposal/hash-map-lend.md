@@ -256,3 +256,117 @@ the owner.
 
 The two-table layout of §2 bought delivery time and nothing else: a second index per map, two hashes and two inserts per write, and a closure-only API (`modify`'s after-step keeps the keys table in step, which is exactly what a returned place cannot do). RULED: build the two-parameter `NativeMap<K, V>` the section names as the end state - the key beside its `Option<V>` slot, `None` a tombstone on both backends - and on it `slot(&mut self, key): &mut Option<V> borrows self` (the `Shared::write` shape) with `Option::get_or_insert(&mut self, lazy v): &mut V borrows self`, so `groups.slot(key).get_or_insert([]).push(row)` is the entry idiom with no handle type; `update` goes. The slice's paper half is a short addition here before the lane builds (M191).
 
+
+## 10. The slice (M191, lane std-56, Order 56): one table, the tombstone, the view
+
+**The table, both backends.** `std::js::native_map` becomes the two-parameter
+`external struct NativeMap<K, V>`, keyed by the canonical `Hash` and storing the
+ORIGINAL key beside an `Option<V>` slot:
+
+```
+external fun new(): NativeMap<K, V>;
+external fun insert(&mut self, hash: Hash, own key: K, own value: V): void;
+external fun get(self, hash: Hash): Option<V>;                       // one copy
+external fun lend<U>(self, hash: Hash, read: |&Option<V>| U): U;     // in place
+external fun slot(&mut self, hash: Hash, own key: K): &mut Option<V> borrows self;
+external fun contains_key(self, hash: Hash): bool;
+external fun remove(&mut self, hash: Hash): void;
+external fun len(self): usize;
+external fun hashes(self): List<Hash>;   // the walks, insertion order,
+external fun keys(self): List<K>;        // each a snapshot (copies)
+external fun values(self): List<V>;
+external fun entries(self): List<(K, V)>;
+```
+
+- **native**: `vilan_rt::NativeMap<K, V> { index: HashMap<Hash, usize>,
+  entries: Vec<(K, Option<V>)>, live, pending }` — the tombstone on the value as
+  today's `Map`; `compact` keeps M91's rule (tombstones > live) and REMAPS the
+  index's positions, so no entry stores its hash.
+- **JS**: a JS `Map` from the hash to the entry `[key, slot]`, `slot` the
+  `Option` array itself (`[0, v]` / `[1]`), so a view of the slot IS the stored
+  object (`__replace`, `take`, `replace` write it in place); `map.p` is the
+  pending hash (below), carried by `__clone`.
+- **const-eval** (the interpreter runs the JS helpers): the same entries in its
+  `Map`; a pending tombstone is found by scanning (it holds at most one).
+
+The one-parameter raw table std's reactive internals key by `Hash` (the turn
+queues, `store_core`'s keyed nodes, `trace`) is NOT this type: it is renamed
+`HashTable<V>` (`std::js::hash_table`) and keeps its layout and cost; its
+`lend`/`lend_mut` go (no reader is left). `HashMap<K, V>` is `{ table:
+NativeMap<K, V> }` and `HashSet<T>` is `{ table: NativeMap<T, void> }` — one
+table each, one hash and one table write per insert.
+
+**The tombstone rules.**
+
+1. A slot holding `None` is a tombstone: `contains_key` is false, `len` does not
+   count it, `get` answers `None`, `lend` reads `&None`, and every walk (the four
+   above, `for x in set`, `dbg`, the debugger's printer) skips it.
+2. Only `slot` leaves one (`insert` stores `Some`, `remove` deletes outright), so
+   a table holds at most ONE: the slot last lent, its PENDING mark. Every write
+   (`insert`, `remove`, `slot`) SETTLES it first: still `None`, the key is
+   deleted; made `Some`, it stays where it is.
+3. Order: a slot on a present key keeps the key's place whatever is written
+   while the view lives, if the view ends `Some`; a slot on an absent key is
+   appended LAST (so a key made `Some` through it lands last, as `insert` does);
+   a key left `None` and written again goes last (remove + insert, the JS `Map`
+   rule).
+4. A copy of a map (`__clone`, `Clone`) carries its pending mark.
+
+**The views.**
+
+- `HashMap::slot(&mut self, key: K): &mut Option<V> borrows self` — a
+  projection (spec memory.md §6.5), second-class: chained in one expression
+  (`groups.slot(k).get_or_insert([]).push(row)`, `counts.slot(w).get_or_insert(0)
+  += 1`, `map.slot(k).take()` = remove-and-answer, `map.slot(k) = Some(v)`) or
+  bound to a short-lived local, and any touch of the map while it lives is the
+  existing view refusal (rule 4); it is never stored, captured or returned
+  except by another `borrows` projection. The key is `own`: copied in on a miss
+  only.
+- `Option::get_or_insert(&mut self, lazy value: T): &mut T borrows self` —
+  `value` evaluated only on `None`, then a view of the payload: the stored
+  object on JS for an aggregate, the `(slot, 1)` pair for a scalar; `&mut T`
+  natively. A vilan body over an `[internal]` intrinsic `some_view` (a
+  match-arm binding is not a returnable projection today).
+
+**What the old three become.** `peek` stays (the read form, `lend`). `modify`
+is FOLDED: `map.modify(k, f)` was `f(map.slot(k))` exactly once one table has no
+after-step to keep, and two spellings of one thing is one too many; the store's
+`at(key)` write step is written that way. `update` is REMOVED (no estate: kolt's
+grouping sites are still the take-copy form). `get` stays one copy;
+`get_or_insert(key, make): V` (I8) stays on `get` + `insert` (B691: a copy out
+of an enum through a view is not yet a copy on JS).
+
+**Re-checked:** the two-parameter bound gap (`NativeMap<K, V>` with
+`K: Hashable` from `HashMap`'s binder — the reason §2 kept the table
+one-parameter) and the const-map lowering (`ConstValue::Map` carries the JS
+entries, `hash => [key, slot]`; the native lowering inserts `(hash, key,
+value)`, a tombstone dropped).
+
+**Measurement plan** (a timing is a report, not a gate; the perf rows are the
+gate): node x3 and native release x2, before (next @5fd01232) and after, on a
+per-write bench (1M `str`-keyed overwrites + reads, 1M insert/remove churn,
+1M set ops), M182's grouping (1k/4k/16k pushes; after on `slot`), B689's three
+reads, and three of kolt's map sites lifted with synthetic data (the sidebar's
+children grouping, take-copy and on `slot`; the vocabulary count; `by_key`).
+
+**As built (lane std-56, Order 56).** As above, with five deviations: (1) the
+native entry is `(Hash, K, Option<V>)` — the hash kept beside the key so a
+compaction re-points the index and `hashes()` walks without a lookup; (2) there
+is no `entries` external: a `(K, V)` pair's JS layout splices a tuple key or
+value into it, which only the vilan side knows, so `HashMap::entries` pairs
+`keys()` and `values()` by popping both (each key and value moves into its pair); a `key(hash): Option<K>` external was added for the
+store's set feed and `entry_at`; (3) natively a compound write through a
+view-returning call (`counts.slot(w).get_or_insert(0) += 1`, `.1 += 1` on a
+tuple payload) binds the view once by a `match` (its subject's temporaries
+outlive the write, so a cell-resident receiver works), a `&mut`-returning call
+passed on is reborrowed, and a view-returning call over a captured binding
+settles its arguments in place; (4) on JS the scalar payload view is the
+`(slot, 1)` pair, decided per instance as a scalar `Shared::write()` is, and
+read as one at the call only for a callee whose tail is `some_view` (B506 keeps
+every other generic view return on its declared protocol); (5) JS `has` takes
+the plain `Map.has` for any hash but the pending one. Measured (instructions,
+next @5fd01232 -> this, node `--single-threaded` / native release): overwrites +
+reads x0.95 / x0.96, churn x0.94 / x0.54, `HashSet` x1.25 / x1.04, M182 on
+`slot` vs `update` x1.01 / x0.28, B689 x1.00 / x1.00, kolt's sidebar grouping
+x1.00 / x0.95 as written and x0.37 / x0.39 on `slot`, the vocabulary count
+x0.96 / x0.90, `by_key` x1.15 / x0.93 (V8's pretenuring of the nested entries).
