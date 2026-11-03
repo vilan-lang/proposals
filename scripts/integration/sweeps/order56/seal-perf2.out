@@ -1,0 +1,24 @@
+parity 46 / 46
+CHANGELOG fixed
+28232027 perf: ten [[bump]] rows (class reference) for the Order 56 seal's red example rows - the same std-wide causes the ci rows carry; CHANGELOG: a dangling family marker removed (parity 46/46)
+perf-only seal on 28232027
+tip=28232027 loadavg=0.49 1.02 3.92
+perf leg starts at loadavg=1.04 1.10 3.82
+  T3 kolt (base and tip on different sources) @3fb5d742: CPU x1.002  RSS x0.990  instructions x1.008  (load max 1.0)
+  T3 thresholds: CPU and instructions 1.10, peak RSS 1.05 (VILAN_PERF_RSS_THRESHOLD / --rss-threshold)
+  T3 peak RSS, a fresh process per run, median of 5: base 503.5 MB [503 503 503 503 503]; tip 498.3 MB [496 498 498 498 498]
+  LSP rows measured (8): leaf keystroke, leaf keystroke + pause, shared.vl keystroke, model.vl keystroke, model.vl keystroke, importers open, css keystroke, parse break, parse repair
+  LSP row leaf keystroke: instructions edit-to-idle base 9.740 G, tip 7.673 G (x0.788, judged); CPU to diagnostics base 1270 ms, tip 1130 ms (x0.89, reported)
+  LSP row leaf keystroke + pause: instructions edit-to-idle base 25.785 G, tip 22.239 G (x0.862, judged); CPU to diagnostics base 3660 ms, tip 3210 ms (x0.88, reported)
+  LSP row shared.vl keystroke: instructions edit-to-idle base 1.499 G, tip 1.527 G (x1.018, judged); CPU to diagnostics base 350 ms, tip 360 ms (x1.03, reported)
+  LSP row model.vl keystroke: instructions edit-to-idle base 3.835 G, tip 3.635 G (x0.948, judged); CPU to diagnostics base 640 ms, tip 590 ms (x0.92, reported)
+  LSP row model.vl keystroke, importers open: instructions edit-to-idle base 19.976 G, tip 18.473 G (x0.925, judged); CPU to diagnostics base 2170 ms, tip 2090 ms (x0.96, reported)
+  LSP row css keystroke: instructions edit-to-idle base 8.817 G, tip 8.426 G (x0.956, judged); CPU to diagnostics base 1310 ms, tip 1220 ms (x0.93, reported)
+  LSP row parse break: instructions edit-to-idle base 16.783 G, tip 15.437 G (x0.920, judged); CPU to diagnostics base 2090 ms, tip 1970 ms (x0.94, reported)
+  LSP row parse repair: instructions edit-to-idle base 17.260 G, tip 15.923 G (x0.923, judged); CPU to diagnostics base 2130 ms, tip 2000 ms (x0.94, reported)
+wrote /home/reed/.vilan/perf-verdicts/perf-2823202762952741cfface964e6d5ad62ec42f7c.json
+PERF VERDICT: green
+perf exit=0
+changelog parity 46 / 46
+verdict: union=skipped doctests=skipped native=skipped clippy=skipped windows=skipped audit=skipped fmt=skipped vilan-fmt=skipped wasm=skipped canary=skipped perf=0
+seal exit 0

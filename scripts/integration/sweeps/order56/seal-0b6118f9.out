@@ -1,0 +1,43 @@
+tip=0b6118f9 loadavg=4.17 1.69 2.83
+     Summary [ 667.524s] 11260 tests run: 11260 passed (6 slow), 37 skipped
+union exit=0
+doc-tests exit=0
+native whole-set exit=0
+clippy exit=0
+windows exit=0
+audit exit=0
+fmt exit=0
+vilan-fmt exit=0
+wasm exit=0
+canary@1.5MiB exit=0
+perf leg starts at loadavg=1.27 3.07 7.11
+E121 state NOT advanced (perf leg red): restored from /home/reed/code/vilan-lang/proposals/scripts/integration/e121-state-before-0b6118f9.json
+  RED  example:browser             1,375,576,077 / ceiling    1,320,729,931 (x1.0415, limit x1.0272)
+  RED  example:fullstack           2,880,159,143 / ceiling    2,777,348,943 (x1.0370, limit x1.0201)
+  RED  example:router              1,503,822,437 / ceiling    1,428,627,939 (x1.0526, limit x1.0272)
+  RED  example:reactive-ui         1,532,144,429 / ceiling    1,474,489,112 (x1.0391, limit x1.0272)
+  RED  example:ssr                 3,272,041,522 / ceiling    3,135,735,765 (x1.0435, limit x1.0241)
+  RED  example:canvas              1,388,518,723 / ceiling    1,334,447,168 (x1.0405, limit x1.0272)
+  RED  example:rpc                 1,571,207,507 / ceiling    1,548,674,718 (x1.0145, limit x1.0100)
+  RED  example:todo                3,932,514,580 / ceiling    3,775,899,646 (x1.0415, limit x1.0221)
+  RED  example:walkthrough         4,119,305,475 / ceiling    3,940,795,609 (x1.0453, limit x1.0221)
+  RED  genapp:46                   7,386,619,612 / ceiling    7,168,811,916 (x1.0304, limit x1.0100)
+  T3 kolt (base and tip on different sources) @3fb5d742: CPU x1.003  RSS x0.987  instructions x1.008  (load max 1.2)
+  T3 thresholds: CPU and instructions 1.10, peak RSS 1.05 (VILAN_PERF_RSS_THRESHOLD / --rss-threshold)
+  T3 peak RSS, a fresh process per run, median of 5: base 503.8 MB [503 503 503 503 504]; tip 497.2 MB [496 497 497 497 498]
+  LSP rows measured (8): leaf keystroke, leaf keystroke + pause, shared.vl keystroke, model.vl keystroke, model.vl keystroke, importers open, css keystroke, parse break, parse repair
+  LSP row leaf keystroke: instructions edit-to-idle base 9.739 G, tip 7.673 G (x0.788, judged); CPU to diagnostics base 1300 ms, tip 1140 ms (x0.88, reported)
+  LSP row leaf keystroke + pause: instructions edit-to-idle base 25.787 G, tip 22.238 G (x0.862, judged); CPU to diagnostics base 3590 ms, tip 3380 ms (x0.94, reported)
+  LSP row shared.vl keystroke: instructions edit-to-idle base 1.498 G, tip 1.527 G (x1.020, judged); CPU to diagnostics base 350 ms, tip 340 ms (x0.97, reported)
+  LSP row model.vl keystroke: instructions edit-to-idle base 3.836 G, tip 3.633 G (x0.947, judged); CPU to diagnostics base 630 ms, tip 600 ms (x0.95, reported)
+  LSP row model.vl keystroke, importers open: instructions edit-to-idle base 19.973 G, tip 18.476 G (x0.925, judged); CPU to diagnostics base 2250 ms, tip 2090 ms (x0.93, reported)
+  LSP row css keystroke: instructions edit-to-idle base 8.817 G, tip 8.426 G (x0.956, judged); CPU to diagnostics base 1330 ms, tip 1230 ms (x0.92, reported)
+  LSP row parse break: instructions edit-to-idle base 16.783 G, tip 15.435 G (x0.920, judged); CPU to diagnostics base 2090 ms, tip 1980 ms (x0.95, reported)
+  LSP row parse repair: instructions edit-to-idle base 17.261 G, tip 15.925 G (x0.923, judged); CPU to diagnostics base 2120 ms, tip 2020 ms (x0.95, reported)
+  E121  NOT advanced: the verdict is red (only a green seal counts toward the two-green rule)
+wrote /home/reed/.vilan/perf-verdicts/perf-0b6118f93eeff6e87d4de1d3b18b70406acfd1eb.json
+PERF VERDICT: RED — example:browser x1.0415 of its ceiling (instructions:u, class reference); example:fullstack x1.0370 of its ceiling (instructions:u, class reference); example:router x1.0526 of its ceiling (instructions:u, class reference); example:reactive-ui x1.0391 of its ceiling (instructions:u, class reference); example:ssr x1.0435 of its ceiling (instructions:u, class reference); example:canvas x1.0405 of its ceiling (instructions:u, class reference); example:rpc x1.0145 of its ceiling (instructions:u, class reference); example:todo x1.0415 of its ceiling (instructions:u, class reference); example:walkthrough x1.0453 of its ceiling (instructions:u, class reference); genapp:46 x1.0304 of its ceiling (instructions:u, class reference)
+perf exit=1
+changelog parity 47 / 46
+verdict: union=0 doctests=0 native=0 clippy=0 windows=0 audit=0 fmt=0 vilan-fmt=0 wasm=0 canary=0 perf=1
+seal exit 0
