@@ -717,6 +717,35 @@ materialized on the tree every analysis; one reference entity per
 (node, context) instead of one per call would cut most of it, filed as a
 find). The numbers after the change are in the C1 report.
 
+**Order 56's sizing of the next post-pass (incr-56, measured on the N186
+exhibit kolt@3fb5d74, callgrind of one served `views.vl` leaf keystroke under
+next 9ac5c214: 10.38 G Ir in all, `post_analysis_passes` 2.54 G).** The two
+candidates E340's table named, by instructions rather than CPU at load:
+
+- **the const pass, 1.31 G** — of which 0.79 G was not evaluation at all but
+  `asset::staged`'s liveness test (a `str::contains` over every const result's
+  text per dead rule's token); FIXED in place, not recorded (one pass over the
+  text per token length, E292 commit 28dac4e0: leaf -7.3 %). What remains,
+  ~0.52 G: `evaluate_one` 0.29 G over 1,019 sites that are ALL const-cache hits
+  (each still lowers its site through `ConstWorld::site` to form the S4 key),
+  `check_const_only`'s dispatch refinement 0.12 G, `live_tokens_of` 0.05 G. A
+  record that served a site without lowering it needs a key that does not
+  read the lowered tree — a per-item digest of the site's reach (its callees'
+  bodies across items, the world declarations S4's key digests) — and the
+  refinement's answer as rows: **L**, not M.
+- **contexts+graph, 0.88 G** — `context::analyze` 0.70 G of it, of which
+  `dispatch_refine::refined_edges` 0.38 G; the graphs and the cold rewrite log
+  ARE replayed (graphs-replayed 2, context-log-replayed 1). What is left is
+  the per-analysis analysis over the replayed graph and `apply`'s threaded
+  arguments (Order 50's M?1, one reference entity per (node, context)): the
+  refinement as rows keyed by the dispatch site's item plus the candidate
+  set's digest is **M–L**, and `apply` is a tree rewrite, not a record (L).
+
+Neither is M or smaller in the record form, so neither was built. Beside
+them, outside the post-passes, the costliest function of the keystroke was
+E310's `implementors_in_reach` (1.39 G, 512 asks each walking every impl) —
+indexed by trait and memoized (E292 commit eb268d5c), not recorded either.
+
 ### 7.3 S5: the spike — and S6 as built (Order 50)
 
 The spike's six legs are byte-identical under `all` (Order 49), and S6 landed
