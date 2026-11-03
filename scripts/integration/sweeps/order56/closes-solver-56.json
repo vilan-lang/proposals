@@ -1,0 +1,31 @@
+{
+ "date": "2026-11-03",
+ "order": "Order 56 wave 1 (lane solver-56; rides v0.54.0 - B695 BREAKING on JS)",
+ "note": "merged into next after lang-56b; the lane's full suite 11,201/11,202 with the one failure the split fixture's golden then regenerated (6f7d21c3)",
+ "closes": [
+  {
+   "id": "B690",
+   "lane": "solver-56",
+   "commit": "2eac7dfd",
+   "text": "FIXED (JS MISCOMPILE). The call graph recorded NO edge at an overloaded binary operator though the emitter lowers it to a call, so the binding walk, the load order and the platform walk all stopped short of the operator's impl - a module `const let` read only through operator dispatch was never declared. Now an edge is recorded per dispatch channel: the impl's own member, a generic or default re-dispatch, and a concatenation's `to_string`. Pinned with the item's repro and the dispatch shapes (binary operators, comparison, Display concatenation); no golden moved. On the way: track_caller.rs told `a + b` that 'a `for .. in` loop calls it' once operator edges existed - fixed in the B646 guard commit. Find: std/web/style.vl:243's `root_px_value()` B690 workaround and its comment are stale now (filed). CHANGELOG `miscompile`."
+  },
+  {
+   "id": "B691",
+   "lane": "solver-56",
+   "commit": "b6c2fa3d + f60debf4 + 6f7d21c3",
+   "text": "FIXED (JS MISCOMPILE). `is_cloneable_aggregate` answered false for EVERY enum, so the `[index, ..data]` array was shared at every rule-1 value seam and a `match &mut` capture wrote it in place - `mut b = a` of an `Option<List<i32>>` aliased `a`'s payload. The premise was wider than the item: scalar payloads alias too, so every enum WITH A PAYLOAD is now an aggregate copied at the seams (`mut b = a`, a field write through `b`, a function argument, a struct literal field, a list element - pinned on both backends, the JS side equal to the native copy). Kept free of new copies: a bare `None` is no place; a tuple of places a pattern takes apart (`match (self, other)`, every derived enum `==`) is no construction. Met on the way: `to_array` made a SHALLOW copy that `unwrap`'s copy had hidden (deep now; the const interpreter hosts it too, bda4e917). hash-map-lend.md §8 deviations 1 and 2: `peek(key, |slot| *slot)` and the `Some(let held)` capture now copy, so `get`/`get_or_insert` CAN move to `peek`/`modify` (pinned; the map left to lane std-56). Goldens: 34 corpus .mjs read - payload captures under `own self` lose a copy, places read into an enum binding/element/field gain one, key-decoder and stdin-keys renumber temporaries; the copy-elision census 579 -> 612; the split fixture's app.js; the native copy census (one copy and one to three moves FEWER in 7 reactive programs); B509's per-write bound 10 -> 20 (measured 14). Find: the runtime cost at std's reactive seams (`releasing_turns.push`, `previous = handle[3].v`, `head = next_same[at]`) - a never-written-in-place elision for enums would remove them (filed). CHANGELOG `miscompile`."
+  },
+  {
+   "id": "E360",
+   "lane": "solver-56",
+   "commit": "fa01c52e",
+   "text": "FIXED. A path through an imported FUNCTION (`editor::reader(..)` where `editor` is a function) now names the cause at the head - ledger row NEW: \"`{name}` is a function, not a module: `{name}::{member}` looks `{member}` up in `{name}`, and a function has no members\" - and the 'could not be resolved' cascade is suppressed. Deviation: the item's `{ self, editor }` steer does not work (the head still resolves to the function), so the message steers `self as editor_module`. Find (lang's area): a path head where an imported MODULE and an imported FUNCTION share a name resolves to the function (filed). Estate 0 by construction. CHANGELOG `diagnostics`."
+  },
+  {
+   "id": "B695",
+   "lane": "solver-56",
+   "commit": "c5ab7f0e + 9a5021cc + bda4e917",
+   "text": "FIXED AS RULED (BREAKING on JS). A cut inside a surrogate pair FLOORS to the code point on both backends (floor rather than outward rounding so `s.substring(0, k) + s.substring(k, len)` is `s` at every k); the rule is in spec strings.md (new heading 'A cut inside a surrogate pair'; the anchor golden regenerated). Covered: `substring`, `char_at`, slicing, and `split(\"\")` / `replace(\"\", x)` which cut pairs on JS. Native `substring` counted CHARACTERS, not UTF-16 units, and clamped where JS panics - fixed to the shared rule; std's M181 lone-surrogate pin now takes its half from the host. `index_of` is pinned on JS only: native refuses its host binding (F1 S1b). Pinned on the differential at a boundary (`\"😀\".substring(0, 1)`, `(1, 2)`, `char_at(1)`). Estate: 0 sites depend on a half, 0 empty-pattern literals; kolt sites that can meet a pair at run time (the per-unit walkers rebuild their text unchanged; task_assignees.vl:50's initial letter is now \"\" for an emoji-initial name; mcp_write, file_page, measure, dictionary) - listed for the owner. 5 corpus goldens (the `__substring` helper text). CHANGELOG `breaking`."
+  }
+ ]
+}

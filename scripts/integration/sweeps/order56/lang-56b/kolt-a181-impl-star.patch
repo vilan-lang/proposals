@@ -1,0 +1,241 @@
+diff -ru kolt/src/channel_ui.vl kolt-star/src/channel_ui.vl
+--- kolt/src/channel_ui.vl	2026-11-02 23:02:09.831656677 -0500
++++ kolt-star/src/channel_ui.vl	2026-11-02 23:06:39.466261015 -0500
+@@ -3,7 +3,7 @@
+ // from), then the direct messages, listed together on the channel directory
+ // (`/o/{slug}/c`). A channel's menu renames it, manages a private one's
+ // members, groups it under another, and leaves or deletes it.
+-import std::display::{ Display, (impl _) };
++import std::display::{ Display, (impl *) };
+ import std::reactive::store::RemoteStore;
+ import std::reactive::{ MemoCell, combine, owner_scope };
+ import std::web::dom::Event;
+diff -ru kolt/src/coedit_test.vl kolt-star/src/coedit_test.vl
+--- kolt/src/coedit_test.vl	2026-11-02 23:02:09.831794458 -0500
++++ kolt-star/src/coedit_test.vl	2026-11-02 23:06:39.466192110 -0500
+@@ -1,5 +1,5 @@
+ import std::debug::Debug;
+-import std::display::{ Display, (impl _) };
++import std::display::{ Display, (impl *) };
+ import std::io::assert;
+ import std::shared::Shared;
+ import pkg::coedit::{ CoAnchor, CoPart, CoPartKind, map_anchor, transform };
+diff -ru kolt/src/documents.vl kolt-star/src/documents.vl
+--- kolt/src/documents.vl	2026-11-02 23:02:09.831941699 -0500
++++ kolt-star/src/documents.vl	2026-11-02 23:06:39.466018618 -0500
+@@ -4,7 +4,7 @@
+ // type, with their carets; it's kept as they go, and a version every so
+ // often is kept in its History.
+ import std::compare::Ord;
+-import std::display::{ Display, (impl _) };
++import std::display::{ Display, (impl *) };
+ import std::reactive::store::RemoteStore;
+ import std::reactive::transient::TransientState;
+ import std::reactive::{ MemoCell, combine };
+diff -ru kolt/src/image_zoom.vl kolt-star/src/image_zoom.vl
+--- kolt/src/image_zoom.vl	2026-11-02 23:02:09.832250313 -0500
++++ kolt-star/src/image_zoom.vl	2026-11-02 23:06:39.467712969 -0500
+@@ -5,7 +5,7 @@
+ import std::reactive::{ MemoCell, combine };
+ import std::shared::Shared;
+ import std::web::dom::{ Element, Event };
+-import pkg::lib::std_ext::{ wheel_pixels, (impl _) };
++import pkg::lib::std_ext::{ wheel_pixels, (impl *) };
+ 
+ export *;
+ 
+diff -ru kolt/src/lib/drag_drop.vl kolt-star/src/lib/drag_drop.vl
+--- kolt/src/lib/drag_drop.vl	2026-11-02 23:02:09.832446549 -0500
++++ kolt-star/src/lib/drag_drop.vl	2026-11-02 23:06:39.467833027 -0500
+@@ -18,7 +18,7 @@
+ import std::reactive::Subscription;
+ import std::shared::Shared;
+ import std::web::dom::{ Element, Event, create_element, is_null, query_selector, window };
+-import pkg::lib::std_ext::{ DataTransfer, LocalFile, viewport_height, viewport_width, (impl _) };
++import pkg::lib::std_ext::{ DataTransfer, LocalFile, viewport_height, viewport_width, (impl *) };
+ import pkg::theme::Theme;
+ 
+ export *;
+diff -ru kolt/src/lib/input_system.vl kolt-star/src/lib/input_system.vl
+--- kolt/src/lib/input_system.vl	2026-11-02 23:02:09.832493422 -0500
++++ kolt-star/src/lib/input_system.vl	2026-11-02 23:06:39.467773203 -0500
+@@ -29,7 +29,7 @@
+ import std::shared::Shared;
+ import std::web::dom::{ Event, window };
+ import pkg::lib::keymap::Keymap;
+-import pkg::lib::std_ext::{ is_text_field, (impl _) };
++import pkg::lib::std_ext::{ is_text_field, (impl *) };
+ 
+ export *;
+ 
+diff -ru kolt/src/lib/rich_text/controller.vl kolt-star/src/lib/rich_text/controller.vl
+--- kolt/src/lib/rich_text/controller.vl	2026-11-02 23:02:09.833229810 -0500
++++ kolt-star/src/lib/rich_text/controller.vl	2026-11-02 23:06:39.467939365 -0500
+@@ -72,7 +72,7 @@
+ 	set_root_flag,
+ 	viewport_height,
+ 	watch_pixel_ratio,
+-	(impl _),
++	(impl *),
+ };
+ import pkg::theme::Theme;
+ import pkg::styles;
+diff -ru kolt/src/line_editor.vl kolt-star/src/line_editor.vl
+--- kolt/src/line_editor.vl	2026-11-02 23:02:09.834027392 -0500
++++ kolt-star/src/line_editor.vl	2026-11-02 23:06:39.468584951 -0500
+@@ -17,7 +17,7 @@
+ import pkg::lib::rich_text::document::{ Document, Fragment };
+ import pkg::lib::rich_text::style::{ StyleId, StyleTable, TextStyle };
+ import pkg::lib::rotary::{ Rotary, RotaryAxis };
+-import pkg::lib::std_ext::{ (impl _) };
++import pkg::lib::std_ext::{ (impl *) };
+ import pkg::menu::menu_frame;
+ import pkg::message_editor::{ LiveEditor, LiveLink, edit_groups };
+ import pkg::shared::{ BlockKind, BodyBlock };
+diff -ru kolt/src/live_edit.vl kolt-star/src/live_edit.vl
+--- kolt/src/live_edit.vl	2026-11-02 23:02:09.834104008 -0500
++++ kolt-star/src/live_edit.vl	2026-11-02 23:06:39.466814735 -0500
+@@ -39,7 +39,7 @@
+ import pkg::lib::rich_text::document::Fragment;
+ import pkg::lib::rich_text::style::TextStyle;
+ import pkg::lib::std_ext::LocalFile;
+-import pkg::lib::std_ext::{ scroll_into_view, (impl _) };
++import pkg::lib::std_ext::{ scroll_into_view, (impl *) };
+ import pkg::line_editor::line_editor;
+ import pkg::lucide;
+ import pkg::message_editor::{ ComposerOptions, LiveEditor, LiveEvents, LiveLink, live_editor };
+diff -ru kolt/src/message_actions.vl kolt-star/src/message_actions.vl
+--- kolt/src/message_actions.vl	2026-11-02 23:02:09.834295243 -0500
++++ kolt-star/src/message_actions.vl	2026-11-02 23:06:39.465541204 -0500
+@@ -1,7 +1,7 @@
+ // What can be done with sent messages besides reading them: a thread (a
+ // channel attached to a message), a task made from them, and moving them to
+ // another channel, with a warning when that shows them to more people.
+-import std::display::{ Display, (impl _) };
++import std::display::{ Display, (impl *) };
+ import std::json::{ FromJson, Json };
+ import std::reactive::store::RemoteStore;
+ import std::reactive::{ MemoCell, combine };
+diff -ru kolt/src/message_editor.vl kolt-star/src/message_editor.vl
+--- kolt/src/message_editor.vl	2026-11-02 23:02:09.834322075 -0500
++++ kolt-star/src/message_editor.vl	2026-11-02 23:06:39.467015349 -0500
+@@ -41,7 +41,7 @@
+ // A removed block keeps its region, so undo can put the same region back and
+ // every recorded change still finds it.
+ import std::compare::PartialEq;
+-import std::display::{ Display, (impl _) };
++import std::display::{ Display, (impl *) };
+ import std::hash_map::HashMap;
+ import std::hash_set::HashSet;
+ import std::json::FromJson;
+@@ -82,7 +82,7 @@
+ 	drag_source,
+ 	drop_target,
+ 	dropped_files,
+-	(impl _),
++	(impl *),
+ };
+ import pkg::lib::keymap::Provider;
+ import pkg::lib::overlay::{ DismissReason, Overlay, Pin };
+@@ -109,7 +109,7 @@
+ 	read_clipboard,
+ 	scroll_into_view,
+ 	write_clipboard,
+-	(impl _),
++	(impl *),
+ };
+ import pkg::links::{ kolt_scheme, link_prefix };
+ import pkg::lucide;
+diff -ru kolt/src/reactions.vl kolt-star/src/reactions.vl
+--- kolt/src/reactions.vl	2026-11-02 23:02:09.834648260 -0500
++++ kolt-star/src/reactions.vl	2026-11-02 23:06:39.466740329 -0500
+@@ -3,7 +3,7 @@
+ // clicking one adds yours or takes it back. The picker adds one: from the
+ // message menu (Add reaction), or with a key (Messages › React to message)
+ // over the message the pointer is on.
+-import std::display::{ Display, (impl _) };
++import std::display::{ Display, (impl *) };
+ import std::reactive::store::RemoteStore;
+ import std::reactive::{ MemoCell, combine };
+ import std::shared::Shared;
+diff -ru kolt/src/settings.vl kolt-star/src/settings.vl
+--- kolt/src/settings.vl	2026-11-02 23:02:09.835027310 -0500
++++ kolt-star/src/settings.vl	2026-11-02 23:06:39.465675283 -0500
+@@ -21,7 +21,7 @@
+ import pkg::lib::rich_text::controller::CaretShape;
+ import pkg::lib::search::{ Document, Hit, Searchable, pieces };
+ import pkg::lib::search_dict;
+-import pkg::lib::std_ext::{ copy_text, page_origin, (impl _) };
++import pkg::lib::std_ext::{ copy_text, page_origin, (impl *) };
+ import pkg::lib::storage::StorageSignalCell;
+ import pkg::lucide;
+ import pkg::model;
+diff -ru kolt/src/shortcut_settings.vl kolt-star/src/shortcut_settings.vl
+--- kolt/src/shortcut_settings.vl	2026-11-02 23:02:09.835083494 -0500
++++ kolt-star/src/shortcut_settings.vl	2026-11-02 23:06:39.465961564 -0500
+@@ -3,7 +3,7 @@
+ // cancels); an action whose keys were changed has a reset. A key another
+ // action of the same category also has is marked: both would answer it, and
+ // the first registered wins.
+-import std::display::{ Display, (impl _) };
++import std::display::{ Display, (impl *) };
+ import std::reactive::{ Subscription, get_owner };
+ import std::shared::Shared;
+ import pkg::app_context::get_input_system;
+diff -ru kolt/src/sidebar_sections.vl kolt-star/src/sidebar_sections.vl
+--- kolt/src/sidebar_sections.vl	2026-11-02 23:02:09.835164241 -0500
++++ kolt-star/src/sidebar_sections.vl	2026-11-02 23:06:39.466518943 -0500
+@@ -38,7 +38,7 @@
+ };
+ import pkg::lib::overlay::{ Overlay, Pin };
+ import pkg::lib::rotary::{ Rotary, RotaryAxis };
+-import pkg::lib::std_ext::{ copy_text, install_style_sheet, page_origin, (impl _) };
++import pkg::lib::std_ext::{ copy_text, install_style_sheet, page_origin, (impl *) };
+ import pkg::lucide;
+ import pkg::menu::{ menu_group, menu_item };
+ import pkg::model;
+diff -ru kolt/src/sidebar.vl kolt-star/src/sidebar.vl
+--- kolt/src/sidebar.vl	2026-11-02 23:02:09.835103036 -0500
++++ kolt-star/src/sidebar.vl	2026-11-02 23:06:39.466643052 -0500
+@@ -7,7 +7,7 @@
+ import std::web::remote::when_remote_live;
+ import std::web::router::navigate;
+ // FIXME: Discussion about impl imports needed.
+-import std::web::style::{ CssValue, Length, (impl Length with CssValue), (impl _) };
++import std::web::style::{ CssValue, Length, (impl Length with CssValue), (impl *) };
+ import pkg::app_context::{ get_app_context, get_input_system, get_overlays, get_prefs, get_route };
+ import pkg::channel::{  };
+ import pkg::documents::new_document_modal;
+@@ -16,7 +16,7 @@
+ import pkg::lib::keymap::Provider;
+ import pkg::lib::overlay::{ DismissReason, Overlay, Pin };
+ import pkg::lib::rotary::{ Rotary, RotaryAxis };
+-import pkg::lib::std_ext::{ (impl _) };
++import pkg::lib::std_ext::{ (impl *) };
+ import pkg::lucide;
+ import pkg::menu::{ menu_choice, menu_frame, menu_group, menu_item };
+ import pkg::model;
+diff -ru kolt/src/spelling.vl kolt-star/src/spelling.vl
+--- kolt/src/spelling.vl	2026-11-02 23:02:09.839497417 -0500
++++ kolt-star/src/spelling.vl	2026-11-02 23:06:39.468411848 -0500
+@@ -10,7 +10,7 @@
+ // (`desktop_first`: words it knows aren't sent anywhere). Words already
+ // answered are kept, so marks follow every keystroke with no wait; a word not
+ // known yet is asked about shortly after typing stops.
+-import std::display::{ Display, (impl _) };
++import std::display::{ Display, (impl *) };
+ import std::hash_map::HashMap;
+ import std::reactive::combine;
+ import std::shared::Shared;
+diff -ru kolt/src/task_fields.vl kolt-star/src/task_fields.vl
+--- kolt/src/task_fields.vl	2026-11-02 23:02:09.897979907 -0500
++++ kolt-star/src/task_fields.vl	2026-11-02 23:06:39.462705341 -0500
+@@ -13,7 +13,7 @@
+ import pkg::dates::{ day_number, full_label, relative_label };
+ import pkg::lib::overlay::{ Overlay, Pin };
+ import pkg::lib::rotary::{ Rotary, RotaryAxis };
+-import pkg::lib::std_ext::{ local_today, show_picker, (impl _) };
++import pkg::lib::std_ext::{ local_today, show_picker, (impl *) };
+ import pkg::lucide;
+ import pkg::menu::{ menu_choice, menu_frame, menu_group, menu_item };
+ import pkg::model;
