@@ -1,0 +1,3 @@
+{"items": [
+ {"id": "B708", "section": "B", "title": "NATIVE: a LOANED resource PARAMETER walked by `for` still emits the move form (`let mut iterator = param;`) - F153's borrow covers `let` bindings and by-value parameters, not a `&mut` parameter", "kind": "native backend defect (cargo refuses; F153 residue)", "area": "Native", "status": "OPEN - filed 2026-11-04 (lane native-56's find)", "discussion": "lane native-56 (Order 56): not exercised by the F153 fixtures; probably the same E0382/E0308 family", "body": "Extend `for_each_resource_subjects` to a loaned parameter (the iterator is the parameter itself, reborrowed: `let iterator = &mut *param;`); pin with a function taking `keys: &mut Keys` that walks it and the caller using it after. Sizing XS-S."}
+]}

@@ -542,7 +542,7 @@ ce21c4ae (S2), c68c3420 (F146). What differs from the paper above, and what the 
 - **`for key in keys`** (Q6): the plain awaiting inherent `next` drives a `for` on both
   backends (F-2/F-3 fixed), but over a RESOURCE the native emitter moves the subject into the
   loop and then drops the moved binding (cargo refuses; filed). The docs write the
-  `for { match keys.next() .. }` loop.
+  `for { match keys.next() .. }` loop. FIXED 2026-11-04 (F153, lane native-56, Order 56): the native loop BORROWS a resource place subject (`let iterator = &mut keys;`), so the plain `for key in keys` builds on both backends; process.md and `keys()`'s sample use it; a loaned resource PARAMETER walked by `for` is B708.
 - **`io::write` (E332) is `std::io::stdout::write`, re-exported** from `std::io`: a module of its
   own because `write` needs `@process` (a browser build is refused naming the chain) and an
   `std::io` that imported `std::process` made the smallest example's check 15% dearer.
