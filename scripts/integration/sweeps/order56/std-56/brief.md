@@ -21,7 +21,7 @@ and runs from the worktree by its absolute path (the shell's cwd resets between 
 
 ## Gates, in this order
 
-`cargo fmt`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test -p vilan-core --test inference`; `cargo test -p vilan-core --test docs`; `cargo test -p vilan-cli --test corpus` (goldens: the map's emitted shape moves — read one, confirm, regenerate, list); `cargo test -p vilan-cli --test native_differential`; `cargo test -p vilan-cli --test third_party_notices` if a dependency moved; `scripts/ci-local.sh wasm` after M190's blob rebuild; `cargo run -q -p vilan-cli -- fmt --check .`; `VILAN_PERF_CLASS=ci scripts/ci-local.sh perf` (std grows: a `[[bump]]` row per red row in the B693 form with the measured ratio); then the FULL suite ONCE at the end.
+`cargo fmt`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test -p vilan-core --test inference`; `cargo test -p vilan-core --test docs`; `cargo test -p vilan-cli --test corpus` (goldens: the map's emitted shape moves — read one, confirm, regenerate, list); `cargo test -p vilan-cli --test native_differential`; `cargo test -p vilan-cli --test third_party_notices` if a dependency moved; `scripts/ci-local.sh wasm` after M190's blob rebuild; `cargo run -q -p vilan-cli -- fmt --check .`; `VILAN_PERF_CLASS=ci scripts/ci-local.sh perf` (std grows: a `[[bump]]` row per red row in the B693 form with the measured ratio); `python3 scripts/regen-markdown-golden.py` if you added or changed a docs HEADING (mdbook v0.5.4 is installed; read the one-line-per-anchor diff; `cargo test -p vilan-core --test markdown_golden`); then the FULL suite ONCE at the end.
 
 ## Report (hand back)
 

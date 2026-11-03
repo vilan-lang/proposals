@@ -23,7 +23,7 @@ and runs from the worktree by its absolute path (the shell's cwd resets between 
 
 ## Gates, in this order
 
-`cargo fmt`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test -p vilan-cli --test request_body`; `cargo test -p vilan-core --test edit_replay_differential` (after N188); `cargo test -p vilan-core --lib formatter`; `cargo test -p vilan-cli --test fmt_declines`; `cargo test -p vilan-core --test docs`; `cargo test -p vilan-cli --test corpus`; `cargo test -p vilan-cli --test perf_gate_script`; `cargo run -q -p vilan-cli -- fmt --check .`; `scripts/ci-local.sh windows` if a `#[cfg(windows)]` pin changed (say so by name); then the FULL suite ONCE at the end.
+`cargo fmt`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test -p vilan-cli --test request_body`; `cargo test -p vilan-core --test edit_replay_differential` (after N188); `cargo test -p vilan-core --lib formatter`; `cargo test -p vilan-cli --test fmt_declines`; `cargo test -p vilan-core --test docs`; `cargo test -p vilan-cli --test corpus`; `cargo test -p vilan-cli --test perf_gate_script`; `cargo run -q -p vilan-cli -- fmt --check .`; `scripts/ci-local.sh windows` if a `#[cfg(windows)]` pin changed (say so by name); `python3 scripts/regen-markdown-golden.py` if you added or changed a docs HEADING (mdbook v0.5.4 is installed; read the one-line-per-anchor diff; `cargo test -p vilan-core --test markdown_golden`); then the FULL suite ONCE at the end.
 
 ## Report (hand back)
 

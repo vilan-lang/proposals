@@ -21,7 +21,7 @@ and runs from the worktree by its absolute path (the shell's cwd resets between 
 
 ## Gates, in this order
 
-`cargo fmt`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test -p vilan-core --test inference`; `cargo test -p vilan-core --test docs`; `cargo test -p vilan-cli --test corpus`; the differentials (`cargo nextest run -p vilan-core -E 'binary(/differential|id_windows|module_resolution/)' -j 6` — byte-identical; the N188 timeout that passes alone is acceptable, say so) and `cargo nextest run -p vilan-lsp -j 6`; `cargo run -q -p vilan-cli -- fmt --check .`; then the FULL suite ONCE at the end.
+`cargo fmt`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test -p vilan-core --test inference`; `cargo test -p vilan-core --test docs`; `cargo test -p vilan-cli --test corpus`; the differentials (`cargo nextest run -p vilan-core -E 'binary(/differential|id_windows|module_resolution/)' -j 6` — byte-identical; the N188 timeout that passes alone is acceptable, say so) and `cargo nextest run -p vilan-lsp -j 6`; `cargo run -q -p vilan-cli -- fmt --check .`; `python3 scripts/regen-markdown-golden.py` if you added or changed a docs HEADING (mdbook v0.5.4 is installed; read the one-line-per-anchor diff; `cargo test -p vilan-core --test markdown_golden`); then the FULL suite ONCE at the end.
 
 ## Report (hand back)
 
