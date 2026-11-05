@@ -67,6 +67,8 @@
 | [B707](items/B707.md) | `match &mut map.slot(k) { Some(let h) => h.1 += 1 }` is refused with "cannot mutate immutable" - a `&mut` match over a view's `Some` binds its payload immutably | bug (checker; match on a &mut view) | lane std-56 (Order 56): the M191 entry idiom's hand-written form; `get_or_insert` sidesteps it |
 | [B708](items/B708.md) | NATIVE: a LOANED resource PARAMETER walked by `for` still emits the move form (`let mut iterator = param;`) - F153's borrow covers `let` bindings and by-value parameters, not a `&mut` parameter | native backend defect (cargo refuses; F153 residue) | lane native-56 (Order 56): not exercised by the F153 fixtures; probably the same E0382/E0308 family |
 | [B709](items/B709.md) | NATIVE: a statement-form `expr is Some(let x) else jump break;` DROPS its binding - the emitted Rust is `if let Some(x) = .. {} else { break; }`, so a later use of `x` is rustc E0425 where node prints the value | native backend defect (cargo refuses; a let-else lowering) | lane http-56 (Order 56): repro scratchpad/http-56/find/guard.vl (prints 6 on node, refused natively); the lane used `match` instead |
+| [B710](items/B710.md) | A closure inside `Some(...)` doesn't take its parameter types from the expected `Option<\|..\|>` type (a bare closure does); the error says it is "never called" | bug | kolt (2026-11-04); repro in the item |
+| [B711](items/B711.md) | Struct keys: `S.x` as a typed `Key<S, F>` (paths too), `~` for the expected type (`~.x`, `~::V`), erased `AnyKey<S>`; wire by index, storage by name (`proposal/struct-keys.md`) | language feature | kolt (2026-11-05); paper |
 
 ## C. Memory model
 
@@ -146,6 +148,7 @@ fun f(): void
 |----|-------|------|------------|
 | [J4](items/J4.md) | Free-spawn lint | design | |
 | [J5](items/J5.md) | Async recorded opens — the deferred pair | feature | |
+| [J8](items/J8.md) | No public cancel handle reactive state can hold: `OwnedNursery` can't sit in a `Shared`, `detached_nursery()` is internal; and an `async ||` parameter silently runs outside the ambient nursery unless typed `context ambient_nursery` | std gap | kolt (2026-11-05) |
 
 ## K. Web presence (site, playground, docs delivery) — NEW SECTION
 
@@ -208,6 +211,7 @@ fun f(): void
 | [M196](items/M196.md) | The JS `HashSet` reads x1.25 instructions on 1M inserts+contains after M191: the table is a `[map, pending]` pair, one more indirection per call - keep the pending mark on the `Map` itself | performance (JS NativeMap) | lane std-56 (Order 56): the other M191 rows are x0.94-x1.01 on JS; the interpreter would need to carry the mark too |
 | [M197](items/M197.md) | Unsubscribing n subscribers from ONE cell is O(n²) with a clone each: std::reactive's `release_under` rebuilds the cell's subscriber list per unsubscribe - kolt's Table page (56k cells on one shared cell) still takes 69-102 s to leave after M187 | performance (std::reactive; subscriber lists) | lane ui-56 (Order 56): M187 took the Table shape from 68-73 s to ~200 ms when each cell binds its own source; with all 56k cells binding one shared cell the leave was 99-228 s before and is 69-102 s after, and the profile is `release_under` |
 | [M198](items/M198.md) | std::crypto has no incremental digest, and native `createHash` buffers everything it is fed - a streamed 64 MiB body cannot be hashed at a bounded peak (M176's pin hashes 256 KiB blocks and then the list of block digests) | feature gap (std::crypto; streaming) | lane http-56 (Order 56): the 64 MiB stream pin had to hash block digests to keep the RSS bound honest; a `Hasher` with `update(bytes)` / `finish()` is the shape every other std has |
+| [M199](items/M199.md) | A `match` over a `Shared` read copies the payload even when the arm only views it (`downgrade().get()` doesn't); `is Some(let _)` copies too | perf (codegen) | kolt (2026-11-04); repro in the item |
 
 ## N. Hygiene & rot — NEW SECTION
 
