@@ -1,0 +1,512 @@
+// kolt's list situations, ported to the lens: the data shape and the update
+// pattern, not the UI. Each scenario starts with how kolt does it today.
+import pkg::lens::{ Change, ItemSlot, Positional, keyed, sequence };
+import std::compare::Ordering;
+import std::display::Display;
+import std::hash_map::HashMap;
+import std::io::assert;
+import std::reactive::{ CollFlow, CollPipe, SequenceCell, SignalCell, Source, batch, combine };
+import std::shared::Shared;
+
+// === A. Rich-text region rows ===============================================
+//
+// kolt today (lib/rich_text/controller.vl:256-273, layout.vl:353-378):
+//   let edit = self.doc.splice(span, fragment);
+//   let lines = self.layout.apply(self.doc, edit);      // Layout.lines: a plain List<Line>
+//   if lines.removed == 1 && lines.inserted.len() == 1 { self.rows.set_at(lines.at, lines.inserted[0]) }
+//   else { self.rows.splice(lines.at, lines.removed, lines.inserted) }
+//   for line in lines.remarked { self.rows.set_at(line, self.layout.lines[line]) }   // renumbered markers
+// `rows: ListCell<Line>` is a second copy of `layout.lines`, kept in step by hand.
+
+[derive(PartialEq)]
+struct Line {
+	key: str,
+	text: str,
+	/// An ordered-list marker: "1.", "2.", ..
+	marker: str,
+}
+
+/// kolt's `LineEdit`.
+struct LineEdit {
+	at: usize,
+	removed: usize,
+	inserted: List<Line>,
+	remarked: List<usize>,
+}
+
+/// The layout: every paragraph one line, all in one ordered list. Plain data.
+struct TextLayout {
+	lines: List<Line>,
+	next_key: i32,
+}
+
+impl TextLayout {
+	fun of(texts: List<str>): TextLayout {
+		mut layout = TextLayout { lines = [], next_key = 0 };
+		layout.apply(0, 0, texts);
+		layout
+	}
+
+	/// kolt's `Layout::apply`: replace `removed` lines at `at` by `texts`, then
+	/// renumber; answer what changed, with the lines whose marker moved.
+	fun apply(&mut self, at: usize, removed: usize, texts: List<str>): LineEdit {
+		mut fresh: List<Line> = [];
+		for text in texts {
+			// One line edited in place keeps its key (kolt: "stable across edits").
+			let key = if removed == 1 && texts.len() == 1 {
+				self.lines[at].key
+			} else {
+				self.next_key += 1;
+				i"k{self.next_key}"
+			};
+			fresh.push(Line { key, text, marker = "" });
+		}
+		mut taken: usize = 0;
+		for taken < removed {
+			self.lines.remove(at);
+			taken += 1;
+		}
+		mut offset: usize = 0;
+		for line in fresh {
+			self.lines.insert(at + offset, line);
+			offset += 1;
+		}
+		mut remarked: List<usize> = [];
+		mut index: usize = 0;
+		let count = fresh.len();
+		for index < self.lines.len() {
+			let marker = i"{index + 1}.";
+			if self.lines[index].marker != marker {
+				self.lines[index].marker = marker;
+				if index < at || index >= at + count {
+					remarked.push(index);
+				}
+			}
+			index += 1;
+		}
+		mut inserted: List<Line> = [];
+		index = at;
+		for index < at + count {
+			inserted.push(self.lines[index]);
+			index += 1;
+		}
+		LineEdit { at, removed, inserted, remarked }
+	}
+}
+
+/// The changes a `LineEdit` stands for: kolt's set_at/splice choice, and the
+/// renumbered markers as `Edit(line, "marker")` rather than `set_at`.
+fun line_changes(edit: LineEdit): List<Change<usize>> {
+	mut out: List<Change<usize>> = [];
+	if edit.removed == 1 && edit.inserted.len() == 1 {
+		out.push(Change::Replace(edit.at));
+	} else {
+		if edit.removed > 0 {
+			out.push(Change::Delete(edit.at, edit.removed));
+		}
+		if edit.inserted.len() > 0 {
+			out.push(Change::Insert(edit.at, edit.inserted.len()));
+		}
+	}
+	for line in edit.remarked {
+		out.push(Change::Edit(line, "marker"));
+	}
+	out
+}
+
+fun rich_text() {
+	// Way 1: the layout's own write, its changes through `update` (the escape hatch).
+	let region = sequence(TextLayout::of(["alpha", "beta", "gamma", "delta"]).lines);
+	let rows = region.rows();
+	let gamma = region.slot(2);
+	let texts: Shared<i32> = Shared::new(0);
+	let markers: Shared<i32> = Shared::new(0);
+	let _a = gamma.part("text", |l| l.text).on_change(|_t| texts.write() += 1);
+	let _b = gamma.part("marker", |l| l.marker).on_change(|_m| markers.write() += 1);
+	let heights: Shared<i32> = Shared::new(0);
+	let measured = region.items().map(|line| {
+		heights.write() += 1;
+		line.text.len()
+	}).memo();
+	assert(heights.read() == 4, "four lines measured at the seed");
+
+	// The layout is the structure; the lens holds its lines. A new item above
+	// gamma: one Insert, and the items below take new markers.
+	region.update(|lines| {
+		mut layout = TextLayout { lines = *lines, next_key = 100 };
+		let edit = layout.apply(1, 0, ["inserted"]);
+		lines = layout.lines;
+		(void, line_changes(edit))
+	});
+	assert(gamma.get().map(|l| l.marker) == Some("4.") && gamma.at() == Some(3), "gamma moved to 3 and reads 4.");
+	assert(markers.read() == 1 && texts.read() == 0, "gamma's marker part woke, its text part did not (kolt: set_at re-renders the row)");
+	assert(rows.get().len() == 5 && rows.get()[3] == gamma, "rows(): one row arrived; gamma's row is the same row");
+	print(i"A. measured runs after an insert with three remarks via update: {heights.read()}");
+	assert(heights.read() == 4 + 5, "LIMIT: an update naming several changes reaches items() as ONE Reset: all five lines re-measured once");
+
+	// Typing in gamma: one line replaced in place (kolt's set_at). Through update:
+	// a Replace, and items() gets a Reset again.
+	let before = heights.read();
+	region.update(|lines| {
+		mut layout = TextLayout { lines = *lines, next_key = 200 };
+		let edit = layout.apply(3, 1, ["gamma!"]);
+		lines = layout.lines;
+		(void, line_changes(edit))
+	});
+	assert(gamma.get().map(|l| l.text) == Some("gamma!") && texts.read() == 1, "typing wakes gamma's text part");
+	assert(markers.read() == 2, "and its marker part: kolt's set_at is a Replace, which wakes every part");
+	assert(heights.read() == before + 5, "LIMIT: and re-measures every line (a Replace through update is a Reset: its changes carry no values)");
+
+	// Way 2: compute the edit on a copy, then write it through the shape methods,
+	// which read what leaves BEFORE the write: the operators get exact ops. The
+	// cost is running the layout twice, or splitting it into "plan" and "do".
+	let shaped_runs = heights.read();
+	let plan = region.peek(|lines| {
+		mut copy = TextLayout { lines = *lines, next_key = 300 };
+		copy.apply(1, 0, ["again"])
+	});
+	batch(|| {
+		region.splice(plan.at, plan.removed, plan.inserted);
+		for line in plan.remarked {
+			let marker = i"{line + 1}.";
+			region.edit(line, "marker", |l| l.marker = marker);
+		}
+	});
+	assert(gamma.get().map(|l| l.marker) == Some("5.") && markers.read() == 3 && texts.read() == 1, "the shape path wakes the same parts");
+	assert(heights.read() == shaped_runs + 1 + 4, "the shape path re-measures the new line and the four remarked ones only");
+	assert(measured.get().len() == 6, "measured follows");
+	print("A. rich text: ok");
+}
+
+// === B. Chat history: the live window and the paged older ones in ONE list ===
+//
+// kolt today (channel.vl:948, 1122-1131, 1155-1180, 1264-1345):
+//   let older: SignalCell<List<Message>> = Signal::new([]);        // the pages loaded so far
+//   record.messages()                                               // the live window: ids in the store
+//   load_older: older.set_with(|list| { mut joined = page.messages; joined.push_many(list); joined })
+//   order = combine((older, record.messages())).derive(all ids).memo()   // a third list, rebuilt per change
+//   each_by(older, ..) { let text = Signal::new((content, body, edited)) }  // a hand-made twin per old row
+
+[derive(PartialEq)]
+struct Message {
+	id: i32,
+	author: str,
+	text: str,
+	edited: bool,
+}
+
+fun messages(from: i32, count: i32): List<Message> {
+	mut out: List<Message> = [];
+	mut id = from;
+	for id < from + count {
+		out.push(Message { id, author = "ann", text = i"message {id}", edited = false });
+		id += 1;
+	}
+	out
+}
+
+/// Where message `id` is now: a positional lens has no index by key.
+fun position_of(list: List<Message>, id: i32): Option<usize> {
+	list.position(|m| m.id == id)
+}
+
+fun chat() {
+	// The live window: the newest twenty.
+	let history = sequence(messages(1000, 20));
+	let rows = history.rows();
+	let first_live = history.slot(0);
+	let last_live = history.slot(19);
+	let first_runs: Shared<i32> = Shared::new(0);
+	let last_runs: Shared<i32> = Shared::new(0);
+	let _a = first_live.on_change(|_m| first_runs.write() += 1);
+	let _b = last_live.on_change(|_m| last_runs.write() += 1);
+	let id_runs: Shared<i32> = Shared::new(0);
+	// What Shift+click runs along: every id, oldest first.
+	let order = history.items().map(|m| {
+		id_runs.write() += 1;
+		m.id
+	}).memo();
+	let shape_runs: Shared<i32> = Shared::new(0);
+	let _c = rows.on_change(|_r| shape_runs.write() += 1);
+	assert(id_runs.read() == 20, "the order seeds twenty");
+
+	// Load older: a page of 50 arrives at the front, as one splice.
+	history.insert_all(0, messages(950, 50));
+	assert(first_live.at() == Some(50) && last_live.at() == Some(69), "the live rows moved down by 50");
+	assert(first_runs.read() == 0 && last_runs.read() == 0, "and did not wake");
+	assert(id_runs.read() == 70, "the order mapped the 50 that arrived, not the 20 it had");
+	assert(order.get().len() == 70 && order.get()[0] == 950 && order.get()[50] == 1000, "the order is oldest first");
+	assert(rows.get().len() == 70 && rows.get()[50] == first_live && shape_runs.read() == 1, "rows: 50 rows arrived, one wake of the row list");
+
+	// Another page.
+	history.insert_all(0, messages(900, 50));
+	assert(first_live.at() == Some(100) && first_runs.read() == 0, "a second page: still silent");
+
+	// An edit, made in the UI on an OLD message (kolt: the row's own twin cell).
+	let old_row = rows.get()[10];
+	let text_runs: Shared<i32> = Shared::new(0);
+	let author_runs: Shared<i32> = Shared::new(0);
+	let _d = old_row.part("text", |m| m.text).on_change(|_t| text_runs.write() += 1);
+	let _e = old_row.part("author", |m| m.author).on_change(|_a| author_runs.write() += 1);
+	old_row.edit("text", |m| {
+		m.text = "fixed";
+		m.edited = true;
+	});
+	assert(history.peek(|l| l[10].text) == "fixed" && text_runs.read() == 1 && author_runs.read() == 0, "one part of one row");
+	assert(first_runs.read() == 0 && shape_runs.read() == 2, "no other row, and the row list did not re-run");
+
+	// The live window grows: a message arrives at the end.
+	history.push(Message { id = 1020, author = "bob", text = "new", edited = false });
+	assert(last_live.at() == Some(119) && last_runs.read() == 0, "a push below wakes nothing above");
+
+	// Someone deletes a live message: found by id (a scan), then removed.
+	let gone = history.peek(|l| position_of(*l, 1019));
+	assert(gone == Some(119), "found by scanning");
+	history.remove_at(gone.unwrap_or(0));
+	assert(last_live.get() == None && last_runs.read() == 1, "its row's slot reads None, one wake");
+	print("B. chat: ok");
+}
+
+// === C. Board columns with drag-reorder =====================================
+//
+// kolt today (board.vl:154-160, store.vl:1118-1130, 3605-3632):
+//   statuses: SignalCell<List<StatusRecord { id, name, color, tasks: List<u53> }>>
+//   column(): let tasks = statuses.derive(|list| list.filter(id).first().tasks).cell();  // per column
+//   move_task (server): board_position between neighbours, then publish_columns(store, [was, status])
+//   publish_columns: store.statuses().set(now.map(|each| changed.contains(each.id) then fresh else each))
+//   every move rewrites the statuses list; each column re-derives its task ids; each_by keys the cards
+
+fun board() {
+	// One lens per column, over its task ids.
+	let todo = sequence([1, 2, 3, 4]);
+	let doing = sequence([5, 6]);
+	let card2 = todo.slot(1);
+	let card3 = todo.slot(2);
+	let runs2: Shared<i32> = Shared::new(0);
+	let runs3: Shared<i32> = Shared::new(0);
+	let _a = card2.on_change(|_id| runs2.write() += 1);
+	let _b = card3.on_change(|_id| runs3.write() += 1);
+	let header: Shared<i32> = Shared::new(0);
+	let _c = todo.length().on_change(|_n| header.write() += 1);
+	let todo_rows = todo.rows();
+
+	// Within a column: move_item, the card keeps its slot and its row.
+	todo.move_item(1, 3);
+	assert(todo.all() == [1, 3, 4, 2], "card 2 dragged to the bottom");
+	assert(card2.at() == Some(3) && runs2.read() == 0 && runs3.read() == 0, "both cards' slots follow, silently");
+	assert(todo_rows.get()[3] == card2, "card 2's row moved, not rebuilt");
+	assert(header.read() == 0, "the column's count header slept through the reorder");
+
+	// Across columns: two lenses, so a remove here and an insert there. The card's
+	// slot ends; the other column makes a new one. A row over it is rebuilt.
+	batch(|| {
+		let at = card2.at().unwrap_or(0);
+		todo.remove_at(at);
+		doing.insert_at(1, 2);
+	});
+	assert(doing.all() == [5, 2, 6] && todo.all() == [1, 3, 4], "card 2 is in doing");
+	assert(card2.get() == None && runs2.read() == 1, "LIMIT: the card's slot died crossing columns (no move between lenses)");
+
+	// One flat lens for the whole board, columns as filtered views: the card's slot
+	// survives a cross-column move (an Edit of its column), but each column is a
+	// separate filtered memo, so the card still leaves one and arrives in the other.
+	let cards = sequence([(1, "todo"), (3, "todo"), (4, "todo"), (5, "doing"), (2, "doing"), (6, "doing")]);
+	let col_runs: Shared<i32> = Shared::new(0);
+	let todo_ids = cards.items().filter(|c| {
+		col_runs.write() += 1;
+		c.1 == "todo"
+	}).map(|c| c.0).memo();
+	let doing_ids = cards.items().filter(|c| c.1 == "doing").map(|c| c.0).memo();
+	let card4 = cards.slot(2);
+	cards.edit(2, "column", |c| c.1 = "doing");
+	cards.move_item(2, 5);
+	assert(card4.get() == Some((4, "doing")) && card4.at() == Some(5), "the flat slot followed the card across columns");
+	assert(todo_ids.get() == [1, 3] && doing_ids.get() == [5, 2, 6, 4], "the filtered columns follow, Move included");
+	// Within a column through the flat list: a Move the filter must map.
+	cards.move_item(5, 3);
+	assert(cards.all().map(|c| c.0) == [1, 3, 5, 4, 2, 6] && doing_ids.get() == [5, 4, 2, 6], "filter maps a Move to its output");
+	print("C. board: ok");
+}
+
+// === D. The filtered task table ==============================================
+//
+// kolt today (task_table.vl:96-135):
+//   let held: Shared<HashMap<u53, TaskRecord>>; let version = Signal::new(0);   // a hand-made mirror
+//   each_owned(ids, |id| TaskRecord::find(g, id).effect(|found| note(id, found)))   // one effect per task
+//   note(): held.insert(id, record); bump `version` once per animation frame
+//   order = combine((ids, version, sort, statuses, fields, picks, me))
+//     .derive(|..| ids.map(held.get).filter(matches && filter_keeps).sort_by(compare_keys).map(id)).memo()
+
+[derive(PartialEq)]
+struct Task {
+	id: i32,
+	title: str,
+	status: str,
+	priority: i32,
+}
+
+fun task_table() {
+	let tasks = sequence([
+		Task { id = 1, title = "write docs", status = "open", priority = 2 },
+		Task { id = 2, title = "fix login", status = "open", priority = 1 },
+		Task { id = 3, title = "ship it", status = "done", priority = 3 },
+		Task { id = 4, title = "fix logout", status = "open", priority = 4 },
+	]);
+	let keeps: Shared<i32> = Shared::new(0);
+	let open = tasks.items().filter(|t| {
+		keeps.write() += 1;
+		t.status != "done"
+	}).map(|t| t.id).memo();
+	let done = tasks.items().count(|t| t.status == "done").memo();
+	let titles = tasks.items().map(|t| t.title).memo();
+	assert(open.get() == [1, 2, 4] && done.get() == 1 && keeps.read() == 4, "seeded");
+
+	// A search box: the filter's answer can be a flow (R9).
+	let query: SignalCell<str> = SignalCell::new("");
+	let found = tasks.items().filter(|t| query.derive(|q| t.title.contains(q))).map(|t| t.id).memo();
+	assert(found.get() == [1, 2, 3, 4], "an empty query keeps all");
+	query.set("fix");
+	assert(found.get() == [2, 4], "the query narrows");
+
+	// The SORTED view: there is no sort operator over a collection flow, so it is
+	// a coarse derive of the whole list, re-sorted on every change.
+	let sorts: Shared<i32> = Shared::new(0);
+	let by_priority = tasks.derive(|all| {
+		sorts.write() += 1;
+		all.filter(|t| t.status != "done").sort_by(|a, b| a.priority.compare(b.priority)).map(|t| t.id)
+	}).memo();
+	assert(by_priority.get() == [2, 1, 4], "sorted by priority");
+	let sorts_before = sorts.read();
+
+	// One task closed through its slot: one filter run, one SetAt.
+	let login = tasks.slot(1);
+	let before = keeps.read();
+	login.edit("status", |t| t.status = "done");
+	assert(open.get() == [1, 4] && done.get() == 2, "the filter and the count follow");
+	assert(keeps.read() == before + 1, "the filter re-ran for that task only");
+	assert(by_priority.get() == [1, 4] && sorts.read() == sorts_before + 1, "the sorted view re-sorted everything");
+
+	// A title edit no sort or filter reads: the derive still re-sorts.
+	tasks.slot(0).edit("title", |t| t.title = "write the docs");
+	assert(titles.get()[0] == "write the docs", "the titles follow");
+	assert(sorts.read() == sorts_before + 2, "LIMIT: a sorted view re-runs for a change its key does not read");
+
+	// A task arrives from the server.
+	tasks.push(Task { id = 5, title = "fix all", status = "open", priority = 0 });
+	assert(open.get() == [1, 4, 5] && found.get() == [2, 4, 5], "filters take the new task");
+	assert(by_priority.get() == [5, 1, 4], "the sorted view too, by re-sorting");
+	print("D. task table: ok");
+}
+
+// === E. The sidebar's channel index, rebuilt whole on the server ============
+//
+// kolt today (store.vl:4842-4853, 4958-4962; channel_ui.vl:57-70, 340-345):
+//   server: found.store.channel_index().set(channel_index_of(facts.org))   // the whole list, re-queried
+//   client: combine((g.channel_index(), private_channels(org.id), me)).derive(sidebar_rows(..)).memo()
+//   menus: channel_menu(org, g, subject, all: SignalCell<List<SidebarChannel>>)  // read whole
+
+[derive(PartialEq)]
+struct ChannelSummary {
+	id: i32,
+	name: str,
+	parent: i32,
+	archived: bool,
+}
+
+fun channel(id: i32, name: str): ChannelSummary {
+	ChannelSummary { id, name, parent = 0, archived = false }
+}
+
+fun sidebar() {
+	let index = sequence([channel(1, "general"), channel(2, "random"), channel(3, "dev"), channel(4, "ops")]);
+	let random = index.slot(1);
+	let dev = index.slot(2);
+	let ops = index.slot(3);
+	let names: Shared<i32> = Shared::new(0);
+	let archived: Shared<i32> = Shared::new(0);
+	let dev_runs: Shared<i32> = Shared::new(0);
+	let whole: Shared<i32> = Shared::new(0);
+	let _a = random.part("name", |c| c.name).on_change(|_n| names.write() += 1);
+	let _b = random.part("archived", |c| c.archived).on_change(|_a| archived.write() += 1);
+	let _c = dev.on_change(|_c| dev_runs.write() += 1);
+	let _d = index.on_change(|_all| whole.write() += 1);
+	let changes: Shared<i32> = Shared::new(0);
+	let _tap = index.tap(|_c| {}, |_c, _late| changes.write() += 1);
+
+	// The server re-queries (ORDER BY id): random renamed, ops deleted, 5 new.
+	index.reconcile_by_key([channel(1, "general"), channel(2, "watercooler"), channel(3, "dev"), channel(5, "design")], |c| c.id);
+	assert(index.all().map(|c| c.name) == ["general", "watercooler", "dev", "design"], "the index became the new one");
+	assert(random.get().map(|c| c.name) == Some("watercooler") && names.read() == 1, "the renamed row's name part woke once");
+	assert(archived.read() == 1, "SURPRISE: and its archived part too: the diff door writes a Replace, never an Edit");
+	assert(dev_runs.read() == 0, "an unchanged row did not wake");
+	assert(ops.get() == None, "the deleted channel's slot ends");
+	assert(whole.read() == 1, "one turn: whole-value readers woke once");
+	assert(changes.read() == 3, "three changes: a Delete, a Replace, an Insert");
+
+	// The same list again: nothing changes, nothing wakes.
+	index.reconcile_by_key([channel(1, "general"), channel(2, "watercooler"), channel(3, "dev"), channel(5, "design")], |c| c.id);
+	assert(changes.read() == 3 && names.read() == 1, "an identical rebuild is silent for slots");
+	assert(whole.read() == 1, "and whole-value readers too: no write, no wake");
+
+	// sidebar_rows groups each channel under its parent: a reorder of the index
+	// into tree order. No operator does that; it stays a coarse derive.
+	let grouped = index.derive(|all| all.sort_by(|a, b| a.parent.compare(b.parent)).map(|c| c.id)).memo();
+	assert(grouped.get().len() == 4, "a coarse grouping");
+	print("E. sidebar: ok");
+}
+
+// === F. Select options =========================================================
+//
+// kolt today (select.vl:7-33):
+//   options: ListCell<(View, T)>
+//   computed_options = options.derive(|x| x.iter().enumerate().to_list()).memo()   // FIXME: granular deltas
+//   each_by(computed_options, |x| x.0, ..)    // keyed by INDEX: an insert at 0 re-keys every option
+//   <option value(index.to_json())>; selection found by scanning computed_options
+
+fun select() {
+	let options = sequence([("Low", 1), ("Medium", 2), ("High", 3)]);
+	let selection: SignalCell<i32> = SignalCell::new(2);
+	let rows = options.rows();
+	// Each option's `value` is its index: the slot knows it (`at()`), but it is
+	// not a source. Riding the length gives one that wakes on inserts and deletes.
+	let position_runs: Shared<i32> = Shared::new(0);
+	let high = rows.get()[2];
+	let high_index = options.length().derive(|_n| {
+		position_runs.write() += 1;
+		high.at()
+	}).distinct().memo();
+	let high_wakes: Shared<i32> = Shared::new(0);
+	let _a = high_index.on_change(|_i| high_wakes.write() += 1);
+	let label_runs: Shared<i32> = Shared::new(0);
+	let _b = high.part("label", |o| o.0).on_change(|_l| label_runs.write() += 1);
+	// The selected index, by value.
+	let values = options.items().map(|o| o.1).memo();
+	let selected = combine((values, selection)).derive(|(all, picked)| all.position(|v| *v == picked)).memo();
+	assert(high_index.get() == Some(2) && selected.get() == Some(1), "seeded");
+
+	// An option at the front: one row arrives; High's index moves to 3.
+	options.insert_at(0, ("None", 0));
+	assert(rows.get().len() == 4 && rows.get()[3] == high, "one row arrived; High kept its row (kolt: every row re-keyed)");
+	assert(high_index.get() == Some(3) && high_wakes.read() == 1, "High's index source woke once");
+	assert(selected.get() == Some(2), "the selection's index follows");
+
+	// A label renamed: High's row label wakes; its index source does not re-run.
+	let runs = position_runs.read();
+	options.replace(3, ("Highest", 3));
+	assert(label_runs.read() == 1 && position_runs.read() == runs, "a rename wakes the label, not the position");
+
+	// An option appended BELOW High: the index derive re-runs, the memo holds.
+	options.push(("Urgent", 4));
+	assert(position_runs.read() == runs + 1 && high_wakes.read() == 1, "every position re-derives on any shape change; distinct stops the wake (memo alone does not)");
+	print("F. select: ok");
+}
+
+fun main() {
+	rich_text();
+	chat();
+	board();
+	task_table();
+	sidebar();
+	select();
+	print("kolt: all passed");
+}

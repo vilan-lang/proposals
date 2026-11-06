@@ -1,0 +1,74 @@
+// Heap held per watched row: 32,000 rows, each with two observers (title and
+// status). Run through `measure_heap.mjs`, which collects and reads the heap at
+// each MEASURE line while this program's values are still alive.
+import pkg::lens::{ sequence };
+import std::reactive::store::{ Storable, Store };
+import std::reactive::{ Flow, SequenceCell, Source };
+import std::shared::Shared;
+import std::wire::Keyed;
+
+[derive(PartialEq, Storable)]
+struct Task {
+	id: i32,
+	title: str,
+	status: str,
+}
+
+impl Task with Keyed<i32> {
+	fun key(self): i32 {
+		self.id
+	}
+}
+
+let rows: usize = 32000;
+
+fun tasks(): List<Task> {
+	mut out: List<Task> = [];
+	mut i: usize = 0;
+	for i < rows {
+		out.push(Task { id = i.as_i32(), title = i"Task {i}", status = "open" });
+		i += 1;
+	}
+	out
+}
+
+fun lens() {
+	let draws: Shared<i32> = Shared::new(0);
+	let list = sequence(tasks());
+	print("MEASURE lens: the list alone");
+	mut keep = [];
+	mut i: usize = 0;
+	for i < rows {
+		let slot = list.slot(i);
+		keep.push(slot.part("title", |t| t.title).on_change(|_t| draws.write() += 1));
+		keep.push(slot.part("status", |t| t.status).on_change(|_s| draws.write() += 1));
+		i += 1;
+	}
+	print("MEASURE lens: with two observers per row");
+	list.edit(0, "title", |t| t.title = "x");
+	print(i"lens drew {draws.read()} with {keep.len()} observers");
+}
+
+fun store() {
+	let draws: Shared<i32> = Shared::new(0);
+	let list: Store<List<Task>> = Store::new(tasks());
+	print("MEASURE store: the list alone");
+	mut keep = [];
+	mut i: usize = 0;
+	for i < rows {
+		let task = list.by_key(i.as_i32()).some();
+		keep.push(task.title().on_change(|_t| draws.write() += 1));
+		keep.push(task.status().on_change(|_s| draws.write() += 1));
+		i += 1;
+	}
+	print("MEASURE store: with two observers per row");
+	list.by_key(0).some().title().patch("x");
+	print(i"store drew {draws.read()} with {keep.len()} observers");
+}
+
+fun main() {
+	print("MEASURE start");
+	lens();
+	print("MEASURE between");
+	store();
+}

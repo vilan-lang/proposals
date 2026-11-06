@@ -1,0 +1,75 @@
+// The same rows on the reactive lens (proposals: reactive-lens-lab): a plain
+// `List<Task>` under a sequence lens. `each` renders one row per SLOT, and a row
+// binds two parts of its slot's item. `web/heavy_lens.html` loads it (the heavy
+// variant: each task carries 300 notes).
+import pkg::lens::{ ItemSlot, Positional, sequence };
+import std::reactive::{ Flow, SequenceCell, Source };
+import std::shared::Shared;
+import std::web::ui::{ View, each, view };
+import std::web::ui;
+
+[derive(PartialEq)]
+struct Task {
+	title: str,
+	status: str,
+	notes: List<str>,
+}
+
+fun notes(): List<str> {
+	mut out: List<str> = [];
+	mut i = 0;
+	for i < 300 {
+		out.push(i"note {i}");
+		i += 1;
+	}
+	out
+}
+
+let rows: i32 = 2089;
+
+fun tasks(): List<Task> {
+	mut out: List<Task> = [];
+	mut i = 0;
+	for i < rows {
+		out.push(Task { title = i"Task {i}", status = "open", notes = notes() });
+		i += 1;
+	}
+	out
+}
+
+fun row(slot: ItemSlot<List<Task>, usize, Task, Positional>): View {
+	let title = slot.part("title", |t| t.title).derive(|t| t.unwrap_or(""));
+	let status = slot.part("status", |t| t.status).derive(|s| s.unwrap_or(""));
+	<li>
+		<span .class("title")>{title}</span>
+		" "
+		<span .class("status")>{status}</span>
+	</li>
+}
+
+fun page(): View {
+	let list = sequence(tasks());
+	let shown = list.rows();
+	let renamed: Shared<i32> = Shared::new(0);
+	let rename = || {
+		renamed.write() += 1;
+		let n = renamed.read();
+		list.edit(1000, "title", |t| t.title = i"Renamed {n}");
+	};
+	let close = || {
+		list.edit(1000, "status", |t| t.status = "done");
+	};
+	let insert = || list.insert_at(0, Task { title = "New", status = "open", notes = notes() });
+	let delete = || list.remove_at(0);
+	<section>
+		<button id("rename") .on("click", rename)>"Rename row 1000"</button>
+		<button id("close") .on("click", close)>"Close row 1000"</button>
+		<button id("insert") .on("click", insert)>"Insert at the top"</button>
+		<button id("delete") .on("click", delete)>"Delete the top"</button>
+		<ul id("rows")>{each(shown, |slot| slot.id, |slot| row(slot))}</ul>
+	</section>
+}
+
+fun main() {
+	let _root = ui::mount_root("app", || page());
+}

@@ -1,0 +1,844 @@
+// Async and transient data over the reactive lens: loading phases, refresh,
+// pagination and optimistic writes. A LAB build beside `lens.vl`, which it does
+// not change.
+//
+// Three decisions shape it:
+//
+// - The PHASE sits beside the data, not around it. A loaded list is a lens plus
+//   a `SignalCell<TransientState<i32, E>>` (std's five arms; the payload is the
+//   token of the load whose items are held). The items stay readable in every
+//   phase, so a refresh or a failure never blanks the rows.
+// - LATEST WINS BY TOKEN. Every load and every page takes a token, and a reply
+//   whose token is no longer the claim is dropped. A reload lands through
+//   `reconcile_by_key`, so the rows both lists hold keep their slots.
+// - Optimistic writes are an OVERLAY addressed by the row, not by position. The
+//   lens holds what is SHOWN; the overlay remembers, per row with changes
+//   pending, the server's last word and the proposals on top of it.
+import pkg::lens::{ ItemSlot, Keyed, Lens, Positional, keyed, sequence };
+import std::compare::PartialEq;
+import std::hash::Hashable;
+import std::hash_map::HashMap;
+import std::io::panic;
+import std::reactive::{ SequenceCell, SignalCell, Source, Subscription, batch, defer_to_owner, register_with_owner };
+import std::reactive::transient::{ TransientSource, TransientState };
+import std::shared::Shared;
+import std::task::{ Nursery, ambient_nursery, detached_nursery };
+
+// === The overlay =============================================================
+
+/// One local change waiting for the server: what the row will hold if the server
+/// agrees (`None`: the row is deleted).
+export struct Proposal<K, T> {
+	id: i32,
+	key: K,
+	value: Option<T>,
+}
+
+/// What the overlay knows of one row while it has changes pending.
+export struct Known<K, T> {
+	/// The server's last word on the row: what a rejection goes back to.
+	value: Option<T>,
+	/// The newest proposal on this row the server confirmed. An older proposal
+	/// still pending is superseded by it.
+	acked: i32,
+	/// The row's neighbours when it was last hidden: where it comes back.
+	before: Option<K>,
+	after: Option<K>,
+}
+
+/// What one row should show now.
+export struct Shown<K, T> {
+	key: K,
+	value: Option<T>,
+	before: Option<K>,
+	after: Option<K>,
+	/// Nothing on the row is pending any more.
+	settled: bool,
+}
+
+/// The bookkeeping of optimistic writes, by row key. Nothing reactive but the
+/// per-row `is_pending` flags and the count: what a row SHOWS is the owner's
+/// business (a positional lens and a keyed lens show it differently).
+export struct Overlay<K: Hashable, T> {
+	proposals: Shared<List<Proposal<K, T>>>,
+	known: Shared<HashMap<K, Known<K, T>>>,
+	flags: Shared<HashMap<K, SignalCell<bool>>>,
+	count: SignalCell<i32>,
+	next_id: Shared<i32>,
+}
+
+export fun overlay<K: Hashable, T>(): Overlay<K, T> {
+	Overlay {
+		proposals = Shared::new([]),
+		known = Shared::new(HashMap::new()),
+		flags = Shared::new(HashMap::new()),
+		count = SignalCell::new(0),
+		next_id = Shared::new(0),
+	}
+}
+
+export impl Overlay<type K: PartialEq + Hashable, type T> {
+	/// The row's pending flag, made on first ask.
+	fun flag(self, key: K): SignalCell<bool> {
+		if self.flags.read().get(key) is Some(let held) {
+			ret held;
+		}
+		let fresh = SignalCell::new(false);
+		self.flags.write().insert(key, fresh);
+		fresh
+	}
+
+	/// Whether the row has a change pending.
+	fun has(self, key: K): bool {
+		self.known.read().contains_key(key)
+	}
+
+	/// The rows with changes pending.
+	fun keys(self): List<K> {
+		mut out: List<K> = [];
+		for proposal in self.proposals.read() {
+			if !out.contains(proposal.key) {
+				out.push(proposal.key);
+			}
+		}
+		out
+	}
+
+	/// Propose `value` for the row. `current` is the server's word on it when no
+	/// change is pending yet (what the row shows is then the server's).
+	fun open(self, key: K, current: Option<T>, value: Option<T>): i32 {
+		let id = self.next_id.read() + 1;
+		self.next_id.write() = id;
+		if !self.has(key) {
+			self.known.write().insert(key, Known { value = current, acked = 0, before = None, after = None });
+			self.flag(key).set(true);
+		}
+		self.proposals.write().push(Proposal { id, key, value });
+		self.count.set(self.count.get() + 1);
+		id
+	}
+
+	/// End a proposal: the server took it (`accepted`) or refused it. Answers
+	/// what its row should show now, or `None` for an unknown id.
+	fun close(self, id: i32, accepted: bool): Option<Shown<K, T>> {
+		mut kept: List<Proposal<K, T>> = [];
+		mut ended: Option<Proposal<K, T>> = None;
+		for proposal in self.proposals.read() {
+			if proposal.id == id {
+				ended = Some(proposal);
+			} else {
+				kept.push(proposal);
+			}
+		}
+		ended is Some(let proposal) else ret None;
+		self.proposals.write() = kept;
+		self.count.set(self.count.get() - 1);
+		if accepted && self.known.read().get(proposal.key) is Some(let found) {
+			// Acks may arrive out of order: an older one says nothing new.
+			if id > found.acked {
+				mut known = found;
+				known.value = proposal.value;
+				known.acked = id;
+				self.known.write().insert(proposal.key, known);
+			}
+		}
+		Some(self.shown(proposal.key))
+	}
+
+	/// The server's word on a row. Held back while the row has a change pending
+	/// (answers what the row shows then); `None` when nothing is pending, and
+	/// the caller applies the word itself.
+	fun heard(self, key: K, value: Option<T>): Option<Shown<K, T>> {
+		self.known.read().get(key) is Some(let found) else ret None;
+		mut known = found;
+		known.value = value;
+		self.known.write().insert(key, known);
+		Some(self.shown(key))
+	}
+
+	/// Remember where a hidden row stood.
+	fun place(self, key: K, before: Option<K>, after: Option<K>) {
+		self.known.read().get(key) is Some(let found) else ret;
+		mut known = found;
+		known.before = before;
+		known.after = after;
+		self.known.write().insert(key, known);
+	}
+
+	/// What the row shows: its newest proposal the server has not superseded, or
+	/// the server's word. A row with nothing pending is forgotten here.
+	fun shown(self, key: K): Shown<K, T> {
+		let known = match self.known.read().get(key) {
+			Some(let found) => found,
+			None => panic("loaded: a row with no record"),
+		};
+		mut value = known.value;
+		mut pending = false;
+		for proposal in self.proposals.read() {
+			if proposal.key == key {
+				pending = true;
+				if proposal.id > known.acked {
+					value = proposal.value;
+				}
+			}
+		}
+		if !pending {
+			self.known.write().remove(key);
+			self.flag(key).set(false);
+		}
+		Shown { key, value, before = known.before, after = known.after, settled = !pending }
+	}
+}
+
+// === Phases and tokens =======================================================
+
+/// One end of a paged list.
+[derive(PartialEq)]
+export enum Edge<E> {
+	/// More may be asked for.
+	Idle,
+	/// A page is on its way.
+	Loading,
+	/// The server said there is nothing more this way.
+	End,
+	/// The last page failed; asking again retries it.
+	Failed(E),
+}
+
+/// One page of items, and whether the server holds more beyond it.
+export struct Page<T> {
+	items: List<T>,
+	more: bool,
+}
+
+/// The claims in flight. 0 is "nothing claimed".
+export struct Claims {
+	next: i32,
+	load: i32,
+	older: i32,
+	newer: i32,
+}
+
+/// Whether two phases are the same as far as a watcher cares. A `Failed` is
+/// always news.
+fun same_phase<E>(a: TransientState<i32, E>, b: TransientState<i32, E>): bool {
+	match (a, b) {
+		(TransientState::Pending, TransientState::Pending) => true,
+		(TransientState::Absent, TransientState::Absent) => true,
+		(TransientState::Ready(let x), TransientState::Ready(let y)) => x == y,
+		(TransientState::Refreshing(let x), TransientState::Refreshing(let y)) => x == y,
+		_ => false,
+	}
+}
+
+fun set_phase<E>(cell: SignalCell<TransientState<i32, E>>, next: TransientState<i32, E>) {
+	if !same_phase(cell.get(), next) {
+		cell.set(next);
+	}
+}
+
+// === A loaded list ===========================================================
+
+export struct Loaded<T, K: Hashable, E> {
+	/// The rows, as shown: the server's items with the pending changes on top.
+	items: Lens<List<T>, usize, T, Positional>,
+	/// Where the whole list stands. `Ready(token)`: the items are load `token`'s.
+	phase: SignalCell<TransientState<i32, E>>,
+	/// The older end (`prepend_page`) and the newer end (`append_page`).
+	older: SignalCell<Edge<E>>,
+	newer: SignalCell<Edge<E>>,
+	changes: Overlay<K, T>,
+	key: |&T| K,
+	claims: Shared<Claims>,
+	/// The slot of each row with a change pending.
+	rows: Shared<HashMap<K, ItemSlot<List<T>, usize, T, Positional>>>,
+	/// The nursery of the load in flight, when `fetch` started it, and of the
+	/// page in flight, when `fetch_older` did.
+	running: Shared<Option<Nursery>>,
+	paging: Shared<Option<Nursery>>,
+}
+
+/// An empty list, `Pending`, whose items are keyed by `key`. Made under an owner,
+/// it drops whatever is in flight when the owner goes.
+export fun loaded<T: PartialEq, K: PartialEq + Hashable, E>(key: |&T| K): Loaded<T, K, E> {
+	let empty: List<T> = [];
+	let feed: Loaded<T, K, E> = Loaded {
+		items = sequence(empty),
+		phase = SignalCell::new(TransientState::Pending),
+		older = SignalCell::new(Edge::Idle),
+		newer = SignalCell::new(Edge::Idle),
+		changes = overlay(),
+		key,
+		claims = Shared::new(Claims { next = 0, load = 0, older = 0, newer = 0 }),
+		rows = Shared::new(HashMap::new()),
+		running = Shared::new(None),
+		paging = Shared::new(None),
+	};
+	defer_to_owner(|| feed.retire());
+	feed
+}
+
+export impl Loaded<type T: PartialEq, type K: PartialEq + Hashable, type E> {
+	fun claim(self): i32 {
+		let token = self.claims.read().next + 1;
+		self.claims.write().next = token;
+		token
+	}
+
+	// --- Loads ---------------------------------------------------------------
+
+	/// Start a load of the whole list: the items stay, the phase says
+	/// `Refreshing` (or `Pending` before the first). A load in flight is
+	/// superseded. Answers the token its reply must carry.
+	fun load(self): i32 {
+		let token = self.claim();
+		self.claims.write().load = token;
+		set_phase(self.phase, self.phase.get().refreshed());
+		token
+	}
+
+	/// The reply to load `token`. Dropped (answers false) when a newer load, a
+	/// resync or the owner's end superseded it. A list lands by key: rows both
+	/// lists hold keep their slots, pending changes stay on top, and the pages
+	/// asked for before it are dropped (they were asked of the old list).
+	fun settle(self, token: i32, reply: Result<List<T>, E>): bool {
+		if token == 0 || self.claims.read().load != token {
+			ret false;
+		}
+		self.claims.write().load = 0;
+		match reply {
+			Ok(let list) => batch(|| {
+				self.land(list);
+				self.drop_pages();
+				set_phase(self.phase, TransientState::Ready(token));
+			}),
+			Err(let error) => set_phase(self.phase, self.phase.get().failed(error)),
+		}
+		true
+	}
+
+	/// The connection dropped: what is in flight will not land, the items stay,
+	/// and the phase says they are stale (`Failed(error, Some(last))`).
+	fun disconnected(self, error: E) {
+		self.retire();
+		set_phase(self.phase, self.phase.get().failed(error));
+	}
+
+	/// The connection is back with the server's whole list: one load, landed now.
+	fun resync(self, list: List<T>) {
+		let token = self.load();
+		self.settle(token, Ok(list));
+	}
+
+	/// Drop every claim (and cancel the task in flight): nothing asked so far
+	/// lands. What the owner's end runs.
+	fun retire(self) {
+		self.claims.write().load = 0;
+		self.drop_pages();
+		if self.running.read() is Some(let task) {
+			task.cancel();
+		}
+		if self.paging.read() is Some(let task) {
+			task.cancel();
+		}
+		self.running.write() = None;
+		self.paging.write() = None;
+	}
+
+	fun drop_pages(self) {
+		self.claims.write().older = 0;
+		self.claims.write().newer = 0;
+		if self.older.get() is Edge::Loading {
+			self.older.set(Edge::Idle);
+		}
+		if self.newer.get() is Edge::Loading {
+			self.newer.set(Edge::Idle);
+		}
+	}
+
+	/// Become the server's `list`, with the pending changes on top.
+	fun land(self, list: List<T>) {
+		let key = self.key;
+		mut shown: List<T> = [];
+		mut seen: HashMap<K, bool> = HashMap::new();
+		mut last: Option<K> = None;
+		mut hidden: List<K> = [];
+		for item in list {
+			let id = key(&item);
+			seen.insert(id, true);
+			mut visible: Option<T> = Some(item);
+			if self.changes.heard(id, Some(item)) is Some(let held) {
+				visible = held.value;
+			}
+			match visible {
+				Some(let value) => {
+					for row in hidden {
+						self.changes.place(row, last, Some(id));
+					}
+					hidden = [];
+					shown.push(value);
+					last = Some(id);
+				},
+				None => hidden.push(id),
+			}
+		}
+		for row in hidden {
+			self.changes.place(row, last, None);
+		}
+		// A row with a change pending that the server does not hold (a local
+		// insert, or an edit of a row deleted elsewhere): kept where it stood.
+		for row in self.changes.keys() {
+			if !seen.contains_key(row) {
+				if self.changes.heard(row, None) is Some(let held) && held.value is Some(let value) {
+					let at = landing_in(shown, key, held.before, held.after);
+					shown.insert(at, value);
+				}
+			}
+		}
+		self.items.reconcile_by_key(shown, key);
+	}
+
+	// --- Pages ---------------------------------------------------------------
+
+	/// Ask for the page before the first row. `None` once the older end is done.
+	fun request_older(self): Option<i32> {
+		self.request(true)
+	}
+
+	/// Ask for the page after the last row. `None` once the newer end is done.
+	fun request_newer(self): Option<i32> {
+		self.request(false)
+	}
+
+	fun request(self, older: bool): Option<i32> {
+		let edge = if older { self.older } else { self.newer };
+		if edge.get() is Edge::End {
+			ret None;
+		}
+		let token = self.claim();
+		if older {
+			self.claims.write().older = token;
+		} else {
+			self.claims.write().newer = token;
+		}
+		edge.set(Edge::Loading);
+		Some(token)
+	}
+
+	/// The older page asked for as `token`: a run spliced in at the top.
+	fun prepend_page(self, token: i32, reply: Result<Page<T>, E>): bool {
+		self.settle_page(true, token, reply)
+	}
+
+	/// The newer page asked for as `token`: a run spliced in at the bottom.
+	fun append_page(self, token: i32, reply: Result<Page<T>, E>): bool {
+		self.settle_page(false, token, reply)
+	}
+
+	fun settle_page(self, older: bool, token: i32, reply: Result<Page<T>, E>): bool {
+		let mine = if older { self.claims.read().older } else { self.claims.read().newer };
+		if token == 0 || mine != token {
+			ret false;
+		}
+		if older {
+			self.claims.write().older = 0;
+		} else {
+			self.claims.write().newer = 0;
+		}
+		let edge = if older { self.older } else { self.newer };
+		match reply {
+			Ok(let page) => batch(|| {
+				let key = self.key;
+				mut held: HashMap<K, bool> = HashMap::new();
+				for item in self.items.all() {
+					held.insert(key(&item), true);
+				}
+				// A row already held (the page overlaps) is the server's word on
+				// it, not a second row.
+				mut fresh: List<T> = [];
+				for item in page.items {
+					let id = key(&item);
+					if held.contains_key(id) || self.changes.has(id) {
+						self.receive(item);
+					} else {
+						held.insert(id, true);
+						fresh.push(item);
+					}
+				}
+				let at = if older { 0 } else { self.items.size() };
+				self.items.splice(at, 0, fresh);
+				edge.set(if page.more { Edge::Idle } else { Edge::End });
+			}),
+			Err(let error) => edge.set(Edge::Failed(error)),
+		}
+		true
+	}
+
+	// --- The server's word on one row ----------------------------------------
+
+	/// The server says this row holds `item` (a push). Held back while the row
+	/// has a change pending; a row not held arrives at the newer end.
+	fun receive(self, item: T) {
+		let id = (self.key)(&item);
+		if self.changes.heard(id, Some(item)) is Some(let held) {
+			self.show(held);
+			ret;
+		}
+		match self.find(id) {
+			Some(let at) => {
+				if self.items.peek(|list| list.get(at)) != Some(item) {
+					self.items.replace(at, item);
+				}
+			},
+			None => self.items.push(item),
+		}
+	}
+
+	/// The server says the row is gone.
+	fun receive_removed(self, id: K) {
+		if self.changes.heard(id, None) is Some(let held) {
+			self.show(held);
+			ret;
+		}
+		if self.find(id) is Some(let at) {
+			self.items.remove_at(at);
+		}
+	}
+
+	// --- Optimistic writes ---------------------------------------------------
+
+	/// Show `value` in the slot's row now, pending the server. `None` when the
+	/// slot's item is gone.
+	fun propose(self, slot: ItemSlot<List<T>, usize, T, Positional>, value: T): Option<i32> {
+		self.propose_value(slot, Some(value))
+	}
+
+	/// Hide the slot's row now, pending the server.
+	fun propose_delete(self, slot: ItemSlot<List<T>, usize, T, Positional>): Option<i32> {
+		self.propose_value(slot, None)
+	}
+
+	fun propose_value(self, slot: ItemSlot<List<T>, usize, T, Positional>, value: Option<T>): Option<i32> {
+		slot.get() is Some(let current) else ret None;
+		let id = (self.key)(&current);
+		let proposal = self.changes.open(id, Some(current), value);
+		self.rows.write().insert(id, slot);
+		self.show(self.changes.shown(id));
+		Some(proposal)
+	}
+
+	/// Show a new row at `at` now, pending the server. It has no confirmed
+	/// counterpart: a rejection takes it out.
+	fun propose_insert(self, at: usize, value: T): i32 {
+		let id = (self.key)(&value);
+		let proposal = self.changes.open(id, None, Some(value));
+		self.changes.place(id, self.key_at(at, true), self.key_at(at, false));
+		self.show(self.changes.shown(id));
+		proposal
+	}
+
+	/// The server took the change.
+	fun confirm(self, proposal: i32) {
+		if self.changes.close(proposal, true) is Some(let held) {
+			self.show(held);
+		}
+	}
+
+	/// The server refused the change: the row shows the server's word again,
+	/// wherever the row is now.
+	fun reject(self, proposal: i32) {
+		if self.changes.close(proposal, false) is Some(let held) {
+			self.show(held);
+		}
+	}
+
+	/// Whether the slot's row has a change pending, as a source.
+	fun is_pending(self, slot: ItemSlot<List<T>, usize, T, Positional>): SignalCell<bool> {
+		slot.get() is Some(let item) else ret SignalCell::new(false);
+		self.changes.flag((self.key)(&item))
+	}
+
+	/// Whether the row with this key has a change pending (a hidden row has no
+	/// live slot to ask with).
+	fun is_pending_key(self, id: K): SignalCell<bool> {
+		self.changes.flag(id)
+	}
+
+	/// How many changes are pending, as a source.
+	fun pending(self): SignalCell<i32> {
+		self.changes.count
+	}
+
+	// --- Showing a row -------------------------------------------------------
+
+	/// Make the row show `held.value`: replace it, hide it, or bring it back at
+	/// its neighbours.
+	fun show(self, held: Shown<K, T>) {
+		let at = self.find(held.key);
+		match held.value {
+			Some(let value) => match at {
+				Some(let index) => {
+					if self.items.peek(|list| list.get(index)) != Some(value) {
+						self.items.replace(index, value);
+					}
+				},
+				None => {
+					let index = landing_in(self.items.all(), self.key, held.before, held.after);
+					self.items.insert_at(index, value);
+					if !held.settled {
+						self.rows.write().insert(held.key, self.items.slot(index));
+					}
+				},
+			},
+			None => {
+				if at is Some(let index) {
+					self.changes.place(held.key, self.key_at(index, true), self.key_at(index + 1, false));
+					self.items.remove_at(index);
+				}
+			},
+		}
+		if held.settled {
+			self.rows.write().remove(held.key);
+		}
+	}
+
+	/// Where the row with this key is now: by its slot when it has one, else by
+	/// a search.
+	fun find(self, id: K): Option<usize> {
+		if self.rows.read().get(id) is Some(let slot) && slot.at() is Some(let at) {
+			ret Some(at);
+		}
+		position_of(self.items.all(), self.key, id)
+	}
+
+	/// The key of the row before `at` (`before`), or at `at`.
+	fun key_at(self, at: usize, before: bool): Option<K> {
+		if before && at == 0 {
+			ret None;
+		}
+		let index = if before { at - 1 } else { at };
+		let key = self.key;
+		match self.items.peek(|list| list.get(index)) {
+			Some(let item) => Some(key(&item)),
+			None => None,
+		}
+	}
+
+	// --- Real tasks ----------------------------------------------------------
+
+	/// Load with a real task: a load in flight is cancelled (its IO aborts) and
+	/// its reply, if it comes anyway, is dropped by its token.
+	fun fetch(self, fetch: (async || Result<List<T>, E>) context ambient_nursery) {
+		let token = self.load();
+		if self.running.read() is Some(let previous) {
+			previous.cancel();
+		}
+		let running = detached_nursery();
+		self.running.write() = Some(running);
+		let feed = self;
+		ambient_nursery.run(running, || {
+			let _load = async {
+				let reply = fetch();
+				feed.settle(token, reply);
+			};
+		});
+	}
+
+	/// Ask for the older page with a real task.
+	fun fetch_older(self, fetch: (async || Result<Page<T>, E>) context ambient_nursery) {
+		self.request_older() is Some(let token) else ret;
+		if self.paging.read() is Some(let previous) {
+			previous.cancel();
+		}
+		let running = detached_nursery();
+		self.paging.write() = Some(running);
+		let feed = self;
+		ambient_nursery.run(running, || {
+			let _page = async {
+				let reply = fetch();
+				feed.prepend_page(token, reply);
+			};
+		});
+	}
+
+	/// Mirror a std transient of whole lists (`.transient()`, `TaskSource`): its
+	/// latest-wins rule picks the reply, and the list lands here by key.
+	fun follow<S: TransientSource<List<T>, E>>(self, source: S): Subscription {
+		let feed = self;
+		let mine: Shared<i32> = Shared::new(0);
+		let watching = source.states().on_change(|state| {
+			match state {
+				TransientState::Pending => mine.write() = feed.load(),
+				TransientState::Refreshing(let _old) => mine.write() = feed.load(),
+				TransientState::Ready(let list) => {
+					if mine.read() == 0 {
+						mine.write() = feed.load();
+					}
+					feed.settle(mine.read(), Ok(list));
+					mine.write() = 0;
+				},
+				TransientState::Failed(let error, let _stale) => {
+					if mine.read() == 0 {
+						mine.write() = feed.load();
+					}
+					feed.settle(mine.read(), Err(error));
+					mine.write() = 0;
+				},
+				TransientState::Absent => {},
+			}
+		});
+		register_with_owner(watching)
+	}
+}
+
+/// Where a row comes back among `items`: after the row it followed, else before
+/// the row that followed it, else at the top.
+fun landing_in<T, K: PartialEq>(items: List<T>, key: |&T| K, before: Option<K>, after: Option<K>): usize {
+	if before is Some(let above) && position_of(items, key, above) is Some(let at) {
+		ret at + 1;
+	}
+	if after is Some(let below) && position_of(items, key, below) is Some(let at) {
+		ret at;
+	}
+	if before is Some(let _gone) {
+		ret items.len();
+	}
+	0
+}
+
+fun position_of<T, K: PartialEq>(items: List<T>, key: |&T| K, id: K): Option<usize> {
+	mut at: usize = 0;
+	for item in items {
+		if key(&item) == id {
+			ret Some(at);
+		}
+		at += 1;
+	}
+	None
+}
+
+// === A loaded keyed collection ===============================================
+
+/// Items fetched one key at a time, each with its own phase. A keyed slot
+/// follows the KEY, so an item that goes `Absent` and comes back wakes the same
+/// slot, and a rejected delete comes back in the same row.
+export struct LoadedMap<K: Hashable, V, E> {
+	entries: Lens<HashMap<K, V>, K, V, Keyed<K>>,
+	phases: Shared<HashMap<K, SignalCell<TransientState<i32, E>>>>,
+	claims: Shared<HashMap<K, i32>>,
+	next: Shared<i32>,
+	changes: Overlay<K, V>,
+}
+
+export fun loaded_map<K: PartialEq + Hashable, V: PartialEq, E>(): LoadedMap<K, V, E> {
+	let empty: HashMap<K, V> = HashMap::new();
+	LoadedMap {
+		entries = keyed(empty),
+		phases = Shared::new(HashMap::new()),
+		claims = Shared::new(HashMap::new()),
+		next = Shared::new(0),
+		changes = overlay(),
+	}
+}
+
+export impl LoadedMap<type K: PartialEq + Hashable, type V: PartialEq, type E> {
+	/// The key's slot.
+	fun slot(self, key: K): ItemSlot<HashMap<K, V>, K, V, Keyed<K>> {
+		self.entries.slot(key)
+	}
+
+	/// The key's phase, made `Pending` on first ask.
+	fun phase(self, key: K): SignalCell<TransientState<i32, E>> {
+		if self.phases.read().get(key) is Some(let held) {
+			ret held;
+		}
+		let fresh: SignalCell<TransientState<i32, E>> = SignalCell::new(TransientState::Pending);
+		self.phases.write().insert(key, fresh);
+		fresh
+	}
+
+	/// Start a load of one key.
+	fun load(self, key: K): i32 {
+		let token = self.next.read() + 1;
+		self.next.write() = token;
+		self.claims.write().insert(key, token);
+		let phase = self.phase(key);
+		set_phase(phase, phase.get().refreshed());
+		token
+	}
+
+	/// The reply to load `token` of `key`: `Ok(None)` is "no such item" (`Absent`).
+	fun settle(self, key: K, token: i32, reply: Result<Option<V>, E>): bool {
+		if self.claims.read().get(key) != Some(token) {
+			ret false;
+		}
+		self.claims.write().remove(key);
+		let phase = self.phase(key);
+		match reply {
+			Ok(let found) => batch(|| {
+				self.receive(key, found);
+				set_phase(phase, if found is Some(let _) { TransientState::Ready(token) } else { TransientState::Absent });
+			}),
+			Err(let error) => set_phase(phase, phase.get().failed(error)),
+		}
+		true
+	}
+
+	/// The server's word on a key, pushed: held back while a change is pending.
+	fun push(self, key: K, value: Option<V>) {
+		let phase = self.phase(key);
+		batch(|| {
+			self.receive(key, value);
+			set_phase(phase, if value is Some(let _) { TransientState::Ready(0) } else { TransientState::Absent });
+		});
+	}
+
+	fun receive(self, key: K, value: Option<V>) {
+		match self.changes.heard(key, value) {
+			Some(let held) => self.show(key, held.value),
+			None => self.show(key, value),
+		}
+	}
+
+	/// Show `value` at the key now (`None`: remove it), pending the server.
+	fun propose(self, slot: ItemSlot<HashMap<K, V>, K, V, Keyed<K>>, value: Option<V>): i32 {
+		let key = match slot.at() {
+			Some(let held) => held,
+			None => panic("loaded: a keyed slot always has its key"),
+		};
+		let proposal = self.changes.open(key, slot.get(), value);
+		self.show(key, self.changes.shown(key).value);
+		proposal
+	}
+
+	fun confirm(self, proposal: i32) {
+		if self.changes.close(proposal, true) is Some(let held) {
+			self.show(held.key, held.value);
+		}
+	}
+
+	fun reject(self, proposal: i32) {
+		if self.changes.close(proposal, false) is Some(let held) {
+			self.show(held.key, held.value);
+		}
+	}
+
+	fun is_pending(self, key: K): SignalCell<bool> {
+		self.changes.flag(key)
+	}
+
+	fun pending(self): SignalCell<i32> {
+		self.changes.count
+	}
+
+	/// Make the key hold `value`, writing only when that differs.
+	fun show(self, key: K, value: Option<V>) {
+		if self.entries.peek(|map| map.get(key)) == value {
+			ret;
+		}
+		match value {
+			Some(let held) => self.entries.put(key, held),
+			None => self.entries.remove(key),
+		}
+	}
+}

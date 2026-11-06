@@ -1,0 +1,314 @@
+// The lens across a wire (reactive-lens.md, the wire section). A LAB model: both
+// ends live in one process and a "frame" is a plain value the test carries by
+// hand, so delivery order, lag and loss are exact. No codec, no sockets, no
+// grants: this is the part of std::rpc the lens would change, and nothing else.
+//
+// One vocabulary both ways down: a patch is a lens change with the values it
+// needs. The server's outbox records patches as the changes happen (so a value
+// is the value at that moment, and a turn's patches replay in order); the
+// client's replica is a lens of its own that applies them through the ordinary
+// write surface, so the client's slots move and wake exactly as the server's do.
+import pkg::lens::{ Change, Keyed, Lens, Lookup, Positional, Resizable, Stage, sequence };
+import std::compare::PartialEq;
+import std::hash::Hashable;
+import std::hash_map::HashMap;
+import std::hash_set::HashSet;
+import std::reactive::{ SequenceCell, SignalCell, Source, batch };
+import std::shared::Shared;
+
+// === Sequences ===============================================================
+
+/// One change to a sequence, with the values the other end cannot know.
+export enum Patch<T> {
+	/// These items arrived, the first at this position.
+	Insert(usize, List<T>),
+	/// The item at this position is now this one.
+	Replace(usize, T),
+	/// This many items left from this position. No value: the replica holds them.
+	Delete(usize, usize),
+	/// This part of the item at this position changed. The lab sends the whole
+	/// item; with typed field keys (B711) it would send the field alone.
+	Edit(usize, str, T),
+	/// The item at the first position now sits at the second.
+	Move(usize, usize),
+	/// The sequence is now this.
+	Reset(List<T>),
+}
+
+/// A run of patches, and the versions it takes a replica from and to.
+export struct Frame<T> {
+	from: i32,
+	to: i32,
+	patches: List<Patch<T>>,
+}
+
+/// The serving end of a sequence lens: a bounded log of patches by version.
+export struct Outbox<S, T> {
+	lens: Lens<S, usize, T, Positional>,
+	log: Shared<List<Patch<T>>>,
+	/// The version before the oldest patch still held.
+	base: Shared<i32>,
+	version: Shared<i32>,
+	limit: usize,
+	/// How many items have been put in patches: what the wire would carry.
+	sent_items: Shared<i32>,
+}
+
+/// Serve a sequence lens, keeping at most `limit` patches for a lagging reader.
+export fun serve<S: Resizable<T>, T>(lens: Lens<S, usize, T, Positional>, limit: usize): Outbox<S, T> {
+	let log: Shared<List<Patch<T>>> = Shared::new([]);
+	let base: Shared<i32> = Shared::new(0);
+	let version: Shared<i32> = Shared::new(0);
+	let record = |patch: Patch<T>| {
+		log.write().push(patch);
+		version.write() += 1;
+		if log.read().len() > limit {
+			log.write().remove(0);
+			base.write() += 1;
+		}
+	};
+	let _tap = lens.tap(
+		|_change| {},
+		|change, stage| {
+			// A write that named several changes cannot be read change by change:
+			// the reader is told the whole sequence once.
+			match stage {
+				Stage::LateFirst => {
+					record(Patch::Reset(lens.all()));
+					ret;
+				},
+				Stage::LateRest => ret,
+				_ => {},
+			}
+			match change {
+				Change::Insert(let at, let count) => {
+					mut arrived: List<T> = [];
+					mut index = at;
+					for index < at + count {
+						if lens.peek(|held| held.item(index)) is Some(let item) {
+							arrived.push(item);
+						}
+						index += 1;
+					}
+					record(Patch::Insert(at, arrived));
+				},
+				Change::Replace(let at) => {
+					if lens.peek(|held| held.item(at)) is Some(let item) {
+						record(Patch::Replace(at, item));
+					}
+				},
+				Change::Delete(let at, let count) => record(Patch::Delete(at, count)),
+				Change::Edit(let at, let part) => {
+					if lens.peek(|held| held.item(at)) is Some(let item) {
+						record(Patch::Edit(at, part, item));
+					}
+				},
+				Change::Move(let from, let to) => record(Patch::Move(from, to)),
+				Change::Reset => record(Patch::Reset(lens.all())),
+			}
+		},
+	);
+	Outbox { lens, log, base, version, limit, sent_items = Shared::new(0) }
+}
+
+export impl Outbox<type S: Resizable<type T>, T> {
+	/// Everything a replica at `version` has not been told. A replica that has
+	/// fallen behind the log, or was never seeded (`-1`), is told the whole
+	/// sequence.
+	fun since(self, version: i32): Frame<T> {
+		let now = self.version.read();
+		let base = self.base.read();
+		if version < base {
+			let all = self.lens.all();
+			self.sent_items.write() += all.len().as_i32();
+			ret Frame { from = version, to = now, patches = [Patch::Reset(all)] };
+		}
+		mut patches: List<Patch<T>> = [];
+		mut index = (version - base).as_usize();
+		let held = self.log.read();
+		for index < held.len() {
+			let patch = held[index];
+			match patch {
+				Patch::Insert(let _at, let items) => self.sent_items.write() += items.len().as_i32(),
+				Patch::Replace(let _at, let _item) => self.sent_items.write() += 1,
+				Patch::Edit(let _at, let _part, let _item) => self.sent_items.write() += 1,
+				Patch::Reset(let items) => self.sent_items.write() += items.len().as_i32(),
+				_ => {},
+			}
+			patches.push(patch);
+			index += 1;
+		}
+		Frame { from = version, to = now, patches }
+	}
+}
+
+/// The reading end: a lens of its own, written only by frames.
+export struct Replica<T, K> {
+	lens: Lens<List<T>, usize, T, Positional>,
+	/// The version this replica is at; -1 before its first frame.
+	version: Shared<i32>,
+	key: |&T| K,
+	/// True from a gap or a loss until the next frame that lands.
+	stale: SignalCell<bool>,
+}
+
+export impl Replica<type T: PartialEq, type K: PartialEq + Hashable> {
+	/// An empty replica. `key` is how a whole-sequence frame is matched against
+	/// what is held, so the rows both hold keep their slots.
+	fun new(key: |&T| K): Replica<T, K> {
+		let empty: List<T> = [];
+		Replica {
+			lens = sequence(empty),
+			version = Shared::new(-1),
+			key,
+			stale = SignalCell::new(false),
+		}
+	}
+
+	/// Land a frame, as one turn. `false` when the frame does not start where
+	/// this replica is: nothing is applied, and the caller asks `since` again.
+	fun apply(self, frame: Frame<T>): bool {
+		if frame.from != self.version.read() {
+			self.stale.set(true);
+			ret false;
+		}
+		let lens = self.lens;
+		let key = self.key;
+		batch(|| {
+			for patch in frame.patches {
+				match patch {
+					Patch::Insert(let at, let items) => lens.splice(at, 0, items),
+					Patch::Replace(let at, let item) => {
+						lens.replace(at, item);
+					},
+					Patch::Delete(let at, let count) => lens.splice(at, count, []),
+					Patch::Edit(let at, let part, let item) => {
+						lens.edit(at, part, |held| held = item);
+					},
+					Patch::Move(let from, let to) => lens.move_item(from, to),
+					Patch::Reset(let items) => lens.reconcile_by_key(items, key),
+				}
+			}
+		});
+		self.version.write() = frame.to;
+		if self.stale.get() {
+			self.stale.set(false);
+		}
+		true
+	}
+
+	/// The connection dropped: what is held stays readable, marked stale.
+	fun lost(self) {
+		self.stale.set(true);
+	}
+}
+
+// === Keyed collections, by subscription ======================================
+
+/// One change to one key a reader asked for.
+export enum KeyPatch<K, V> {
+	/// The key holds this value now.
+	Put(K, V),
+	/// One part of the key's value changed (the lab sends the whole value).
+	Edit(K, str, V),
+	/// The key holds nothing now.
+	Gone(K),
+}
+
+/// One reader's demand on a keyed lens: the keys it asked for, and the patches
+/// waiting for it. A change to a key nobody asked for is recorded nowhere.
+export struct KeySession<K: Hashable, V> {
+	wanted: Shared<HashSet<K>>,
+	waiting: Shared<List<KeyPatch<K, V>>>,
+}
+
+/// The serving end of a keyed lens.
+export struct KeyOutbox<S, K: Hashable, V> {
+	lens: Lens<S, K, V, Keyed<K>>,
+	sessions: Shared<List<KeySession<K, V>>>,
+}
+
+export fun serve_keys<S: Lookup<K, V>, K: Hashable, V>(lens: Lens<S, K, V, Keyed<K>>): KeyOutbox<S, K, V> {
+	let sessions: Shared<List<KeySession<K, V>>> = Shared::new([]);
+	let _tap = lens.tap(
+		|_change| {},
+		|change, _stage| {
+			match change {
+				Change::Insert(let key, let _count) => tell(sessions, lens, key, None),
+				Change::Replace(let key) => tell(sessions, lens, key, None),
+				Change::Delete(let key, let _count) => tell(sessions, lens, key, None),
+				Change::Edit(let key, let part) => tell(sessions, lens, key, Some(part)),
+				_ => {},
+			}
+		},
+	);
+	KeyOutbox { lens, sessions }
+}
+
+fun tell<S: Lookup<K, V>, K: Hashable, V>(
+	sessions: Shared<List<KeySession<K, V>>>,
+	lens: Lens<S, K, V, Keyed<K>>,
+	key: K,
+	part: Option<str>,
+) {
+	for session in sessions.read() {
+		if session.wanted.read().contains(key) {
+			let patch = match lens.peek(|held| held.find(key)) {
+				Some(let value) => match part {
+					Some(let name) => KeyPatch::Edit(key, name, value),
+					None => KeyPatch::Put(key, value),
+				},
+				None => KeyPatch::Gone(key),
+			};
+			session.waiting.write().push(patch);
+		}
+	}
+}
+
+export impl KeyOutbox<type S: Lookup<type K: Hashable, type V>, K, V> {
+	/// A new reader, wanting nothing yet.
+	fun join(self): KeySession<K, V> {
+		let session: KeySession<K, V> = KeySession { wanted = Shared::new(HashSet::new()), waiting = Shared::new([]) };
+		self.sessions.write().push(session);
+		session
+	}
+
+	/// The reader wants `key` from now on, starting with what it holds now.
+	fun subscribe(self, session: KeySession<K, V>, key: K) {
+		session.wanted.write().insert(key);
+		match self.lens.peek(|held| held.find(key)) {
+			Some(let value) => session.waiting.write().push(KeyPatch::Put(key, value)),
+			None => session.waiting.write().push(KeyPatch::Gone(key)),
+		}
+	}
+
+	fun unsubscribe(self, session: KeySession<K, V>, key: K) {
+		session.wanted.write().remove(key);
+	}
+}
+
+export impl KeySession<type K: Hashable, type V> {
+	/// Take what is waiting for this reader.
+	fun drain(self): List<KeyPatch<K, V>> {
+		let out = self.waiting.read();
+		self.waiting.write() = [];
+		out
+	}
+}
+
+/// Land keyed patches on a client's keyed lens, as one turn.
+export fun land_keys<K: Hashable, V>(lens: Lens<HashMap<K, V>, K, V, Keyed<K>>, patches: List<KeyPatch<K, V>>) {
+	batch(|| {
+		for patch in patches {
+			match patch {
+				KeyPatch::Put(let key, let value) => lens.put(key, value),
+				KeyPatch::Edit(let key, let part, let value) => {
+					if !lens.edit(key, part, |held| held = value) {
+						lens.put(key, value);
+					}
+				},
+				KeyPatch::Gone(let key) => lens.remove(key),
+			}
+		}
+	});
+}

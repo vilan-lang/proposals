@@ -1,0 +1,168 @@
+// L1 under random writes: thousands of inserts, deletes, bulk splices, moves and
+// replaces against a plain model, with every slot checked after every write. The
+// positional table is kept in blocks that split and empty; this is its proof.
+import pkg::lens::{ ItemSlot, Positional, sequence };
+import std::io::{ assert, panic };
+import std::reactive::{ CollFlow, CollPipe, SequenceCell, Source };
+
+struct Random {
+	state: i32,
+}
+
+impl Random {
+	/// The next number in 0..below.
+	fun next(&mut self, below: usize): usize {
+		// A small linear congruential step, kept inside 31 bits.
+		self.state = (self.state * 1103 + 12345) % 2147483;
+		if self.state < 0 {
+			self.state = -self.state;
+		}
+		self.state.as_usize() % below
+	}
+}
+
+struct Followed {
+	slot: ItemSlot<List<i32>, usize, i32, Positional>,
+	/// The id the slot should read, or -1 once its item is gone.
+	id: i32,
+}
+
+fun check(list: List<i32>, followed: List<Followed>, step: i32, what: str) {
+	for held in followed {
+		if held.id == -1 {
+			if held.slot.get() != None {
+				panic(i"step {step} ({what}): a dead slot reads {held.slot.get().debug()}");
+			}
+		} else {
+			mut found: Option<usize> = None;
+			mut at: usize = 0;
+			for id in list {
+				if id == held.id {
+					found = Some(at);
+				}
+				at += 1;
+			}
+			if held.slot.at() != found || held.slot.get() != Some(held.id) {
+				panic(i"step {step} ({what}): the slot of {held.id} is at {held.slot.at().debug()} reading {held.slot.get().debug()}, the model says {found.debug()}");
+			}
+		}
+	}
+}
+
+fun run(seed: i32, steps: i32) {
+	mut random = Random { state = seed };
+	mut model: List<i32> = [];
+	mut next_id = 0;
+	for next_id < 40 {
+		model.push(next_id);
+		next_id += 1;
+	}
+	let list = sequence(model);
+	// std's operators over the lens: the derivative law, checked after every write.
+	let tripled = list.items().map(|id| id * 3).memo();
+	let evens = list.items().filter(|id| id % 2 == 0).memo();
+	mut followed: List<Followed> = [];
+	mut step = 0;
+	for step < steps {
+		let size = model.len();
+		let choice = random.next(100);
+		mut what = "";
+		if choice < 14 && size > 0 {
+			// Follow a new slot.
+			what = "follow";
+			let at = random.next(size);
+			followed.push(Followed { slot = list.slot(at), id = model[at] });
+		} else if choice < 40 {
+			what = "insert";
+			let at = random.next(size + 1);
+			list.insert_at(at, next_id);
+			model.insert(at, next_id);
+			next_id += 1;
+		} else if choice < 60 && size > 0 {
+			what = "remove";
+			let at = random.next(size);
+			let gone = model.remove(at);
+			list.remove_at(at);
+			mark_gone(&mut followed, gone);
+		} else if choice < 66 {
+			// A bulk insert, long enough to split a block more than once.
+			what = "bulk insert";
+			let at = random.next(size + 1);
+			let count = 1 + random.next(400);
+			mut run: List<i32> = [];
+			mut made: usize = 0;
+			for made < count {
+				run.push(next_id);
+				model.insert(at + made, next_id);
+				next_id += 1;
+				made += 1;
+			}
+			list.splice(at, 0, run);
+		} else if choice < 72 && size > 1 {
+			// A bulk delete, often across blocks.
+			what = "bulk remove";
+			let at = random.next(size);
+			let count = 1 + random.next(size - at);
+			mut taken: usize = 0;
+			for taken < count {
+				let gone = model.remove(at);
+				mark_gone(&mut followed, gone);
+				taken += 1;
+			}
+			list.splice(at, count, []);
+		} else if choice < 88 && size > 1 {
+			what = "move";
+			let from = random.next(size);
+			let to = random.next(size);
+			if from != to {
+				let moved = model.remove(from);
+				model.insert(to, moved);
+				list.move_item(from, to);
+			}
+		} else if size > 0 {
+			// A replace: another item now sits there, and the slot reads it.
+			what = "replace";
+			let at = random.next(size);
+			let old = model[at];
+			model[at] = next_id;
+			list.replace(at, next_id);
+			mut index: usize = 0;
+			for index < followed.len() {
+				if followed[index].id == old {
+					followed[index].id = next_id;
+				}
+				index += 1;
+			}
+			next_id += 1;
+		}
+		if list.all() != model {
+			panic(i"step {step} ({what}): the list and the model differ");
+		}
+		check(model, followed, step, what);
+		if tripled.get() != model.map(|id| id * 3) {
+			panic(i"step {step} ({what}): map over the lens fell out of step");
+		}
+		if evens.get() != model.filter(|id| id % 2 == 0) {
+			panic(i"step {step} ({what}): filter over the lens fell out of step");
+		}
+		step += 1;
+	}
+	print(i"fuzz seed {seed}: {steps} writes, {followed.len()} slots, {model.len()} items held at the end");
+}
+
+fun mark_gone(followed: &mut List<Followed>, gone: i32) {
+	mut index: usize = 0;
+	for index < followed.len() {
+		if followed[index].id == gone {
+			followed[index].id = -1;
+		}
+		index += 1;
+	}
+}
+
+fun main() {
+	run(1, 3000);
+	run(7, 3000);
+	run(42, 3000);
+	print("fuzz: all passed");
+}

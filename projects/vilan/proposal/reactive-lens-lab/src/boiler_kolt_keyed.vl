@@ -1,0 +1,78 @@
+// Boilerplate measurement 4(ii)(b): the keyed-lens variant of the tab lookups. It lives in its own
+// module because a `Lookup::find` impl in the same module as a positional lens breaks lens.vl
+// (see the report). Same stand-in types as boiler_kolt.vl.
+import pkg::lens::{ Keyed, Lens, Lookup, keyed };
+import std::io::assert;
+import std::shared::Shared;
+
+struct TabRecord {
+	id: u53,
+	org: str,
+	name: str,
+	layout: str,
+}
+
+fun tab(id: u53, name: str): TabRecord {
+	TabRecord { id, org = "o", name, layout = "" }
+}
+
+// @BEGIN tabs_after_keyed
+// (b) keyed lens over an ordered store: `Tabs` is the storage, `Lookup` is the whole adapter
+struct Tabs {
+	list: List<TabRecord>,
+}
+
+impl Tabs with Lookup<u53, TabRecord> {
+	fun find(self, key: u53): Option<TabRecord> {
+		self.list.find(|each| each.id == key)
+	}
+
+	fun store(&mut self, key: u53, value: TabRecord) {
+		match self.list.position(|each| each.id == key) {
+			Some(let at) => self.list[at] = value,
+			None => self.list.push(value),
+		}
+	}
+
+	fun drop(&mut self, key: u53) {
+		if self.list.position(|each| each.id == key) is Some(let at) {
+			self.list.remove(at);
+		}
+	}
+}
+
+struct PanelsLensB {
+	tabs: Lens<Tabs, u53, TabRecord, Keyed<u53>>,
+	log: Shared<List<str>>,
+}
+
+impl PanelsLensB {
+	fun went_to(self, id: u53) {
+		match self.tabs.slot(id).get() {
+			Some(let tab) => self.log.write().push(tab.name),
+			None => self.log.write().push("none"),
+		}
+	}
+
+	fun switch_to(self, id: u53) {
+		if self.tabs.slot(id).get() is Some(let tab) {
+			self.log.write().push(tab.name);
+		}
+	}
+
+	fun merge_tab(self, id: u53) {
+		let tab = self.tabs.slot(id).get() is Some(let found) then found else ret;
+		self.log.write().push(tab.name);
+	}
+}
+// @END tabs_after_keyed
+
+fun main() {
+	let log_b: Shared<List<str>> = Shared::new([]);
+	let pb = PanelsLensB { tabs = keyed(Tabs { list = [tab(1, "one"), tab(2, "two")] }), log = log_b };
+	pb.went_to(2);
+	pb.switch_to(1);
+	pb.merge_tab(2);
+	pb.went_to(9);
+	assert(log_b.read() == ["two", "one", "two", "none"], "tabs (b) same");
+}

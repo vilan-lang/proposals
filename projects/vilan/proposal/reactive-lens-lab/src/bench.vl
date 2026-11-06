@@ -1,0 +1,218 @@
+// The Tasks list's rows at kolt's large-org size (2,089 tasks), on the lens and on
+// std's rivals. Each row watches its task's title and status and counts a "draw"
+// when either changes. No DOM: this times the reactive layer alone.
+//
+// The workloads are kolt's prototype bench (planning/proposal/live/src/bench.vl)
+// plus three it does not have: a wide turn, appends, and a build at 32,000 rows.
+import pkg::lens::{ ItemSlot, Positional, sequence };
+import std::reactive::store::{ Storable, Store };
+import std::reactive::{ Flow, SequenceCell, SignalCell, Source, batch };
+import std::shared::Shared;
+import std::time::now_millis;
+import std::wire::Keyed;
+
+[derive(PartialEq, Storable)]
+struct Task {
+	id: i32,
+	title: str,
+	status: str,
+	notes: List<str>,
+}
+
+impl Task with Keyed<i32> {
+	fun key(self): i32 {
+		self.id
+	}
+}
+
+fun notes(count: usize): List<str> {
+	mut out: List<str> = [];
+	mut i: usize = 0;
+	for i < count {
+		out.push(i"note {i}");
+		i += 1;
+	}
+	out
+}
+
+fun tasks(rows: usize, heavy: usize): List<Task> {
+	mut out: List<Task> = [];
+	mut i: usize = 0;
+	for i < rows {
+		out.push(Task { id = i.as_i32(), title = i"Task {i}", status = "open", notes = notes(heavy) });
+		i += 1;
+	}
+	out
+}
+
+fun report(name: str, what: str, start: f64, draws: Shared<i32>) {
+	let ms = now_millis() - start;
+	print(i"{name} | {what} | {ms} ms | {draws.read()} draws");
+	draws.write() = 0;
+}
+
+let rounds: i32 = 200;
+
+/// The plain-signals rival takes about 16 seconds; it does not change between runs.
+let run_signals = false;
+
+fun lens(rows: usize, heavy: usize, tag: str) {
+	let name = i"lens    {tag}";
+	let draws: Shared<i32> = Shared::new(0);
+	let start = now_millis();
+	let list = sequence(tasks(rows, heavy));
+	mut slots: List<ItemSlot<List<Task>, usize, Task, Positional>> = [];
+	mut i: usize = 0;
+	for i < rows {
+		let slot = list.slot(i);
+		let _a = slot.part("title", |t| t.title).on_change(|_t| draws.write() += 1);
+		let _b = slot.part("status", |t| t.status).on_change(|_s| draws.write() += 1);
+		slots.push(slot);
+		i += 1;
+	}
+	report(name, "build", start, draws);
+
+	let rename = now_millis();
+	mut round = 0;
+	for round < rounds {
+		slots[rows / 2].edit("title", |t| t.title = i"Renamed {round}");
+		round += 1;
+	}
+	report(name, "rename x200", rename, draws);
+
+	let inserting = now_millis();
+	round = 0;
+	for round < rounds {
+		list.insert_at(0, Task { id = -1, title = "New", status = "open", notes = notes(heavy) });
+		list.remove_at(0);
+		round += 1;
+	}
+	report(name, "insert+delete at top x200", inserting, draws);
+
+	let appending = now_millis();
+	round = 0;
+	for round < rounds {
+		list.push(Task { id = -1, title = "New", status = "open", notes = notes(heavy) });
+		round += 1;
+	}
+	report(name, "append x200", appending, draws);
+
+	let wide = now_millis();
+	batch(|| {
+		for slot in slots {
+			slot.edit("status", |t| t.status = "done");
+		}
+	});
+	report(name, "one turn closing every row", wide, draws);
+}
+
+fun store(rows: usize, heavy: usize, tag: str) {
+	let name = i"store   {tag}";
+	let draws: Shared<i32> = Shared::new(0);
+	let start = now_millis();
+	let list: Store<List<Task>> = Store::new(tasks(rows, heavy));
+	mut held = [];
+	mut i: usize = 0;
+	for i < rows {
+		let task = list.by_key(i.as_i32()).some();
+		let _a = task.title().on_change(|_t| draws.write() += 1);
+		let _b = task.status().on_change(|_s| draws.write() += 1);
+		held.push(task.status());
+		i += 1;
+	}
+	report(name, "build", start, draws);
+
+	let middle = (rows / 2).as_i32();
+	let rename = now_millis();
+	mut round = 0;
+	for round < rounds {
+		list.by_key(middle).some().title().patch(i"Renamed {round}");
+		round += 1;
+	}
+	report(name, "rename x200", rename, draws);
+
+	let inserting = now_millis();
+	round = 0;
+	for round < rounds {
+		list.splice(0, 0, [Task { id = -1, title = "New", status = "open", notes = notes(heavy) }]);
+		list.splice(0, 1, []);
+		round += 1;
+	}
+	report(name, "insert+delete at top x200", inserting, draws);
+
+	let appending = now_millis();
+	round = 0;
+	for round < rounds {
+		list.splice(rows + round.as_usize(), 0, [Task { id = -2 - round, title = "New", status = "open", notes = notes(heavy) }]);
+		round += 1;
+	}
+	report(name, "append x200", appending, draws);
+
+	let wide = now_millis();
+	batch(|| {
+		mut at: usize = 0;
+		for at < rows {
+			list.by_key(at.as_i32()).some().status().patch("done");
+			at += 1;
+		}
+	});
+	report(name, "one turn closing every row", wide, draws);
+
+	// The same turn through handles the rows already hold, with no lookup by key.
+	let again = now_millis();
+	batch(|| {
+		for status in held {
+			status.patch("open");
+		}
+	});
+	report(name, "the same turn through held handles", again, draws);
+}
+
+fun signals(rows: usize, heavy: usize, tag: str) {
+	let name = i"signals {tag}";
+	let draws: Shared<i32> = Shared::new(0);
+	let start = now_millis();
+	let list = SignalCell::new(tasks(rows, heavy));
+	mut subscriptions = [];
+	mut i: usize = 0;
+	for i < rows {
+		let at = i;
+		subscriptions.push(list.derive(|x| x.get(at).map(|t| t.title)).distinct_by(|t| t).on_change(|_t| draws.write() += 1));
+		subscriptions.push(list.derive(|x| x.get(at).map(|t| t.status)).distinct_by(|s| s).on_change(|_s| draws.write() += 1));
+		i += 1;
+	}
+	report(name, "build", start, draws);
+
+	// A tenth of the rounds: every write here re-runs every row.
+	let few = rounds / 10;
+	let rename = now_millis();
+	mut round = 0;
+	for round < few {
+		list.update(|x| x[rows / 2].title = i"Renamed {round}");
+		round += 1;
+	}
+	report(name, "rename x20", rename, draws);
+
+	let inserting = now_millis();
+	round = 0;
+	for round < few {
+		list.update(|x| x.insert(0, Task { id = -1, title = "New", status = "open", notes = notes(heavy) }));
+		list.update(|x| {
+			x.remove(0);
+		});
+		round += 1;
+	}
+	report(name, "insert+delete at top x20", inserting, draws);
+}
+
+fun main() {
+	lens(2089, 0, "light");
+	store(2089, 0, "light");
+	lens(2089, 300, "heavy");
+	store(2089, 300, "heavy");
+	lens(32000, 0, "32k  ");
+	store(32000, 0, "32k  ");
+	if run_signals {
+		signals(2089, 0, "light");
+	}
+}

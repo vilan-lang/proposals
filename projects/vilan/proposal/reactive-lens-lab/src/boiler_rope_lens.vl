@@ -1,0 +1,114 @@
+// Boilerplate measurement 2a: the toy rope under the lens.
+import pkg::lens::{ Resizable, sequence };
+import std::io::assert;
+import std::reactive::{ CollFlow, CollPipe, SequenceCell, Source };
+
+// ---- the storage itself (needed under ANY design) ---------------------------
+struct Rope {
+	chunks: List<List<str>>,
+}
+
+impl Rope {
+	fun find(self, i: usize): Option<(usize, usize)> {
+		mut start: usize = 0;
+		mut c: usize = 0;
+		for chunk in self.chunks {
+			if i < start + chunk.len() {
+				ret Some((c, i - start));
+			}
+			start += chunk.len();
+			c += 1;
+		}
+		None
+	}
+
+	fun len(self): usize {
+		mut total: usize = 0;
+		for chunk in self.chunks {
+			total += chunk.len();
+		}
+		total
+	}
+
+	fun get(self, at: usize): Option<str> {
+		self.find(at) is Some((let c, let k)) else ret None;
+		self.chunks[c].get(k)
+	}
+
+	fun add(&mut self, at: usize, value: str) {
+		if self.chunks.len() == 0 {
+			self.chunks.push([value]);
+			ret;
+		}
+		let (c, k) = match self.find(at) {
+			Some(let place) => place,
+			None => (self.chunks.len() - 1, self.chunks[self.chunks.len() - 1].len()),
+		};
+		self.chunks[c].insert(k, value);
+		if self.chunks[c].len() > 4 {
+			mut tail: List<str> = [];
+			for self.chunks[c].len() > 2 {
+				tail.insert(0, self.chunks[c].pop().unwrap_or(""));
+			}
+			self.chunks.insert(c + 1, tail);
+		}
+	}
+
+	fun take(&mut self, at: usize) {
+		self.find(at) is Some((let c, let k)) else ret;
+		self.chunks[c].remove(k);
+		if self.chunks[c].len() == 0 {
+			self.chunks.remove(c);
+		}
+	}
+
+	fun all(self): List<str> {
+		mut out: List<str> = [];
+		for chunk in self.chunks {
+			for line in chunk {
+				out.push(line);
+			}
+		}
+		out
+	}
+}
+
+// ---- BEGIN lens adapter ------------------------------------------------------
+impl Rope with Resizable<str> {
+	fun count(self): usize {
+		self.len()
+	}
+
+	fun item(self, at: usize): Option<str> {
+		self.get(at)
+	}
+
+	fun splice(&mut self, at: usize, removed: usize, inserted: List<str>) {
+		mut k: usize = 0;
+		for k < removed {
+			self.take(at);
+			k += 1;
+		}
+		mut j: usize = 0;
+		for line in inserted {
+			self.add(at + j, line);
+			j += 1;
+		}
+	}
+}
+// ---- END lens adapter --------------------------------------------------------
+
+fun main() {
+	let text = sequence(Rope { chunks = [["a", "b", "c", "d"], ["e", "f", "g"]] });
+	let fifth = text.slot(4);
+	text.insert_at(1, "new");
+	assert(fifth.at() == Some(5) && fifth.get() == Some("e"), "slot follows its line through a chunk split");
+	fifth.set("E");
+	assert(text.all() == ["a", "new", "b", "c", "d", "E", "f", "g"], "slot write lands in the rope");
+	text.remove_at(0);
+	assert(fifth.at() == Some(4), "slot moved up");
+	let derived = text.items().map(|line| line + "!").memo();
+	text.push("z");
+	text.replace(0, "N");
+	assert(derived.get() == ["N!", "b!", "c!", "d!", "E!", "f!", "g!", "z!"], "derived list follows");
+}

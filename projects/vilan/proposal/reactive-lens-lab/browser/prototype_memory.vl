@@ -1,0 +1,72 @@
+import pkg::live::{ Live };
+import std::reactive::SignalCell;
+import std::reactive::{ Flow, Source };
+import std::shared::Shared;
+
+[derive(PartialEq)]
+struct Task {
+	id: i32,
+	title: str,
+	status: str,
+}
+
+let rows: usize = 32000;
+
+fun tasks(): List<Task> {
+	mut out: List<Task> = [];
+	mut i: usize = 0;
+	for i < rows {
+		out.push(Task { id = i.as_i32(), title = i"Task {i}", status = "open" });
+		i += 1;
+	}
+	out
+}
+
+fun live() {
+	let draws: Shared<i32> = Shared::new(0);
+	let list = Live::resizable(tasks());
+	print("MEASURE live: the list alone");
+	mut keep = [];
+	mut watches = [];
+	mut i: usize = 0;
+	for i < rows {
+		let slot = list.at(i);
+		let title = slot.field("title", |t| t.title);
+		let status = slot.field("status", |t| t.status);
+		watches.push(title.on(|_t| draws.write() += 1));
+		watches.push(status.on(|_s| draws.write() += 1));
+		keep.push(title);
+		keep.push(status);
+		i += 1;
+	}
+	print("MEASURE live: with two observers per row");
+	print(i"live drew {draws.read()} with {keep.len()} fields and {watches.len()} watches");
+}
+
+struct Row {
+	title: SignalCell<str>,
+	status: SignalCell<str>,
+}
+
+fun twin() {
+	let draws: Shared<i32> = Shared::new(0);
+	let source = tasks();
+	print("MEASURE twin: the list alone");
+	mut held: List<Row> = [];
+	mut keep = [];
+	for task in source {
+		let row = Row { title = SignalCell::new(task.title), status = SignalCell::new(task.status) };
+		keep.push(row.title.on_change(|_t| draws.write() += 1));
+		keep.push(row.status.on_change(|_s| draws.write() += 1));
+		held.push(row);
+	}
+	print("MEASURE twin: a cell per field, two observers per row");
+	print(i"twin drew {draws.read()} with {keep.len()} observers over {held.len()} rows and {source.len()} tasks");
+}
+
+fun main() {
+	print("MEASURE start");
+	live();
+	print("MEASURE between");
+	twin();
+}

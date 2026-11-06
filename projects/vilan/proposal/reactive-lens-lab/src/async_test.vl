@@ -1,0 +1,273 @@
+// Async data over the lens, with "the server" driven by hand: every reply,
+// confirmation and push is a call the test makes, in an order it chooses.
+import pkg::loaded::{ Edge, Loaded, LoadedMap, Page, loaded, loaded_map };
+import std::io::assert;
+import std::reactive::{ SequenceCell, Source };
+import std::reactive::transient::TransientState;
+import std::shared::Shared;
+
+[derive(PartialEq)]
+struct Msg {
+	id: i32,
+	text: str,
+}
+
+fun m(id: i32, text: str): Msg {
+	Msg { id, text }
+}
+
+fun ids(feed: Loaded<Msg, i32, str>): List<i32> {
+	mut out: List<i32> = [];
+	for item in feed.items.all() {
+		out.push(item.id);
+	}
+	out
+}
+
+fun said(state: TransientState<i32, str>): str {
+	match state {
+		TransientState::Pending => "Pending",
+		TransientState::Ready(let token) => i"Ready({token})",
+		TransientState::Refreshing(let token) => i"Refreshing({token})",
+		TransientState::Failed(let error, let stale) => match stale {
+			Some(let token) => i"Failed({error}, {token})",
+			None => i"Failed({error})",
+		},
+		TransientState::Absent => "Absent",
+	}
+}
+
+fun edge(state: Edge<str>): str {
+	match state {
+		Edge::Idle => "Idle",
+		Edge::Loading => "Loading",
+		Edge::End => "End",
+		Edge::Failed(let error) => i"Failed({error})",
+	}
+}
+
+fun fresh(): Loaded<Msg, i32, str> {
+	loaded(|item: &Msg| item.id)
+}
+
+fun main() {
+	// === Scenario 1: a paged list where page 2 arrives while a row of page 1 is
+	// being edited optimistically.
+	let feed = fresh();
+	assert(said(feed.phase.get()) == "Pending" && feed.items.size() == 0, "1: nothing yet is Pending, not empty");
+	let first = feed.load();
+	assert(feed.settle(first, Ok([m(10, "j"), m(11, "k"), m(12, "l")])), "1: page 1 lands");
+	assert(said(feed.phase.get()) == "Ready(1)", "1: Ready, with the load's token");
+	let row = feed.items.slot(1);
+	let row_runs: Shared<i32> = Shared::new(0);
+	let shape_runs: Shared<i32> = Shared::new(0);
+	let flag_runs: Shared<i32> = Shared::new(0);
+	let _r1 = row.on_change(|_item| row_runs.write() += 1);
+	let _s1 = feed.items.length().on_change(|_n| shape_runs.write() += 1);
+	let flag = feed.is_pending(row);
+	let _f1 = flag.on_change(|_on| flag_runs.write() += 1);
+	let edit = feed.propose(row, m(11, "k, edited")).unwrap();
+	assert(row.get() == Some(m(11, "k, edited")) && flag.get() && feed.pending().get() == 1, "1: the edit shows at once");
+	assert(row_runs.read() == 1 && flag_runs.read() == 1, "1: the row and its flag woke once");
+	let page = feed.request_older().unwrap();
+	assert(edge(feed.older.get()) == "Loading", "1: the older end is loading");
+	// Page 2 overlaps page 1 by one row (10): no duplicate.
+	assert(feed.prepend_page(page, Ok(Page { items = [m(7, "g"), m(8, "h"), m(9, "i"), m(10, "j")], more = true })), "1: page 2 lands");
+	assert(ids(feed) == [7, 8, 9, 10, 11, 12], "1: page 2 is spliced in at the top, the overlap once");
+	assert(row.at() == Some(4) && row.get() == Some(m(11, "k, edited")), "1: the edited row moved down and kept its edit");
+	assert(row_runs.read() == 1 && shape_runs.read() == 1, "1: a page above the row did not wake it; the length woke once");
+	assert(edge(feed.older.get()) == "Idle", "1: the older end may ask again");
+	feed.confirm(edit);
+	assert(row.get() == Some(m(11, "k, edited")) && !flag.get() && feed.pending().get() == 0, "1: confirmed");
+	assert(row_runs.read() == 1 && flag_runs.read() == 2, "1: a confirm of the value shown woke the flag only");
+
+	// === Scenario 2: a refresh superseded mid-flight; the old reply arrives late
+	// and must not overwrite; row slots survive the reconcile.
+	let feed = fresh();
+	feed.resync([m(1, "a"), m(2, "b"), m(3, "c")]);
+	let one = feed.items.slot(0);
+	let two = feed.items.slot(1);
+	let three = feed.items.slot(2);
+	let one_runs: Shared<i32> = Shared::new(0);
+	let three_runs: Shared<i32> = Shared::new(0);
+	let _r2 = one.on_change(|_item| one_runs.write() += 1);
+	let _r3 = three.on_change(|_item| three_runs.write() += 1);
+	let slow = feed.load();
+	assert(said(feed.phase.get()) == "Refreshing(1)", "2: a refresh keeps the items and says so");
+	let quick = feed.load();
+	assert(feed.settle(quick, Ok([m(1, "a"), m(3, "c2"), m(4, "d")])), "2: the newer reply lands");
+	assert(!feed.settle(slow, Ok([m(1, "OLD")])), "2: the superseded reply is dropped");
+	assert(ids(feed) == [1, 3, 4] && feed.items.peek(|list| list[1].text) == "c2", "2: the newer reply's items");
+	assert(said(feed.phase.get()) == i"Ready({quick})", "2: Ready with the newer token");
+	assert(one.at() == Some(0) && three.at() == Some(1) && three.get() == Some(m(3, "c2")), "2: kept rows kept their slots");
+	assert(two.get() == None, "2: a row that left ends its slot");
+	assert(one_runs.read() == 0 && three_runs.read() == 1, "2: an unchanged row woke nothing; a changed one woke once");
+
+	// === Scenario 3: a refresh fails: old items stay visible, the phase is
+	// Failed, a retry succeeds.
+	let failing = feed.load();
+	assert(feed.settle(failing, Err("500")), "3: the failure is applied");
+	assert(said(feed.phase.get()) == i"Failed(500, {quick})", "3: Failed, naming the load whose items are held");
+	assert(ids(feed) == [1, 3, 4] && three.get() == Some(m(3, "c2")), "3: the items stay");
+	let retry = feed.load();
+	assert(said(feed.phase.get()) == i"Refreshing({quick})", "3: a retry refreshes from the stale items");
+	assert(feed.settle(retry, Ok([m(1, "a"), m(3, "c3"), m(4, "d")])), "3: the retry lands");
+	assert(said(feed.phase.get()) == i"Ready({retry})" && three.get() == Some(m(3, "c3")), "3: Ready again, the slot survived");
+
+	// === Scenario 4: an optimistic delete is rejected while the same list is
+	// reloaded: the row comes back at the right place.
+	let feed = fresh();
+	feed.resync([m(1, "a"), m(2, "b"), m(3, "c"), m(4, "d")]);
+	let doomed = feed.items.slot(2);
+	let delete = feed.propose_delete(doomed).unwrap();
+	assert(ids(feed) == [1, 2, 4] && doomed.get() == None, "4: the delete shows at once");
+	assert(feed.is_pending_key(3).get() && feed.pending().get() == 1, "4: and is pending");
+	let reload = feed.load();
+	// The server still holds 3 (it has not taken the delete), and has reordered.
+	assert(feed.settle(reload, Ok([m(0, "new"), m(4, "d"), m(3, "c"), m(2, "b"), m(1, "a")])), "4: the reload lands");
+	assert(ids(feed) == [0, 4, 2, 1], "4: the reload is shown with the pending delete still applied");
+	feed.reject(delete);
+	assert(ids(feed) == [0, 4, 3, 2, 1], "4: the rejected row came back where the server now has it");
+	assert(!feed.is_pending_key(3).get() && feed.pending().get() == 0, "4: nothing pending");
+	assert(doomed.get() == None, "4: (the old slot stays dead: the row is back under a NEW slot)");
+	// The other order: the rejection lands while the reload is in flight.
+	let doomed = feed.items.slot(1);
+	let delete = feed.propose_delete(doomed).unwrap();
+	let reload = feed.load();
+	feed.reject(delete);
+	assert(ids(feed) == [0, 4, 3, 2, 1], "4b: rejected before the reload: back between its neighbours");
+	assert(feed.settle(reload, Ok([m(0, "new"), m(1, "a"), m(4, "d"), m(3, "c"), m(2, "b")])), "4b: the reload lands");
+	assert(ids(feed) == [0, 1, 4, 3, 2], "4b: and the reload orders it");
+	// A delete of the TOP row, then a page arrives above it, then the rejection.
+	let top = feed.items.slot(0);
+	let delete = feed.propose_delete(top).unwrap();
+	let older = feed.request_older().unwrap();
+	assert(feed.prepend_page(older, Ok(Page { items = [m(-2, "y"), m(-1, "z")], more = false })), "4c: a page lands above");
+	feed.reject(delete);
+	assert(ids(feed) == [-2, -1, 0, 1, 4, 3, 2], "4c: the top row came back below the new page, not at position 0");
+
+	// === Scenario 5: two optimistic edits to one row; the server confirms the
+	// second first.
+	let feed = fresh();
+	feed.resync([m(1, "a"), m(2, "b")]);
+	let row = feed.items.slot(1);
+	let runs: Shared<i32> = Shared::new(0);
+	let other_runs: Shared<i32> = Shared::new(0);
+	let _r5 = row.on_change(|_item| runs.write() += 1);
+	let _o5 = feed.items.slot(0).on_change(|_item| other_runs.write() += 1);
+	let first = feed.propose(row, m(2, "A")).unwrap();
+	let second = feed.propose(row, m(2, "B")).unwrap();
+	assert(row.get() == Some(m(2, "B")) && runs.read() == 2 && feed.pending().get() == 2, "5: both edits showed, the newer on top");
+	feed.confirm(second);
+	assert(row.get() == Some(m(2, "B")) && runs.read() == 2, "5: confirming the shown value woke nothing");
+	assert(feed.is_pending(row).get() && feed.pending().get() == 1, "5: the first is still pending");
+	feed.confirm(first);
+	assert(row.get() == Some(m(2, "B")) && runs.read() == 2, "5: the late, older ack does not walk the row back to A");
+	assert(!feed.is_pending(row).get() && feed.pending().get() == 0 && other_runs.read() == 0, "5: settled; the other row never woke");
+	// Rejections in either order.
+	let first = feed.propose(row, m(2, "C")).unwrap();
+	let second = feed.propose(row, m(2, "D")).unwrap();
+	feed.reject(second);
+	assert(row.get() == Some(m(2, "C")), "5b: the newer refused: the older still shows");
+	feed.reject(first);
+	assert(row.get() == Some(m(2, "B")), "5b: both refused: the confirmed value");
+	let first = feed.propose(row, m(2, "E")).unwrap();
+	let second = feed.propose(row, m(2, "F")).unwrap();
+	feed.confirm(second);
+	feed.reject(first);
+	assert(row.get() == Some(m(2, "F")) && feed.pending().get() == 0, "5c: the older refused after the newer confirmed: F stands");
+
+	// === Scenario 6: a load-more that fails, then is retried: no duplicate or
+	// lost rows.
+	let feed = fresh();
+	feed.resync([m(10, "j"), m(11, "k")]);
+	let page = feed.request_older().unwrap();
+	assert(feed.prepend_page(page, Err("timeout")), "6: the failure is applied");
+	assert(edge(feed.older.get()) == "Failed(timeout)" && ids(feed) == [10, 11], "6: the end failed, the rows stay");
+	let stuck = feed.request_older().unwrap();
+	let retry = feed.request_older().unwrap();
+	assert(!feed.prepend_page(stuck, Ok(Page { items = [m(9, "STALE")], more = true })), "6: the superseded ask is dropped");
+	assert(feed.prepend_page(retry, Ok(Page { items = [m(8, "h"), m(9, "i"), m(10, "j"), m(10, "j")], more = false })), "6: the retry lands");
+	assert(ids(feed) == [8, 9, 10, 11], "6: no duplicate, nothing lost");
+	assert(edge(feed.older.get()) == "End" && feed.request_older() == None, "6: the end is reached");
+	let newer = feed.request_newer().unwrap();
+	assert(feed.append_page(newer, Ok(Page { items = [m(11, "k"), m(12, "l")], more = true })), "6: the newer end appends");
+	assert(ids(feed) == [8, 9, 10, 11, 12], "6: appended, the overlap once");
+	// A page asked of the old list is dropped when a reload lands first.
+	let older_page = feed.request_newer().unwrap();
+	feed.resync([m(20, "t")]);
+	assert(!feed.append_page(older_page, Ok(Page { items = [m(13, "m")], more = true })), "6b: a page asked before a reload is dropped");
+	assert(ids(feed) == [20] && edge(feed.newer.get()) == "Idle", "6b: the reload's items only");
+
+	// === Scenario 7: a single keyed item that goes Absent then Ready again, and
+	// an item that arrives from the server while a pending local edit exists.
+	let users: LoadedMap<str, str, str> = loaded_map();
+	let ada = users.slot("ada");
+	let ada_runs: Shared<i32> = Shared::new(0);
+	let _a7 = ada.on_change(|_name| ada_runs.write() += 1);
+	let asked = users.load("ada");
+	assert(said(users.phase("ada").get()) == "Pending", "7: a key asked for is Pending");
+	assert(users.settle("ada", asked, Ok(None)), "7: no such user");
+	assert(said(users.phase("ada").get()) == "Absent" && ada.get() == None && ada_runs.read() == 0, "7: Absent, the slot reads None, nothing woke");
+	let again = users.load("ada");
+	assert(said(users.phase("ada").get()) == "Pending", "7: asking again after Absent is Pending");
+	assert(users.settle("ada", again, Ok(Some("Ada"))), "7: now there is");
+	assert(said(users.phase("ada").get()) == i"Ready({again})" && ada.get() == Some("Ada") && ada_runs.read() == 1, "7: Ready, the same slot woke once");
+	let rename = users.propose(ada, Some("Ada L."));
+	assert(ada.get() == Some("Ada L.") && ada_runs.read() == 2 && users.is_pending("ada").get(), "7: a local edit shows");
+	users.push("ada", Some("Ada (server)"));
+	assert(ada.get() == Some("Ada L.") && ada_runs.read() == 2, "7: the server's push is held back behind the pending edit");
+	users.reject(rename);
+	assert(ada.get() == Some("Ada (server)") && ada_runs.read() == 3, "7: the rejection shows the pushed value, not the old one");
+	// A local create the server echoes before confirming it.
+	let bob = users.slot("bob");
+	let bob_runs: Shared<i32> = Shared::new(0);
+	let _b7 = bob.on_change(|_name| bob_runs.write() += 1);
+	let create = users.propose(bob, Some("Bob"));
+	assert(bob.get() == Some("Bob") && bob_runs.read() == 1, "7: the create shows");
+	users.push("bob", Some("Bob, as stored"));
+	assert(bob.get() == Some("Bob") && bob_runs.read() == 1, "7: the arriving item waits behind the create");
+	users.confirm(create);
+	assert(bob.get() == Some("Bob") && bob_runs.read() == 1 && users.pending().get() == 0, "7: the confirm keeps the shown value and wakes nothing");
+	// A keyed delete, rejected: the row comes back in the SAME slot.
+	let drop = users.propose(ada, None);
+	assert(ada.get() == None, "7: the delete shows");
+	users.reject(drop);
+	assert(ada.get() == Some("Ada (server)"), "7: rejected: the same slot reads the item again");
+	// The same arrival on a list row.
+	let feed = fresh();
+	feed.resync([m(1, "a"), m(2, "b")]);
+	let row = feed.items.slot(1);
+	let mine = feed.propose(row, m(2, "mine")).unwrap();
+	feed.receive(m(2, "theirs"));
+	feed.receive(m(3, "new"));
+	assert(row.get() == Some(m(2, "mine")) && ids(feed) == [1, 2, 3], "7b: a push to a pending row waits; a new row arrives at the end");
+	feed.reject(mine);
+	assert(row.get() == Some(m(2, "theirs")), "7b: rejected: the row shows the pushed value");
+
+	// === Scenario 8: a connection drop and resync: the items stay and the phase
+	// says stale, then a reconcile by key with a local edit still pending.
+	let feed = fresh();
+	feed.resync([m(1, "a"), m(2, "b"), m(3, "c")]);
+	let held = feed.phase.get();
+	let one = feed.items.slot(0);
+	let two = feed.items.slot(1);
+	let one_runs: Shared<i32> = Shared::new(0);
+	let two_runs: Shared<i32> = Shared::new(0);
+	let _o8 = one.on_change(|_item| one_runs.write() += 1);
+	let _t8 = two.on_change(|_item| two_runs.write() += 1);
+	let local = feed.propose(two, m(2, "local")).unwrap();
+	let in_flight = feed.load();
+	feed.disconnected("offline");
+	assert(said(feed.phase.get()) == i"Failed(offline, {held.latest().unwrap()})", "8: the phase says the items are stale");
+	assert(ids(feed) == [1, 2, 3] && two.get() == Some(m(2, "local")), "8: the items stay, the edit still shows");
+	assert(!feed.settle(in_flight, Ok([])), "8: the load in flight when the connection dropped is dropped");
+	feed.resync([m(1, "a"), m(2, "server"), m(3, "c2"), m(4, "d")]);
+	assert(ids(feed) == [1, 2, 3, 4] && said(feed.phase.get()) != "Pending", "8: resynced");
+	assert(two.get() == Some(m(2, "local")) && feed.is_pending(two).get(), "8: the pending edit is still on top");
+	assert(one_runs.read() == 0 && two_runs.read() == 1, "8: the resync woke neither unchanged row");
+	feed.reject(local);
+	assert(two.get() == Some(m(2, "server")) && two_runs.read() == 2, "8: rejected: the row shows the resynced value");
+
+	print("async: all passed");
+}

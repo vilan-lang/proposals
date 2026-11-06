@@ -1,0 +1,78 @@
+// A sorted index: the STRUCTURE decides where an insert lands. Its mutators
+// return the changes they made (the paper's §4.2 convention), because the caller
+// cannot know them. No reactive code.
+import pkg::lens::{ Change, Resizable };
+
+export struct SortedIndex {
+	items: List<i32>,
+}
+
+export impl SortedIndex {
+	/// Where `value` goes: after every item not greater than it.
+	fun place(self, value: i32): usize {
+		mut low: usize = 0;
+		mut high = self.items.len();
+		for low < high {
+			let middle = (low + high) / 2;
+			if self.items[middle] <= value {
+				low = middle + 1;
+			} else {
+				high = middle;
+			}
+		}
+		low
+	}
+
+	fun insert(&mut self, value: i32): (usize, Change<usize>) {
+		let at = self.place(value);
+		self.items.insert(at, value);
+		(at, Change::Insert(at, 1))
+	}
+
+	fun remove_value(&mut self, value: i32): List<Change<usize>> {
+		let at = self.place(value);
+		if at == 0 || self.items[at - 1] != value {
+			ret [];
+		}
+		self.items.remove(at - 1);
+		[Change::Delete(at - 1, 1)]
+	}
+
+	/// The item at `at` takes a new value, and moves to keep the order. The same
+	/// item: a `Move` then a `Replace`, so a slot on it survives.
+	fun reprice(&mut self, at: usize, value: i32): List<Change<usize>> {
+		self.items.remove(at);
+		let to = self.place(value);
+		self.items.insert(to, value);
+		if to == at {
+			ret [Change::Replace(at)];
+		}
+		[Change::Move(at, to), Change::Replace(to)]
+	}
+}
+
+/// So the bridge (`items()`, `rows()`, `length()`) is reachable at all: the lens
+/// gives them only to a `Resizable`. A positional splice can break the order;
+/// nothing here stops a caller.
+export impl SortedIndex with Resizable<i32> {
+	fun count(self): usize {
+		self.items.len()
+	}
+
+	fun item(self, at: usize): Option<i32> {
+		self.items.get(at)
+	}
+
+	fun splice(&mut self, at: usize, removed: usize, inserted: List<i32>) {
+		mut taken: usize = 0;
+		for taken < removed {
+			self.items.remove(at);
+			taken += 1;
+		}
+		mut offset: usize = 0;
+		for value in inserted {
+			self.items.insert(at + offset, value);
+			offset += 1;
+		}
+	}
+}

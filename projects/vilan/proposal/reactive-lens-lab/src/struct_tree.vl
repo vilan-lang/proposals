@@ -1,0 +1,141 @@
+// A tree stored flat by node id, as kolt keeps its panel layout (kolt
+// src/shared.vl:281, src/layout.vl:226-356): a split node names its two children
+// by id, a leaf shows a path. The operations are kolt's, returning a whole new
+// tree. No reactive code; `Lookup<u32, Node>` is its shape.
+import pkg::lens::{ Change, Lookup };
+
+[derive(PartialEq)]
+export struct Node {
+	id: u32,
+	/// "leaf", "row" or "column".
+	kind: str,
+	first: u32,
+	second: u32,
+	path: str,
+}
+
+[derive(PartialEq)]
+export struct Tree {
+	root: u32,
+	nodes: List<Node>,
+	next: u32,
+}
+
+export fun leaf(id: u32, path: str): Node {
+	Node { id, kind = "leaf", first = 0, second = 0, path }
+}
+
+export impl Tree {
+	fun single(path: str): Tree {
+		Tree { root = 1, nodes = [leaf(1, path)], next = 2 }
+	}
+
+	fun node(self, id: u32): Option<Node> {
+		self.nodes.filter(|each| each.id == id).first()
+	}
+
+	/// The split holding `id`, if any.
+	fun parent_of(self, id: u32): Option<u32> {
+		self.nodes.filter(|each| each.kind != "leaf" && (each.first == id || each.second == id)).first().map(|found| found.id)
+	}
+
+	/// Whatever held `old` holds `new` instead (kolt's `with_child`).
+	fun with_child(self, old: u32, new: u32): Tree {
+		Tree {
+			root = if self.root == old { new } else { self.root },
+			nodes = self.nodes.map(|each| Node {
+				id = each.id,
+				kind = each.kind,
+				first = if each.kind != "leaf" && each.first == old { new } else { each.first },
+				second = if each.kind != "leaf" && each.second == old { new } else { each.second },
+				path = each.path,
+			}),
+			next = self.next,
+		}
+	}
+
+	/// Page `id` split in two; it keeps its id as the first half.
+	fun split(self, id: u32, kind: str): Tree {
+		self.node(id) is Some(let found) else ret self;
+		let parent = self.next;
+		let added = parent + 1;
+		let wrapped = self.with_child(id, parent);
+		mut nodes = wrapped.nodes;
+		nodes.push(Node { id = parent, kind, first = id, second = added, path = "" });
+		nodes.push(leaf(added, found.path));
+		Tree { root = wrapped.root, nodes, next = added + 1 }
+	}
+
+	/// Page `id` closed: its sibling takes its parent's place.
+	fun close(self, id: u32): Tree {
+		id != self.root else ret self;
+		self.parent_of(id) is Some(let parent_id) else ret self;
+		self.node(parent_id) is Some(let parent) else ret self;
+		let sibling = if parent.first == id { parent.second } else { parent.first };
+		let lifted = self.with_child(parent_id, sibling);
+		Tree {
+			root = lifted.root,
+			nodes = lifted.nodes.filter(|each| each.id != id && each.id != parent_id),
+			next = self.next,
+		}
+	}
+
+	/// Page `source` moved beside page `target`: closed where it was, and put back
+	/// in a new split around `target`. It keeps its id (kolt's `move_page`).
+	fun move_page(self, source: u32, target: u32): Tree {
+		self.node(source) is Some(let moved) else ret self;
+		let closed = self.close(source);
+		let parent = closed.next;
+		let wrapped = closed.with_child(target, parent);
+		mut nodes = wrapped.nodes;
+		nodes.push(Node { id = parent, kind = "row", first = target, second = source, path = "" });
+		nodes.push(moved);
+		Tree { root = wrapped.root, nodes, next = parent + 1 }
+	}
+}
+
+/// What turned `old` into `new`, by node id: kolt's operations return a whole new
+/// tree, so the changes come from a diff. A field-aware one: a node whose
+/// children changed is an `Edit` of "children", not a `Replace`.
+export fun node_changes(old: Tree, new: Tree): List<Change<u32>> {
+	mut out: List<Change<u32>> = [];
+	for before in old.nodes {
+		if new.node(before.id) is None {
+			out.push(Change::Delete(before.id, 1));
+		}
+	}
+	for after in new.nodes {
+		match old.node(after.id) {
+			None => out.push(Change::Insert(after.id, 1)),
+			Some(let before) => {
+				if before.kind != after.kind {
+					out.push(Change::Replace(after.id));
+				} else {
+					if before.first != after.first || before.second != after.second {
+						out.push(Change::Edit(after.id, "children"));
+					}
+					if before.path != after.path {
+						out.push(Change::Edit(after.id, "path"));
+					}
+				}
+			},
+		}
+	}
+	out
+}
+
+export impl Tree with Lookup<u32, Node> {
+	fun find(self, key: u32): Option<Node> {
+		self.node(key)
+	}
+
+	fun store(&mut self, key: u32, value: Node) {
+		mut kept = self.nodes.filter(|each| each.id != key);
+		kept.push(value);
+		self.nodes = kept;
+	}
+
+	fun drop(&mut self, key: u32) {
+		self.nodes = self.nodes.filter(|each| each.id != key);
+	}
+}

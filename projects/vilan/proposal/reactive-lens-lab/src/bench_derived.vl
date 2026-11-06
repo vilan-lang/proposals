@@ -1,0 +1,70 @@
+// A derived view over 2,089 and 32,000 rows: `map` and `filter` sealed with
+// `memo`, then single writes. The lens's op bridge against std's `ListCell`,
+// whose writes are its ops natively.
+import pkg::lens::{ sequence };
+import std::reactive::{ CollFlow, CollPipe, ListCell, SequenceCell, Source };
+import std::time::now_millis;
+
+[derive(PartialEq)]
+struct Task {
+	id: i32,
+	title: str,
+	open: bool,
+}
+
+fun tasks(rows: usize): List<Task> {
+	mut out: List<Task> = [];
+	mut i: usize = 0;
+	for i < rows {
+		out.push(Task { id = i.as_i32(), title = i"Task {i}", open = i % 3 != 0 });
+		i += 1;
+	}
+	out
+}
+
+fun report(name: str, what: str, start: f64, check: usize) {
+	print(i"{name} | {what} | {now_millis() - start} ms | {check} rows in the view");
+}
+
+fun lens(rows: usize, tag: str) {
+	let name = i"lens     {tag}";
+	let start = now_millis();
+	let list = sequence(tasks(rows));
+	let titles = list.items().map(|task| task.title).memo();
+	let open = list.items().filter(|task| task.open).memo();
+	report(name, "build two views", start, open.get().len());
+	let writing = now_millis();
+	mut round = 0;
+	for round < 200 {
+		list.insert_at(0, Task { id = -1, title = "New", open = true });
+		list.replace(rows / 2, Task { id = -2, title = i"Renamed {round}", open = round % 2 == 0 });
+		list.remove_at(0);
+		round += 1;
+	}
+	report(name, "insert, replace, delete x200", writing, open.get().len() + titles.get().len());
+}
+
+fun cell(rows: usize, tag: str) {
+	let name = i"listcell {tag}";
+	let start = now_millis();
+	let list: ListCell<Task> = ListCell::of(tasks(rows));
+	let titles = list.map(|task| task.title).memo();
+	let open = list.filter(|task| task.open).memo();
+	report(name, "build two views", start, open.get().len());
+	let writing = now_millis();
+	mut round = 0;
+	for round < 200 {
+		list.insert_at(0, Task { id = -1, title = "New", open = true });
+		list.set_at(rows / 2, Task { id = -2, title = i"Renamed {round}", open = round % 2 == 0 });
+		list.remove_at(0);
+		round += 1;
+	}
+	report(name, "insert, replace, delete x200", writing, open.get().len() + titles.get().len());
+}
+
+fun main() {
+	lens(2089, "2k ");
+	cell(2089, "2k ");
+	lens(32000, "32k");
+	cell(32000, "32k");
+}

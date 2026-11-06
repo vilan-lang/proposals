@@ -1,0 +1,155 @@
+// The same library, wired to REAL tasks: std sleeps of different lengths, a
+// superseded load cancelled, a page retried, an owner that goes, and std's own
+// `.transient()` and `TaskSource` feeding a loaded list.
+import pkg::loaded::{ Edge, Loaded, Page, loaded };
+import std::io::assert;
+import std::reactive::{ Owner, SequenceCell, SignalCell, Source, run_with_owner };
+import std::reactive::transient::{ TaskSource, TransientState };
+import std::shared::Shared;
+import std::time::sleep;
+
+[derive(PartialEq)]
+struct Msg {
+	id: i32,
+	text: str,
+}
+
+fun m(id: i32, text: str): Msg {
+	Msg { id, text }
+}
+
+fun ids(feed: Loaded<Msg, i32, str>): List<i32> {
+	mut out: List<i32> = [];
+	for item in feed.items.all() {
+		out.push(item.id);
+	}
+	out
+}
+
+fun ready(state: TransientState<i32, str>): bool {
+	match state {
+		TransientState::Ready(let _token) => true,
+		_ => false,
+	}
+}
+
+/// The server: the next scripted reply, after its delay.
+fun serve(script: Shared<List<(i32, Result<List<Msg>, str>)>>, finished: Shared<i32>): Result<List<Msg>, str> {
+	let (delay, reply) = script.write().remove(0);
+	sleep(delay);
+	finished.write() += 1;
+	reply
+}
+
+fun serve_page(script: Shared<List<(i32, Result<Page<Msg>, str>)>>): Result<Page<Msg>, str> {
+	let (delay, reply) = script.write().remove(0);
+	sleep(delay);
+	reply
+}
+
+/// A search: the query's results, after a delay that shrinks as the query grows
+/// (so an older query answers LAST).
+fun search(query: i32): Result<List<Msg>, str> {
+	sleep(80 - query * 20);
+	Ok([m(query, i"result for {query}"), m(100, "shared row")])
+}
+
+async fun main() {
+	// A slow load superseded by a quick one: the slow one is cancelled (its sleep
+	// never finishes), and the quick one lands by key.
+	let script: Shared<List<(i32, Result<List<Msg>, str>)>> = Shared::new([
+		(10, Ok([m(1, "a"), m(2, "b")])),
+		(60, Ok([m(1, "SLOW")])),
+		(10, Ok([m(1, "a"), m(2, "b2")])),
+		(10, Err("server error")),
+	]);
+	let finished: Shared<i32> = Shared::new(0);
+	let feed: Loaded<Msg, i32, str> = loaded(|item: &Msg| item.id);
+	feed.fetch(|| serve(script, finished));
+	assert(feed.items.size() == 0, "nothing yet");
+	sleep(30);
+	assert(ready(feed.phase.get()) && ids(feed) == [1, 2], "the first load lands");
+	let second = feed.items.slot(1);
+	feed.fetch(|| serve(script, finished));
+	feed.fetch(|| serve(script, finished));
+	sleep(100);
+	assert(finished.read() == 2, "the superseded load was cancelled: its sleep never finished");
+	assert(second.get() == Some(m(2, "b2")) && feed.items.peek(|list| list[0].text) == "a", "the newer load landed; the slot survived");
+	feed.fetch(|| serve(script, finished));
+	sleep(30);
+	assert(ids(feed) == [1, 2], "a failure keeps the items");
+	match feed.phase.get() {
+		TransientState::Failed(let error, let stale) => assert(error == "server error" && stale != None, "Failed, with the stale token"),
+		_ => assert(false, "the phase is Failed"),
+	}
+
+	// A page that fails, retried with a real task.
+	let pages: Shared<List<(i32, Result<Page<Msg>, str>)>> = Shared::new([
+		(10, Err("timeout")),
+		(10, Ok(Page { items = [m(-1, "older"), m(1, "a")], more = false })),
+	]);
+	feed.fetch_older(|| serve_page(pages));
+	assert(feed.older.get() == Edge::Loading, "the older end is loading");
+	sleep(30);
+	assert(feed.older.get() == Edge::Failed("timeout") && ids(feed) == [1, 2], "the page failed, the rows stayed");
+	feed.fetch_older(|| serve_page(pages));
+	sleep(30);
+	assert(ids(feed) == [-1, 1, 2] && feed.older.get() == Edge::End, "the retry landed once, no duplicate");
+
+	// An optimistic edit confirmed by a real round trip, while a reload lands in
+	// between: the edit stays on top of the reload until the server answers.
+	let row = feed.items.slot(2);
+	let runs: Shared<i32> = Shared::new(0);
+	let _watch = row.on_change(|_item| runs.write() += 1);
+	let edit = feed.propose(row, m(2, "edited")).unwrap();
+	let _sent = async {
+		sleep(40);
+		feed.confirm(edit);
+	};
+	script.write() = [(10, Ok([m(-1, "older"), m(1, "a"), m(2, "b2 (before the edit)")]))];
+	feed.fetch(|| serve(script, finished));
+	sleep(20);
+	assert(row.get() == Some(m(2, "edited")) && feed.pending().get() == 1, "the reload landed under the pending edit");
+	sleep(40);
+	assert(row.get() == Some(m(2, "edited")) && feed.pending().get() == 0, "confirmed");
+	assert(runs.read() == 1, "the row woke once: the edit; not the reload, not the confirm");
+
+	// A load made under an owner is cancelled when the owner goes.
+	let page = Owner::new();
+	let late: Shared<bool> = Shared::new(false);
+	let on_page: Loaded<Msg, i32, str> = run_with_owner(page, || loaded(|item: &Msg| item.id));
+	on_page.fetch(|| {
+		sleep(30);
+		late.write() = true;
+		let reply: Result<List<Msg>, str> = Ok([m(9, "late")]);
+		reply
+	});
+	page.dispose();
+	sleep(60);
+	assert(!late.read() && on_page.items.size() == 0, "the owner's end cancelled the load and dropped its reply");
+
+	// std's `.transient()` over a search pipe, followed by a loaded list: three
+	// queries in a row, the older ones slower; only the last lands, and the row
+	// all three answers share keeps its slot.
+	let query = SignalCell::new(1);
+	let results = query.derive(|q| async search(q)).transient();
+	let found: Loaded<Msg, i32, str> = loaded(|item: &Msg| item.id);
+	let _following = found.follow(results);
+	sleep(100);
+	assert(ids(found) == [1, 100], "the first search landed");
+	let shared = found.items.slot(1);
+	query.set(2);
+	query.set(3);
+	sleep(120);
+	assert(ids(found) == [3, 100], "only the latest search landed");
+	assert(shared.at() == Some(1) && shared.get() == Some(m(100, "shared row")), "the shared row kept its slot");
+	assert(ready(found.phase.get()), "Ready");
+
+	// One task, as std's `TaskSource`, followed the same way.
+	let once: Loaded<Msg, i32, str> = loaded(|item: &Msg| item.id);
+	let _once = once.follow(TaskSource::new(async search(2)));
+	sleep(80);
+	assert(ids(once) == [2, 100] && ready(once.phase.get()), "a TaskSource lands too");
+
+	print("async real: all passed");
+}

@@ -1,0 +1,74 @@
+// A gap buffer: the items before the gap, and the items after it (kept reversed,
+// so the one right after the gap is last). An edit moves the gap to itself first.
+// No reactive code.
+import pkg::lens::Resizable;
+
+export struct GapBuffer<T> {
+	before: List<T>,
+	/// Reversed: `after[after.len() - 1]` is the item just past the gap.
+	after: List<T>,
+	/// How many items crossed the gap, over the buffer's life.
+	shifted: i32,
+}
+
+export impl GapBuffer<type T> {
+	fun new(items: List<T>): GapBuffer<T> {
+		GapBuffer { before = items, after = [], shifted = 0 }
+	}
+
+	fun gap(self): usize {
+		self.before.len()
+	}
+
+	/// Move the gap so `to` items are before it. Moves items, changes none.
+	fun move_gap(&mut self, to: usize) {
+		for self.before.len() > to {
+			if self.before.pop() is Some(let item) {
+				self.after.push(item);
+				self.shifted += 1;
+			}
+		}
+		for self.before.len() < to && self.after.len() > 0 {
+			if self.after.pop() is Some(let item) {
+				self.before.push(item);
+				self.shifted += 1;
+			}
+		}
+	}
+}
+
+export impl GapBuffer<type T> with Resizable<T> {
+	fun count(self): usize {
+		self.before.len() + self.after.len()
+	}
+
+	fun item(self, at: usize): Option<T> {
+		if at < self.before.len() {
+			ret self.before.get(at);
+		}
+		let past = at - self.before.len();
+		if past >= self.after.len() {
+			ret None;
+		}
+		self.after.get(self.after.len() - 1 - past)
+	}
+
+	fun splice(&mut self, at: usize, removed: usize, inserted: List<T>) {
+		self.move_gap(at);
+		mut taken: usize = 0;
+		for taken < removed && self.after.len() > 0 {
+			self.after.pop();
+			taken += 1;
+		}
+		self.before.push_many(inserted);
+	}
+
+	fun put(&mut self, at: usize, value: T) {
+		if at < self.before.len() {
+			self.before[at] = value;
+		} else {
+			let index = self.after.len() - 1 - (at - self.before.len());
+			self.after[index] = value;
+		}
+	}
+}

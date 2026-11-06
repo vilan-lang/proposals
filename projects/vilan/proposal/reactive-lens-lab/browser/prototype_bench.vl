@@ -1,0 +1,101 @@
+// The lab bench's workloads (reactive-lens-lab/src/bench.vl), on the prototype.
+import pkg::live::{ Live, LiveResizeEvent, turn };
+import std::shared::Shared;
+import std::time::now_millis;
+
+[derive(PartialEq)]
+struct Task {
+	id: i32,
+	title: str,
+	status: str,
+	notes: List<str>,
+}
+
+fun notes(count: usize): List<str> {
+	mut out: List<str> = [];
+	mut i: usize = 0;
+	for i < count {
+		out.push(i"note {i}");
+		i += 1;
+	}
+	out
+}
+
+fun tasks(rows: usize, heavy: usize): List<Task> {
+	mut out: List<Task> = [];
+	mut i: usize = 0;
+	for i < rows {
+		out.push(Task { id = i.as_i32(), title = i"Task {i}", status = "open", notes = notes(heavy) });
+		i += 1;
+	}
+	out
+}
+
+fun report(name: str, what: str, start: f64, draws: Shared<i32>) {
+	let ms = now_millis() - start;
+	print(i"{name} | {what} | {ms} ms | {draws.read()} draws");
+	draws.write() = 0;
+}
+
+let rounds: i32 = 200;
+
+fun live(rows: usize, heavy: usize, tag: str) {
+	let name = i"live    {tag}";
+	let draws: Shared<i32> = Shared::new(0);
+	let start = now_millis();
+	let list = Live::resizable(tasks(rows, heavy));
+	mut slots = [];
+	mut keep = [];
+	mut i: usize = 0;
+	for i < rows {
+		let slot = list.at(i);
+		let title = slot.field("title", |t| t.title);
+		let status = slot.field("status", |t| t.status);
+		let _a = title.on(|_t| draws.write() += 1);
+		let _b = status.on(|_s| draws.write() += 1);
+		slots.push(slot);
+		keep.push(title);
+		keep.push(status);
+		i += 1;
+	}
+	report(name, "build", start, draws);
+
+	let rename = now_millis();
+	mut round = 0;
+	for round < rounds {
+		slots[rows / 2].edit("title", |t| t.title = i"Renamed {round}");
+		round += 1;
+	}
+	report(name, "rename x200", rename, draws);
+
+	let inserting = now_millis();
+	round = 0;
+	for round < rounds {
+		list.insert(0, Task { id = -1, title = "New", status = "open", notes = notes(heavy) });
+		list.remove(0);
+		round += 1;
+	}
+	report(name, "insert+delete at top x200", inserting, draws);
+
+	let appending = now_millis();
+	round = 0;
+	for round < rounds {
+		list.push(Task { id = -1, title = "New", status = "open", notes = notes(heavy) });
+		round += 1;
+	}
+	report(name, "append x200", appending, draws);
+
+	let wide = now_millis();
+	turn(|| {
+		for slot in slots {
+			slot.edit("status", |t| t.status = "done");
+		}
+	});
+	report(name, "one turn closing every row", wide, draws);
+}
+
+fun main() {
+	live(2089, 0, "light");
+	live(2089, 300, "heavy");
+	live(32000, 0, "32k  ");
+}

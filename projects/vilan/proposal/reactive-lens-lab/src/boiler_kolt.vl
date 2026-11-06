@@ -1,0 +1,238 @@
+// Boilerplate measurement 4: three kolt sites, before (kolt's code, stand-in types)
+// and after (the lens). Blocks are marked `// @BEGIN name` / `// @END name`.
+import pkg::lens::{ ItemSlot, Lens, Positional, sequence };
+import std::compare::PartialEq;
+import std::io::assert;
+import std::json::{ FromJson, Json, (impl usize with FromJson), (impl usize with Json), (impl i32 with FromJson), (impl i32 with Json) };
+import std::reactive::{ CollFlow, CollPipe, Flow, ListCell, SequenceCell, Signal, SignalCell, Source, combine, comp };
+import std::shared::Shared;
+import std::web::ui::{ View, each, each_by, each_values, render, view };
+import std::web::ui;
+
+// =============================================================================
+// (i) select.vl
+// =============================================================================
+// @BEGIN select_before
+export fun select_before<T: PartialEq>(
+	name: str,
+	options: ListCell<(View, T)>,
+	selection: Signal<T>,
+	picked: Shared<str>,
+) {
+	let computed_options = {
+		// FIXME: Make this support granular delta changes.
+		options.derive(|x| x.iter().enumerate().to_list()).memo()
+	};
+	let selected_option = combine((computed_options, selection))
+		.derive(|(x, y)| x.find(|x| x.1.1 == y))
+		.memo();
+	let view = {
+		<select
+			name(name)
+			value(selected_option.get().map_or(|x| x.0.to_json(), const 0usize.to_json()))
+			on:change(|event| {
+				let value = picked.read();
+				if usize::from_json(value) is Ok(let index) && computed_options.get().get(index) is Some(let option) {
+					selection.set(option.1.1);
+				}
+			})
+		>
+			{ui::each_by(computed_options, |x| x.0, |cell| {
+				<option value(cell.derive(|x| x.0.to_json()))>{cell.derive(|x| x.1.0)}</option>
+			})}
+		</select>
+	};
+	selected_option.effect(|incoming| {
+		if incoming is Some(let option) {
+			let _unused = option.0;
+		}
+	});
+	view
+}
+// @END select_before
+
+// @BEGIN select_after
+export fun select_after<T: PartialEq>(
+	name: str,
+	options: Lens<List<(View, T)>, usize, (View, T), Positional>,
+	selection: Signal<T>,
+	picked: Shared<str>,
+) {
+	let chosen = combine((options.rows(), selection))
+		.derive(|(slots, wanted)| slots.find(|s| s.get().map_or(|o| o.1 == wanted, const false)).map(|s| s.id))
+		.memo();
+	let view = {
+		<select
+			name(name)
+			value(chosen.get().map_or(|id| id.to_json(), const 0.to_json()))
+			on:change(|event| {
+				let value = picked.read();
+				if i32::from_json(value) is Ok(let id) && options.rows().get().find(|s| s.id == id) is Some(let slot) && slot.get() is Some(let option) {
+					selection.set(option.1);
+				}
+			})
+		>
+			{each(options.rows(), |slot| slot.id, |slot| {
+				<option value(slot.id.to_json())>{slot.part("label", |o| o.0).derive(|v| v.unwrap_or(ui::nothing()))}</option>
+			})}
+		</select>
+	};
+	view
+}
+// @END select_after
+
+// =============================================================================
+// (ii) panels.vl lookups of a tab by id
+// =============================================================================
+struct TabRecord {
+	id: u53,
+	org: str,
+	name: str,
+	layout: str,
+}
+
+impl TabRecord with PartialEq {
+	fun eq(self, other: TabRecord): bool {
+		self.id == other.id && self.org == other.org && self.name == other.name && self.layout == other.layout
+	}
+}
+
+fun tab(id: u53, name: str): TabRecord {
+	TabRecord { id, org = "o", name, layout = "" }
+}
+
+// @BEGIN tabs_before
+struct PanelsBefore {
+	tabs: SignalCell<List<TabRecord>>,
+	log: Shared<List<str>>,
+}
+
+impl PanelsBefore {
+	fun went_to(self, id: u53) {
+		match self.tabs.get().find(|each| each.id == id) {
+			Some(let tab) => self.log.write().push(tab.name),
+			None => self.log.write().push("none"),
+		}
+	}
+
+	fun switch_to(self, id: u53) {
+		if self.tabs.get().find(|each| each.id == id) is Some(let tab) {
+			self.log.write().push(tab.name);
+		}
+	}
+
+	fun merge_tab(self, id: u53) {
+		let tab = self.tabs.get().find(|each| each.id == id) is Some(let found) then found else ret;
+		self.log.write().push(tab.name);
+	}
+}
+// @END tabs_before
+
+// @BEGIN tabs_after_positional
+// (a) positional lens, lookup in place (no copy of the run)
+struct PanelsLensA {
+	tabs: Lens<List<TabRecord>, usize, TabRecord, Positional>,
+	log: Shared<List<str>>,
+}
+
+impl PanelsLensA {
+	fun went_to(self, id: u53) {
+		match self.tabs.peek(|list| list.find(|each| each.id == id)) {
+			Some(let tab) => self.log.write().push(tab.name),
+			None => self.log.write().push("none"),
+		}
+	}
+
+	fun switch_to(self, id: u53) {
+		if self.tabs.peek(|list| list.find(|each| each.id == id)) is Some(let tab) {
+			self.log.write().push(tab.name);
+		}
+	}
+
+	fun merge_tab(self, id: u53) {
+		let tab = self.tabs.peek(|list| list.find(|each| each.id == id)) is Some(let found) then found else ret;
+		self.log.write().push(tab.name);
+	}
+}
+// @END tabs_after_positional
+
+
+// =============================================================================
+// (iii) task_sections.vl: store handle copied to a cell, then each_values
+// =============================================================================
+// @BEGIN copy_before
+fun sections_before(handle: SignalCell<Option<List<u53>>>): View {
+	let ids = handle.derive(|list| list.unwrap_or([])).cell();
+	<div>
+		{ui::each_values(ids, |id| <p>{i"section {id}"}</p>)}
+	</div>
+}
+
+fun items_before(items: SignalCell<List<u53>>): View {
+	<div>
+		{ui::each_values(
+			items.derive(|items| items).cell(),
+			|item| <p>{i"item {item}"}</p>,
+		)}
+	</div>
+}
+// @END copy_before
+
+// @BEGIN copy_after
+fun sections_after(ids: Lens<List<u53>, usize, u53, Positional>): View {
+	<div>
+		{ui::each_values(ids.items(), |id| <p>{i"section {id}"}</p>)}
+	</div>
+}
+
+fun items_after(items: Lens<List<u53>, usize, u53, Positional>): View {
+	<div>
+		{ui::each_values(
+			items.items(),
+			|item| <p>{i"item {item}"}</p>,
+		)}
+	</div>
+}
+// @END copy_after
+
+fun main() {
+	// (i)
+	let picked: Shared<str> = Shared::new("0");
+	let sel1: SignalCell<i32> = Signal::new(20);
+	let cell: ListCell<(View, i32)> = ListCell::of([(<b>"ten"</b>, 10), (<b>"twenty"</b>, 20)]);
+	let ((before, after, lens), _owner) = comp(|| {
+	let before = select_before("pick", cell, sel1, picked);
+	let sel2: SignalCell<i32> = Signal::new(20);
+	let lens = sequence([(<b>"ten"</b>, 10), (<b>"twenty"</b>, 20)]);
+	let after = select_after("pick", lens, sel2, picked);
+	(before, after, lens)
+	});
+	let a = render(before);
+	let b = render(after);
+	assert(a == b, "select: same markup (before: " + a + ") (after: " + b + ")");
+	// (ii)
+	let log: Shared<List<str>> = Shared::new([]);
+	let before_p = PanelsBefore { tabs = Signal::new([tab(1, "one"), tab(2, "two")]), log };
+	before_p.went_to(2);
+	before_p.switch_to(1);
+	before_p.merge_tab(2);
+	before_p.went_to(9);
+	let log_a: Shared<List<str>> = Shared::new([]);
+	let pa = PanelsLensA { tabs = sequence([tab(1, "one"), tab(2, "two")]), log = log_a };
+	pa.went_to(2);
+	pa.switch_to(1);
+	pa.merge_tab(2);
+	pa.went_to(9);
+	assert(log.read() == ["two", "one", "two", "none"], "tabs before");
+	assert(log_a.read() == log.read(), "tabs (a) same");
+	// (iii)
+	let handle: SignalCell<Option<List<u53>>> = Signal::new(Some([1u53, 2u53]));
+	let items: SignalCell<List<u53>> = Signal::new([7u53, 8u53]);
+	let ids_lens = sequence([1u53, 2u53]);
+	let items_lens = sequence([7u53, 8u53]);
+	assert(render(sections_before(handle)) == render(sections_after(ids_lens)), "sections: same markup");
+	assert(render(items_before(items)) == render(items_after(items_lens)), "items: same markup");
+	// the sync cost under the lens: a server push becomes one reconcile
+	ids_lens.reconcile_by_key([1u53, 2u53, 3u53], |id| *id);
+	assert(ids_lens.all() == [1u53, 2u53, 3u53], "reconcile");
+}

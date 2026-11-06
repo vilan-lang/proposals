@@ -1,0 +1,174 @@
+// A rope of text lines kept in chunks, with a real bulk splice. No reactive code:
+// its whole cost under the lens is the `Resizable<str>` impl below.
+import pkg::lens::Resizable;
+
+export struct Rope {
+	chunks: List<List<str>>,
+	/// A chunk holds at most this many lines and, unless it is the only one, at
+	/// least a quarter of it.
+	cap: usize,
+	total: usize,
+	/// How many times a splice made more chunks than it consumed, and fewer.
+	splits: i32,
+	merges: i32,
+}
+
+fun smaller(a: usize, b: usize): usize {
+	if a < b { a } else { b }
+}
+
+export impl Rope {
+	fun new(cap: usize, lines: List<str>): Rope {
+		mut rope = Rope { chunks = [], cap, total = 0, splits = 0, merges = 0 };
+		rope.splice(0, 0, lines);
+		rope.splits = 0;
+		rope
+	}
+
+	/// The chunk holding line `at`, and the index in it.
+	fun find(self, at: usize): Option<(usize, usize)> {
+		mut start: usize = 0;
+		mut c: usize = 0;
+		for chunk in self.chunks {
+			if at < start + chunk.len() {
+				ret Some((c, at - start));
+			}
+			start += chunk.len();
+			c += 1;
+		}
+		None
+	}
+
+	fun all(self): List<str> {
+		mut out: List<str> = [];
+		for chunk in self.chunks {
+			out.push_many(chunk);
+		}
+		out
+	}
+
+	fun chunk_count(self): usize {
+		self.chunks.len()
+	}
+
+	/// Every chunk within its bounds.
+	fun balanced(self): bool {
+		if self.chunks.len() <= 1 {
+			ret true;
+		}
+		for chunk in self.chunks {
+			if chunk.len() > self.cap || chunk.len() * 4 < self.cap {
+				ret false;
+			}
+		}
+		true
+	}
+
+	/// Cut `lines` into chunks of near-equal size, none over the cap.
+	fun cut(self, lines: List<str>): List<List<str>> {
+		let n = lines.len();
+		if n == 0 {
+			ret [];
+		}
+		let pieces = (n + self.cap - 1) / self.cap;
+		let size = (n + pieces - 1) / pieces;
+		mut out: List<List<str>> = [];
+		mut piece: List<str> = [];
+		for line in lines {
+			piece.push(line);
+			if piece.len() == size {
+				out.push(piece);
+				piece = [];
+			}
+		}
+		if piece.len() > 0 {
+			out.push(piece);
+		}
+		out
+	}
+}
+
+export impl Rope with Resizable<str> {
+	fun count(self): usize {
+		self.total
+	}
+
+	fun item(self, at: usize): Option<str> {
+		self.find(at) is Some((let c, let k)) else ret None;
+		self.chunks[c].get(k)
+	}
+
+	/// The bulk splice: only the chunks the span touches (and the one before, so an
+	/// emptied chunk merges into its neighbour) are cut again.
+	fun splice(&mut self, at: usize, removed: usize, inserted: List<str>) {
+		let start = smaller(at, self.total);
+		let taking = smaller(removed, self.total - start);
+		// The window of chunks the span touches.
+		let (first, offset) = match self.find(start) {
+			Some(let place) => place,
+			None => if self.chunks.len() == 0 { (0usize, 0usize) } else { (self.chunks.len() - 1, self.chunks[self.chunks.len() - 1].len()) },
+		};
+		let from = if first > 0 { first - 1 } else { first };
+		mut window: List<str> = [];
+		mut skip: usize = 0;
+		if from < first {
+			skip = self.chunks[from].len();
+			window.push_many(self.chunks[from]);
+		}
+		mut last = first;
+		for last < self.chunks.len() && window.len() < skip + offset + taking {
+			window.push_many(self.chunks[last]);
+			last += 1;
+		}
+		if last == first && last < self.chunks.len() {
+			window.push_many(self.chunks[last]);
+			last += 1;
+		}
+		// head + inserted + tail.
+		let cut_at = skip + offset;
+		mut fresh: List<str> = [];
+		mut i: usize = 0;
+		for i < cut_at {
+			fresh.push(window[i]);
+			i += 1;
+		}
+		fresh.push_many(inserted);
+		i = cut_at + taking;
+		for i < window.len() {
+			fresh.push(window[i]);
+			i += 1;
+		}
+		let pieces = self.cut(fresh);
+		let consumed = last - from;
+		if pieces.len() > consumed {
+			self.splits += 1;
+		}
+		if pieces.len() < consumed {
+			self.merges += 1;
+		}
+		mut kept: List<List<str>> = [];
+		mut c: usize = 0;
+		for c < from {
+			kept.push(self.chunks[c]);
+			c += 1;
+		}
+		kept.push_many(pieces);
+		c = last;
+		for c < self.chunks.len() {
+			kept.push(self.chunks[c]);
+			c += 1;
+		}
+		self.chunks = kept;
+		self.total = self.total - taking + inserted.len();
+	}
+
+	fun put(&mut self, at: usize, value: str) {
+		self.find(at) is Some((let c, let k)) else ret;
+		self.chunks[c][k] = value;
+	}
+
+	fun lend(self, at: usize, read: |&str| void) {
+		self.find(at) is Some((let c, let k)) else ret;
+		read(&self.chunks[c][k]);
+	}
+}

@@ -1,0 +1,156 @@
+// The lens across a wire: a server lens, a client lens, and frames carried by
+// hand so order, lag and loss are exact.
+import pkg::lens::{ keyed, sequence };
+import pkg::wire::{ Frame, Patch, Replica, land_keys, serve, serve_keys };
+import std::hash_map::HashMap;
+import std::io::assert;
+import std::reactive::{ SequenceCell, Source, batch };
+import std::shared::Shared;
+
+[derive(PartialEq)]
+struct Task {
+	id: i32,
+	title: str,
+	status: str,
+}
+
+fun tasks(count: i32): List<Task> {
+	mut out: List<Task> = [];
+	mut i = 0;
+	for i < count {
+		out.push(Task { id = i, title = i"Task {i}", status = "open" });
+		i += 1;
+	}
+	out
+}
+
+fun main() {
+	// 1. Seed, then follow. The client's slots are the client's own; they move
+	//    and wake exactly as the server's would.
+	let server = sequence(tasks(6));
+	let out = serve(server, 64);
+	let client: Replica<Task, i32> = Replica::new(|task: &Task| task.id);
+	assert(client.apply(out.since(-1)), "the seed lands");
+	assert(client.lens.all() == server.all(), "the replica holds the list");
+
+	let third = client.lens.slot(3);
+	let title_runs: Shared<i32> = Shared::new(0);
+	let status_runs: Shared<i32> = Shared::new(0);
+	let other_runs: Shared<i32> = Shared::new(0);
+	let _a = third.part("title", |task| task.title).on_change(|_t| title_runs.write() += 1);
+	let _b = third.part("status", |task| task.status).on_change(|_s| status_runs.write() += 1);
+	let _c = client.lens.slot(1).on_change(|_task| other_runs.write() += 1);
+
+	let before = client.version.read();
+	server.insert_at(0, Task { id = 100, title = "New", status = "open" });
+	server.edit(4, "title", |task| task.title = "Renamed");
+	server.move_item(5, 1);
+	let frame = out.since(before);
+	assert(frame.patches.len() == 3, "three writes are three patches");
+	assert(client.apply(frame), "the frame lands");
+	assert(client.lens.all() == server.all(), "the replica followed");
+	assert(third.at() == Some(5) && third.get().map(|task| task.title) == Some("Renamed"), "the client slot followed its row through the insert and the move");
+	assert(title_runs.read() == 1 && status_runs.read() == 0, "one part woke on the client, as on the server");
+	assert(other_runs.read() == 0, "no other row woke");
+
+	// 2. One turn that inserts and then deletes the same row: the patches replay
+	//    in order, the replica ends equal, and no row on the client wakes.
+	let at = client.version.read();
+	batch(|| {
+		server.insert_at(2, Task { id = 101, title = "Brief", status = "open" });
+		server.remove_at(2);
+	});
+	assert(client.apply(out.since(at)), "the frame lands");
+	assert(client.lens.all() == server.all(), "the replica is equal after the pair");
+	assert(title_runs.read() == 1 && other_runs.read() == 0, "a row that came and went woke nobody");
+
+	// 3. A lagging reader: the log holds 4 patches and the server makes 10
+	//    writes. The reader is told the whole list, lands it by key, and the
+	//    rows both lists hold keep their slots; only the changed row wakes.
+	let small_server = sequence(tasks(8));
+	let small = serve(small_server, 4);
+	let lagging: Replica<Task, i32> = Replica::new(|task: &Task| task.id);
+	assert(lagging.apply(small.since(-1)), "seed");
+	let kept = lagging.lens.slot(6);
+	let kept_runs: Shared<i32> = Shared::new(0);
+	let changed = lagging.lens.slot(2);
+	let changed_runs: Shared<i32> = Shared::new(0);
+	let _d = kept.on_change(|_task| kept_runs.write() += 1);
+	let _e = changed.on_change(|_task| changed_runs.write() += 1);
+	let behind = lagging.version.read();
+	mut write = 0;
+	for write < 9 {
+		small_server.push(Task { id = 200 + write, title = "More", status = "open" });
+		write += 1;
+	}
+	small_server.replace(2, Task { id = 2, title = "Task 2 (edited)", status = "open" });
+	let catch_up = small.since(behind);
+	assert(catch_up.patches.len() == 1, "a reader behind the log gets one patch: the whole list");
+	assert(lagging.apply(catch_up), "the catch-up lands");
+	assert(lagging.lens.all() == small_server.all(), "equal after the catch-up");
+	assert(kept.at() == Some(6) && kept_runs.read() == 0, "an unchanged row kept its slot and did not wake");
+	assert(changed.get().map(|task| task.title) == Some("Task 2 (edited)") && changed_runs.read() == 1, "the changed row woke once");
+
+	// 4. A lost frame: the next one does not start where the replica is, so it
+	//    is refused whole; the replica says stale and asks again from where it is.
+	let lost_at = client.version.read();
+	server.push(Task { id = 300, title = "Lost", status = "open" });
+	let _dropped = out.since(lost_at);
+	let after_loss = client.version.read() + 1;
+	server.push(Task { id = 301, title = "Next", status = "open" });
+	let late = out.since(after_loss);
+	assert(!client.apply(late), "a frame that skips a version is refused");
+	assert(client.stale.get(), "and the replica says it is stale");
+	assert(client.apply(out.since(client.version.read())), "asking from its own version heals it");
+	assert(client.lens.all() == server.all() && !client.stale.get(), "equal and fresh again");
+	assert(third.get().map(|task| task.title) == Some("Renamed"), "the slot from step 1 is still on its row");
+
+	// 5. kolt's shape: records in a map by id, and an order list of ids. A
+	//    reader subscribes to the order whole and to records by key, on demand.
+	let records: HashMap<i32, Task> = HashMap::new();
+	let server_tasks = keyed(records);
+	let server_order = sequence([1, 2, 3]);
+	for task in tasks(4) {
+		server_tasks.put(task.id, task);
+	}
+	let order_out = serve(server_order, 64);
+	let keys_out = serve_keys(server_tasks);
+	let session = keys_out.join();
+
+	let client_order: Replica<i32, i32> = Replica::new(|id: &i32| *id);
+	let empty: HashMap<i32, Task> = HashMap::new();
+	let client_tasks = keyed(empty);
+	assert(client_order.apply(order_out.since(-1)), "the order seeds");
+	// Two rows are on screen: the reader asks for two records, not all four.
+	keys_out.subscribe(session, 1);
+	keys_out.subscribe(session, 2);
+	land_keys(client_tasks, session.drain());
+	let one = client_tasks.slot(1);
+	let three = client_tasks.slot(3);
+	assert(one.get().map(|task| task.title) == Some("Task 1"), "a subscribed record arrived");
+	assert(three.get() == None, "a record nobody asked for did not");
+
+	let one_title: Shared<i32> = Shared::new(0);
+	let _f = one.part("title", |task| task.title).on_change(|_t| one_title.write() += 1);
+	server_tasks.edit(1, "title", |task| task.title = "Task 1 renamed");
+	server_tasks.edit(3, "title", |task| task.title = "Task 3 renamed");
+	let waiting = session.drain();
+	assert(waiting.len() == 1, "only the subscribed key's change was queued");
+	land_keys(client_tasks, waiting);
+	assert(one.get().map(|task| task.title) == Some("Task 1 renamed") && one_title.read() == 1, "it reached the client's part watcher");
+
+	// A drag on the board: one Move in the order list. Today's wire has no Move
+	// and sends the whole column.
+	let order_at = client_order.version.read();
+	server_order.move_item(2, 0);
+	let moved = order_out.since(order_at);
+	assert(moved.patches.len() == 1, "a reorder is one patch");
+	assert(client_order.apply(moved) && client_order.lens.all() == [3, 1, 2], "the client's order followed");
+
+	// A record deleted on the server: the client's slot for it reads None.
+	server_tasks.remove(1);
+	land_keys(client_tasks, session.drain());
+	assert(one.get() == None, "the key's slot reads the removal");
+
+	print(i"wire: all passed ({out.sent_items.read()} items carried by the first server)");
+}

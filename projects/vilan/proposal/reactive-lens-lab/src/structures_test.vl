@@ -1,0 +1,534 @@
+// Structures under the lens, with NO reactive code in any of them: each joins by
+// one shape impl (`Resizable<T>` or `Lookup<K, V>`) or, where no shape fits, by a
+// handler of its own. Slot behaviour and exact wake counts are asserted.
+import pkg::lens::{ Access, Change, Keyed, Lens, Lookup, Positional, keyed, sequence };
+import pkg::struct_gap::GapBuffer;
+import pkg::struct_grid::{ Grid, GridAt, GridHandler };
+import pkg::struct_rope::Rope;
+import pkg::struct_sorted::SortedIndex;
+import pkg::struct_tree::{ Tree, node_changes };
+import std::display::Display;
+import std::hash::Hashable;
+import std::hash_map::HashMap;
+import std::hash_set::HashSet;
+import std::io::assert;
+import std::reactive::{ CollFlow, CollPipe, SequenceCell, Source, batch };
+import std::shared::Shared;
+import std::time::now_millis;
+
+fun lines(prefix: str, count: usize): List<str> {
+	mut out: List<str> = [];
+	mut i: usize = 0;
+	for i < count {
+		out.push(i"{prefix}{i}");
+		i += 1;
+	}
+	out
+}
+
+/// `Change` has no `PartialEq`, so a test compares its description.
+fun describe(change: Change<usize>): str {
+	match change {
+		Change::Insert(let at, let n) => i"insert {at} {n}",
+		Change::Delete(let at, let n) => i"delete {at} {n}",
+		Change::Replace(let at) => i"replace {at}",
+		Change::Edit(let at, let part) => i"edit {at} {part}",
+		Change::Move(let from, let to) => i"move {from} {to}",
+		Change::Reset => "reset",
+	}
+}
+
+fun rope_scenarios() {
+	// 20 lines in chunks of at most 8.
+	let text = sequence(Rope::new(8, lines("l", 20)));
+	assert(text.peek(|r| r.chunk_count()) == 3, "20 lines cut into 3 chunks");
+	let l5 = text.slot(5);
+	let l17 = text.slot(17);
+	let runs5: Shared<i32> = Shared::new(0);
+	let runs17: Shared<i32> = Shared::new(0);
+	let _a = l5.on_change(|_v| runs5.write() += 1);
+	let _b = l17.on_change(|_v| runs17.write() += 1);
+
+	// A split: 10 lines into the first chunk.
+	text.splice(2, 0, lines("new", 10));
+	assert(text.peek(|r| r.splits) == 1, "the insert split a chunk");
+	assert(text.peek(|r| r.balanced()), "chunks stay in bounds after the split");
+	assert(l5.at() == Some(15) && l5.get() == Some("l5"), "l5 follows its line through the split");
+	assert(l17.at() == Some(27) && l17.get() == Some("l17"), "l17 follows too");
+	assert(runs5.read() == 0 && runs17.read() == 0, "an insert above wakes neither");
+
+	// A merge: delete most of the text around l5, but not l5.
+	text.splice(3, 11, []);
+	assert(text.peek(|r| r.merges) >= 1, "the delete merged chunks");
+	assert(text.peek(|r| r.balanced()), "chunks stay in bounds after the merge");
+	assert(l5.at() == Some(4) && l5.get() == Some("l5"), "l5 follows its line through the merge");
+	assert(runs5.read() == 0, "a delete next to l5 does not wake it");
+
+	// A delete over l5 ends its slot; l17 is untouched.
+	text.splice(4, 1, []);
+	assert(l5.get() == None && runs5.read() == 1, "l5 reads None and woke once");
+	assert(l17.get() == Some("l17") && runs17.read() == 0, "l17 did not wake");
+
+	// A write through a slot lands in the rope, wherever the line is.
+	l17.set("L17");
+	assert(text.peek(|r| r.all()).contains("L17") && runs17.read() == 1, "a slot write lands and wakes once");
+
+	// The 5,000-line paste as ONE splice: a tap counts the changes it saw.
+	let seen: Shared<List<Change<usize>>> = Shared::new([]);
+	let befores: Shared<i32> = Shared::new(0);
+	let _tap = text.tap(|_c| befores.write() += 1, |change, _late| seen.write().push(change));
+	let size_before = text.size();
+	let whole: Shared<i32> = Shared::new(0);
+	let lengths: Shared<i32> = Shared::new(0);
+	let _w = text.on_change(|_r| whole.write() += 1);
+	let _l = text.length().on_change(|_n| lengths.write() += 1);
+	let l17_was = l17.at();
+	text.splice(1, 0, lines("paste", 5000));
+	assert(seen.read().len() == 1, "the paste is one change");
+	assert(describe(seen.read()[0]) == "insert 1 5000", "Insert(1, 5000)");
+	assert(befores.read() == 1, "the tap's before ran once");
+	assert(text.size() == size_before + 5000, "5,000 lines arrived");
+	assert(text.peek(|r| r.balanced()), "chunks in bounds after the paste");
+	assert(l17.at() == l17_was.map(|at| at + 5000) && l17.get() == Some("L17"), "l17 moved by 5,000");
+	assert(runs17.read() == 1, "and did not wake");
+	assert(whole.read() == 1 && lengths.read() == 1, "the whole value and the length woke once each");
+
+	// rows() and items() over the rope.
+	let rows = text.rows();
+	let items = text.items();
+	let upper = items.map(|line| line.len()).memo();
+	assert(rows.get().len() == text.size(), "a row per line");
+	assert(upper.get().len() == text.size(), "items seed the map");
+	text.splice(0, 0, ["top"]);
+	assert(rows.get().len() == text.size() && rows.get()[0].get() == Some("top"), "rows follow an insert");
+	text.splice(0, 2, []);
+	assert(rows.get().len() == text.size() && upper.get().len() == text.size(), "rows and items follow a delete");
+	print("rope: ok");
+}
+
+fun gap_scenarios() {
+	let buffer = sequence(GapBuffer::new(["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]));
+	let c = buffer.slot(2);
+	let h = buffer.slot(7);
+	let c_runs: Shared<i32> = Shared::new(0);
+	let h_runs: Shared<i32> = Shared::new(0);
+	let whole: Shared<i32> = Shared::new(0);
+	let _a = c.on_change(|_v| c_runs.write() += 1);
+	let _b = h.on_change(|_v| h_runs.write() += 1);
+	let _w = buffer.on_change(|_all| whole.write() += 1);
+	let lengths = buffer.items().map(|item| item.len()).memo();
+
+	// An insert in the middle: the gap moves to 5, then the item lands.
+	buffer.insert_at(5, "x");
+	assert(buffer.peek(|g| g.gap()) == 6, "the gap sits after the insert");
+	assert(c.at() == Some(2) && h.at() == Some(8) && h.get() == Some("h"), "slots on both sides of the gap follow");
+	assert(c_runs.read() == 0 && h_runs.read() == 0 && whole.read() == 1, "no slot woke; the whole value did");
+
+	// Typing at the gap: three more inserts, each one splice.
+	buffer.insert_at(6, "y");
+	buffer.insert_at(7, "z");
+	assert(buffer.all() == ["a", "b", "c", "d", "e", "x", "y", "z", "f", "g", "h", "i", "j"], "typed at the gap");
+	assert(h.at() == Some(10) && lengths.get().len() == 13, "slot and map follow");
+
+	// Moving the gap changes no item: an `update` with no changes, which is silent.
+	// (Found here: the first build of the lens announced a write for it.)
+	let before = whole.read();
+	buffer.update(|g| {
+		g.move_gap(1);
+		(void, [])
+	});
+	assert(buffer.peek(|g| g.gap()) == 1 && h.get() == Some("h"), "the gap moved; items did not");
+	assert(whole.read() == before, "an update with no changes wakes nobody");
+
+	// Delete across the gap: the slot on c ends.
+	buffer.remove_range(1, 2);
+	assert(c.get() == None && c_runs.read() == 1, "c reads None and woke once");
+	assert(h.get() == Some("h") && h_runs.read() == 0, "h untouched");
+	h.set("H");
+	assert(buffer.peek(|g| g.item(8)) == Some("H") && h_runs.read() == 1, "a slot write lands behind the gap");
+	print("gap buffer: ok");
+}
+
+/// The same index with no `Resizable`: the lens still takes it, by `Access`.
+struct SortedOnly {
+	items: List<i32>,
+}
+
+fun sorted_scenarios() {
+	let index = sequence(SortedIndex { items = [10, 20, 30, 40] });
+	let thirty = index.slot(2);
+	let runs: Shared<i32> = Shared::new(0);
+	let _a = thirty.on_change(|_v| runs.write() += 1);
+	let calls: Shared<i32> = Shared::new(0);
+	let doubled = index.items().map(|v| {
+		calls.write() += 1;
+		v * 2
+	}).memo();
+	assert(calls.read() == 4, "the map seeded four");
+
+	// The structure decides where 25 goes; the mutator says so.
+	let landed = index.update(|s| {
+		let (at, change) = s.insert(25);
+		(at, [change])
+	});
+	assert(landed == 2 && thirty.at() == Some(3) && runs.read() == 0, "25 landed at 2; the slot on 30 moved to 3 silently");
+	assert(calls.read() == 5 && doubled.get() == [20, 40, 50, 60, 80], "an Insert through update reaches the map as one splice");
+
+	// 30 becomes 5: the item moves to the front, and its slot goes with it.
+	let at = thirty.at().unwrap_or(0);
+	index.update(|s| (void, s.reprice(at, 5)));
+	assert(index.all() == [5, 10, 20, 25, 40], "repriced and re-sorted");
+	assert(thirty.at() == Some(0) && thirty.get() == Some(5) && runs.read() == 1, "the slot followed its item and woke once");
+	let after_reprice = calls.read();
+	assert(after_reprice == 10, "LIMIT: a Replace through update reaches the map as a Reset (all five re-ran): update's changes carry no values");
+	assert(doubled.get() == [10, 20, 40, 50, 80], "the map is right, the long way");
+
+	// A delete through update: the departed value was never read, so a Reset.
+	index.update(|s| (void, s.remove_value(20)));
+	assert(index.all() == [5, 10, 25, 40], "20 left");
+	assert(calls.read() == after_reprice + 4, "LIMIT: a Delete through update re-runs the map over everything, for the same reason");
+	// The same delete through the shape path: no re-run.
+	let shaped = calls.read();
+	index.remove_at(2);
+	assert(calls.read() == shaped && doubled.get() == [10, 20, 80], "a Delete through remove_at is one splice");
+
+	// Without `Resizable`: the slots and `update` work; `items()`, `rows()`,
+	// `length()`, `move_item` and `reconcile_by_key` are not there.
+	let only: Lens<SortedOnly, usize, i32, Positional> = Lens::over(
+		SortedOnly { items = [1, 3] },
+		Positional::new(),
+		Access {
+			read = |s: &SortedOnly, at: usize| s.items.get(at),
+			view = |s: &SortedOnly, at: usize, read: |&i32| void| {
+				if s.items.get(at) is Some(let v) {
+					read(&v);
+				}
+			},
+			write = |s: &mut SortedOnly, at: usize, v: i32| s.items[at] = v,
+			modify = |s: &mut SortedOnly, at: usize, change: |&mut i32| void| change(&mut s.items[at]),
+		},
+	);
+	let three = only.slot(1);
+	only.update(|s| {
+		s.items.insert(1, 2);
+		(void, [Change::Insert(1usize, 1usize)])
+	});
+	assert(three.at() == Some(2) && three.get() == Some(3), "a lens with no shape trait still keeps slots");
+	print("sorted index: ok");
+}
+
+/// A set is a keyed collection whose value is "present".
+impl HashSet<type T: Hashable> with Lookup<T, bool> {
+	fun find(self, key: T): Option<bool> {
+		if self.contains(key) { Some(true) } else { None }
+	}
+
+	fun store(&mut self, key: T, _value: bool) {
+		self.insert(key);
+	}
+
+	fun drop(&mut self, key: T) {
+		self.remove(key);
+	}
+}
+
+/// An insertion-ordered map: the order in a key list, the values in a map.
+struct OrderedMap<V> {
+	keys: List<str>,
+	values: HashMap<str, V>,
+}
+
+impl OrderedMap<type V> {
+	fun new(): OrderedMap<V> {
+		OrderedMap { keys = [], values = HashMap::new() }
+	}
+
+	/// Put `key` first. A reorder: no value changes.
+	fun to_front(&mut self, key: str) {
+		mut kept: List<str> = [key];
+		for each in self.keys {
+			if each != key {
+				kept.push(each);
+			}
+		}
+		self.keys = kept;
+	}
+
+	fun in_order(self): List<V> {
+		self.keys.map(|key| self.values.get(key)).filter(|found| found.is_some()).map(|found| found.unwrap())
+	}
+}
+
+impl OrderedMap<type V> with Lookup<str, V> {
+	fun find(self, key: str): Option<V> {
+		self.values.get(key)
+	}
+
+	fun store(&mut self, key: str, value: V) {
+		if !self.values.contains_key(key) {
+			self.keys.push(key);
+		}
+		self.values.insert(key, value);
+	}
+
+	fun drop(&mut self, key: str) {
+		self.values.remove(key);
+		self.keys = self.keys.filter(|each| *each != key);
+	}
+}
+
+fun keyed_scenarios() {
+	// A HashSet<str>.
+	let members: HashSet<str> = HashSet::new();
+	let tags = keyed(members);
+	let urgent = tags.slot("urgent");
+	let later = tags.slot("later");
+	let u_runs: Shared<i32> = Shared::new(0);
+	let l_runs: Shared<i32> = Shared::new(0);
+	let _a = urgent.on_change(|_v| u_runs.write() += 1);
+	let _b = later.on_change(|_v| l_runs.write() += 1);
+	assert(urgent.get() == None, "absent: None (a set has no Some(false))");
+	tags.put("urgent", true);
+	assert(urgent.get() == Some(true) && u_runs.read() == 1 && l_runs.read() == 0, "only urgent woke");
+	tags.put("urgent", true);
+	assert(u_runs.read() == 2, "SURPRISE: re-adding a member changes nothing and still wakes its slot");
+	tags.remove("urgent");
+	assert(urgent.get() == None && u_runs.read() == 3, "removal wakes once");
+	tags.remove("urgent");
+	assert(u_runs.read() == 3, "removing an absent key is a no-op");
+
+	// An insertion-ordered map.
+	let empty: OrderedMap<i32> = OrderedMap::new();
+	let scores = keyed(empty);
+	scores.put("ann", 1);
+	scores.put("bob", 2);
+	scores.put("cy", 3);
+	let bob = scores.slot("bob");
+	let b_runs: Shared<i32> = Shared::new(0);
+	let whole: Shared<i32> = Shared::new(0);
+	let _c = bob.on_change(|_v| b_runs.write() += 1);
+	let _d = scores.on_change(|_m| whole.write() += 1);
+	scores.put("bob", 20);
+	assert(bob.get() == Some(20) && b_runs.read() == 1 && whole.read() == 1, "a put wakes its key and the whole value");
+	// A reorder: the keyed vocabulary has no word for it (Move is ignored by Keyed).
+	scores.update(|m| {
+		m.to_front("cy");
+		(void, [Change::Move("cy", "cy")])
+	});
+	assert(scores.peek(|m| m.in_order()) == [3, 1, 20], "cy is first");
+	assert(b_runs.read() == 1 && whole.read() == 2, "a reorder wakes only whole-value readers");
+	// The order is only readable whole: a keyed lens has no items(), rows() or
+	// length(), so an ordered view of it re-reads everything on every change.
+	print("keyed: ok");
+}
+
+fun tree_scenarios() {
+	// kolt's layout: one page, split right, then the right half split down.
+	let start = Tree::single("/a").split(1, "row").split(3, "column");
+	// nodes: 1 leaf, 2 row(1, 4), 3 leaf, 4 column(3, 5), 5 leaf
+	let layout = keyed(start);
+	let five = layout.slot(5);
+	let four = layout.slot(4);
+	let two = layout.slot(2);
+	let one = layout.slot(1);
+	let runs5: Shared<i32> = Shared::new(0);
+	let runs4: Shared<i32> = Shared::new(0);
+	let runs1: Shared<i32> = Shared::new(0);
+	let children2: Shared<i32> = Shared::new(0);
+	let paths2: Shared<i32> = Shared::new(0);
+	let _a = five.on_change(|_n| runs5.write() += 1);
+	let _b = four.on_change(|_n| runs4.write() += 1);
+	let _c = one.on_change(|_n| runs1.write() += 1);
+	let _d = two.part("children", |n| (n.first, n.second)).on_change(|_c| children2.write() += 1);
+	let _e = two.part("path", |n| n.path).on_change(|_p| paths2.write() += 1);
+
+	// Re-parent page 5 beside page 1 (kolt's move_page): a whole new tree, so the
+	// changes come from a keyed diff written here (the lens has none for keys).
+	layout.update(|tree| {
+		let next = tree.move_page(5, 1);
+		let changes = node_changes(*tree, next);
+		tree = next;
+		(void, changes)
+	});
+	// nodes now: 1 leaf, 2 row(6, 3), 3 leaf, 6 row(1, 5), 5 leaf
+	assert(layout.peek(|t| t.parent_of(5)) == Some(6), "5 now sits under the new split 6");
+	assert(five.get().map(|n| n.path) == Some("/a") && runs5.read() == 0, "the moved page's slot survives and does NOT wake: its node did not change");
+	assert(four.get() == None && runs4.read() == 1, "the old parent's slot ends");
+	assert(children2.read() == 1 && paths2.read() == 0, "the grandparent's children part woke, its path part did not");
+	assert(runs1.read() == 0, "page 1 got a new parent and did not wake either");
+
+	// The same move under a POSITIONAL lens over the node list, by the diff door.
+	let nodes = sequence(start.nodes);
+	let five_at = nodes.slot(4);
+	nodes.reconcile_by_key(start.move_page(5, 1).nodes, |n| n.id);
+	assert(five_at.get().map(|n| n.id) == Some(5), "positional: the slot follows node 5 through the diff");
+	print("tree: ok");
+}
+
+fun grid_scenarios() {
+	// Way 1: a sequence of rows.
+	let sheet = sequence(Grid::new(3, 3));
+	let row1 = sheet.slot(1);
+	let row_runs: Shared<i32> = Shared::new(0);
+	let all_rows: Shared<i32> = Shared::new(0);
+	let _a = row1.on_change(|_r| row_runs.write() += 1);
+	let rows = sheet.rows();
+	for slot in rows.get() {
+		let _w = slot.on_change(|_r| all_rows.write() += 1);
+	}
+	sheet.insert_at(0, ["new0", "new1", "new2"]);
+	assert(row1.at() == Some(2) && row_runs.read() == 0, "a row insert: the row's slot moved, silently");
+	// A column insert is an Edit of every row, in one update.
+	sheet.update(|g| {
+		g.insert_col(1, "col");
+		(void, [Change::Edit(0usize, "cells"), Change::Edit(1usize, "cells"), Change::Edit(2usize, "cells"), Change::Edit(3usize, "cells")])
+	});
+	assert(row1.get().map(|r| r[1]) == Some("col2"), "the column arrived in every row");
+	assert(row_runs.read() == 1, "row 1 woke once: it did change");
+	assert(all_rows.read() == 3, "every row watcher woke: a column insert is a wake of every row");
+
+	// Way 2: a handler addressed by GridAt follows CELLS through both axes.
+	let cells: Lens<Grid, GridAt, str, GridHandler> = Lens::over(
+		Grid::new(3, 3),
+		GridHandler::new(),
+		Access {
+			read = |g: &Grid, at: GridAt| g.cell(at),
+			view = |g: &Grid, at: GridAt, read: |&str| void| {
+				if g.cell(at) is Some(let v) {
+					read(&v);
+				}
+			},
+			write = |g: &mut Grid, at: GridAt, v: str| {
+				if at is GridAt::Cell(let r, let c) {
+					g.cells[r][c] = v;
+				}
+			},
+			modify = |g: &mut Grid, at: GridAt, change: |&mut str| void| {
+				if at is GridAt::Cell(let r, let c) {
+					change(&mut g.cells[r][c]);
+				}
+			},
+		},
+	);
+	let b1 = cells.slot(GridAt::Cell(1, 1));
+	let c2 = cells.slot(GridAt::Cell(2, 2));
+	let b1_runs: Shared<i32> = Shared::new(0);
+	let c2_runs: Shared<i32> = Shared::new(0);
+	let _b = b1.on_change(|_v| b1_runs.write() += 1);
+	let _c = c2.on_change(|_v| c2_runs.write() += 1);
+	cells.update(|g| (void, [g.insert_row(0, "top")]));
+	cells.update(|g| (void, [g.insert_col(0, "left")]));
+	assert(b1.at() == Some(GridAt::Cell(2, 2)) && b1.get() == Some("r1c1"), "a cell slot follows a row AND a column insert");
+	assert(c2.at() == Some(GridAt::Cell(3, 3)) && c2.get() == Some("r2c2"), "so does another");
+	assert(b1_runs.read() == 0 && c2_runs.read() == 0, "neither woke");
+	cells.update(|g| (void, [g.delete_col(2)]));
+	assert(b1.get() == None && b1_runs.read() == 1, "deleting its column ends the cell's slot, one wake");
+	assert(c2.at() == Some(GridAt::Cell(3, 2)) && c2_runs.read() == 0, "the cell right of it shifts left, silently");
+	c2.set("C2");
+	assert(cells.peek(|g| g.cells[3][2]) == "C2" && c2_runs.read() == 1, "a write through the cell slot lands");
+	cells.update(|g| (void, [g.delete_row(3)]));
+	assert(c2.get() == None && c2_runs.read() == 2, "deleting its row ends it too");
+	print("grid: ok");
+}
+
+/// Edges of the lens itself, found while porting the structures above.
+fun edge_scenarios() {
+	// E1. A slot asked for past the end follows nothing, and stays so. (Found
+	// here: the first build gave it a phantom position that later pushes moved.)
+	let short = sequence(["a", "b", "c"]);
+	let phantom = short.slot(5);
+	assert(phantom.get() == None && phantom.at() == None, "a slot past the end reads None and has no place");
+	short.push("d");
+	short.push("e");
+	short.push("f");
+	assert(short.size() == 6 && phantom.get() == None && phantom.at() == None, "six items now, and it still follows nothing");
+	assert(!phantom.set("z") && short.all() == ["a", "b", "c", "d", "e", "f"], "a write through it says it wrote nothing");
+
+	// E2. An update that names several changes. A tap cannot read the structure
+	// change by change (it is already final), so the value feed is told the whole
+	// list once, and the slot feed, which reads no values, stays exact. (Found
+	// here: the first build read the final list for each change and lost "A".)
+	let list = sequence(["x"]);
+	let items = list.items().map(|v| v).memo();
+	let rows = list.rows();
+	list.update(|held| {
+		held.insert(0, "A");
+		held.insert(0, "B");
+		(void, [Change::Insert(0usize, 1usize), Change::Insert(0usize, 1usize)])
+	});
+	assert(list.all() == ["B", "A", "x"], "the structure is right");
+	let row_values = rows.get().map(|slot| slot.get().unwrap_or("?"));
+	let shown_items = items.get().join(",");
+	let shown_rows = row_values.join(",");
+	print(i"E2 items memo: {shown_items}  rows: {shown_rows}");
+	assert(items.get() == ["B", "A", "x"], "the items feed is right after a several-change update");
+	assert(row_values == ["B", "A", "x"] && rows.get()[0] != rows.get()[1], "rows() holds one slot per item, in order");
+
+	// E3. A Delete then an Insert named by one update: one Reset, nothing doubled.
+	// (Found here: the first build applied the Insert on top of the Reset.)
+	let pair = sequence(["p", "q", "r"]);
+	let mirror = pair.items().map(|v| v).memo();
+	pair.update(|held| {
+		held[1] = "Q";
+		(void, [Change::Delete(1usize, 1usize), Change::Insert(1usize, 1usize)])
+	});
+	let shown_mirror = mirror.get().join(",");
+	print(i"E3 mirror: {shown_mirror}");
+	assert(mirror.get() == ["p", "Q", "r"], "a Delete + Insert through update leaves the mirror right");
+
+	// E4. items() and rows() each hold a tap until released. Nothing releases one
+	// automatically yet (no owner tie).
+	let fresh = sequence([1, 2, 3]);
+	let i1 = fresh.items();
+	let i2 = fresh.items();
+	let r1 = fresh.rows();
+	assert(fresh.taps.read().len() == 3, "three feeds, three taps");
+	i1.release();
+	i2.release();
+	r1.release();
+	assert(fresh.taps.read().len() == 0, "a released feed lets its tap go");
+
+	// E5. Slots are never reclaimed: a Gone slot keeps its cells and its table row.
+	let churn = sequence([0]);
+	mut round = 0;
+	for round < 100 {
+		let _s = churn.slot(0);
+		churn.remove_at(0);
+		churn.push(round);
+		round += 1;
+	}
+	assert(churn.cells.read().len() == 100, "LIMIT: 100 slot cells for a one-item list: slots are never reclaimed");
+
+	// E6. A Move does not wake the length's readers. (Found here: it did.)
+	let order = sequence(["a", "b", "c"]);
+	let lengths: Shared<i32> = Shared::new(0);
+	let _l = order.length().on_change(|_n| lengths.write() += 1);
+	order.move_item(0, 2);
+	assert(lengths.read() == 0, "a move leaves the length's reader asleep");
+
+	// E7. The cost of a paste with rows() attached: rows() makes a slot for every
+	// item up front, and each arriving line gets a slot and a one-by-one insert.
+	let big = sequence(Rope::new(64, lines("b", 20000)));
+	let t0 = now_millis();
+	let big_rows = big.rows();
+	let t1 = now_millis();
+	big.splice(10000, 0, lines("p", 5000));
+	let t2 = now_millis();
+	let made = big.cells.read().len();
+	let build = t1 - t0;
+	let paste = t2 - t1;
+	print(i"E7 rows() over 20,000 lines: {build} ms; a 5,000-line paste with rows attached: {paste} ms; slots made: {made}");
+	assert(big_rows.get().len() == 25000 && made == 25000, "a slot per line, made eagerly");
+	print("edges: ok");
+}
+
+fun main() {
+	rope_scenarios();
+	gap_scenarios();
+	sorted_scenarios();
+	keyed_scenarios();
+	tree_scenarios();
+	grid_scenarios();
+	edge_scenarios();
+	print("structures: all passed");
+}

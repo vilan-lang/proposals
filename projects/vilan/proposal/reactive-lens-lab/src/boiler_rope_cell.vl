@@ -1,0 +1,228 @@
+// Boilerplate measurement 2b: the toy rope as a std-style cell (a RopeCell the way ListCell is a List cell).
+import std::io::{ assert, panic };
+import std::reactive::{
+	CollFlow,
+	CollPipe,
+	CollSource,
+	DeltaCursor,
+	DeltaLog,
+	DeltaSource,
+	SeqOp,
+	SequenceCell,
+	SignalCell,
+	Source,
+	Subscriber,
+	Subscription,
+};
+import std::reactive::delta::{ splice_count, splice_start };
+import std::shared::Shared;
+
+// ---- the storage itself (needed under ANY design) ---------------------------
+export struct Rope {
+	chunks: List<List<str>>,
+}
+
+impl Rope {
+	fun find(self, i: usize): Option<(usize, usize)> {
+		mut start: usize = 0;
+		mut c: usize = 0;
+		for chunk in self.chunks {
+			if i < start + chunk.len() {
+				ret Some((c, i - start));
+			}
+			start += chunk.len();
+			c += 1;
+		}
+		None
+	}
+
+	fun len(self): usize {
+		mut total: usize = 0;
+		for chunk in self.chunks {
+			total += chunk.len();
+		}
+		total
+	}
+
+	fun get(self, at: usize): Option<str> {
+		self.find(at) is Some((let c, let k)) else ret None;
+		self.chunks[c].get(k)
+	}
+
+	fun add(&mut self, at: usize, value: str) {
+		if self.chunks.len() == 0 {
+			self.chunks.push([value]);
+			ret;
+		}
+		let (c, k) = match self.find(at) {
+			Some(let place) => place,
+			None => (self.chunks.len() - 1, self.chunks[self.chunks.len() - 1].len()),
+		};
+		self.chunks[c].insert(k, value);
+		if self.chunks[c].len() > 4 {
+			mut tail: List<str> = [];
+			for self.chunks[c].len() > 2 {
+				tail.insert(0, self.chunks[c].pop().unwrap_or(""));
+			}
+			self.chunks.insert(c + 1, tail);
+		}
+	}
+
+	fun take(&mut self, at: usize) {
+		self.find(at) is Some((let c, let k)) else ret;
+		self.chunks[c].remove(k);
+		if self.chunks[c].len() == 0 {
+			self.chunks.remove(c);
+		}
+	}
+
+	fun all(self): List<str> {
+		mut out: List<str> = [];
+		for chunk in self.chunks {
+			for line in chunk {
+				out.push(line);
+			}
+		}
+		out
+	}
+}
+
+
+// ---- BEGIN std-style cell -----------------------------------------------------
+export struct RopeCell {
+	rope: Shared<Rope>,
+	published: SignalCell<i32>,
+	log: DeltaLog<SeqOp<str>>,
+}
+
+fun publish(cell: RopeCell) {
+	cell.published.set(cell.log.at());
+}
+
+export impl RopeCell {
+	fun new(): RopeCell {
+		RopeCell { rope = Shared::new(Rope { chunks = [] }), published = SignalCell::new(0), log = DeltaLog<SeqOp<str>>::new() }
+	}
+
+	fun peek<U>(self, read: sync |&Rope| U): U {
+		let weak = self.rope.downgrade();
+		match weak.get() {
+			Some(let rope) => read(rope),
+			None => panic("RopeCell::peek: the cell's own rope is gone while the cell holds it"),
+		}
+	}
+
+	fun set_at(self, at: usize, value: str) {
+		match self.rope.read().get(at) {
+			Some(let previous) => {
+				self.rope.write().take(at);
+				self.rope.write().add(at, value);
+				self.log.record(SeqOp::SetAt(at, previous, value));
+				publish(self);
+			},
+			None => {},
+		}
+	}
+}
+
+export impl RopeCell with Source<List<str>> {
+	fun get(self): List<str> {
+		self.rope.read().all()
+	}
+
+	fun identity(self): Option<i32> {
+		Some(self.rope.identity())
+	}
+
+	[must_use]
+	fun attach_observer(self, observer: |List<str>| void, immediately: bool): Subscription {
+		let rope = self.rope;
+		self.published.attach_observer(|_sequence| observer(rope.read().all()), immediately)
+	}
+
+	[must_use]
+	fun on_settle(self, subscriber: Subscriber): Subscription {
+		self.published.on_settle(subscriber)
+	}
+}
+
+export impl RopeCell with SequenceCell<str> {
+	fun size(self): usize {
+		self.rope.read().len()
+	}
+
+	fun splice(self, at: usize, removed: usize, inserted: List<str>) {
+		let held = self.size();
+		let start = splice_start(held, at);
+		let taking = splice_count(held, start, removed);
+		if taking == 0 && inserted.len() == 0 {
+			ret;
+		}
+		mut left: List<str> = [];
+		mut taken = 0;
+		for taken < taking {
+			left.push(self.rope.read().get(start).unwrap_or(""));
+			self.rope.write().take(start);
+			taken += 1;
+		}
+		mut offset = 0;
+		for line in inserted {
+			self.rope.write().add(start + offset, line);
+			offset += 1;
+		}
+		self.log.record(SeqOp::Splice(start, left, inserted));
+		publish(self);
+	}
+}
+
+export impl RopeCell with DeltaSource<List<str>, SeqOp<str>> {
+	fun cursor(self): DeltaCursor {
+		self.log.cursor()
+	}
+
+	fun drop_cursor(self, cursor: DeltaCursor) {
+		self.log.drop_cursor(cursor);
+	}
+
+	fun since(self, cursor: DeltaCursor): List<SeqOp<str>> {
+		rope_cell_since(self.log, self.rope, cursor)
+	}
+
+	fun reader(self): |DeltaCursor| List<SeqOp<str>> {
+		let log = self.log;
+		let rope = self.rope;
+		|cursor| rope_cell_since(log, rope, cursor)
+	}
+}
+
+fun rope_cell_since(log: DeltaLog<SeqOp<str>>, rope: Shared<Rope>, cursor: DeltaCursor): List<SeqOp<str>> {
+	match log.since(cursor) {
+		None => {
+			mut lost: List<SeqOp<str>> = [];
+			lost.push(SeqOp::Reset(rope.read().all()));
+			lost
+		},
+		Some(let recorded) => recorded,
+	}
+}
+
+export impl RopeCell with CollSource<str> {}
+// ---- END std-style cell -------------------------------------------------------
+
+fun main() {
+	let cell = RopeCell::new();
+	let derived = cell.map(|line| line + "!").memo();
+	cell.push("a");
+	cell.push("b");
+	cell.push("c");
+	cell.push("d");
+	cell.push("e");
+	cell.insert_at(1, "new");
+	assert(cell.get() == ["a", "new", "b", "c", "d", "e"], "inserts landed");
+	assert(derived.get() == ["a!", "new!", "b!", "c!", "d!", "e!"], "derived follows inserts");
+	cell.remove_at(0);
+	cell.set_at(0, "N");
+	assert(derived.get() == ["N!", "b!", "c!", "d!", "e!"], "derived follows remove + set_at");
+	assert(cell.peek(|rope| rope.len()) == 5, "peek reads in place");
+	assert(cell.size() == 5, "size");
+}

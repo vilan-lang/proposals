@@ -1,0 +1,252 @@
+// A 2D grid: rows of cells. Two ways under the lens.
+//
+// 1. A sequence of rows (`Grid` is `Resizable<List<str>>`): a row insert is one
+//    `Insert`; a COLUMN insert can only be an `Edit` of every row.
+// 2. A handler of its own (`GridHandler`), addressed by `GridAt`: the address type
+//    carries the axis, so `Insert(Col(c), n)` says "a column" and a cell slot
+//    follows its cell through row AND column inserts. Built from two `Positional`
+//    tables. No change to the lens was needed for it; the grid itself still holds
+//    no reactive code.
+import pkg::lens::{ Change, Handler, Positional, Resizable, Wake };
+import std::hash_map::HashMap;
+import std::io::panic;
+
+export struct Grid {
+	cells: List<List<str>>,
+}
+
+export impl Grid {
+	fun new(rows: usize, cols: usize): Grid {
+		mut cells: List<List<str>> = [];
+		mut r: usize = 0;
+		for r < rows {
+			mut row: List<str> = [];
+			mut c: usize = 0;
+			for c < cols {
+				row.push(i"r{r}c{c}");
+				c += 1;
+			}
+			cells.push(row);
+			r += 1;
+		}
+		Grid { cells }
+	}
+
+	fun width(self): usize {
+		if self.cells.len() == 0 { 0 } else { self.cells[0].len() }
+	}
+
+	fun cell(self, at: GridAt): Option<str> {
+		match at {
+			GridAt::Cell(let r, let c) => {
+				self.cells.get(r) is Some(let row) else ret None;
+				row.get(c)
+			},
+			_ => None,
+		}
+	}
+
+	fun insert_row(&mut self, at: usize, prefix: str): Change<GridAt> {
+		mut row: List<str> = [];
+		mut c: usize = 0;
+		let width = self.width();
+		for c < width {
+			row.push(i"{prefix}{c}");
+			c += 1;
+		}
+		self.cells.insert(at, row);
+		Change::Insert(GridAt::Row(at), 1)
+	}
+
+	fun insert_col(&mut self, at: usize, prefix: str): Change<GridAt> {
+		mut r: usize = 0;
+		let height = self.cells.len();
+		for r < height {
+			self.cells[r].insert(at, i"{prefix}{r}");
+			r += 1;
+		}
+		Change::Insert(GridAt::Col(at), 1)
+	}
+
+	fun delete_col(&mut self, at: usize): Change<GridAt> {
+		mut r: usize = 0;
+		let height = self.cells.len();
+		for r < height {
+			self.cells[r].remove(at);
+			r += 1;
+		}
+		Change::Delete(GridAt::Col(at), 1)
+	}
+
+	fun delete_row(&mut self, at: usize): Change<GridAt> {
+		self.cells.remove(at);
+		Change::Delete(GridAt::Row(at), 1)
+	}
+}
+
+/// Way 1: the grid as a sequence of rows.
+export impl Grid with Resizable<List<str>> {
+	fun count(self): usize {
+		self.cells.len()
+	}
+
+	fun item(self, at: usize): Option<List<str>> {
+		self.cells.get(at)
+	}
+
+	fun splice(&mut self, at: usize, removed: usize, inserted: List<List<str>>) {
+		mut taken: usize = 0;
+		for taken < removed {
+			self.cells.remove(at);
+			taken += 1;
+		}
+		mut offset: usize = 0;
+		for row in inserted {
+			self.cells.insert(at + offset, row);
+			offset += 1;
+		}
+	}
+}
+
+/// Way 2's address: a whole row, a whole column, or one cell.
+[derive(PartialEq)]
+export enum GridAt {
+	Row(usize),
+	Col(usize),
+	Cell(usize, usize),
+}
+
+/// Cells followed through row and column changes: a row table and a column table
+/// (each a `Positional`), and a cell slot per (row slot, column slot) pair.
+export struct GridHandler {
+	rows: Positional,
+	cols: Positional,
+	/// Each cell slot's row slot and column slot; -1 once the cell is gone.
+	cell_row: List<i32>,
+	cell_col: List<i32>,
+	/// "row slot:col slot" -> cell slot.
+	pairs: HashMap<str, i32>,
+	/// The cell slots on each row slot and each column slot.
+	on_row: HashMap<i32, List<i32>>,
+	on_col: HashMap<i32, List<i32>>,
+}
+
+export impl GridHandler {
+	fun new(): GridHandler {
+		GridHandler {
+			rows = Positional::new(),
+			cols = Positional::new(),
+			cell_row = [],
+			cell_col = [],
+			pairs = HashMap::new(),
+			on_row = HashMap::new(),
+			on_col = HashMap::new(),
+		}
+	}
+
+	/// The cell slot at a cell, if one was made. Inner slots are made to look.
+	fun existing(&mut self, r: usize, c: usize): Option<i32> {
+		let rs = self.rows.follow(r);
+		let cs = self.cols.follow(c);
+		self.pairs.get(i"{rs}:{cs}")
+	}
+
+	/// The cells on inner slots that just died die too.
+	fun bury(&mut self, inner: List<Wake>, by_row: bool, wakes: &mut List<Wake>) {
+		for wake in inner {
+			match wake {
+				Wake::Gone(let line) => {
+					let held = if by_row { self.on_row.get(line) } else { self.on_col.get(line) };
+					for cell in held.unwrap_or([]) {
+						if self.cell_row[cell.as_usize()] != -1 {
+							self.cell_row[cell.as_usize()] = -1;
+							wakes.push(Wake::Gone(cell));
+						}
+					}
+				},
+				_ => {},
+			}
+		}
+	}
+}
+
+export impl GridHandler with Handler<GridAt> {
+	fun follows_items(self): bool {
+		true
+	}
+
+	fun follow(&mut self, at: GridAt): i32 {
+		let (r, c) = match at {
+			GridAt::Cell(let r, let c) => (r, c),
+			_ => panic("grid: only a cell has a slot"),
+		};
+		let rs = self.rows.follow(r);
+		let cs = self.cols.follow(c);
+		let key = i"{rs}:{cs}";
+		if self.pairs.get(key) is Some(let held) {
+			ret held;
+		}
+		let slot = self.cell_row.len().as_i32();
+		self.cell_row.push(rs);
+		self.cell_col.push(cs);
+		self.pairs.insert(key, slot);
+		mut row_cells = self.on_row.get(rs).unwrap_or([]);
+		row_cells.push(slot);
+		self.on_row.insert(rs, row_cells);
+		mut col_cells = self.on_col.get(cs).unwrap_or([]);
+		col_cells.push(slot);
+		self.on_col.insert(cs, col_cells);
+		slot
+	}
+
+	fun apply(&mut self, change: Change<GridAt>, wakes: &mut List<Wake>) {
+		mut inner: List<Wake> = [];
+		match change {
+			Change::Insert(GridAt::Row(let r), let n) => self.rows.apply(Change::Insert(r, n), &mut inner),
+			Change::Insert(GridAt::Col(let c), let n) => self.cols.apply(Change::Insert(c, n), &mut inner),
+			Change::Delete(GridAt::Row(let r), let n) => {
+				self.rows.apply(Change::Delete(r, n), &mut inner);
+				self.bury(inner, true, wakes);
+			},
+			Change::Delete(GridAt::Col(let c), let n) => {
+				self.cols.apply(Change::Delete(c, n), &mut inner);
+				self.bury(inner, false, wakes);
+			},
+			Change::Move(GridAt::Row(let a), GridAt::Row(let b)) => self.rows.apply(Change::Move(a, b), &mut inner),
+			Change::Move(GridAt::Col(let a), GridAt::Col(let b)) => self.cols.apply(Change::Move(a, b), &mut inner),
+			Change::Replace(GridAt::Cell(let r, let c)) => {
+				if self.existing(r, c) is Some(let slot) {
+					wakes.push(Wake::Value(slot));
+				}
+			},
+			Change::Edit(GridAt::Cell(let r, let c), let part) => {
+				if self.existing(r, c) is Some(let slot) {
+					wakes.push(Wake::Part(slot, part));
+				}
+			},
+			Change::Reset => {
+				mut slot: usize = 0;
+				for slot < self.cell_row.len() {
+					if self.cell_row[slot] != -1 {
+						self.cell_row[slot] = -1;
+						wakes.push(Wake::Gone(slot.as_i32()));
+					}
+					slot += 1;
+				}
+				self.rows.apply(Change::Reset, &mut inner);
+				self.cols.apply(Change::Reset, &mut inner);
+			},
+			_ => panic("grid: a change this handler has no meaning for"),
+		}
+	}
+
+	fun locate(self, slot: i32): Option<GridAt> {
+		let rs = self.cell_row[slot.as_usize()];
+		if rs == -1 {
+			ret None;
+		}
+		let r = self.rows.locate(rs)!;
+		let c = self.cols.locate(self.cell_col[slot.as_usize()])!;
+		Some(GridAt::Cell(r, c))
+	}
+}
