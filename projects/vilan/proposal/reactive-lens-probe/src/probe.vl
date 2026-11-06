@@ -1,0 +1,386 @@
+// The reactive lens, reduced to its mechanism (proposal/reactive-lens.md, Appendix A).
+//
+// ONE lens type. What differs between a list, a set and a rope is passed in:
+// the HANDLER (how addresses move when the structure changes) and the READ (how a
+// value is fetched at an address). The structures hold no reactive code.
+import std::hash_map::HashMap;
+import std::hash_set::HashSet;
+import std::io::{ assert, panic };
+import std::shared::Shared;
+
+/// What one write did, by address. The same three for every structure.
+enum Change<A> {
+	Insert(A),
+	Replace(A),
+	Delete(A),
+}
+
+/// How one kind of address behaves. It owns the slots: which slot follows which
+/// address, and what a change does to the others.
+trait Handler<A> {
+	/// The slot that follows whatever is at `at` now.
+	fun follow(&mut self, at: A): i32;
+	/// Move the slots for `change`, NOW, and answer the slots that must wake.
+	fun apply(&mut self, change: Change<A>): List<i32>;
+	/// Where a slot's item is now, or `None` once it was deleted.
+	fun locate(self, slot: i32): Option<A>;
+}
+
+// --- Addresses that shift: a position ----------------------------------------
+
+struct Positional {
+	/// The slot id at each position, or -1 where nothing follows.
+	positions: List<i32>,
+	next: i32,
+}
+
+impl Positional {
+	fun new(): Positional {
+		Positional { positions = [], next = 0 }
+	}
+}
+
+impl Positional with Handler<usize> {
+	fun follow(&mut self, at: usize): i32 {
+		for self.positions.len() <= at {
+			self.positions.push(-1);
+		}
+		if self.positions[at] == -1 {
+			self.positions[at] = self.next;
+			self.next += 1;
+		}
+		self.positions[at]
+	}
+
+	fun apply(&mut self, change: Change<usize>): List<i32> {
+		match change {
+			Change::Insert(let at) => {
+				if at <= self.positions.len() {
+					self.positions.insert(at, -1);
+				}
+				[]
+			},
+			Change::Replace(let at) => match self.positions.get(at) {
+				Some(let slot) => (slot == -1 then [] else [slot]),
+				None => [],
+			},
+			Change::Delete(let at) => {
+				if at < self.positions.len() {
+					let slot = self.positions.remove(at);
+					ret (slot == -1 then [] else [slot]);
+				}
+				[]
+			},
+		}
+	}
+
+	fun locate(self, slot: i32): Option<usize> {
+		mut at: usize = 0;
+		for held in self.positions {
+			if held == slot {
+				ret Some(at);
+			}
+			at += 1;
+		}
+		None
+	}
+}
+
+// --- Addresses that stay: a key ------------------------------------------------
+
+struct ByKey {
+	slots: HashMap<str, i32>,
+	keys: HashMap<i32, str>,
+	next: i32,
+}
+
+impl ByKey {
+	fun new(): ByKey {
+		ByKey { slots = HashMap::new(), keys = HashMap::new(), next = 0 }
+	}
+
+	fun held(self, key: str): List<i32> {
+		match self.slots.get(key) {
+			Some(let slot) => [slot],
+			None => [],
+		}
+	}
+}
+
+impl ByKey with Handler<str> {
+	fun follow(&mut self, at: str): i32 {
+		if self.slots.get(at) is Some(let slot) {
+			ret slot;
+		}
+		let slot = self.next;
+		self.next += 1;
+		self.slots.insert(at, slot);
+		self.keys.insert(slot, at);
+		slot
+	}
+
+	// A key never moves, so every change wakes the key's own slot and nothing else.
+	fun apply(&mut self, change: Change<str>): List<i32> {
+		match change {
+			Change::Insert(let key) => self.held(key),
+			Change::Replace(let key) => self.held(key),
+			Change::Delete(let key) => self.held(key),
+		}
+	}
+
+	fun locate(self, slot: i32): Option<str> {
+		self.keys.get(slot)
+	}
+}
+
+// --- The lens ------------------------------------------------------------------
+
+struct Lens<S, A, T, H> {
+	storage: Shared<S>,
+	handler: Shared<H>,
+	read: |&S, A| Option<T>,
+	/// The slots this turn woke, in order. Draining it is the settle.
+	woken: Shared<List<i32>>,
+}
+
+struct Slot<S, A, T, H> {
+	lens: Lens<S, A, T, H>,
+	id: i32,
+}
+
+fun viewing<V, R>(cell: Shared<V>, read: sync |&V| R): R {
+	let weak = cell.downgrade();
+	match weak.get() {
+		Some(let value) => read(value),
+		None => panic("viewing: the storage is gone while a lens holds it"),
+	}
+}
+
+impl Lens<type S, type A, type T, type H: Handler<A>> {
+	fun over(own value: S, own handler: H, read: |&S, A| Option<T>): Lens<S, A, T, H> {
+		Lens { storage = Shared::new(value), handler = Shared::new(handler), read, woken = Shared::new([]) }
+	}
+
+	/// The structure's OWN write, with the changes it made. The slots move before
+	/// this returns; the wakes wait for `settle`.
+	fun update<R>(self, change: |&mut S| (R, List<Change<A>>)): R {
+		let (result, changes) = change(self.storage.write());
+		for made in changes {
+			for slot in self.handler.write().apply(made) {
+				self.woken.write().push(slot);
+			}
+		}
+		result
+	}
+
+	fun slot(self, at: A): Slot<S, A, T, H> {
+		Slot { lens = self, id = self.handler.write().follow(at) }
+	}
+
+	/// The end of a turn: which slots woke.
+	fun settle(self): List<i32> {
+		let out = self.woken.read();
+		self.woken.write() = [];
+		out
+	}
+}
+
+impl Slot<type S, type A, type T, type H: Handler<A>> {
+	fun at(self): Option<A> {
+		self.lens.handler.read().locate(self.id)
+	}
+
+	fun get(self): Option<T> {
+		self.at() is Some(let at) else ret None;
+		let read = self.lens.read;
+		viewing(self.lens.storage, |held| read(held, at))
+	}
+}
+
+// --- No annotation: the mutations a SHAPE has, written once -------------------
+
+/// What a structure offers to be a sequence under the lens. Nothing reactive.
+trait Resizable<T> {
+	fun count(self): usize;
+	fun item(self, at: usize): Option<T>;
+	fun put(&mut self, at: usize, value: T);
+	fun add(&mut self, at: usize, value: T);
+	fun take(&mut self, at: usize);
+}
+
+fun sequence<S: Resizable<T>, T>(own value: S): Lens<S, usize, T, Positional> {
+	Lens::over(value, Positional::new(), |held: &S, at: usize| held.item(at))
+}
+
+fun insert_at<S: Resizable<T>, T>(lens: Lens<S, usize, T, Positional>, at: usize, value: T) {
+	lens.update(|held| {
+		held.add(at, value);
+		(void, [Change::Insert(at)])
+	})
+}
+
+fun remove_at<S: Resizable<T>, T>(lens: Lens<S, usize, T, Positional>, at: usize) {
+	lens.update(|held| {
+		held.take(at);
+		(void, [Change::Delete(at)])
+	})
+}
+
+/// A write THROUGH a slot: it lands wherever the slot's item is now.
+fun set<S: Resizable<T>, T>(slot: Slot<S, usize, T, Positional>, value: T) {
+	slot.at() is Some(let at) else ret;
+	slot.lens.update(|held| {
+		held.put(at, value);
+		(void, [Change::Replace(at)])
+	})
+}
+
+// --- Two structures that know nothing about any of this ------------------------
+
+struct Lines {
+	items: List<str>,
+}
+
+impl Lines with Resizable<str> {
+	fun count(self): usize {
+		self.items.len()
+	}
+	fun item(self, at: usize): Option<str> {
+		self.items.get(at)
+	}
+	fun put(&mut self, at: usize, value: str) {
+		self.items[at] = value;
+	}
+	fun add(&mut self, at: usize, value: str) {
+		self.items.insert(at, value);
+	}
+	fun take(&mut self, at: usize) {
+		self.items.remove(at);
+	}
+}
+
+/// A toy rope: lines kept in chunks of at most four.
+struct Rope {
+	chunks: List<List<str>>,
+}
+
+impl Rope {
+	fun find(self, i: usize): Option<(usize, usize)> {
+		mut start: usize = 0;
+		mut c: usize = 0;
+		for chunk in self.chunks {
+			if i < start + chunk.len() {
+				ret Some((c, i - start));
+			}
+			start += chunk.len();
+			c += 1;
+		}
+		None
+	}
+
+	fun all(self): List<str> {
+		mut out: List<str> = [];
+		for chunk in self.chunks {
+			for line in chunk {
+				out.push(line);
+			}
+		}
+		out
+	}
+}
+
+impl Rope with Resizable<str> {
+	fun count(self): usize {
+		mut total: usize = 0;
+		for chunk in self.chunks {
+			total += chunk.len();
+		}
+		total
+	}
+	fun item(self, at: usize): Option<str> {
+		self.find(at) is Some((let c, let k)) else ret None;
+		self.chunks[c].get(k)
+	}
+	fun put(&mut self, at: usize, value: str) {
+		self.find(at) is Some((let c, let k)) else ret;
+		self.chunks[c][k] = value;
+	}
+	fun add(&mut self, at: usize, value: str) {
+		if self.chunks.len() == 0 {
+			self.chunks.push([value]);
+			ret;
+		}
+		let (c, k) = match self.find(at) {
+			Some(let place) => place,
+			None => (self.chunks.len() - 1, self.chunks[self.chunks.len() - 1].len()),
+		};
+		self.chunks[c].insert(k, value);
+		if self.chunks[c].len() > 4 {
+			mut tail: List<str> = [];
+			for self.chunks[c].len() > 2 {
+				tail.insert(0, self.chunks[c].pop().unwrap_or(""));
+			}
+			self.chunks.insert(c + 1, tail);
+		}
+	}
+	fun take(&mut self, at: usize) {
+		self.find(at) is Some((let c, let k)) else ret;
+		self.chunks[c].remove(k);
+		if self.chunks[c].len() == 0 {
+			self.chunks.remove(c);
+		}
+	}
+}
+
+fun main() {
+	// 1. The sketch from the proposal, on a list.
+	let list = sequence(Lines { items = ["foo", "bar", "baz"] });
+	let bar = list.slot(1);
+	assert(bar.get() == Some("bar"), "a slot reads its item");
+	insert_at(list, 0, "qux");
+	assert(bar.get() == Some("bar"), "the slot follows its item through an insert");
+	assert(viewing(list.storage, |held| held.item(1)) == Some("foo"), "position 1 is now foo");
+	assert(list.settle() == [], "an insert above a slot does not wake it");
+
+	// 2. The batched turn the prototype got wrong: insert, then write through a
+	//    slot, with no settle between them.
+	let rows = sequence(Lines { items = ["a", "b", "c"] });
+	let c = rows.slot(2);
+	insert_at(rows, 0, "z");
+	set(c, "C!");
+	assert(viewing(rows.storage, |held| held.items) == ["z", "a", "b", "C!"], "the write lands on c, not on b");
+	assert(rows.settle() == [c.id], "one wake, for the slot that changed");
+
+	// 3. A deleted item: the slot answers None, and it wakes once to say so.
+	remove_at(rows, 3);
+	assert(c.get() == None, "a slot whose item was deleted reads None");
+	assert(rows.settle() == [c.id], "the delete wakes the slot");
+
+	// 4. A rope under the SAME lens and the SAME handler, by one trait impl.
+	let text = sequence(Rope { chunks = [["a", "b", "c", "d"], ["e", "f", "g"]] });
+	let fifth = text.slot(4);
+	insert_at(text, 1, "new");
+	assert(fifth.at() == Some(5) && fifth.get() == Some("e"), "the slot follows its line through a chunk split");
+	set(fifth, "E");
+	assert(viewing(text.storage, |held| held.all()) == ["a", "new", "b", "c", "d", "E", "f", "g"], "a slot write lands in the rope");
+
+	// 5. A set under the SAME lens with a different handler. The write names its
+	//    change, as in the proposal's sketch.
+	let tags: Lens<HashSet<str>, str, bool, ByKey> = Lens::over(
+		HashSet::new(),
+		ByKey::new(),
+		|held: &HashSet<str>, key: str| Some(held.contains(key)),
+	);
+	let urgent = tags.slot("urgent");
+	let later = tags.slot("later");
+	assert(urgent.get() == Some(false), "a key's slot exists before the key does");
+	tags.update(|held| {
+		held.insert("urgent");
+		(void, [Change::Insert("urgent")])
+	});
+	assert(urgent.get() == Some(true), "the key's slot reads the insert");
+	assert(tags.settle() == [urgent.id], "only that key's slot wakes");
+	assert(later.get() == Some(false), "another key is untouched");
+
+	print("lens probe: all passed");
+}
