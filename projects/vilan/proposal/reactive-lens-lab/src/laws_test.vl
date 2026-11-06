@@ -144,6 +144,22 @@ fun main() {
 	tabs.insert_at(0, Task { title = "zero", status = "open" });
 	assert(places.read().len() == 1 && first_tab.at() == Some(1), "a slot's position is a source that follows the shifts");
 
+	// Lifetime: a slot is counted by its handles and released with the last one.
+	let held = sequence(["p", "q", "r"]);
+	let one = held.slot(1);
+	let two = held.slot(1);
+	assert(one.id == two.id, "two asks for one item are one slot");
+	one.release();
+	assert(two.get() == Some("q") && two.at() == Some(1), "the slot lives while a handle holds it");
+	two.release();
+	assert(two.get() == None && two.at() == None, "the last release ends it");
+	held.insert_at(0, "o");
+	assert(held.slot(2).get() == Some("q") && held.slot(2).id != one.id, "a new ask makes a new slot; the old entry is free");
+	let feed = held.rows();
+	assert(feed.get().len() == 4, "rows() holds a slot per item");
+	feed.release();
+	assert(held.taps.read().len() == 0, "releasing the feed lets its tap and its slots go");
+
 	// The keyed handler, under the same lens.
 	let ages: HashMap<str, i32> = HashMap::new();
 	let people = keyed(ages);

@@ -1,0 +1,8 @@
+export trait Look<K, V> {
+	fun find(self, key: K): Option<V>;
+}
+
+/// A generic body, declared here, that calls the trait's method through its bound.
+export fun look_up<S: Look<K, V>, K, V>(held: S, key: K): Option<V> {
+	held.find(key)
+}

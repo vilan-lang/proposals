@@ -230,6 +230,10 @@ impl HashSet<type T: Hashable> with Lookup<T, bool> {
 	fun drop(&mut self, key: T) {
 		self.remove(key);
 	}
+
+	fun held_keys(self): List<T> {
+		self.values()
+	}
 }
 
 /// An insertion-ordered map: the order in a key list, the values in a map.
@@ -274,6 +278,10 @@ impl OrderedMap<type V> with Lookup<str, V> {
 	fun drop(&mut self, key: str) {
 		self.values.remove(key);
 		self.keys = self.keys.filter(|each| *each != key);
+	}
+
+	fun held_keys(self): List<str> {
+		self.keys
 	}
 }
 
@@ -497,7 +505,7 @@ fun edge_scenarios() {
 		churn.push(round);
 		round += 1;
 	}
-	assert(churn.cells.read().len() == 100, "LIMIT: 100 slot cells for a one-item list: slots are never reclaimed");
+	assert(churn.cells.read().len() == 100, "LIMIT: 100 slot cells for a one-item list: a slot's table entry is freed by release(), but ids and cells are not reused");
 
 	// E6. A Move does not wake the length's readers. (Found here: it did.)
 	let order = sequence(["a", "b", "c"]);

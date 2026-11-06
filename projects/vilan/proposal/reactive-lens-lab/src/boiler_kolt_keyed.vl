@@ -39,6 +39,10 @@ impl Tabs with Lookup<u53, TabRecord> {
 			self.list.remove(at);
 		}
 	}
+
+	fun held_keys(self): List<u53> {
+		self.list.map(|each| each.id)
+	}
 }
 
 struct PanelsLensB {

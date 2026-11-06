@@ -240,6 +240,14 @@ export impl GridHandler with Handler<GridAt> {
 		}
 	}
 
+	/// A cell slot released by hand: it follows nothing from now on. Its pair stays
+	/// in the index (a lab shortcut), so a new ask for the same cell is a new slot.
+	fun release(&mut self, slot: i32) {
+		if slot >= 0 && slot.as_usize() < self.cell_row.len() {
+			self.cell_row[slot.as_usize()] = -1;
+		}
+	}
+
 	fun locate(self, slot: i32): Option<GridAt> {
 		let rs = self.cell_row[slot.as_usize()];
 		if rs == -1 {

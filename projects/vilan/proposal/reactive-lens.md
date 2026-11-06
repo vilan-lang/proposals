@@ -2,7 +2,7 @@
 
 Tracker A185. Proposed by the owner (2026-11-05), from kolt's reactive-list prototype (`kolt/planning/proposal/live/`, `new_connection.md` §14). Drafted on vilan 0.54.0.
 
-**DRAFT rev 2 (2026-11-05), for ruling.** Q1–Q15 are open (§10).
+**DRAFT rev 2.1 (2026-11-06), for ruling.** Q1–Q15 are open (§10). Rev 2.1 fills four of rev 2's gaps (the planned write, the truth check, counted slots, the keyed side) and isolates the trait-admission find (B712).
 
 - **Part I** is the design. Rev 2 changes law L7, adds law L8, and updates §5, §8, §9, §10 and §11 from what the lab found.
 - **Part II** is the lab: a working library on std's own signals and turns, measured against std's cells and kolt's prototype, with more structures, kolt's situations, async data, a wire and nesting.
@@ -327,12 +327,12 @@ If T4 fails and cannot be fixed, the lens still ships as the answer for bespoke 
 Rev 2 marks what the lab settled, changed or added.
 
 - **Q1. One core, or a second system?** Rec: **one core**. Re-found the cells on the lens and keep their names. The lab is the case for it (§13, §15); T4 is the condition.
-- **Q2. Do changes carry values?** Rev 1's rec was addresses only. **Changed:** addresses by default, and a change MAY carry what arrived and what left. The shape path has no need (the lens reads for itself, and `rows()` needs no values at all). `update` does: without values every such write is a `Reset` to derived views and to a wire (§14.3).
+- **Q2. Do changes carry values?** Rev 1's rec was addresses only; rev 2 wanted values on `update`'s changes. **Rev 2.1 answers it without values:** a planned write (`plan(change, write)`) names its one change BEFORE the write, so the taps read what is about to leave exactly as on the shape path. Rec: addresses only, `plan` for a structure's own fast path, `update` kept for a write that cannot say in advance (coarse but correct). What is still open is a write of several changes (§20).
 - **Q3. The default source of changes.** Rec: **the shape trait** (§4.1). Built; no write in the lab's app code names a change.
 - **Q4. What a keyed slot follows.** Rec: **the key**. Built so. It is what lets a rejected optimistic delete return in the same slot (§16.2).
 - **Q5. Positional slots at a `Reset`.** **Changed** (L7): a `Reset` lands by diff when the items have a key, and slots die only when there is none.
 - **Q6. Spellings.** The lab's are `sequence(x)`, `keyed(x)`, `.slot(a)`, `.part(name, read)`, `.slot(a).sequence(..)`. A slot IS the source of its item, so the sketch's `.value()` step is not needed. The constructor's name is the owner's call.
-- **Q7. The truth check for `update`.** Rec unchanged: on in debug builds and tests. **Not built in the lab.** It matters more than rev 1 thought: `update` is where the lab's worst defect was (§19).
+- **Q7. The truth check for `update`.** Rec: on in debug builds and tests. **Built in rev 2.1** (`sequence_checked`): the lengths must add up and nothing outside the window the changes name may differ. It catches a wrong position, a wrong count and an unnamed change, and it copies the structure once per checked write. Conservative inside the window.
 - **Q8. The positional table.** **Answered:** blocks of 128 positions (§13.1). A flat table is 13 to 47 times too slow; a tree was not needed.
 - **Q9. Fields before B711?** Rec: **no**. The lab names parts by strings as a stand-in and never ships that.
 - **Q10. The four type parameters.** Quantified (§15.5): invisible inside a function, 45 to 51 characters at every boundary. Rec: wrapper types per handler (`SequenceLens<S, T>`, `KeyedLens<S, K, V>`), not aliases, and constructors that infer.
@@ -340,7 +340,7 @@ Rev 2 marks what the lab settled, changed or added.
 - **Q12 (new). Optimistic writes.** Rec: an overlay beside the lens, never a write to it. An optimistic edit shows through the overlay; an optimistic delete HIDES the row until the server answers (§16.4).
 - **Q13 (new). Nested lenses.** Rec: one inner table per slot and part, kept with the slot, so two handles to the same inner lens are the same lens (§18).
 - **Q14 (new). A list that is also looked up by id.** Rec: **an index over a sequence lens** (`index_by`, a tap), not a third handler. It is kolt's most common shape (§15.4).
-- **Q15 (new). Lifetime.** Rec: slots counted and freed at the last release, as store.md Q12 rules for store slots; a feed's tap released with its owner.
+- **Q15 (new). Lifetime.** Rec: slots counted and freed at the last release, as store.md Q12 rules for store slots (built in rev 2.1), and a slot or feed made inside an owner scope released with that owner (not built: the lab has no owner tie).
 
 ---
 
@@ -378,6 +378,7 @@ Rev 1 rested on a 386-line probe. Rev 2 rests on a working library and its exper
 - **Two bridges to std's ops** (§5): `items()` is the op feed of values, for `map`, `filter`, `count`, `memo`. `rows()` is the op feed of SLOTS, for `each`: a row is handed its item's slot and nothing is copied.
 - **Taps:** a listener for the changes themselves, called before a write (while what leaves can still be read) and again for each change right after the slots moved for it. The op bridges, the index and the wire are taps. A tap is told the STAGE of each change, because a write that names several changes at once (`update`) cannot be read change by change: the structure is already final. Value feeds answer that with one `Reset`; the slot feed needs no values and stays exact.
 - **Nesting** (§18) and **a wire** (§17).
+- **Rev 2.1 (2026-11-06), after the ports:** a **planned write** (`plan(change, write)`) names its one change BEFORE writing, so a structure's own fast path is as exact as the shape path with no value carried (Q2 answered without values); a **truth check** (`sequence_checked`: lengths must add up, and nothing outside the window the changes name may differ) that catches a wrong position, a wrong count and an unnamed change (Q7, built); **counted slots** released with their last handle, and feeds that release their tap and their slots (Q15, the explicit half); and the **keyed side**: std's `MapOp` feed (`entries()`, so `filter`, `map_values` and `memo` follow a keyed lens), a length, and `reconcile_keyed` that leaves equal values alone. `keyed_test.vl` covers them; ten test files are green.
 - **Tracked reads work unchanged** (`tracked_test.vl`): a `derive(|| ..)` body that tracks two parts of one slot re-runs once for an edit of either, once for the row's deletion, and not at all for another row's edit or an insert above it.
 - **An index is a tap:** `index_by(key)` keeps a map from a key of the items to their slots, so a list that is also looked up by id (§15.4) answers in one lookup; `slot.index()` is a slot's position as a source.
 
@@ -498,9 +499,9 @@ Each is the data shape and update pattern of a real kolt site, with asserts on w
 
 The model held in every case: no scenario needed reactive code in a structure, and none needed a change to the lens type. The gaps are in what surrounds it, in this order:
 
-1. **`update`'s changes carry no values.** Every write that names its own changes degrades to a `Reset` for value consumers (derived views, a wire). It is correct and it is coarse. A change should be able to carry what arrived and what left (Q2).
-2. **Nothing is released.** Slots, and the taps behind `items()`, `rows()` and an index, live until released by hand (§20).
-3. **The keyed side is thin:** no `MapOp` bridge, no length, no diff door, no order.
+1. **`update`'s changes carry no values.** Every write that names its own changes degrades to a `Reset` for value consumers (derived views, a wire). It is correct and it is coarse. **Rev 2.1:** the planned write (`plan`) names its one change first and is exact; `update` stays for a write that cannot say in advance (Q2).
+2. **Nothing is released.** **Rev 2.1:** slots are counted and released with their last handle; feeds release their tap and slots. The owner tie is still by hand (§20).
+3. **The keyed side is thin.** **Rev 2.1:** it has the `MapOp` feed, a length and a diff door. It still has no order.
 4. **The diff door cannot emit field edits.**
 5. **No move between lenses.**
 6. **std has no sort operator.** Not the lens's gap, but every table in kolt meets it.
@@ -514,16 +515,16 @@ Every count is non-blank, non-comment lines, by one script (`reactive-lens-lab/c
 
 | The lens (`lens.vl`) | Lines | Public names | std's twins | Lines | Public names |
 |---|---|---|---|---|---|
-| changes, both handlers, the lens, slots, nesting | 730 | | | | |
-| the sequence shape: both op bridges, the index, moves, the diff door | 511 | | `ListCell`, its traits and recorder | 345 | 47 |
-| the keyed shape | 55 | | `HashMapCell` | 452 | 40 |
+| changes, both handlers, the lens, slots, nesting, the truth check | 789 | | | | |
+| the sequence shape: both op bridges, the index, moves, the diff door, the sequence check | 603 | | `ListCell`, its traits and recorder | 345 | 47 |
+| the keyed shape: the `MapOp` feed, length, the diff door | 191 | | `HashMapCell` | 452 | 40 |
 | | | | `HashSetCell` | 268 | 18 |
 | | | | `KeyedCell` (rpc) | 228 | 12 |
 | | | | `Store` | 3,433 | 120 |
-| **Total** | **1,296** | **76** | **Total** | **4,726** | **237** |
+| **Total (rev 2.1)** | **1,583** | **90** | **Total** | **4,726** | **237** |
 
-- Without `Store`, std's four cells are 1,293 lines and 117 names against the lens's 1,296 and 76. **Line for line the lens is no smaller than the four cells it would replace.** What it buys is that the fifth structure costs 20 lines (§15.2), and that slots, parts, nesting and the index come with it.
-- **The sequence shape is larger than `ListCell`** (511 against 345). The saving is in the later twins: the keyed shape is 55 lines where `HashMapCell` and `HashSetCell` are 720.
+- Without `Store`, std's four cells are 1,293 lines and 117 names against the lens's 1,583 and 90. **Line for line the lens is larger than the four cells it would replace**, and grew by 290 lines in rev 2.1 as the ports' gaps were filled. What it buys is that the fifth structure costs 20 lines (§15.2), and that slots, parts, nesting, the index, the truth check and the diff doors come with every one of them.
+- **The sequence shape is larger than `ListCell`** (603 against 345). The keyed shape is 191 lines where `HashMapCell` and `HashSetCell` are 720.
 - The comparison flatters the lens in two ways. It reuses std's `DeltaLog`, `SeqOp`, `SignalCell`, `SequenceCell` and `each`, which the twins carry or re-implement. And `Store`'s 3,433 lines include the derive, static paths and remote handling, none of which the lab attempts.
 - The lab also lacks things the cells have: log trimming for its own taps, a `Signal`-style whole `set`, the batch recorder, a set shape of its own.
 
@@ -705,7 +706,7 @@ Met while building and measuring. The first is filed; the others are for the int
   - A write through a dead slot did nothing, silently. `set` and `edit` now answer whether they wrote.
   - A keyed slot's `set` on an absent key reported a replace of a key that never existed. It is an insert now.
 - **Left as found:** the diff door moves more than it must (one item from top to bottom of five is four moves); slots and taps are not released automatically (§20).
-- **A trait impl in the caller's module was once not admitted to the library's generic body:** `'find' is provided by an impl in module boiler_kolt, and module lens does not admit it: a generic body resolves under the file it was DECLARED in`. It appeared when a `Lookup` impl shared a module with a positional lens use, and went away when the impl moved to its own file. The trigger was not isolated. **This one matters**: the whole design rests on a user's module implementing a shape trait that the library's generic code then calls. Every other shape impl in the lab (rope, gap buffer, tree, grid) is admitted without trouble, so it is probably a name clash with `List`'s own `find`, but it needs a minimal repro before S1.
+- **A trait impl in the caller's module was not admitted to the library's generic body:** `'find' is provided by an impl in module boiler_kolt, and module lens does not admit it: a generic body resolves under the file it was DECLARED in`. **Isolated (rev 2):** it is B318's explicit export surface, not a name clash. A module that exports anything exports its impls only when they are written `export impl`, and a library's generic body reaching the impl through a bound is subject to that. Marking the impl `export impl Tabs with Lookup<..>` fixes it; a module with `export *;` (70 of kolt's 92 files) never meets it. The defect is the diagnostic, which tells the user to widen the LIBRARY's import of the caller's module, advice a library cannot follow; filed as B712. Not a design blocker, but every shape impl in a module with an explicit surface must be exported, and the docs for the shape traits must say so.
 - **Integer literals are not inferred through a generic return:** `(void, [Change::Insert(1, 1)])` is read as `Change<i32>` where `Change<usize>` is expected; the lab writes `1usize`.
 - **A bound must be repeated on every struct that holds a `HashMap<K, _>`**, and `TransientState` cannot be compared with `==`.
 
@@ -714,8 +715,8 @@ Met while building and measuring. The first is filed; the others are for the int
 In order of how much each could change the design:
 
 1. **std's own cells on the lens (T4).** Every number here is the lab's library against std's cells, not std's cells rebuilt on the lens. Only S4 settles it.
-2. **Lifetime.** The lab never frees a slot or shrinks its table, and a feed's tap lives until released by hand. A long session that mounts and unmounts rows needs counted slots, as store.md Q12 rules for store slots, and taps tied to an owner (Q15).
-3. **Values on `update`'s changes** (Q2), and the truth check for them (Q7). Until both exist, the escape hatch is coarse for derived views and unchecked.
+2. **Lifetime, the owner half.** Slots are counted and released with their last handle, and a feed releases its tap and slots (rev 2.1), but every release is by hand: nothing ties a slot or a feed to the owner that made it, which is what a view needs (Q15). Slot ids and their cells are not reused either.
+3. **`update` for a write of several changes.** A planned write of ONE change is exact and checked (rev 2.1). A write that names several (a rich-text edit with its renumbered markers) still reaches value consumers as one `Reset`, and the check for it is conservative. Composition of a change list, as the mirror does for a turn, is the missing piece (Q2).
 4. **One inner lens per slot and part** (§18, Q13).
 5. **A window onto a large list across the wire** (§17.4).
 6. **The native backend.** The lab uses `Weak::get` for in-place reads, which the rust backend does not emit yet (F1 S1b).

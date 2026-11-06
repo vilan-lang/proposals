@@ -17,6 +17,8 @@ import std::io::panic;
 import std::reactive::{
 	CollSource,
 	DeltaCursor,
+	MapOp,
+	MapSource,
 	DeltaLog,
 	DeltaSource,
 	SeqOp,
@@ -77,6 +79,8 @@ export trait Handler<A> {
 	/// Whether a slot follows an ITEM (it needs one to exist, and ends with it) or
 	/// an ADDRESS (it exists before anything is there).
 	fun follows_items(self): bool;
+	/// Forget a slot: it follows nothing from now on and its table entry is free.
+	fun release(&mut self, slot: i32);
 }
 
 /// How many positions one block of the positional table holds before it splits.
@@ -365,6 +369,15 @@ export impl Positional with Handler<usize> {
 		true
 	}
 
+	fun release(&mut self, slot: i32) {
+		let block = self.home[slot.as_usize()];
+		if block == -1 {
+			ret;
+		}
+		self.blocks[block.as_usize()][self.offset[slot.as_usize()]] = -1;
+		self.home[slot.as_usize()] = -1;
+	}
+
 	fun locate(self, slot: i32): Option<usize> {
 		let block = self.home[slot.as_usize()];
 		if block == -1 {
@@ -440,6 +453,12 @@ export impl Keyed<type K: Hashable> with Handler<K> {
 	fun follows_items(self): bool {
 		false
 	}
+
+	fun release(&mut self, slot: i32) {
+		if self.keys.get(slot.as_usize()) is Some(let key) {
+			self.slots.remove(key);
+		}
+	}
 }
 
 // === The lens ================================================================
@@ -509,6 +528,8 @@ export struct PartCell {
 export struct SlotCells {
 	woke: SignalCell<i32>,
 	parts: Shared<List<PartCell>>,
+	/// How many handles hold this slot. At zero the slot is released.
+	users: Shared<i32>,
 }
 
 export struct Lens<S, A, T, H> {
@@ -526,6 +547,9 @@ export struct Lens<S, A, T, H> {
 	sized: SignalCell<i32>,
 	taps: Shared<List<Tap<A>>>,
 	next_tap: Shared<i32>,
+	/// The truth check for `update` (Q7): given the structure before and after a
+	/// write and the changes the write named, what is wrong, if anything.
+	verify: Shared<Option<|&S, &S, List<Change<A>>| Option<str>>>,
 }
 
 /// Lend a cell's value to a reader in place.
@@ -551,6 +575,7 @@ export impl Lens<type S, type A, type T, type H: Handler<A>> {
 			sized = SignalCell::new(0),
 			taps = Shared::new([]),
 			next_tap = Shared::new(0),
+			verify = Shared::new(None),
 		}
 	}
 
@@ -580,14 +605,48 @@ export impl Lens<type S, type A, type T, type H: Handler<A>> {
 	/// The structure's OWN write, with the changes it made (the escape hatch: a
 	/// write no shape has a method for). The slots have moved when this returns.
 	fun update<R>(self, change: |&mut S| (R, List<Change<A>>)): R {
+		let before = match self.verify.read() {
+			Some(let _check) => Some(self.peek(|held| *held)),
+			None => None,
+		};
 		let out: Shared<Option<(R, List<Change<A>>)>> = Shared::new(None);
 		self.mutate(|held| out.write() = Some(change(held)));
 		match out.read() {
 			Some((let result, let changes)) => {
+				self.audit(before, changes);
 				self.landed(changes, true);
 				result
 			},
 			None => panic("lens: an update's write never ran"),
+		}
+	}
+
+	/// A write that names its ONE change before making it: the taps see what is
+	/// about to leave, so the write is as exact as the shape path (`Stage::Exact`),
+	/// with no value carried. For a structure's own fast path that is one change.
+	fun plan<R>(self, change: Change<A>, write: |&mut S| R): R {
+		let before = match self.verify.read() {
+			Some(let _check) => Some(self.peek(|held| *held)),
+			None => None,
+		};
+		self.coming([change]);
+		let out: Shared<Option<R>> = Shared::new(None);
+		self.mutate(|held| out.write() = Some(write(held)));
+		self.audit(before, [change]);
+		self.landed([change], false);
+		match out.read() {
+			Some(let result) => result,
+			None => panic("lens: a planned write never ran"),
+		}
+	}
+
+	/// Check a write's changes against what it did, when a check is installed.
+	fun audit(self, before: Option<S>, changes: List<Change<A>>) {
+		self.verify.read() is Some(let check) else ret;
+		before is Some(let old) else ret;
+		let problem = self.peek(|held| check(&old, held, changes));
+		if problem is Some(let what) {
+			panic(i"lens: the changes do not match the write: {what}");
 		}
 	}
 
@@ -675,13 +734,14 @@ export impl Lens<type S, type A, type T, type H: Handler<A>> {
 	fun slot(self, at: A): ItemSlot<S, A, T, H> {
 		if viewing(self.handler, |handler| handler.follows_items()) && !self.has(at) {
 			// Nothing is there to follow: a slot that reads `None` and stays so.
-			ret ItemSlot { lens = self, id = -1, cells = SlotCells { woke = SignalCell::new(0), parts = Shared::new([]) } };
+			ret ItemSlot { lens = self, id = -1, cells = SlotCells { woke = SignalCell::new(0), parts = Shared::new([]), users = Shared::new(0) } };
 		}
 		let id = self.handler.write().follow(at);
 		for self.cells.read().len() <= id.as_usize() {
-			self.cells.write().push(SlotCells { woke = SignalCell::new(0), parts = Shared::new([]) });
+			self.cells.write().push(SlotCells { woke = SignalCell::new(0), parts = Shared::new([]), users = Shared::new(0) });
 		}
 		let cells = viewing(self.cells, |held| held[id.as_usize()]);
+		cells.users.write() += 1;
 		ItemSlot { lens = self, id, cells }
 	}
 
@@ -787,6 +847,19 @@ export impl ItemSlot<type S, type A, type T, type H: Handler<A>> {
 		viewing(self.lens.handler, |handler| handler.locate(self.id))
 	}
 
+	/// Let this handle go. The slot itself is released when its last handle is:
+	/// it follows nothing from then on, and its table entry is free.
+	fun release(self) {
+		if self.id < 0 {
+			ret;
+		}
+		let left = self.cells.users.read() - 1;
+		self.cells.users.write() = left;
+		if left <= 0 {
+			self.lens.handler.write().release(self.id);
+		}
+	}
+
 	/// Where the item is now, as a source: it wakes when items arrive, leave or
 	/// move anywhere in the structure.
 	fun index(self): SlotIndex<S, A, T, H> {
@@ -855,6 +928,7 @@ export impl ItemSlot<type S, type A, type T, type H: Handler<A>> {
 			sized = SignalCell::new(0),
 			taps = Shared::new([]),
 			next_tap = Shared::new(0),
+			verify = Shared::new(None),
 		}
 	}
 
@@ -967,6 +1041,103 @@ export trait Resizable<T> {
 		with(&mut item);
 		self.put(at, item);
 	}
+}
+
+/// What a sequence write's changes say against what it did: the lengths must
+/// agree, and everything outside the window the changes name must be untouched.
+/// A conservative check (a change naming a wrong part inside the window passes),
+/// but a wrong position, a wrong count or a change left unnamed fails it.
+export fun explain_sequence<S: Resizable<T>, T: PartialEq>(before: &S, after: &S, changes: List<Change<usize>>): Option<str> {
+	let old_count = before.count();
+	let new_count = after.count();
+	mut low = old_count;
+	mut high: usize = 0;
+	mut grew: i32 = 0;
+	for change in changes {
+		match change {
+			Change::Insert(let at, let count) => {
+				if at < low {
+					low = at;
+				}
+				if at > high {
+					high = at;
+				}
+				grew += count.as_i32();
+			},
+			Change::Delete(let at, let count) => {
+				if at < low {
+					low = at;
+				}
+				if at + count > high {
+					high = at + count;
+				}
+				grew -= count.as_i32();
+			},
+			Change::Replace(let at) => {
+				if at < low {
+					low = at;
+				}
+				if at + 1 > high {
+					high = at + 1;
+				}
+			},
+			Change::Edit(let at, let _part) => {
+				if at < low {
+					low = at;
+				}
+				if at + 1 > high {
+					high = at + 1;
+				}
+			},
+			Change::Move(let from, let to) => {
+				let first = if from < to { from } else { to };
+				let last = if from < to { to } else { from };
+				if first < low {
+					low = first;
+				}
+				if last + 1 > high {
+					high = last + 1;
+				}
+			},
+			Change::Reset => ret None,
+		}
+	}
+	if new_count.as_i32() != old_count.as_i32() + grew {
+		ret Some(i"the changes add up to {old_count.as_i32() + grew} items, the write left {new_count}");
+	}
+	if changes.len() == 0 {
+		low = 0;
+		high = 0;
+	}
+	mut at: usize = 0;
+	let head = if low < old_count { low } else { old_count };
+	for at < head {
+		if before.item(at) != after.item(at) {
+			ret Some(i"item {at} changed, and no change names it");
+		}
+		at += 1;
+	}
+	if high > old_count {
+		high = old_count;
+	}
+	mut tail = high;
+	for tail < old_count {
+		let moved = (tail.as_i32() + grew).as_usize();
+		if before.item(tail) != after.item(moved) {
+			ret Some(i"item {tail} (now {moved}) changed, and no change names it");
+		}
+		tail += 1;
+	}
+	None
+}
+
+/// A lens over any sequence that CHECKS every `update` and `plan` against the
+/// changes it names, and panics on a mismatch. For tests and debug builds: it
+/// copies the structure once per such write.
+export fun sequence_checked<S: Resizable<T>, T: PartialEq>(own value: S): Lens<S, usize, T, Positional> {
+	let lens = sequence(value);
+	lens.verify.write() = Some(|before: &S, after: &S, changes: List<Change<usize>>| explain_sequence(before, after, changes));
+	lens
 }
 
 /// A lens over any sequence.
@@ -1456,9 +1627,13 @@ export struct LensRows<S, T> {
 }
 
 export impl LensRows<type S: Resizable<type T>, T> {
-	/// Stop following the lens. The feed holds a tap until this is called.
+	/// Stop following the lens, and let go of the slots the feed holds.
 	fun release(self) {
 		self.lens.untap(self.tap);
+		for slot in self.held.read() {
+			slot.release();
+		}
+		self.held.write() = [];
 	}
 }
 
@@ -1544,6 +1719,8 @@ export trait Lookup<K, V> {
 	fun find(self, key: K): Option<V>;
 	fun store(&mut self, key: K, value: V);
 	fun drop(&mut self, key: K);
+	/// Every key held, in the structure's own order.
+	fun held_keys(self): List<K>;
 }
 
 /// A lens over any keyed collection.
@@ -1603,5 +1780,167 @@ export impl HashMap<type K: Hashable, type V> with Lookup<K, V> {
 
 	fun drop(&mut self, key: K) {
 		self.remove(key);
+	}
+
+	fun held_keys(self): List<K> {
+		self.keys()
+	}
+}
+
+export impl Lens<type S: Lookup<type K: Hashable, type V>, K, V, Keyed<K>> {
+	/// Every key and value, copied out.
+	fun all(self): HashMap<K, V> {
+		self.peek(|held| {
+			mut out: HashMap<K, V> = HashMap::new();
+			for key in held.held_keys() {
+				if held.find(key) is Some(let value) {
+					out.insert(key, value);
+				}
+			}
+			out
+		})
+	}
+
+	/// How many keys, as a source: it wakes when keys arrive or leave.
+	fun length(self): KeyedLength<S, K, V> {
+		KeyedLength { lens = self }
+	}
+
+	/// The entries as std's map op feed (`MapOp`), for the map operators.
+	fun entries(self): LensEntries<S, K, V> {
+		let log: DeltaLog<MapOp<K, V>> = DeltaLog::new();
+		let leaving: Shared<Option<V>> = Shared::new(None);
+		let lens = self;
+		let tap = self.tap(
+			|change| {
+				match change {
+					Change::Delete(let key, let _count) => leaving.write() = lens.peek(|held| held.find(key)),
+					Change::Replace(let key) => leaving.write() = lens.peek(|held| held.find(key)),
+					Change::Edit(let key, let _part) => leaving.write() = lens.peek(|held| held.find(key)),
+					_ => {},
+				}
+			},
+			|change, stage| {
+				// Keys never shift, so a write that named several changes is still
+				// readable change by change; only what LEFT is unknown.
+				let late = !(stage is Stage::Exact);
+				match change {
+					Change::Insert(let key, let _count) => {
+						if lens.peek(|held| held.find(key)) is Some(let value) {
+							log.record(MapOp::Put(key, None, value));
+						}
+					},
+					Change::Replace(let key) => {
+						if lens.peek(|held| held.find(key)) is Some(let value) {
+							log.record(MapOp::Put(key, (late then None else leaving.read()), value));
+						}
+					},
+					Change::Edit(let key, let _part) => {
+						if lens.peek(|held| held.find(key)) is Some(let value) {
+							log.record(MapOp::Put(key, (late then None else leaving.read()), value));
+						}
+					},
+					Change::Delete(let key, let _count) => {
+						if late {
+							log.record(MapOp::Reset(lens.all()));
+						} else if leaving.read() is Some(let value) {
+							log.record(MapOp::Delete(key, value));
+						}
+					},
+					Change::Move(let _from, let _to) => {},
+					Change::Reset => log.record(MapOp::Reset(lens.all())),
+				}
+			},
+		);
+		LensEntries { lens = self, log, tap }
+	}
+}
+
+export impl Lens<type S: Lookup<type K: Hashable, type V: PartialEq>, K, V, Keyed<K>> {
+	/// Become `next`, by the changes that get there: what left is deleted, what
+	/// is new is inserted, what differs is replaced, and what is equal is left
+	/// alone. One turn.
+	fun reconcile_keyed(self, next: HashMap<K, V>) {
+		let lens = self;
+		batch(|| {
+			for key in lens.peek(|held| held.held_keys()) {
+				if !next.contains_key(key) {
+					lens.remove(key);
+				}
+			}
+			for (key, value) in next.entries() {
+				match lens.peek(|held| held.find(key)) {
+					Some(let held) => {
+						if held != value {
+							lens.put(key, value);
+						}
+					},
+					None => lens.put(key, value),
+				}
+			}
+		});
+	}
+}
+
+/// A keyed lens's key count.
+export struct KeyedLength<S, K: Hashable, V> {
+	lens: Lens<S, K, V, Keyed<K>>,
+}
+
+export impl KeyedLength<type S: Lookup<type K: Hashable, type V>, K, V> with Source<usize> {
+	fun get(self): usize {
+		self.lens.peek(|held| held.held_keys().len())
+	}
+
+	fun identity(self): Option<i32> {
+		self.lens.sized.identity()
+	}
+
+	[must_use]
+	fun on_settle(self, subscriber: Subscriber): Subscription {
+		self.lens.sized.on_settle(subscriber)
+	}
+}
+
+/// A keyed lens's entries, as a source of the map and of std's map ops.
+export struct LensEntries<S, K: Hashable, V> {
+	lens: Lens<S, K, V, Keyed<K>>,
+	log: DeltaLog<MapOp<K, V>>,
+	tap: i32,
+}
+
+export impl LensEntries<type S: Lookup<type K: Hashable, type V>, K, V> {
+	fun release(self) {
+		self.lens.untap(self.tap);
+	}
+}
+
+export impl LensEntries<type S: Lookup<type K: Hashable, type V>, K, V> with Source<HashMap<K, V>> {
+	fun get(self): HashMap<K, V> {
+		self.lens.all()
+	}
+
+	[must_use]
+	fun on_settle(self, subscriber: Subscriber): Subscription {
+		self.lens.published.on_settle(subscriber)
+	}
+}
+
+export impl LensEntries<type S: Lookup<type K: Hashable, type V>, K, V> with MapSource<K, V> {}
+
+export impl LensEntries<type S: Lookup<type K: Hashable, type V>, K, V> with DeltaSource<HashMap<K, V>, MapOp<K, V>> {
+	fun cursor(self): DeltaCursor {
+		self.log.cursor()
+	}
+
+	fun drop_cursor(self, cursor: DeltaCursor) {
+		self.log.drop_cursor(cursor);
+	}
+
+	fun since(self, cursor: DeltaCursor): List<MapOp<K, V>> {
+		match self.log.since(cursor) {
+			Some(let recorded) => recorded,
+			None => [MapOp::Reset(self.lens.all())],
+		}
 	}
 }

@@ -138,4 +138,8 @@ export impl Tree with Lookup<u32, Node> {
 	fun drop(&mut self, key: u32) {
 		self.nodes = self.nodes.filter(|each| each.id != key);
 	}
+
+	fun held_keys(self): List<u32> {
+		self.nodes.map(|each| each.id)
+	}
 }

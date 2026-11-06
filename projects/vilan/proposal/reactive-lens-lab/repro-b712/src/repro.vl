@@ -1,0 +1,23 @@
+import pkg::lib::{ Look, look_up };
+import std::io::assert;
+
+struct Tabs {
+	list: List<i32>,
+}
+
+impl Tabs with Look<i32, i32> { // `export impl` makes it compile (B712)
+	fun find(self, key: i32): Option<i32> { // renamed below
+		self.list.find(|each| *each == key)
+	}
+}
+
+// An EXPORTED function that calls List's own `find`. Without `export`, or without
+// the impl above, or without the generic call below, everything compiles.
+export fun probe(wanted: i32): i32 {
+	wanted
+}
+
+fun main() {
+	assert(look_up(Tabs { list = [7] }, 7) == Some(7), "looked up through the bound");
+	print("repro: passed");
+}
