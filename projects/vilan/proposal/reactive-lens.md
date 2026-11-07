@@ -2,7 +2,7 @@
 
 Tracker A185. Proposed by the owner (2026-11-05), from kolt's reactive-list prototype (`kolt/planning/proposal/live/`, `new_connection.md` §14). Drafted on vilan 0.54.0.
 
-**DRAFT rev 2.1 (2026-11-06), for ruling.** Q1–Q15 are open (§10). Rev 2.1 fills four of rev 2's gaps (the planned write, the truth check, counted slots, the keyed side) and isolates the trait-admission find (B712).
+**DRAFT rev 2.2 (2026-11-06), for ruling.** Q1–Q17 are open (§10). Rev 2.1 filled four of rev 2's gaps (the planned write, the truth check, owner-tied slots, the keyed side) and isolated the trait-admission find (B712); rev 2.2 adds T4's result (§21: `ListCell` on the lens inside std keeps every semantic and is slower) and the lane's library fixes.
 
 - **Part I** is the design. Rev 2 changes law L7, adds law L8, and updates §5, §8, §9, §10 and §11 from what the lab found.
 - **Part II** is the lab: a working library on std's own signals and turns, measured against std's cells and kolt's prototype, with more structures, kolt's situations, async data, a wire and nesting.
@@ -33,7 +33,9 @@ Related:
 
 **What it does to std, if the tests in §9 pass.** The four cells become one lens plus two handlers. `Store` becomes the lens fed by a diff. The operators in `delta.vl` stay as they are. Q11 can be reversed: a positional handle becomes sound.
 
-**What is still open.** std's own cells rebuilt on it and measured on kolt's exhibit (T4); the lifetime of slots and taps; one inner lens per slot and part; values on `update`'s changes; the native backend (§20).
+**T4, done (§21).** `ListCell` re-founded on the lens inside std keeps every semantic and passes the whole suite, and is **slower**: 2× on bare writes, 3.4× heap per cell, and 13–18% more compile cost on every reactive program because the module is analyzed with std's reactive closure. Not passed as built; what it takes is listed. Until then the lens ships beside the cells, for bespoke structures and rows with slots.
+
+**What is still open.** The slim write path and the module's analysis cost (§21.3); one inner lens per slot and part; a write of several changes; the native backend (§20).
 
 ---
 
@@ -315,7 +317,7 @@ All five before anything in std is re-founded (S4 on). The lens is built beside 
 | **T1. The laws** | L1–L8 pinned per handler, each proven non-vacuous by planting the bug | All but L5 asserted in the lab on std's turns, with a randomized test of the slot table and planted bugs for the table and the wire. Not yet pins in std's suite. |
 | **T2. A rope with no reactive code** | A rope under the lens by one trait impl: slots, a paste as one change, rows through `each` | Done in the lab (§14). |
 | **T3. The operators, unchanged** | `map`, `filter`, a fold and `memo` over a lens, std's own `delta-law` suite green, no operator edited | `map`, `filter`, `count` and `memo` follow a lens in the lab with no operator edited. `delta-law` itself has not been run over a lens. |
-| **T4. `ListCell` on the lens, no slower** | kolt's perf exhibit and the perf gate's rows, judged by the seal's ceilings | Not done. The lab's numbers (§13) say it is likely; only std's build can say it is so. |
+| **T4. `ListCell` on the lens, no slower** | kolt's perf exhibit and the perf gate's rows, judged by the seal's ceilings | **Done, and failed** (§21): semantics kept, 11,278 tests green, but 2× on bare writes, 3.4× heap per cell, ten compile-cost rows over their ceiling. |
 | **T5. The batched turn** | The review's repro and its sibling, in one turn | Done (laws test; the wire and nesting tests repeat it). |
 
 If T4 fails and cannot be fixed, the lens still ships as the answer for bespoke structures, and the cells stay. That outcome answers §1.2 without touching std's own collections.
@@ -340,7 +342,9 @@ Rev 2 marks what the lab settled, changed or added.
 - **Q12 (new). Optimistic writes.** Rec: an overlay beside the lens, never a write to it. An optimistic edit shows through the overlay; an optimistic delete HIDES the row until the server answers (§16.4).
 - **Q13 (new). Nested lenses.** Rec: one inner table per slot and part, kept with the slot, so two handles to the same inner lens are the same lens (§18).
 - **Q14 (new). A list that is also looked up by id.** Rec: **an index over a sequence lens** (`index_by`, a tap), not a third handler. It is kolt's most common shape (§15.4).
-- **Q15 (new). Lifetime.** Rec: slots counted and freed at the last release, as store.md Q12 rules for store slots (built in rev 2.1), and a slot or feed made inside an owner scope released with that owner (not built: the lab has no owner tie).
+- **Q16 (new). One `Splice` change, or the `Delete`+`Insert` pair?** T4 showed a consumer is owed one op for a replacing splice, and the lab now pairs them in the feed from `before`. Rec: keep the owner's three words at the surface and add `Splice(A, removed, inserted)` as the one change a sequence write records, with `Insert` and `Delete` as its two degenerate forms, so no tap has to pair anything.
+- **Q17 (new). Where the module lives.** Rec: `std::reactive::lens`, imported by name, NOT re-exported from `std::reactive`, until its analysis cost is paid down; `ListCell` stays off it until the slim path exists (§21.3).
+- **Q15 (new). Lifetime.** Rec: slots counted and freed at the last release, as store.md Q12 rules for store slots, and a slot or feed made inside an owner scope released with that owner. **Both built in rev 2.1** through std's `defer_to_owner`, which is a no-op outside an owner, so the same `slot()` serves a view and a plain program.
 
 ---
 
@@ -351,14 +355,15 @@ Rev 2 moves the lab's lessons into the order.
 - **S0.** This paper and its rulings.
 - **S1.** `std::reactive::lens`: the lab's library made std's, with what the lab lacks: counted slots and owner-tied taps (Q15), the truth check for `update` (Q7), values on changes (Q2), the laws and the randomized test as pins. A minimal repro of the trait-admission find (§19) comes first. Nothing existing moves.
 - **S2.** The keyed side filled in: a `MapOp` bridge, length, the diff door, and the index (Q14). A real rope as the exhibit.
-- **S3.** `ListCell` re-founded on the lens (T4), then `HashMapCell` and `HashSetCell`. **The first slice that can break anything.**
+- **S3.** The slim write path and `settle_together` (§21.3 items 1 and 3), measured on the T4 lane's microbenchmark. Nothing existing moves.
+- **S3b.** `ListCell` re-founded on the lens (T4 again), then `HashMapCell` and `HashSetCell`, only once S3 brings bare writes level and the compile-cost rows under their ceilings. **The first slice that can break anything.**
 - **S4.** Fields and nested lenses, after B711 S1 (Q13).
 - **S5.** The loaded collection and the optimistic overlay (§16), replacing nothing: std has neither for collections today.
 - **S6.** The wire: the patch vocabulary for lens sources beside today's three, then `KeyedCell` and the mirror's landing moved onto it (§17).
 - **S7.** `Store` on the lens; Q11 reopened.
 - **S8.** kolt: its chat history and its board as the exhibits.
 
-S1, S2 and S5 are additive. If T4 fails at S3, they still ship, and the cells stay.
+S1, S2, S3 and S5 are additive. T4 failed once (§21); if it fails again at S3b, they still ship, and the cells stay.
 
 ---
 
@@ -378,7 +383,7 @@ Rev 1 rested on a 386-line probe. Rev 2 rests on a working library and its exper
 - **Two bridges to std's ops** (§5): `items()` is the op feed of values, for `map`, `filter`, `count`, `memo`. `rows()` is the op feed of SLOTS, for `each`: a row is handed its item's slot and nothing is copied.
 - **Taps:** a listener for the changes themselves, called before a write (while what leaves can still be read) and again for each change right after the slots moved for it. The op bridges, the index and the wire are taps. A tap is told the STAGE of each change, because a write that names several changes at once (`update`) cannot be read change by change: the structure is already final. Value feeds answer that with one `Reset`; the slot feed needs no values and stays exact.
 - **Nesting** (§18) and **a wire** (§17).
-- **Rev 2.1 (2026-11-06), after the ports:** a **planned write** (`plan(change, write)`) names its one change BEFORE writing, so a structure's own fast path is as exact as the shape path with no value carried (Q2 answered without values); a **truth check** (`sequence_checked`: lengths must add up, and nothing outside the window the changes name may differ) that catches a wrong position, a wrong count and an unnamed change (Q7, built); **counted slots** released with their last handle, and feeds that release their tap and their slots (Q15, the explicit half); and the **keyed side**: std's `MapOp` feed (`entries()`, so `filter`, `map_values` and `memo` follow a keyed lens), a length, and `reconcile_keyed` that leaves equal values alone. `keyed_test.vl` covers them; ten test files are green.
+- **Rev 2.1 (2026-11-06), after the ports:** a **planned write** (`plan(change, write)`) names its one change BEFORE writing, so a structure's own fast path is as exact as the shape path with no value carried (Q2 answered without values); a **truth check** (`sequence_checked`: lengths must add up, and nothing outside the window the changes name may differ) that catches a wrong position, a wrong count and an unnamed change (Q7, built); **counted slots** released with their last handle, feeds that release their tap and their slots, and both tied to the ambient owner when made inside one, so a view's row lets its slot go when the row unmounts and an explicit `release()` is only for code outside any owner (Q15); and the **keyed side**: std's `MapOp` feed (`entries()`, so `filter`, `map_values` and `memo` follow a keyed lens), a length, and `reconcile_keyed` that leaves equal values alone. `keyed_test.vl` covers them; ten test files are green.
 - **Tracked reads work unchanged** (`tracked_test.vl`): a `derive(|| ..)` body that tracks two parts of one slot re-runs once for an edit of either, once for the row's deletion, and not at all for another row's edit or an insert above it.
 - **An index is a tap:** `index_by(key)` keeps a map from a key of the items to their slots, so a list that is also looked up by id (§15.4) answers in one lookup; `slot.index()` is a slot's position as a source.
 
@@ -521,9 +526,9 @@ Every count is non-blank, non-comment lines, by one script (`reactive-lens-lab/c
 | | | | `HashSetCell` | 268 | 18 |
 | | | | `KeyedCell` (rpc) | 228 | 12 |
 | | | | `Store` | 3,433 | 120 |
-| **Total (rev 2.1)** | **1,583** | **90** | **Total** | **4,726** | **237** |
+| **Total (rev 2.2)** | **1,650** | **90** | **Total** | **4,726** | **237** |
 
-- Without `Store`, std's four cells are 1,293 lines and 117 names against the lens's 1,583 and 90. **Line for line the lens is larger than the four cells it would replace**, and grew by 290 lines in rev 2.1 as the ports' gaps were filled. What it buys is that the fifth structure costs 20 lines (§15.2), and that slots, parts, nesting, the index, the truth check and the diff doors come with every one of them.
+- Without `Store`, std's four cells are 1,293 lines and 117 names against the lens's 1,650 and 90. **Line for line the lens is larger than the four cells it would replace**, and grew by 354 lines in rev 2.1 and 2.2 as the ports' and T4's gaps were filled. What it buys is that the fifth structure costs 20 lines (§15.2), and that slots, parts, nesting, the index, the truth check and the diff doors come with every one of them.
 - **The sequence shape is larger than `ListCell`** (603 against 345). The keyed shape is 191 lines where `HashMapCell` and `HashSetCell` are 720.
 - The comparison flatters the lens in two ways. It reuses std's `DeltaLog`, `SeqOp`, `SignalCell`, `SequenceCell` and `each`, which the twins carry or re-implement. And `Store`'s 3,433 lines include the derive, static paths and remote handling, none of which the lab attempts.
 - The lab also lacks things the cells have: log trimming for its own taps, a `Signal`-style whole `set`, the batch recorder, a set shape of its own.
@@ -705,6 +710,8 @@ Met while building and measuring. The first is filed; the others are for the int
   - A move woke readers of the length; an `update` with no changes woke readers of the whole value. Both now sleep.
   - A write through a dead slot did nothing, silently. `set` and `edit` now answer whether they wrote.
   - A keyed slot's `set` on an absent key reported a replace of a key that never existed. It is an insert now.
+- **Found by the T4 lane in the library and fixed in rev 2.2** (§21.1): a tap captured the lens handle (a cycle under counting, 213 leaked cells); a replacing splice was two ops; a run of moves was one op each; the in-place read used `Weak::get`. **Found and not fixable in the lab:** `batch` inside an observer opens a turn instead of joining the draining one (std needs `settle_together`).
+- **The rust backend drops a guard's binding:** `x.at() is Some(let at) else ret;` emits Rust whose later use of `at` is `E0425 cannot find value`. B709's family (filed for `jump break`), met here with `ret`; stamped on B709 with this repro.
 - **Left as found:** the diff door moves more than it must (one item from top to bottom of five is four moves); slots and taps are not released automatically (§20).
 - **A trait impl in the caller's module was not admitted to the library's generic body:** `'find' is provided by an impl in module boiler_kolt, and module lens does not admit it: a generic body resolves under the file it was DECLARED in`. **Isolated (rev 2):** it is B318's explicit export surface, not a name clash. A module that exports anything exports its impls only when they are written `export impl`, and a library's generic body reaching the impl through a bound is subject to that. Marking the impl `export impl Tabs with Lookup<..>` fixes it; a module with `export *;` (70 of kolt's 92 files) never meets it. The defect is the diagnostic, which tells the user to widen the LIBRARY's import of the caller's module, advice a library cannot follow; filed as B712. Not a design blocker, but every shape impl in a module with an explicit surface must be exported, and the docs for the shape traits must say so.
 - **Integer literals are not inferred through a generic return:** `(void, [Change::Insert(1, 1)])` is read as `Change<i32>` where `Change<usize>` is expected; the lab writes `1usize`.
@@ -714,14 +721,74 @@ Met while building and measuring. The first is filed; the others are for the int
 
 In order of how much each could change the design:
 
-1. **std's own cells on the lens (T4).** Every number here is the lab's library against std's cells, not std's cells rebuilt on the lens. Only S4 settles it.
-2. **Lifetime, the owner half.** Slots are counted and released with their last handle, and a feed releases its tap and slots (rev 2.1), but every release is by hand: nothing ties a slot or a feed to the owner that made it, which is what a view needs (Q15). Slot ids and their cells are not reused either.
+1. **A slim write path, and the module's analysis cost.** T4 measured both (§21). Neither is designed yet; both are engineering, not semantics.
+2. **Lifetime, the last corner.** Slots are counted, released with their last handle, and tied to the ambient owner when made inside one, as are the feeds and the index (rev 2.1; `laws_test.vl` disposes an owner and watches both go). What remains: slot ids and their cells are not reused, and a slot a feed makes from inside a tap is deliberately tied to no owner, so it lives until the feed does.
 3. **`update` for a write of several changes.** A planned write of ONE change is exact and checked (rev 2.1). A write that names several (a rich-text edit with its renumbered markers) still reaches value consumers as one `Reset`, and the check for it is conservative. Composition of a change list, as the mirror does for a turn, is the missing piece (Q2).
 4. **One inner lens per slot and part** (§18, Q13).
 5. **A window onto a large list across the wire** (§17.4).
-6. **The native backend.** The lab uses `Weak::get` for in-place reads, which the rust backend does not emit yet (F1 S1b).
+6. **The native backend.** The in-place read no longer uses `Weak::get` (rev 2.2), and std's `ListCell::peek` builds natively through it. The lab's own tests still do not: the next stop is B709's family, a `.. is Some(let at) else ret;` guard whose binding the emitted Rust drops.
 7. **Field keys.** Parts are named by strings in the lab. Nothing is final until B711 S1 exists.
 
+
+## 21. T4: std's `ListCell` re-founded on the lens
+
+A lane did it, in a throwaway worktree (`vilan/.claude/worktrees/lens-t4`, branch `lens-t4`, off `next` @56008e46; nothing merged). The lens went into std as `std/src/reactive/lens.vl`, re-exported from `reactive.vl`, and `ListCell<T>` became `{ lens: Lens<List<T>, usize, T, Positional>, feed: LensItems<..> }` with its whole API kept and `slot(at)` added.
+
+### 21.1 Semantics: kept
+
+Every gate green, each exit code read directly: `cargo build`; the docs gate (no fence changed); the corpus (ONE golden moved, `list-cell.mjs`, 39.9 → 75.2 KB, because it now bundles the lens; `delta-law.vl` and `list-cell.vl` print byte-identical output; all 149 corpus programs run identically); the lab's own tests against std's copy; `cargo fmt`; **`cargo nextest run --workspace`: 11,278 passed**; clippy. Three semantics could not be kept exactly: `move_range` past the end clamps where it panicked; `edit` copies the list once instead of twice (a pin updated as an improvement); `identity()` is the notification cell's.
+
+The port needed six changes to the library, all now folded back into the lab (rev 2.2):
+
+1. The in-place read lends through the cell's write view narrowed to a read, not `Weak::get`, which the rust backend does not emit. `ListCell::peek` builds natively now, which it did not before.
+2. **A tap captures the storage, never the lens handle.** The handle carries the tap list the tap is on; under counting that is a cycle no count collects (A132's rule). The native leak census read **213 live cells** before the fix. `rows()` and `index_by` still capture the handle in the lab.
+3. **A replacing splice is ONE `SeqOp::Splice`**, not a `Delete` op and an `Insert` op. `each` matches the rows of one splice's span by key, and two ops tore down a row the second brought back. The feed pairs them from `before`. Pinned in `laws_test.vl`.
+4. **A run of single moves is one `SeqOp::Move(from, count, to)`**; otherwise `move_range(0, 2, 5)` cost `each` thirty whole-list copies instead of fifteen.
+5. **`landed`'s `batch` must join a draining turn.** Called from inside an observer, `batch` opened and drained a fresh turn on the spot, where `SignalCell::notify` joins the one draining, so `map_each`'s writes into its output drained once per op instead of once per turn (a pin read 2,071 renders against 2,061). std's copy gained a `settle_together` for it; the lab cannot (the draining turn is std-private), so the lab still over-notifies in that one situation.
+6. A feed can be made over a caller's log, for `with_limit`.
+
+### 21.2 Performance: not kept
+
+Release build; best of five; two runs where they differed.
+
+| `ListCell` alone (ms) | 0.54.0 | on the lens |
+|---|---|---|
+| 2,089 rows: 10,000 bare writes (push, insert, set_at, remove, pop) | 12 | **25** |
+| 2,089 rows: 4,000 single-element `move_range` | 8 | **12–13** |
+| 2,089 rows: 200 `edit`s | 24 | 13–14 |
+| 2,089 rows: 6,000 writes under two memo views | 114 | **140** |
+| 32,000 rows: 1,200 writes under two memo views | 459–466 | 439 |
+| §13.3's 2,089-row derived views, 600 writes | 14 | 17–18 |
+| §13.3's 32,000-row derived views, 600 writes | 228–242 | 248–251 |
+
+| Heap | 0.54.0 | on the lens |
+|---|---|---|
+| 20,000 small cells | 21 MB (1.07 KB each) | **74 MB (3.7 KB each)** |
+| one 200,000-row cell plus two memo views | +20.7 MB | +20.6 MB |
+
+| Browser, script ms per click (kolt's harness) | mount | rename | insert | delete |
+|---|---|---|---|---|
+| `ListCell` + `each`, 0.54.0 | 61 | 0.124 | 0.083 | 0.064 |
+| `ListCell` + `each`, on the lens | 57 | 0.134 | 0.089 | 0.066 |
+| `each_by` over `ListCell`, 0.54.0 | 82 | 0.080 | 0.106 | 0.117 |
+| `each_by` over `ListCell`, on the lens | 81 | 0.095 | 0.117 | 0.133 |
+
+DOM mutation counts and row contents are identical. Bundles grew by 21 KB each.
+
+**Compile cost** (`perf_gate.py measure`, instructions): the base binary reproduces every ceiling within 0.1%. With the lens in std, **ten rows are over their ceiling**: every example that imports `std::reactive` costs 13–18% more to check (`browser` ×1.184, `canvas` ×1.184, `router` ×1.181, `reactive-ui` ×1.174, `rpc` ×1.167, ..), and the kolt-shaped `genapp:46` ×1.073. A split says where it goes: with the module merely present and `ListCell` untouched, `browser` is 1,378M → 1,600M instructions; re-founding `ListCell` adds 25M more. **About 90% is the lens module being analyzed with std's reactive closure**, whether or not a program uses it.
+
+### 21.3 The verdict on T4
+
+**Not passed, as built.** The design holds (every semantic, every gate, one golden), but the implementation is 2× on bare writes, 3.4× in heap per cell, and 7–18% in compile cost on every reactive program. The browser rows barely move because layout dominates them, which is also why the lab's own numbers (§13) looked so good: they measured the lens where it is strong, with slots and parts, against `Store`, and not `ListCell`'s bare-write path, where the lens pays for machinery a plain cell never asks for (three notification cells, a tap list, a slot table, per-item in-place reads).
+
+What landing it for real takes, in order:
+
+1. **A slim write path when nothing is watched:** one notification cell until a slot or the shape is asked for; no `Shared` out-cells and no `has()` on the hot path; a handle of one field (§13.5).
+2. **The module out of the default reactive closure, or cheaper to analyze.** A program that never names the lens must not pay 220M instructions for it. Either `std::reactive::lens` is imported by name (and `ListCell` then drags it in: the cost returns for every list user), or the analyzer's cost per std module falls (M194's arc).
+3. **`settle_together` in std** (21.1 item 5), and the tap-capture rule applied to `rows()` and `index_by`.
+4. Then T4 again.
+
+Until then the first outcome in §9 stands: the lens ships as the answer for bespoke structures and for rows with slots, beside the cells, and `ListCell` stays as it is.
 
 ## Appendix A. The probe (0.54.0)
 

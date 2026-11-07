@@ -2,7 +2,7 @@
 import pkg::lens::{ Change, keyed, sequence };
 import std::hash_map::HashMap;
 import std::io::assert;
-import std::reactive::{ CollFlow, CollPipe, SequenceCell, Source, batch };
+import std::reactive::{ CollFlow, CollPipe, DeltaSource, Disposable, SeqOp, SequenceCell, Source, batch, comp };
 import std::shared::Shared;
 
 [derive(PartialEq)]
@@ -159,6 +159,28 @@ fun main() {
 	assert(feed.get().len() == 4, "rows() holds a slot per item");
 	feed.release();
 	assert(held.taps.read().len() == 0, "releasing the feed lets its tap and its slots go");
+
+	// Made inside an owner scope, a slot and a feed go with the owner.
+	let scoped = sequence(["m", "n"]);
+	let ((inner, feed2), owner) = comp(|| (scoped.slot(1), scoped.rows()));
+	assert(inner.get() == Some("n") && scoped.taps.read().len() == 1, "alive while the owner is");
+	owner.dispose();
+	assert(inner.get() == None && scoped.taps.read().len() == 0, "released with the owner");
+	assert(feed2.get().len() == 0, "the feed let its slots go");
+
+	// One write is one op to a consumer: a replacing splice is a Delete and an
+	// Insert at one address to the handler, and ONE Splice to the op feed (T4's
+	// find: two ops tore down a row the second brought back under `each`).
+	let one_write = sequence([1, 2, 3]);
+	let feed3 = one_write.items();
+	let cursor = feed3.cursor();
+	one_write.splice(0, 1, [9]);
+	let ops = feed3.since(cursor);
+	assert(ops.len() == 1, "a replacing splice is one op");
+	assert(ops[0] is SeqOp::Splice(let at, let left, let arrived) && at == 0 && left == [1] && arrived == [9], "and it carries what left and what arrived");
+	one_write.splice(1, 2, [7, 8, 6]);
+	let again = feed3.since(cursor);
+	assert(again.len() == 1 && again[0] is SeqOp::Splice(let at2, let left2, let arrived2) && at2 == 1 && left2 == [2, 3] && arrived2 == [7, 8, 6], "so is a splice that takes and inserts different counts");
 
 	// The keyed handler, under the same lens.
 	let ages: HashMap<str, i32> = HashMap::new();

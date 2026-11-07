@@ -16,6 +16,8 @@ The node benchmark (best of five runs per row):
 vilan build src/bench.vl && node run_bench.mjs 5 src/bench.mjs
 ```
 
+T4 (`ListCell` re-founded on the lens inside std) was run by a lane in the throwaway worktree `vilan/.claude/worktrees/lens-t4` (branch `lens-t4`, uncommitted; its target is cleaned); the paper's §21 has its numbers.
+
 ## What is here
 
 | File | What it is |
