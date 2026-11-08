@@ -2,7 +2,7 @@
 
 Tracker A185. Proposed by the owner (2026-11-05), from kolt's reactive-list prototype (`kolt/planning/proposal/live/`, `new_connection.md` §14). Drafted on vilan 0.54.0.
 
-**RATIFIED rev 2.2 (recommendations accepted as rulings 2026-11-08; see §10a). S1 in progress.** Q1–Q17 were open at rev 2.2 (§10). Rev 2.1 filled four of rev 2's gaps (the planned write, the truth check, owner-tied slots, the keyed side) and isolated the trait-admission find (B712); rev 2.2 adds T4's result (§21: `ListCell` on the lens inside std keeps every semantic and is slower) and the lane's library fixes.
+**RATIFIED rev 2.2 (recommendations accepted as rulings 2026-11-08; see §10a). S1 LANDED on `next` @09100b52 (2026-11-08): `std::reactive::lens`, by name; docs/std/lens.md; five pins.** Q1–Q17 were open at rev 2.2 (§10). Rev 2.1 filled four of rev 2's gaps (the planned write, the truth check, owner-tied slots, the keyed side) and isolated the trait-admission find (B712); rev 2.2 adds T4's result (§21: `ListCell` on the lens inside std keeps every semantic and is slower) and the lane's library fixes.
 
 - **Part I** is the design. Rev 2 changes law L7, adds law L8, and updates §5, §8, §9, §10 and §11 from what the lab found.
 - **Part II** is the lab: a working library on std's own signals and turns, measured against std's cells and kolt's prototype, with more structures, kolt's situations, async data, a wire and nesting.
