@@ -2,7 +2,7 @@
 
 Tracker A185. Proposed by the owner (2026-11-05), from kolt's reactive-list prototype (`kolt/planning/proposal/live/`, `new_connection.md` §14). Drafted on vilan 0.54.0.
 
-**DRAFT rev 2.2 (2026-11-06), for ruling.** Q1–Q17 are open (§10). Rev 2.1 filled four of rev 2's gaps (the planned write, the truth check, owner-tied slots, the keyed side) and isolated the trait-admission find (B712); rev 2.2 adds T4's result (§21: `ListCell` on the lens inside std keeps every semantic and is slower) and the lane's library fixes.
+**RATIFIED rev 2.2 (recommendations accepted as rulings 2026-11-08; see §10a). S1 in progress.** Q1–Q17 were open at rev 2.2 (§10). Rev 2.1 filled four of rev 2's gaps (the planned write, the truth check, owner-tied slots, the keyed side) and isolated the trait-admission find (B712); rev 2.2 adds T4's result (§21: `ListCell` on the lens inside std keeps every semantic and is slower) and the lane's library fixes.
 
 - **Part I** is the design. Rev 2 changes law L7, adds law L8, and updates §5, §8, §9, §10 and §11 from what the lab found.
 - **Part II** is the lab: a working library on std's own signals and turns, measured against std's cells and kolt's prototype, with more structures, kolt's situations, async data, a wire and nesting.
@@ -345,6 +345,28 @@ Rev 2 marks what the lab settled, changed or added.
 - **Q16 (new). One `Splice` change, or the `Delete`+`Insert` pair?** T4 showed a consumer is owed one op for a replacing splice, and the lab now pairs them in the feed from `before`. Rec: keep the owner's three words at the surface and add `Splice(A, removed, inserted)` as the one change a sequence write records, with `Insert` and `Delete` as its two degenerate forms, so no tap has to pair anything.
 - **Q17 (new). Where the module lives.** Rec: `std::reactive::lens`, imported by name, NOT re-exported from `std::reactive`, until its analysis cost is paid down; `ListCell` stays off it until the slim path exists (§21.3).
 - **Q15 (new). Lifetime.** Rec: slots counted and freed at the last release, as store.md Q12 rules for store slots, and a slot or feed made inside an owner scope released with that owner. **Both built in rev 2.1** through std's `defer_to_owner`, which is a no-op outside an owner, so the same `slot()` serves a view and a plain program.
+
+## 10a. Rulings (2026-11-08)
+
+The owner accepted every recommendation of §10 as written ("I agree. Paper recs accepted"), and the adoption itself: the lens is std's reactive core going forward, landed in the order of §11 and under its gates. In short:
+
+- **R1** one core; the cells are re-founded on it and keep their names, once T4 passes (S3b).
+- **R2** changes carry addresses only; `plan` for a structure's own fast path; `update` for a write that cannot say in advance.
+- **R3** the shape trait is the default source of changes.
+- **R4** a keyed slot follows the key.
+- **R5** a `Reset` lands by diff when the items have a key; positional slots die only without one.
+- **R6** `sequence(..)`, `keyed(..)`, `.slot(a)` as the item's source (no `.value()` step), `.part(..)`, `.slot(a).sequence(..)`; the constructor's final name is the owner's.
+- **R7** the truth check is on in debug builds and tests.
+- **R8** the positional table is kept in blocks of 128.
+- **R9** no fields before B711 S1; parts are never shipped as strings.
+- **R10** wrapper types per handler (`SequenceLens<S, T>`, `KeyedLens<S, K, V>`) and inferring constructors.
+- **R11** one patch vocabulary on the wire; frames carry versions; a `Reset` lands by key; the replica stays read-only.
+- **R12** optimistic writes are an overlay beside the lens, never a write to it; an optimistic delete hides the row.
+- **R13** one inner table per slot and part, kept with the slot.
+- **R14** a list looked up by id is an index over a sequence lens, not a third handler.
+- **R15** slots counted and freed at the last release, and released with the owner that made them.
+- **R16** `Splice(A, removed, inserted)` is the one change a sequence write records; `Insert` and `Delete` are its degenerate forms.
+- **R17** `std::reactive::lens`, imported by name and not re-exported from `std::reactive`, until its analysis cost is paid down; `ListCell` stays off it until the slim write path exists.
 
 ---
 
