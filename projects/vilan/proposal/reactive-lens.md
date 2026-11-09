@@ -2,7 +2,7 @@
 
 Tracker A185. Proposed by the owner (2026-11-05), from kolt's reactive-list prototype (`kolt/planning/proposal/live/`, `new_connection.md` §14). Drafted on vilan 0.54.0.
 
-**RATIFIED rev 2.2 (recommendations accepted as rulings 2026-11-08; see §10a). S1 LANDED on `next` @09100b52 (2026-11-08): `std::reactive::lens`, by name; docs/std/lens.md; five pins.** Q1–Q17 were open at rev 2.2 (§10). Rev 2.1 filled four of rev 2's gaps (the planned write, the truth check, owner-tied slots, the keyed side) and isolated the trait-admission find (B712); rev 2.2 adds T4's result (§21: `ListCell` on the lens inside std keeps every semantic and is slower) and the lane's library fixes.
+**RATIFIED rev 2.2 (recommendations accepted as rulings 2026-11-08; see §10a). S1 LANDED on `next` @09100b52 (2026-11-08): `std::reactive::lens`, by name; docs/std/lens.md; five pins. S3 LANDED @68b995ec (2026-11-09): the slim write path; T4 tried again and refused by the numbers (§21.4).** Q1–Q17 were open at rev 2.2 (§10). Rev 2.1 filled four of rev 2's gaps (the planned write, the truth check, owner-tied slots, the keyed side) and isolated the trait-admission find (B712); rev 2.2 adds T4's result (§21: `ListCell` on the lens inside std keeps every semantic and is slower) and the lane's library fixes.
 
 - **Part I** is the design. Rev 2 changes law L7, adds law L8, and updates §5, §8, §9, §10 and §11 from what the lab found.
 - **Part II** is the lab: a working library on std's own signals and turns, measured against std's cells and kolt's prototype, with more structures, kolt's situations, async data, a wire and nesting.
@@ -811,6 +811,25 @@ What landing it for real takes, in order:
 4. Then T4 again.
 
 Until then the first outcome in §9 stands: the lens ships as the answer for bespoke structures and for rows with slots, beside the cells, and `ListCell` stays as it is.
+
+### 21.4 S3: the slim write path, and T4 a second time
+
+Landed on `next` @68b995ec (lane `lens-s3`, 2026-11-09). A lens nobody follows now holds its structure and ONE notification cell: `shape`, `sized` and the slot table are made on first ask, a slot's cell on its first `on_settle`, no list or stage is built when no tap exists, the existence probe went (the shape answers `holds`), the handle is one pointer (`Lens { core: Shared<..> }`), and `Resizable` gained a defaulted `shift` so a move is one remove and one insert instead of a copy. Measured in fresh processes, best of nine, against `ListCell` as it is:
+
+| row (2,089 rows unless said) | `ListCell` | lens, S1 | lens, S3 |
+|---|---|---|---|
+| 10,000 bare writes | 15 | 20 | 17 |
+| 4,000 single moves | 8.5 | 24 | 13 |
+| 6,000 writes under two memo views | 98 | 126 | 115 |
+| 32,000 rows, 1,200 writes under two memo views | 459 | 473 | 467 |
+| heap per idle lens | 0.82 KiB | 1.94 KiB | 1.57 KiB |
+| heap per lens with one watched part | | 5.35 KiB | 4.69 KiB |
+
+Those rows are mostly warm-up: a second pass of the bare writes in the same process puts `ListCell` at 10.5–11.8 ms and the lens at 11.5–13.4, and 40,000-round drivers are level or ahead (moves 137 ms against 491 before `shift`; writes under memo views 1,033 against `ListCell`'s 1,146). The watched price did not grow. What is left of the heap gap is 18 arrays against `ListCell`'s 8 plus five access closures, which a generic function cannot replace (a closure field cannot take a named generic function).
+
+**T4 again, on top of S3: not kept.** With `ListCell` re-founded on the slimmed lens, bare writes are ×1.48, moves ×1.83, the heap per cell ×3.28 (2.68 KiB), and the compile cost is WORSE than T4's: ten rows red at ×1.21–×1.29, because re-founding `ListCell` drags the module into every reactive program, which is exactly what R17 keeps out. The lane's alternative (the cell records its own ops without a tap) reached ×1.22 and ×2.26, still outside the gate.
+
+**What this settles.** S3b cannot pass on the lens's own merits until two things outside it move: the analyzer's cost per std module (M194) and about half of the lens's resting heap, which is its arrays and closures, not its logic. Neither is this arc's work. The lens therefore stays beside the cells (`ListCell`, `HashMapCell`, `HashSetCell` unchanged), as the answer for bespoke structures and rows with slots, and the arc goes on to S2 and S5, which add what the cells cannot do. S3b is parked, not dropped: it re-opens when M194 lands.
 
 ## Appendix A. The probe (0.54.0)
 
