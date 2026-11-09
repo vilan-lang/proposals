@@ -1,0 +1,4 @@
+{"prefix": "2026-11-09 (the integrator)", "stamps": {
+ "A185": "S2 LANDED on next @be5a6bab (lane lens-s2 98b7334f; CI pending at the stamp): `Indexed<T>` split from `Resizable<T>` so a sorted index written only through update/plan gets slots, rows and the op feed; `Membership<T>`/`SetLens` with the SetOp bridge, a member slot as Source<bool>, `reconcile_set`; a real chunked rope as the exhibit (lens-rope.vl: a 5,000-line paste into 20,000 lines is ONE change, 64-85 ms with rows + a map + an index attached; 2,000 edits 89-124 ms); the ids-and-records pairing documented (R14, no new handler); B715 (a mono miscompile the split exposed) fixed with two pins. Perf rows unchanged (worst canvas x1.0022). Still JS only (B709). Next: S5 lane running.",
+ "B709": "also blocks lens-rope.vl natively (it imports std::time); named in native_differential's PLATFORM_BOUND_OUTSIDE by lane lens-s2"
+}}

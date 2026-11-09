@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B715",
+   "section": "B",
+   "title": "MISCOMPILE, no diagnostic: a default method of a SUPERTRAIT (`trait Read<T> { fun lend(self, read: \\|&T\\| void) { .. self.item() .. } }`) called on a type that implements only the SUB-trait (`impl Cell with Write<str>` where `trait Write<T> with Read<T>`) runs with `Read`'s `T` UNBOUND - `mono::trait_parameter_substitution` selected only an impl block that names the declaring trait - so `Cell { held = \"abc\" }.lend(\\|text\\| print(text.len()))` printed `TypeError: reading 'length' of undefined`",
+   "kind": "miscompile (monomorphization; supertrait type parameters)",
+   "area": "Transformer / mono",
+   "status": "FIXED on next with A185 S2 (lane lens-s2, 2026-11-09; crates/vilan-core/src/mono.rs +39/-2; two pins in tests/inference/traits.rs) - OPEN for the owner's review of the fix's one caveat",
+   "discussion": "found when A185 S2 split `Resizable<T>` into `Indexed<T>` (the reading members, with the default `lend`) and `Resizable<T> with Indexed<T>`: a structure with one `impl X with Resizable<str>` block provides both traits, and `lend`'s body then read its `T` as nothing. The fix falls back to the block that provides the trait through the supertrait chain (B419's `provided_trait_args`)",
+   "body": "CAVEAT for the owner: the fallback ignores the admission `file` (B318's import surface) - it runs only when selection by name fails, so an unadmitted block is chosen only where the old code chose nothing and miscompiled, but it is a second resolution rule beside the admitted one. Rec: fold the fallback into the admitted lookup (select by provided-trait-chain under the same admission), pin the B712 interplay (an unexported impl in an explicit-surface module providing a supertrait through a sub-trait), and keep the two existing pins. Sizing S. No existing golden moved under the fix."
+  }
+ ]
+}
