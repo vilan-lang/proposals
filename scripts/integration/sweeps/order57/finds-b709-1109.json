@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B717",
+   "section": "B",
+   "title": "The reactive lens leaves counted cells LIVE at exit on the native backend (the leak census: lens-laws 184 of 537 minted, lens-keyed 97/143, lens-sorted 41/117, lens-nested 25/103, lens-tracked 21/57, lens-set 19/153, lens-rope 85/49,453) where every other reactive row reads 0 - a cycle among the lens's cells that a count cannot collect",
+   "kind": "leak (std::reactive::lens under counting; C14's leak gate)",
+   "area": "Standard library / reactive",
+   "status": "OPEN - filed 2026-11-09 (lane b709's find, the first native run of the lens programs after B709)",
+   "discussion": "the T4 lane's tap-capture rule (a tap captures the storage, never the lens handle) removed 213 leaked cells in ListCell's case; S1 and S3 kept the rule, yet every lens program still ends with live cells, so another edge closes a loop: candidates are a slot handle holding its lens while the lens's slot-cells list holds the slot's cells, the nested port's write side (which holds the outer lens by design), the index/row feed holding handles, or `defer_to_owner` closures capturing a handle that holds the owner. The programs are NOT in the leak census's default suite (a non-zero row there is a leak, not a number to regenerate past), so the gate does not judge them yet",
+   "body": "Rec: find the cycle with the census's own instruments (`minted`/`live` per cell kind; bisect by program section: lens-tracked's 21 is the smallest), break it as C14 did (a weak edge where a holder only follows), then add the lens programs to the leak census's default suite at 0. Until then the native docs say the lens runs natively but not all of its cells are released. Sizing S-M; before S3b, since a re-founded ListCell would carry the leak to every list."
+  }
+ ]
+}
