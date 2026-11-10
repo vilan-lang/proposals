@@ -1,0 +1,7 @@
+{"prefix": "2026-11-10 Order 58", "stamps": {
+"M175": "FIXED on next @52081c5b (lane db-58 72eebcd1): Statement::run/all/first take List<dyn SqlValue>; a literal list at a List<dyn T> now wraps its values (latent miscompile). Breaking; kolt patch in sweeps/order58/repros/kolt-db58.patch. Follow-ups B730, B731, F161. Close at the sweep.",
+"F149": "FIXED on next @52081c5b (lane db-58 d053d9ae): typed readers panic on NULL at the caller's line on both backends; the nullable door is Row::optional_text/integer/big_integer/real/bytes (named optional_*, not *_or_null). Breaking. Close at the sweep.",
+"M195": "FIXED on next @52081c5b (lane db-58 c4661fe5): BLOB bind and read (Row::bytes) on both backends. Close at the sweep.",
+"F152": "Windows CI note: newer node 24.x corks same-tick writes into one chunk where 24.2.0 and the native server send one chunk per write; the probe now sends each piece on its own turn (52081c5b). The native one-chunk-per-write behaviour stands.",
+"F156": "Windows fix 0ae15986: a recursive mkdir through a file is ENOTDIR on every OS."
+}}
