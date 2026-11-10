@@ -150,6 +150,7 @@ fun f(): void
 | [F157](items/F157.md) | Native: SIGTERM with a detached forever task leaves the process alive | bug (native runtime) | native census (2026-11-09); native-objective.md chunk 3 |
 | [F158](items/F158.md) | std: padded base64 `encode`/`decode` and `JsonValue::keys`, on both backends | feature (std) | native census (2026-11-09); native-objective.md chunk 3 |
 | [F159](items/F159.md) | Native JSON objects keep insertion order only - JS puts integer-like keys first, ascending | bug (native runtime) | lane std-58 (Order 58, 2026-11-09) |
+| [F160](items/F160.md) | Native executor polls sockets on a 1 ms sleep - one client tops out near 1,000 requests a second | performance (native runtime) | lane http-58 (Order 58, 2026-11-09) |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
