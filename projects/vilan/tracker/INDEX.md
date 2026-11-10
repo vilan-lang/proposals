@@ -93,6 +93,7 @@
 | [B732](items/B732.md) | Native: a view method called on `cell.write()` emits Rust that rustc rejects (E0308 on `RefMut`) | bug (native backend) | lane m199-58 (Order 58, 2026-11-09) |
 | [B733](items/B733.md) | Native: indexing through a `Shared` read in a `for` condition moves a `str` parameter inside the loop (rustc E0382) | bug (native backend) | lane kolt-m1 (Order 58, 2026-11-10) |
 | [B734](items/B734.md) | Building a single file with `--backend rust` writes a stray `<file>.css` next to the source | bug (cli) | lane kolt-m1 (Order 58, 2026-11-10) |
+| [B735](items/B735.md) | A bare read of a module-level cell returned from a function tail is never copied on JS - the caller's result aliases the cell | MISCOMPILE (JS) | lane m199-58b (Order 58, 2026-11-10); confirmed by the integrator on next 11404d78 |
 
 ## C. Memory model
 
@@ -247,6 +248,7 @@ fun f(): void
 | [M198](items/M198.md) | std::crypto has no incremental digest, and native `createHash` buffers everything it is fed - a streamed 64 MiB body cannot be hashed at a bounded peak (M176's pin hashes 256 KiB blocks and then the list of block digests) | feature gap (std::crypto; streaming) | lane http-56 (Order 56): the 64 MiB stream pin had to hash block digests to keep the RSS bound honest; a `Hasher` with `update(bytes)` / `finish()` is the shape every other std has |
 | [M199](items/M199.md) | A `match` over a `Shared` read copies the payload even when the arm only views it (`downgrade().get()` doesn't); `is Some(let _)` copies too | perf (codegen) | kolt (2026-11-04); repro in the item |
 | [M200](items/M200.md) | `Store<List<T: Keyed>>::by_key` scans the list on EVERY read and write through the handle (`keyed_element` / `keyed_write`, store.vl:884-900): a field patch costs O(list length), and one turn patching every row of a 32,000-row list takes 5.3 s | performance (std::reactive::store; keyed lists) | measured on 0.54.0 in proposal/reactive-lens-lab (src/bench.vl, best of five): rename one row x200 costs 6 ms at 2,089 rows and 25 ms at 32,000; one batch patching `status` on every row costs 28 ms at 2,089 rows and 5,325 ms at 32,000 - the same through handles the rows already hold, so it is the write, not the lookup at the call site. The lens lab's positional table does the same turn in 50 ms and kolt's prototype in 890 ms. kolt itself is not exposed: its records live in HashMaps by id, whose keyed step is one lookup |
+| [M201](items/M201.md) | Caller-side alias tracking for a call result that aliases a cell - what dropping M199's return copy needs | design (analysis) | lane m199-58b (Order 58, 2026-11-10); follows M199 |
 
 ## N. Hygiene & rot — NEW SECTION
 

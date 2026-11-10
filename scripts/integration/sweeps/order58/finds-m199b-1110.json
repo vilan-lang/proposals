@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "B735",
+   "section": "B",
+   "kind": "MISCOMPILE (JS)",
+   "status": "open",
+   "area": "analyzer: cell borrows",
+   "discussion": "lane m199-58b (Order 58, 2026-11-10); confirmed by the integrator on next 11404d78",
+   "title": "A bare read of a module-level cell returned from a function tail is never copied on JS - the caller's result aliases the cell",
+   "body": "`let plain: Shared<List<i32>> = Shared::new([1, 2]); fun from_plain(): List<i32> { plain.read() }` then `mut b = from_plain(); b.push(3); print(plain.read().len())` prints 3 on JS; it must print 2. The same for a `lazy let` cell. The other direction is wrong too: `let held = from_plain(); plain.write().push(3); held.len()` reads 3. A cell passed as a PARAMETER copies correctly (`return __clone(cell.v)`), so the gap is module-level cells only. The same at 98ac8519, at f57ef700 (the held M199 branch) and on next 11404d78. Unchecked guess at the cause: module-level cell reads are missing from `shared_cells.reads`. Repros: `scripts/integration/sweeps/order58/repros/module-cell-return/main.vl` (prints `3 3`, wants `2 2`) and `later-write.vl`."
+  },
+  {
+   "id": "M201",
+   "section": "M",
+   "kind": "design (analysis)",
+   "status": "open",
+   "area": "analyzer: copy elision",
+   "discussion": "lane m199-58b (Order 58, 2026-11-10); follows M199",
+   "title": "Caller-side alias tracking for a call result that aliases a cell - what dropping M199's return copy needs",
+   "body": "M199's fix (branch m199-58 @f57ef700) copies on JS where a value read out of a cell is returned. The owner asked to narrow it to cells some write mutates in place. The lane found that rule UNSOUND: callers treat every call result as owned, so `mut out = stores(cell); out.push(3)` writes into a cell nothing else ever mutates (f57ef700's own pin `m199_a_capture_at_a_value_seam_copies` is that program and would go red). The sound way to drop the copy is to treat a call to a function returning a cell alias as a `cell.read()` at each call site; that only moves the copy to the caller in the shape that matters (`let list = word_list() is Some(let found) then found else ret true;` copies even over a direct read today). Removing it for real needs alias tracking from the call result through pattern captures and `then` branches into an immutable `let` and on into by-value parameters, across every call site, including regions restored from the incremental cache (a new held-row kind). Cost of the copy today, 500 lookups over a 100,000-entry `std::hash_map::HashMap` behind `Shared<Option<..>>` on node: 0.14 s without the copy, 19.9 s with it. Kolt's real dictionary is an `external struct` and `__clone` passes it through, so kolt pays nothing (0.05 s both ways). Workaround that copies nothing on either backend: check inside the read, `if loaded.read() is Some(let found) { has_word(found, word) }`."
+  }
+ ]
+}

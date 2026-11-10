@@ -1,0 +1,20 @@
+import std::shared::Shared;
+
+lazy let loaded: Shared<List<i32>> = Shared::new([1, 2]);
+let plain: Shared<List<i32>> = Shared::new([1, 2]);
+
+fun from_lazy(): List<i32> {
+	loaded.read()
+}
+
+fun from_plain(): List<i32> {
+	plain.read()
+}
+
+fun main() {
+	mut a = from_lazy();
+	a.push(3);
+	mut b = from_plain();
+	b.push(3);
+	print(i"{loaded.read().len()} {plain.read().len()}");
+}

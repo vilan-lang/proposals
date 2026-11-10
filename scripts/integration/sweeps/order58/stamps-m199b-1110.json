@@ -1,0 +1,6 @@
+{
+ "prefix": "2026-11-10 (lane m199-58b)",
+ "stamps": {
+  "M199": "the narrowing the owner asked for (copy only where a cell is mutated in place) is UNSOUND - callers treat call results as owned and mutate them into the cell; no change made, branch m199-58 still @f57ef700 and HELD. Kolt's real dictionary (an external struct) does not regress on JS under f57ef700: the 0.18 s -> 25 s figure holds only for a vilan-built HashMap. The real narrowing is M201; a related standing miscompile is B735. Recommendation changed to: merge f57ef700 as is."
+ }
+}

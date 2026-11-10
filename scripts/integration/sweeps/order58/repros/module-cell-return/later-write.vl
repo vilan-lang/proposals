@@ -1,0 +1,20 @@
+import std::shared::Shared;
+
+let plain: Shared<List<i32>> = Shared::new([1, 2]);
+
+fun from_plain(): List<i32> {
+	plain.read()
+}
+
+fun from_param(cell: Shared<List<i32>>): List<i32> {
+	cell.read()
+}
+
+fun main() {
+	let held = from_plain();
+	plain.write().push(3);
+	let local = Shared::new([1, 2]);
+	let snapshot = from_param(local);
+	local.write().push(3);
+	print(i"{held.len()} {snapshot.len()}");
+}
