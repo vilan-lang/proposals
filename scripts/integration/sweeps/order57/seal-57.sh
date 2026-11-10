@@ -11,10 +11,9 @@
 # sweeps/order57/budgets-pre-seal.toml before ANY re-run. N166: perf_gate judges the T3 kolt row's peak RSS at 1.05.
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.nvm/versions/node/v24.2.0/bin:$PATH"
 export CARGO_BUILD_JOBS=6
-E="$HOME/.vilan/perf-exhibit/order56"
+E="$HOME/.vilan/perf-exhibit/order57"
 export VILAN_PERF_KOLT_DIR="$E/kolt"
-export VILAN_PERF_KOLT_COMMIT=3fb5d74
-export VILAN_PERF_TIP_KOLT="$E/kolt-tip"
+export VILAN_PERF_KOLT_COMMIT=c745405
 export VILAN_PERF_ADVANCE=1
 # VILAN_PERF_THRESHOLD unset = perf_gate's default 1.10; VILAN_SEAL_PERF_ONLY=1 for a re-run of the perf leg alone.
 exec bash /home/reed/code/vilan-lang/proposals/scripts/integration/seal.sh
