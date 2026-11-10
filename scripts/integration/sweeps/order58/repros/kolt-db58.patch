@@ -1,0 +1,87 @@
+diff --git a/src/mcp.vl b/src/mcp.vl
+index 3f9a12c..9f4c247 100644
+--- a/src/mcp.vl
++++ b/src/mcp.vl
+@@ -12,6 +12,7 @@
+ //   claude mcp add --transport http kolt http://localhost:59401/mcp \
+ //     --header "Authorization: Bearer kolt_pat_…"
+ import std::compare::{ Ord, Ordering };
++import std::db::SqlValue;
+ import std::display::Display;
+ import std::http::{ Request, Response };
+ import std::json::{ FromJson, Json, JsonKind, JsonValue };
+@@ -795,7 +796,11 @@ fun search_words(query: str): List<str> {
+ 
+ /// SQL keeping the rows where every word is in one of `columns` (lowercase),
+ /// and its parameters after `before`.
+-fun word_filter(words: List<str>, columns: List<str>, before: List<str>): (str, List<str>) {
++fun word_filter(
++	words: List<str>,
++	columns: List<str>,
++	before: List<dyn SqlValue>,
++): (str, List<dyn SqlValue>) {
+ 	mut parts: List<str> = [];
+ 	mut parameters = before;
+ 	for word in words {
+diff --git a/src/store.vl b/src/store.vl
+index 916584a..63a4c31 100644
+--- a/src/store.vl
++++ b/src/store.vl
+@@ -16,7 +16,7 @@
+ import std::bytes::encode_utf8;
+ import std::compare::{ Ordering, PartialEq, PartialOrd };
+ import std::crypto::{ random_bytes, random_uuid, sha256 };
+-import std::db::{ Database, Migration, Row };
++import std::db::{ Database, Migration, Row, SqlValue };
+ import std::display::Display;
+ import std::hash_map::HashMap;
+ import std::json::{ FromJson, Json, JsonKind, JsonValue };
+@@ -1764,8 +1764,10 @@ fun body_problem(org: str, content: str, body: str, limits: BodyLimits): Option<
+ 	uploads.is_empty() then ret None;
+ 	let distinct = uploads.to_set().values();
+ 	let marks = distinct.map(|_| "?").join(", ");
+-	mut parameters: List<str> = [org];
+-	parameters.push_many(distinct);
++	mut parameters: List<dyn SqlValue> = [org];
++	for each in distinct {
++		parameters.push(each);
++	}
+ 	let known = db
+ 		.prepare(
+ 			i"SELECT count(*) AS found FROM upload WHERE organization_id = ? AND id IN ({marks})",
+@@ -1865,7 +1867,7 @@ impl KoltStore {
+ 			.run([id, handle, title, now]);
+ 		db
+ 			.prepare("INSERT INTO membership (organization_id, account_id, role, joined_at) VALUES (?, ?, ?, ?)")
+-			.run([id, self.user_id.uuid, role_owner, now]);
++			.run([id, self.user_id.uuid, role_owner.value(), now]);
+ 		db.exec("COMMIT");
+ 		publish_membership(self.user_id, id);
+ 		seed_statuses(id);
+@@ -1913,7 +1915,7 @@ impl KoltStore {
+ 		let expires = expires_in_hours > 0 then now + expires_in_hours.as_f64() * 3600 else 0f;
+ 		db
+ 			.prepare("INSERT INTO invite (token, organization_id, created_by, role, max_uses, uses, expires_at, created_at, revoked) VALUES (?, ?, ?, ?, ?, 0, ?, ?, 0)")
+-			.run([token, org, self.user_id.uuid, role, max_uses.max(0), expires, now]);
++			.run([token, org, self.user_id.uuid, role.value(), max_uses.max(0), expires, now]);
+ 		Ok(token)
+ 	}
+ 
+@@ -2051,7 +2053,7 @@ impl KoltStore {
+ 			db.exec("BEGIN");
+ 			db
+ 				.prepare("INSERT INTO membership (organization_id, account_id, role, joined_at) VALUES (?, ?, ?, ?)")
+-				.run([org, self.user_id.uuid, role, now_seconds()]);
++				.run([org, self.user_id.uuid, role.value(), now_seconds()]);
+ 			db.prepare("UPDATE invite SET uses = uses + 1 WHERE token = ?").run([token]);
+ 			// A newcomer starts in every public channel, and leaves what they don't want.
+ 			db
+@@ -2076,7 +2078,7 @@ impl KoltStore {
+ 	fun owners(self, org: str): i32 {
+ 		db
+ 			.prepare("SELECT count(*) AS n FROM membership WHERE organization_id = ? AND role = ?")
+-			.first([org, role_owner])
++			.first([org, role_owner.value()])
+ 			.map_or(|row| row.integer("n"), 0)
+ 	}
+ 

@@ -1,0 +1,44 @@
+{
+ "items": [
+  {
+   "id": "B730",
+   "section": "B",
+   "title": "Native refuses a `map` closure that calls a function returning `any` - unbound generic parameter of `map`",
+   "kind": "bug (native backend)",
+   "discussion": "lane db-58 (Order 58, 2026-11-09)",
+   "status": "open",
+   "area": "native backend",
+   "body": "Found by lane db-58. A closure passed to `map` whose body calls a function returning `any` is refused natively as \"unbound generic type parameter (parameter 1 of `map`)\"; the JS backend builds it. Repro: `scripts/integration/sweeps/order58/repros/repro-map-closure-returning-any.vl`. std::db works around it with a `for`/`push` loop; remove that when this is fixed. Size S-M."
+  },
+  {
+   "id": "F161",
+   "section": "F",
+   "title": "std::db: node binds every number as REAL, native binds integers as INTEGER - an untyped column stores 7.0 vs 7",
+   "kind": "bug (backend parity)",
+   "discussion": "lane db-58 (Order 58, 2026-11-09)",
+   "status": "open",
+   "area": "std::db",
+   "body": "Found by lane db-58 and documented in native.md. A column with no declared type stores `7` as `7.0` on JS and as INTEGER natively, because node's sqlite binds every JS number as a REAL. A possible fix: the integer `SqlValue` impls pass a BigInt on JS. Columns with a declared INTEGER affinity are unaffected. Size S."
+  },
+  {
+   "id": "F162",
+   "section": "F",
+   "title": "Native ws client: no size cap on a received message, and the address lookup cannot be cancelled",
+   "kind": "hardening (native runtime)",
+   "discussion": "lane ws-58 (Order 58, 2026-11-09)",
+   "status": "open",
+   "area": "native backend",
+   "body": "Left by lane ws-58, noted in `crates/vilan-rt/src/ws.rs`. (1) The client accepts a frame or a fragmented message of any size; give it a cap with a close code 1009, matching what the server side does. (2) The address lookup and connect run on a helper thread; `close()` abandons the result but the lookup itself runs to its own timeout. Size S each."
+  },
+  {
+   "id": "B731",
+   "section": "B",
+   "title": "Owner question: should a backed enum implement `SqlValue` automatically, as it gets `Hashable`?",
+   "kind": "design question",
+   "discussion": "lane db-58 (Order 58, 2026-11-09)",
+   "status": "open (owner ruling)",
+   "area": "std::db / language",
+   "body": "M175 made bind lists `List<dyn SqlValue>`. A string-backed enum (kolt's `Role`) no longer binds: four kolt sites need `.value()`. Node used to bind the enum as its string; natively it never built. Options: (a) backed enums get a `SqlValue` impl automatically, bound as their backing value; (b) leave it explicit (`role.value()`), the shipped state. Recommendation: (b) for now; a derive (`[derive(SqlValue)]`) is the lighter door if the sites multiply."
+  }
+ ]
+}

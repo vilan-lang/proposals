@@ -88,6 +88,8 @@
 | [B727](items/B727.md) | A variant that fixes only some of its enum's type parameters drops all of them (`Ok(x)` is `Result` with no arguments); JS prints `Ok(<T>)` | bug (analyzer) | Order 58 emitter lanes (2026-11-09) |
 | [B728](items/B728.md) | Native: `usize::max`/`min` go through f64 (`((a as f64).max(b as f64)) as usize`), losing precision above 2^53 | bug (rust backend) | Order 58 emitter lanes (2026-11-09) |
 | [B729](items/B729.md) | Native: F102's refusal is broader than it needs to be - a closure that reaches a `&mut` parameter is refused though it is not an argument of the call holding the view | bug (rust backend) | Order 58 emitter lanes (2026-11-09) |
+| [B730](items/B730.md) | Native refuses a `map` closure that calls a function returning `any` - unbound generic parameter of `map` | bug (native backend) | lane db-58 (Order 58, 2026-11-09) |
+| [B731](items/B731.md) | Owner question: should a backed enum implement `SqlValue` automatically, as it gets `Hashable`? | design question | lane db-58 (Order 58, 2026-11-09) |
 
 ## C. Memory model
 
@@ -151,6 +153,8 @@ fun f(): void
 | [F158](items/F158.md) | std: padded base64 `encode`/`decode` and `JsonValue::keys`, on both backends | feature (std) | native census (2026-11-09); native-objective.md chunk 3 |
 | [F159](items/F159.md) | Native JSON objects keep insertion order only - JS puts integer-like keys first, ascending | bug (native runtime) | lane std-58 (Order 58, 2026-11-09) |
 | [F160](items/F160.md) | Native executor polls sockets on a 1 ms sleep - one client tops out near 1,000 requests a second | performance (native runtime) | lane http-58 (Order 58, 2026-11-09) |
+| [F161](items/F161.md) | std::db: node binds every number as REAL, native binds integers as INTEGER - an untyped column stores 7.0 vs 7 | bug (backend parity) | lane db-58 (Order 58, 2026-11-09) |
+| [F162](items/F162.md) | Native ws client: no size cap on a received message, and the address lookup cannot be cancelled | hardening (native runtime) | lane ws-58 (Order 58, 2026-11-09) |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |

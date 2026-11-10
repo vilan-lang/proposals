@@ -1,0 +1,11 @@
+fun held(value: i32): any {
+	value
+}
+
+fun widen(values: List<i32>): List<any> {
+	values.map(|each| held(each))
+}
+
+fun main() {
+	print(widen([1]).len());
+}
