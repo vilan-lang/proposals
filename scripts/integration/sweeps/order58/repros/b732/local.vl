@@ -1,0 +1,6 @@
+import std::shared::Shared;
+fun main() {
+	let cell: Shared<Option<List<i32>>> = Shared::new(Some([1, 2]));
+	cell.write().some_view().push(4);
+	print(cell.read().debug());
+}

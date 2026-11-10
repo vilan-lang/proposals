@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "F165",
+   "section": "F",
+   "kind": "perf (native runtime)",
+   "status": "open",
+   "area": "vilan-rt executor",
+   "discussion": "lane poll-58 (Order 58, 2026-11-10); follows F160",
+   "title": "The readiness loop pays per-turn costs under concurrent load, and poll/WSAPoll scale with the connection count",
+   "body": "F160 replaced the 1 ms tick with a real readiness wait (idle wake-ups 900/s to 0; keep-alive p50 1,130 to 330 us). Two costs remain. (1) Under eight-connection load, server CPU per request went from 14-20 us to 38-42 us: user instructions per request are unchanged (callgrind), the cost is 0.41 context switches per request against the tick's batched 0.15, plus a zero-timeout poll each turn after progress and a pass over every connection on a turn without a fresh report. (2) `poll(2)`/`WSAPoll` cost grows with the watched set; a server holding thousands of idle keep-alive connections wants epoll/kqueue/IOCP. Repro and figures: ~/.vilan/gates/poll-58/probe/ (measure.py, ctx.py, before.txt, final.txt)."
+  }
+ ]
+}

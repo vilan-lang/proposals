@@ -1,0 +1,9 @@
+{
+ "prefix": "2026-11-10",
+ "stamps": {
+  "F164": "FIXED by lane bind-58 (fb22bc74), merged to next @47650db8, CI run 42860204923 GREEN incl. all four Windows shards: no host and `::` bind dual-stack on every OS with IPV6_V6ONLY cleared, fallback to 0.0.0.0 without IPv6; new FFI crate crates/vilan-rt-net (libc/windows-sys, no new third-party package); the Windows test skip removed. Close at the sweep.",
+  "F160": "FIXED by lane poll-58 (0b9c307c), merged to next @095164d9 (local suite 11,476/11,476 + native differential 356/356; CI watched): the loop blocks on readiness via new crate crates/vilan-rt-poll (poll/WSAPoll, a loopback UDP bell for cross-thread wakes); idle wake-ups 900/s to 0, idle CPU 2% to 0, keep-alive p50 1,130 to 330 us; the tick stays as a fallback. Follow-up F165.",
+  "B735": "FIXED by lane b735-58 (f22488ee), merged to next @01aedb35: root cause was rule 1's return clause treating a module-level root as a local that dies at the return (not shared_cells.reads); wider than filed (plain module-level let/mut aggregates aliased too); eleven shapes probed on both backends; ten borrows pins + a modules pin + corpus program b735.vl; compile cost about x1.0006; a by-value return of a 100,000-element module-level list now costs about 2 ms per call on JS until M201.",
+  "B732": "a minimal repro now exists (local cell, no module-level binding needed): ~/.vilan/gates/b735-58/probes/someview/local.vl"
+ }
+}
