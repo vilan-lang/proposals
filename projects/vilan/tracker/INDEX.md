@@ -159,6 +159,7 @@ fun f(): void
 | [F161](items/F161.md) | std::db: node binds every number as REAL, native binds integers as INTEGER - an untyped column stores 7.0 vs 7 | bug (backend parity) | lane db-58 (Order 58, 2026-11-09) |
 | [F162](items/F162.md) | Native ws client: no size cap on a received message, and the address lookup cannot be cancelled | hardening (native runtime) | lane ws-58 (Order 58, 2026-11-09) |
 | [F163](items/F163.md) | std::http `Request` has no peer address - kolt's sign-in throttle reads it through a JS binding native refuses | std gap (blocks M1) | lane kolt-m1 (Order 58, 2026-11-10) |
+| [F164](items/F164.md) | A native server with no host binds 0.0.0.0 (IPv4 only); node binds dual-stack `::` | bug (backend parity) | lane peer-58 (Order 58, 2026-11-10) |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |

@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "F164",
+   "section": "F",
+   "title": "A native server with no host binds 0.0.0.0 (IPv4 only); node binds dual-stack `::`",
+   "kind": "bug (backend parity)",
+   "discussion": "lane peer-58 (Order 58, 2026-11-10)",
+   "status": "open",
+   "area": "native backend",
+   "body": "Found by lane peer-58, documented in native.md. With no `host`, node listens on `::` (dual-stack) and an IPv4 client's peer reads `::ffff:127.0.0.1`; the native server listens on `0.0.0.0`, so IPv6 clients cannot reach it and the peer reads `127.0.0.1`. Fix: bind `[::]` with IPV6_V6ONLY off when the host is unset, falling back to 0.0.0.0 where IPv6 is unavailable (node does the same). Needs a socket option std's TcpListener does not expose (socket2 or a small libc call). Size S."
+  }
+ ]
+}
