@@ -1,0 +1,15 @@
+{
+ "prefix": "2026-11-09 (Order 58): ",
+ "stamps": {
+  "B705": "lane emit-58a 0af0671c (merged to next locally @2ff194fb): a mutating intrinsic or a written `&mut place` argument whose other arguments read the receiver evaluates them first. STILL OPEN: the original shape, a `let v = &mut xs` view held across a later read of `xs` in separate statements.",
+  "B720": "lane emit-58b 6dab7176 (merged locally @98ac8519): fixed in the emitter (a generic enum/struct with missing type arguments counts as unresolved; the call's position fills them); the analyzer cause is B727.",
+  "B718": "FIXED lane emit-58a 05e0d2cb (an extern's written return type now types its call); merged to next locally @2ff194fb.",
+  "B719": "FIXED lane emit-58a 67dbaebe (let-else subject parenthesized; `while let` for a capturing loop head); merged locally @2ff194fb.",
+  "B722": "FIXED lane emit-58a ce9d0069; merged locally @2ff194fb.",
+  "B723": "FIXED by B718's change; test pinned 1e60129a; merged locally @2ff194fb.",
+  "B725": "FIXED lane emit-58a 7dbca6b3 (`Box::pin` around the call cycle, direct and mutual); merged locally @2ff194fb.",
+  "B726": "FIXED lane emit-58a 583fb394 (a `let` of `List::new()` is annotated when its type is known); merged locally @2ff194fb.",
+  "B721": "FIXED lane emit-58b 0b1899f2 (element-wise `Any::from` for List/Option at any depth; a host binding's argument gets its declared type when it mentions `any`; std's migrate builds natively); merged locally @98ac8519.",
+  "B724": "FIXED lane emit-58b d644328c (a parameter a closure captures by `&`/`&mut` becomes a shared cell, copied back by `vilan_rt::WriteBack` on every exit; no unsafe; one or two copies per call in such functions only); merged locally @98ac8519."
+ }
+}

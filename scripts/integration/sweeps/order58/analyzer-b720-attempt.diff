@@ -1,0 +1,61 @@
+diff --git a/crates/vilan-core/src/analyzer.rs b/crates/vilan-core/src/analyzer.rs
+index 59840c69..f1bbf117 100644
+--- a/crates/vilan-core/src/analyzer.rs
++++ b/crates/vilan-core/src/analyzer.rs
+@@ -48660,12 +48660,30 @@ impl<'src> Analyzer<'src> {
+                 bindings.extend(new_bindings);
+             }
+         }
+-        // Only commit when every parameter is bound; a partial inference keeps
+-        // the arguments erased rather than inventing placeholders.
+-        generic_parameters
++        // B720: a parameter the payload decides nothing about is a HOLE — a
++        // real `Unknown`, as B357 made a payload-less variant's — never the
++        // ERASED form. `Ok(found)` binds `T` and says nothing of `E`; keeping
++        // the arguments erased typed it as a bare `Result` with NO arguments,
++        // which carries no hole for `binding_is_weaker` to test, so it bound
++        // `map_or<U>`'s `U` for good over the fallback's `Result<_, str>` and
++        // the native backend rendered `Result<>` (rustc E0107).
++        if generic_parameters
+             .iter()
+-            .map(|constraint_id| bindings.get(constraint_id).copied())
+-            .collect()
++            .all(|constraint_id| !bindings.contains_key(constraint_id))
++        {
++            return None;
++        }
++        Some(
++            generic_parameters
++                .iter()
++                .map(|constraint_id| {
++                    bindings
++                        .get(constraint_id)
++                        .copied()
++                        .unwrap_or_else(|| Type::Unknown.get_type_id(self))
++                })
++                .collect(),
++        )
+     }
+ 
+     fn infer_type(
+@@ -50596,7 +50614,19 @@ impl<'src> Analyzer<'src> {
+                             {
+                                 return Type::Unresolved;
+                             }
+-                            Type::Enum(enum_id, inferred.unwrap_or(arguments))
++                            // B720: a payload that decided nothing leaves a
++                            // HOLE per parameter (B357's rule), never the
++                            // erased argument list.
++                            let inferred = inferred.unwrap_or_else(|| {
++                                let parameters = self
++                                    .enums
++                                    .get(&enum_id)
++                                    .map(|enum_| enum_.generic_parameter_constraint_ids.len())
++                                    .unwrap_or(0);
++                                let hole = Type::Unknown.get_type_id(self);
++                                vec![hole; parameters]
++                            });
++                            Type::Enum(enum_id, inferred)
+                         } else {
+                             Type::Enum(enum_id, arguments)
+                         }

@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B727",
+   "section": "B",
+   "title": "A variant that fixes only some of its enum's type parameters drops all of them (`Ok(x)` is `Result` with no arguments); JS prints `Ok(<T>)`",
+   "kind": "bug (analyzer)",
+   "discussion": "Order 58 emitter lanes (2026-11-09)",
+   "status": "open",
+   "area": "compiler",
+   "body": "Found by lane emit-58b (Order 58, 2026-11-09). B720's real cause. `infer_enum_constructor_arguments` drops every type argument when a variant fixes only some. Effects: (1) JS: `let o: Option<i32> = Some(1); let r = o.map_or(|x| Ok(x), Err(\"e\")); print(r);` prints `Ok(<T>)` instead of `Ok(1)`; (2) native: B720's emitter fix fills the arguments from the call's return position, and a call with no position to infer from is refused by name. Attempt: filling the unfixed parameters with unknowns (as B357 did for `None`) fixes the shape but turns `lifetimes::rk_transient_global_ignores_an_ambient_owner_where_transient_is_released_with_it` red with a false \"cannot infer\" (5,821/5,822); the diff was kept in the session scratchpad as analyzer-b720-attempt.diff. Size M."
+  },
+  {
+   "id": "B728",
+   "section": "B",
+   "title": "Native: `usize::max`/`min` go through f64 (`((a as f64).max(b as f64)) as usize`), losing precision above 2^53",
+   "kind": "bug (rust backend)",
+   "discussion": "Order 58 emitter lanes (2026-11-09)",
+   "status": "open",
+   "area": "compiler",
+   "body": "Found by lane emit-58a (Order 58, 2026-11-09). `last.1.max(range.1)` on `usize` emits a float round trip. Seen in the emitted Rust for the census repro rustc/list_new_infer.vl. Fix: integer `max`/`min` (and check `abs`, `clamp`, `pow`) emit the integer methods. Size S."
+  },
+  {
+   "id": "B729",
+   "section": "B",
+   "title": "Native: F102's refusal is broader than it needs to be - a closure that reaches a `&mut` parameter is refused though it is not an argument of the call holding the view",
+   "kind": "bug (rust backend)",
+   "discussion": "Order 58 emitter lanes (2026-11-09)",
+   "status": "open",
+   "area": "compiler",
+   "body": "Found by lane emit-58b (Order 58, 2026-11-09). Inside `fun f(table: &mut Table)`: `[\"x\",\"y\"].map(|n| table.names.len() + n.len())` followed by `grow(table, ..)` is refused as \"a closure that reaches `table` handed to a call that holds a `&mut` view\", though the closure is an argument of `map`, not of `grow`. Size S-M."
+  }
+ ]
+}

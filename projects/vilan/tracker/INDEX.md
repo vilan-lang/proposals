@@ -85,6 +85,9 @@
 | [B724](items/B724.md) | Native: a closure that mutates through a `&mut` capture is emitted as `Fn` (E0525) | bug (rust backend) | native census (2026-11-09); native-objective.md chunk 3 |
 | [B725](items/B725.md) | Native: a self-recursive async fn needs boxing (E0733) | bug (rust backend) | native census (2026-11-09); native-objective.md chunk 3 |
 | [B726](items/B726.md) | Native: `List<T>::new()` used before its first push emits an untyped `Vec::new()` (E0282) | bug (rust backend) | native census (2026-11-09); native-objective.md chunk 3 |
+| [B727](items/B727.md) | A variant that fixes only some of its enum's type parameters drops all of them (`Ok(x)` is `Result` with no arguments); JS prints `Ok(<T>)` | bug (analyzer) | Order 58 emitter lanes (2026-11-09) |
+| [B728](items/B728.md) | Native: `usize::max`/`min` go through f64 (`((a as f64).max(b as f64)) as usize`), losing precision above 2^53 | bug (rust backend) | Order 58 emitter lanes (2026-11-09) |
+| [B729](items/B729.md) | Native: F102's refusal is broader than it needs to be - a closure that reaches a `&mut` parameter is refused though it is not an argument of the call holding the view | bug (rust backend) | Order 58 emitter lanes (2026-11-09) |
 
 ## C. Memory model
 
