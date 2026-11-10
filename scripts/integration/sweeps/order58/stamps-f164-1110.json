@@ -1,0 +1,1 @@
+{"prefix": "2026-11-10 CI", "stamps": {"F164": "Windows adds a second face: a `::` bind is IPv6-only there (IPV6_V6ONLY defaults on), so an IPv4 client is refused where node answers. The fix must clear IPV6_V6ONLY on every OS. vilan-rt's peer-address unit test skips its `::` case on Windows until then (next @09032e8f); remove the skip with the fix."}}
