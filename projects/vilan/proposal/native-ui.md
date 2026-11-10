@@ -1,6 +1,8 @@
 # Native UI: a graphics API, a UI framework on it, and components on that
 
-Status: DRAFT for discussion, 2026-11-10. Nothing here is ruled. It answers the
+Status: DRAFT rev 2 for discussion, 2026-11-10. Nothing here is ruled. Rev 2
+folds in the spike's measurements (section 11) and corrects what the spike
+found wrong in rev 1. It answers the
 owner's direction of 2026-11-10 (native-objective.md, "Owner direction") and
 replaces chunks 8 and 9 of that plan once ruled. Every recommendation is a
 proposal; section 9 lists the decisions in the order I would ask them.
@@ -40,9 +42,10 @@ The four positions I recommend:
   A UI is almost entirely rounded rectangles, text and images. Those draw as
   instanced quads with the shape computed in the fragment shader. That is what
   GPUI does, it is a few hundred lines of shader, and it runs on every backend
-  `wgpu` has, WebGPU included.
+  `wgpu` has, WebGPU included. The spike built it: two draw calls per scene.
 - **Fine-grained updates from signals, not a re-render per frame.** GPUI
-  rebuilds a view's element tree whenever the view is notified. Vilan already
+  rebuilds the whole window's element tree on every drawn frame (a view opts
+  into caching). Vilan already
   has a fine-grained reactive core. An element's property is bound to a signal;
   a write marks that one element for layout or for paint, and nothing else
   runs. This is Vilan's main advantage over the systems it borrows from.
@@ -121,8 +124,12 @@ rectangle's corners, border and anti-aliasing come from a signed-distance
 function in the fragment shader, so a rounded, bordered rectangle is one quad.
 Text is quads sampling a glyph atlas.
 
-This is GPUI's design in outline (my summary of it is from memory of the Zed
-source and blog posts and should be checked against the code during the spike).
+This is GPUI's design in outline, checked against the Zed source by the spike
+(2026-11-10). One decision is open here (Q14): sorting by kind inside a layer
+is wrong when a later rectangle overlaps earlier text in the same layer. GPUI
+orders by an overlap test over bounds, then merges by order and kind. The
+alternative is strict layers, where the framework opens a layer for every
+overlapping subtree. The primitive list also needs an underline.
 
 ### 3.3 The recommendation and what I rejected
 
@@ -138,9 +145,11 @@ source and blog posts and should be checked against the code during the spike).
   larger thing to depend on and to debug. If paths turn out to matter more
   than I expect, it can be added behind the Path primitive later without
   changing the API above.
-- **Rejected: direct platform APIs** (Metal, Direct3D, Vulkan written three
-  times, which is what GPUI does). It is three renderers to maintain. GPUI has
-  a company behind it. We do not.
+- **Rejected: direct platform APIs.** GPUI writes Metal for macOS and
+  Direct3D 11 for Windows by hand, and now uses `wgpu` itself for Linux and
+  the web (its earlier Vulkan renderer was removed). That is the strongest
+  outside evidence for `wgpu`, and hand-written renderers per system are more
+  than we can maintain.
 - **Rejected: Skia.** A large C++ dependency with a difficult build. It would
   put a C++ toolchain into every user's desktop build.
 
@@ -153,10 +162,21 @@ them. Two candidate stacks, both pure Rust:
 - `parley` (shaping and paragraph layout) with `swash` for rasterising.
 - `cosmic-text` (shaping, layout, fallback, and an editor model).
 
-D6 named `parley`. I do not have a measured reason to prefer one, so the spike
-measures both on the same paragraph set: dependency count, licences, build
-time, shaping cost per line, and correctness on mixed scripts. `cosmic-text`
-ships an editing model, which matters for the text input component later.
+The spike measured both (section 11). Recommendation: `parley`. It shaped
+ordinary text about twice as fast and text needing a fallback font 30 to 170
+times as fast, it avoids an unmaintained dependency, and it ships an editing
+model. Against it: 19 more packages, a build-time link to libfontconfig on
+Linux unless a feature is switched, and an API still changing shape.
+
+A third option the spike raised (Q15): use each system's own text engine, as
+GPUI does on macOS (CoreText) and Windows (DirectWrite). That gives native
+font fallback and rendering, at the price of three text back ends. I
+recommend one Rust stack first, with the interface kept small enough to put a
+platform engine behind it later.
+
+Text decisions still to make, none urgent: subpixel positioning bins, gamma
+correction, and LCD subpixel text. I recommend no LCD subpixel text: it needs
+a blending mode WebGL2 lacks.
 
 ## 4. Layer 2: `std::ui`
 
@@ -266,6 +286,9 @@ because there is no rem or px underneath it:
   spacing, sizing and text also times the user's text scale setting.
 - A border or hairline of `dp(1)` is never thinner than one device pixel and
   is snapped to the device pixel grid, so it stays sharp at 125% and 150%.
+  The spike confirmed one opaque device pixel at 100% and 125%. At 150% the
+  rule must choose between 1 and 2 device pixels (Q16). I recommend rounding
+  down for widths under 2 dp, so a hairline stays a hairline.
 - Fractions (`fraction(1, 2)`, percent of parent) and `auto` remain. `em`,
   `vh` and the rest do not exist.
 
@@ -280,9 +303,11 @@ because there is no rem or px underneath it:
 | Element tree, style, conditions, focus, events, reactive binding | `vilan/std/src/ui/` | Vilan |
 | Components | `vilan/std/src/ui/kit/` | Vilan |
 
-The crate sits outside the workspace for the reason the webview crate does:
-`wgpu` and `winit` bring a large dependency tree. A dependency probe (count,
-advisories, licences) is the spike's first step, as it was for `wry`.
+The spike's probe found the webview crate's reasons do not apply here: every
+licence is on the compiler's accepted list and the audit passes. The remaining
+reasons to keep it outside are weight (about 330 packages against the
+compiler's 191) and `parley`'s libfontconfig build dependency. Q11 is
+therefore a real choice now, not a forced one.
 
 Platform fencing follows D4: these modules are native-only until the browser
 part lands, and the JavaScript build refuses them by name, as `std::window`
@@ -346,17 +371,20 @@ binary.
 |---|---|---|
 | Q1 | Names: `std::gfx`, `std::ui`, `std::ui::kit` | As written; the web UI keeps its names |
 | Q2 | Renderer: own batch renderer on `wgpu`, or `vello`, or platform APIs | Own renderer on `wgpu` |
-| Q3 | Text stack: `parley` or `cosmic-text` | Decide from the spike's measurements |
+| Q3 | Text stack: `parley` or `cosmic-text` | `parley` (measured, section 11) |
 | Q4 | Layout: `taffy` under our own vocabulary, flex first, grid later | Yes |
 | Q5 | No margins: gap and padding only | Yes |
-| Q6 | Reuse the element syntax (`<row gap(..)>`) with framework element names | Yes, if the lowering allows it without HTML assumptions; the spike checks |
+| Q6 | Reuse the element syntax (`<row gap(..)>`) with framework element names | Yes. It needs a compiler change of roughly 80 to 200 lines: the lowering hard-codes `std::web::ui::view(tag)`, four method names, and string-keyed attributes |
 | Q7 | Style: typed values, no cascade, text style inherited by context only | Yes |
-| Q8 | Threading: does the Vilan program run on the main thread driven by the window loop, or on a second thread as in M2 | Main thread, so layout and resize are in step; the spike confirms the executor can be driven that way |
+| Q8 | Threading: does the Vilan program run on the main thread driven by the window loop, or on a second thread as in M2 | Main thread. It needs an executor slice first (section 11.4); the second-thread arrangement works today and is the fallback |
 | Q9 | Updates: retained tree with signal-bound properties, not a per-frame rebuild | Yes |
 | Q10 | Accessibility role and label fields in the first version, published later | Yes |
-| Q11 | The crate outside the workspace with its own lockfile and CI job | Yes, as D2a |
+| Q11 | The crate outside the workspace with its own lockfile and CI job | Outside, for weight and the fontconfig build dependency; no longer forced by licences or audit |
 | Q12 | The web UI stays; one-source-for-both is left open | Yes |
-| Q13 | Start the spike now, before the rest is ruled | Yes; it is throwaway and its numbers inform Q2, Q3 and Q8 |
+| Q13 | Start the spike now, before the rest is ruled | DONE 2026-11-10 (owner: "Start the spike"); section 11 |
+| Q14 | Paint order: strict layers, or an overlap test over bounds as GPUI does | Overlap test; it keeps batches large without making the user think about layers |
+| Q15 | One Rust text stack, or each system's own text engine | One Rust stack first, behind a small interface |
+| Q16 | `dp(1)` at 150%: one device pixel or two | One, for widths under 2 dp |
 
 ## 10. What I am least sure of
 
@@ -367,7 +395,110 @@ binary.
   the fallback.
 - **The element syntax (Q6).** I have read that it lowers to `view("div")` and
   method chains. I have not checked how much of the analyzer assumes `View`.
-- **GPUI specifics.** Written from memory. The spike lane reads the source
-  before copying any idea from it.
-- **Software rendering in CI.** Golden-image tests under lavapipe may differ
-  by a pixel between driver versions. The tests may need a tolerance.
+- **Software rendering in CI.** The spike found Vulkan and GL software
+  drivers differ by 1 in a handful of channel values. A tolerance of 1 covers
+  it.
+- **Everything not run on a real GPU or on Windows and macOS.** Section 11.6.
+
+## 11. Spike results (lane gfx-spike, 2026-11-10)
+
+Throwaway code on branch `gfx-spike` (a9c64577, not pushed, not for merge), in
+`spike/gfx/` of that worktree with its images and logs under `out/`. Every GPU
+time below is from a software driver and says nothing about a real GPU.
+
+### 11.1 What ran
+
+- `wgpu` found an adapter on this machine through software Vulkan and GL.
+- Rounded rectangles with per-corner radii and borders, an analytic blurred
+  shadow, and atlas text render correctly offscreen at 100%, 125% and 150%. I
+  looked at the images.
+- A real window ran under xvfb, driven by clicks injected through the X
+  server. It drew one frame at start, one per click that changed the counter,
+  and none for a click that missed. Idle CPU over 10 s was zero.
+- The Windows binary type-checks here but cannot be linked here.
+
+### 11.2 Dependencies
+
+Pinned: `winit =0.30.13`, `wgpu =30.0.1`, `taffy =0.15.1`, `parley =0.12.0`,
+`swash =0.2.10`, `cosmic-text =0.19.0`.
+
+| Set | Packages | Clean debug | Clean release |
+|---|---|---|---|
+| `winit` + `wgpu` | 256 | 25.0 s | 41.7 s |
+| with `parley` + `swash` | 300 | 29.0 s | 54.0 s |
+| with `cosmic-text` | 281 | 28.0 s | 53.3 s |
+| with `taffy` | 257 | 25.6 s | 46.1 s |
+| The whole spike | 328 | | |
+
+Audit: one `unmaintained` warning (`ttf-parser`), which the compiler's audit
+leg does not deny. Licences: all on the compiler's accepted list.
+
+### 11.3 Measurements
+
+| Measure | Result |
+|---|---|
+| Release binary, stripped | 12.3 MB; 7.5 MB size-optimised |
+| Cold start to first offscreen frame | 115 to 219 ms, of which device creation 72 to 166 ms |
+| First frame on screen in the window | 105 to 286 ms |
+| CPU per counter click | event 2 us, layout with reshape 33 us, scene 13 to 25 us, encode and submit 73 to 120 us |
+| Work per click | one text reshaped, one element repainted; a miss does nothing |
+| 10,000-row list, 23 rows visible | scene build 101 us median, 153 us at the 95th percentile; two draw calls |
+| Same, a full page per frame | 357 us median |
+| Resident memory | about 140 MB, mostly the software driver; the spike's atlas wastes 32 MB that a real one would not |
+
+Text shaping, best CPU time per paragraph in microseconds:
+
+| Paragraph | `parley` | `cosmic-text` |
+|---|---|---|
+| Latin | 11.9 | 25.7 |
+| Latin, Arabic, Hebrew mixed | 16.8 | 24.9 |
+| Long, eight lines | 45.5 | 98.1 |
+| Emoji | 17.5 | 21.2 |
+| CJK through a fallback font | 11.4 | 585 |
+
+Both rendered Arabic joining, bidirectional order, Hebrew, CJK and colour
+emoji correctly by eye. `cosmic-text` has an optional cache that might close
+the fallback gap; it was not tried.
+
+### 11.4 Q8: the executor and the window loop
+
+The executor cannot be driven from the window loop today. It owns its loop and
+blocks inside the readiness wait; a turn is private; and its waker rings a
+loopback bell that cannot wake `winit`.
+
+Main thread, as recommended, needs a small executor slice: a public
+non-blocking turn that returns the next deadline and the sockets to watch, and
+a pluggable waker that calls the window loop's proxy. Timers then cost
+nothing. Sockets need a helper thread that waits and signals the loop, only
+while sockets are registered, so an app with no network pays nothing. Resize
+is in step for free.
+
+Second thread, as M2 does, needs no executor change. Signals cannot cross
+threads, so the element tree, layout and rendering all live on the program
+thread. Live resize then needs the main thread to wait for each new frame, and
+on macOS window calls must be forwarded.
+
+### 11.5 Q6: the element syntax
+
+Tag names are unrestricted, so `<row>` parses. The lowering in
+`crates/vilan-core/src/elements.rs` hard-codes the constructor
+`std::web::ui::view(tag)`, the method names `attr`, `on`, `on_event` and
+`child`, and turns an undotted `gap(x)` into `.attr("gap", x)`. Lowering onto
+another element type means resolving the constructor in the analyzer and
+lowering undotted attributes to typed method calls. Also touched: IDE
+completion, and the formatter, which reorders attributes as an HTML set.
+
+### 11.6 Not verified
+
+Any real GPU. Windows and macOS at run time. Wayland. Live window resize. A
+scale change while running. Animation. Either editing model. Input methods.
+Thai and Indic line breaking. Whether Windows' emoji font draws in colour.
+
+### 11.7 The run that would settle the GPU numbers
+
+On the owner's Windows machine, with rustup's MSVC toolchain, from the
+`gfx-spike` branch: `cargo build --release` in `spike\gfx`, then the `demo`,
+`counter`, `list`, `coldstart` and `window` subcommands of `gfx-spike.exe`,
+once per `WGPU_BACKEND` of `dx12` and `vulkan`. To look at: frame times, a
+live drag-resize, idle CPU and GPU, device creation time, memory, and real
+125% and 150% scaling.
