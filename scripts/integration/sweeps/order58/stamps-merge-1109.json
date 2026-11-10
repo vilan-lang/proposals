@@ -1,0 +1,8 @@
+{"prefix": "2026-11-09 Order 58", "stamps": {
+"F151": "FIXED on next @9e09acf0 (lane http-58 bd5be545): node's reason phrases on both backends. Close at the sweep.",
+"F152": "FIXED on next @9e09acf0 (lane http-58 bd5be545): native keep-alive, pipelining in order, head 60 s / request 300 s / idle 5 s timeouts. Breaking: a Server struct literal needs `timeouts = ServerTimeouts::new()`. Follow-up F160 (executor polls on a 1 ms sleep). Close at the sweep.",
+"F156": "FIXED on next @9e09acf0 (lane std-58 1e8a9691 + 9fc8a872). Still refused: fs File handle tier, the watcher. Close at the sweep.",
+"F157": "FIXED on next @9e09acf0 (lane std-58 13bcb2b2): a native SIGTERM ends the program once its servers drain. Close at the sweep.",
+"F158": "FIXED on next @9e09acf0 (lane std-58 19c8d7d0): std::base64::encode/decode, JsonValue::keys. Follow-up F159. Close at the sweep.",
+"F1": "S1b's ws:// client LANDED on next @9e09acf0 (lane ws-58 2675ad84): std::rpc's client side runs natively, four pairings identical; wss:// refused at the dial by name (ruling S1). Follow-up F162."
+}}
