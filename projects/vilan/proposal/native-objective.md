@@ -122,6 +122,8 @@ Effect: D3 (the DOM-shaped `View` as the one shared surface) and D6's style mapp
 
 RULED the same day: the new system lands in parts, DESKTOP FIRST. The browser target (canvas, the wasm question) follows and is not a requirement of the first version; the paper keeps the graphics API browser-capable by design but the spike is a desktop window only.
 
+DRAFT 2026-11-10: the design paper is `native-ui.md` (three layers: `std::gfx`, `std::ui`, `std::ui::kit`; thirteen questions in its section 9). Nothing in it is ruled.
+
 ## 4. Chunks, in order
 
 | # | Chunk | Needs | Size |
