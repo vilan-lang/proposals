@@ -1,6 +1,6 @@
 # The native objective: a Rust web server, then a Rust desktop app
 
-Status: DRAFT for the owner's rulings (2026-11-09, the integrator). Reads with
+Status: RULED 2026-11-09 - the owner accepted every recommendation in §3 (S1-S7, D1-D8) as a ruling. §5 (Kolt) is HELD: the git tracker stays the only planning surface; the project switches when Kolt is ready for the whole project (§5's gap list is the checklist). Reads with
 `native-apps.md` (F1), F15, F17, F27. This paper is the plan and the question
 list; it builds nothing.
 
@@ -44,7 +44,7 @@ clipboard APIs (about 130 browser bindings).
 M1 needs no design ruling except TLS. M2 needs one dependency ruling. M3 needs
 F17.
 
-## 3. Questions, each with a recommendation
+## 3. Rulings (each recommendation below is RULED as written, 2026-11-09)
 
 ### Server (M1)
 
@@ -117,7 +117,7 @@ F17.
 One chunk is one to three lanes and lands as one seal's worth of work. A chunk
 closes with: merged to `next`, CI green, its items closed, this table stamped.
 
-## 5. Managing it: Kolt, and how ready Kolt is
+## 5. Managing it: Kolt, and how ready Kolt is (HELD 2026-11-09: no vilan organization now; switch when the whole project fits)
 
 What Kolt has today (the `kolt` organization, read through its MCP on
 2026-11-09): tasks with number, status (three columns), assignees, comments,
