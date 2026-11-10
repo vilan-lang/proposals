@@ -79,6 +79,17 @@ F17.
 - **D2. The webview dependency (M2).** Rec: `wry` + `tao` (the Tauri crates),
   in their own runtime crate linked only by a desktop entry - the same rule
   as sqlite and ctrlc. This is the one new-dependency ruling M2 needs.
+  RULED 2026-11-10 (D2a, after lane shell-58's dependency probe: +164 packages,
+  RUSTSEC-2024-0429 unsound on `glib 0.18.5` via the gtk3 bindings with no fixed
+  gtk3 release, MPL-2.0 and Apache-2.0 WITH LLVM-exception outside `about.toml`,
+  and vilan-core's `toml` forced down): the webview crate lives OUTSIDE the
+  workspace (`exclude`), with its own `Cargo.lock` and its own CI job on a
+  GitHub-hosted Linux runner that installs the webview packages, lints and audits
+  it. That job carries the allowances by name, each with its reason: the glib
+  advisory, and the two licences. The compiler's lockfile, audit and notices do
+  not change. Slice 1 links by use of `std::window`; the `desktop` entry kind is a
+  later slice. Threading: the OS event loop on the main thread, the program and
+  its executor on a second thread.
 - **D3. F17 - one UI source for native and web.** Rec: the DOM-shaped `View`
   as the shared surface (the F1 paper's position): one `std::ui`, three twins
   (browser DOM, process SSR, native scene). No second retained-tree API.
