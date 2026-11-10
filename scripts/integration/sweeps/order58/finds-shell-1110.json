@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "F166",
+   "section": "F",
+   "kind": "feature (native desktop shell)",
+   "status": "open",
+   "area": "std::window, vilan-rt-webview",
+   "discussion": "lane shell-58 (Order 58, 2026-11-10); native-objective.md M2, rulings D1, D2, D2a, D4, D8",
+   "title": "Webview desktop shell: the slices after slice 1",
+   "body": "Slice 1 LANDED on next @1a894115 (lane commit 29f38354): `std::window` (`Window::builder(url).title(..).size(w, h).open()`, `Window::close`), runtime crate `crates/vilan-rt-webview` (wry =0.57.2, tao =0.37.2) outside the workspace with its own lockfile, notices and CI job `webview` (GitHub-hosted ubuntu, xvfb end-to-end proof), linked by use, the JS backend refuses by name. Verified on Linux only; macOS and Windows are cross-linted, never run. Remaining slices, in order: deep links; menus; notifications; secure token storage; tray; multiple windows; packaging and installers; porting kolt's Electron shell; verification on real macOS and Windows machines. Also open: a `desktop` entry kind (a manifest backend key plus run/build/workspace rules), deferred from slice 1 as a larger design."
+  }
+ ]
+}
