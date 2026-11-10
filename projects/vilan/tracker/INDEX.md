@@ -90,6 +90,7 @@
 | [B729](items/B729.md) | Native: F102's refusal is broader than it needs to be - a closure that reaches a `&mut` parameter is refused though it is not an argument of the call holding the view | bug (rust backend) | Order 58 emitter lanes (2026-11-09) |
 | [B730](items/B730.md) | Native refuses a `map` closure that calls a function returning `any` - unbound generic parameter of `map` | bug (native backend) | lane db-58 (Order 58, 2026-11-09) |
 | [B731](items/B731.md) | Owner question: should a backed enum implement `SqlValue` automatically, as it gets `Hashable`? | design question | lane db-58 (Order 58, 2026-11-09) |
+| [B732](items/B732.md) | Native: a view method called on `cell.write()` emits Rust that rustc rejects (E0308 on `RefMut`) | bug (native backend) | lane m199-58 (Order 58, 2026-11-09) |
 
 ## C. Memory model
 

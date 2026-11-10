@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "B732",
+   "section": "B",
+   "title": "Native: a view method called on `cell.write()` emits Rust that rustc rejects (E0308 on `RefMut`)",
+   "kind": "bug (native backend)",
+   "discussion": "lane m199-58 (Order 58, 2026-11-09)",
+   "status": "open",
+   "area": "native backend",
+   "body": "Found by lane m199-58, not fixed. `cell.write().some_view()` on a `Shared` cell, where `some_view` takes a view receiver, emits Rust that rustc refuses with E0308 (a `RefMut` where a reference is expected). JS builds it. Needs a minimal repro and a probe under `crates/vilan-cli/tests/native/`. Size S."
+  }
+ ]
+}
