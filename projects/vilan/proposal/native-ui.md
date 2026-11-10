@@ -1,6 +1,7 @@
 # Native UI: a graphics API, a UI framework on it, and components on that
 
-Status: DRAFT rev 2 for discussion, 2026-11-10. Nothing here is ruled. Rev 2
+Status: RULED 2026-11-10. The owner accepted every recommendation in section 9
+(Q1 to Q16) as rulings ("Accept all recs"). Rev 2
 folds in the spike's measurements (section 11) and corrects what the spike
 found wrong in rev 1. It answers the
 owner's direction of 2026-11-10 (native-objective.md, "Owner direction") and
@@ -365,7 +366,10 @@ Frame times from a software driver are not meaningful. Real numbers need a
 run on Windows with the GPU, which I would ask the owner to do with a built
 binary.
 
-## 9. Decisions, in the order I would ask them
+## 9. Decisions (ALL RULED as recommended, 2026-11-10)
+
+Each recommendation below is a ruling, R1 to R16 by its question number. First
+work under them: the executor slice of section 11.4 (R8) and part P1.
 
 | # | Question | Recommendation |
 |---|---|---|
