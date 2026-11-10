@@ -149,6 +149,7 @@ fun f(): void
 | [F156](items/F156.md) | Native refuses std members kolt's server uses: `str::index_of`/`last_index_of`, `Instant::to_iso`, the fs options object | gap (native std) | native census (2026-11-09); native-objective.md chunk 3 |
 | [F157](items/F157.md) | Native: SIGTERM with a detached forever task leaves the process alive | bug (native runtime) | native census (2026-11-09); native-objective.md chunk 3 |
 | [F158](items/F158.md) | std: padded base64 `encode`/`decode` and `JsonValue::keys`, on both backends | feature (std) | native census (2026-11-09); native-objective.md chunk 3 |
+| [F159](items/F159.md) | Native JSON objects keep insertion order only - JS puts integer-like keys first, ascending | bug (native runtime) | lane std-58 (Order 58, 2026-11-09) |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
