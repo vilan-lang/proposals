@@ -99,6 +99,16 @@ F17.
   in-process server (nothing new). F1's S6 (rpc in-process, no socket) waits
   until M3 has an app that wants it.
 
+### Owner direction, 2026-11-10 (reopens D3 and the style half of D6; chunks 8 and 9 do not start as written)
+
+The owner's high-level points, before the M3 design conversation:
+
+- No HTML+CSS for true native GPU rendering, not even through a translation layer. Distill what they represent into an efficient UI system instead. Draw on GPUI (the Rust project), keeping vilan's own innovations (the display pixel).
+- HTML does two jobs, structure and default components; most sites override the default styling, so a successor should not ship styled defaults. The model: a graphics API that takes full advantage of the GPU, with a standard 2D UI framework on top; buttons, inputs and forms are built on the graphics API.
+- The biggest hurdle is abstraction across systems (Windows, macOS, Linux) and browsers (Chrome, Firefox). HTML for browsers and GPU draw calls for desktop is tricky; when to use canvas (WebGL/WebGPU) versus traditional HTML is complicated. All-in on canvas for v1 is acceptable if helpful, with a worry about the cost JS incurs.
+
+Effect: D3 (the DOM-shaped `View` as the one shared surface) and D6's style mapping from A95's condition sets are REOPENED. D1, D2, D4, D8 and M2 (the webview shell, which renders the existing web UI) stand. D6's crate stack and D7's fences are inputs to the new paper, not rulings. Chunk 8 becomes a design paper for the new system plus a spike; the conversation happens over that draft.
+
 ## 4. Chunks, in order
 
 | # | Chunk | Needs | Size |
