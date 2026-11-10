@@ -1,0 +1,440 @@
+diff --git a/src/server/account_guard.vl b/src/server/account_guard.vl
+index 19d9fb8..3c4f7e6 100644
+--- a/src/server/account_guard.vl
++++ b/src/server/account_guard.vl
+@@ -103,8 +103,12 @@ export fun client_of(request: Request): str {
+ 
+ /// The request socket's peer address. std's `Request` doesn't offer it (only an
+ /// upgrade's raw socket has `remote_address`): vilan-lang M201.
+-[extern("((request) => request.socket?.remoteAddress ?? '')")]
+-external fun peer_address(request: NodeRequest): str;
++// M1-1 (native only): the JS [extern] has no rust arm, so natively every client
++// reads as "" (the per-client throttle becomes one bucket) unless
++// KOLT_TRUST_PROXY=1 names it. The fix is std's Request peer address (M201).
++fun peer_address(request: NodeRequest): str {
++	""
++}
+ 
+ // --- throttles ---
+ 
+diff --git a/src/server/dictionary.vl b/src/server/dictionary.vl
+index 66e92d8..e2400ff 100644
+--- a/src/server/dictionary.vl
++++ b/src/server/dictionary.vl
+@@ -5,35 +5,157 @@
+ // words one or two edits from a misspelling, and how a word being typed might
+ // end. An organization's own words (and an account's) are store.vl's; this is
+ // English alone.
++import std::compare::Ord;
+ import std::fs::{ read_file_to_str, stat };
++import std::hash_map::HashMap;
++import std::hash_set::HashSet;
+ import std::shared::Shared;
+ 
+ export *;
+ 
+ /// The loaded list: a set of words (each with whether it may be offered) and
+-/// the same words sorted.
+-external struct WordList;
++/// the same words in the file's (sorted) order.
++struct WordList {
++	all: HashMap<str, bool>,
++	sorted: List<str>,
++}
+ 
+-[extern("((text) => { const all = new Map(); const sorted = []; for (const line of text.split('\n')) { if (!line) continue; const tab = line.indexOf('\t'); const word = tab < 0 ? line : line.slice(0, tab); all.set(word, tab < 0); sorted.push(word); } return { all, sorted }; })")]
+-external fun read_word_list(text: str): WordList;
++/// The list from the word file: a word per line, a tab after one that is
++/// spelled right but never offered.
++fun read_word_list(text: str): WordList {
++	mut all: HashMap<str, bool> = HashMap::new();
++	mut sorted: List<str> = [];
++	for line in text.split("\n") {
++		line.is_empty() then jump continue;
++		let word = line.split("\t")[0];
++		all.insert(word, !line.contains("\t"));
++		sorted.push(word);
++	}
++	WordList { all, sorted }
++}
+ 
+-[extern("((list, word) => list.all.has(word))")]
+-external fun has_word(list: WordList, word: str): bool;
++impl WordList {
++	fun has_word(self, word: str): bool {
++		self.all.contains_key(word)
++	}
++}
+ 
+-[extern("((list) => list.sorted.length)")]
+-external fun word_count(list: WordList): usize;
++impl WordList {
++	fun word_count(self): usize {
++		self.sorted.len()
++	}
++}
+ 
+-/// The words one edit from `word` (a letter dropped, swapped, changed or
+-/// added), else two, that the list offers; at most `limit`, those keeping
+-/// the word's first letter first.
+-[extern("((list, word, limit) => { const letters = 'abcdefghijklmnopqrstuvwxyz' + String.fromCharCode(39); const edits = (w) => { const out = new Set(); for (let i = 0; i <= w.length; i++) { const a = w.slice(0, i), b = w.slice(i); if (b) out.add(a + b.slice(1)); if (b.length > 1) out.add(a + b[1] + b[0] + b.slice(2)); for (const c of letters) { if (b) out.add(a + c + b.slice(1)); out.add(a + c + b); } } out.delete(w); return out; }; const lower = word.toLowerCase(); const offered = (w) => list.all.get(w) === true; let found = [...edits(lower)].filter(offered); if (found.length === 0 && lower.length <= 12) { const far = new Set(); for (const once of edits(lower)) for (const twice of edits(once)) if (offered(twice)) far.add(twice); far.delete(lower); found = [...far]; } found.sort((x, y) => (y[0] === lower[0]) - (x[0] === lower[0]) || Math.abs(x.length - lower.length) - Math.abs(y.length - lower.length) || (x < y ? -1 : 1)); return found.slice(0, limit); })")]
+-external fun near_words(list: WordList, word: str, limit: usize): List<str>;
++impl WordList {
++	/// Whether the list may offer `word`.
++	fun offered(self, word: str): bool {
++		self.all.get(word) == Some(true)
++	}
++}
+ 
+-/// Up to `limit` words the list offers that start with `prefix` and are
+-/// longer, the shortest first (none with an apostrophe,
+-/// `rec'd`, unless the prefix has one).
+-[extern("((list, prefix, limit) => { const s = list.sorted; let lo = 0, hi = s.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (s[mid] < prefix) lo = mid + 1; else hi = mid; } const found = []; for (let i = lo; i < s.length && s[i].startsWith(prefix); i++) { const w = s[i]; if (w.length > prefix.length && list.all.get(w) && (prefix.includes(String.fromCharCode(39)) || !w.includes(String.fromCharCode(39)))) found.push(w); } found.sort((a, b) => a.length - b.length || (a < b ? -1 : 1)); return found.slice(0, limit); })")]
+-external fun completions_in(list: WordList, prefix: str, limit: usize): List<str>;
++/// The strings one edit from `word`: a letter dropped, two swapped, one
++/// changed, one added.
++fun edits(word: str): HashSet<str> {
++	let letters = "abcdefghijklmnopqrstuvwxyz'";
++	mut out: HashSet<str> = HashSet::new();
++	let n = word.len();
++	mut i = 0usize;
++	for i <= n {
++		let a = word.substring(0, i);
++		let b = word.substring(i, n);
++		let m = b.len();
++		m > 0 then out.insert(i"{a}{b.substring(1, m)}");
++		m > 1 then out.insert(i"{a}{b.substring(1, 2)}{b.substring(0, 1)}{b.substring(2, m)}");
++		mut c = 0usize;
++		for c < letters.len() {
++			let letter = letters.substring(c, c + 1);
++			m > 0 then out.insert(i"{a}{letter}{b.substring(1, m)}");
++			out.insert(i"{a}{letter}{b}");
++			c += 1;
++		}
++		i += 1;
++	}
++	out.remove(word);
++	out
++}
++
++fun gap(a: usize, b: usize): usize {
++	a > b then a - b else b - a
++}
++
++impl WordList {
++	/// The words one edit from `word` (a letter dropped, swapped, changed or
++	/// added), else two, that the list offers; at most `limit`, those keeping
++	/// the word's first letter first.
++	fun near_words(self, word: str, limit: usize): List<str> {
++		let lower = word.to_lowercase();
++		let once = edits(lower).values();
++		mut found = once.filter(|each| self.offered(each));
++		if found.is_empty() && lower.len() <= 12 {
++			mut far: HashSet<str> = HashSet::new();
++			for each in once {
++				for twice in edits(each).values() {
++					self.offered(twice) then far.insert(twice);
++				}
++			}
++			far.remove(lower);
++			found = far.values();
++		}
++		let first = lower.substring(0, 1);
++		let ordered = found.sort_by(|x, y| {
++			let x_rank = x.substring(0, 1) == first then 0usize else 1usize;
++			let y_rank = y.substring(0, 1) == first then 0usize else 1usize;
++			x_rank != y_rank then ret x_rank.compare(y_rank);
++			let x_gap = gap(x.len(), lower.len());
++			let y_gap = gap(y.len(), lower.len());
++			x_gap != y_gap then ret x_gap.compare(y_gap);
++			x.compare(y)
++		});
++		mut out: List<str> = [];
++		for each in ordered {
++			out.len() >= limit then jump break;
++			out.push(each);
++		}
++		out
++	}
++}
++
++impl WordList {
++	/// Up to `limit` words the list offers that start with `prefix` and are
++	/// longer, the shortest first (none with an apostrophe,
++	/// `rec'd`, unless the prefix has one).
++	fun completions_in(self, prefix: str, limit: usize): List<str> {
++		mut lo = 0usize;
++		mut hi = self.sorted.len();
++		for lo < hi {
++			let mid = (lo + hi) / 2;
++			if self.sorted[mid] < prefix {
++				lo = mid + 1;
++			} else {
++				hi = mid;
++			}
++		}
++		let quoted = prefix.contains("'");
++		mut found: List<str> = [];
++		mut at = lo;
++		for at < self.sorted.len() && self.sorted[at].starts_with(prefix) {
++			let each = self.sorted[at];
++			if each.len() > prefix.len() && self.offered(each) && (quoted || !each.contains("'")) {
++				found.push(each);
++			}
++			at += 1;
++		}
++		let ordered = found.sort_by(|a, b| a.len() != b.len()
++			then a.len().compare(b.len())
++			else a.compare(b));
++		mut out: List<str> = [];
++		for each in ordered {
++			out.len() >= limit then jump break;
++			out.push(each);
++		}
++		out
++	}
++}
+ 
+ /// Where the list is: beside the build the server runs from.
+ let word_list_path = "dist/spell/en_US.words";
+@@ -48,7 +170,7 @@ fun word_list(): Option<WordList> {
+ 	}
+ 	stat(word_list_path).is_some() else ret None;
+ 	let list = read_word_list(read_file_to_str(word_list_path));
+-	print(i"kolt: spelling dictionary loaded ({word_count(list)} words)");
++	print(i"kolt: spelling dictionary loaded ({list.word_count()} words)");
+ 	loaded.write() = Some(list);
+ 	Some(list)
+ }
+@@ -88,25 +210,29 @@ fun spelled_right(word: str): bool {
+ 		bare = bare.substring(0, bare.len() - 1);
+ 	}
+ 	bare.is_empty() then ret true;
+-	has_cased(list, bare) then ret true;
++	list.has_cased(bare) then ret true;
+ 	// A possessive: the word it belongs to.
+-	bare.ends_with("'s") && has_cased(list, bare.substring(0, bare.len() - 2)) then ret true;
++	bare.ends_with("'s") && list.has_cased(bare.substring(0, bare.len() - 2)) then ret true;
+ 	false
+ }
+ 
+-/// Whether `word` is in the list as written, or as a sentence may case it:
+-/// `The` for `the`, `NASA` and `HELLO` for `NASA` and `hello`.
+-fun has_cased(list: WordList, word: str): bool {
+-	has_word(list, word) then ret true;
+-	let lower = word.to_lowercase();
+-	let first_upper = word.substring(0, 1) != word.substring(0, 1).to_lowercase();
+-	if first_upper && word.substring(1, word.len()) == word.substring(1, word.len()).to_lowercase() {
+-		has_word(list, lower) then ret true;
+-	}
+-	if is_upper(word) {
+-		has_word(list, lower) || has_word(list, capitalized(word)) then ret true;
++impl WordList {
++	/// Whether `word` is in the list as written, or as a sentence may case it:
++	/// `The` for `the`, `NASA` and `HELLO` for `NASA` and `hello`.
++	fun has_cased(self, word: str): bool {
++		self.has_word(word) then ret true;
++		let lower = word.to_lowercase();
++		let first_upper = word.substring(0, 1) != word.substring(0, 1).to_lowercase();
++		if first_upper && word.substring(1, word.len()) == word
++			.substring(1, word.len())
++			.to_lowercase() {
++			self.has_word(lower) then ret true;
++		}
++		if is_upper(word) {
++			self.has_word(lower) || self.has_word(capitalized(word)) then ret true;
++		}
++		false
+ 	}
+-	false
+ }
+ 
+ /// What `word` might have meant: up to `limit` words, cased as it was.
+@@ -117,16 +243,18 @@ fun suggestions(word: str, limit: usize): List<str> {
+ 	let first_upper = !plain.is_empty() && plain.substring(0, 1) != plain
+ 		.substring(0, 1)
+ 		.to_lowercase();
+-	near_words(list, plain, limit).map(|found| all_caps
+-		then found.to_uppercase()
+-		else first_upper
+-		then capitalized(found)
+-		else found)
++	list
++		.near_words(plain, limit)
++		.map(|found| all_caps
++			then found.to_uppercase()
++			else first_upper
++			then capitalized(found)
++			else found)
+ }
+ 
+ /// How `prefix` might end, from the dictionary alone: up to `limit` words,
+ /// the shortest first.
+ fun dictionary_completions(prefix: str, limit: usize): List<str> {
+ 	let list = word_list() is Some(let found) then found else ret [];
+-	completions_in(list, prefix.to_lowercase(), limit)
++	list.completions_in(prefix.to_lowercase(), limit)
+ }
+diff --git a/src/server/files.vl b/src/server/files.vl
+index e005e2a..de836ac 100644
+--- a/src/server/files.vl
++++ b/src/server/files.vl
+@@ -14,6 +14,7 @@
+ // An `<img>` cannot send an `Authorization` header, so a session also travels
+ // as an HttpOnly cookie (`session_cookie`), set when signing in and refreshed
+ // by `POST /api/session` for a session made before cookies existed.
++import std::base64::decode;
+ import std::bytes::Bytes;
+ import std::crypto::{ random_uuid, sha256 };
+ import std::fs::{ create_dir_all, read_bytes, remove, stat, write_bytes_atomic };
+@@ -173,7 +174,7 @@ fun embedded_upload(org: str, author: str, name: str, src: str): Option<str> {
+ 	let head = src.substring(5, comma);
+ 	head.ends_with(";base64") else ret None;
+ 	let mime = head.substring(0, head.len() - 7);
+-	let bytes = decode_base64(src.substring(comma + 1, src.len()));
++	let bytes = decode(src.substring(comma + 1, src.len())).unwrap_or(Bytes::alloc(0usize));
+ 	bytes.len() > 0 else ret None;
+ 	let key = sha256(bytes).to_hex();
+ 	(storage.put)(key, bytes);
+@@ -184,9 +185,6 @@ fun embedded_upload(org: str, author: str, name: str, src: str): Option<str> {
+ 	Some(i"/files/{id}")
+ }
+ 
+-[extern("((text) => new Uint8Array(Buffer.from(text, 'base64')))")]
+-external fun decode_base64(text: str): Bytes;
+-
+ /// The session token a request carries: `Authorization: Bearer …`, else the
+ /// session cookie.
+ fun token_of(request: Request): Option<str> {
+diff --git a/src/server/mcp.vl b/src/server/mcp.vl
+index 4629990..6ad8581 100644
+--- a/src/server/mcp.vl
++++ b/src/server/mcp.vl
+@@ -12,6 +12,7 @@
+ //   claude mcp add --transport http kolt http://localhost:59401/mcp \
+ //     --header "Authorization: Bearer kolt_pat_…"
+ import std::compare::{ Ord, Ordering };
++import std::db::SqlValue;
+ import std::display::Display;
+ import std::http::{ Request, Response };
+ import std::json::{ FromJson, Json, JsonKind, JsonValue };
+@@ -806,7 +807,11 @@ fun search_words(query: str): List<str> {
+ 
+ /// SQL keeping the rows where every word is in one of `columns` (lowercase),
+ /// and its parameters after `before`.
+-fun word_filter(words: List<str>, columns: List<str>, before: List<str>): (str, List<str>) {
++fun word_filter(
++	words: List<str>,
++	columns: List<str>,
++	before: List<dyn SqlValue>,
++): (str, List<dyn SqlValue>) {
+ 	mut parts: List<str> = [];
+ 	mut parameters = before;
+ 	for word in words {
+diff --git a/src/server/mcp_write.vl b/src/server/mcp_write.vl
+index 4616864..888eded 100644
+--- a/src/server/mcp_write.vl
++++ b/src/server/mcp_write.vl
+@@ -5,6 +5,7 @@
+ //
+ // Also here, as it isn't text: `get_file`, an upload as an agent takes it (a
+ // picture as an image, a text file as its text).
++import std::base64::encode;
+ import std::bytes::{ Bytes, decode_utf8 };
+ import std::display::Display;
+ import std::json::{ Json, JsonKind, JsonValue };
+@@ -30,14 +31,6 @@ import pkg::shared::{ UserId, file_kind };
+ 
+ export *;
+ 
+-/// An object's keys (`Object.keys`): std reads fields by name only.
+-[extern("((value) => (value && typeof value === 'object' && !Array.isArray(value)) ? Object.keys(value) : [])")]
+-external fun keys_of(value: JsonValue): List<str>;
+-
+-/// Bytes as standard base64 (what MCP's image content carries).
+-[extern("((bytes) => Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString('base64'))")]
+-external fun base64_of(bytes: Bytes): str;
+-
+ /// What an agent wrote (markdown) as a body: its `kolt://task/<number>`
+ /// links made the ids links name.
+ fun written(org: OrgSummary, text: str): Converted {
+@@ -102,7 +95,7 @@ fun set_status(store: KoltStore, org: OrgSummary, task: u53, name: str): Result<
+ /// or a number; "" clears) on task `task`.
+ fun set_fields(store: KoltStore, org: OrgSummary, task: u53, values: JsonValue): Result<bool, str> {
+ 	let fields = fields_of(org.id);
+-	for key in keys_of(values) {
++	for key in values.keys() {
+ 		fields.filter(|each| each.name.to_lowercase() == key.trim().to_lowercase()).first() is Some(let field)
+ 			else ret Err(
+ 				i"There's no field {key}. The fields: {fields.map(|each| each.name).join(", ")}.",
+@@ -644,7 +637,7 @@ fun get_file(user: UserId, file: str): Result<str, str> {
+ 	(storage.get)(row.text("sha256")) is Some(let bytes)
+ 		else ret Err(i"{name} is missing from storage.");
+ 	if picture {
+-		ret Ok(i"\{\"type\":\"image\",\"data\":{base64_of(bytes).to_json()},\"mimeType\":{mime.to_json()}\},{note(about)}");
++		ret Ok(i"\{\"type\":\"image\",\"data\":{encode(bytes).to_json()},\"mimeType\":{mime.to_json()}\},{note(about)}");
+ 	}
+ 	let text = decode_utf8(bytes);
+ 	let cut = text.len() > max_text_chars
+diff --git a/src/server/store.vl b/src/server/store.vl
+index 0cf7378..fac1d9b 100644
+--- a/src/server/store.vl
++++ b/src/server/store.vl
+@@ -16,7 +16,7 @@
+ import std::bytes::encode_utf8;
+ import std::compare::{ Ordering, PartialEq, PartialOrd };
+ import std::crypto::{ random_bytes, random_uuid, sha256 };
+-import std::db::{ Database, Migration, Row };
++import std::db::{ Database, Migration, Row, SqlValue };
+ import std::display::Display;
+ import std::fs::{ create_dir, stat };
+ import std::hash_map::HashMap;
+@@ -1821,8 +1821,10 @@ fun body_problem(org: str, content: str, body: str, limits: BodyLimits): Option<
+ 	uploads.is_empty() then ret None;
+ 	let distinct = uploads.to_set().values();
+ 	let marks = distinct.map(|_| "?").join(", ");
+-	mut parameters: List<str> = [org];
+-	parameters.push_many(distinct);
++	mut parameters: List<dyn SqlValue> = [org];
++	for each in distinct {
++		parameters.push(each);
++	}
+ 	let known = db
+ 		.prepare(
+ 			i"SELECT count(*) AS found FROM upload WHERE organization_id = ? AND id IN ({marks})",
+@@ -1922,7 +1924,7 @@ impl KoltStore {
+ 			.run([id, handle, title, now]);
+ 		db
+ 			.prepare("INSERT INTO membership (organization_id, account_id, role, joined_at) VALUES (?, ?, ?, ?)")
+-			.run([id, self.user_id.uuid, role_owner, now]);
++			.run([id, self.user_id.uuid, role_owner.value(), now]);
+ 		db.exec("COMMIT");
+ 		publish_membership(self.user_id, id);
+ 		seed_statuses(id);
+@@ -1970,7 +1972,7 @@ impl KoltStore {
+ 		let expires = expires_in_hours > 0 then now + expires_in_hours.as_f64() * 3600 else 0f;
+ 		db
+ 			.prepare("INSERT INTO invite (token, organization_id, created_by, role, max_uses, uses, expires_at, created_at, revoked) VALUES (?, ?, ?, ?, ?, 0, ?, ?, 0)")
+-			.run([token, org, self.user_id.uuid, role, max_uses.max(0), expires, now]);
++			.run([token, org, self.user_id.uuid, role.value(), max_uses.max(0), expires, now]);
+ 		Ok(token)
+ 	}
+ 
+@@ -2108,7 +2110,7 @@ impl KoltStore {
+ 			db.exec("BEGIN");
+ 			db
+ 				.prepare("INSERT INTO membership (organization_id, account_id, role, joined_at) VALUES (?, ?, ?, ?)")
+-				.run([org, self.user_id.uuid, role, now_seconds()]);
++				.run([org, self.user_id.uuid, role.value(), now_seconds()]);
+ 			db.prepare("UPDATE invite SET uses = uses + 1 WHERE token = ?").run([token]);
+ 			// A newcomer starts in every public channel, and leaves what they don't want.
+ 			db
+@@ -2133,7 +2135,7 @@ impl KoltStore {
+ 	fun owners(self, org: str): i32 {
+ 		db
+ 			.prepare("SELECT count(*) AS n FROM membership WHERE organization_id = ? AND role = ?")
+-			.first([org, role_owner])
++			.first([org, role_owner.value()])
+ 			.map_or(|row| row.integer("n"), 0)
+ 	}
+ 

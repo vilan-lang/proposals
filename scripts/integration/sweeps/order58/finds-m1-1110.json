@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "F163",
+   "section": "F",
+   "title": "std::http `Request` has no peer address - kolt's sign-in throttle reads it through a JS binding native refuses",
+   "kind": "std gap (blocks M1)",
+   "discussion": "lane kolt-m1 (Order 58, 2026-11-10)",
+   "status": "open",
+   "area": "std::http",
+   "body": "The last behaviour-dropping workaround in kolt's native server build (W1 in sweeps/order58/native-m1-report.md). Kolt reads `request.socket.remoteAddress` through an app binding; natively `peer_address` returns an empty string, so every client shares one sign-in throttle unless KOLT_TRUST_PROXY=1. Fix: `Request::peer_address(self): Option<str>` (or `remote_address`) in std on both backends - node's `socket.remoteAddress`, the native accept's peer. This is ruling S2's first door (general binding moves into std); the two-arm `[extern(js = .., rust = ..)]` is not needed for it. Size S. Closes M1's build half with zero workarounds."
+  },
+  {
+   "id": "B733",
+   "section": "B",
+   "title": "Native: indexing through a `Shared` read in a `for` condition moves a `str` parameter inside the loop (rustc E0382)",
+   "kind": "bug (native backend)",
+   "discussion": "lane kolt-m1 (Order 58, 2026-11-10)",
+   "status": "open",
+   "area": "native backend",
+   "body": "Repro: sweeps/order58/repros/loop-cond-move/main.vl - prints 2 on JS, rustc refuses the native emit with E0382 (use of moved value). A `str` parameter passed to a method inside a loop whose condition indexes through a `Shared` read is moved, not cloned, on the second turn. Kolt does not hit it today. Size S."
+  },
+  {
+   "id": "B734",
+   "section": "B",
+   "title": "Building a single file with `--backend rust` writes a stray `<file>.css` next to the source",
+   "kind": "bug (cli)",
+   "discussion": "lane kolt-m1 (Order 58, 2026-11-10)",
+   "status": "open",
+   "area": "cli / native backend",
+   "body": "A native single-file build leaves `<file>.css` beside the source file. The native backend has no use for the stylesheet output on a server program; it should not be written (or should go to the output directory). Size XS."
+  }
+ ]
+}

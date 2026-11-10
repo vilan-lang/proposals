@@ -91,6 +91,8 @@
 | [B730](items/B730.md) | Native refuses a `map` closure that calls a function returning `any` - unbound generic parameter of `map` | bug (native backend) | lane db-58 (Order 58, 2026-11-09) |
 | [B731](items/B731.md) | Owner question: should a backed enum implement `SqlValue` automatically, as it gets `Hashable`? | design question | lane db-58 (Order 58, 2026-11-09) |
 | [B732](items/B732.md) | Native: a view method called on `cell.write()` emits Rust that rustc rejects (E0308 on `RefMut`) | bug (native backend) | lane m199-58 (Order 58, 2026-11-09) |
+| [B733](items/B733.md) | Native: indexing through a `Shared` read in a `for` condition moves a `str` parameter inside the loop (rustc E0382) | bug (native backend) | lane kolt-m1 (Order 58, 2026-11-10) |
+| [B734](items/B734.md) | Building a single file with `--backend rust` writes a stray `<file>.css` next to the source | bug (cli) | lane kolt-m1 (Order 58, 2026-11-10) |
 
 ## C. Memory model
 
@@ -156,6 +158,7 @@ fun f(): void
 | [F160](items/F160.md) | Native executor polls sockets on a 1 ms sleep - one client tops out near 1,000 requests a second | performance (native runtime) | lane http-58 (Order 58, 2026-11-09) |
 | [F161](items/F161.md) | std::db: node binds every number as REAL, native binds integers as INTEGER - an untyped column stores 7.0 vs 7 | bug (backend parity) | lane db-58 (Order 58, 2026-11-09) |
 | [F162](items/F162.md) | Native ws client: no size cap on a received message, and the address lookup cannot be cancelled | hardening (native runtime) | lane ws-58 (Order 58, 2026-11-09) |
+| [F163](items/F163.md) | std::http `Request` has no peer address - kolt's sign-in throttle reads it through a JS binding native refuses | std gap (blocks M1) | lane kolt-m1 (Order 58, 2026-11-10) |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |

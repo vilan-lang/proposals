@@ -1,0 +1,17 @@
+// NEW (kolt-m1): an indexed read through a Shared view in a `for` condition,
+// with a str PARAMETER as a method argument, moves the parameter inside the
+// loop: rustc E0382 "use of moved value" natively. JS prints 2.
+import std::shared::Shared;
+
+fun count_prefixed(words: Shared<List<str>>, prefix: str): usize {
+	mut at = 0usize;
+	for at < words.read().len() && words.read()[at].starts_with(prefix) {
+		at += 1;
+	}
+	at
+}
+
+fun main() {
+	let words = Shared::new(["ab", "abc", "b"]);
+	print(count_prefixed(words, "a"));
+}
