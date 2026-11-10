@@ -109,6 +109,8 @@ The owner's high-level points, before the M3 design conversation:
 
 Effect: D3 (the DOM-shaped `View` as the one shared surface) and D6's style mapping from A95's condition sets are REOPENED. D1, D2, D4, D8 and M2 (the webview shell, which renders the existing web UI) stand. D6's crate stack and D7's fences are inputs to the new paper, not rulings. Chunk 8 becomes a design paper for the new system plus a spike; the conversation happens over that draft.
 
+RULED the same day: the new system lands in parts, DESKTOP FIRST. The browser target (canvas, the wasm question) follows and is not a requirement of the first version; the paper keeps the graphics API browser-capable by design but the spike is a desktop window only.
+
 ## 4. Chunks, in order
 
 | # | Chunk | Needs | Size |
