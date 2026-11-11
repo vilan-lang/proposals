@@ -163,6 +163,7 @@ fun f(): void
 | [F164](items/F164.md) | A native server with no host binds 0.0.0.0 (IPv4 only); node binds dual-stack `::` | bug (backend parity) | lane peer-58 (Order 58, 2026-11-10) |
 | [F165](items/F165.md) | The readiness loop pays per-turn costs under concurrent load, and poll/WSAPoll scale with the connection count | perf (native runtime) | lane poll-58 (Order 58, 2026-11-10); follows F160 |
 | [F166](items/F166.md) | Webview desktop shell: the slices after slice 1 | feature (native desktop shell) | lane shell-58 (Order 58, 2026-11-10); native-objective.md M2, rulings D1, D2, D2a, D4, D8 |
+| [F167](items/F167.md) | Native GPU UI: the parts after the executor slice and the graphics crate | feature (native UI) | native-ui.md (RULED 2026-11-10, R1-R16); lanes gfx-spike, exec-58, gfx-p1 (Order 58) |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
