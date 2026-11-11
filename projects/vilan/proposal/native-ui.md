@@ -506,3 +506,46 @@ On the owner's Windows machine, with rustup's MSVC toolchain, from the
 once per `WGPU_BACKEND` of `dx12` and `vulkan`. To look at: frame times, a
 live drag-resize, idle CPU and GPU, device creation time, memory, and real
 125% and 150% scaling.
+
+## 12. Q6, the mechanism (integrator's recommendation, 2026-11-10; in force unless overruled)
+
+R6 ruled that the element syntax is reused. It did not say how a tag finds its
+framework. This section does.
+
+**The rule.** A tag whose name resolves, in the scope of the element
+expression, to a function declared with the `[element]` attribute is a TYPED
+element. Every other tag keeps today's web lowering, byte for byte.
+
+**The lowering of a typed element.** With `[element] fun row(): Row`:
+
+| Source | Lowers to |
+|---|---|
+| `<row>` | `row()` |
+| an attribute `gap(dp(8))` | `.gap(dp(8))`, in source order |
+| a bare attribute `wrap` | `.wrap()` |
+| a child expression or nested element | `.child(value)`, in source order |
+| literal text between tags | `.child("the text")` |
+
+The result is checked as that method chain is checked: an unknown attribute is
+an unknown method on `Row`, with the attribute's span, and an argument of the
+wrong type is that method's ordinary mismatch. Nothing is string-keyed. Events
+are attributes like any other (`on_press(|| ..)`).
+
+**Why a marker and not any function in scope.** Web programs have functions
+named `button`, `text`, `label` and `title`. Resolving a tag to any function
+of its name would change what their `<button>` means. The marker makes the
+change invisible to every program that does not declare one. Estate impact: 0.
+
+**What a typed element does not accept.** The web-only forms (a dotted
+attribute, a string-keyed attribute, whatever else the web lowering has that
+maps to no method call) are refused by name on a typed tag, each with a ledger
+row.
+
+**Also in the slice.** The formatter keeps a typed element's attributes in
+source order (its HTML ordering applies to web tags only). IDE completion
+inside a typed tag offers the methods of the constructor's return type.
+
+The framework's side of the contract (`std::ui`, part P2): each element kind is
+an `[element]` function that answers a builder; attributes are its methods;
+`child` takes anything that converts to an element.
+
