@@ -1,0 +1,4 @@
+{"date":"2026-11-12","order":"Order 58","closes":[
+{"id":"B738","lane":"ui-p3b","commit":"af70ada8","text":"removal is the one place an element leaves a tree, and it takes the subtree's handlers (a scroll's offset handler included) out of it; the host drops them after releasing the tree borrow, because a captured handle's drop re-enters the tree; weak handles were not chosen since user closures capture what they like; drop-counting pin in the gfx crate's `host/tests.rs`, red with the fix removed"},
+{"id":"N198","lane":"ui-p3b","commit":"af70ada8","text":"`crates/vilan-cli/tests/support/xvfb.rs` holds one `Running` for the three suites; the run gets a process group of its own and `Drop` ends the whole group (SIGTERM, then SIGKILL after a grace period) and returns only when no live member remains; pinned by a panic inside `catch_unwind` with `sleep 600` under xvfb, red under a leader-only kill"}
+]}
