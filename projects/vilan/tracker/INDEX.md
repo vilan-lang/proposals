@@ -96,6 +96,7 @@
 | [B735](items/B735.md) | A bare read of a module-level cell returned from a function tail is never copied on JS - the caller's result aliases the cell | MISCOMPILE (JS) | lane m199-58b (Order 58, 2026-11-10); confirmed by the integrator on next 11404d78 |
 | [B736](items/B736.md) | Rust backend: a GUARDED match leg that binds a `match`'s whole `str` subject is refused as unsupported | gap (native backend; match on str) | lane gfx-s2 fixed the unguarded form (the binding is an `Rc<str>` again inside the body) and refuses the guarded one by name rather than emit Rust that does not build; the JavaScript backend accepts both |
 | [B737](items/B737.md) | A context requirement inside a trait's DEFAULT method is charged to every call of the method, even calls that take the arm that needs no context | bug (checker; context requirements and trait defaults) | met by lane ui-p3: with `MaybeSignal`, every static `.gap(dp(8))` on a `std::ui` element would have needed an ambient owner, so the lane added a second trait `Bindable<T>` whose signal arm lets a binding with no owner belong to its source |
+| [B739](items/B739.md) | `ListCell::peek` does not build natively (the `WeakGet` intrinsic is missing in the native backend) | bug (native backend; std intrinsic) | found by lane kit-b (Order 58, 2026-11-12); `examples/ui-virtual-list` uses `get()` instead |
 
 ## C. Memory model
 
@@ -171,6 +172,7 @@ fun f(): void
 | [F171](items/F171.md) | gfx host on X11: give the GPU surface its own X connection, so no driver thread reads winit's (the root-cause fix behind F169's wake schedule) | design question (native runtime; needs `unsafe`) — OWNER RULING | raised by lane f169-58 (Order 58, 2026-11-12); F169's fix is a bounded wake schedule after each present, which removes the measured loss but leaves a present stalled past about 2 s uncovered and costs up to eight wakes after the last frame |
 | [F172](items/F172.md) | `std::ui`: no pointer capture, so a drag that leaves its element stops (a text selection stops extending outside the field) | feature gap (native UI; input) | found by lane kit-a (Order 58, 2026-11-12) building `kit::text_input`; pointer moves go only to the element under the pointer; `tests/ui/todo-check.txt` records today's behaviour |
 | [F173](items/F173.md) | `std::ui::kit::text_input` has no clipboard: winit 0.30 has no clipboard API and the gfx crate has no clipboard dependency | feature gap (native UI; dependency question) — OWNER RULING on the dependency | lane kit-a (Order 58, 2026-11-12); `x11rb` is only a dev-dependency of the gfx crate |
+| [F174](items/F174.md) | `std::ui::kit::virtual_list`: what the first version leaves out (estimated row extents, its own padding, positions past 4 million dp, a focused row scrolled away) | feature gap (native UI; kit) | lane kit-b (Order 58, 2026-11-12); the first version takes a fixed row extent in dp |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
