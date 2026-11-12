@@ -173,6 +173,7 @@ fun f(): void
 | [F172](items/F172.md) | `std::ui`: no pointer capture, so a drag that leaves its element stops (a text selection stops extending outside the field) | feature gap (native UI; input) | found by lane kit-a (Order 58, 2026-11-12) building `kit::text_input`; pointer moves go only to the element under the pointer; `tests/ui/todo-check.txt` records today's behaviour |
 | [F173](items/F173.md) | `std::ui::kit::text_input` has no clipboard: winit 0.30 has no clipboard API and the gfx crate has no clipboard dependency | feature gap (native UI; dependency question) — OWNER RULING on the dependency | lane kit-a (Order 58, 2026-11-12); `x11rb` is only a dev-dependency of the gfx crate |
 | [F174](items/F174.md) | `std::ui::kit::virtual_list`: what the first version leaves out (estimated row extents, its own padding, positions past 4 million dp, a focused row scrolled away) | feature gap (native UI; kit) | lane kit-b (Order 58, 2026-11-12); the first version takes a fixed row extent in dp |
+| [F175](items/F175.md) | Paths and icons for `std::gfx` and `std::ui` (native-ui.md P5): the paper `gfx-path.md`, thirteen decisions for the owner | design paper — OWNER RULING (Q1-Q13) | lane path-58 (Order 58, 2026-11-12): paper `proposals/projects/vilan/proposal/gfx-path.md` with images in `gfx-path-images/`; spike on vilan branch `path-58` @05259d63 (`spike/path/`, its own package and lockfile, not for merge) |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
