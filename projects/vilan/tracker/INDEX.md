@@ -175,6 +175,7 @@ fun f(): void
 | [F178](items/F178.md) | Accessibility publishing: what the first slice leaves unverified or open (Windows and macOS at run time, a real screen reader, the AT-SPI test skipped on CI, paint-only republishes, the dependency weight) | follow-ups (native UI; accessibility) | lane a11y-58 (Order 58, 2026-11-12, commit 6dcc8451): `accesskit =0.25.2` and `accesskit_winit =0.34.2`, 57 new packages in the gfx crate's lockfile (307 to 364), all MIT or Apache-2.0 |
 | [F179](items/F179.md) | `kit::virtual_list` after estimated extents: the fixed form does not anchor, the scroll underneath speaks local numbers past 4 million dp, and inserts and removals are O(n) | feature gap (native UI; kit) | left by lane list-extents (Order 58, 2026-11-12, bd7204d1) at F174's close |
 | [F180](items/F180.md) | `kit::text_area`: one key costs 42 ms at 1,000 lines and 0.49 s at 10,000 (the whole text is one paragraph, reshaped twice per change) | perf (native UI; text editing) | measured by lane text-area (Order 58, 2026-11-12, bc69a5dd): release, `ui_measure -- edited`, layout only, CPU numbers; paint stays under 0.3 ms |
+| [F181](items/F181.md) | Revisit the BSL-1.0 dependencies in the gfx crate (`clipboard-win`, `error-code`, the Windows half of `arboard`): accepted for now by the owner | dependency review (licence) — OWNER asked to revisit | owner ruling 2026-11-13: "Accept BSL-1.0 for now, but file an item to revisit later"; context F173 (the clipboard, `arboard =3.7.0`, `default-features = false`) |
 ## G. Macros & const
 
 | ID | Title | Kind | Discussion |
