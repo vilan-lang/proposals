@@ -1,6 +1,6 @@
 # Paths and icons in `std::gfx` and `std::ui` (native-ui.md part P5)
 
-Status: PAPER, for the owner's ruling (tracker F175). Written 2026-11-12 by lane `path-58`,
+Status: RULED 2026-11-12. The owner accepted all thirteen recommendations of section 9 ("Accept all recs"); they are rulings R1 to R13 by question number (tracker F175). First work under them: slices S1 and S2 of section 5. Written 2026-11-12 by lane `path-58`,
 with a spike on branch `path-58` @05259d63 (`spike/path/`, not for merge). Nothing here
 is built in the shipped crate. Section 9 lists the decisions in the order I
 would ask them, each with a recommended answer.
@@ -498,7 +498,9 @@ pixel on curved inner edges.
 - A custom-paint element in `std::ui` for charts.
 - Where a first-party Lucide package lives (this repo, its own, the registry).
 
-## 9. Decisions
+## 9. Decisions (ALL RULED as recommended, 2026-11-12)
+
+Each recommendation below is a ruling, R1 to R13 by its question number.
 
 | # | Question | Recommendation |
 |---|---|---|
