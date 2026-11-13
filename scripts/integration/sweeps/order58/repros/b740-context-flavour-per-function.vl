@@ -1,0 +1,34 @@
+import std::reactive::{Signal, SignalCell, comp, owner_scope};
+
+trait Note {
+	fun note(own self);
+}
+
+impl str with Note {
+	fun note(own self) {
+		match owner_scope.get_safe() {
+			Some(_) => print(i"{self}: owned"),
+			None => print(i"{self}: free"),
+		}
+	}
+}
+
+impl SignalCell<str> with Note {
+	fun note(own self) {
+		let owner = owner_scope.get();
+		print(i"{self.get()}: strict");
+	}
+}
+
+fun noted<V: Note>(own value: V) {
+	value.note();
+}
+
+fun main() {
+	noted("top");
+	let (_, owner) = comp(|| {
+		noted("inside");
+		let cell: SignalCell<str> = Signal::new("signal");
+		noted(cell);
+	});
+}

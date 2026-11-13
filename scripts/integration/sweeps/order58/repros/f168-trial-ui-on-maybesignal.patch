@@ -1,0 +1,334 @@
+diff --git a/vilan/std/src/ui.vl b/vilan/std/src/ui.vl
+index b7088331..a9fc4571 100644
+--- a/vilan/std/src/ui.vl
++++ b/vilan/std/src/ui.vl
+@@ -91,6 +91,7 @@ import pkg::option::Option::{ self, None, Some };
+ import pkg::reactive::delta::{ live_ops, settled_steps };
+ import pkg::reactive::{
+ 	Flow,
++	MaybeSignal,
+ 	FlushPolicy,
+ 	Owner,
+ 	RowFeed,
+@@ -351,24 +352,6 @@ external fun ui_outline_text(index: i32, which: i32): str;
+ /// under `comp`. When F168 is gone the two can be one trait, and the remaining
+ /// difference — a binding with no owner refused, instead of kept by its source — is
+ /// the owner's call.
+-export trait Bindable<T> {
+-	fun bind(own self, apply: |T| void);
+-}
+-
+-/// The value: set once.
+-export impl type T with Bindable<T> {
+-	fun bind(own self, apply: |T| void) {
+-		apply(self);
+-	}
+-}
+-
+-/// The signal: set now, and again at every write.
+-export impl type F: Flow<type T> with Bindable<T> {
+-	fun bind(own self, apply: |T| void) {
+-		let _bound = register_with_owner(self.sub(|value: T| apply(value)));
+-	}
+-}
+-
+ // --- Lengths -------------------------------------------------------------------
+ 
+ /// A size: a length in dp, a fraction of the parent's content box, or `Auto` —
+@@ -1070,37 +1053,37 @@ export trait Attributes {
+ 	fun element(self): Element;
+ 
+ 	/// `width(dp(240))`, `width(fraction(1, 2))`, `width(Length::Auto)`.
+-	fun width<L: IntoLength, V: Bindable<L>>(self, own width: V): Self {
++	fun width<L: IntoLength, V: MaybeSignal<L>>(self, own width: V): Self {
+ 		let node = self.element().node;
+ 		width.bind(|value: L| set_length(node, 0, value.into_length()));
+ 		self
+ 	}
+ 
+-	fun height<L: IntoLength, V: Bindable<L>>(self, own height: V): Self {
++	fun height<L: IntoLength, V: MaybeSignal<L>>(self, own height: V): Self {
+ 		let node = self.element().node;
+ 		height.bind(|value: L| set_length(node, 1, value.into_length()));
+ 		self
+ 	}
+ 
+-	fun min_width<L: IntoLength, V: Bindable<L>>(self, own width: V): Self {
++	fun min_width<L: IntoLength, V: MaybeSignal<L>>(self, own width: V): Self {
+ 		let node = self.element().node;
+ 		width.bind(|value: L| set_length(node, 2, value.into_length()));
+ 		self
+ 	}
+ 
+-	fun max_width<L: IntoLength, V: Bindable<L>>(self, own width: V): Self {
++	fun max_width<L: IntoLength, V: MaybeSignal<L>>(self, own width: V): Self {
+ 		let node = self.element().node;
+ 		width.bind(|value: L| set_length(node, 3, value.into_length()));
+ 		self
+ 	}
+ 
+-	fun min_height<L: IntoLength, V: Bindable<L>>(self, own height: V): Self {
++	fun min_height<L: IntoLength, V: MaybeSignal<L>>(self, own height: V): Self {
+ 		let node = self.element().node;
+ 		height.bind(|value: L| set_length(node, 4, value.into_length()));
+ 		self
+ 	}
+ 
+-	fun max_height<L: IntoLength, V: Bindable<L>>(self, own height: V): Self {
++	fun max_height<L: IntoLength, V: MaybeSignal<L>>(self, own height: V): Self {
+ 		let node = self.element().node;
+ 		height.bind(|value: L| set_length(node, 5, value.into_length()));
+ 		self
+@@ -1108,7 +1091,7 @@ export trait Attributes {
+ 
+ 	/// Its share of a row's or a column's leftover space along the axis, against
+ 	/// its siblings' shares. 0 (none) until set.
+-	fun grow<V: Bindable<f64>>(self, own grow: V): Self {
++	fun grow<V: MaybeSignal<f64>>(self, own grow: V): Self {
+ 		let node = self.element().node;
+ 		grow.bind(|value: f64| ui_set(node, 0, value));
+ 		self
+@@ -1116,14 +1099,14 @@ export trait Attributes {
+ 
+ 	/// Its share of a row's or a column's shortfall when the children do not fit. 1
+ 	/// until set; 0 keeps it at least as large as its content.
+-	fun shrink<V: Bindable<f64>>(self, own shrink: V): Self {
++	fun shrink<V: MaybeSignal<f64>>(self, own shrink: V): Self {
+ 		let node = self.element().node;
+ 		shrink.bind(|value: f64| ui_set(node, 1, value));
+ 		self
+ 	}
+ 
+ 	/// The space inside it, between its edge and its content, on every side.
+-	fun padding<V: Bindable<Dp>>(self, own padding: V): Self {
++	fun padding<V: MaybeSignal<Dp>>(self, own padding: V): Self {
+ 		let node = self.element().node;
+ 		padding.bind(|value: Dp| {
+ 			for side in [14, 15, 16, 17] {
+@@ -1134,7 +1117,7 @@ export trait Attributes {
+ 	}
+ 
+ 	/// The padding on the left and the right.
+-	fun padding_x<V: Bindable<Dp>>(self, own padding: V): Self {
++	fun padding_x<V: MaybeSignal<Dp>>(self, own padding: V): Self {
+ 		let node = self.element().node;
+ 		padding.bind(|value: Dp| {
+ 			ui_set(node, 15, value.value());
+@@ -1144,7 +1127,7 @@ export trait Attributes {
+ 	}
+ 
+ 	/// The padding at the top and the bottom.
+-	fun padding_y<V: Bindable<Dp>>(self, own padding: V): Self {
++	fun padding_y<V: MaybeSignal<Dp>>(self, own padding: V): Self {
+ 		let node = self.element().node;
+ 		padding.bind(|value: Dp| {
+ 			ui_set(node, 14, value.value());
+@@ -1153,32 +1136,32 @@ export trait Attributes {
+ 		self
+ 	}
+ 
+-	fun padding_top<V: Bindable<Dp>>(self, own padding: V): Self {
++	fun padding_top<V: MaybeSignal<Dp>>(self, own padding: V): Self {
+ 		let node = self.element().node;
+ 		padding.bind(|value: Dp| ui_set(node, 14, value.value()));
+ 		self
+ 	}
+ 
+-	fun padding_right<V: Bindable<Dp>>(self, own padding: V): Self {
++	fun padding_right<V: MaybeSignal<Dp>>(self, own padding: V): Self {
+ 		let node = self.element().node;
+ 		padding.bind(|value: Dp| ui_set(node, 15, value.value()));
+ 		self
+ 	}
+ 
+-	fun padding_bottom<V: Bindable<Dp>>(self, own padding: V): Self {
++	fun padding_bottom<V: MaybeSignal<Dp>>(self, own padding: V): Self {
+ 		let node = self.element().node;
+ 		padding.bind(|value: Dp| ui_set(node, 16, value.value()));
+ 		self
+ 	}
+ 
+-	fun padding_left<V: Bindable<Dp>>(self, own padding: V): Self {
++	fun padding_left<V: MaybeSignal<Dp>>(self, own padding: V): Self {
+ 		let node = self.element().node;
+ 		padding.bind(|value: Dp| ui_set(node, 17, value.value()));
+ 		self
+ 	}
+ 
+ 	/// Where it sits in a `stack`.
+-	fun anchor<V: Bindable<Anchor>>(self, own anchor: V): Self {
++	fun anchor<V: MaybeSignal<Anchor>>(self, own anchor: V): Self {
+ 		let node = self.element().node;
+ 		anchor.bind(|value: Anchor| ui_set(node, 6, anchor_code(value)));
+ 		self
+@@ -1187,7 +1170,7 @@ export trait Attributes {
+ 	/// Sets every field `style` has (a second `style` composes onto the first). A
+ 	/// signal of a style replaces what its last value set, and leaves what other
+ 	/// `style` calls set alone.
+-	fun style<V: Bindable<Style>>(self, own style: V): Self {
++	fun style<V: MaybeSignal<Style>>(self, own style: V): Self {
+ 		let node = self.element().node;
+ 		let group = ui_style_group(node, -1);
+ 		style.bind(|value: Style| {
+@@ -1211,7 +1194,7 @@ export trait Attributes {
+ 	}
+ 
+ 	/// What assistive technology reads for it, and the name `outline` lists it by.
+-	fun label<V: Bindable<str>>(self, own label: V): Self {
++	fun label<V: MaybeSignal<str>>(self, own label: V): Self {
+ 		let node = self.element().node;
+ 		label.bind(|value: str| ui_set_label(node, value));
+ 		self
+@@ -1377,21 +1360,21 @@ export trait Parent with Attributes {
+ export trait Flex with Parent {
+ 	/// The space between neighbouring children, along the axis (and between the
+ 	/// lines when it wraps).
+-	fun gap<V: Bindable<Dp>>(self, own gap: V): Self {
++	fun gap<V: MaybeSignal<Dp>>(self, own gap: V): Self {
+ 		let node = self.element().node;
+ 		gap.bind(|value: Dp| ui_set(node, 2, value.value()));
+ 		self
+ 	}
+ 
+ 	/// Where the children sit across the axis.
+-	fun align<V: Bindable<Align>>(self, own align: V): Self {
++	fun align<V: MaybeSignal<Align>>(self, own align: V): Self {
+ 		let node = self.element().node;
+ 		align.bind(|value: Align| ui_set(node, 3, align_code(value)));
+ 		self
+ 	}
+ 
+ 	/// How the children share the space along the axis.
+-	fun justify<V: Bindable<Justify>>(self, own justify: V): Self {
++	fun justify<V: MaybeSignal<Justify>>(self, own justify: V): Self {
+ 		let node = self.element().node;
+ 		justify.bind(|value: Justify| ui_set(node, 4, justify_code(value)));
+ 		self
+@@ -1549,7 +1532,7 @@ export impl Text {
+ 	/// Appends a run of text to the paragraph: a `str`, or a signal of one, whose
+ 	/// writes replace the run in place (the text is laid out again, and nothing
+ 	/// else that does not have to move).
+-	fun child<V: Bindable<str>>(self, own run: V): Text {
++	fun child<V: MaybeSignal<str>>(self, own run: V): Text {
+ 		let node = self.element.node;
+ 		let index = ui_append_text(node, "");
+ 		run.bind(|value: str| ui_set_run(node, index, value));
+@@ -1571,14 +1554,14 @@ export impl ImageElement with Child {
+ 
+ export impl ImageElement {
+ 	/// The picture it shows.
+-	fun texture<V: Bindable<Texture>>(self, own texture: V): ImageElement {
++	fun texture<V: MaybeSignal<Texture>>(self, own texture: V): ImageElement {
+ 		let node = self.element.node;
+ 		texture.bind(|value: Texture| ui_set_texture(node, value));
+ 		self
+ 	}
+ 
+ 	/// How the picture fills the box.
+-	fun fit<V: Bindable<Fit>>(self, own fit: V): ImageElement {
++	fun fit<V: MaybeSignal<Fit>>(self, own fit: V): ImageElement {
+ 		let node = self.element.node;
+ 		fit.bind(|value: Fit| ui_set(node, 13, fit_code(value)));
+ 		self
+diff --git a/vilan/std/src/ui/kit/buttons.vl b/vilan/std/src/ui/kit/buttons.vl
+index 37198f5d..eafebe8d 100644
+--- a/vilan/std/src/ui/kit/buttons.vl
++++ b/vilan/std/src/ui/kit/buttons.vl
+@@ -8,10 +8,10 @@
+ import pkg::gfx::{ KeyName, KeyPress };
+ import pkg::option::Option::{ self, None, Some };
+ import pkg::reactive::turn_scope;
++import pkg::reactive::MaybeSignal;
+ import pkg::shared::Shared;
+ import pkg::ui::{
+ 	Attributes,
+-	Bindable,
+ 	Child,
+ 	Column,
+ 	Element,
+@@ -178,7 +178,7 @@ fun pressable(role: Role, off: Shared<bool>, activate: (|| void) context turn_sc
+ /// `off` (a value, or a signal of one) disables `element`: no activation, and out
+ /// of the tab order (a press no longer focuses it). Enabled again, it is focusable
+ /// in tree order.
+-fun bind_disabled<V: Bindable<bool>>(element: Element, off: Shared<bool>, own disabled: V) {
++fun bind_disabled<V: MaybeSignal<bool>>(element: Element, off: Shared<bool>, own disabled: V) {
+ 	disabled.bind(|value: bool| {
+ 		off.write() = value;
+ 		ui_set_focusable(element.node, !value);
+@@ -206,7 +206,7 @@ export impl Button {
+ 	/// Enter and Space do nothing, and Tab and a press pass it by. Style the
+ 	/// disabled look with a style bound to the same signal:
+ 	/// `style(off.derive(|off: bool| if off { dim } else { look }))`.
+-	fun disabled<V: Bindable<bool>>(self, own disabled: V): Button {
++	fun disabled<V: MaybeSignal<bool>>(self, own disabled: V): Button {
+ 		bind_disabled(self.element, self.off, disabled);
+ 		self
+ 	}
+diff --git a/vilan/std/src/ui/kit/checkboxes.vl b/vilan/std/src/ui/kit/checkboxes.vl
+index 668b65de..dba7bcd5 100644
+--- a/vilan/std/src/ui/kit/checkboxes.vl
++++ b/vilan/std/src/ui/kit/checkboxes.vl
+@@ -6,9 +6,10 @@
+ [platform("@process")] mod self;
+ 
+ import pkg::reactive::SignalCell;
++import pkg::reactive::MaybeSignal;
+ import pkg::shared::Shared;
+ import pkg::ui::kit::buttons::{ #bind_disabled, #pressable };
+-import pkg::ui::{ Attributes, Bindable, Child, Element, Flex, Parent, Role };
++import pkg::ui::{ Attributes, Child, Element, Flex, Parent, Role };
+ 
+ /// A checkbox. See `checkbox(..)`.
+ export struct Checkbox {
+@@ -47,7 +48,7 @@ export impl Checkbox with Child {
+ export impl Checkbox {
+ 	/// Disabled while `disabled` (a `bool`, or a signal of one) holds: it does not
+ 	/// toggle, and Tab and a press pass it by.
+-	fun disabled<V: Bindable<bool>>(self, own disabled: V): Checkbox {
++	fun disabled<V: MaybeSignal<bool>>(self, own disabled: V): Checkbox {
+ 		bind_disabled(self.element, self.off, disabled);
+ 		self
+ 	}
+diff --git a/vilan/std/src/ui/kit/inputs.vl b/vilan/std/src/ui/kit/inputs.vl
+index d2ab1012..1ac48eb8 100644
+--- a/vilan/std/src/ui/kit/inputs.vl
++++ b/vilan/std/src/ui/kit/inputs.vl
+@@ -31,10 +31,10 @@
+ import pkg::gfx::{ Color, Dp, Event, KeyName, KeyPress, Point, current_event };
+ import pkg::option::Option::{ self, None, Some };
+ import pkg::reactive::{ Signal, SignalCell, turn_scope };
++import pkg::reactive::MaybeSignal;
+ import pkg::shared::Shared;
+ import pkg::ui::{
+ 	Attributes,
+-	Bindable,
+ 	Child,
+ 	Element,
+ 	Node,
+@@ -199,7 +199,7 @@ export impl TextInput with Child {
+ 
+ export impl TextInput {
+ 	/// What it shows while its value is empty: a `str`, or a signal of one.
+-	fun placeholder<V: Bindable<str>>(self, own placeholder: V): TextInput {
++	fun placeholder<V: MaybeSignal<str>>(self, own placeholder: V): TextInput {
+ 		let cell = self.placeholder;
+ 		placeholder.bind(|now: str| cell.set(now));
+ 		self
+@@ -207,7 +207,7 @@ export impl TextInput {
+ 
+ 	/// The placeholder's style (over the text style it inherits): a `Style`, or a
+ 	/// signal of one.
+-	fun placeholder_style<V: Bindable<Style>>(self, own look: V): TextInput {
++	fun placeholder_style<V: MaybeSignal<Style>>(self, own look: V): TextInput {
+ 		let cell = self.placeholder_look;
+ 		look.bind(|now: Style| cell.set(now));
+ 		self
+@@ -242,7 +242,7 @@ export impl TextInput {
+ 
+ 	/// Disabled while `disabled` (a `bool`, or a signal of one) holds: no edit, no
+ 	/// caret, and Tab and a press pass it by.
+-	fun disabled<V: Bindable<bool>>(self, own disabled: V): TextInput {
++	fun disabled<V: MaybeSignal<bool>>(self, own disabled: V): TextInput {
+ 		let input = self;
+ 		disabled.bind(|value: bool| {
+ 			input.off.write() = value;
