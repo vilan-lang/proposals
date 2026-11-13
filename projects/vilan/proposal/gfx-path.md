@@ -175,9 +175,14 @@ numbers.
 | `gfx_path_number(path, which: i32): f64` | the bounds, one number at a time, as `gfx_layout_number` |
 | `gfx_path(frame, path, x, y, scale, paint: i32, rule_or_width, join, cap, miter_limit, r, g, b, a)` | one call of numbers per draw, as `gfx_text` |
 
-Parsing. `zeno` parses SVG path data, arcs included, and its validator gives
-the byte where data goes wrong (`zeno::validate_svg`). The host wraps that in
-an error that names the byte and shows the data around it. Parsing the gear
+Parsing. CORRECTED 2026-11-12 by lane `path-s1` (S1): the first version of
+this paragraph said `zeno::validate_svg` gives the byte where data goes wrong.
+It does not: it accepts `M 10`, `M10 10 L` and `M10 10 L5 5 6` and silently
+drops their last command, accepts data that does not start with a move, and
+refuses exponents. So the crate parses SVG path data itself (`src/path/svg.rs`,
+SVG 2's grammar, every command, arcs included), builds `zeno` commands from it
+and uses `zeno`'s arc. The error names the byte and shows the data around it.
+No ruling changes. Parsing the gear
 (600 bytes, 62 commands) takes 11 us, the check mark 0.2 us.
 
 Identity and caching. A `Path` keeps its commands and a hash of them, made
@@ -499,6 +504,14 @@ pixel on curved inner edges.
 - Where a first-party Lucide package lives (this repo, its own, the registry).
 
 ## 9. Decisions (ALL RULED as recommended, 2026-11-12)
+
+KNOWN GAP under R5, found building S1: `zeno` 0.3.3 bevels every MITER join
+sharper than 90 degrees, whatever the miter limit (SVG would mitre a 53 degree
+corner under the default limit of 4). Round and bevel joins, which Lucide
+uses, are right. Pinned as an ignored test
+(`a_sharp_miter_join_reaches_its_miter`). The integrator's recommendation:
+accept it for now and let S4's full-set sweep decide whether R2's `tiny-skia`
+fallback is needed for strokes.
 
 Each recommendation below is a ruling, R1 to R13 by its question number.
 
