@@ -1,0 +1,12 @@
+import std::reactive::{MaybeSignal, Signal, SignalCell};
+
+fun shown<V: MaybeSignal<str>>(own value: V) {
+	value.bind(|text: str| print(text));
+}
+
+fun main() {
+	shown("static");
+	let cell: SignalCell<str> = Signal::new("signal");
+	shown(cell);
+	shown("static again");
+}

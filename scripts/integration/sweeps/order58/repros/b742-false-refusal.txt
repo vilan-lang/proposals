@@ -1,0 +1,20 @@
+Error: context `depth` is read here, but this code can be reached without an enclosing `run`
+    ╭─[ b742-false-refusal.vl:25:20 ]
+    │
+  9 │        self.note();
+    │             ──┬─  
+    │               ╰─── the context requirement may flow through this call (dispatch may select a reader)
+    │ 
+ 25 │        print(i"deep at {depth.get()}");
+    │                         ─────┬─────  
+    │                              ╰─────── context `depth` is read here, but this code can be reached without an enclosing `run`
+    │ 
+ 30 │     item.announce();
+    │          ────┬───  
+    │              ╰───── the context requirement may flow through this call (dispatch may select a reader)
+    │ 
+ 34 │     announced(Plain {});
+    │     ─────────┬─────────  
+    │              ╰─────────── the context requirement flows through this call
+────╯
+exit=1

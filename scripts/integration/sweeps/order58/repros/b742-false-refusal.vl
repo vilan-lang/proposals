@@ -1,0 +1,36 @@
+import std::context::Context;
+
+let depth: Context<i32> = Context::new();
+
+trait Note {
+	fun note(self);
+
+	fun announce(self) {
+		self.note();
+	}
+}
+
+struct Plain {}
+
+struct Deep {}
+
+impl Plain with Note {
+	fun note(self) {
+		print("plain");
+	}
+}
+
+impl Deep with Note {
+	fun note(self) {
+		print(i"deep at {depth.get()}");
+	}
+}
+
+fun announced<T: Note>(item: T) {
+	item.announce();
+}
+
+fun main() {
+	announced(Plain {});
+	depth.run(5, || announced(Deep {}));
+}
