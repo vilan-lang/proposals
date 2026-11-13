@@ -1,0 +1,12 @@
+// B743: a local closure that awaits is emitted natively as a spawned task, but
+// its call sites still await it, so cargo refuses the build. Also with `sleep(1)`
+// in place of `clipboard_text()`. Found by lane kit-wire, 2026-11-13.
+import std::gfx::clipboard_text;
+
+fun main() {
+	let board = |what: str| {
+		let held = clipboard_text();
+		print(i"{what} {held.is_some()}");
+	};
+	board("first");
+}
