@@ -96,7 +96,6 @@
 | [B735](items/B735.md) | A bare read of a module-level cell returned from a function tail is never copied on JS - the caller's result aliases the cell | MISCOMPILE (JS) | lane m199-58b (Order 58, 2026-11-10); confirmed by the integrator on next 11404d78 |
 | [B736](items/B736.md) | Rust backend: a GUARDED match leg that binds a `match`'s whole `str` subject is refused as unsupported | gap (native backend; match on str) | lane gfx-s2 fixed the unguarded form (the binding is an `Rc<str>` again inside the body) and refuses the guarded one by name rather than emit Rust that does not build; the JavaScript backend accepts both |
 | [B737](items/B737.md) | A context requirement inside a trait's DEFAULT method is charged to every call of the method, even calls that take the arm that needs no context | bug (checker; context requirements and trait defaults) | met by lane ui-p3: with `MaybeSignal`, every static `.gap(dp(8))` on a `std::ui` element would have needed an ambient owner, so the lane added a second trait `Bindable<T>` whose signal arm lets a binding with no owner belong to its source |
-| [B744](items/B744.md) | A call through a `dyn` object escapes the const-only check: the program checks clean, then throws `ReferenceError: __emit_asset is not defined` at run time (0.55.1 too) | bug (checker hole; const-only capability) | found by lane ctx-58b (Order 58, 2026-11-13) beside B742; not caused by it: vilan 0.55.1 does the same; repro, outputs and a ready `#[ignore]`d pin in `scripts/integration/sweeps/order58/repros/b744-*` |
 
 ## C. Memory model
 
