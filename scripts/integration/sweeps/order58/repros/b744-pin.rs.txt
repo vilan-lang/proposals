@@ -1,0 +1,32 @@
+// Belongs in: crates/vilan-core/tests/inference/styling.rs
+// (beside `a_shared_default_self_call_resolves_by_its_receiver`, in the
+// const-only / `asset::emit` pins). Un-ignore when B744 is fixed.
+
+#[test]
+#[ignore = "B744: a call through a `dyn` object escapes the const-only check, and the emitting impl throws `ReferenceError: __emit_asset is not defined` at run time"]
+fn b744_a_dyn_objects_dispatch_into_an_emitting_impl_is_refused() {
+    assert_fails_with(
+        r##"
+        import std::io::print;
+        import std::web::asset::emit;
+        struct Token {
+            value: str,
+        }
+        trait Emitter {
+            fun text(self): str;
+        }
+        impl Token with Emitter {
+            fun text(self): str {
+                emit("css", ":root{--p:1rem}");
+                self.value
+            }
+        }
+        fun main() {
+            let erased: dyn Emitter = Token { value = "emitting" };
+            print(erased.text());
+        }
+        main();
+        "##,
+        "compile-time-only",
+    );
+}
