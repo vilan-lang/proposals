@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "B748",
+   "section": "B",
+   "title": "MISCOMPILE (JavaScript): a copy of a plain unit-only enum changes when the original is written through `&mut` - `let copy = a; set(&mut a)` moves `copy` too",
+   "kind": "miscompile (JS backend; rule 1, a view write in place)",
+   "discussion": "lane b746-58, 2026-11-16, out of scope there; verified by the integrator under v0.56.0 (d20bbfd9) and 0.55.1: `a written: true`, `copy kept: false`; native keeps the copy",
+   "status": "open",
+   "area": "crates/vilan-core/src/analyzer.rs (`is_cloneable_aggregate`, the B691 comment), the transformer's `__replace` for a view write",
+   "body": "Repro: `scripts/integration/sweeps/order58/repros/b748-plain-enum-copy-aliases-through-mut.vl`. A plain (unbacked) unit-only enum lowers to a mutable `[index]` array. `let copy = a;` shares it, on the reasoning (the B691 comment in `is_cloneable_aggregate`) that a payload-less enum is only ever REPLACED whole. A `&mut` write is not a replacement of the binding: it goes through `__replace`, which assigns into the shared array, so every copy moves. Two doors: copy a plain enum on assignment like any other aggregate, or make a unit-only enum a scalar to a view, a `(base, key)` place, by the rule B746 set (`enum_lowers_to_js_primitive` would then need the lowering itself to be a primitive, which is the larger and cleaner change). Pin the repro on both backends, and the same through a field and a generic `&mut self`."
+  },
+  {
+   "id": "B749",
+   "section": "B",
+   "title": "MISCOMPILE (JavaScript): `if x` and `!x` over a `&bool` view read the `(base, key)` pair, so `if x` is always true and `!x` always false",
+   "kind": "miscompile (JS backend; scalar views read as values)",
+   "discussion": "lane b746-58, 2026-11-16, out of scope there (it fixed the same shape for `match` and `is`); verified by the integrator under v0.56.0 (d20bbfd9) and 0.55.1: a view of `false` takes the `if`, `!` of a view of `true` answers `false`",
+   "status": "open",
+   "area": "crates/vilan-core/src/analyzer.rs (`check_view_value_reads`), crates/vilan-core/src/transformer.rs (`walk_tested_subject`, `read_through_a_scalar_view`)",
+   "body": "Repro: `scripts/integration/sweeps/order58/repros/b749-if-and-not-over-a-bool-view.vl`. A scalar view is a pair on JS, and reading it as a value is refused with the \"write `*`\" diagnostic at the positions `check_view_value_reads` covers. An `if` condition and a unary operand are not among them, and the emitter does not read through there either, so the pair itself is tested: an array is truthy. Decide ONE rule for both positions and every other condition position (`while`, `then`/`else` forms, `&&`/`||` operands, a guard): either the check refuses them as it refuses other value reads, or the emitter reads through as B746 made `match` and `is` do. The second matches what B746 chose for tests. Since B746 a backed enum's view is in the same class. Native is B750."
+  },
+  {
+   "id": "B750",
+   "section": "B",
+   "title": "Native: three scalar-view reads are rustc E0308 - `if x` over `x: &bool`, `x is Named::B` over a str-backed enum's view, and an inline `match &holder.kind { .. }` over a str-backed enum",
+   "kind": "native backend defect (cargo refuses; scalar views)",
+   "discussion": "lane b746-58, 2026-11-16, out of scope there; as the lane reported it, NOT re-run by the integrator; a `match` inside a function over `x: &Named` builds",
+   "status": "open",
+   "area": "crates/vilan-rust (the emitter's view reads and string-backed enum patterns)",
+   "body": "Each fails loudly at rustc, so nothing wrong runs. (1) `if x` with `x: &bool`: the condition is the reference. (2) `x is Named::B` with `x: &Named`, `Named` str-backed. (3) `match &h.kind { Named::A => .. }` inline over a str-backed enum matches `&Rc<str>` against `&str`. Fix together with B749's rule so both backends read a scalar view the same way at a test position; pin each through the native differential."
+  }
+ ]
+}

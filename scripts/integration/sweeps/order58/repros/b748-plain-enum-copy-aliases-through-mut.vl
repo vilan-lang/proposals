@@ -1,0 +1,17 @@
+[derive(PartialEq)]
+enum Plain {
+	X,
+	Y,
+}
+
+fun set(slot: &mut Plain) {
+	slot = Plain::Y;
+}
+
+fun main() {
+	mut a = Plain::X;
+	let copy = a;
+	set(&mut a);
+	print(i"a written: {a == Plain::Y}");
+	print(i"copy kept: {copy == Plain::X}");
+}

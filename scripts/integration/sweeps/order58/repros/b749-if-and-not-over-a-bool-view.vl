@@ -1,0 +1,18 @@
+fun shown(x: &bool): str {
+	if x {
+		"yes"
+	} else {
+		"no"
+	}
+}
+
+fun negated(x: &bool): bool {
+	!x
+}
+
+fun main() {
+	let off = false;
+	print(i"if over a view of false: {shown(&off)}");
+	let on = true;
+	print(i"not over a view of true: {negated(&on)}");
+}
