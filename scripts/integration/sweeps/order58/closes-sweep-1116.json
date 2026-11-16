@@ -1,0 +1,150 @@
+{
+ "date": "2026-11-16",
+ "order": "Order 58",
+ "closes": [
+  {
+   "id": "B718",
+   "lane": "emit-58a",
+   "commit": "2ff194fb",
+   "text": "Fixed on the emitter lane emit-58a (05e0d2cb): an extern's written return type now types its call, so `!` on a host-bound method's result builds natively. Pinned by B723's test; listed in v0.56.0."
+  },
+  {
+   "id": "B719",
+   "lane": "emit-58a",
+   "commit": "2ff194fb",
+   "text": "Fixed by emit-58a (67dbaebe): the let-else subject is parenthesized, and a capturing loop head emits `while let`, so both B709 follow-ups build natively. Listed in v0.56.0."
+  },
+  {
+   "id": "B720",
+   "lane": "emit-58b",
+   "commit": "98ac8519",
+   "text": "Fixed in the emitter by emit-58b (6dab7176): a generic enum or struct with missing type arguments counts as unresolved and the call's position fills them, so a closure returning Ok/Err builds natively. The analyzer cause is the separate item B727, which stays open. Listed in v0.56.0."
+  },
+  {
+   "id": "B721",
+   "lane": "emit-58b",
+   "commit": "98ac8519",
+   "text": "Fixed by emit-58b (0b1899f2): `Any::from` is element-wise for List/Option at any depth and a host binding's argument gets its declared type when it mentions `any`; std's migrate now builds natively. Listed in v0.56.0."
+  },
+  {
+   "id": "B722",
+   "lane": "emit-58a",
+   "commit": "2ff194fb",
+   "text": "Fixed by emit-58a (ce9d0069): a deref on a binding a tuple pattern declares builds natively. Listed in v0.56.0."
+  },
+  {
+   "id": "B723",
+   "lane": "emit-58a",
+   "commit": "2ff194fb",
+   "text": "Fixed by B718's change (emit-58a); the test is pinned at 1e60129a, so `+` over two str results of host-bound methods builds natively. Listed in v0.56.0."
+  },
+  {
+   "id": "B724",
+   "lane": "emit-58b",
+   "commit": "98ac8519",
+   "text": "Fixed by emit-58b (d644328c): a parameter a closure captures by `&`/`&mut` becomes a shared cell copied back by `vilan_rt::WriteBack` on every exit, with no unsafe and one or two copies per call in such functions only. Listed in v0.56.0."
+  },
+  {
+   "id": "B725",
+   "lane": "emit-58a",
+   "commit": "2ff194fb",
+   "text": "Fixed by emit-58a (7dbca6b3): `Box::pin` around the call cycle, direct and mutual, so a self-calling or mutually calling async function builds natively. Listed in v0.56.0."
+  },
+  {
+   "id": "B726",
+   "lane": "emit-58a",
+   "commit": "2ff194fb",
+   "text": "Fixed by emit-58a (583fb394): a `let` of `List::new()` is annotated when its type is known, so natively it no longer hits rustc E0282. Listed in v0.56.0."
+  },
+  {
+   "id": "B731",
+   "lane": "owner-ruling",
+   "commit": "d20bbfd9",
+   "text": "Ruled by the owner on 2026-11-10 (Rec accepted): backed enums do NOT bind as SQL values automatically; `SqlValue` stays an explicit impl, the shipped state of M175. No code change, so there is no changelog entry; the commit named is the v0.56.0 release head."
+  },
+  {
+   "id": "B735",
+   "lane": "b735-58",
+   "commit": "01aedb35",
+   "text": "Fixed by lane b735-58 (f22488ee): rule 1's return clause treated a module-level root as a local dying at the return, so a by-value return aliased the binding on JS; wider than filed. Eleven shapes probed on both backends, ten borrows pins, a modules pin and corpus program b735.vl; compile cost about x1.0006. A by-value return of a large module-level list costs about 2 ms per call on JS until M201."
+  },
+  {
+   "id": "E361",
+   "lane": "integrator",
+   "commit": "ad0add35",
+   "text": "SHIPPED in v0.55.1 (the VS Code extension debug-config fix): tag 00f7daa3 on release/0.55, release run 42732440340 green, folded by hand (main = next = ad0add35). No v0.56.0 changelog entry because it shipped in the earlier patch release."
+  },
+  {
+   "id": "F149",
+   "lane": "db-58",
+   "commit": "52081c5b",
+   "text": "Fixed by db-58 (d053d9ae): typed std::db readers panic on NULL at the caller's line on both backends, and the nullable door is Row::optional_text/integer/big_integer/real/bytes. Breaking. Listed in v0.56.0."
+  },
+  {
+   "id": "F151",
+   "lane": "http-58",
+   "commit": "9e09acf0",
+   "text": "Fixed by http-58 (bd5be545): node's reason phrases on both backends, so the wire differential compares whole heads. Listed in v0.56.0 with F152."
+  },
+  {
+   "id": "F152",
+   "lane": "http-58",
+   "commit": "9e09acf0",
+   "text": "Fixed by http-58 (bd5be545): the native server does keep-alive, pipelining in order, and head 60 s / request 300 s / idle 5 s timeouts. Breaking: a Server struct literal needs `timeouts = ServerTimeouts::new()`. Follow-up F160 (done). Listed in v0.56.0."
+  },
+  {
+   "id": "F156",
+   "lane": "std-58",
+   "commit": "9e09acf0",
+   "text": "Fixed by std-58 (1e8a9691, 9fc8a872): native str::index_of/last_index_of, Instant::to_iso and the fs options-object calls build; a Windows fix 0ae15986 makes a recursive mkdir through a file ENOTDIR everywhere. Still refused natively: the fs File handle tier and the watcher, now F185. Listed in v0.56.0."
+  },
+  {
+   "id": "F157",
+   "lane": "std-58",
+   "commit": "9e09acf0",
+   "text": "Fixed by std-58 (13bcb2b2): a native SIGTERM ends the program once its servers drain, even with other tasks pending. Listed in v0.56.0."
+  },
+  {
+   "id": "F158",
+   "lane": "std-58",
+   "commit": "9e09acf0",
+   "text": "Fixed by std-58 (19c8d7d0): std::base64::encode/decode and JsonValue::keys added. Follow-up F159. Listed in v0.56.0."
+  },
+  {
+   "id": "F160",
+   "lane": "poll-58",
+   "commit": "095164d9",
+   "text": "Fixed by poll-58 (0b9c307c): the native loop blocks on readiness via the new crate crates/vilan-rt-poll (poll/WSAPoll, loopback UDP bell for cross-thread wakes); idle wake-ups 900/s to 0, idle CPU 2% to 0, keep-alive p50 1,130 to 330 us. Follow-up F165. Listed in v0.56.0."
+  },
+  {
+   "id": "F163",
+   "lane": "peer-58",
+   "commit": "46ff5439",
+   "text": "Fixed by peer-58: `Request::peer_address(self): Option<str>` on both backends; kolt's W1 workaround can go. Follow-up F164. Listed in v0.56.0."
+  },
+  {
+   "id": "F164",
+   "lane": "bind-58",
+   "commit": "47650db8",
+   "text": "Fixed by bind-58 (fb22bc74): no host and `::` bind dual-stack on every OS with IPV6_V6ONLY cleared, falling back to 0.0.0.0 without IPv6, via the new FFI crate crates/vilan-rt-net. CI run 42860204923 green incl. all four Windows shards; the Windows test skip is removed. Listed in v0.56.0."
+  },
+  {
+   "id": "M175",
+   "lane": "db-58",
+   "commit": "52081c5b",
+   "text": "Fixed by db-58 (72eebcd1): Statement::run/all/first take List<dyn SqlValue>, and a literal list at a List<dyn T> now wraps its values (a latent miscompile). Breaking; kolt patch in sweeps/order58/repros/kolt-db58.patch. Follow-ups B730, B731 (ruled), F161. Listed in v0.56.0."
+  },
+  {
+   "id": "M195",
+   "lane": "db-58",
+   "commit": "52081c5b",
+   "text": "Fixed by db-58 (c4661fe5): BLOB bind and read (Row::bytes, Row::optional_bytes) on both backends. Listed in v0.56.0."
+  },
+  {
+   "id": "B709",
+   "lane": "b709",
+   "commit": "bca72073",
+   "text": "SHIPPED in v0.55.0 (tag fc9efaa1) and missed by that release's sweep: the analyzer records which statement `if`s publish their captures (`Program::guard_continuations`) and the rust emitter lowers them as the captures' declaration (`let PAT = SUBJECT else { .. };`, or a let-chain for several). The whole-set native differential ran 330/330 with lens-fuzz taken off the exclusion list. Its two follow-ups are B719, closed in this sweep."
+  }
+ ]
+}
