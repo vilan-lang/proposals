@@ -1,0 +1,28 @@
+[derive(PartialEq)]
+enum Named {
+	A = "a",
+	B = "b",
+}
+
+[derive(PartialEq)]
+enum Numbered {
+	One = 1,
+	Two = 2,
+}
+
+fun set_numbered(slot: &mut Numbered) {
+	slot = Numbered::Two;
+}
+
+fun set_named(slot: &mut Named) {
+	slot = Named::B;
+}
+
+fun main() {
+	mut numbered = Numbered::One;
+	set_numbered(&mut numbered);
+	print(i"numbered written: {numbered == Numbered::Two}");
+	mut named = Named::A;
+	set_named(&mut named);
+	print(i"named written: {named == Named::B}");
+}
