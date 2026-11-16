@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "N205",
+   "section": "N",
+   "title": "`bump-version.sh` does not reach the two crates outside the workspace: `crates/vilan-rt-gfx` and `crates/vilan-rt-webview` keep the old version in their own `Cargo.lock` and in their notices' `Covers:` line, and CI's `gfx` and `webview` legs would refuse the release commit",
+   "kind": "release tooling (the cut; first release with these crates)",
+   "discussion": "found at the v0.56.0 cut, 2026-11-16, before the commit; fixed BY HAND in the release commit d20bbfd9 (three version lines in each lockfile, each notices file regenerated with `cargo about generate --offline` and its CRs stripped)",
+   "status": "open",
+   "area": "scripts/bump-version.sh, scripts/cut-release.sh (`release_files`), crates/vilan-cli/tests/release_scripts.rs",
+   "body": "The bump rewrites every `crates/*/Cargo.toml` and runs `cargo update --workspace`, which refreshes the ROOT lockfile only. The two excluded crates have their own lockfiles holding `vilan-rt`, `vilan-rt-poll` and themselves by path, and `ci-local.sh`'s legs run `cargo fetch --locked` and byte-compare the notices, whose `Covers:` line names those three versions. Do NOT fix it with `cargo update -p ..` inside the crate: on 2026-11-16 that also re-resolved four `windows-sys 0.61.2` edges to `0.52.0` in the gfx lockfile. Edit the three `version = ` lines under their `name = ` lines, then `cargo fetch --locked` to prove the lock stands, then regenerate the notices. `release_files` must list the four files so a `--commit` cut stages them, and `release_scripts.rs` should hold the set to the root manifest's `exclude` list the way it holds the members."
+  },
+  {
+   "id": "N206",
+   "section": "N",
+   "title": "The cut accepts byte-identical duplicate changelog entries: ten rode `## Unreleased` for a week, and the marker/head parity count (71/71) cannot see them",
+   "kind": "release tooling (the cut; changelog hygiene)",
+   "discussion": "found reading the v0.56.0 dry run's order listing, 2026-11-16 (entries 19-28 repeated as 30-39: B720, B724, B721, B705, B726, B725, B723, B722, B719, B718); removed by hand in the release commit d20bbfd9, 61 entries; the seal messages before that said 70 and 71",
+   "status": "open",
+   "area": "scripts/cut-release.sh (the parse), ~/.vilan/tools/chk_changelog.py and union_changelog.py (the integrator's merge tools)",
+   "body": "A changelog union early in Order 58 kept both sides' copies of ten native-backend entries. Every check since counts markers against heads, and a duplicated entry carries both. `cut-release.sh` should REFUSE two entries with the same bold head (print both line numbers), as it refuses a missing family; `chk_changelog.py` should say the same after every merge, and `union_changelog.py` should drop an entry whose head it already holds. Pin in `release_scripts.rs` with a two-entry fixture."
+  },
+  {
+   "id": "N207",
+   "section": "N",
+   "title": "Tracker ids are allocated per local branch: kolt-side sessions file vilan items on unpushed `kolt-*` branches of the proposals repository, where they collide with main's ids and stay invisible to the integrator",
+   "kind": "process (tracker; an owner decision)",
+   "discussion": "2026-11-16: ten items found on five local branches, up to a week old, five with ids taken on main (B740, B741, E362, E363, M204), one a live miscompile (B746); synced at proposals 97486c46; the same happened with E358 -> E361 on 2026-11-09",
+   "status": "open",
+   "area": "proposals (branches kolt-mirror, kolt-packages, kolt-image-gaps, kolt-overlay-owner, kolt-list-any, kolt-053), scripts/integration/file_items.py",
+   "body": "Recommendation, the owner's to rule: a kolt-side session files on MAIN (pull, `file_items.py`, push; proposals main is pushed as it goes since 2026-11-10), and never on a branch. If a branch must be used, `file_items.py` should take the next id from `origin/main` and refuse one that any local `kolt-*` branch or main already holds. Until ruled, the integrator checks `git diff --name-status main...<branch> -- projects/vilan/tracker` over those branches before filing and at every seal. The stale branches and their worktrees under `proposals/.claude/worktrees/` can be reaped once the owner confirms nothing else lives there (kolt-053's items and its `proposal/struct-keys.md` are on main already)."
+  }
+ ]
+}
