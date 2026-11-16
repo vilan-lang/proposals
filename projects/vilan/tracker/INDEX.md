@@ -132,6 +132,7 @@
 | [E350](items/E350.md) | A comment between a block statement's `}` and its written `;` still declines the file (after B671 keeps the `;`) | fmt edge | fmt-55 (Order 55); sweeps/order55/fmt-55/finds/comment_between_brace_and_semicolon_declines.vl |
 | [E351](items/E351.md) | A decline's line inside ONE large item can still fall back to the first token the canonicalization moved when the item has canonicalizations on both sides of the divergence | fmt edge | fmt-55 (Order 55); formatter.rs item_local_span |
 | [E361](items/E361.md) | A `vilan` launch configuration silently drops `preLaunchTask`, `postDebugTask` and VS Code's other generic attributes: the resolvers rebuild the configuration from a fixed field list | bug (VS Code extension) | kolt (2026-11-09, as E358 on kolt-053; renumbered on sync); repro + kolt's workaround in the item; RULED: a PATCH after v0.55.0 |
+| [E363](items/E363.md) | `vilan fmt` prints an empty import set with two spaces (`{  }`), and nothing says the statement imports nothing | polish (formatter; a missing lint) | found beside E362, 2026-11-16: kolt's `sidebar.vl:31` carried `import pkg::client::channels::channel::{  };` through a week of `vilan fmt` and `vilan check` without a word |
 ```
 mod x::y::z
 impl T

@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "id": "E362",
+   "section": "E",
+   "title": "An empty import set (`import a::b::{  };`) from a loaded module panics the add-import edit and takes the file's whole analysis down: `a parsed brace set has at least one member` (formatter.rs, `try_extend_import`)",
+   "kind": "bug (language server; panic)",
+   "discussion": "the owner, 2026-11-16, opening kolt's `src/client/sidebar/sidebar.vl` in VS Code under 0.55.1 (line 31 is `import pkg::client::channels::channel::{  };`, there since kolt 82fb8c3 of 2026-11-09); fixed at next eca174d4, rides v0.56.0",
+   "status": "open",
+   "area": "crates/vilan-core/src/formatter.rs (`try_extend_import`), crates/vilan-ide/src/completion.rs (`import_edits`)",
+   "body": "The parser's `comma_list` accepts zero members, so `import a::b::{  };` parses and imports nothing (the nesting refusal of B142 also stands in an empty set). `try_extend_import` assumed the opposite and called `.expect(..)` on the last member when the new leaf sorts after every member, which for an empty set is always. Every analysis computes the add-import edit for EACH auto-import candidate (M29, `AutoImportOrder::import_edits`), so a file holding an empty set from any module the program loads panicked on open, and the guard replaced the file's diagnostics with one `internal error: the compiler panicked analyzing ..`. The quick fix and \"add all missing imports\" reach the same function."
+  },
+  {
+   "id": "E363",
+   "section": "E",
+   "title": "`vilan fmt` prints an empty import set with two spaces (`{  }`), and nothing says the statement imports nothing",
+   "kind": "polish (formatter; a missing lint)",
+   "discussion": "found beside E362, 2026-11-16: kolt's `sidebar.vl:31` carried `import pkg::client::channels::channel::{  };` through a week of `vilan fmt` and `vilan check` without a word",
+   "status": "open",
+   "area": "crates/vilan-core/src/formatter.rs (the set printer), the unused-import warning",
+   "body": "Two small things. (1) The set printer writes `{ ` + members + ` }`, so no members prints `{  }`; an empty block prints `{}` (`an_empty_block_prints_as_a_pair_of_braces`), and an empty set should agree. `format(\"import std::json::{  };\")` is the one-line repro. (2) An import whose set is empty binds nothing, and neither the unused-import warning nor Organize Imports notices it: Organize prunes a set whose members are all unused, but a set written empty has no member to call unused. Proposed: the unused-import warning names it (\"this import brings nothing in\"), and Organize Imports drops the statement. A side note for whoever takes it: an empty set does not load its module (a file whose only reach to `m` is `import m::{};` gets no auto-import candidates from `m`), which is consistent with importing nothing and probably right; say so in the pin."
+  }
+ ]
+}

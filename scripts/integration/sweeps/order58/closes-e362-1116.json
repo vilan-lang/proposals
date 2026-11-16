@@ -1,0 +1,12 @@
+{
+ "date": "2026-11-16",
+ "order": "Order 58",
+ "closes": [
+  {
+   "id": "E362",
+   "lane": "integrator",
+   "commit": "eca174d4",
+   "text": "CAUSE: `try_extend_import` asserted a parsed brace set has a member; the grammar allows none. FIX: an empty set answers `NoMatch`, as a set with a non-flat member already did (it has no member span to anchor an edit on and carries none of its own), so the name gets its own `import` line in its sorted slot and the empty set stays byte for byte. PINS (each red with the assertion planted back): `formatter::insert::an_empty_set_is_left_alone_and_the_leaf_gets_its_own_line` (four spellings of the empty braces, mid-run, root-level, nested in a set), `formatter::insert::a_parsed_source_steps_over_an_empty_set_too`, `document::tests::an_empty_import_set_from_a_loaded_module_does_not_take_the_analysis_down` (the route kolt hit: the analysis-time candidate table; red it showed the exact `internal error` diagnostic), `document::tests::an_empty_import_set_from_the_target_module_still_offers_the_add_import` (the quick fix). Not done here: what `vilan fmt` prints for an empty set and the missing lint are E363."
+  }
+ ]
+}
