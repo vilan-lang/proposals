@@ -1,0 +1,1964 @@
+{
+ "header": "vilan-lsp latency \u2014 vilan-lsp 0.56.0 (e9c25ab05) on kolt @76067e7a (the server's embedded std); 5 run(s) per edit; loadavg 0.80 3.97 5.54 before, 0.93 2.37 4.56 after; 16 cores",
+ "source": {
+  "kind": "commit",
+  "sha": "76067e7acdfbe9355bc2fe0dc860c6950099a529"
+ },
+ "open": {
+  "open src/views.vl": {
+   "diagnostics_ms": 2920.921651999379,
+   "diagnostics_cpu_ms": 2910.0,
+   "cpu_ms": 2920.0,
+   "memory": {
+    "VmHWM": 1266084,
+    "VmRSS": 1158172
+   }
+  },
+  "open src/shared.vl": {
+   "diagnostics_ms": 730.9709600012866,
+   "diagnostics_cpu_ms": 730.0,
+   "cpu_ms": 740.0,
+   "memory": {
+    "VmHWM": 2093276,
+    "VmRSS": 1084380
+   }
+  },
+  "open src/model.vl": {
+   "diagnostics_ms": 1233.5913169990818,
+   "diagnostics_cpu_ms": 1220.0,
+   "cpu_ms": 1230.0,
+   "memory": {
+    "VmHWM": 2093276,
+    "VmRSS": 1140680
+   },
+   "references": [
+    {
+     "cpu_ms": 1240.0,
+     "wall_ms": 1228.084010999737,
+     "instructions": 9108833571,
+     "locations": 5,
+     "files": 5
+    },
+    {
+     "cpu_ms": 0.0,
+     "wall_ms": 2.6228239985357504,
+     "instructions": 2150637,
+     "locations": 5,
+     "files": 5
+    }
+   ]
+  },
+  "open src/model.vl (beside 3 open importers)": {
+   "diagnostics_ms": 153.8415070026531,
+   "diagnostics_cpu_ms": 150.0,
+   "cpu_ms": 170.0,
+   "memory": {
+    "VmHWM": 2093276,
+    "VmRSS": 1239468
+   }
+  },
+  "open src/styles.vl": {
+   "diagnostics_ms": 1970.5368700015242,
+   "diagnostics_cpu_ms": 1960.0,
+   "cpu_ms": 1990.0,
+   "memory": {
+    "VmHWM": 2093276,
+    "VmRSS": 1448672
+   }
+  },
+  "open src/channel.vl": {
+   "diagnostics_ms": 2841.0417569975834,
+   "diagnostics_cpu_ms": 2840.0,
+   "cpu_ms": 2860.0,
+   "memory": {
+    "VmHWM": 2093276,
+    "VmRSS": 1500116
+   }
+  }
+ },
+ "edits": {
+  "leaf keystroke": [
+   {
+    "diagnostics_ms": 1299.7471480011882,
+    "diagnostics_cpu_ms": 1150.0,
+    "first_publish_ms": 1299.7471480011882,
+    "instructions": 7524730249,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 95.6ms/94.0cpu lsp-analyze 771.8ms/771.2cpu lsp-index 79.4ms/79.4cpu lsp-landed 34.4ms/34.4cpu lsp-legs 0.6ms/0.6cpu legs 0"
+    ],
+    "all_published_ms": 1299.7471480011882,
+    "all_published_cpu_ms": 1150.0,
+    "files_republished": 1,
+    "cpu_ms": 1160.0,
+    "settle_ms": 1801.3374649999605,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.103843999269884,
+     "completion": 1.795567000954179,
+     "inlay": 0.6143859973235521,
+     "tokens": 0.6357329984894022
+    },
+    "settled": {
+     "hover": [
+      2.656687,
+      2.7050979988416657
+     ],
+     "completion": [
+      1.503311,
+      1.4882600007695146
+     ],
+     "inlay": [
+      0.503701,
+      0.570841999433469
+     ],
+     "tokens": [
+      0.48603,
+      0.5697810011042748
+     ]
+    },
+    "memory": {
+     "VmHWM": 933340,
+     "VmRSS": 834524
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 1241.7184890000499,
+    "diagnostics_cpu_ms": 1090.0,
+    "first_publish_ms": 1241.7184890000499,
+    "instructions": 7487020243,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 94.7ms/93.4cpu lsp-analyze 717.3ms/715.1cpu lsp-index 82.9ms/82.9cpu lsp-landed 35.2ms/35.2cpu lsp-legs 0.6ms/0.6cpu legs 0"
+    ],
+    "all_published_ms": 1241.7184890000499,
+    "all_published_cpu_ms": 1090.0,
+    "files_republished": 1,
+    "cpu_ms": 1090.0,
+    "settle_ms": 1642.769172001863,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.112807000434259,
+     "completion": 1.570602002175292,
+     "inlay": 0.5802990017400589,
+     "tokens": 0.6433529997593723
+    },
+    "settled": {
+     "hover": [
+      2.678396,
+      2.7023219990951475
+     ],
+     "completion": [
+      1.513018,
+      1.5553019984508865
+     ],
+     "inlay": [
+      0.49451,
+      0.5479880019265693
+     ],
+     "tokens": [
+      0.4873,
+      0.568480998481391
+     ]
+    },
+    "memory": {
+     "VmHWM": 1000976,
+     "VmRSS": 904720
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 1263.8253959994472,
+    "diagnostics_cpu_ms": 1110.0,
+    "first_publish_ms": 1263.8253959994472,
+    "instructions": 7485385593,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 107.8ms/106.3cpu lsp-analyze 719.4ms/719.0cpu lsp-index 78.4ms/76.5cpu lsp-landed 35.0ms/35.0cpu lsp-legs 0.6ms/0.6cpu legs 0"
+    ],
+    "all_published_ms": 1263.8253959994472,
+    "all_published_cpu_ms": 1110.0,
+    "files_republished": 1,
+    "cpu_ms": 1120.0,
+    "settle_ms": 1765.0556369990227,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.5544860002119094,
+     "completion": 1.8249249988002703,
+     "inlay": 0.6542430019180756,
+     "tokens": 0.7741959998384118
+    },
+    "settled": {
+     "hover": [
+      2.729713,
+      2.800718000798952
+     ],
+     "completion": [
+      1.577442,
+      1.5702919990872033
+     ],
+     "inlay": [
+      0.498541,
+      0.5501519990502857
+     ],
+     "tokens": [
+      0.525129,
+      0.5948479993094224
+     ]
+    },
+    "memory": {
+     "VmHWM": 1007296,
+     "VmRSS": 910972
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 1242.6432369975373,
+    "diagnostics_cpu_ms": 1090.0,
+    "first_publish_ms": 1242.6432369975373,
+    "instructions": 7489464039,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 93.5ms/92.6cpu lsp-analyze 715.2ms/714.6cpu lsp-index 77.0ms/77.0cpu lsp-landed 35.1ms/35.0cpu lsp-legs 0.6ms/0.6cpu legs 0"
+    ],
+    "all_published_ms": 1242.6432369975373,
+    "all_published_cpu_ms": 1090.0,
+    "files_republished": 1,
+    "cpu_ms": 1100.0,
+    "settle_ms": 1743.8367909999215,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.02361300055054,
+     "completion": 2.2734039994247723,
+     "inlay": 0.7693309999012854,
+     "tokens": 0.6653780001215637
+    },
+    "settled": {
+     "hover": [
+      2.973642,
+      3.0368349980562925
+     ],
+     "completion": [
+      1.760216,
+      1.7213249993801583
+     ],
+     "inlay": [
+      0.618392,
+      0.6490800005849451
+     ],
+     "tokens": [
+      0.587294,
+      0.6334729987429455
+     ]
+    },
+    "memory": {
+     "VmHWM": 1013980,
+     "VmRSS": 917596
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 1233.2323259979603,
+    "diagnostics_cpu_ms": 1080.0,
+    "first_publish_ms": 1233.2323259979603,
+    "instructions": 7486490435,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 97.7ms/96.2cpu lsp-analyze 714.0ms/713.3cpu lsp-index 73.7ms/73.7cpu lsp-landed 35.2ms/35.2cpu lsp-legs 0.6ms/0.6cpu legs 0"
+    ],
+    "all_published_ms": 1233.2323259979603,
+    "all_published_cpu_ms": 1080.0,
+    "files_republished": 1,
+    "cpu_ms": 1090.0,
+    "settle_ms": 1734.4085670010827,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.1811179978831206,
+     "completion": 1.676454998232657,
+     "inlay": 0.9568800014676526,
+     "tokens": 0.6461930024670437
+    },
+    "settled": {
+     "hover": [
+      2.766516,
+      2.8911819972563535
+     ],
+     "completion": [
+      1.586551,
+      1.5819520012883004
+     ],
+     "inlay": [
+      0.636284,
+      0.6998690005275421
+     ],
+     "tokens": [
+      0.4993,
+      0.5761579996033106
+     ]
+    },
+    "memory": {
+     "VmHWM": 1014148,
+     "VmRSS": 917620
+    },
+    "companions": 0
+   }
+  ],
+  "leaf keystroke + pause": [
+   {
+    "diagnostics_ms": 5633.34344300165,
+    "diagnostics_cpu_ms": 6290.0,
+    "first_publish_ms": 1293.8982980012952,
+    "instructions": 38547624613,
+    "analyses": 3,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 96.1ms/95.2cpu lsp-analyze 758.6ms/758.5cpu lsp-index 78.9ms/78.9cpu lsp-landed 35.7ms/35.7cpu lsp-legs 0.6ms/0.6cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 1 prefix-refusal -",
+     "[vilan phase] lsp-context 201.0ms/162.9cpu lsp-analyze 1376.4ms/1283.5cpu lsp-index 37.1ms/37.1cpu lsp-landed 13.1ms/13.1cpu lsp-legs 0.4ms/0.4cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 1 prefix-refusal -",
+     "[vilan phase] lsp-context 200.6ms/163.8cpu lsp-analyze 3253.3ms/3144.4cpu lsp-index 86.5ms/86.5cpu lsp-landed 27.3ms/27.3cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 5633.34344300165,
+    "all_published_cpu_ms": 6290.0,
+    "files_republished": 1,
+    "cpu_ms": 6290.0,
+    "settle_ms": 8709.56400200157,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.025341997272335,
+     "completion": 1.769827002135571,
+     "inlay": 0.6382030005624983,
+     "tokens": 0.6440639990614727
+    },
+    "settled": {
+     "hover": [
+      3.178267,
+      3.2511169993085787
+     ],
+     "completion": [
+      1.747656,
+      1.7121550008596387
+     ],
+     "inlay": [
+      0.727116,
+      0.7497650003642775
+     ],
+     "tokens": [
+      0.550724,
+      0.6349530012812465
+     ]
+    },
+    "memory": {
+     "VmHWM": 1830236,
+     "VmRSS": 1712136
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 3456.0891459987033,
+    "diagnostics_cpu_ms": 3270.0,
+    "first_publish_ms": 1336.2913669989211,
+    "instructions": 21882949949,
+    "analyses": 3,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 92.9ms/92.2cpu lsp-analyze 812.2ms/811.9cpu lsp-index 87.1ms/87.1cpu lsp-landed 34.7ms/34.7cpu lsp-legs 0.6ms/0.6cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 185.4ms/151.4cpu lsp-analyze 412.8ms/410.8cpu lsp-index 33.7ms/33.7cpu lsp-landed 12.9ms/12.9cpu lsp-legs 0.4ms/0.4cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 184.7ms/149.6cpu lsp-analyze 1074.4ms/1032.1cpu lsp-index 74.3ms/74.3cpu lsp-landed 27.6ms/27.6cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 3456.0891459987033,
+    "all_published_cpu_ms": 3270.0,
+    "files_republished": 1,
+    "cpu_ms": 3270.0,
+    "settle_ms": 6547.292154999013,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.742526001384249,
+     "completion": 1.5434420020028483,
+     "inlay": 0.6141430021671113,
+     "tokens": 0.6495939996966626
+    },
+    "settled": {
+     "hover": [
+      2.89369,
+      2.9353309982980136
+     ],
+     "completion": [
+      1.659876,
+      1.6894850014068652
+     ],
+     "inlay": [
+      0.601122,
+      0.6950539973331615
+     ],
+     "tokens": [
+      0.558251,
+      0.625066997599788
+     ]
+    },
+    "memory": {
+     "VmHWM": 2040148,
+     "VmRSS": 1885348
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 3366.365981000854,
+    "diagnostics_cpu_ms": 3190.0,
+    "first_publish_ms": 1270.2263819992368,
+    "instructions": 21887534920,
+    "analyses": 3,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 94.2ms/92.7cpu lsp-analyze 736.5ms/735.7cpu lsp-index 95.7ms/95.7cpu lsp-landed 35.9ms/35.9cpu lsp-legs 0.6ms/0.6cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 181.0ms/148.0cpu lsp-analyze 402.0ms/400.3cpu lsp-index 33.1ms/33.1cpu lsp-landed 13.2ms/13.2cpu lsp-legs 0.4ms/0.4cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 181.5ms/148.1cpu lsp-analyze 1044.5ms/1021.9cpu lsp-index 75.6ms/75.6cpu lsp-landed 27.3ms/27.3cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 3366.365981000854,
+    "all_published_cpu_ms": 3190.0,
+    "files_republished": 1,
+    "cpu_ms": 3190.0,
+    "settle_ms": 6381.5953390003415,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.9316099971765652,
+     "completion": 1.5956220013322309,
+     "inlay": 0.6322629997157492,
+     "tokens": 0.6707089996780269
+    },
+    "settled": {
+     "hover": [
+      4.834718,
+      4.871594999713125
+     ],
+     "completion": [
+      2.601461,
+      2.632908999657957
+     ],
+     "inlay": [
+      0.595942,
+      0.6833939987700433
+     ],
+     "tokens": [
+      0.552211,
+      0.6452259985962883
+     ]
+    },
+    "memory": {
+     "VmHWM": 2092472,
+     "VmRSS": 1931084
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 3379.505708999204,
+    "diagnostics_cpu_ms": 3280.0,
+    "first_publish_ms": 1248.170555998513,
+    "instructions": 21876643363,
+    "analyses": 3,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 93.5ms/91.7cpu lsp-analyze 738.9ms/738.3cpu lsp-index 73.7ms/73.7cpu lsp-landed 35.2ms/35.2cpu lsp-legs 0.6ms/0.6cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 181.6ms/147.5cpu lsp-analyze 540.3ms/445.6cpu lsp-index 35.0ms/35.0cpu lsp-landed 13.0ms/13.0cpu lsp-legs 0.4ms/0.4cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 181.2ms/150.1cpu lsp-analyze 1085.4ms/1084.1cpu lsp-index 78.3ms/78.3cpu lsp-landed 26.8ms/26.8cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 3379.505708999204,
+    "all_published_cpu_ms": 3280.0,
+    "files_republished": 1,
+    "cpu_ms": 3280.0,
+    "settle_ms": 6460.279165999964,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.0625280014646705,
+     "completion": 1.7329949987470172,
+     "inlay": 0.5778020022262353,
+     "tokens": 0.6426659965654835
+    },
+    "settled": {
+     "hover": [
+      2.95557,
+      3.034402001503622
+     ],
+     "completion": [
+      1.878928,
+      1.818291002564365
+     ],
+     "inlay": [
+      0.56164,
+      0.6297320032899734
+     ],
+     "tokens": [
+      0.560212,
+      0.6551359983859584
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1949824
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 3338.9047319979,
+    "diagnostics_cpu_ms": 3180.0,
+    "first_publish_ms": 1286.506868997094,
+    "instructions": 21877989408,
+    "analyses": 3,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 105.0ms/103.6cpu lsp-analyze 750.2ms/749.7cpu lsp-index 73.9ms/73.9cpu lsp-landed 35.1ms/35.1cpu lsp-legs 0.6ms/0.6cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 184.0ms/149.9cpu lsp-analyze 453.4ms/393.8cpu lsp-index 39.5ms/39.5cpu lsp-landed 13.4ms/13.4cpu lsp-legs 0.4ms/0.4cpu legs 0",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 182.9ms/150.4cpu lsp-analyze 1013.7ms/1012.4cpu lsp-index 73.5ms/73.5cpu lsp-landed 27.0ms/27.0cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 3338.9047319979,
+    "all_published_cpu_ms": 3180.0,
+    "files_republished": 1,
+    "cpu_ms": 3180.0,
+    "settle_ms": 6397.548987999471,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.8424880001693964,
+     "completion": 1.6056960012065247,
+     "inlay": 0.6245430013223086,
+     "tokens": 0.647446999209933
+    },
+    "settled": {
+     "hover": [
+      3.076544,
+      3.0863930005580187
+     ],
+     "completion": [
+      1.709486,
+      1.7027680005412549
+     ],
+     "inlay": [
+      0.548701,
+      0.768391000747215
+     ],
+     "tokens": [
+      0.586081,
+      0.6171929999254644
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1889996
+    },
+    "companions": 0
+   }
+  ],
+  "shared.vl keystroke": [
+   {
+    "diagnostics_ms": 491.4155779988505,
+    "diagnostics_cpu_ms": 340.0,
+    "first_publish_ms": 491.4155779988505,
+    "instructions": 1537639842,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 96.9ms/95.6cpu lsp-analyze 56.7ms/56.1cpu lsp-index 7.4ms/7.4cpu lsp-landed 7.0ms/7.0cpu lsp-legs 56.7ms/56.7cpu legs 1"
+    ],
+    "all_published_ms": 491.4155779988505,
+    "all_published_cpu_ms": 340.0,
+    "files_republished": 1,
+    "cpu_ms": 350.0,
+    "settle_ms": 992.3749720001069,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.6084220005723182,
+     "completion": 0.7267379987752065,
+     "inlay": 0.4334090008342173,
+     "tokens": 0.8164819992089178
+    },
+    "settled": {
+     "hover": [
+      1.284457,
+      1.2972369986528065
+     ],
+     "completion": [
+      0.722304,
+      0.6857570006104652
+     ],
+     "inlay": [
+      0.460079,
+      0.4083679996256251
+     ],
+     "tokens": [
+      0.52023,
+      0.516504002007423
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1085700
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 506.47219299935387,
+    "diagnostics_cpu_ms": 360.0,
+    "first_publish_ms": 506.47219299935387,
+    "instructions": 1533463870,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 105.5ms/103.5cpu lsp-analyze 62.1ms/61.7cpu lsp-index 6.8ms/6.8cpu lsp-landed 6.9ms/6.9cpu lsp-legs 55.5ms/55.5cpu legs 1"
+    ],
+    "all_published_ms": 506.47219299935387,
+    "all_published_cpu_ms": 360.0,
+    "files_republished": 1,
+    "cpu_ms": 370.0,
+    "settle_ms": 1007.6413229980972,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.5235610007948708,
+     "completion": 0.6593970028916374,
+     "inlay": 0.4237040011503268,
+     "tokens": 0.6290410019573756
+    },
+    "settled": {
+     "hover": [
+      1.396859,
+      1.4437429999816231
+     ],
+     "completion": [
+      0.719456,
+      0.6899170002725441
+     ],
+     "inlay": [
+      0.520789,
+      0.4641699997591786
+     ],
+     "tokens": [
+      0.4754,
+      0.5116199972690083
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1087484
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 508.7828739997349,
+    "diagnostics_cpu_ms": 350.0,
+    "first_publish_ms": 508.7828739997349,
+    "instructions": 1535409936,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 107.4ms/106.4cpu lsp-analyze 62.5ms/62.1cpu lsp-index 7.1ms/7.1cpu lsp-landed 7.1ms/7.1cpu lsp-legs 55.7ms/55.7cpu legs 1"
+    ],
+    "all_published_ms": 508.7828739997349,
+    "all_published_cpu_ms": 350.0,
+    "files_republished": 1,
+    "cpu_ms": 360.0,
+    "settle_ms": 1010.11081100296,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.6460340011690278,
+     "completion": 0.7388880003418308,
+     "inlay": 0.4151539978920482,
+     "tokens": 0.8332119978149422
+    },
+    "settled": {
+     "hover": [
+      1.521149,
+      1.5665069986425806
+     ],
+     "completion": [
+      0.739856,
+      0.6979149984545074
+     ],
+     "inlay": [
+      0.413067,
+      0.4073210002388805
+     ],
+     "tokens": [
+      0.466751,
+      0.5048899984103628
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1087492
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 512.0022019982571,
+    "diagnostics_cpu_ms": 360.0,
+    "first_publish_ms": 512.0022019982571,
+    "instructions": 1534962882,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 106.6ms/104.9cpu lsp-analyze 64.9ms/64.4cpu lsp-index 7.4ms/7.4cpu lsp-landed 7.1ms/7.1cpu lsp-legs 55.9ms/55.9cpu legs 1"
+    ],
+    "all_published_ms": 512.0022019982571,
+    "all_published_cpu_ms": 360.0,
+    "files_republished": 1,
+    "cpu_ms": 370.0,
+    "settle_ms": 1013.2803679989593,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.5119740019144956,
+     "completion": 0.6811570019635838,
+     "inlay": 0.5677810004272033,
+     "tokens": 0.614843000221299
+    },
+    "settled": {
+     "hover": [
+      1.513161,
+      1.547881998703815
+     ],
+     "completion": [
+      0.768258,
+      0.7333879984798841
+     ],
+     "inlay": [
+      0.397808,
+      0.4069230017194059
+     ],
+     "tokens": [
+      0.465879,
+      0.4826139993383549
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1087496
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 499.6596720011439,
+    "diagnostics_cpu_ms": 340.0,
+    "first_publish_ms": 499.6596720011439,
+    "instructions": 1536869831,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 103.1ms/102.5cpu lsp-analyze 59.3ms/58.3cpu lsp-index 7.5ms/7.5cpu lsp-landed 7.2ms/7.2cpu lsp-legs 55.6ms/55.6cpu legs 1"
+    ],
+    "all_published_ms": 499.6596720011439,
+    "all_published_cpu_ms": 340.0,
+    "files_republished": 1,
+    "cpu_ms": 360.0,
+    "settle_ms": 1001.0102740016009,
+    "errors": 0,
+    "keystroke": {
+     "hover": 1.4240290001907852,
+     "completion": 0.6779069990443531,
+     "inlay": 0.4263929986336734,
+     "tokens": 0.6039319996489212
+    },
+    "settled": {
+     "hover": [
+      1.44419,
+      1.4769859990337864
+     ],
+     "completion": [
+      0.779917,
+      0.7384849996014964
+     ],
+     "inlay": [
+      0.644473,
+      0.5387509991123807
+     ],
+     "tokens": [
+      0.51969,
+      0.49918000149773434
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1087496
+    },
+    "companions": 0
+   }
+  ],
+  "model.vl keystroke": [
+   {
+    "diagnostics_ms": 725.7851569993363,
+    "diagnostics_cpu_ms": 590.0,
+    "first_publish_ms": 3.693493999890052,
+    "instructions": 3641457776,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 94.5ms/93.5cpu lsp-analyze 300.2ms/300.0cpu lsp-index 29.9ms/29.9cpu lsp-landed 14.1ms/14.1cpu lsp-legs 0.9ms/0.9cpu legs 0"
+    ],
+    "all_published_ms": 725.7851569993363,
+    "all_published_cpu_ms": 590.0,
+    "files_republished": 1,
+    "cpu_ms": 600.0,
+    "settle_ms": 1211.122130000149,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.646393000963144,
+     "completion": 2.155293001123937,
+     "inlay": 1.000680000288412,
+     "tokens": 1.2467730011849198
+    },
+    "settled": {
+     "hover": [
+      2.745006,
+      2.767038000456523
+     ],
+     "completion": [
+      2.298987,
+      2.3164159974840004
+     ],
+     "inlay": [
+      0.759704,
+      0.9568189998390153
+     ],
+     "tokens": [
+      0.969844,
+      1.2902109992865007
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1143336
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 750.4127250031161,
+    "diagnostics_cpu_ms": 600.0,
+    "first_publish_ms": 750.4127250031161,
+    "instructions": 3628119713,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 103.2ms/101.3cpu lsp-analyze 309.1ms/309.0cpu lsp-index 29.9ms/29.9cpu lsp-landed 13.9ms/13.9cpu lsp-legs 0.9ms/0.9cpu legs 0"
+    ],
+    "all_published_ms": 750.4127250031161,
+    "all_published_cpu_ms": 600.0,
+    "files_republished": 1,
+    "cpu_ms": 610.0,
+    "settle_ms": 1251.3836450016242,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.9958030027046334,
+     "completion": 2.307056998688495,
+     "inlay": 0.8966150016931351,
+     "tokens": 1.26526599706267
+    },
+    "settled": {
+     "hover": [
+      2.759025,
+      2.7721059996110853
+     ],
+     "completion": [
+      2.325906,
+      2.322754000488203
+     ],
+     "inlay": [
+      0.818478,
+      1.0117210003954824
+     ],
+     "tokens": [
+      1.18461,
+      1.5590969996992499
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1143524
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 725.5594979978923,
+    "diagnostics_cpu_ms": 580.0,
+    "first_publish_ms": 725.5594979978923,
+    "instructions": 3628163776,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 96.3ms/94.8cpu lsp-analyze 297.7ms/296.9cpu lsp-index 30.2ms/30.2cpu lsp-landed 13.8ms/13.8cpu lsp-legs 0.8ms/0.8cpu legs 0"
+    ],
+    "all_published_ms": 725.5594979978923,
+    "all_published_cpu_ms": 580.0,
+    "files_republished": 1,
+    "cpu_ms": 600.0,
+    "settle_ms": 1226.8490709975595,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.3493470000394154,
+     "completion": 2.506386001186911,
+     "inlay": 1.0220500007562805,
+     "tokens": 1.4160589998937212
+    },
+    "settled": {
+     "hover": [
+      2.644524,
+      2.6721249996626284
+     ],
+     "completion": [
+      2.109665,
+      2.105800002027536
+     ],
+     "inlay": [
+      0.733744,
+      0.956414998654509
+     ],
+     "tokens": [
+      0.827317,
+      1.1160189969814382
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1143528
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 745.2059659990482,
+    "diagnostics_cpu_ms": 590.0,
+    "first_publish_ms": 745.2059659990482,
+    "instructions": 3627684460,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 107.9ms/106.0cpu lsp-analyze 303.7ms/303.0cpu lsp-index 30.5ms/30.5cpu lsp-landed 14.0ms/14.0cpu lsp-legs 0.8ms/0.8cpu legs 0"
+    ],
+    "all_published_ms": 745.2059659990482,
+    "all_published_cpu_ms": 590.0,
+    "files_republished": 1,
+    "cpu_ms": 610.0,
+    "settle_ms": 1246.514753998781,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.9122530031600036,
+     "completion": 2.37323300098069,
+     "inlay": 1.044336000632029,
+     "tokens": 1.997204999497626
+    },
+    "settled": {
+     "hover": [
+      2.861259,
+      2.9121090010448825
+     ],
+     "completion": [
+      2.404717,
+      2.405536000878783
+     ],
+     "inlay": [
+      0.821457,
+      1.0051350000139792
+     ],
+     "tokens": [
+      0.942711,
+      1.2620929992408492
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1143532
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 752.1360470018408,
+    "diagnostics_cpu_ms": 600.0,
+    "first_publish_ms": 752.1360470018408,
+    "instructions": 3630512242,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 108.6ms/107.6cpu lsp-analyze 307.0ms/306.2cpu lsp-index 31.1ms/31.1cpu lsp-landed 14.5ms/14.4cpu lsp-legs 0.9ms/0.9cpu legs 0"
+    ],
+    "all_published_ms": 752.1360470018408,
+    "all_published_cpu_ms": 600.0,
+    "files_republished": 1,
+    "cpu_ms": 620.0,
+    "settle_ms": 1253.4756910026772,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.867747996788239,
+     "completion": 2.3559420005767606,
+     "inlay": 1.019860999804223,
+     "tokens": 1.4315890002762899
+    },
+    "settled": {
+     "hover": [
+      2.9135,
+      2.9294260020833462
+     ],
+     "completion": [
+      2.8655,
+      2.9011130027356558
+     ],
+     "inlay": [
+      0.870047,
+      1.0264129996357951
+     ],
+     "tokens": [
+      0.929329,
+      1.2449550013116095
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1143536
+    },
+    "companions": 0
+   }
+  ],
+  "model.vl keystroke, importers open": [
+   {
+    "diagnostics_ms": 2323.3491430000868,
+    "diagnostics_cpu_ms": 2170.0,
+    "first_publish_ms": 3.634984001109842,
+    "instructions": 18324383391,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set 37/100 interface-moved - global-moved - unknown-interfaces - hot-world 1 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 108.6ms/107.0cpu lsp-analyze 1639.1ms/1637.0cpu lsp-index 81.2ms/81.2cpu lsp-landed 27.5ms/27.5cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 2331.4671190019,
+    "all_published_cpu_ms": 2190.0,
+    "files_republished": 4,
+    "cpu_ms": 2220.0,
+    "settle_ms": 2815.195023002161,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.7237850010569673,
+     "completion": 2.4188960014726035,
+     "inlay": 1.0060410022560973,
+     "tokens": 1.4445359993260354
+    },
+    "settled": {
+     "hover": [
+      2.981961,
+      3.020113999809837
+     ],
+     "completion": [
+      2.320528,
+      2.3114070027077105
+     ],
+     "inlay": [
+      0.684604,
+      0.9078450020751916
+     ],
+     "tokens": [
+      0.827265,
+      1.1600729994825087
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1406540
+    },
+    "companions": 3
+   },
+   {
+    "diagnostics_ms": 2250.332730000082,
+    "diagnostics_cpu_ms": 2100.0,
+    "first_publish_ms": 2250.332730000082,
+    "instructions": 18315842973,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set 37/100 interface-moved - global-moved - unknown-interfaces - hot-world 1 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 101.2ms/99.6cpu lsp-analyze 1588.5ms/1585.9cpu lsp-index 77.0ms/77.0cpu lsp-landed 28.1ms/28.1cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 2258.095229000901,
+    "all_published_cpu_ms": 2110.0,
+    "files_republished": 4,
+    "cpu_ms": 2150.0,
+    "settle_ms": 2751.5216959982354,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.358370999194449,
+     "completion": 2.3899579973658547,
+     "inlay": 0.9284360021410976,
+     "tokens": 1.3070560016785748
+    },
+    "settled": {
+     "hover": [
+      2.978632,
+      2.9917709980509244
+     ],
+     "completion": [
+      2.475781,
+      2.419676999124931
+     ],
+     "inlay": [
+      0.765626,
+      0.9962560034182388
+     ],
+     "tokens": [
+      0.788666,
+      1.0573709987511393
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1440040
+    },
+    "companions": 3
+   },
+   {
+    "diagnostics_ms": 2263.7971180010936,
+    "diagnostics_cpu_ms": 2110.0,
+    "first_publish_ms": 2263.7971180010936,
+    "instructions": 18317722257,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set 37/100 interface-moved - global-moved - unknown-interfaces - hot-world 1 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 103.4ms/101.8cpu lsp-analyze 1591.6ms/1590.1cpu lsp-index 76.1ms/76.1cpu lsp-landed 27.2ms/27.2cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 2271.498349000467,
+    "all_published_cpu_ms": 2120.0,
+    "files_republished": 4,
+    "cpu_ms": 2160.0,
+    "settle_ms": 2765.1219380022667,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.5393229991314,
+     "completion": 2.353497999138199,
+     "inlay": 0.950230001762975,
+     "tokens": 1.2448730012692977
+    },
+    "settled": {
+     "hover": [
+      3.117564,
+      3.112964001047658
+     ],
+     "completion": [
+      2.297647,
+      2.3098470010154415
+     ],
+     "inlay": [
+      0.816857,
+      1.0032869977294467
+     ],
+     "tokens": [
+      0.856896,
+      1.1187529999006074
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1441304
+    },
+    "companions": 3
+   },
+   {
+    "diagnostics_ms": 2257.577856998978,
+    "diagnostics_cpu_ms": 2100.0,
+    "first_publish_ms": 2257.577856998978,
+    "instructions": 18320206787,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set 37/100 interface-moved - global-moved - unknown-interfaces - hot-world 1 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 98.5ms/96.7cpu lsp-analyze 1600.7ms/1598.2cpu lsp-index 77.4ms/77.4cpu lsp-landed 27.8ms/27.8cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 2265.3445659998397,
+    "all_published_cpu_ms": 2110.0,
+    "files_republished": 4,
+    "cpu_ms": 2150.0,
+    "settle_ms": 2758.6681360007788,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.332430998852942,
+     "completion": 2.425820002827095,
+     "inlay": 1.0590370002319105,
+     "tokens": 1.3354779985093046
+    },
+    "settled": {
+     "hover": [
+      3.322419,
+      3.3244789992750157
+     ],
+     "completion": [
+      2.385778,
+      2.3482169999624602
+     ],
+     "inlay": [
+      0.795727,
+      1.0588820005068555
+     ],
+     "tokens": [
+      0.789456,
+      1.0714620002545416
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1457960
+    },
+    "companions": 3
+   },
+   {
+    "diagnostics_ms": 2256.7722589992627,
+    "diagnostics_cpu_ms": 2100.0,
+    "first_publish_ms": 2256.7722589992627,
+    "instructions": 18338931808,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set 37/100 interface-moved - global-moved - unknown-interfaces - hot-world 1 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 100.2ms/99.2cpu lsp-analyze 1595.1ms/1592.3cpu lsp-index 77.0ms/76.9cpu lsp-landed 27.6ms/27.6cpu lsp-legs 0.3ms/0.3cpu legs 0"
+    ],
+    "all_published_ms": 2264.498172000458,
+    "all_published_cpu_ms": 2120.0,
+    "files_republished": 4,
+    "cpu_ms": 2150.0,
+    "settle_ms": 2758.0558699992253,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.595305999624543,
+     "completion": 2.3841989968786947,
+     "inlay": 1.4633799983130302,
+     "tokens": 1.2903210008516908
+    },
+    "settled": {
+     "hover": [
+      2.981692,
+      2.987091000250075
+     ],
+     "completion": [
+      2.205046,
+      2.2485260014946107
+     ],
+     "inlay": [
+      0.692951,
+      0.9245490000466816
+     ],
+     "tokens": [
+      0.817516,
+      1.0992130009981338
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1459748
+    },
+    "companions": 3
+   }
+  ],
+  "css keystroke": [
+   {
+    "diagnostics_ms": 1454.0106040003593,
+    "diagnostics_cpu_ms": 1300.0,
+    "first_publish_ms": 3.2223819980572443,
+    "instructions": 8929034418,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 93.0ms/92.0cpu lsp-analyze 977.1ms/976.3cpu lsp-index 59.4ms/59.4cpu lsp-landed 18.5ms/18.5cpu lsp-legs 0.2ms/0.2cpu legs 0"
+    ],
+    "all_published_ms": 1454.0106040003593,
+    "all_published_cpu_ms": 1300.0,
+    "files_republished": 1,
+    "cpu_ms": 1320.0,
+    "settle_ms": 1910.0404259988863,
+    "errors": 0,
+    "keystroke": {
+     "hover": 3.1879509988357313,
+     "completion": 1.6412039985880256,
+     "inlay": 0.5565310020756442,
+     "tokens": 0.4337390018918086
+    },
+    "settled": {
+     "hover": [
+      2.472462,
+      2.5092769974435214
+     ],
+     "completion": [
+      1.340267,
+      1.549411997984862
+     ],
+     "inlay": [
+      0.601572,
+      0.635472999420017
+     ],
+     "tokens": [
+      0.437768,
+      0.438038998254342
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1582752
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 1378.5929969999415,
+    "diagnostics_cpu_ms": 1220.0,
+    "first_publish_ms": 2.8387380007188767,
+    "instructions": 8428094719,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 99.7ms/97.9cpu lsp-analyze 903.5ms/902.8cpu lsp-index 55.1ms/55.1cpu lsp-landed 18.9ms/18.9cpu lsp-legs 0.2ms/0.2cpu legs 0"
+    ],
+    "all_published_ms": 1378.5929969999415,
+    "all_published_cpu_ms": 1220.0,
+    "files_republished": 1,
+    "cpu_ms": 1240.0,
+    "settle_ms": 1809.7486789993127,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.566434002801543,
+     "completion": 1.5782989976287354,
+     "inlay": 0.7080140021571424,
+     "tokens": 0.5167300005268771
+    },
+    "settled": {
+     "hover": [
+      2.445859,
+      2.47307199970237
+     ],
+     "completion": [
+      1.292717,
+      1.459879000321962
+     ],
+     "inlay": [
+      0.49082,
+      0.5636890018649865
+     ],
+     "tokens": [
+      0.372879,
+      0.36919799822499044
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1594464
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 1350.8136269992974,
+    "diagnostics_cpu_ms": 1200.0,
+    "first_publish_ms": 2.791451999655692,
+    "instructions": 8432932866,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 94.0ms/93.1cpu lsp-analyze 887.5ms/887.4cpu lsp-index 60.2ms/60.2cpu lsp-landed 19.7ms/19.7cpu lsp-legs 0.2ms/0.2cpu legs 0"
+    ],
+    "all_published_ms": 1350.8136269992974,
+    "all_published_cpu_ms": 1200.0,
+    "files_republished": 1,
+    "cpu_ms": 1220.0,
+    "settle_ms": 1809.712080997997,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.5333920020784717,
+     "completion": 1.6471000017190818,
+     "inlay": 0.6490830019174609,
+     "tokens": 0.395443999877898
+    },
+    "settled": {
+     "hover": [
+      2.679204,
+      2.713310001126956
+     ],
+     "completion": [
+      1.392829,
+      1.5282009990187362
+     ],
+     "inlay": [
+      0.597634,
+      0.6314199999906123
+     ],
+     "tokens": [
+      0.457839,
+      0.417408999055624
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1597940
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 1365.9676240022236,
+    "diagnostics_cpu_ms": 1210.0,
+    "first_publish_ms": 2.932380000856938,
+    "instructions": 8437317115,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 102.5ms/101.4cpu lsp-analyze 886.7ms/886.6cpu lsp-index 55.4ms/55.3cpu lsp-landed 19.6ms/19.6cpu lsp-legs 0.2ms/0.2cpu legs 0"
+    ],
+    "all_published_ms": 1365.9676240022236,
+    "all_published_cpu_ms": 1210.0,
+    "files_republished": 1,
+    "cpu_ms": 1230.0,
+    "settle_ms": 1809.738356001617,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.6084529999934603,
+     "completion": 1.6430670002591796,
+     "inlay": 0.6140320001577493,
+     "tokens": 0.3937780020351056
+    },
+    "settled": {
+     "hover": [
+      2.540202,
+      2.5277909990109038
+     ],
+     "completion": [
+      1.264016,
+      1.449928997317329
+     ],
+     "inlay": [
+      0.526051,
+      0.604663000558503
+     ],
+     "tokens": [
+      0.395346,
+      0.3731380020326469
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1597952
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 1382.3839920005412,
+    "diagnostics_cpu_ms": 1240.0,
+    "first_publish_ms": 2.7020849993277807,
+    "instructions": 8436499622,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 102.7ms/102.1cpu lsp-analyze 903.9ms/903.1cpu lsp-index 53.8ms/53.8cpu lsp-landed 18.9ms/18.9cpu lsp-legs 0.2ms/0.2cpu legs 0"
+    ],
+    "all_published_ms": 1382.3839920005412,
+    "all_published_cpu_ms": 1240.0,
+    "files_republished": 1,
+    "cpu_ms": 1250.0,
+    "settle_ms": 1809.5839919988066,
+    "errors": 0,
+    "keystroke": {
+     "hover": 2.722015000472311,
+     "completion": 1.40111500149942,
+     "inlay": 0.5848420005349908,
+     "tokens": 0.3967480006394908
+    },
+    "settled": {
+     "hover": [
+      2.597864,
+      2.6393990010546986
+     ],
+     "completion": [
+      1.268156,
+      1.506169999629492
+     ],
+     "inlay": [
+      0.493541,
+      0.5759749983553775
+     ],
+     "tokens": [
+      0.406658,
+      0.37292799970600754
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1618608
+    },
+    "companions": 0
+   }
+  ],
+  "parse break": [
+   {
+    "diagnostics_ms": 2173.881883001741,
+    "diagnostics_cpu_ms": 2030.0,
+    "first_publish_ms": 7.458287000190467,
+    "instructions": 15859395740,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 103.1ms/102.3cpu lsp-analyze 1642.1ms/1641.3cpu lsp-index 71.2ms/71.2cpu lsp-landed 26.1ms/26.1cpu lsp-legs 2.8ms/2.8cpu legs 0"
+    ],
+    "all_published_ms": 2173.881883001741,
+    "all_published_cpu_ms": 2030.0,
+    "files_republished": 1,
+    "cpu_ms": 2050.0,
+    "settle_ms": 2623.0376819985395,
+    "errors": 1,
+    "keystroke": {
+     "hover": 7.45413699769415,
+     "completion": 3.7431119999382645,
+     "inlay": 3.663174000394065,
+     "tokens": 1.873588000307791
+    },
+    "settled": {
+     "hover": [
+      5.602245,
+      5.706822001229739
+     ],
+     "completion": [
+      3.816977,
+      3.79277899992303
+     ],
+     "inlay": [
+      1.187614,
+      1.6578369977651164
+     ],
+     "tokens": [
+      1.209025,
+      1.6497429969604127
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1567764
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 2046.4759829992545,
+    "diagnostics_cpu_ms": 1900.0,
+    "first_publish_ms": 5.603616998996586,
+    "instructions": 15342610049,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 108.3ms/106.9cpu lsp-analyze 1511.2ms/1510.5cpu lsp-index 71.4ms/71.4cpu lsp-landed 26.4ms/26.3cpu lsp-legs 2.9ms/2.9cpu legs 0"
+    ],
+    "all_published_ms": 2046.4759829992545,
+    "all_published_cpu_ms": 1900.0,
+    "files_republished": 1,
+    "cpu_ms": 1920.0,
+    "settle_ms": 2518.713129000389,
+    "errors": 1,
+    "keystroke": {
+     "hover": 5.58136600011494,
+     "completion": 3.590683998481836,
+     "inlay": 1.5210640012810472,
+     "tokens": 1.9278500003565568
+    },
+    "settled": {
+     "hover": [
+      5.510453,
+      5.520261998753995
+     ],
+     "completion": [
+      3.971781,
+      3.948530000343453
+     ],
+     "inlay": [
+      1.183995,
+      1.7070479989342857
+     ],
+     "tokens": [
+      1.170874,
+      1.6475240008730907
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1593948
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 2070.1182570010133,
+    "diagnostics_cpu_ms": 1930.0,
+    "first_publish_ms": 5.255069998383988,
+    "instructions": 15355323740,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 103.7ms/102.1cpu lsp-analyze 1547.3ms/1546.4cpu lsp-index 70.8ms/70.8cpu lsp-landed 27.2ms/27.2cpu lsp-legs 3.3ms/3.3cpu legs 0"
+    ],
+    "all_published_ms": 2070.1182570010133,
+    "all_published_cpu_ms": 1930.0,
+    "files_republished": 1,
+    "cpu_ms": 1940.0,
+    "settle_ms": 2518.458408998413,
+    "errors": 1,
+    "keystroke": {
+     "hover": 5.233479001617525,
+     "completion": 3.640590002760291,
+     "inlay": 1.474820001021726,
+     "tokens": 1.996474002226023
+    },
+    "settled": {
+     "hover": [
+      5.350378,
+      5.412755999714136
+     ],
+     "completion": [
+      4.037465,
+      4.005670998594724
+     ],
+     "inlay": [
+      1.168943,
+      1.695558999927016
+     ],
+     "tokens": [
+      1.213085,
+      1.7504190000181552
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1622036
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 2069.4217039999785,
+    "diagnostics_cpu_ms": 1920.0,
+    "first_publish_ms": 5.448116000479786,
+    "instructions": 15349668169,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 106.4ms/105.9cpu lsp-analyze 1537.4ms/1536.6cpu lsp-index 71.5ms/71.5cpu lsp-landed 27.2ms/27.2cpu lsp-legs 3.2ms/3.2cpu legs 0"
+    ],
+    "all_published_ms": 2069.4217039999785,
+    "all_published_cpu_ms": 1920.0,
+    "files_republished": 1,
+    "cpu_ms": 1940.0,
+    "settle_ms": 2518.651915001101,
+    "errors": 1,
+    "keystroke": {
+     "hover": 5.522402003407478,
+     "completion": 3.5826160019496456,
+     "inlay": 1.4905499992892146,
+     "tokens": 2.013564000662882
+    },
+    "settled": {
+     "hover": [
+      5.677696,
+      5.71301499803667
+     ],
+     "completion": [
+      3.898019,
+      3.810922997217858
+     ],
+     "inlay": [
+      1.231776,
+      1.799916000891244
+     ],
+     "tokens": [
+      1.225065,
+      1.6291059982904699
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1582536
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 2088.391479002894,
+    "diagnostics_cpu_ms": 1940.0,
+    "first_publish_ms": 5.375584001740208,
+    "instructions": 15350083211,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 107.4ms/106.2cpu lsp-analyze 1553.8ms/1553.6cpu lsp-index 70.2ms/70.2cpu lsp-landed 26.9ms/26.9cpu lsp-legs 3.0ms/3.0cpu legs 0"
+    ],
+    "all_published_ms": 2088.391479002894,
+    "all_published_cpu_ms": 1940.0,
+    "files_republished": 1,
+    "cpu_ms": 1960.0,
+    "settle_ms": 2518.885104000219,
+    "errors": 1,
+    "keystroke": {
+     "hover": 5.476125999848591,
+     "completion": 3.887789000145858,
+     "inlay": 1.5842319990042597,
+     "tokens": 1.9574799989641178
+    },
+    "settled": {
+     "hover": [
+      5.312707,
+      5.338111997843953
+     ],
+     "completion": [
+      3.907748,
+      3.8240579997363966
+     ],
+     "inlay": [
+      1.202074,
+      1.7058570010703988
+     ],
+     "tokens": [
+      1.185133,
+      1.6473729992867447
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1644964
+    },
+    "companions": 0
+   }
+  ],
+  "parse repair": [
+   {
+    "diagnostics_ms": 2090.699272001075,
+    "diagnostics_cpu_ms": 1950.0,
+    "first_publish_ms": 5.462944998726016,
+    "instructions": 15839846061,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 106.6ms/104.6cpu lsp-analyze 1538.5ms/1538.2cpu lsp-index 71.3ms/71.3cpu lsp-landed 43.8ms/43.8cpu lsp-legs 3.3ms/3.3cpu legs 0"
+    ],
+    "all_published_ms": 2090.699272001075,
+    "all_published_cpu_ms": 1950.0,
+    "files_republished": 1,
+    "cpu_ms": 1970.0,
+    "settle_ms": 2518.188031997852,
+    "errors": 0,
+    "keystroke": {
+     "hover": 5.430854002042906,
+     "completion": 3.584098998544505,
+     "inlay": 1.4861310010019224,
+     "tokens": 1.983743997698184
+    },
+    "settled": {
+     "hover": [
+      5.306318,
+      5.3052520015626214
+     ],
+     "completion": [
+      3.827358,
+      3.8045799992687535
+     ],
+     "inlay": [
+      1.398625,
+      1.9234499995945953
+     ],
+     "tokens": [
+      1.252115,
+      1.7285860012634657
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1589732
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 2106.3933380028175,
+    "diagnostics_cpu_ms": 1960.0,
+    "first_publish_ms": 5.404343002737733,
+    "instructions": 15838966161,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 106.9ms/105.2cpu lsp-analyze 1550.0ms/1549.2cpu lsp-index 71.6ms/71.5cpu lsp-landed 44.0ms/44.0cpu lsp-legs 3.2ms/3.2cpu legs 0"
+    ],
+    "all_published_ms": 2106.3933380028175,
+    "all_published_cpu_ms": 1960.0,
+    "files_republished": 1,
+    "cpu_ms": 1980.0,
+    "settle_ms": 2618.949806001183,
+    "errors": 0,
+    "keystroke": {
+     "hover": 5.430973000329686,
+     "completion": 3.6977499985368922,
+     "inlay": 1.5054149989737198,
+     "tokens": 2.0725560025312006
+    },
+    "settled": {
+     "hover": [
+      5.471982,
+      5.4873219996807165
+     ],
+     "completion": [
+      3.867829,
+      3.8228379999054596
+     ],
+     "inlay": [
+      1.235034,
+      1.7546489980304614
+     ],
+     "tokens": [
+      1.239906,
+      1.651553000556305
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1564520
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 2119.8697600011656,
+    "diagnostics_cpu_ms": 1970.0,
+    "first_publish_ms": 5.260442001599586,
+    "instructions": 15838258691,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 107.1ms/105.9cpu lsp-analyze 1563.1ms/1562.5cpu lsp-index 73.5ms/73.5cpu lsp-landed 43.6ms/43.6cpu lsp-legs 3.7ms/3.7cpu legs 0"
+    ],
+    "all_published_ms": 2119.8697600011656,
+    "all_published_cpu_ms": 1970.0,
+    "files_republished": 1,
+    "cpu_ms": 1990.0,
+    "settle_ms": 2618.913122001686,
+    "errors": 0,
+    "keystroke": {
+     "hover": 5.3595889985444956,
+     "completion": 3.712658002768876,
+     "inlay": 1.5673969974159263,
+     "tokens": 1.9359690013516229
+    },
+    "settled": {
+     "hover": [
+      5.300759,
+      5.309537998982705
+     ],
+     "completion": [
+      3.988101,
+      3.920093000488123
+     ],
+     "inlay": [
+      1.268766,
+      1.7545750015415251
+     ],
+     "tokens": [
+      1.193884,
+      1.6303260017593857
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1623352
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 2118.7808079994284,
+    "diagnostics_cpu_ms": 1980.0,
+    "first_publish_ms": 5.289107000862714,
+    "instructions": 15832660034,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 107.7ms/105.9cpu lsp-analyze 1567.8ms/1566.7cpu lsp-index 74.3ms/74.3cpu lsp-landed 42.6ms/42.6cpu lsp-legs 2.9ms/2.9cpu legs 0"
+    ],
+    "all_published_ms": 2118.7808079994284,
+    "all_published_cpu_ms": 1980.0,
+    "files_republished": 1,
+    "cpu_ms": 1990.0,
+    "settle_ms": 2619.390609997936,
+    "errors": 0,
+    "keystroke": {
+     "hover": 5.3634839969163295,
+     "completion": 3.6063489969819784,
+     "inlay": 1.6368329997931141,
+     "tokens": 1.967842999874847
+    },
+    "settled": {
+     "hover": [
+      5.701538,
+      5.756956001278013
+     ],
+     "completion": [
+      4.211846,
+      4.181457999948179
+     ],
+     "inlay": [
+      1.320094,
+      1.8598880014906172
+     ],
+     "tokens": [
+      1.250868,
+      1.7757510031515267
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1644644
+    },
+    "companions": 0
+   },
+   {
+    "diagnostics_ms": 2174.19142700237,
+    "diagnostics_cpu_ms": 2030.0,
+    "first_publish_ms": 5.384322001191322,
+    "instructions": 15834708141,
+    "analyses": 1,
+    "phase": [
+     "[vilan phase] hot-set - interface-moved - global-moved - unknown-interfaces - hot-world 0 hot-refusal - resolve-deferred 0 prefix-world 0 prefix-refusal -",
+     "[vilan phase] lsp-context 108.6ms/107.3cpu lsp-analyze 1613.4ms/1612.4cpu lsp-index 72.4ms/72.3cpu lsp-landed 44.9ms/44.9cpu lsp-legs 3.1ms/3.1cpu legs 0"
+    ],
+    "all_published_ms": 2174.19142700237,
+    "all_published_cpu_ms": 2030.0,
+    "files_republished": 1,
+    "cpu_ms": 2050.0,
+    "settle_ms": 2619.1554380020534,
+    "errors": 0,
+    "keystroke": {
+     "hover": 5.354482000257121,
+     "completion": 3.593122000893345,
+     "inlay": 1.503804000094533,
+     "tokens": 2.000209999096114
+    },
+    "settled": {
+     "hover": [
+      5.383371,
+      5.415785999502987
+     ],
+     "completion": [
+      3.851429,
+      3.824267001618864
+     ],
+     "inlay": [
+      1.159893,
+      1.8020060015260242
+     ],
+     "tokens": [
+      1.187736,
+      1.6225529980147257
+     ]
+    },
+    "memory": {
+     "VmHWM": 2093276,
+     "VmRSS": 1647772
+    },
+    "companions": 0
+   }
+  ]
+ },
+ "skipped": [],
+ "skipped_reasons": {}
+}

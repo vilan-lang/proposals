@@ -1,0 +1,18 @@
+{
+ "date": "2026-11-16",
+ "order": "Order 58 (the v0.56.1 patch)",
+ "closes": [
+  {
+   "id": "B746",
+   "lane": "b746-58",
+   "commit": "b4561bf6",
+   "text": "CAUSE, verified, and wider than the item's guess: TWO classifiers knew `bool` and the scalar primitives but not a backed enum, the analyzer's `is_scalar_view_pointee` and the transformer's per-instance `resolves_to_scalar_view_pointee`; fixing the analyzer alone left a generic `&mut self` write broken (shown by planting). ONE RULE now: a type whose JS value is an immutable primitive is a scalar to a view, decided by `enum_lowers_to_js_primitive` (analyzer.rs), read by both classifiers and by the two native-comparison predicates that each held their own copy. The fix exposed a READ-side bug that was already silently wrong for `bool`, `str` and the numbers: a `match` or `is` over a scalar view tested the `(base, key)` pair (`match x { true => .., false => .. }` over `x: &bool` took `false`); `walk_tested_subject` reads the view through. LANGUAGE CONSEQUENCE, accepted by the owner (\"Yes, cut v0.56.1\"): a backed enum's view read as a value (`x == Named::B` with `x: &Named`) is refused with the \"write `*`\" diagnostic, as `bool`'s always was. PINS, each seen red with the bug planted: seven in `backed_enums.rs` (local, field and nested field, list element, generic `&mut self`, aggregates as a guard, match/is, the refusal), `borrows::a_match_or_is_over_a_scalar_view_tests_the_value_not_the_pair`, `store::b746_a_whole_record_set_over_a_held_struct_with_a_backed_enum_field_lands`, and two native differential probes. Native was correct throughout; no golden moved. The probes' layout was fixed at e9c25ab0 (the vilan-fmt leg). Follow-ups: B748, B749, B750."
+  },
+  {
+   "id": "B745",
+   "lane": "b746-58",
+   "commit": "b4561bf6",
+   "text": "The mirror's symptom of B746 and closed with it: the value that threw in `__replace` was a str-backed enum FIELD of the held struct, written through `&mut` by the derived `store_apply_at`. Pinned by `store::b746_a_whole_record_set_over_a_held_struct_with_a_backed_enum_field_lands` (str- and int-backed fields, a whole-record `Set` over a held value with no reconnect, frames after it still land, a second whole `Set`) and by the native differential probe `store_mirror_backed_enum.vl`."
+  }
+ ]
+}
