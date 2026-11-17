@@ -1,7 +1,8 @@
 # The GPU UI on real hardware: Windows and macOS runbook (F187)
 
-Prepared by lane hw-58 on 2026-11-17. The report switch is on `next` from commit
-`eba9c211` (pushed 2026-11-17): use a checkout of `next` at or after it.
+Prepared by lane hw-58 on 2026-11-17. Use a checkout of `next` at or after commit
+`02e3b989` (2026-11-17; CI green on Linux and Windows). The report switch first landed in
+`eba9c211`, whose CI was red on a docs pin: do not use that one.
 Tracker item F187. A sample of the report's output from Linux is in
 [gpu-ui-hardware-run-sample-report.txt](gpu-ui-hardware-run-sample-report.txt).
 
