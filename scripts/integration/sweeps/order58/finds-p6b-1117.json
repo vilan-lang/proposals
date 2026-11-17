@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "M207",
+   "section": "M",
+   "title": "P6b: make the saved std prefix the default for `vilan check` and `vilan build` (the one unbuilt slice of std-prefix.md; unblocked, scheduled for Order 56, never built, tracked only inside M36 until now)",
+   "kind": "performance (CLI cold start; the last slice of a ruled paper; S)",
+   "discussion": "the 2026-11-17 map survey: `crates/vilan-cli/src/main.rs` still says `VILAN_STD_PREFIX=off` is the CLI's default; std-prefix.md put P6b in Order 56; its prerequisites P5, P6a (M157) and M158 are closed",
+   "status": "open",
+   "area": "crates/vilan-cli/src/main.rs (the prefix switch), crates/vilan-core/src/prefix_file/, world_cache.rs, proposal/std-prefix.md \u00a713-14",
+   "body": "The language server loads the persisted std (and dependency tier) prefix world by default; the CLI does not, unless `VILAN_STD_PREFIX=on` or `vilan cache warm` ran. M158 measured what the default would buy over a loaded prefix: kolt client check -5.1%, kolt server check -22.2%, the corpus -20.8%. What P6b needs beyond flipping the default (std-prefix.md names them): the first run writes the prefix (who pays, and is it atomic under two concurrent `vilan` processes), the cache's budget and pruning without a daemon (`world_cache.rs` has prune/clean), a stale or corrupt file must fall back silently and be replaced, and `vilan check --explain-cost` should say whether the prefix was loaded. Gates: the permutation differential and the corpus goldens byte-identical with the prefix on; the perf rows re-anchored (every `ci` and `reference` row moves down, so the ceilings ratchet in the same commit). This also lowers the per-process floor M36 describes for the CLI-spawning test binaries."
+  }
+ ]
+}

@@ -7,6 +7,11 @@ line citations, are in [map/2026-11-17/](map/2026-11-17/)); the integrator verif
 "verified" and wrote the reading. Nothing here was built or run for the survey except where a
 section says so.
 
+**Since this was written** (same day): Homebrew is fixed and serves 0.56.1 (L25 keeps two code
+follow-ups). The tracker rows section 11 calls stale were closed after checking each against the
+code (B713, C13, N192, N193, E99, F175) or corrected (A185, M110, F1), the broken index row was
+removed, and P6b has its own item, M207. The text below is left as found.
+
 **How to read a percentage.** Every percentage has a basis in the same row, and a different basis
 gives a different number. "Slices" counts the paper's planned pieces; "outcome" measures the goal
 the paper set. Where the two disagree, both are given, and the gap between them is usually the

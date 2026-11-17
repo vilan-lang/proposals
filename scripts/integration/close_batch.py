@@ -29,12 +29,28 @@ for c in closes:
 if errors: print("INVALID:\n  " + "\n  ".join(errors)); sys.exit(1)
 print(f"valid: {len(closes)} closes")
 if check: sys.exit(0)
+def drop_row(lines, item):
+    """Remove the item's INDEX row. A row whose discussion holds a code fence spans several lines: the
+    head line does not end with `|`, and its continuation runs to the next row, heading or blank line.
+    Removing only the head left E299's tail orphaned in the index for five weeks (found 2026-11-17)."""
+    out, skipping = [], False
+    for l in lines:
+        if l.startswith(f"| [{item}]("):
+            skipping = not l.rstrip().endswith("|")
+            continue
+        if skipping:
+            if l.startswith("| [") or l.startswith("#") or l.strip() == "":
+                skipping = False
+            else:
+                continue
+        out.append(l)
+    return out
 tomb = []
 for c in closes:
     i = c["id"]
     tomb.append(f"- **{i}. {titles[i]} — CLOSED {date}** ({order}, lane {c['lane']}, vilan {c['commit']}: {' '.join(c['text'].split())})")
     os.remove(os.path.join(tracker, "items", i + ".md"))
-    index = [l for l in index if not l.startswith(f"| [{i}](")]
+    index = drop_row(index, i)
 open(index_path, "w").write("\n".join(index))
 open(archive_path, "w").write(archive.rstrip("\n") + "\n\n" + "\n\n".join(tomb) + "\n")
 print(f"closed {len(closes)}: {[c['id'] for c in closes]}")

@@ -1,0 +1,42 @@
+{
+ "date": "2026-11-17",
+ "order": "the map's cleanup (after Order 58)",
+ "closes": [
+  {
+   "id": "B713",
+   "lane": "b713",
+   "commit": "53135cdb",
+   "text": "STALE ROW: fixed and SHIPPED in v0.55.0 (merged to next a6dc370e, CI green 14/14), never closed. A compound assignment's hoisted subscript temps are scoped to the statement, so each instantiation of a generic declares its own. Pins `generics::b713_two_instantiations_of_a_generic_each_declare_their_hoisted_index`, `b713_a_closure_in_a_generic_declares_its_hoisted_index_per_instantiation`, `b713_every_hoist_of_a_nested_target_is_per_instantiation` and the corpus golden `vilan/test/b713`. Verified at next 6edafda5 on 2026-11-17."
+  },
+  {
+   "id": "C13",
+   "lane": "C16 (Order 37)",
+   "commit": "e56b1227",
+   "text": "STALE ROW, two months: closed in code by C16 on 2026-09-17. A closure that captures a view and is handed to a callee that KEEPS it is refused, which closes the escape; the item's pinned-and-ignored case is un-ignored and live in `crates/vilan-core/tests/inference/borrows.rs` (the block headed `C16: the escape rule's remainder`). The row still read `pinned ignored`. Verified at next 6edafda5 on 2026-11-17."
+  },
+  {
+   "id": "N192",
+   "lane": "http-56",
+   "commit": "6dbbab39",
+   "text": "STALE ROW: it was a real native server bug, not a flaky pin, fixed and shipped in v0.54.0 (the changelog entry `N192: a native server reads past a request's head by at most one slice before a handler asks for the body`); the pin `request_body::m176_a_body_read_as_a_stream_on_both_backends` has been green since. Order 56's owner question 11 recorded the resolution. Verified an ancestor of next on 2026-11-17."
+  },
+  {
+   "id": "N193",
+   "lane": "integrator (the v0.54.0 cut)",
+   "commit": "3891c987",
+   "text": "STALE ROW: built and shipped in v0.54.0 (the changelog entry `N193: scripts/cut-release.sh rebuilds std::image's committed wasm blob after the version bump and stages it in the release commit`). The v0.55.0, v0.55.1, v0.56.0 and v0.56.1 cuts each ran it (`build-image-wasm: wrote ..` in the cut logs) and their release commits were green on the wasm leg."
+  },
+  {
+   "id": "E99",
+   "lane": "(Order 30 era)",
+   "commit": "v0.39.0",
+   "text": "STALE ROW: shipped in v0.39.0 (the changelog entry `-d dumps the raw parse now, and its help says what each stage is`), which is exactly the item's ask: a raw-parse dump stage, and flag help naming the stages."
+  },
+  {
+   "id": "F175",
+   "lane": "path-58, icon-s3, kit-wire, lucide-s4",
+   "commit": "93afb97f",
+   "text": "BUILT in full and shipped in v0.56.0: gfx-path.md's thirteen decisions RULED 2026-11-12 (R1-R13) and its four slices landed 2026-11-13: S1 the `Path` primitive (masks in the glyph atlas, our own SVG path parser), S2 the vilan surface (`Path::from_svg`, `Path::builder()`, `Frame::path`), S3 the `icon` element and `Icon`, S4 the Lucide generator, the package `vilan/packages/lucide` (1,999 icons) and the full-set sweep against a reference rasteriser. No decision remains. Follow-ups carry on as F183 (stroke overlap coverage), F184 (package distribution and check cost) and the R5 miter gap noted in the paper."
+  }
+ ]
+}
