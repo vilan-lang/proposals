@@ -1,0 +1,30 @@
+{
+ "date": "2026-11-17",
+ "order": "after Order 58",
+ "closes": [
+  {
+   "id": "B749",
+   "lane": "views-58",
+   "commit": "69e567d3",
+   "text": "THE RULE, established from spec memory.md 6.3 and the check's history and now stated there: a scalar view used as a VALUE is refused with the `write *` diagnostic when the expression NAMES the view (a view binding or parameter, a `&place`, a value `if`/`match`/block handing one back), and READ THROUGH, as `*` would read it, when it does not (a `borrows` call's answer; B685's fallback), on both backends. CAUSE: `check_view_value_reads` had no arm for a unary operand, an `if`/`else if`/`then`-`else` condition, a `for` condition or a guard, and neither emitter read through there, so the `(base, key)` pair was tested: always truthy. FIX: `collect_scalar_value_read` shared by the binary and the new arms; the transformer's `walk_value_read` (which `walk_tested_subject` now delegates to) at `&&`/`||`, unary operands, every condition and guard; natively `condition_value`. NEWLY REFUSES `if x` over `x: &bool` (it was always true): ESTATE 0 (std by the full scope differential, corpus, examples, docs, kolt, the website). Seven refusal pins red with the arms removed (if, else if, then, `!`, `-`, loop, guard; each over a parameter, a local view and a field view), `*` as the positive control, a `borrows`-call condition pin and a native differential probe red with the read-through removed. No golden moved. Merged to next 7825cef0, pushed in 02e3b989 after the full suite on the merged tree (11,751 passed)."
+  },
+  {
+   "id": "B685",
+   "lane": "views-58",
+   "commit": "69e567d3",
+   "text": "CAUSE: B444's read-through at a by-value argument skipped a WRITTEN `&place`, and never reached a `lazy` thunk; `unwrap_or`'s `fallback` is `lazy`, so `&0` was handed on as its `(base, key)` pair and `+ 1` concatenated it. FIX: a by-value argument goes through `walk_value_read`, and `lazy_argument(arg, by_value)` does the same inside the thunk. Pins: `b685_a_view_fallback_is_read_out_where_the_option_is_consumed` (`unwrap_or(&0)`, `&zero`, `unwrap_or_else`, `map`, interpolation, `print`, a binding; over `Some` and `None`) and the native probe `view_fallback_reads.vl`, both red with the fix removed. Follow-up: B751. Merged to next 7825cef0, pushed in 02e3b989 after the full suite on the merged tree (11,751 passed)."
+  },
+  {
+   "id": "B750",
+   "lane": "views-58",
+   "commit": "69e567d3",
+   "text": "All three shapes reproduced first, then: (1) `if x` over `x: &bool` is B749's refusal (a checker answer, never rustc's), and `if flag(&holder)` builds through `condition_value`; (2) `is` never rendered a string subject as `&str` (only `match` did), so `x is Named::B` and even `s is \"x\"` by value were E0308: the rendering is shared now (`pattern_matches_a_string`, `string_subject`); (3) `match &holder.kind` reaches the `str` through `AsRef`. Pin: `b750_a_str_tested_through_a_view_or_by_is_builds_on_both_backends` (`native/str_view_tests.vl`), red with nine E0308 when the string subject is removed. Merged to next 7825cef0, pushed in 02e3b989 after the full suite on the merged tree (11,751 passed)."
+  },
+  {
+   "id": "N208",
+   "lane": "lsp-58",
+   "commit": "4ee5c2e2",
+   "text": "BOTH DEFECTS FIXED. (1) LAYOUT: `scripts/lsp-latency.py` detects kolt's layout and has a scenario table per layout; the old table is untouched (anchors, offsets and instruction counts identical before and after on the old exhibit), the new one keeps every row name and points each role at today's file; both scripts carry the generated inputs of both layouts from one list, and a tracked symlink that dangles in a `git archive` copy no longer crashes the harness. `perf/budgets.toml` and the E121 state are unchanged: re-anchoring the gated series on today's kolt is the owner's ruling (the css row changed role there; see E369). (2) THE 27% GAP, cause found: `vilan check` keeps a per-package macro and const-site table under the check-cache, keyed by the copy's path and stamped with the compiler build; a same-source seal ran both compilers in ONE copy, so every measured run missed it (46.1 G), while a seal with a separate tip tree had two warm tables (33.7 G); the const-site table is ~9.4 G of the gap and the macro table ~2.9 G. `perf_gate.py seal` now always gives the tip a copy of its own. The next same-source seal's absolute kolt row will read about 27% lower and about 75 MB less; past ratios stand. Three pins in `perf_gate_script.rs`, red with the defects planted. A `--probes` mode was added (cold open, a ten-keystroke burst, requests during an analysis, a file switch). Merged to next 02e3b989."
+  }
+ ]
+}

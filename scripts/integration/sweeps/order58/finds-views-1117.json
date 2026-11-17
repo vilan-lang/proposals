@@ -1,0 +1,54 @@
+{
+ "items": [
+  {
+   "id": "B751",
+   "section": "B",
+   "title": "Native: a view fallback BOUND to a name and then read with `*` is rustc E0614 - `let found = shelf.count(5).unwrap_or(&zero); print(*found + 1);`, and the checker accepts both `found + 1` and `*found + 1`",
+   "kind": "native backend defect (cargo refuses) + an ambiguity in the checker (is the binding a view?)",
+   "discussion": "lane views-58, 2026-11-17, out of scope of B685 (which fixed the consumed, unbound form on both backends); JS prints `1` for both spellings since B685",
+   "status": "open",
+   "area": "the B649/F99 corner: a generic `T` bound to a view (`Option<&i32>::unwrap_or`), crates/vilan-rust (how the bound result is typed), `check_view_value_reads`",
+   "body": "`Option<&i32>::unwrap_or(&zero)` answers a `&i32` at the type level, and B577/B685 read the payload or the fallback out where the option is CONSUMED. Bound to a name instead, what `found` is depends on who you ask: the checker lets it be read both as a value (`found + 1`) and through a star (`*found + 1`), JS has a number, and the native emission has an `i32` that `*` cannot dereference (E0614). Decide what the binding is (B649 deliberately leaves the `&` alone because the parameter's `T` IS a view) and make the checker say it: either the binding is a view (then `found + 1` is the `write *` refusal and native keeps a reference) or it is a value (then `*found` is refused with a diagnostic that says so). Pin both spellings on both backends."
+  },
+  {
+   "id": "B752",
+   "section": "B",
+   "title": "`unwrap_or_else(\\|\\| &0)` over an `Option<&i32>` is refused as `a view cannot escape its scope`, with nothing telling the author to write `\\|\\| 0`",
+   "kind": "diagnostic (a correct refusal that gives no way forward)",
+   "discussion": "lane views-58, 2026-11-17, met pinning B685",
+   "status": "open",
+   "area": "the view-escape check's message for a closure body that returns a `&literal` or `&local`",
+   "body": "The refusal is probably right (the closure's `&0` would be a view of its own temporary), but `unwrap_or(&0)` beside it is ACCEPTED (B649: the fallback is evaluated in the caller), so the author who moves from one to the other gets a memory-model error for what looks like the same thing. Say what to write: when the escaping view is of a literal or a fresh value and the expected type is the generic's `T` at a view, name the by-value closure (`|| 0`) if that types, or `unwrap_or(&0)`. Check first whether `|| 0` does type there; if not, that is the real gap."
+  },
+  {
+   "id": "M209",
+   "section": "M",
+   "title": "Every keystroke re-works which platform the edited file belongs to: the server re-reads and re-parses both entries' import graphs, 0.50 G instructions (about 150 ms) per keystroke on kolt, on every row; it was 28 ms at Order 50",
+   "kind": "performance (LSP latency; found by the 2026-11-17 profile; no item named it)",
+   "discussion": "lane lsp-58, 2026-11-17: callgrind of one leaf keystroke on today's kolt, 5.4% of the window; `map/2026-11-17/06-lsp-latency-today.md` section 4",
+   "status": "open",
+   "area": "crates/vilan-lsp (where a document's platform/entry is chosen per analysis; platform requirements in the server are a further 0.17 G)",
+   "body": "The answer depends on the package's import graph and manifest, not on the edited file's body: cache it per (entry set, import-graph stamp) and invalidate when an `import` line or the manifest changes (the parse already knows whether a keystroke touched an import). Lever 7 of the ranked list, ~0.50 G on EVERY keystroke of every row. Pin: a session of body edits performs the graph walk once; an edit to an import performs it again."
+  },
+  {
+   "id": "M210",
+   "section": "M",
+   "title": "A base-cache HIT still copies the stored world (0.30 G per keystroke), and the const pass costs 0.78 G when every one of its 1,227 sites is a cache hit",
+   "kind": "performance (LSP latency; found by the 2026-11-17 profile)",
+   "discussion": "lane lsp-58, 2026-11-17; `map/2026-11-17/06-lsp-latency-today.md` sections 4 and 6 (levers 8 and 4); M163 holds the const pass's design question",
+   "status": "open",
+   "area": "crates/vilan-core/src/analyzer.rs (the base cache's clone-on-serve), const_eval.rs + const_cache.rs (the hit path)",
+   "body": "Two fixed costs paid on every served keystroke. (1) The stored prefix world is cloned for the hot set to be walked over; 3.3% of a leaf keystroke. Share what the hot set cannot write (persistent or copy-on-write tables), clone only what it can. (2) With every const site a hit, the pass still spends 8.6% of the keystroke finding that out: 1,227 lookups should not cost 0.78 G, so the cost is in building keys or in the walk to the sites, not in evaluation. Profile the hit path alone; M163 is the larger question of whether the pass can be skipped for items whose records say nothing moved."
+  },
+  {
+   "id": "E369",
+   "section": "E",
+   "title": "The latency gate does not measure what is slowest in ordinary editing: a keystroke in a widely imported module with the entry open costs about 21 G (about 3 s of CPU) on kolt and no E121 row covers it; the css row changed role on today's kolt; idle hover costs 5 to 9 ms",
+   "kind": "tooling (the latency gate's coverage; an owner ruling on re-anchoring)",
+   "discussion": "lane lsp-58, 2026-11-17; `map/2026-11-17/06-lsp-latency-today.md` sections 2 and 3; E121 and E292 hold the mandate rows, N186 is the precedent for re-anchoring a series",
+   "status": "open",
+   "area": "scripts/lsp-latency.py (the scenario tables; the new `--probes` mode), perf/budgets.toml `[[e121]]`",
+   "body": "(1) THE MISSING ROW. Theme, model, styles and channel each re-walk 43 to 51 of the client world's 87 modules when edited with the entry open: about 21 G per keystroke. The only world-mode row today edits the leaf, which re-walks 2. Add a row for a widely imported module in world mode; it is the row importer reuse (M110's unbuilt firewall decision, M208 lever 1) would move from ~21 G to ~11 G. (2) RE-ANCHOR ON TODAY'S KOLT: the harness can drive both layouts since N208; today's kolt reads x1.11 to x2.27 of the old exhibit row by row (leaf x1.15). The gated series still runs on the frozen old layout. Moving it is the owner's ruling: new targets per row, the css row (today's `styles.vl` alone is a tiny world: 1.89 G; the same block typed with the entry open is 21.5 G), and which exhibit commit. (3) THE KEYSTROKE PATH: hover costs 5 to 9 ms of CPU on an idle server (1.8x the old exhibit) and 11.6 to 18.9 ms wall at a parse break; the mandate's other half is under 10 ms, and no report carries these figures. Carry them into the release report and give hover a row. (4) A file switch costs a base-cache miss, +7.5 to +17 G on the first keystroke in each newly edited file (M140): a probe exists for it now; make it a reported row."
+  }
+ ]
+}

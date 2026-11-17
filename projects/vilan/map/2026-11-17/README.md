@@ -11,6 +11,7 @@ Nothing was built or run for them beyond reading, `grep`, `wc`, `git log` and `g
 | 03-native-gpu-desktop.md | the Rust backend, native build times, the GPU layer and UI, desktop apps |
 | 04-compiler-core.md | the pipeline, incremental analysis, performance, tooling, correctness debt |
 | 05-papers-tracker.md | all 182 papers classified, tracker statistics, the owner's decision queue |
+| 06-lsp-latency-today.md | added later the same day: the language server measured on today's Kolt, one keystroke profiled, the levers ranked (it corrects survey 04 on what the incremental work built) |
 
 ## Known corrections (the integrator's, after reading them)
 

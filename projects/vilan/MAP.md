@@ -12,6 +12,14 @@ follow-ups). The tracker rows section 11 calls stale were closed after checking 
 code (B713, C13, N192, N193, E99, F175) or corrected (A185, M110, F1), the broken index row was
 removed, and P6b has its own item, M207. The text below is left as found.
 
+**A correction to section 4, from measuring today's Kolt** (survey 06 in the folder beside this
+file): "every slice landed" overstates the incremental work. The slice named S6 landed as a
+mechanism, but the decision it was for was never wired: an edit still re-walks every module that
+imports the edited one, whether or not its interface moved. That, not the leaf keystroke, is the
+sponginess: about 21 G instructions and 3 s of CPU per keystroke in a widely imported module,
+which no gated row measures. M194 turned out to be worth at most 7.7% of a keystroke. The four JS
+miscompiles of section 3 (B748, B749, B684, B685) are fixed on next.
+
 **How to read a percentage.** Every percentage has a basis in the same row, and a different basis
 gives a different number. "Slices" counts the paper's planned pieces; "outcome" measures the goal
 the paper set. Where the two disagree, both are given, and the gap between them is usually the
