@@ -1,0 +1,48 @@
+# VILAN_GFX_REPORT=1 on vilan/examples/ui-counter (debug build, --smoke), hw-58 @252e4dd85, under xvfb-run on
+# Mesa lavapipe (software Vulkan), WSL2 Linux, 2026-11-17; driven by XTEST: hover, ten clicks
+# on "Add one", Tab/Return/Tab/Space, leave, close. Everything below the marker is the program's stderr, verbatim.
+# ---8<---
+--- vilan gfx report: start ---
+window: 1
+crate: vilan-rt-gfx 0.56.1 (debug build)
+os: linux x86_64
+WGPU_BACKEND: (unset)
+WGPU_DEBUG: (unset)
+adapter: llvmpipe (LLVM 19.1.7, 256 bits)
+adapter vendor: 0x10005 (Mesa)
+adapter device: 0x0000
+adapter type: CPU (a software renderer)
+backend: Vulkan
+driver: llvmpipe
+driver info: Mesa 25.0.7-2+deb13u1 (LLVM 19.1.7)
+max texture side: 16384 (adapter 16384; the device asks WebGL2's limits, raised to the adapter's texture size)
+surface format: Bgra8UnormSrgb (supported: Bgra8UnormSrgb, Bgra8Unorm)
+present mode: AutoVsync (supported: Immediate, Mailbox, Fifo, FifoRelaxed)
+alpha mode: Opaque (supported: Opaque, Inherit)
+frame latency: 2 frames at most
+surface size: 360x240 px
+window inner size: 360x240 px
+scale factor: 1
+text scale: 1 (the system's text size setting is not read)
+monitor: screen, 1280x1024 px, refresh unknown, scale factor 1
+--- end ---
+--- vilan gfx report: exit ---
+run time: 1.2 s
+frames presented: 12
+frames skipped: 0 (minimised, covered, timed out, or the surface had to be made again)
+surface resizes: 0
+scale factor changes: 0
+times: microseconds elapsed on the main thread (wall time, not CPU time), per frame: count, median, 95th percentile, max
+layout: count 12, median 316 us, p95 11264 us, max 11264 us (std::ui layout)
+paint: count 12, median 14 us, p95 21 us, max 21 us (std::ui paint, into the scene)
+frame build: count 12, median 359 us, p95 11352 us, max 11352 us (the frame callback: std::ui's layout and paint, or the program's drawing)
+encode: count 12, median 170 us, p95 2297 us, max 2297 us (scene to instances, glyphs and path masks rasterised)
+submit: count 12, median 1654 us, p95 2370 us, max 2370 us (upload, record and submit)
+acquire: count 12, median 38 us, p95 96 us, max 96 us (waiting for the surface's next texture)
+present: count 12, median 262 us, p95 10756 us, max 10756 us (handing the frame to the system)
+interval: count 9, median 2951 us, p95 3368 us, max 3368 us (between presents); counted only between frames asked for back to back (the next frame requested before, or within 1 ms after, the previous present): 9 of 11 intervals
+glyph atlas: 1 mask pages, 0 colour pages, 1.0 MiB (peak 1.0 MiB), 22 glyphs resident, 0 evicted, 0 dropped
+path mask textures: 0 at most
+peak per frame: 6 primitives, 3 quad instances, 19 sprite instances, 2 draw calls
+instance buffers: 272.0 KiB at most
+--- end ---
