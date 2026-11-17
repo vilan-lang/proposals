@@ -326,7 +326,7 @@ build would also open a console window.
 | npm | current |
 | Open VSX and the VS Code Marketplace | current (Marketplace not independently queried) |
 | Playground | current |
-| **Homebrew** | **broken.** The publish job reads a secret named `TAP_APP_CLIENT_ID`. The repository has `TAP_APP_ID`. The job skips its steps and reports green. The website advertises `brew install`. Fix: add the App's client id as that secret, then re-run the job for v0.56.1 (L25) |
+| **Homebrew** | **was broken; fixed later on 2026-11-17** (the secret was added and the tap now serves 0.56.1; the two code follow-ups in L25 remain). As found: the publish job reads a secret named `TAP_APP_CLIENT_ID`. The repository has `TAP_APP_ID`. The job skips its steps and reports green. The website advertises `brew install`. Fix: add the App's client id as that secret, then re-run the job for v0.56.1 (L25) |
 
 Also: the nightly perf workflow's macOS job has been cancelled within two seconds on eight straight
 nights (N209).
