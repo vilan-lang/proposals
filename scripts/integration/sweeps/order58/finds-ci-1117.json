@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "N210",
+   "section": "N",
+   "title": "CI tests one tree several times: a release's fold lands `main` and `next` on the tag's exact tree, and each gets a full 24-minute run (v0.56.0 and v0.56.1 spent four of twelve full runs that way on 2026-11-16)",
+   "kind": "CI (duplicate work; the owner's P.S. of 2026-11-17)",
+   "discussion": "the owner, 2026-11-17: 'We should consider better ways of working around the lengthy CI runs'; MAP.md section 10 lists seven options with measured timings; this item is options 1 and 5, the two that need no ruling",
+   "status": "open",
+   "area": ".github/workflows/ci.yml (`changes`, the `seen` step), scripts/ci-already-green.sh, scripts/ci-local.sh (`--quick`), crates/vilan-cli/tests/ci_local_script.rs",
+   "body": "BUILT on next (the commit that names this item): (1) `ci.yml`'s `changes` job asks `scripts/ci-already-green.sh` whether a push run of this workflow in the last fourteen days, with EVERY job successful, holds the head commit's TREE; a yes skips the leg jobs and `check` still reports; anything else runs the suite; `[ci full]` in the head commit's message runs it regardless. Tried by hand against 2026-11-16's commits: main 12b8f86a and the tag 7524826e share tree 3210d9b4, next b6bc6b54 and the release commit d20bbfd9 share 17e54cac, and b4561bf6 (its run red on vilan-fmt) is not found. (2) `scripts/ci-local.sh --quick` = fmt, vilan-fmt, clippy, audit, about three minutes; CLAUDE.md asks for it before a push. STILL OPEN from MAP.md section 10, in its order: (3) the single self-hosted runner is a point of failure and runs the two Linux shards one after the other (fallback to hosted runners when it is offline; a second runner instance); (4) the four Windows shards are the 19 to 23 minute floor: measure compile against test time first; L20 and L24 are the owner's Windows-runner items; (2) letting release.yml trust ci.yml on the same commit saves 30 minutes per release and reverses a rule made after v0.32.0: the owner's ruling. KNOWN EDGE of the tree skip: `cut-release.sh` absorbs `ci`-class perf bumps from the `perf-measured` artifact of the green run at the cut's target; a target whose run was tree-skipped has no artifact, so its bumps stay one more release (the script already says so when the artifact is missing). The script prints the run it found, so the cut could follow it; not done."
+  }
+ ]
+}
