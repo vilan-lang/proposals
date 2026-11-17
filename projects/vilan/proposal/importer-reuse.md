@@ -1,6 +1,11 @@
 # Importer reuse: the stub split (M208 lever 1)
 
-> Status: **DRAFT 2026-11-18, for the owner's ruling.** Stage 1 (design only) of lane incr-58,
+> Status: **RULED 2026-11-18, the spike is GO.** The owner, asked "May importer reuse depend on
+> `auto` annotations, with Kolt opting in, so I can run the spike?": "Yes, run the spike". So:
+> (1) importer reuse MAY depend on `auto` annotations; (2) Kolt's opt-in is an acceptable price;
+> (3) the spike of section 12 runs (P1 and P2, slice A, behind a switch, not for `next`), and its
+> yes or no on the four criteria there decides the build. Section 9's smaller win was already
+> going ahead. Slice B stays behind the effects audit. Originally: DRAFT 2026-11-18, for the owner's ruling. Stage 1 (design only) of lane incr-58,
 > written against `vilan` `next` @02e3b989. No mechanism is built. Every claim is marked
 > `[ran]`, `[read]` or `[inferred]`.
 >

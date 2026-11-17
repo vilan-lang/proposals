@@ -171,4 +171,4 @@ are the frozen eras before it.
 
 Nothing in flight outside this directory as of the 2026-08-18 sweep —
 every drafted paper has a row above.
-| `importer-reuse.md` | DRAFT 2026-11-18, for ruling; three decisions in §12 (tracker M208 lever 1; depends on `auto-annotations.md` S5) | Why an edit still re-analyzes every importer, why the mechanism M110's S6 implied cannot be sound, and the stub split that can be |
+| `importer-reuse.md` | RULED 2026-11-18: the spike is GO, importer reuse may depend on `auto`, Kolt opts in; three decisions in §12 answered (tracker M208 lever 1; depends on `auto-annotations.md` S5) | Why an edit still re-analyzes every importer, why the mechanism M110's S6 implied cannot be sound, and the stub split that can be |
