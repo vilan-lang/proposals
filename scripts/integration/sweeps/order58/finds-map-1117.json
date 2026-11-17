@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "L25",
+   "section": "L",
+   "title": "Homebrew has not been updated since v0.41.1 (2026-09-27): the release job reads the secret `TAP_APP_CLIENT_ID`, the repository holds `TAP_APP_ID`, and the job skips its steps while reporting green",
+   "kind": "release engineering (a broken publish channel; the owner's step)",
+   "discussion": "found by the 2026-11-17 map survey and verified by the integrator: `gh api repos/vilan-lang/homebrew-vilan/contents/Formula/vilan.rb` names version 0.41.1; `gh secret list -R vilan-lang/vilan` shows TAP_APP_ID and TAP_APP_PRIVATE_KEY only; fifteen releases behind at v0.56.1",
+   "status": "open",
+   "area": ".github/workflows/release.yml (`publish-brew`, the `Is there an app to push with?` step), scripts/brew-formula.sh, the website's install page",
+   "body": "Commit 1946f746 (2026-09-28) moved the token step from the App's numeric id to its CLIENT id (the action deprecated `app-id`), and the secret it reads became `TAP_APP_CLIENT_ID`. That secret was never created, so `publish=false`, every later step is skipped, the job is green, and only a `::notice` says the tap was not updated. The website and the hello-vilan tour advertise `brew install vilan-lang/vilan/vilan`, which installs 0.41.1. THE OWNER'S STEP: add the App's client id (the `Iv...` string on its settings page) as the repository secret `TAP_APP_CLIENT_ID`, then re-run `publish-brew` for the latest tag (or wait for the next release). TWO CODE FOLLOW-UPS: (1) a publish channel that is configured-then-broken should fail, not skip: make the skip an error once the tap has ever been published (or when `TAP_APP_PRIVATE_KEY` is set and the client id is not); (2) the fold's manifest check has a cousin to add: after a release, read the tap's formula version and refuse a fold that leaves it behind."
+  },
+  {
+   "id": "N208",
+   "section": "N",
+   "title": "The perf harness measures a frozen pre-reorganisation Kolt, and its Kolt check row reads about 27% lower at seals run across a breaking change than at ordinary seals on the same source",
+   "kind": "harness (perf exhibit; two defects)",
+   "discussion": "2026-11-16 (the v0.56.1 patch needed the old-layout exhibit `~/.vilan/perf-exhibit/order58b/kolt @76067e7`) and 2026-11-17 (the map survey's trend table)",
+   "status": "open",
+   "area": "scripts/perf_gate.py (the untracked-input list near line 456, the `--tip-kolt` path), scripts/lsp-latency.py (`copy_untracked_inputs`, the scenario files), proposals/scripts/integration/seal.sh",
+   "body": "(1) LAYOUT. Kolt was reorganised on 2026-11-09 (`src/server`, `src/client`, `src/shared`, library packages under `lib/`, generated inputs at `lib/lucide/src/icons` and `lib/search-dict/data`). The harness carries the OLD untracked inputs (`src/lucide`, `src/search-dict`, `search-dict`) and its E121 scenarios edit files by their old paths (`shared.vl`, `model.vl`, the css file). So every seal since measures a copy of Kolt from before the reorganisation with patches committed on top, not the program the owner works on, which has grown since. Migrate the input list and the scenario table to the new layout, re-anchor the E121 series as N186 did, and state the new baseline. (2) MODE. The same Kolt source reads about 33.7 G instructions for `vilan check` at a seal run with a separate prepared tip tree (v0.54.0, v0.56.0: both sides, base and tip) and about 46.1 G at a same-source seal (v0.55.0 on c7454052, v0.56.1 on 76067e7a: both sides), under compilers that differ by under 1%. The exhibit trees are byte-identical outside `.git` (checked with `diff -rq` on 2026-11-17: order58/kolt, order58b/kolt and order58/kolt-tip differ only by the db patch). Peak RSS follows the same split (510 to 530 MB against 589 to 594 MB). Each seal's RATIO stands, since both of its sides are measured one way, but the absolute rows in `perf/report-v*.md` are not comparable across the two kinds of seal, and one of the two modes is measuring less than the other believes. Find which (a second entry or package checked in one mode and not the other is the first guess), make the two modes measure the same thing, and say in the report which kind of seal a row came from."
+  },
+  {
+   "id": "N209",
+   "section": "N",
+   "title": "The nightly `perf.yml` macOS job has been cancelled within two seconds on eight straight nights (2026-11-10 to 2026-11-17), so every nightly run concludes `cancelled`",
+   "kind": "CI rot (an informational job)",
+   "discussion": "found by the 2026-11-17 map survey (`gh run list --workflow perf.yml`); the cause was not determined: the job records no steps",
+   "status": "open",
+   "area": ".github/workflows/perf.yml (job `macos`, runner macos-14)",
+   "body": "The `counts` job succeeds in about 26 minutes; `macos` is cancelled before any step. Likely causes to check in order: a concurrency group it shares with `counts` or with ci.yml, the runner label (macos-14 images are retired on a schedule), a job-level `if:` or `needs:` that now evaluates false. Either fix it or delete the job: a nightly that is always `cancelled` hides the day `counts` really fails. This is also the only place anything of ours runs on macOS at all, and it runs no window."
+  }
+ ]
+}
