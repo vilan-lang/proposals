@@ -1,0 +1,14 @@
+{
+ "items": [
+  {
+   "id": "E370",
+   "section": "E",
+   "title": "`VILAN_INCREMENTAL=verify` is RED on kolt on the released compiler: on 39 of 40 keystrokes the incremental analysis and the clean one differ in a hover `definition` row, and because verify reports only the first differing row it would hide any other divergence behind it",
+   "kind": "bug or gate defect (incremental analysis vs clean: hover definitions; the dogfooding gate is blind)",
+   "discussion": "lane incr-58 stage 2a, 2026-11-18: the installed 0.56.1 on today's kolt (39 of 40 keystrokes DIFFERS, every one a hover `definition` row); the tip gives the same lines byte for byte after normalising paths and row numbers; the old exhibit is red the same way on the tip (37 of 40). NOT investigated which side is right",
+   "status": "open",
+   "area": "crates/vilan-core/src/incremental.rs (`render_observation`, verify's comparison), analyzer/hover_labels.rs and the per-item hover records (M188/M189 era), scripts/lsp-latency.py (the session under verify)",
+   "body": "Two readings, and the item is to find out which. (a) A REAL STALE ANSWER: the incremental path serves a hover's `definition` (a position or a label) from a record that a clean analysis computes differently, which the owner would meet as go-to-definition or a hover pointing at the wrong line after an edit above it. Positions under edits are exactly where served records need re-basing (item_records.rs stores window-relative ids and re-bases; a span not re-based would look like this). (b) A COMPARISON ARTIFACT: the observation renders something that legitimately differs between the two analyses (an absolute row number, an id), and the differential's corpus is green because it does not render hovers this way. Either way the gate is broken today: `verify` is the dogfooding mode Q3 of incremental-analysis.md ruled, it stops at the FIRST differing row, and with the `definition` rows dropped from the comparison (a scratch patch, never committed: `~/.vilan/gates/incr-58/verify-skip-definitions.scratch.patch`) 57 of 57 comparisons are identical on both exhibits. So: (1) take the first DIFFERS line, reduce it to a fixture, decide (a) or (b); (2) if (a), fix the record and add the fixture to the edit-replay differential with a plant; (3) make verify report every differing row class, not the first; (4) run the kolt session under verify in the seal, where it would have been red since whichever order introduced this."
+  }
+ ]
+}
