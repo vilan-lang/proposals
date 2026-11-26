@@ -30,7 +30,7 @@ Related:
 | 5 | The inferred root `~` is deferred | With (4) most of its uses go away, and `~` is already the editor's spelling for a hinted type |
 | 6 | Four statements of rev 1 are corrected against the code (§9) | The contract hash already covers layouts; fields have no visibility; the derives are already std macros; a native key needs generated access |
 
-**What is asked of the owner.** Fourteen questions, each with a recommendation (§8). The ones that shape everything else are Q1 (identity in S1), Q2 (two key types), Q3 (how a partial place is reached) and Q6 (the handle door).
+**Ruled 2026-11-25.** The owner accepted the recommendation on each of the fourteen questions (§8); the rulings are §8a.
 
 ---
 
@@ -275,6 +275,29 @@ Each has a recommendation. Q1, Q2, Q3 and Q6 shape the rest.
 12. **A field holding a closure** (rev 1 Q3). Its key is comparable though its value is not. **Rec: nothing to refuse.**
 13. **Steps of a library's own** (a rope's line, a grid's cell) as `MaybeKey` steps built from two continuations and a `Hash`? **Rec: no.** A structure's own addressing is the lens's job, and an open step would put closures back into keys.
 14. **Names.** `KeyPath` for the erased identity (Swift uses the word for the typed thing), `MaybeKey`, `[field_syntax]`. **Rec: as written; the owner's to change.**
+
+## 8a. Rulings (2026-11-25)
+
+The owner: "Recommendations accepted for Q1-Q14." Each question's recommendation is the ruling.
+
+| # | Ruling |
+|---|---|
+| R1 | Identity is in S1: `PartialEq`, `Hashable`, `name`, `starts_with` and the erased `KeyPath` |
+| R2 | Two key types: `Key<S, F>` for a place that is always there, `MaybeKey<S, F>` for one that may not be. Rev 1's `Key<S, Option<P>>` is withdrawn |
+| R3 | A partial place is reached by continuation in S3 (`get`, `view`, `change`, `put`). A view form is later sugar, not designed here |
+| R4 | Variant steps are `::Variant` then a payload position, the position optional for a one-slot payload. A payload of several slots is reached one slot at a time |
+| R5 | List and map steps are `MaybeKey` steps in S3, identified by `Hash`. A list step is a position, never an item |
+| R6 | The handle door is `[field_syntax]` on a method taking a `Key<T, _>`. It replaces the rule keyed on `Store` and `StoreSome` |
+| R7 | No inferred root (`~.x`, `~::Variant`) in these stages |
+| R8 | A generic struct's key infers its arguments from the expected type (`Pair.left`). No `Pair<i32>.left` |
+| R9 | Where `S` names both a type and a value, the value wins |
+| R10 | `TupleKey` gains identity and in-place access in S1. Unifying it with `Key`, and a labelled tuple's key, stay open |
+| R11 | Natively a key carries its access (§4 (a)) |
+| R12 | A key to a field holding a closure is an ordinary key |
+| R13 | No library-defined steps |
+| R14 | The names stand: `KeyPath`, `MaybeKey`, `[field_syntax]` |
+
+B711 is ready to queue by stage. B753 (a scalar view returned through `borrows`) is a prerequisite of S1's accessor and goes first.
 
 ## 9. Rev 1 against the code
 
