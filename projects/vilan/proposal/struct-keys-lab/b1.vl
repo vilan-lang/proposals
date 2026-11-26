@@ -1,0 +1,24 @@
+struct Meta { owner: str, n: i32 }
+struct Task { title: str, status: str, meta: Meta }
+
+fun meta_of(t: &mut Task): &mut Meta borrows t {
+	t.meta
+}
+
+fun title_of(t: &mut Task): &mut str borrows t {
+	t.title
+}
+
+fun set(place: &mut str, value: str) {
+	place = value;
+}
+
+fun main() {
+	mut t = Task { title = "a", status = "open", meta = Meta { owner = "x", n = 1 } };
+	meta_of(&mut t).owner = "y";
+	print(t.meta.owner);
+	set(title_of(&mut t), "b");
+	print(t.title);
+	set(&mut t.status, "done");
+	print(t.status);
+}

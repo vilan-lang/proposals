@@ -1,0 +1,7 @@
+struct Meta { owner: str }
+struct Task { title: str, status: str, meta: Meta }
+
+fun main() {
+	let k = Task.title;
+	print(k);
+}

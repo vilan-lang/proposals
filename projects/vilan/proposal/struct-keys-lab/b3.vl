@@ -1,0 +1,18 @@
+struct Meta { owner: str, n: i32 }
+struct Task { title: str, meta: Meta }
+
+struct Reach<S, F> {
+	borrow: |&mut S| &mut F,
+	lend: |&S| &F,
+}
+
+fun main() {
+	mut t = Task { title = "a", meta = Meta { owner = "x", n = 1 } };
+	let pick: |&mut Task| &mut Meta = |task| task.meta;
+	pick(&mut t).owner = "y";
+	print(t.meta.owner);
+	let reach: Reach<Task, Meta> = Reach { borrow = |task| task.meta, lend = |task| task.meta };
+	(reach.borrow)(&mut t).n = 7;
+	print(t.meta.n);
+	print((reach.lend)(&t).owner);
+}
