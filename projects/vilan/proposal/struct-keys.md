@@ -330,7 +330,7 @@ The owner: "Recommendations accepted for Q1-Q14." Each question's recommendation
 | R13 | No library-defined steps |
 | R14 | The names stand: `KeyPath`, `MaybeKey`, `[field_syntax]` |
 
-B711 is ready to queue by stage. B753 (a scalar view returned through `borrows`) was a prerequisite of S1's accessor and is fixed on `next` (2026-11-25). What it left is B758: a GENERIC view return used at a scalar is still wrong on JS, and `fun at<F>(s: &mut S, k: Key<S, F>): &mut F borrows s` is exactly that. B758 goes before S1, or S1 carries it.
+B711 is ready to queue by stage. B753 (a scalar view returned through `borrows`) was a prerequisite of S1's accessor and is fixed on `next` (2026-11-25). What it left is B758: a GENERIC view return used at a scalar is still wrong on JS, and `fun at<F>(s: &mut S, k: Key<S, F>): &mut F borrows s` is exactly that. B758 goes before S1, or S1 carries it. Update 2026-11-26: B758 is fixed on `next` (local): the scalar-ness of a bare view return is decided at the instance by caller and callee alike, pinned for the accessor's shape on both backends. B760 (native: no lifetime when a view return borrows one of two view parameters) is open and S1 may meet it.
 
 ## 9. Rev 1 against the code
 
