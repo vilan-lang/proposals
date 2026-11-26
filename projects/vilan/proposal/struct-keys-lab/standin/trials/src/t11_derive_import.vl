@@ -1,0 +1,15 @@
+// Can the derive carry its own imports (as std's PartialEq derive does), so a
+// user imports only `Keys`? It has to name the library by a path, and a
+// library's macro cannot know what the USER's package calls it (`pkg::` here
+// is the user's own package; from another package it is the dependency name).
+import pkg::key::{ Keys };
+
+[derive(Keys)]
+struct Thing {
+	label: str,
+}
+
+fun main() {
+	let t = Thing { label = "x" };
+	print(Thing::label().get(&t));
+}

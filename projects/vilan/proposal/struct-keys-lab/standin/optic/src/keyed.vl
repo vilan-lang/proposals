@@ -1,0 +1,310 @@
+// LAB (2026-11-25): the optic of `lib.vl`, ported onto the `Key` stand-in of
+// `key.vl`. Node identity is the KEY's path (its erased steps), not a string,
+// and a covering write wakes the watched places below it by a structural diff
+// of old against new through each watched node's key, instead of copying every
+// watched place before the write (lib.vl's `remember_below`).
+import std::hash::{ Hash, Hashable };
+import std::hash_map::HashMap;
+import std::io::panic;
+import std::reactive::{
+	Signal,
+	SignalCell,
+	Source,
+	Subscriber,
+	Subscription,
+	batch,
+	cell_identity,
+	subscriber_of,
+};
+import std::shared::Shared;
+import pkg::key::{ Differs, Key, KeyStep, MaybeKey };
+
+export *;
+
+/// How a place compares between two roots.
+enum Compared {
+	Same,
+	Changed,
+	/// Not there in either: nothing below it can be there.
+	Absent,
+}
+
+/// One watched place. Typed by the ROOT only: a path key erases the types of
+/// the places it passes through, so a node knows its place relative to the
+/// root, never relative to its parent.
+struct KNode<S> {
+	woke: SignalCell<i32>,
+	/// By the hash of ONE step: `at(a.then(b))` and `at(a).at(b)` walk the
+	/// same two edges and reach the same node.
+	children: HashMap<Hash, Shared<KNode<S>>>,
+	/// How this place compares between two roots, in place (no copy). `None`
+	/// on a node a path only passed through: no handle was ever made for it,
+	/// so it has no watcher, and the diff walks on below it.
+	compare: Option<|&S, &S| Compared>,
+}
+
+fun knode<S>(): Shared<KNode<S>> {
+	Shared::new(KNode { woke = SignalCell::new(0), children = HashMap::new(), compare = None })
+}
+
+fun bump<S>(node: Shared<KNode<S>>) {
+	let woke = node.read().woke;
+	woke.set(woke.get() + 1);
+}
+
+/// The structural diff: walk the WATCHED nodes below `node` only, comparing
+/// each place in `old` against `new` through its key, and wake what changed.
+/// A place that did not change has no changed place below it.
+fun wake_diff<S>(node: Shared<KNode<S>>, old: &S, new: &S) {
+	for child in node.read().children.values() {
+		match child.read().compare {
+			Some(let compare) => {
+				match compare(old, new) {
+					Compared::Changed => {
+						bump(child);
+						wake_diff(child, old, new);
+					},
+					Compared::Same => {},
+					Compared::Absent => {},
+				}
+			},
+			None => wake_diff(child, old, new),
+		}
+	}
+}
+
+fun lend_cell<V>(value: &mut V, read: |&V| void) {
+	read(value)
+}
+
+fun diff_roots<S>(node: Shared<KNode<S>>, old: &S, new: &mut S) {
+	wake_diff(node, old, new);
+}
+
+/// A readable, writable view of one place `T` inside a root state `S`.
+export struct KOptic<S, T> {
+	state: Shared<S>,
+	node: Shared<KNode<S>>,
+	above: List<Shared<KNode<S>>>,
+	/// The path from the root, as the keys spelled it.
+	steps: List<KeyStep>,
+	lend: |&S, (|&T| void)| void,
+	borrow: |&mut S, (|&mut T| void)| void,
+	/// Only on the root, where `T` is `S`: the value as a root. Generic code
+	/// over `T` cannot learn that `T == S`; the root's constructor can.
+	as_root: Option<|T| S>,
+}
+
+export fun koptic<S>(own value: S): KOptic<S, S> {
+	KOptic {
+		state = Shared::new(value),
+		node = knode(),
+		above = [],
+		steps = [],
+		lend = |held: &S, read: |&S| void| read(held),
+		borrow = |held: &mut S, change: |&mut S| void| change(held),
+		as_root = Some(|value: S| value),
+	}
+}
+
+export impl KOptic<type S, type T> {
+	fun peek<R>(self, read: |&T| R): Option<R> {
+		mut out: Option<R> = None;
+		let lend = self.lend;
+		lend_cell(self.state.write(), |held| lend(held, |place| out = Some(read(place))));
+		out
+	}
+
+	/// The key path's name, `address.city`.
+	fun path(self): List<KeyStep> {
+		self.steps
+	}
+
+	fun watched_below(self): bool {
+		self.node.read().children.len() > 0
+	}
+
+	/// Change the place in place. With watched places below it, there is no old
+	/// value to diff against unless one is kept: this copies the ROOT once (a
+	/// path-reached node compares root-relative, see `KNode`), writes, then
+	/// diffs. With nothing watched below it, nothing is copied.
+	fun update(self, change: |&mut T| void): bool {
+		mut wrote = false;
+		let borrow = self.borrow;
+		let node = self.node;
+		let state = self.state;
+		let below = self.watched_below();
+		batch(|| {
+			mut old: Option<S> = None;
+			if below {
+				old = Some(state.read());
+			}
+			borrow(state.write(), |place| {
+				change(place);
+				wrote = true;
+			});
+			if wrote {
+				for above in self.above {
+					bump(above);
+				}
+				bump(node);
+				if old is Some(let before) {
+					diff_roots(node, &before, state.write());
+				}
+			}
+		});
+		wrote
+	}
+
+	/// Replace the place. At the root both values are at hand, so the diff runs
+	/// old-in-place against new with no copy; below the root it is `update`.
+	fun replace(self, value: T): bool {
+		match self.as_root {
+			Some(let to_root) => {
+				let fresh = to_root(value);
+				let node = self.node;
+				let state = self.state;
+				batch(|| {
+					if node.read().children.len() > 0 {
+						lend_cell(state.write(), |old| wake_diff(node, old, &fresh));
+					}
+					state.write() = fresh;
+					bump(node);
+				});
+				true
+			},
+			None => self.update(|place| place = value),
+		}
+	}
+
+	fun try_set(self, value: T): bool {
+		self.replace(value)
+	}
+
+	/// The optic of a total key's place under this one.
+	fun at<U: Differs>(self, key: Key<T, U>): KOptic<S, U> {
+		self.walk(key.steps, key.lend, key.borrow)
+	}
+
+	/// The optic of a partial key's place: a second method, because `at` cannot
+	/// be overloaded on `Key` versus `MaybeKey` (trials/t1_then_overload.vl).
+	fun at_maybe<U: Differs>(self, key: MaybeKey<T, U>): KOptic<S, U> {
+		self.walk(key.steps, key.lend, key.borrow)
+	}
+
+	fun walk<U: Differs>(
+		self,
+		steps: List<KeyStep>,
+		lend: |&T, (|&U| void)| void,
+		borrow: |&mut T, (|&mut U| void)| void,
+	): KOptic<S, U> {
+		let outer_lend = self.lend;
+		let outer_borrow = self.borrow;
+		let lend_part = |held: &S, read: |&U| void| outer_lend(held, |place| lend(place, read));
+		let borrow_part = |held: &mut S, change: |&mut U| void| outer_borrow(
+			held,
+			|place| borrow(place, change),
+		);
+		// One edge per step: the path's identity is its steps, however the keys
+		// that spelled it were grouped.
+		mut at = self.node;
+		mut above = self.above;
+		mut path = self.steps;
+		for step in steps {
+			above.push(at);
+			path.push(step);
+			let edge = step.hash();
+			let next = match at.read().children.get(edge) {
+				Some(let found) => found,
+				None => {
+					let made: Shared<KNode<S>> = knode();
+					at.write().children.insert(edge, made);
+					made
+				},
+			};
+			at = next;
+		}
+		if at.read().compare is None {
+			at.write().compare = Some(|old: &S, new: &S| {
+				mut result = Compared::Absent;
+				mut was = false;
+				lend_part(old, |before| {
+					was = true;
+					mut now_there = false;
+					lend_part(new, |after| {
+						now_there = true;
+						result = if before.differs_from(after) { Compared::Changed } else { Compared::Same };
+					});
+					if !now_there {
+						result = Compared::Changed;
+					}
+				});
+				if !was {
+					lend_part(new, |_after| result = Compared::Changed);
+				}
+				result
+			});
+		}
+		KOptic {
+			state = self.state,
+			node = at,
+			above,
+			steps = path,
+			lend = lend_part,
+			borrow = borrow_part,
+			as_root = None,
+		}
+	}
+}
+
+export impl KOptic<type S, type T> with Source<T> {
+	fun get(self): T {
+		match self.peek(|place| *place) {
+			Some(let value) => value,
+			None => panic("optic: this place is not there"),
+		}
+	}
+
+	[must_use]
+	fun on_settle(self, subscriber: Subscriber): Subscription {
+		self.node.read().woke.on_settle(subscriber)
+	}
+
+	fun identity(self): Option<i32> {
+		Some(cell_identity(self.node.read().woke))
+	}
+
+	[must_use]
+	fun attach_observer(self, observer: |T| void, immediately: bool): Subscription {
+		let state = self.state;
+		let lend = self.lend;
+		let tell = || {
+			mut now: Option<T> = None;
+			lend_cell(state.write(), |held| lend(held, |place| now = Some(*place)));
+			if now is Some(let value) {
+				observer(value);
+			}
+		};
+		let subscription = self.node.read().woke.on_settle(subscriber_of(tell, false));
+		if immediately {
+			tell();
+		}
+		subscription
+	}
+}
+
+export impl KOptic<type S, type T> with Signal<T> {
+	[track_caller]
+	fun set(self, value: T) {
+		self.replace(value);
+	}
+
+	fun notify(self) {
+		batch(|| {
+			for node in self.above {
+				bump(node);
+			}
+			bump(self.node);
+		});
+	}
+}

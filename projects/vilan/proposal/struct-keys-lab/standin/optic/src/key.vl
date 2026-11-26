@@ -1,0 +1,406 @@
+// LAB (2026-11-25): a LIBRARY stand-in for the struct-keys paper's `Key<S, F>`
+// (B711), to learn what the real feature must provide. Nothing here is the
+// feature: a key is a list of erased steps plus two continuation closures.
+import std::compare::PartialEq;
+import std::hash::{ Hash, Hashable };
+import std::hash_map::HashMap;
+import std::io::panic;
+
+export *;
+
+/// One step of a key's path, erased so every key shares one representation.
+///
+/// `Field` carries its OWNER struct's name, so `A.x` and `B.x` differ even when
+/// both are field 0 named `x`. The value steps (`Index`, `Entry`) hold their
+/// value erased: an index as itself, a map key as its `Hash`, which carries no
+/// type tag (see `Entry`).
+[derive(PartialEq, Hashable)]
+export enum KeyStep {
+	/// owner struct, field index, field name
+	Field(str, usize, str),
+	/// an `Option`'s payload
+	Payload,
+	/// a list position
+	Index(usize),
+	/// a map key, erased to its hash, and how it renders in `name()`.
+	/// UNSOUND across key types: `Id { n = 1 }` and `Other { m = 1 }` hash
+	/// alike, and a library has no type name to add (there is no `type_name`).
+	Entry(Hash, str),
+	/// owner enum, variant name
+	Variant(str, str),
+}
+
+fun render(steps: List<KeyStep>): str {
+	mut out = "";
+	for step in steps {
+		match step {
+			KeyStep::Field(let _owner, let _index, let name) => {
+				out = if out == "" { name } else { i"{out}.{name}" };
+			},
+			KeyStep::Payload => out = i"{out}?",
+			KeyStep::Index(let index) => out = i"{out}[{index}]",
+			KeyStep::Entry(let _hash, let shown) => out = i"{out}[{shown}]",
+			KeyStep::Variant(let _owner, let variant) => out = i"{out}::{variant}",
+		}
+	}
+	out
+}
+
+fun prefixed(steps: List<KeyStep>, prefix: List<KeyStep>): bool {
+	if prefix.len() > steps.len() {
+		ret false;
+	}
+	mut i: usize = 0;
+	for i < prefix.len() {
+		if steps[i] != prefix[i] {
+			ret false;
+		}
+		i += 1;
+	}
+	true
+}
+
+fun joined(a: List<KeyStep>, b: List<KeyStep>): List<KeyStep> {
+	mut out = a;
+	for step in b {
+		out.push(step);
+	}
+	out
+}
+
+/// A TOTAL key: the field `F` is always there in an `S`.
+export struct Key<S, F> {
+	steps: List<KeyStep>,
+	lend: |&S, (|&F| void)| void,
+	borrow: |&mut S, (|&mut F| void)| void,
+}
+
+/// A PARTIAL key: the place may not be there (an option's payload, a variant's,
+/// a list position, a map entry). The closures simply do not call back then.
+export struct MaybeKey<S, F> {
+	steps: List<KeyStep>,
+	lend: |&S, (|&F| void)| void,
+	borrow: |&mut S, (|&mut F| void)| void,
+}
+
+/// What the derive calls: the key of one field, by owner, index and name.
+export fun field_key<S, F>(
+	owner: str,
+	index: usize,
+	name: str,
+	lend: |&S, (|&F| void)| void,
+	borrow: |&mut S, (|&mut F| void)| void,
+): Key<S, F> {
+	Key { steps = [KeyStep::Field(owner, index, name)], lend, borrow }
+}
+
+/// The identity key `S -> S` (the empty path).
+export fun whole<S>(): Key<S, S> {
+	Key {
+		steps = [],
+		lend = |held: &S, read: |&S| void| read(held),
+		borrow = |held: &mut S, change: |&mut S| void| change(held),
+	}
+}
+
+export impl Key<type S, type F> {
+	fun name(self): str {
+		render(self.steps)
+	}
+
+	fun starts_with<G>(self, prefix: Key<S, G>): bool {
+		prefixed(self.steps, prefix.steps)
+	}
+
+	/// The erased identity: the hash of the path. Two keys over different roots
+	/// can share it (it holds no root type).
+	fun identity(self): Hash {
+		self.steps.hash()
+	}
+
+	/// Read in place and copy the field out: total, so always a value.
+	fun get(self, s: &S): F {
+		mut out: Option<F> = None;
+		let lend = self.lend;
+		lend(s, |f| out = Some(*f));
+		match out {
+			Some(let value) => value,
+			None => panic("key: a total key found no place"),
+		}
+	}
+
+	fun read<R>(self, s: &S, look: |&F| R): R {
+		mut out: Option<R> = None;
+		let lend = self.lend;
+		lend(s, |f| out = Some(look(f)));
+		match out {
+			Some(let value) => value,
+			None => panic("key: a total key found no place"),
+		}
+	}
+
+	fun put(self, s: &mut S, value: F) {
+		let borrow = self.borrow;
+		borrow(s, |f| f = value);
+	}
+
+	fun edit(self, s: &mut S, change: |&mut F| void) {
+		let borrow = self.borrow;
+		borrow(s, change);
+	}
+
+	/// total . total -> total
+	fun then<G>(self, next: Key<F, G>): Key<S, G> {
+		let a = self.lend;
+		let b = next.lend;
+		let am = self.borrow;
+		let bm = next.borrow;
+		Key {
+			steps = joined(self.steps, next.steps),
+			lend = |s: &S, read: |&G| void| a(s, |f| b(f, read)),
+			borrow = |s: &mut S, change: |&mut G| void| am(s, |f| bm(f, change)),
+		}
+	}
+
+	/// total . partial -> partial. A second name: a method cannot be overloaded
+	/// on its parameter type (trials/t1_then_overload.vl).
+	fun then_maybe<G>(self, next: MaybeKey<F, G>): MaybeKey<S, G> {
+		self.partial().then(next)
+	}
+
+	/// Forget totality.
+	fun partial(self): MaybeKey<S, F> {
+		MaybeKey { steps = self.steps, lend = self.lend, borrow = self.borrow }
+	}
+}
+
+export impl MaybeKey<type S, type F> {
+	fun name(self): str {
+		render(self.steps)
+	}
+
+	fun identity(self): Hash {
+		self.steps.hash()
+	}
+
+	fun starts_with<G>(self, prefix: MaybeKey<S, G>): bool {
+		prefixed(self.steps, prefix.steps)
+	}
+
+	fun get(self, s: &S): Option<F> {
+		mut out: Option<F> = None;
+		let lend = self.lend;
+		lend(s, |f| out = Some(*f));
+		out
+	}
+
+	/// Answers whether the place was there to write.
+	fun put(self, s: &mut S, value: F): bool {
+		mut wrote = false;
+		let borrow = self.borrow;
+		borrow(s, |f| {
+			f = value;
+			wrote = true;
+		});
+		wrote
+	}
+
+	/// partial . partial -> partial
+	fun then<G>(self, next: MaybeKey<F, G>): MaybeKey<S, G> {
+		let a = self.lend;
+		let b = next.lend;
+		let am = self.borrow;
+		let bm = next.borrow;
+		MaybeKey {
+			steps = joined(self.steps, next.steps),
+			lend = |s: &S, read: |&G| void| a(s, |f| b(f, read)),
+			borrow = |s: &mut S, change: |&mut G| void| am(s, |f| bm(f, change)),
+		}
+	}
+
+	/// partial . total -> partial
+	fun then_key<G>(self, next: Key<F, G>): MaybeKey<S, G> {
+		self.then(next.partial())
+	}
+}
+
+/// Equality is the path's. The closures are not compared (they cannot be);
+/// that is sound only because no public constructor builds a key whose steps
+/// lie about its closures, which a library cannot enforce: `Key { .. }` is a
+/// struct literal anyone can write.
+export impl Key<type S, type F> with PartialEq {
+	fun eq(self, b: Key<S, F>): bool {
+		self.steps == b.steps
+	}
+}
+
+export impl Key<type S, type F> with Hashable {
+	fun hash(self): Hash {
+		self.steps.hash()
+	}
+}
+
+export impl MaybeKey<type S, type F> with PartialEq {
+	fun eq(self, b: MaybeKey<S, F>): bool {
+		self.steps == b.steps
+	}
+}
+
+export impl MaybeKey<type S, type F> with Hashable {
+	fun hash(self): Hash {
+		self.steps.hash()
+	}
+}
+
+// ---- partial steps
+
+/// The payload of an `Option`-typed field: `Doc::title().some()`.
+export impl Key<type S, Option<type T>> {
+	fun some(self): MaybeKey<S, T> {
+		self.then_maybe(payload<T>())
+	}
+}
+
+export impl MaybeKey<type S, Option<type T>> {
+	fun some(self): MaybeKey<S, T> {
+		self.then(payload<T>())
+	}
+}
+
+export fun payload<T>(): MaybeKey<Option<T>, T> {
+	MaybeKey {
+		steps = [KeyStep::Payload],
+		lend = |held: &Option<T>, read: |&T| void| {
+			match &held {
+				Some(let value) => read(value),
+				None => {},
+			}
+		},
+		borrow = |held: &mut Option<T>, change: |&mut T| void| {
+			match &mut held {
+				Some(let value) => change(value),
+				None => {},
+			}
+		},
+	}
+}
+
+/// A list position.
+export fun index<E>(at: usize): MaybeKey<List<E>, E> {
+	MaybeKey {
+		steps = [KeyStep::Index(at)],
+		lend = |list: &List<E>, read: |&E| void| {
+			if at < list.len() {
+				read(&list[at]);
+			}
+		},
+		borrow = |list: &mut List<E>, change: |&mut E| void| {
+			if at < list.len() {
+				change(&mut list[at]);
+			}
+		},
+	}
+}
+
+fun with_some<V>(slot: &mut Option<V>, change: |&mut V| void) {
+	match &mut slot {
+		Some(let value) => change(value),
+		None => {},
+	}
+}
+
+/// A map entry. `shown` is what `name()` prints for it: a library cannot render
+/// an arbitrary `K` without a `Display` bound, so the caller passes it.
+export fun entry<K: Hashable, V>(key: K, shown: str): MaybeKey<HashMap<K, V>, V> {
+	MaybeKey {
+		steps = [KeyStep::Entry(key.hash(), shown)],
+		lend = |map: &HashMap<K, V>, read: |&V| void| {
+			map.peek(key, |slot| {
+				match &slot {
+					Some(let value) => read(value),
+					None => {},
+				}
+			});
+		},
+		borrow = |map: &mut HashMap<K, V>, change: |&mut V| void| with_some(map.slot(key), change),
+	}
+}
+
+/// A variant's payload, hand-written per variant (no derive reads enums here).
+export fun variant_key<E, P>(
+	owner: str,
+	variant: str,
+	lend: |&E, (|&P| void)| void,
+	borrow: |&mut E, (|&mut P| void)| void,
+): MaybeKey<E, P> {
+	MaybeKey { steps = [KeyStep::Variant(owner, variant)], lend, borrow }
+}
+
+// ---- the fields family
+
+/// One field of `S`, erased over its type: its identity, and a comparison of
+/// that field in two values of `S`, in place.
+export struct FieldEntry<S> {
+	step: KeyStep,
+	name: str,
+	differs: |&S, &S| bool,
+}
+
+/// `[derive(Keys)]` on a struct writes, per field `x: F`, an associated function
+/// `S::x(): Key<S, F>`, and `S::fields(): List<FieldEntry<S>>`.
+///
+/// The comparison goes through `differs_from` (the optic's tier trait), so a
+/// field type without equality always "differs". The derive names the field
+/// TYPE as written, which is why it can type the closures at all.
+export macro fun Keys(item: Item): Source {
+	import macro_std::option::Option::{ self, Some, None };
+	if item.as_struct() is Some(let target) {
+		let subject = target.subject();
+		// The impl heads bind the parameters in place: `impl Pair<type T>` for
+		// the keys, and `impl Pair<type T: Differs>` for the family, whose
+		// comparisons call `differs_from` on a field of type `T` (a blanket impl
+		// does not satisfy a bound inside a generic: it must be written).
+		mut head = target.name;
+		mut bounded = target.name;
+		if target.generics.len() > 0 {
+			mut joined = "";
+			mut joined_bounded = "";
+			for g in target.generics {
+				joined = if joined == "" { i"type {g.name}" } else { i"{joined}, type {g.name}" };
+				joined_bounded = if joined_bounded == "" { i"type {g.name}: Differs" } else { i"{joined_bounded}, type {g.name}: Differs" };
+			}
+			head = i"{target.name}<{joined}>";
+			bounded = i"{target.name}<{joined_bounded}>";
+		}
+		mut methods = "";
+		mut entries = "";
+		mut index = 0;
+		for f in target.fields {
+			let ty = f.type_.render();
+			methods = methods + i"\tfun {f.name}(): Key<{subject}, {ty}> \{\n\t\tfield_key(\"{target.name}\", {index}, \"{f.name}\", |v: &{subject}, read: |&{ty}| void| read(&v.{f.name}), |v: &mut {subject}, change: |&mut {ty}| void| change(&mut v.{f.name}))\n\t\}\n";
+			entries = entries + i"\t\t\tFieldEntry \{ step = KeyStep::Field(\"{target.name}\", {index}, \"{f.name}\"), name = \"{f.name}\", differs = |a: &{subject}, b: &{subject}| a.{f.name}.differs_from(&b.{f.name}) \},\n";
+			index = index + 1;
+		}
+		let family = i"\tfun fields(): List<FieldEntry<{subject}>> \{\n\t\t[\n{entries}\t\t]\n\t\}\n";
+		ret source(i"impl {head} \{\n{methods}\}\nimpl {bounded} \{\n{family}\}\n");
+	}
+	source("")
+}
+
+/// Whether a value differs from another: equality where the type has one, and
+/// "yes" where it has none (std's tier pattern; the optic's PREREQ(6)).
+export trait Differs {
+	fun differs_from(&self, other: &Self): bool;
+}
+
+impl type T with Differs {
+	fun differs_from(&self, other: &T): bool {
+		true
+	}
+}
+
+impl type T: PartialEq with Differs {
+	fun differs_from(&self, other: &T): bool {
+		*self != *other
+	}
+}

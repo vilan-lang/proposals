@@ -255,7 +255,40 @@ S1 is the compiler work: a new expression form, one arm in subscript resolution,
 | `b3.vl` | A closure cannot return a view that is written through; and a closure in a generic struct literal is typed against the unsubstituted parameter ("cannot access field 'meta' on type S", B754) |
 | `c1.vl` | `match &mut` gives writable views of a variant's payload slots and an `Option`'s payload, on both backends |
 
-A library stand-in for `Key` and `MaybeKey`, with the optic ported onto it and a key-based diff measured against the spike's copy-and-compare, is being built; its results will be added here as §7.1.
+### 7.1 The stand-in (added after the rulings; it changes none of them)
+
+`struct-keys-lab/standin/` is `Key` and `MaybeKey` written as a LIBRARY (steps for identity, two continuations for access, a `[derive(Keys)]` that writes `User::name()`), with the optic ported onto it. Five test files pass on JS and natively. It exists to find what a library cannot do, which is the list of what S1 must.
+
+**What held.**
+
+- `user.at(User::address().then(Address::city()))` and `user.at(User::address()).at(Address::city())` are one node: one watcher wakes for a write through either. Identity by steps is what makes that true (R1).
+- Two types read better than one (R2). With one type, a total key's `get` has to answer `Option<F>`; and rev 1's `Key<S, Option<P>>` cannot tell `Doc.title` from `Doc.title::Some`, where `s[k] = None` clears the title for the first and means nothing for the second.
+- The continuation form is enough for every partial edit and for the in-place diff (R3).
+
+**A key-based diff against the spike's copy-and-compare.** JS, ns per root write, medians; the machine was busy, so read the ratios:
+
+| Root write | 0 watched (copy / key) | 10 watched | 100 watched |
+|---|---|---|---|
+| `set`, one leaf differs | 3,000 / 1,400 | 5,350 / 2,750 | 26,200 / 14,950 |
+| `set`, nothing differs | 2,300 / 1,050 | 4,750 / 2,350 | 27,000 / 14,450 |
+| `set`, every item differs | 2,250 / 1,350 | 7,350 / 6,000 | 55,050 / 45,800 |
+| `update` in place | 1,200 / 650 | 2,700 / 1,100 | 15,550 / 4,750 |
+
+A `set` compares the old value in place against the new one and copies nothing. An equal list prunes every element node below it after one comparison. A leaf write costs the same either way (about 600 ns at depth 3). Native timings were taken under load and are not reported.
+
+**What a library could not do, and S1 must.**
+
+| Gap in the stand-in | What it means for S1 |
+|---|---|
+| A method cannot be overloaded on its parameter type, so composition took three names (`then`, `then_maybe`, `then_key`) and a `.partial()` | One `then`, with the compiler working out total or partial |
+| `Key { steps, lend, borrow }` is a struct literal anyone can write, with steps that do not match its closures | No public constructor; `S.x` is the only source (already §3.1) |
+| Steps carry a struct's bare NAME, so two `User` structs in two modules would be equal | A field step carries its owner TYPE. `Left.x != Right.x` |
+| `User::name()` collides with a user's own associated `name()`, and `fields()` with a field called `fields` | `S.x` is its own namespace |
+| The user imports five names and writes a `Differs` bound on every generic struct's impl | Nothing to import; identity needs no bound |
+| A path key hides the types of the places it passes through, so a node made from `at(a.then(b))` can compare only from the root, and a covering write below the root copies the root once | Field syntax (S2) makes single steps the common spelling, so each node knows its parent's type. A path passed whole stays the rarer, dearer case; S5's family is what lets a node between two steps compare without a watcher |
+| A value step's `Hash` has no type tag: `Id { n = 1 }` and `[1]` make equal entry steps | Sound under R5 as ruled, because a map has one key type and the step's kind is part of it; a table that MIXED key types under one parent would need a tag |
+
+**Finds.** Two programs the checker accepts run wrong on JS and are refused natively: `*` on a value that is not a view (`Some(*cell.read())` aliases the cell, B755), and an argument's type parameter left unbound inside a specialized impl (`self.then(payload())` reads `undefined`, B756). A third is a diagnostic: two tier traits of one name in two modules are reported as "both 'Differs' and 'Differs'" (B757).
 
 ## 8. Questions
 

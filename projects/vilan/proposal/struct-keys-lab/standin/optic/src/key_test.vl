@@ -1,0 +1,176 @@
+// Pins for the Key stand-in itself: identity, names, prefixes, composition,
+// partial steps, the fields family, and the erasure hazard.
+import std::hash::{ Hash, Hashable };
+import std::hash_map::HashMap;
+import std::io::assert;
+import pkg::key::{ Key, KeyStep, Keys, MaybeKey, FieldEntry, Differs, field_key, index, entry, variant_key };
+
+[derive(PartialEq, Keys)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+[derive(PartialEq, Keys)]
+struct Meta {
+	text: str,
+	stars: i32,
+}
+
+[derive(PartialEq, Keys)]
+struct User {
+	name: str,
+	address: Address,
+	tags: List<str>,
+	cover: Option<Meta>,
+}
+
+/// Two structs with a same-named field at the same index.
+[derive(PartialEq, Keys)]
+struct Left {
+	x: i32,
+}
+
+[derive(PartialEq, Keys)]
+struct Right {
+	x: i32,
+}
+
+[derive(PartialEq, Keys)]
+struct Pair<T> {
+	left: T,
+	right: T,
+}
+
+[derive(PartialEq, Hashable)]
+struct Id {
+	n: i32,
+}
+
+[derive(PartialEq, Hashable)]
+struct Other {
+	m: i32,
+}
+
+enum Shape {
+	Circle(f64),
+	Square(f64),
+}
+
+fun circle(): MaybeKey<Shape, f64> {
+	variant_key("Shape", "Circle", |s: &Shape, read: |&f64| void| {
+		match &s {
+			Shape::Circle(let r) => read(r),
+			_ => {},
+		}
+	}, |s: &mut Shape, change: |&mut f64| void| {
+		match &mut s {
+			Shape::Circle(let r) => change(r),
+			_ => {},
+		}
+	})
+}
+
+fun ada(): User {
+	User {
+		name = "Ada",
+		address = Address { city = "London", zip = "N1" },
+		tags = ["math", "engines"],
+		cover = None,
+	}
+}
+
+fun main() {
+	mut u = ada();
+
+	// Paths: one key value however it was grouped.
+	let city = User::address().then(Address::city());
+	assert(city.get(&u) == "London", "a path reads in place");
+	city.put(&mut u, "Paris");
+	assert(u.address.city == "Paris", "and writes in place");
+	assert(city == User::address().then(Address::city()), "equal paths are equal");
+	assert(city.hash() == User::address().then(Address::city()).hash(), "and hash alike");
+	assert(city != User::address().then(Address::zip()), "a sibling path is not");
+
+	// Names.
+	assert(city.name() == "address.city", city.name());
+	let second = User::tags().then_maybe(index<str>(1));
+	assert(second.name() == "tags[1]", second.name());
+	let cover = User::cover().some();
+	assert(cover.name() == "cover?", cover.name());
+	let cover_text = cover.then_key(Meta::text());
+	assert(cover_text.name() == "cover?.text", cover_text.name());
+
+	// Prefixes.
+	assert(city.starts_with(User::address()), "address.city starts with address");
+	assert(!User::address().starts_with(city), "and not the other way");
+	assert(city.starts_with(city), "a key starts with itself");
+	assert(!city.starts_with(User::name()), "nor with a sibling");
+	assert(second.starts_with(User::tags().partial()), "a partial key against a total prefix needs .partial()");
+
+	// total . partial . total: an Option's payload, then a field of it.
+	assert(cover_text.get(&u) == None, "absent payload reads None");
+	assert(!cover_text.put(&mut u, "x"), "and refuses a write");
+	u.cover = Some(Meta { text = "hi", stars = 3 });
+	assert(cover_text.get(&u) == Some("hi"), "present payload reads");
+	assert(cover_text.put(&mut u, "yo"), "and writes");
+	assert(u.cover.unwrap().text == "yo", "in place");
+	// ... and partial . total . total, starting from the same pieces.
+	let stars = User::cover().some().then_key(Meta::stars());
+	assert(stars.get(&u) == Some(3), "a second partial path reads");
+
+	// A field named x in two structs: distinct steps (the step carries its owner).
+	assert(Left::x().identity() != Right::x().identity(), "Left.x is not Right.x");
+
+	// A generic struct.
+	let p = Pair { left = 1, right = 2 };
+	let left: Key<Pair<i32>, i32> = Pair::left();
+	assert(left.get(&p) == 1, "a generic struct's key");
+	assert(Pair<i32>::right().get(&p) == 2, "spelled with its argument");
+	assert(Pair<str>::left().identity() == Pair<i32>::left().identity(), "ERASED: Pair<str>.left and Pair<i32>.left share an identity");
+
+	// The variant payload.
+	mut shape = Shape::Circle(1.0);
+	assert(circle().get(&shape) == Some(1.0), "a live variant reads");
+	assert(circle().put(&mut shape, 2.0), "and writes");
+	shape = Shape::Square(1.0);
+	assert(circle().get(&shape) == None, "a dead one reads None");
+	assert(circle().name() == "::Circle", circle().name());
+
+	// Map entries: the erasure hazard.
+	let by_id = entry<Id, i32>(Id { n = 1 }, "Id(1)");
+	let by_other = entry<Other, i32>(Other { m = 1 }, "Other(1)");
+	assert(by_id.identity() != by_other.identity(), "differ only by their rendering");
+	let by_id_plain = entry<Id, i32>(Id { n = 1 }, "");
+	let by_other_plain = entry<Other, i32>(Other { m = 1 }, "");
+	let collide = by_id_plain.identity() == by_other_plain.identity();
+	print(i"HAZARD Id(1) vs Other(1) entry steps collide: {collide}");
+	let int_key = entry<i32, i32>(1, "");
+	let str_key = entry<str, i32>("1", "");
+	print(i"HAZARD entry 1 vs entry \"1\" collide: {int_key.identity() == str_key.identity()}");
+	let list_key = entry<List<i32>, i32>([1], "");
+	print(i"HAZARD entry Id(1) vs entry [1] collide: {by_id_plain.identity() == list_key.identity()}");
+	// One table over both key types (what a node's children map is):
+	mut table: HashMap<Hash, str> = HashMap::new();
+	table.insert(by_id_plain.identity(), "id");
+	table.insert(by_other_plain.identity(), "other");
+	print(i"HAZARD one table, two key types: {table.len()} entries (2 wanted)");
+
+	// The fields family.
+	let a = ada();
+	mut b = ada();
+	b.address.zip = "E1";
+	mut changed: List<str> = [];
+	for f in User::fields() {
+		let differs = f.differs;
+		if differs(&a, &b) {
+			changed.push(f.name);
+		}
+	}
+	assert(changed.len() == 1, "one field differs");
+	assert(changed[0] == "address", "the address");
+	assert(User::fields()[1].step == User::address().steps[0], "an entry's identity is its key's");
+
+	print("keys: all pins hold");
+}
+

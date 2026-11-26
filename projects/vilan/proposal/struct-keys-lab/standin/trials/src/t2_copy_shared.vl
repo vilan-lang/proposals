@@ -1,0 +1,27 @@
+// Repro: a copy of a Shared's value taken into an Option before an in-place
+// write. `*state.read()` (deref of a non-reference) is accepted by the checker;
+// natively rustc refuses it (E0614). On JS, `Some(*state.read())` and
+// `Some(state.read())` ALIAS the cell: the later in-place write shows in the copy.
+import std::shared::Shared;
+
+struct U {
+	tags: List<str>,
+}
+
+fun main() {
+	let state = Shared::new(U { tags = ["a", "b"] });
+	mut old: Option<U> = None;
+	old = Some(state.read());
+	state.write().tags.insert(0, "z");
+	if old is Some(let before) {
+		print(i"Some(read()): old len {before.tags.len()} (want 2), new len {state.read().tags.len()}");
+	}
+	let plain = state.read();
+	state.write().tags.push("q");
+	print(i"let = read(): plain len {plain.tags.len()} (want 3), new len {state.read().tags.len()}");
+	let boxed = Some(state.read());
+	state.write().tags.push("r");
+	if boxed is Some(let b) {
+		print(i"let = Some(read()): len {b.tags.len()} (want 4), new len {state.read().tags.len()}");
+	}
+}

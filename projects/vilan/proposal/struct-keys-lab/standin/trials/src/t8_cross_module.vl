@@ -1,0 +1,9 @@
+// The derive's generated `impl Thing` (not `export impl`) used from another
+// module: is `Thing::label()` visible through the import?
+import pkg::t8_model::{ Thing };
+import pkg::key::{ Key };
+
+fun main() {
+	let t = Thing { label = "x" };
+	print(Thing::label().get(&t));
+}

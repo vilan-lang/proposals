@@ -1,0 +1,148 @@
+// optic_test.vl, ported to keys: what a write through a key-built optic wakes.
+import std::io::assert;
+import std::reactive::{ Signal, Source, batch, derive };
+import std::shared::Shared;
+import pkg::key::{ Key, Keys, FieldEntry, KeyStep, Differs, field_key, index };
+import pkg::keyed::{ KOptic, koptic };
+
+[derive(PartialEq, Keys)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+[derive(PartialEq, Keys)]
+struct User {
+	name: str,
+	email: str,
+	address: Address,
+	tags: List<str>,
+}
+
+fun ada(): User {
+	User {
+		name = "Ada",
+		email = "ada@example.com",
+		address = Address { city = "London", zip = "N1" },
+		tags = ["math", "engines"],
+	}
+}
+
+fun count<T, S: Source<T>>(source: S): Shared<i32> {
+	let seen = Shared::new(0);
+	let _watch = source.on_change(|_value| seen.write() += 1);
+	seen
+}
+
+fun main() {
+	let user = koptic(ada());
+	let name = user.at(User::name());
+	let email = user.at(User::email());
+	let address = user.at(User::address());
+	let city = address.at(Address::city());
+
+	let users = count(user);
+	let names = count(name);
+	let emails = count(email);
+	let addresses = count(address);
+	let cities = count(city);
+
+	name.set("Ada L.");
+	assert(name.get() == "Ada L.", "the write landed");
+	assert(user.get().name == "Ada L.", "and the root reads it");
+	assert(names.read() == 1, "the field woke");
+	assert(users.read() == 1, "the root woke");
+	assert(emails.read() == 0, "a sibling slept");
+	assert(cities.read() == 0, "a cousin slept");
+
+	city.set("Paris");
+	assert(cities.read() == 1, "the leaf woke");
+	assert(addresses.read() == 1, "its parent woke");
+	assert(users.read() == 2, "the root woke");
+	assert(names.read() == 1, "the other branch slept");
+
+	// A covering write wakes only what changed below it (the structural diff).
+	mut next = user.get();
+	next.email = "countess@example.com";
+	user.set(next);
+	assert(emails.read() == 1, "the changed field woke");
+	assert(names.read() == 1, "an equal field slept");
+	assert(addresses.read() == 1, "an equal subtree slept");
+	assert(cities.read() == 1, "and so did what is under it");
+	assert(users.read() == 3, "the root woke");
+
+	// Two handles to one place are one place.
+	let again = user.at(User::name());
+	again.set("Lovelace");
+	assert(name.get() == "Lovelace", "the other handle reads the write");
+	assert(names.read() == 2, "and its watcher woke");
+
+	batch(|| {
+		name.set("A");
+		name.set("B");
+		email.set("b@example.com");
+	});
+	assert(names.read() == 3, "two writes, one wake");
+	assert(users.read() == 5, "three writes, one wake at the root");
+
+	let shout = name.derive(|n| i"{n}!").memo();
+	assert(shout.get() == "B!", "a derived value reads through");
+	name.set("C");
+	assert(shout.get() == "C!", "and follows");
+	name.set_with(|n| i"{n}{n}");
+	assert(name.get() == "CC", "Signal's set_with writes through");
+
+	let label = derive(|| if name.track() == "" { email.track() } else { name.track() }).memo();
+	let labels = count(label);
+	assert(label.get() == "CC", "the body read the name");
+	email.set("c@example.com");
+	assert(labels.read() == 0, "an optic the body did not read does not wake it");
+	name.set("");
+	assert(label.get() == "c@example.com", "the body switched to the email");
+	email.set("d@example.com");
+	assert(label.get() == "d@example.com", "and follows it now");
+	name.set("C");
+
+	let tags = user.at(User::tags());
+	let second = tags.at_maybe(index<str>(1));
+	let fifth = tags.at_maybe(index<str>(4));
+	assert(second.peek(|t| *t) == Some("engines"), "an element reads");
+	assert(fifth.peek(|t| *t) == None, "a missing one reads None");
+	assert(!fifth.try_set("x"), "and refuses a write");
+	let seconds = count(second);
+	tags.update(|list| list.insert(0, "poetry"));
+	assert(second.get() == "math", "a position reads whatever sits there now");
+	assert(seconds.read() == 1, "and woke, because it changed");
+
+	user.update(|u| u.address.zip = "75001");
+	assert(addresses.read() == 2, "an edit from above wakes the changed subtree");
+	assert(cities.read() == 1, "and not its unchanged leaf");
+
+	// PATHS: one node however the keys are grouped.
+	let by_path = user.at(User::address().then(Address::city()));
+	let by_steps = user.at(User::address()).at(Address::city());
+	assert(by_path.identity() == by_steps.identity(), "one node for both spellings");
+	assert(by_path.identity() == city.identity(), "and it is the node already watched");
+	let paths = count(by_path);
+	by_steps.set("Rome");
+	assert(paths.read() == 1, "a write through the steps wakes the path's watcher");
+	assert(cities.read() == 2, "and the earlier handle's");
+	assert(addresses.read() == 3, "and the intermediate node, which the path shares");
+	by_path.set("Oslo");
+	assert(cities.read() == 3, "a write through the path wakes the steps' watcher");
+
+	// A path reaching a node nobody made a handle for: the intermediate node
+	// exists with no comparison, and a covering write still finds the leaf.
+	let fresh = koptic(ada());
+	let deep = fresh.at(User::address().then(Address::zip()));
+	let deeps = count(deep);
+	mut moved = fresh.get();
+	moved.address.zip = "SW1";
+	fresh.set(moved);
+	assert(deeps.read() == 1, "the diff walks through a path-only node");
+	mut same = fresh.get();
+	fresh.set(same);
+	assert(deeps.read() == 1, "and an equal value wakes nothing");
+
+	print("keyed optic: all pins hold");
+}

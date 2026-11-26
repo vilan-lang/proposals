@@ -1,0 +1,64 @@
+// The one-type alternative: a key with a `total` flag. One `then`, one `at`,
+// composition is `total && total` at run time. What it loses: a total key's
+// read can no longer return `F` statically, so `get` answers `Option<F>`
+// everywhere (or panics on a flag the type does not show).
+struct AKey<S, F> {
+	total: bool,
+	name: str,
+	lend: |&S, (|&F| void)| void,
+}
+
+impl AKey<type S, type F> {
+	fun then<G>(self, next: AKey<F, G>): AKey<S, G> {
+		let a = self.lend;
+		let b = next.lend;
+		AKey {
+			total = self.total && next.total,
+			name = i"{self.name}.{next.name}",
+			lend = |s: &S, read: |&G| void| a(s, |f| b(f, read)),
+		}
+	}
+
+	fun get(self, s: &S): Option<F> {
+		mut out: Option<F> = None;
+		let lend = self.lend;
+		lend(s, |f| out = Some(*f));
+		out
+	}
+}
+
+fun some<T>(): AKey<Option<T>, T> {
+	AKey {
+		total = false,
+		name = "?",
+		lend = |held: &Option<T>, read: |&T| void| {
+			match &held {
+				Some(let value) => read(value),
+				None => {},
+			}
+		},
+	}
+}
+
+struct Doc {
+	cover: Option<Meta>,
+}
+
+struct Meta {
+	text: str,
+}
+
+fun main() {
+	let cover: AKey<Doc, Option<Meta>> = AKey { total = true, name = "cover", lend = |d: &Doc, read: |&Option<Meta>| void| read(&d.cover) };
+	let text: AKey<Meta, str> = AKey { total = true, name = "text", lend = |m: &Meta, read: |&str| void| read(&m.text) };
+	let path = cover.then(some<Meta>()).then(text);
+	let d = Doc { cover = Some(Meta { text = "hi" }) };
+	let got = path.get(&d).unwrap_or("none");
+	print(i"{path.name} total={path.total} -> {got}");
+	let whole = cover.then(some<Meta>());
+	print(i"cover? total={whole.total}");
+	// A total key must still be unwrapped: the flag is not in the type.
+	let m = Meta { text = "t" };
+	let t = text.get(&m).unwrap();
+	print(i"text total={text.total} -> {t}");
+}

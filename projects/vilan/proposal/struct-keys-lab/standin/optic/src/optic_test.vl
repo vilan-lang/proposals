@@ -1,0 +1,148 @@
+// The spike's pins: what a write through an optic wakes, on std's own turns.
+import std::io::assert;
+import std::reactive::{ Signal, Source, batch, derive };
+import std::shared::Shared;
+import pkg::lib::{ Optic, optic };
+
+[derive(PartialEq)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+[derive(PartialEq)]
+struct User {
+	name: str,
+	email: str,
+	address: Address,
+	tags: List<str>,
+}
+
+fun ada(): User {
+	User {
+		name = "Ada",
+		email = "ada@example.com",
+		address = Address { city = "London", zip = "N1" },
+		tags = ["math", "engines"],
+	}
+}
+
+fun name_of(user: Optic<User, User>): Optic<User, str> {
+	user.field("name", |u, read| read(&u.name), |u, change| change(&mut u.name))
+}
+
+fun email_of(user: Optic<User, User>): Optic<User, str> {
+	user.field("email", |u, read| read(&u.email), |u, change| change(&mut u.email))
+}
+
+fun address_of(user: Optic<User, User>): Optic<User, Address> {
+	user.field("address", |u, read| read(&u.address), |u, change| change(&mut u.address))
+}
+
+fun city_of(address: Optic<User, Address>): Optic<User, str> {
+	address.field("city", |a, read| read(&a.city), |a, change| change(&mut a.city))
+}
+
+fun tags_of(user: Optic<User, User>): Optic<User, List<str>> {
+	user.field("tags", |u, read| read(&u.tags), |u, change| change(&mut u.tags))
+}
+
+fun count<T, S: Source<T>>(source: S): Shared<i32> {
+	let seen = Shared::new(0);
+	let _watch = source.on_change(|_value| seen.write() += 1);
+	seen
+}
+
+fun main() {
+	let user = optic(ada());
+	let name = name_of(user);
+	let email = email_of(user);
+	let address = address_of(user);
+	let city = city_of(address);
+
+	let users = count(user);
+	let names = count(name);
+	let emails = count(email);
+	let addresses = count(address);
+	let cities = count(city);
+
+	// A field write wakes the field and everything above it, and no sibling.
+	name.set("Ada L.");
+	assert(name.get() == "Ada L.", "the write landed");
+	assert(user.get().name == "Ada L.", "and the root reads it");
+	assert(names.read() == 1, "the field woke");
+	assert(users.read() == 1, "the root woke");
+	assert(emails.read() == 0, "a sibling slept");
+	assert(cities.read() == 0, "a cousin slept");
+
+	// A nested write wakes its whole path.
+	city.set("Paris");
+	assert(cities.read() == 1, "the leaf woke");
+	assert(addresses.read() == 1, "its parent woke");
+	assert(users.read() == 2, "the root woke");
+	assert(names.read() == 1, "the other branch slept");
+
+	// A covering write wakes only what changed below it.
+	mut next = user.get();
+	next.email = "countess@example.com";
+	user.set(next);
+	assert(emails.read() == 1, "the changed field woke");
+	assert(names.read() == 1, "an equal field slept");
+	assert(addresses.read() == 1, "an equal subtree slept");
+	assert(cities.read() == 1, "and so did what is under it");
+	assert(users.read() == 3, "the root woke");
+
+	// Two handles to one place are one place.
+	let again = name_of(user);
+	again.set("Lovelace");
+	assert(name.get() == "Lovelace", "the other handle reads the write");
+	assert(names.read() == 2, "and its watcher woke");
+
+	// One turn, one wake.
+	batch(|| {
+		name.set("A");
+		name.set("B");
+		email.set("b@example.com");
+	});
+	assert(names.read() == 3, "two writes, one wake");
+	assert(users.read() == 5, "three writes, one wake at the root");
+
+	// An optic is a Source: std's pipes run over it.
+	let shout = name.derive(|n| i"{n}!").memo();
+	assert(shout.get() == "B!", "a derived value reads through");
+	name.set("C");
+	assert(shout.get() == "C!", "and follows");
+	name.set_with(|n| i"{n}{n}");
+	assert(name.get() == "CC", "Signal's set_with writes through");
+
+	// Tracked reads: a body follows whichever optics it read last.
+	let label = derive(|| if name.track() == "" { email.track() } else { name.track() }).memo();
+	let labels = count(label);
+	assert(label.get() == "CC", "the body read the name");
+	email.set("c@example.com");
+	assert(labels.read() == 0, "an optic the body did not read does not wake it");
+	name.set("");
+	assert(label.get() == "c@example.com", "the body switched to the email");
+	email.set("d@example.com");
+	assert(label.get() == "d@example.com", "and follows it now");
+	name.set("C");
+
+	// A place that may not be there.
+	let tags = tags_of(user);
+	let second = tags.at(1);
+	let fifth = tags.at(4);
+	assert(second.peek(|t| *t) == Some("engines"), "an element reads");
+	assert(fifth.peek(|t| *t) == None, "a missing one reads None");
+	assert(!fifth.try_set("x"), "and refuses a write");
+	let seconds = count(second);
+	tags.update(|list| list.insert(0, "poetry"));
+	assert(second.get() == "math", "a position reads whatever sits there now");
+	assert(seconds.read() == 1, "and woke, because it changed");
+
+	// In-place edit of the root.
+	user.update(|u| u.address.zip = "75001");
+	assert(addresses.read() == 2, "an edit from above wakes the changed subtree");
+	assert(cities.read() == 1, "and not its unchanged leaf");
+
+	print("optic spike: all pins hold");
+}

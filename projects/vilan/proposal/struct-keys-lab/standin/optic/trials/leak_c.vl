@@ -1,0 +1,11 @@
+import pkg::lib::{ Optic, Optics, optic };
+import std::reactive::{ Disposable, Signal, SignalCell, Source, comp };
+
+[derive(PartialEq, Optics)]
+struct P {
+	name: str,
+}
+
+fun main() {
+	let name = SignalCell::new("a"); let m = name.derive(|n| i"{n}!").memo(); name.set("b"); print(m.get());
+}

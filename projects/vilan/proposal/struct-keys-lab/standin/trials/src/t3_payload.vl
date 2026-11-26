@@ -1,0 +1,37 @@
+// Repro: an Option payload read through a continuation closure built in a
+// generic function.
+fun payload_lend<T>(): |&Option<T>, (|&T| void)| void {
+	|held: &Option<T>, read: |&T| void| {
+		match &held {
+			Some(let value) => read(value),
+			None => {},
+		}
+	}
+}
+
+fun direct(held: &Option<str>, read: |&str| void) {
+	match &held {
+		Some(let value) => read(value),
+		None => {},
+	}
+}
+
+fun main() {
+	let o: Option<str> = Some("Hello");
+	let lend = payload_lend<str>();
+	mut out = "unset";
+	lend(&o, |v| out = *v);
+	print(i"generic closure: {out}");
+	mut out2 = "unset";
+	direct(&o, |v| out2 = *v);
+	print(i"direct fun: {out2}");
+	let local = |held: &Option<str>, read: |&str| void| {
+		match &held {
+			Some(let value) => read(value),
+			None => {},
+		}
+	};
+	mut out3 = "unset";
+	local(&o, |v| out3 = *v);
+	print(i"local closure: {out3}");
+}

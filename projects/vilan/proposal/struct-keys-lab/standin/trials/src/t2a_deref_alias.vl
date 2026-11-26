@@ -1,0 +1,19 @@
+// Repro (JS miscompile + checker gap): `*` on a non-reference (`Shared::read()`
+// returns `T`) type-checks. On JS, `Some(*state.read())` ALIASES the cell (the
+// later in-place write shows in the "copy"); natively rustc refuses the emitted
+// `*` (E0614). Without the `*` both backends copy (t2_copy_shared.vl).
+import std::shared::Shared;
+
+struct U {
+	tags: List<str>,
+}
+
+fun main() {
+	let state = Shared::new(U { tags = ["a", "b"] });
+	mut old: Option<U> = None;
+	old = Some(*state.read());
+	state.write().tags.insert(0, "z");
+	if old is Some(let before) {
+		print(i"old len {before.tags.len()} (want 2)");
+	}
+}

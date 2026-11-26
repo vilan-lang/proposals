@@ -1,0 +1,13 @@
+// Repro: `*` on a non-reference value (`Shared::read()` returns `T`) type-checks;
+// JS runs it, rustc refuses the emitted `*` (E0614).
+import std::shared::Shared;
+
+struct U {
+	tags: List<str>,
+}
+
+fun main() {
+	let state = Shared::new(U { tags = ["a"] });
+	let plain = *state.read();
+	print(i"{plain.tags.len()}");
+}

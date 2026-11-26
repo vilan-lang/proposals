@@ -1,0 +1,21 @@
+// What the derive's spelling `S::x()` collides with: a field named `fields`
+// (the family's name), and a user's own associated function named like a field.
+import pkg::key::{ Key, Keys, FieldEntry, KeyStep, Differs, field_key };
+
+[derive(Keys)]
+struct Form {
+	fields: List<str>,
+}
+
+[derive(Keys)]
+struct Person {
+	name: str,
+}
+
+impl Person {
+	fun name(): str {
+		"a constructor-ish helper"
+	}
+}
+
+fun main() {}

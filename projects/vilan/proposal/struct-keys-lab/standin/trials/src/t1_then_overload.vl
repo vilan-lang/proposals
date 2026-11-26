@@ -1,0 +1,27 @@
+// Can `then` be overloaded on its parameter type (Key vs MaybeKey) by two impl
+// blocks? (The stand-in needs it for total . partial without a second name.)
+struct Key<S, F> {
+	lend: |&S, (|&F| void)| void,
+}
+
+struct MaybeKey<S, F> {
+	lend: |&S, (|&F| void)| void,
+}
+
+impl Key<type S, type F> {
+	fun then<G>(self, next: Key<F, G>): Key<S, G> {
+		let a = self.lend;
+		let b = next.lend;
+		Key { lend = |s: &S, read: |&G| void| a(s, |f| b(f, read)) }
+	}
+}
+
+impl Key<type S, type F> {
+	fun then<G>(self, next: MaybeKey<F, G>): MaybeKey<S, G> {
+		let a = self.lend;
+		let b = next.lend;
+		MaybeKey { lend = |s: &S, read: |&G| void| a(s, |f| b(f, read)) }
+	}
+}
+
+fun main() {}

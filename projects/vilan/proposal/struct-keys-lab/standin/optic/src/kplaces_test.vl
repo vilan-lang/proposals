@@ -1,0 +1,77 @@
+// places_test.vl, ported to keys: an Option's payload, a map's entry, the derive.
+import std::hash_map::HashMap;
+import std::io::assert;
+import std::reactive::{ Signal, Source, subscriber_of };
+import std::shared::Shared;
+import pkg::key::{ Key, Keys, FieldEntry, KeyStep, MaybeKey, Differs, field_key, entry };
+import pkg::keyed::{ KOptic, koptic };
+
+[derive(PartialEq, Keys)]
+struct Address {
+	city: str,
+	zip: str,
+}
+
+[derive(PartialEq, Keys)]
+struct Doc {
+	title: Option<str>,
+	address: Address,
+	scores: HashMap<str, i32>,
+}
+
+fun count<T, S: Source<T>>(source: S): Shared<i32> {
+	let seen = Shared::new(0);
+	let _watch = source.on_settle(subscriber_of(|| seen.write() += 1, false));
+	seen
+}
+
+fun main() {
+	mut scores: HashMap<str, i32> = HashMap::new();
+	scores.insert("ada", 1);
+	let doc = koptic(Doc {
+		title = None,
+		address = Address { city = "London", zip = "N1" },
+		scores,
+	});
+
+	let city = doc.at(Doc::address().then(Address::city()));
+	let cities = count(city);
+	city.set("Paris");
+	assert(doc.get().address.city == "Paris", "a path key writes through");
+	assert(cities.read() == 1, "and wakes its watcher");
+
+	let title = doc.at(Doc::title());
+	let text = doc.at_maybe(Doc::title().some());
+	let texts = count(text);
+	assert(text.peek(|t| *t) == None, "an absent payload reads None");
+	assert(!text.try_set("x"), "and refuses a write");
+	title.set(Some("Hello"));
+	assert(texts.read() == 1, "appearing wakes");
+	assert(text.get() == "Hello", "a present payload reads");
+	assert(text.try_set("Hi"), "and takes a write");
+	assert(title.get() == Some("Hi"), "which lands in the option");
+	assert(texts.read() == 2, "and wakes");
+	title.set(None);
+	assert(texts.read() == 3, "disappearing wakes");
+	title.set(None);
+	assert(texts.read() == 3, "absent to absent does not");
+	city.set("Rome");
+	assert(texts.read() == 3, "nor does a write elsewhere");
+
+	let ada = doc.at(Doc::scores()).at_maybe(entry<str, i32>("ada", "ada"));
+	let bob = doc.at(Doc::scores()).at_maybe(entry<str, i32>("bob", "bob"));
+	let adas = count(ada);
+	let bobs = count(bob);
+	assert(ada.get() == 1, "an entry reads");
+	ada.set(2);
+	assert(doc.get().scores.get("ada") == Some(2), "an entry writes in place");
+	assert(adas.read() == 1, "its watcher woke");
+	assert(bobs.read() == 0, "another key's slept");
+	assert(bob.peek(|v| *v) == None, "a missing key reads None");
+	doc.at(Doc::scores()).update(|map| map.insert("bob", 7));
+	assert(bob.get() == 7, "a key that appears reads");
+	assert(bobs.read() == 1, "and woke");
+	assert(adas.read() == 1, "the unchanged key slept");
+
+	print("keyed optic: partial places hold");
+}

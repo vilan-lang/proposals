@@ -1,0 +1,8 @@
+import pkg::key::{ Key, Keys, FieldEntry, KeyStep, Differs, field_key };
+
+export *;
+
+[derive(Keys)]
+struct Thing {
+	label: str,
+}

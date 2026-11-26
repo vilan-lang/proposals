@@ -1,0 +1,29 @@
+// A generic constructor passed where the parameter's type fixes its type
+// argument: `tags.at_maybe(index(1))` with `at_maybe<U: Differs>(key:
+// MaybeKey<T, U>)` and `T = List<str>`. Without the bound on `U` it infers
+// (`at_plain`); WITH it, the call is refused: "generic parameter 'E' is missing
+// the bound ': Differs'" and "the type of 'second' is never fully determined".
+// `index<str>(1)` is needed. (Every type has `Differs` through the blanket.)
+import pkg::key::{ Differs, MaybeKey, index };
+
+struct Holder<T> {
+	value: T,
+}
+
+impl Holder<type T> {
+	fun at_plain<U>(self, key: MaybeKey<T, U>): Option<U> {
+		key.get(&self.value)
+	}
+
+	fun at_maybe<U: Differs>(self, key: MaybeKey<T, U>): Option<U> {
+		key.get(&self.value)
+	}
+}
+
+fun main() {
+	let tags = Holder { value = ["a", "b"] };
+	let first = tags.at_plain(index(0));
+	print(first.unwrap_or("none"));
+	let second = tags.at_maybe(index(1));
+	print(second.unwrap_or("none"));
+}

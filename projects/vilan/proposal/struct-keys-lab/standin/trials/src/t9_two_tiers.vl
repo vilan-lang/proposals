@@ -1,0 +1,10 @@
+// Two libraries each with the tier pattern (a blanket trait over every type):
+// the method is ambiguous on every type once both are in the program, even
+// with only one of the traits imported.
+import pkg::t9_tier_a::{ Differs };
+import pkg::key::{ Key };
+
+fun main() {
+	let a = 1;
+	print(i"{a.differs_from(&a)}");
+}

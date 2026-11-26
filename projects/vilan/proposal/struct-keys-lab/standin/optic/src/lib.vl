@@ -1,0 +1,339 @@
+// SPIKE (2026-11-25): field optics over plain state, on std's turns and
+// sources. The state is ordinary data (`struct User { name: str, .. }` has no
+// reactive variant); an `Optic` is the only way to write it, and it says who
+// to wake. The sketch this grew from is kept beside it as `optic_v0.vl`.
+//
+// What the spike is for is the list of things the language made hard. Each one
+// is marked `PREREQ(n)` where it bites; `n` is the section of FINDINGS.md.
+import std::compare::PartialEq;
+import std::hash::{ Hash, Hashable };
+import std::hash_map::HashMap;
+import std::io::panic;
+import std::reactive::{
+	Signal,
+	SignalCell,
+	Source,
+	Subscriber,
+	Subscription,
+	batch,
+	cell_identity,
+	subscriber_of,
+};
+import std::shared::Shared;
+
+export *;
+
+// LAB: `Differs` now lives in key.vl. Two libraries each declaring this tier
+// trait make `differs_from` ambiguous on EVERY type in a program that sees
+// both (trials/t9_two_tiers.vl), so the old optic shares the new one's.
+import pkg::key::Differs;
+
+/// What names a child under its parent, erased to a `Hash` so a field name and
+/// a map key of any `K: Hashable` share one table.
+///
+/// PREREQ(1): a `Hash` carries no type tag, so two key TYPES under one parent
+/// can collide. A typed key with equality (B711's `AnyKey`) is the real answer.
+[derive(Hashable)]
+enum Step {
+	Named(str),
+	Entry(Hash),
+}
+
+/// One watched place under a root. Untyped, so one tree serves every focus
+/// type: what a node knows about its value is behind two closures.
+struct Node {
+	/// Bumped when this place's value may have changed; the cell is what
+	/// subscribers attach to, so std's turns, dedup and tracking all apply.
+	woke: SignalCell<i32>,
+	children: HashMap<Hash, Shared<Node>>,
+	/// Remember this place's value (before a write that covers it).
+	remember: || void,
+	/// Whether the value differs from the one remembered.
+	changed: || bool,
+}
+
+fun node(remember: || void, changed: || bool): Shared<Node> {
+	Shared::new(Node { woke = SignalCell::new(0), children = HashMap::new(), remember, changed })
+}
+
+fun bump(node: Shared<Node>) {
+	let woke = node.read().woke;
+	woke.set(woke.get() + 1);
+}
+
+/// Before a write at `node`: every watched place below it remembers its value.
+fun remember_below(node: Shared<Node>) {
+	for child in node.read().children.values() {
+		(child.read().remember)();
+		remember_below(child);
+	}
+}
+
+/// After a write at `node`: wake each watched place below it whose value
+/// changed. A place that did not change has no changed place below it.
+fun wake_below(node: Shared<Node>) {
+	for child in node.read().children.values() {
+		if (child.read().changed)() {
+			bump(child);
+			wake_below(child);
+		}
+	}
+}
+
+fun lend_cell<V>(value: &mut V, read: |&V| void) {
+	read(value)
+}
+
+fun with_some<V>(slot: &mut Option<V>, change: |&mut V| void) {
+	match &mut slot {
+		Some(let value) => change(value),
+		None => {},
+	}
+}
+
+/// A readable, writable view of one place (`T`) inside a root state (`S`).
+///
+/// A handle: copying it copies no state. PREREQ(1): `lend` and `borrow` are
+/// how the place is reached, and every `field` call writes both by hand.
+export struct Optic<S, T> {
+	state: Shared<S>,
+	node: Shared<Node>,
+	/// The nodes above this one, root first: a write here wakes their readers.
+	above: List<Shared<Node>>,
+	lend: |&S, (|&T| void)| void,
+	borrow: |&mut S, (|&mut T| void)| void,
+}
+
+/// A root optic: the state lives in it, and nowhere else.
+export fun optic<S>(own value: S): Optic<S, S> {
+	Optic {
+		state = Shared::new(value),
+		node = node(|| {}, || true),
+		above = [],
+		lend = |held: &S, read: |&S| void| read(held),
+		borrow = |held: &mut S, change: |&mut S| void| change(held),
+	}
+}
+
+export impl Optic<type S, type T> {
+	/// Read the place where it lies. Not tracked. `None` when the place is not
+	/// there (an index past the end).
+	fun peek<R>(self, read: |&T| R): Option<R> {
+		mut out: Option<R> = None;
+		let lend = self.lend;
+		lend_cell(self.state.write(), |held| lend(held, |place| out = Some(read(place))));
+		out
+	}
+
+	/// Change the place where it lies, then wake exactly who must hear: readers
+	/// of this place, of every place above it, and of each watched place below
+	/// it whose value changed. Answers whether the place was there to write.
+	fun update(self, change: |&mut T| void): bool {
+		mut wrote = false;
+		let borrow = self.borrow;
+		batch(|| {
+			remember_below(self.node);
+			borrow(self.state.write(), |place| {
+				change(place);
+				wrote = true;
+			});
+			if wrote {
+				for node in self.above {
+					bump(node);
+				}
+				bump(self.node);
+				wake_below(self.node);
+			}
+		});
+		wrote
+	}
+
+	/// `set` that answers whether the place was there to write. (`set` itself is
+	/// `Signal`'s, below, and answers nothing.)
+	fun try_set(self, value: T): bool {
+		self.update(|place| place = value)
+	}
+
+	/// The optic of one part of this place. `name` is the part's identity under
+	/// this place: two calls with one name are the same optic.
+	fun field<U: Differs>(
+		self,
+		name: str,
+		lend: |&T, (|&U| void)| void,
+		borrow: |&mut T, (|&mut U| void)| void,
+	): Optic<S, U> {
+		self.step(Step::Named(name).hash(), lend, borrow)
+	}
+
+	/// The general child: `at` is the erased identity of the step from this place.
+	fun step<U: Differs>(
+		self,
+		at: Hash,
+		lend: |&T, (|&U| void)| void,
+		borrow: |&mut T, (|&mut U| void)| void,
+	): Optic<S, U> {
+		let outer_lend = self.lend;
+		let outer_borrow = self.borrow;
+		let state = self.state;
+		let lend_part = |held: &S, read: |&U| void| outer_lend(held, |place| lend(place, read));
+		let borrow_part = |held: &mut S, change: |&mut U| void| outer_borrow(
+			held,
+			|place| borrow(place, change),
+		);
+		let child = match self.node.read().children.get(at) {
+			Some(let found) => found,
+			None => {
+				// The node's closures hold the state and the way in, never the
+				// node: an edge back to it is a cycle a count cannot collect.
+				let last: Shared<Option<U>> = Shared::new(None);
+				let made = node(|| {
+					last.write() = None;
+					lend_cell(state.write(), |held| lend_part(held, |part| last.write() = Some(*part)));
+				}, || {
+					// A place that is not there now changed only if it was there before.
+					mut changed = last.read() is Some(let _);
+					lend_cell(state.write(), |held| lend_part(held, |part| {
+						changed = match last.read() {
+							Some(let before) => part.differs_from(&before),
+							None => true,
+						};
+					}));
+					changed
+				});
+				self.node.write().children.insert(at, made);
+				made
+			},
+		};
+		mut above = self.above;
+		above.push(self.node);
+		Optic { state, node = child, above, lend = lend_part, borrow = borrow_part }
+	}
+}
+
+/// An element of a list, by position.
+export impl Optic<type S, List<type E: Differs>> {
+	fun at(self, index: usize): Optic<S, E> {
+		self.field(i"[{index}]", |list: &List<E>, read: |&E| void| {
+			if index < list.len() {
+				read(&list[index]);
+			}
+		}, |list: &mut List<E>, change: |&mut E| void| {
+			if index < list.len() {
+				change(&mut list[index]);
+			}
+		})
+	}
+}
+
+/// The payload of an `Option`: there only while it is `Some`.
+export impl Optic<type S, Option<type T: Differs>> {
+	fun some(self): Optic<S, T> {
+		self.field("?some", |held: &Option<T>, read: |&T| void| {
+			match &held {
+				Some(let value) => read(value),
+				None => {},
+			}
+		}, |held: &mut Option<T>, change: |&mut T| void| {
+			match &mut held {
+				Some(let value) => change(value),
+				None => {},
+			}
+		})
+	}
+}
+
+/// One entry of a map: there only while the key is held.
+export impl Optic<type S, HashMap<type K: Hashable, type V: Differs>> {
+	fun entry(self, key: K): Optic<S, V> {
+		self.step(Step::Entry(key.hash()).hash(), |map: &HashMap<K, V>, read: |&V| void| {
+			map.peek(key, |slot| {
+				match &slot {
+					Some(let value) => read(value),
+					None => {},
+				}
+			});
+		}, |map: &mut HashMap<K, V>, change: |&mut V| void| with_some(map.slot(key), change))
+		// Through a helper: `let slot = map.slot(key); match &mut slot {..}`
+		// runs on JS and is refused by rustc natively (E0596).
+	}
+}
+
+/// `[derive(Optics)]` on a struct writes one accessor per field on
+/// `Optic<S, ThatStruct>`: `user.address().city()`. A stand-in for typed field
+/// keys (PREREQ(1)): it removes the closures from the call site, not from the
+/// program, and a field named like a method of `Optic` shadows that method.
+export macro fun Optics(item: Item): Source {
+	import macro_std::option::Option::{ self, Some, None };
+	if item.as_struct() is Some(let target) {
+		mut methods = "";
+		for f in target.fields {
+			let ty = f.type_.render();
+			methods = methods + i"\tfun {f.name}(self): Optic<S, {ty}> \{\n\t\tself.field(\"{f.name}\", |v: &{target.name}, read: |&{ty}| void| read(&v.{f.name}), |v: &mut {target.name}, change: |&mut {ty}| void| change(&mut v.{f.name}))\n\t\}\n";
+		}
+		ret source(i"impl Optic<type S, {target.name}> \{\n{methods}\}\n");
+	}
+	source("")
+}
+
+/// An optic is a `Source` of its place, so every consumer std has (`sub`,
+/// `derive`, `memo`, a view's hole) takes one. A place that is not there has
+/// no value to give: `get` panics, and `peek` is the read that answers `None`.
+export impl Optic<type S, type T> with Source<T> {
+	fun get(self): T {
+		match self.peek(|place| *place) {
+			Some(let value) => value,
+			None => panic("optic: this place is not there"),
+		}
+	}
+
+	[must_use]
+	fun on_settle(self, subscriber: Subscriber): Subscription {
+		self.node.read().woke.on_settle(subscriber)
+	}
+
+	fun identity(self): Option<i32> {
+		Some(cell_identity(self.node.read().woke))
+	}
+
+	/// The observer's own attach, written out because the default captures
+	/// `self`: the optic holds its node, the node's cell holds the subscriber,
+	/// and the subscriber would hold the optic - a cycle a count cannot collect.
+	/// This one captures the state and the way in, never the node. It also calls
+	/// the observer only while the place is there, where the default's `get`
+	/// would panic.
+	[must_use]
+	fun attach_observer(self, observer: |T| void, immediately: bool): Subscription {
+		let state = self.state;
+		let lend = self.lend;
+		let tell = || {
+			mut now: Option<T> = None;
+			lend_cell(state.write(), |held| lend(held, |place| now = Some(*place)));
+			if now is Some(let value) {
+				observer(value);
+			}
+		};
+		let subscription = self.node.read().woke.on_settle(subscriber_of(tell, false));
+		if immediately {
+			tell();
+		}
+		subscription
+	}
+}
+
+/// And a `Signal`, so what writes a cell writes an optic: `.bind_value(name)` on
+/// an input, `set_with`, a `Draft`.
+export impl Optic<type S, type T> with Signal<T> {
+	[track_caller]
+	fun set(self, value: T) {
+		self.update(|place| place = value);
+	}
+
+	fun notify(self) {
+		batch(|| {
+			for node in self.above {
+				bump(node);
+			}
+			bump(self.node);
+		});
+	}
+}

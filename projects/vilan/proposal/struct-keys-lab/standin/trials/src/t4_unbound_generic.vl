@@ -1,0 +1,46 @@
+// Repro (JS miscompile, native refusal): inside `impl K<type S, Option<type T>>`,
+// `self.then(payload())` where `then<G>(next: K<F, G>)`: the argument's type
+// parameter is never bound to `T`. JS runs and reads `undefined` out of a
+// present `Some`; native refuses: "does not emit a value of an unbound generic
+// type parameter (parameter 1 of `payload`)". `payload<T>()` fixes both.
+struct K<S, F> {
+	lend: |&S, (|&F| void)| void,
+}
+
+fun payload<T>(): K<Option<T>, T> {
+	K {
+		lend = |held: &Option<T>, read: |&T| void| {
+			match &held {
+				Some(let value) => read(value),
+				None => {},
+			}
+		},
+	}
+}
+
+impl K<type S, type F> {
+	fun then<G>(self, next: K<F, G>): K<S, G> {
+		let a = self.lend;
+		let b = next.lend;
+		K { lend = |s: &S, read: |&G| void| a(s, |f| b(f, read)) }
+	}
+}
+
+impl K<type S, Option<type T>> {
+	fun some(self): K<S, T> {
+		self.then(payload())
+	}
+}
+
+struct Doc {
+	title: Option<str>,
+}
+
+fun main() {
+	let title: K<Doc, Option<str>> = K { lend = |d: &Doc, read: |&Option<str>| void| read(&d.title) };
+	let d = Doc { title = Some("Hello") };
+	mut out = "nothing";
+	let lend = title.some().lend;
+	lend(&d, |v| out = *v);
+	print(i"{out} (want Hello)");
+}

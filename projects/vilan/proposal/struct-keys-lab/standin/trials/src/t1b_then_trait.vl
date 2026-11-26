@@ -1,0 +1,52 @@
+// The other way to one `then`: a trait both key types implement, and a
+// generic `then<K: Step<F, G>>`. The result's totality cannot follow the
+// argument's without an associated output type, so it must be partial.
+struct Key<S, F> {
+	lend: |&S, (|&F| void)| void,
+}
+
+struct MaybeKey<S, F> {
+	lend: |&S, (|&F| void)| void,
+}
+
+trait Step<S, F> {
+	fun lender(self): |&S, (|&F| void)| void;
+}
+
+impl Key<type S, type F> with Step<S, F> {
+	fun lender(self): |&S, (|&F| void)| void {
+		self.lend
+	}
+}
+
+impl MaybeKey<type S, type F> with Step<S, F> {
+	fun lender(self): |&S, (|&F| void)| void {
+		self.lend
+	}
+}
+
+impl Key<type S, type F> {
+	fun then<G, K: Step<F, G>>(self, next: K): MaybeKey<S, G> {
+		let a = self.lend;
+		let b = next.lender();
+		MaybeKey { lend = |s: &S, read: |&G| void| a(s, |f| b(f, read)) }
+	}
+}
+
+struct A {
+	b: B,
+}
+
+struct B {
+	c: i32,
+}
+
+fun main() {
+	let ab: Key<A, B> = Key { lend = |a: &A, read: |&B| void| read(&a.b) };
+	let bc: Key<B, i32> = Key { lend = |b: &B, read: |&i32| void| read(&b.c) };
+	let ac = ab.then(bc);
+	mut out = 0;
+	let lend = ac.lend;
+	lend(&A { b = B { c = 7 } }, |v| out = *v);
+	print(i"{out} (want 7)");
+}

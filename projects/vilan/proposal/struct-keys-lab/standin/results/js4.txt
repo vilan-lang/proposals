@@ -1,0 +1,33 @@
+L old leaf set depth3, 0 watched | 610 ns/op
+L key leaf set depth3, 0 watched | 555 ns/op
+B0 construct mk0 only, 0 items | 50 ns/op
+B2 old ROOT set (leaf differs), 0 watched | 3050 ns/op
+B2 key ROOT set (leaf differs), 0 watched | 1350 ns/op
+B3 old ROOT set (nothing differs), 0 watched | 2400 ns/op
+B3 key ROOT set (nothing differs), 0 watched | 1250 ns/op
+B4 old ROOT set (every item differs), 0 watched | 2250 ns/op
+B4 key ROOT set (every item differs), 0 watched | 1350 ns/op
+U old ROOT update (name), 0 watched | 1350 ns/op
+U key ROOT update (name), 0 watched | 600 ns/op
+L old leaf set depth3, 10 watched | 610 ns/op
+L key leaf set depth3, 10 watched | 585 ns/op
+B0 construct mk0 only, 10 items | 600 ns/op
+B2 old ROOT set (leaf differs), 10 watched | 5250 ns/op
+B2 key ROOT set (leaf differs), 10 watched | 2650 ns/op
+B3 old ROOT set (nothing differs), 10 watched | 4950 ns/op
+B3 key ROOT set (nothing differs), 10 watched | 2200 ns/op
+B4 old ROOT set (every item differs), 10 watched | 7350 ns/op
+B4 key ROOT set (every item differs), 10 watched | 6000 ns/op
+U old ROOT update (name), 10 watched | 2600 ns/op
+U key ROOT update (name), 10 watched | 1150 ns/op
+L old leaf set depth3, 100 watched | 585 ns/op
+L key leaf set depth3, 100 watched | 675 ns/op
+B0 construct mk0 only, 100 items | 4200 ns/op
+B2 old ROOT set (leaf differs), 100 watched | 26250 ns/op
+B2 key ROOT set (leaf differs), 100 watched | 14800 ns/op
+B3 old ROOT set (nothing differs), 100 watched | 27650 ns/op
+B3 key ROOT set (nothing differs), 100 watched | 14850 ns/op
+B4 old ROOT set (every item differs), 100 watched | 55050 ns/op
+B4 key ROOT set (every item differs), 100 watched | 45800 ns/op
+U old ROOT update (name), 100 watched | 15750 ns/op
+U key ROOT update (name), 100 watched | 4650 ns/op

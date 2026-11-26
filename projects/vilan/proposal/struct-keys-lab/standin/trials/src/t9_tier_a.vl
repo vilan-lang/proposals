@@ -1,0 +1,11 @@
+export *;
+
+trait Differs {
+	fun differs_from(&self, other: &Self): bool;
+}
+
+impl type T with Differs {
+	fun differs_from(&self, other: &T): bool {
+		true
+	}
+}
