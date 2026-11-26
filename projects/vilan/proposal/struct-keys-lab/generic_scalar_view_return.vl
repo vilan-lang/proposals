@@ -1,0 +1,27 @@
+// Separate from B753 (found while fixing it): a GENERIC view return
+// instantiated at a scalar is read by its caller on JS by the DECLARED pointee
+// (`T`, not a scalar), while the callee hands back what the instance makes —
+// here the `(base, key)` pair the caller passed in. Writes are lost and `*`
+// prints the pair. Native is correct. The explicit `&mut x` tail is the same.
+// Expected (native): 2 / 2 / b / 4
+// JS today:          1 / 1,0 / a / 3
+fun same<T>(x: &mut T): &mut T borrows x {
+	x
+}
+
+fun same_explicit<T>(x: &mut T): &mut T borrows x {
+	&mut x
+}
+
+fun main() {
+	mut n = 1;
+	same(&mut n) = 2;
+	print(n);
+	print(*same(&mut n));
+	mut s = "a";
+	same(&mut s) = "b";
+	print(s);
+	mut k = 3;
+	same_explicit(&mut k) = 4;
+	print(k);
+}
