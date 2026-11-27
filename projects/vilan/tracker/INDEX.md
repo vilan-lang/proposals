@@ -99,6 +99,10 @@
 | [B764](items/B764.md) | Native: an `async fun` called without `await`, bound, and awaited later (`let b = work(); print(await b);`) is refused by rustc (E0277); JS is correct | backend defect (native) | the integrator, 2026-11-26, probing keys across `await`; no key involved; the rule (pending value or implicit await) to be read out of the spec first |
 | [B765](items/B765.md) | JS: a writable view of a tuple element that is itself a tuple (`&mut t.1` where `t.1` is `(i32, i32)`) is a copy, so a write through it is lost; native is correct | miscompile (JS) | lane `keys-s1c`, 2026-11-26; pre-existing, no key needed; also reached through a generic tuple-key accessor; rec: the `(base, offset)` view form, or a refusal by name first |
 | [B766](items/B766.md) | Native: `a.get() + b.get()` where `get` returns an impl's type parameter instantiated at `str` emits `Rc<str> + Rc<str>` and rustc refuses it (E0369); JS is correct | backend defect (native) | lane `keys-s2`, 2026-11-26 |
+| [B767](items/B767.md) | JS: a write through a `&mut` view of a closure-typed place is lost (`fun set(place: &mut (\|\| i32)) { place = \|\| 7; }` leaves the caller's closure); native is correct | miscompile (JS) | the integrator, 2026-11-27 (reviewing `keys-s3a`); pre-existing; B711 S3a's `change` on a closure-typed place shows it |
+| [B768](items/B768.md) | The view-escape check accepts a view-capturing closure assigned through a `&mut` view to a closure-typed place, where the direct field store is refused | bug (checker, C16) | the integrator, 2026-11-27 (reviewing `keys-s3a`); pre-existing |
+| [B769](items/B769.md) | Native: a closure that writes through a captured scalar `&mut` view does not build (rustc E0070); JS is correct | backend defect (native) | lane `keys-s3a`, 2026-11-27; pre-existing |
+| [B770](items/B770.md) | Native: an enum whose payload holds its own type emits an unboxed Rust enum (rustc E0072); JS is correct | backend defect (native) | lane `keys-s3a`, 2026-11-27; pre-existing |
 
 ## C. Memory model
 
